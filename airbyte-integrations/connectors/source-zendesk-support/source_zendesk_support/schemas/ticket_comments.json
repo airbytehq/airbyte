@@ -4,6 +4,9 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "timestamp": {
+      "type": ["null", "integer"]
+    },
     "body": {
       "type": ["null", "string"]
     },
@@ -15,6 +18,9 @@
     },
     "type": {
       "type": ["null", "string"]
+    },
+    "via_reference_id": {
+      "type": ["null", "integer"]
     },
     "html_body": {
       "type": ["null", "string"]
