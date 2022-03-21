@@ -750,13 +750,8 @@ paths:
     post:
       tags:
         - destination_definition
-      summary: List all the destinationDefinitions the given workspace is configured to use
+      summary: List all the destinationDefinitions the current Airbyte deployment is configured to use
       operationId: listDestinationDefinitions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
       responses:
         "200":
           description: Successful operation
@@ -798,6 +793,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PrivateDestinationDefinitionReadList"
+  /v1/destination_definitions/list_for_workspace:
+    post:
+      tags:
+        - destination_definition
+      summary: List all the destinationDefinitions the given workspace is configured to use
+      operationId: listDestinationDefinitionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionReadList"
+  /v1/destination_definitions/create_custom:
+    post:
+      tags:
+        - destination_definition
+      summary: Creates a custom destinationDefinition for the given workspace
+      operationId: createCustomDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomDestinationDefinitionCreate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/grant_definition:
     post:
       tags:
@@ -2596,14 +2629,11 @@ components:
     DestinationDefinitionCreate:
       type: object
       required:
-        - workspaceId
         - name
         - dockerRepository
         - dockerImageTag
         - documentationUrl
       properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
         dockerRepository:
@@ -2668,6 +2698,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationDefinitionRead"
+    CustomDestinationDefinitionCreate:
+      type: object
+      required:
+        - workspaceId
+        - destinationDefinition
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionCreate"
     PrivateDestinationDefinitionRead:
       type: object
       required:

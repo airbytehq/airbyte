@@ -259,11 +259,13 @@ font-style: italic;
   </ul>
   <h4><a href="#DestinationDefinition">DestinationDefinition</a></h4>
   <ul>
+  <li><a href="#createCustomDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create_custom</code></a></li>
   <li><a href="#createDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/create</code></a></li>
   <li><a href="#deleteDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete</code></a></li>
   <li><a href="#getDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/get</code></a></li>
   <li><a href="#grantDestinationDefinitionToWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/grant_definition</code></a></li>
   <li><a href="#listDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list</code></a></li>
+  <li><a href="#listDestinationDefinitionsForWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/list_for_workspace</code></a></li>
   <li><a href="#listLatestDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_latest</code></a></li>
   <li><a href="#listPrivateDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list_private</code></a></li>
   <li><a href="#revokeDestinationDefinitionFromWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/revoke_definition</code></a></li>
@@ -2578,6 +2580,90 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="DestinationDefinition">DestinationDefinition</a></h1>
+  <div class="method"><a name="createCustomDestinationDefinition"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/create_custom</code></pre></div>
+    <div class="method-summary">Creates a custom destinationDefinition for the given workspace (<span class="nickname">createCustomDestinationDefinition</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">CustomDestinationDefinitionCreate <a href="#CustomDestinationDefinitionCreate">CustomDestinationDefinitionCreate</a> (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="createDestinationDefinition"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2891,7 +2977,109 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list</code></pre></div>
-    <div class="method-summary">List all the destinationDefinitions the given workspace is configured to use (<span class="nickname">listDestinationDefinitions</span>)</div>
+    <div class="method-summary">List all the destinationDefinitions the current Airbyte deployment is configured to use (<span class="nickname">listDestinationDefinitions</span>)</div>
+    <div class="method-notes"></div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "destinationDefinitions" : [ {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "resourceRequirements" : {
+      "default" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      },
+      "jobSpecific" : [ {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      }, {
+        "resourceRequirements" : {
+          "cpu_limit" : "cpu_limit",
+          "memory_request" : "memory_request",
+          "memory_limit" : "memory_limit",
+          "cpu_request" : "cpu_request"
+        }
+      } ]
+    },
+    "documentationUrl" : "https://openapi-generator.tech",
+    "dockerImageTag" : "dockerImageTag",
+    "releaseDate" : "2000-01-23",
+    "dockerRepository" : "dockerRepository",
+    "name" : "name",
+    "icon" : "icon",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionReadList">DestinationDefinitionReadList</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listDestinationDefinitionsForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/list_for_workspace</code></pre></div>
+    <div class="method-summary">List all the destinationDefinitions the given workspace is configured to use (<span class="nickname">listDestinationDefinitionsForWorkspace</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -9038,6 +9226,7 @@ font-style: italic;
     <li><a href="#ConnectionState"><code>ConnectionState</code> - </a></li>
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
+    <li><a href="#CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a></li>
     <li><a href="#CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a></li>
     <li><a href="#DataType"><code>DataType</code> - </a></li>
     <li><a href="#DbMigrationExecutionRead"><code>DbMigrationExecutionRead</code> - </a></li>
@@ -9446,6 +9635,14 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationDefinition </div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionCreate">DestinationDefinitionCreate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -9523,8 +9720,7 @@ font-style: italic;
     <h3><a name="DestinationDefinitionCreate"><code>DestinationDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">dockerRepository </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">dockerImageTag </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">documentationUrl </div><div class="param-desc"><span class="param-type"><a href="#URI">URI</a></span>  format: uri</div>
