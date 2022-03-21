@@ -1,4 +1,7 @@
 # As of today, dbt-oracle doesn't support 1.0.0
+# IF YOU UPGRADE DBT, make sure to also edit these files:
+# 1. Remove the "normalization-oracle" entry here https://github.com/airbytehq/airbyte/pull/11267/files#diff-9a3bcae8cb5c56aa30c00548e06eade6ad771f3d4f098f6867ae9a183049dfd8R404
+# 2. Check if mysql.Dockerfile is on DBT 1.0.0 yet; if it is, then revert this entire edit https://github.com/airbytehq/airbyte/pull/11267/files#diff-8880e85b2b5690accc6f15f9292a8589a6eb83564803d57c4ee74e2ee8ede09eR117-R130
 FROM fishtownanalytics/dbt:0.19.1
 
 USER root
