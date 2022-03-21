@@ -97,19 +97,22 @@ public class S3Destination extends BaseConnector implements Destination {
         testFile,
         s3Client,
         (long) S3StreamTransferManagerHelper.DEFAULT_PART_SIZE_MB);
-    try {
-      try (final MultiPartOutputStream outputStream = manager.getMultiPartOutputStreams().get(0);
+    boolean success = false;
+    try (final MultiPartOutputStream outputStream = manager.getMultiPartOutputStreams().get(0);
           final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
-        final String oneMegaByteString = "a".repeat(500_000);
-        // write a file larger than the 5 MB, which is the default part size, to make sure it is a multipart
-        // upload
-        for (int i = 0; i < 7; ++i) {
-          csvPrinter.printRecord(System.currentTimeMillis(), oneMegaByteString);
-        }
+      final String oneMegaByteString = "a".repeat(500_000);
+      // write a file larger than the 5 MB, which is the default part size, to make sure it is a multipart
+      // upload
+      for (int i = 0; i < 7; ++i) {
+        csvPrinter.printRecord(System.currentTimeMillis(), oneMegaByteString);
       }
-      manager.complete();
+      success = true;
     } finally {
-      manager.abort();
+      if (success) {
+        manager.complete();
+      } else {
+        manager.abort();
+      }
       s3Client.deleteObject(bucketName, testFile);
     }
     LOGGER.info("Finished verification for multipart upload mode");
