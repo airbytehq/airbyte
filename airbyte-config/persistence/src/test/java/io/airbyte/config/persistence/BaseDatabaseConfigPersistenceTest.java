@@ -6,14 +6,16 @@ package io.airbyte.config.persistence;
 
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import java.sql.SQLException;
 import java.util.List;
@@ -39,6 +41,8 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   protected static PostgreSQLContainer<?> container;
   protected static Database database;
   protected static DatabaseConfigPersistence configPersistence;
+  protected static JsonSecretsProcessor jsonSecretsProcessor;
+  protected static FeatureFlags featureFlags;
 
   @BeforeAll
   public static void dbSetup() {
@@ -47,6 +51,8 @@ public abstract class BaseDatabaseConfigPersistenceTest {
         .withUsername("docker")
         .withPassword("docker");
     container.start();
+    jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
+    featureFlags = mock(FeatureFlags.class);
   }
 
   @AfterAll

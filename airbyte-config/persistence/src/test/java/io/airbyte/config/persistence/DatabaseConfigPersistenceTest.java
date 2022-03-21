@@ -51,7 +51,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   @BeforeEach
   public void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence(database));
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -163,6 +163,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     writeSource(configPersistence, SOURCE_GITHUB);
     writeSource(configPersistence, SOURCE_POSTGRES);
     writeDestination(configPersistence, DESTINATION_S3);
+    // when(jsonSecretsProcessor.maskSecrets(any(), any())).thenCallRealMethod();
     final Map<String, Stream<JsonNode>> actual = configPersistence.dumpConfigs();
     final Map<String, Stream<JsonNode>> expected = Map.of(
         STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),

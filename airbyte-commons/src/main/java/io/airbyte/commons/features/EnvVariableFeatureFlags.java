@@ -23,4 +23,9 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
     return Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS"));
   }
 
+  @Override
+  public boolean hideSecretsInExport() {
+    return Boolean.parseBoolean(System.getenv("HIDE_SECRETS_IN_EXPORT"));
+  }
+
 }

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -46,6 +47,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
@@ -80,14 +82,20 @@ import org.slf4j.LoggerFactory;
 public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private final ExceptionWrappingDatabase database;
+  private final JsonSecretsProcessor jsonSecretsProcessor;
+  private final FeatureFlags featureFlags;
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
 
-  public static ConfigPersistence createWithValidation(final Database database) {
-    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database));
+  public static ConfigPersistence createWithValidation(final Database database,
+                                                       final JsonSecretsProcessor jsonSecretsProcessor,
+                                                       final FeatureFlags featureFlags) {
+    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
   }
 
-  public DatabaseConfigPersistence(final Database database) {
+  public DatabaseConfigPersistence(final Database database, final JsonSecretsProcessor jsonSecretsProcessor, final FeatureFlags featureFlags) {
     this.database = new ExceptionWrappingDatabase(database);
+    this.jsonSecretsProcessor = jsonSecretsProcessor;
+    this.featureFlags = featureFlags;
   }
 
   @Override
@@ -1575,8 +1583,23 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       result.put(ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
           standardSourceDefinitionWithMetadata
               .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
+              .map(configWitMetadata -> {
+                if (!featureFlags.hideSecretsInExport()) {
+                  return Jsons.jsonNode(configWitMetadata.getConfig());
+                }
+
+                try {
+                  final StandardSourceDefinition standardSourceDefinition = getConfig(
+                      ConfigSchema.STANDARD_SOURCE_DEFINITION,
+                      configWitMetadata.getConfigId(),
+                      StandardSourceDefinition.class);
+                  final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
+                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWitMetadata.getConfig()), connectionSpecs);
+                  return sanitizedConfig;
+                } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
+                  throw new RuntimeException(e);
+                }
+              }));
     }
     final List<ConfigWithMetadata<StandardDestinationDefinition>> standardDestinationDefinitionWithMetadata =
         listStandardDestinationDefinitionWithMetadata();
@@ -1584,8 +1607,23 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       result.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
           standardDestinationDefinitionWithMetadata
               .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
+              .map(configWitMetadata -> {
+                if (!featureFlags.hideSecretsInExport()) {
+                  return Jsons.jsonNode(configWitMetadata.getConfig());
+                }
+
+                try {
+                  final StandardDestinationDefinition standardDestinationDefinition = getConfig(
+                      ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+                      configWitMetadata.getConfigId(),
+                      StandardDestinationDefinition.class);
+                  final JsonNode connectionSpecs = standardDestinationDefinition.getSpec().getConnectionSpecification();
+                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWitMetadata.getConfig()), connectionSpecs);
+                  return sanitizedConfig;
+                } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
+                  throw new RuntimeException(e);
+                }
+              }));
     }
     final List<ConfigWithMetadata<SourceConnection>> sourceConnectionWithMetadata = listSourceConnectionWithMetadata();
     if (!sourceConnectionWithMetadata.isEmpty()) {
