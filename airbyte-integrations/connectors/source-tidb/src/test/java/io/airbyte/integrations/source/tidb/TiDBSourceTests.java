@@ -22,7 +22,7 @@ public class TiDBSourceTests {
 
   @Test
   public void testSettingTimezones() throws Exception {
-    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:v5.4.0"))
+    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
         .withExposedPorts(4000);
 
     container.start();

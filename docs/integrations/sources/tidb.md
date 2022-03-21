@@ -25,7 +25,7 @@ The TiDB source does not alter the schema present in your database. Depending on
 
 ### Requirements
 
-1. TiDB `v2.1` or above
+1. TiDB `v4.0` or above
 2. Allow connections from Airbyte to your TiDB database \(if they exist in separate VPCs\)
 3. (Optional) Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
@@ -78,7 +78,7 @@ Using this feature requires additional configuration, when creating the source. 
 TiDB data types are mapped to the following data types when synchronizing data:
 
 | TiDB Type                                 | Resulting Type         | Notes                                                        |
-| :---------------------------------------- | :--------------------- | :----------------------------------------------------------- |
+| :---------------------------------------- |:-----------------------| :----------------------------------------------------------- |
 | `bit(1)`                                  | boolean                |                                                              |
 | `bit(>1)`                                 | base64 binary string   |                                                              |
 | `boolean`                                 | boolean                |                                                              |
@@ -91,8 +91,8 @@ TiDB data types are mapped to the following data types when synchronizing data:
 | `float`                                   | number                 |                                                              |
 | `double`                                  | number                 |                                                              |
 | `decimal`                                 | number                 |                                                              |
-| `binary`                                  | string                 |                                                              |
-| `blob`                                    | string                 |                                                              |
+| `binary`                                  | base64 binary string   |                                                              |
+| `blob`                                    | base64 binary string   |                                                              |
 | `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
 | `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
 | `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59. |
@@ -112,7 +112,7 @@ TiDB data types are mapped to the following data types when synchronizing data:
 | `json`                                    | serialized json string | E.g. `{"a": 10, "b": 15}`                                    |
 | `enum`                                    | string                 |                                                              |
 | `set`                                     | string                 | E.g. `blue,green,yellow`                                     |
-| `geometry`                                | base64 binary string   |                                                              |
+
 
 **Note:** arrays for all the above types as well as custom types are supported, although they may be de-nested depending on the destination.
 

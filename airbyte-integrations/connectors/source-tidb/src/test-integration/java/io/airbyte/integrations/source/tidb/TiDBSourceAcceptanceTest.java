@@ -32,7 +32,7 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv testEnv) throws Exception {
-    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:v5.4.0"))
+    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
         .withExposedPorts(4000);
     container.start();
 
