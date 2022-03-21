@@ -1,9 +1,15 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import copy
-import six
 import dataclasses
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional
+
+import six
+
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 
 
@@ -111,32 +117,19 @@ class FieldMeta(FromDictMixin):
         return [pick_item.actual_value for pick_item in self.pick_list_values]
 
     def _boolean_field(self):
-        return {
-            "type": ["null", "boolean"],
-            **self._default_type_kwargs()
-        }
+        return {"type": ["null", "boolean"], **self._default_type_kwargs()}
 
     def _integer_field(self):
-        return {
-            "type": ["null", "int"],
-            **self._default_type_kwargs()
-        }
+        return {"type": ["null", "int"], **self._default_type_kwargs()}
 
     def _double_field(self):
-        typedef = {
-            "type": ["null", "int"],
-            **self._default_type_kwargs()
-        }
+        typedef = {"type": ["null", "int"], **self._default_type_kwargs()}
         if self.decimal_place:
             typedef["multipleOf"] = Decimal("0.1") ** self.decimal_place
         return typedef
 
     def _string_field(self):
-        typedef = {
-           "type": ["null", "string"],
-           "maxLength": self.length,
-           **self._default_type_kwargs()
-        }
+        typedef = {"type": ["null", "string"], "maxLength": self.length, **self._default_type_kwargs()}
         if self.data_type == ZohoDataType.website:
             typedef["format"] = "uri"
         elif self.data_type == ZohoDataType.email:
@@ -171,20 +164,15 @@ class FieldMeta(FromDictMixin):
             "type": "object",
             "additionalProperties": False,
             "required": ["name", "id"],
-            "properties": {
-                "name": {"type": ["null", "string"]},
-                "id": {"type": "string"}
-            },
-            **self._default_type_kwargs()
+            "properties": {"name": {"type": ["null", "string"]}, "id": {"type": "string"}},
+            **self._default_type_kwargs(),
         }
         if self.data_type == ZohoDataType.lookup:
             return lookup_typedef
         if self.data_type == ZohoDataType.ownerlookup:
             owner_lookup_typedef = copy.deepcopy(lookup_typedef)
             owner_lookup_typedef["required"] += ["email"]
-            owner_lookup_typedef["properties"]["email"] = {
-                "type": "string", "format": "email"
-            }
+            owner_lookup_typedef["properties"]["email"] = {"type": "string", "format": "email"}
             return owner_lookup_typedef
         # exact specification unknown
         return {"type": "object"}
@@ -209,14 +197,5 @@ class ModuleMeta(FromDictMixin):
             raise IncompleteMetaDataException("Not enough data")
         required = ["id"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
-        properties = {
-            "id": {
-                "type": "str"
-            },
-            "Modified_Time": {
-                "type": "str",
-                "format": "date-time"
-            },
-            **field_to_properties
-        }
+        properties = {"id": {"type": "str"}, "Modified_Time": {"type": "str", "format": "date-time"}, **field_to_properties}
         return Schema(description=self.module_name, properties=properties, required=required)

@@ -1,17 +1,21 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import concurrent.futures
 import datetime
 import logging
 import math
-import requests
 from abc import ABC
 from dataclasses import asdict
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
+import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+
 from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
-from .types import ModuleMeta, FieldMeta, ZohoPickListItem
-
+from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +53,7 @@ class ZohoCrmStream(HttpStream, ABC):
 class IncrementalZohoCrmStream(ZohoCrmStream):
     cursor_field = "Modified_Time"
 
-    def __init__(
-        self,
-        authenticator: "requests.auth.AuthBase" = None,
-        config: Mapping[str, Any] = None
-    ):
+    def __init__(self, authenticator: "requests.auth.AuthBase" = None, config: Mapping[str, Any] = None):
         super().__init__(authenticator)
         self._config = config
         self._start_datetime = self._config.get("start_datetime") or "1970-01-01T00:00:00+00:00"
@@ -111,10 +111,7 @@ class ZohoStreamFactory:
         for field in fields_meta_json:
             pick_list_values = field.get("pick_list_values", [])
             if pick_list_values:
-                field["pick_list_values"] = [
-                    ZohoPickListItem.from_dict(pick_list_item)
-                    for pick_list_item in field["pick_list_values"]
-                ]
+                field["pick_list_values"] = [ZohoPickListItem.from_dict(pick_list_item) for pick_list_item in field["pick_list_values"]]
             fields_meta.append(FieldMeta.from_dict(field))
         module.fields = fields_meta
 
@@ -137,7 +134,7 @@ class ZohoStreamFactory:
 
         def chunk(max_len, lst):
             for i in range(math.ceil(len(lst) / max_len)):
-                yield lst[i * max_len: (i + 1) * max_len]
+                yield lst[i * max_len : (i + 1) * max_len]
 
         max_concurrent_request = self.api.max_concurrent_requests
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent_request) as executor:
@@ -154,14 +151,8 @@ class ZohoStreamFactory:
                 "url_base": f"{self.api.api_url}",
                 "_path": f"/crm/v2/{module.api_name}",
                 "json_schema": schema,
-                "primary_key": "id"
+                "primary_key": "id",
             }
-            incremental_stream = type(
-                f"Incremental{module.api_name}ZohoCRMStream",
-                (IncrementalZohoCrmStream,),
-                stream_params
-            )
-            streams.append(
-                incremental_stream(self.api.authenticator, config=self._config)
-            )
+            incremental_stream = type(f"Incremental{module.api_name}ZohoCRMStream", (IncrementalZohoCrmStream,), stream_params)
+            streams.append(incremental_stream(self.api.authenticator, config=self._config))
         return streams

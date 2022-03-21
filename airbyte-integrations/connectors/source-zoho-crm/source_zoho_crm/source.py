@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-import logging
 
-from typing import Any, List, Mapping, Tuple, TYPE_CHECKING
+import logging
+from typing import TYPE_CHECKING, Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
+
 from .api import ZohoAPI
 from .streams import ZohoStreamFactory
-
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.streams import Stream
