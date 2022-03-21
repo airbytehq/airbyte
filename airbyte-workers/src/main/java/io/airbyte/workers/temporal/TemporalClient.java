@@ -28,6 +28,7 @@ import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.BatchRequest;
@@ -252,9 +253,31 @@ public class TemporalClient {
   }
 
   public void deleteConnection(final UUID connectionId) {
-    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+    try {
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+      connectionManagerWorkflow.deleteConnection();
+    } catch (final IllegalStateException e) {
+      log.info("Create new workflow and sent delete signal", e); // todo make better logging message
+      final ConnectionManagerWorkflow connectionManagerWorkflow =
+          getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+      final BatchRequest signalRequest = client.newSignalWithStartRequest();
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(connectionId)
+          .jobId(null)
+          .attemptId(null)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(null)
+          .resetConnection(false)
+          .fromJobResetFailure(false)
+          .build();
 
-    connectionManagerWorkflow.deleteConnection();
+      signalRequest.add(connectionManagerWorkflow::run, input);
+      signalRequest.add(connectionManagerWorkflow::deleteConnection);
+      final WorkflowExecution workflowExecution = client.signalWithStart(signalRequest);
+      // todo add logging about workflow execution? do i need to sleep to confirm connection has started
+      // and received signal?
+    }
   }
 
   public void update(final UUID connectionId) {
