@@ -23,16 +23,16 @@ public class TiDBSourceTests {
   @Test
   public void testSettingTimezones() throws Exception {
     container = new GenericContainer(DockerImageName.parse("pingcap/tidb:v5.4.0"))
-            .withExposedPorts(4000);
+        .withExposedPorts(4000);
 
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", "127.0.0.1")
-            .put("port", container.getFirstMappedPort())
-            .put("username", "root")
-            .put("database", "test")
-            .build());
+        .put("host", "127.0.0.1")
+        .put("port", container.getFirstMappedPort())
+        .put("username", "root")
+        .put("database", "test")
+        .build());
 
     AirbyteConnectionStatus check = new TiDBSource().check(config);
 

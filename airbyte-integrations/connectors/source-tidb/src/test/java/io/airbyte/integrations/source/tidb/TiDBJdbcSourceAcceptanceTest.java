@@ -26,16 +26,16 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     container = new GenericContainer(DockerImageName.parse("pingcap/tidb:v5.4.0"))
-            .withExposedPorts(4000);
+        .withExposedPorts(4000);
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", "127.0.0.1")
-            .put("port", container.getFirstMappedPort())
-            .put("username", USER)
-            .put("database", DATABASE)
-            //.put("ssl", true)
-            .build());
+        .put("host", "127.0.0.1")
+        .put("port", container.getFirstMappedPort())
+        .put("username", USER)
+        .put("database", DATABASE)
+        //.put("ssl", true)
+        .build());
 
     super.setup();
   }

@@ -33,24 +33,24 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void setupEnvironment(final TestDestinationEnv testEnv) throws Exception {
     container = new GenericContainer(DockerImageName.parse("pingcap/tidb:v5.4.0"))
-            .withExposedPorts(4000);
+        .withExposedPorts(4000);
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-       .put("host", "127.0.0.1")
-            .put("port", container.getFirstMappedPort())
-            .put("username", "root")
-            .put("database", "test")
-            .build());
+        .put("host", "127.0.0.1")
+        .put("port", container.getFirstMappedPort())
+        .put("username", "root")
+        .put("database", "test")
+        .build());
     final Database database = Databases.createDatabase(
-            config.get("username").asText(),
-            "",
-            String.format("jdbc:mysql://%s:%s/%s",
-                    config.get("host").asText(),
-                    config.get("port").asText(),
-                    config.get("database").asText()),
-            "com.mysql.cj.jdbc.Driver",
-            SQLDialect.MYSQL);
+        config.get("username").asText(),
+        "",
+        String.format("jdbc:mysql://%s:%s/%s",
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("database").asText()),
+        "com.mysql.cj.jdbc.Driver",
+        SQLDialect.MYSQL);
 
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -86,24 +86,24 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-            new ConfiguredAirbyteStream()
-                    .withSyncMode(SyncMode.INCREMENTAL)
-                    .withCursorField(Lists.newArrayList("id"))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                    .withStream(CatalogHelpers.createAirbyteStream(
-                                    String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
-                                    Field.of("id", JsonSchemaType.NUMBER),
-                                    Field.of("name", JsonSchemaType.STRING))
-                            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
+                    Field.of("id", JsonSchemaType.NUMBER),
+                    Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
+                    Field.of("id", JsonSchemaType.NUMBER),
+                    Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
 
   }
 
