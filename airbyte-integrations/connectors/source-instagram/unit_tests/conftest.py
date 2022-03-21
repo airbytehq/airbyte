@@ -2,18 +2,11 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 from facebook_business import FacebookAdsApi, FacebookSession
 from pytest import fixture
 from source_instagram.api import InstagramAPI as API
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
-
-
-@fixture(autouse=True)
-def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep")
-    yield time_mock
 
 
 @fixture(scope="session", name="account_id")
@@ -38,16 +31,13 @@ def some_config_fixture(account_id):
 
 @fixture(name="fb_account_response")
 def fb_account_response_fixture(account_id, some_config, requests_mock):
-    account = {
-        "id": "test_id",
-        "instagram_business_account": {
-            "id": "test_id"
-        }
-    }
-    requests_mock.register_uri("GET",
-                               FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/"
-                                                       f"?access_token={some_config['access_token']}&fields=instagram_business_account",
-                               json=account)
+    account = {"id": "test_id", "instagram_business_account": {"id": "test_id"}}
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/"
+        f"?access_token={some_config['access_token']}&fields=instagram_business_account",
+        json=account,
+    )
     return {
         "json": {
             "data": [
@@ -66,9 +56,11 @@ def fb_account_response_fixture(account_id, some_config, requests_mock):
 def api_fixture(some_config, requests_mock, fb_account_response):
     api = API(access_token=some_config["access_token"])
 
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/accounts?"
-                                                              f"access_token={some_config['access_token']}&summary=true",
-                               [fb_account_response])
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/accounts?" f"access_token={some_config['access_token']}&summary=true",
+        [fb_account_response],
+    )
 
     return api
 
@@ -79,7 +71,7 @@ def user_data_fixture():
         "biography": "Dino data crunching app",
         "id": "17841405822304914",
         "username": "metricsaurus",
-        "website": "http://www.metricsaurus.com/"
+        "website": "http://www.metricsaurus.com/",
     }
 
 
@@ -88,19 +80,10 @@ def user_insight_data_fixture():
     return {
         "name": "impressions",
         "period": "day",
-        "values": [
-            {
-                "value": 4,
-                "end_time": "2020-05-04T07:00:00+0000"
-            },
-            {
-                "value": 66,
-                "end_time": "2020-05-05T07:00:00+0000"
-            }
-        ],
+        "values": [{"value": 4, "end_time": "2020-05-04T07:00:00+0000"}, {"value": 66, "end_time": "2020-05-05T07:00:00+0000"}],
         "title": "Impressions",
         "description": "Total number of times this profile has been seen",
-        "id": "17841400008460056/insights/impressions/day"
+        "id": "17841400008460056/insights/impressions/day",
     }
 
 
@@ -114,12 +97,8 @@ def user_media_insights_data_fixture():
     return {
         "name": "impressions",
         "period": "lifetime",
-        "values": [
-            {
-                "value": 264
-            }
-        ],
+        "values": [{"value": 264}],
         "title": "Impressions",
         "description": "Total number of times the media object has been seen",
-        "id": "17855590849148465/insights/impressions/lifetime"
+        "id": "17855590849148465/insights/impressions/lifetime",
     }

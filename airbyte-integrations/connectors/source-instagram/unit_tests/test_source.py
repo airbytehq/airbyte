@@ -3,15 +3,18 @@
 #
 
 
-from airbyte_cdk.models import ConnectorSpecification, ConfiguredAirbyteStream, AirbyteStream, SyncMode, DestinationSyncMode
-from source_instagram.source import SourceInstagram, ConnectorConfig
-import logging
-from facebook_business import FacebookAdsApi, FacebookSession
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import (
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    SyncMode,
+)
+from source_instagram.source import SourceInstagram
 
-FB_API_VERSION = FacebookAdsApi.API_VERSION
-
-logger = logging.getLogger("test_client")
+logger = AirbyteLogger()
 
 
 def test_check_connection_ok(api, some_config):
@@ -60,12 +63,12 @@ def test_spec():
 def test_read(config):
     source = SourceInstagram()
     catalog = ConfiguredAirbyteCatalog(
-            streams=[
-                ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name="users", json_schema={}),
-                    sync_mode=SyncMode.full_refresh,
-                    destination_sync_mode=DestinationSyncMode.overwrite,
-                )
-            ]
-        )
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="users", json_schema={}),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
     assert source.read(logger, config, catalog)

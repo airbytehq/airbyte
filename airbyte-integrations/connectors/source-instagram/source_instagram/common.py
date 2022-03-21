@@ -40,7 +40,11 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         if exc.http_status() == status_codes.TOO_MANY_REQUESTS:
             return True
 
-        if exc.api_error_type() == "OAuthException" and exc.api_error_code() == 10 and exc.api_error_message() == "(#10) Not enough viewers for the media to show insights":
+        if (
+            exc.api_error_type() == "OAuthException"
+            and exc.api_error_code() == 10
+            and exc.api_error_message() == "(#10) Not enough viewers for the media to show insights"
+        ):
             return True
 
         # Issue 4028, Sometimes an error about the Rate Limit is returned with a 400 HTTP code

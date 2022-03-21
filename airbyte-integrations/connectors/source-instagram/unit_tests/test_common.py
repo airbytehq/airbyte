@@ -2,8 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
-from source_instagram.common import remove_params_from_url, retry_pattern
+from source_instagram.common import remove_params_from_url
 
 
 def test_empty_url():
