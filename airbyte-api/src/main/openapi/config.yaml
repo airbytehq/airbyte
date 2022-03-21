@@ -317,6 +317,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionReadList"
+  /v1/source_definitions/get:
+    post:
+      tags:
+        - source_definition
+      summary: Get source
+      operationId: getSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/delete:
+    post:
+      tags:
+        - source_definition
+      summary: Delete a source definition
+      operationId: deleteSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/list_private:
     post:
       tags:
@@ -448,48 +490,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SourceDefinitionGrantUpdate"
-        required: true
-      responses:
-        "204":
-          description: The resource was deleted successfully.
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/get:
-    post:
-      tags:
-        - source_definition
-      summary: Get source
-      operationId: getSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/delete:
-    post:
-      tags:
-        - source_definition
-      summary: Delete a source definition
-      operationId: deleteSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
         required: true
       responses:
         "204":
@@ -814,6 +814,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionReadList"
+  /v1/destination_definitions/get:
+    post:
+      tags:
+        - destination_definition
+      summary: Get destinationDefinition
+      operationId: getDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/delete:
+    post:
+      tags:
+        - destination_definition
+      summary: Delete a destination definition
+      operationId: deleteDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/list_private:
     post:
       tags:
@@ -947,48 +989,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/DestinationDefinitionGrantUpdate"
-        required: true
-      responses:
-        "204":
-          description: The resource was deleted successfully.
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/get:
-    post:
-      tags:
-        - destination_definition
-      summary: Get destinationDefinition
-      operationId: getDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/delete:
-    post:
-      tags:
-        - destination_definition
-      summary: Delete a destination definition
-      operationId: deleteDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
         required: true
       responses:
         "204":
