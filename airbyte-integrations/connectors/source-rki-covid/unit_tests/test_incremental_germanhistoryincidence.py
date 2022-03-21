@@ -25,7 +25,7 @@ def test_cursor_field(patch_incremental_german_history_incidence):
 def test_get_updated_state(patch_incremental_german_history_incidence):
     config = {"incidence_in_days": 2}
     stream = GermanHistoryIncidence(config)
-    d = datetime.date(datetime.today()) - timedelta(days=2)
+    d = datetime.date(datetime.today()) - timedelta(days=1)
     date = {stream.cursor_field: str(d)}
     inputs = {"current_stream_state": date, "latest_record": date}
     expected_state = {stream.cursor_field: str(d)}
