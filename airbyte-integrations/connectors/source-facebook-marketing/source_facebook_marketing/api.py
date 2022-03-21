@@ -91,7 +91,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         """The sleep time will be calculated based on usage consumed."""
         if usage >= self.MAX_RATE:
             return max(self.MAX_PAUSE_INTERVAL, pause_interval)
-        return self.MIN_PAUSE_INTERVAL
+        return max(self.MIN_PAUSE_INTERVAL, pause_interval)
 
     def _get_max_usage_pause_interval_from_batch(self, records):
         usage = 0
