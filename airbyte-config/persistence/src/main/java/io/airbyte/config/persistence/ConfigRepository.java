@@ -36,6 +36,8 @@ import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -66,12 +68,6 @@ public class ConfigRepository {
 
   private final ConfigPersistence persistence;
   private final ExceptionWrappingDatabase database;
-
-  // todo (cgardens) - very bad that this exposed. usages should be removed. do not use it.
-  @Deprecated
-  public ExceptionWrappingDatabase getDatabase() {
-    return database;
-  }
 
   public ConfigRepository(final ConfigPersistence persistence, final Database database) {
     this.persistence = persistence;
@@ -737,6 +733,19 @@ public class ConfigRepository {
    */
   public void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
     persistence.loadData(seedPersistenceWithoutSecrets);
+  }
+
+  /**
+   * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit metrics without
+   * exposing the underlying database connection.
+   */
+
+  public List<ReleaseStage> getSrcIdAndDestIdToReleaseStages(final UUID srcId, final UUID dstId) throws IOException {
+    return database.query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
+  }
+
+  public List<ReleaseStage> getJobIdToReleaseStages(final long jobId) throws IOException {
+    return database.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
   }
 
 }
