@@ -63,6 +63,7 @@ import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.api.model.SourceRead;
@@ -432,8 +433,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
+  public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody) {
+    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaRequestBody));
   }
 
   // DB MIGRATION
