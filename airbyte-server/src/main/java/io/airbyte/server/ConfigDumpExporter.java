@@ -89,7 +89,7 @@ public class ConfigDumpExporter {
   }
 
   private void dumpConfigsDatabase(final Path parentFolder) throws IOException {
-    for (final Map.Entry<String, Stream<JsonNode>> configEntry : secretsRepositoryReader.dumpConfigsWithSecrets().entrySet()) {
+    for (final Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigsNoSecrets().entrySet()) {
       writeConfigsToArchive(parentFolder, configEntry.getKey(), configEntry.getValue());
     }
   }
