@@ -7,6 +7,8 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -20,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -64,6 +67,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
   public static final String SYNC_JOB_MAX_TIMEOUT_DAYS = "SYNC_JOB_MAX_TIMEOUT_DAYS";
+  private static final String CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED = "CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
@@ -117,6 +121,9 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
 
+  private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
+  private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
+
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
   public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
@@ -167,7 +174,15 @@ public class EnvConfigs implements Configs {
 
   public static final String DEFAULT_NETWORK = "host";
 
+  public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
+      AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
+      AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
+      WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());
+
   public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
+
+  public static final int DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = 100;
+  public static final int DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = 14;
 
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
@@ -419,6 +434,11 @@ public class EnvConfigs implements Configs {
     return Integer.parseInt(getEnvOrDefault(SYNC_JOB_MAX_TIMEOUT_DAYS, "3"));
   }
 
+  @Override
+  public boolean connectorSpecificResourceDefaultsEnabled() {
+    return getEnvOrDefault(CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED, false);
+  }
+
   /**
    * Returns worker pod tolerations parsed from its own environment variable. The value of the env is
    * a string that represents one or more tolerations.
@@ -626,11 +646,35 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_MEMORY_REQUIREMENT);
   }
 
+  /**
+   * There are two types of environment variables available to the job container:
+   * <ul>
+   * <li>Exclusive variables prefixed with JOB_DEFAULT_ENV_PREFIX</li>
+   * <li>Shared variables defined in JOB_SHARED_ENVS</li>
+   * </ul>
+   */
   @Override
   public Map<String, String> getJobDefaultEnvMap() {
-    return getAllEnvKeys.get().stream()
+    final Map<String, String> jobPrefixedEnvMap = getAllEnvKeys.get().stream()
         .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
         .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
+    // This method assumes that these shared env variables are not critical to the execution
+    // of the jobs, and only serve as metadata. So any exception is swallowed and default to
+    // an empty string. Change this logic if this assumption no longer holds.
+    final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream().collect(Collectors.toMap(
+        Entry::getKey,
+        entry -> Exceptions.swallowWithDefault(() -> Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
+    return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
+  }
+
+  @Override
+  public int getMaxFailedJobsInARowBeforeConnectionDisable() {
+    return getEnvOrDefault(MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE, DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE);
+  }
+
+  @Override
+  public int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable() {
+    return getEnvOrDefault(MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE, DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE);
   }
 
   @Override
