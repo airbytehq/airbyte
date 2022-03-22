@@ -44,7 +44,7 @@ class SnowflakeSqlOperationsTest {
   @Test
   void isSchemaExists() throws Exception {
     snowflakeSqlOperations.isSchemaExists(db, SCHEMA_NAME);
-    verify(db, times(1)).query(anyString());
+    verify(db, times(1)).unsafeQuery(anyString());
   }
 
   @Test

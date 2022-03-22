@@ -1,20 +1,15 @@
 import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
-import { useStatefulResource } from "@rest-hooks/legacy";
 
 import DestinationResource from "core/resources/Destination";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import { RoutePaths } from "pages/routes";
 import useRouter from "../useRouter";
-import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import {
-  Destination,
-  DestinationDefinitionSpecification,
-} from "core/domain/connector";
+import { Destination } from "core/domain/connector";
 
 type ValuesProps = {
   name: string;
@@ -23,46 +18,6 @@ type ValuesProps = {
 };
 
 type ConnectorProps = { name: string; destinationDefinitionId: string };
-
-export const useDestinationDefinitionSpecificationLoad = (
-  destinationDefinitionId: string | null
-): {
-  isLoading: boolean;
-  destinationDefinitionSpecification?: DestinationDefinitionSpecification;
-  sourceDefinitionError?: Error;
-} => {
-  const {
-    loading: isLoading,
-    error,
-    data: destinationDefinitionSpecification,
-  } = useStatefulResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    destinationDefinitionId
-      ? {
-          destinationDefinitionId,
-        }
-      : null
-  );
-
-  return {
-    destinationDefinitionSpecification,
-    sourceDefinitionError: error,
-    isLoading,
-  };
-};
-
-export const useDestinationDefinitionSpecificationLoadAsync = (
-  destinationDefinitionId: string
-): DestinationDefinitionSpecification => {
-  const definition = useResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    {
-      destinationDefinitionId,
-    }
-  );
-
-  return definition;
-};
 
 type DestinationService = {
   checkDestinationConnection: ({
