@@ -4,8 +4,8 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Zendesk Support Spec",
     "type": "object",
-    "required": ["start_date", "subdomain", "auth_method"],
-    "additionalProperties": false,
+    "required": ["start_date", "subdomain"],
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "type": "string",
@@ -16,23 +16,47 @@
       },
       "subdomain": {
         "type": "string",
-        "description": "The subdomain for your Zendesk Support"
+        "title": "Subdomain",
+        "description": "Identifier of your Zendesk Subdomain, like: https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain"
       },
-      "auth_method": {
+      "credentials": {
         "title": "Authorization Method",
         "type": "object",
-        "default": "api_token",
-        "description": "Zendesk service provides 2 auth method: API token and OAuth2. Now only the first one is available. Another one will be added in the future.",
+        "description": "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.",
         "oneOf": [
+          {
+            "title": "OAuth2.0",
+            "type": "object",
+            "required": ["access_token"],
+            "additionalProperties": true,
+            "properties": {
+              "credentials": {
+                "type": "string",
+                "const": "oauth2.0",
+                "enum": ["oauth2.0"],
+                "default": "oauth2.0",
+                "order": 0
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a> for more information.",
+                "airbyte_secret": true
+              }
+            }
+          },
           {
             "title": "API Token",
             "type": "object",
             "required": ["email", "api_token"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
-              "auth_method": {
+              "credentials": {
                 "type": "string",
-                "const": "api_token"
+                "const": "api_token",
+                "enum": ["api_token"],
+                "default": "api_token",
+                "order": 0
               },
               "email": {
                 "title": "Email",
@@ -46,26 +70,61 @@
                 "airbyte_secret": true
               }
             }
-          },
-          {
-            "title": "OAuth2.0",
-            "type": "object",
-            "required": ["access_token"],
-            "additionalProperties": false,
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "access_token"
-              },
-              "access_token": {
-                "title": "Access Token",
-                "type": "string",
-                "description": "The value of the Access token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a> for more information.",
-                "airbyte_secret": true
-              }
-            }
           }
         ]
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "credentials"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      },
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "subdomain": {
+            "type": "string",
+            "path_in_connector_config": ["subdomain"]
+          }
+        }
       }
     }
   }

@@ -15,7 +15,6 @@ import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourc
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
@@ -79,4 +78,5 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     // for MySQL DB name ans schema name would be the same
     return Stream.of(Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000));
   }
+
 }
