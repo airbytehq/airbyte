@@ -224,4 +224,15 @@ public class ConfigRepositoryE2EReadWriteTest {
         .fetchSet(CONNECTION_OPERATION.OPERATION_ID));
   }
 
+  @Test
+  public void testActorDefinitionWorkspaceGrantExists() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final UUID definitionId = MockData.standardSourceDefinitions().get(0).getSourceDefinitionId();
+
+    assertFalse(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+
+    configRepository.writeActorDefinitionWorkspaceGrant(definitionId, workspaceId);
+    assertTrue(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+  }
+
 }

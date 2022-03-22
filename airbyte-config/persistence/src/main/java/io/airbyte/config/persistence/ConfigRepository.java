@@ -317,6 +317,15 @@ public class ConfigRepository {
         .execute());
   }
 
+  public boolean actorDefinitionWorkspaceGrantExists(final UUID actorDefinitionId, final UUID workspaceId) throws IOException {
+    final Result<Record1<Integer>> records = database.query(ctx -> ctx.selectCount()
+        .from(ACTOR_DEFINITION_WORKSPACE_GRANT)
+        .where(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID.eq(actorDefinitionId))
+        .and(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId))
+        .fetch());
+    return records.stream().anyMatch(record -> record.value1() == 1);
+  }
+
   /**
    * Returns source with a given id. Does not contain secrets. To hydrate with secrets see { @link
    * SecretsRepositoryReader#getSourceConnectionWithSecrets(final UUID sourceId) }.
