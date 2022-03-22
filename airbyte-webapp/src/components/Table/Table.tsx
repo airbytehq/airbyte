@@ -142,6 +142,7 @@ const Table: React.FC<IProps> = ({
     }
     return [pl, plConfig];
   }, [sortBy]);
+
   const {
     getTableProps,
     getTableBodyProps,

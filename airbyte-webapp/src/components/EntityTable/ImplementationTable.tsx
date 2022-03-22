@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
+import queryString from "query-string";
 
 import Table from "components/Table";
 
@@ -9,8 +10,10 @@ import LastSyncCell from "./components/LastSyncCell";
 import ConnectorCell from "./components/ConnectorCell";
 import NameCell from "./components/NameCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
-import { EntityTableDataItem } from "./types";
+import { EntityTableDataItem, SortOrderEnum } from "./types";
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
+import useRouter from "hooks/useRouter";
+import SortButton from "./components/SortButton";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
@@ -27,10 +30,64 @@ const ImplementationTable: React.FC<IProps> = ({
   entity,
   onClickRow,
 }) => {
+  const { query, push } = useRouter();
+  const sortBy = query.sortBy || "entity";
+  const sortOrder = query.order || SortOrderEnum.ASC;
+
+  const onSortClick = useCallback(
+    (field: string) => {
+      const order =
+        sortBy !== field
+          ? SortOrderEnum.ASC
+          : sortOrder === SortOrderEnum.ASC
+          ? SortOrderEnum.DESC
+          : SortOrderEnum.ASC;
+      push({
+        search: queryString.stringify(
+          {
+            sortBy: field,
+            order: order,
+          },
+          { skipNull: true }
+        ),
+      });
+    },
+    [push, sortBy, sortOrder]
+  );
+
+  const sortData = useCallback(
+    (a, b) => {
+      const result = a[`${sortBy}Name`]
+        .toLowerCase()
+        .localeCompare(b[`${sortBy}Name`].toLowerCase());
+
+      if (sortOrder === SortOrderEnum.DESC) {
+        return -1 * result;
+      }
+
+      return result;
+    },
+    [sortBy, sortOrder]
+  );
+
+  const sortingData = React.useMemo(() => data.sort(sortData), [
+    sortData,
+    data,
+  ]);
+
   const columns = React.useMemo(
     () => [
       {
-        Header: <FormattedMessage id="tables.name" />,
+        Header: (
+          <>
+            <FormattedMessage id="tables.name" />
+            <SortButton
+              wasActive={sortBy === "entity"}
+              lowToLarge={sortOrder === SortOrderEnum.ASC}
+              onClick={() => onSortClick("entity")}
+            />
+          </>
+        ),
         headerHighlighted: true,
         accessor: "entityName",
         customWidth: 40,
@@ -39,7 +96,16 @@ const ImplementationTable: React.FC<IProps> = ({
         ),
       },
       {
-        Header: <FormattedMessage id="tables.connector" />,
+        Header: (
+          <>
+            <FormattedMessage id="tables.connector" />
+            <SortButton
+              wasActive={sortBy === "entity"}
+              lowToLarge={sortOrder === SortOrderEnum.ASC}
+              onClick={() => onSortClick("entity")}
+            />
+          </>
+        ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
           <ConnectorCell
@@ -79,14 +145,14 @@ const ImplementationTable: React.FC<IProps> = ({
         ),
       },
     ],
-    [entity]
+    [entity, onSortClick, sortBy, sortOrder]
   );
 
   return (
     <Content>
       <Table
         columns={columns}
-        data={data}
+        data={sortingData}
         onClickRow={onClickRow}
         erroredRows
       />
