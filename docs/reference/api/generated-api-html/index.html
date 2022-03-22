@@ -264,6 +264,7 @@ font-style: italic;
   <li><a href="#deleteCustomDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete_custom</code></a></li>
   <li><a href="#deleteDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/delete</code></a></li>
   <li><a href="#getDestinationDefinition"><code><span class="http-method">post</span> /v1/destination_definitions/get</code></a></li>
+  <li><a href="#getDestinationDefinitionForWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/get_for_workspace</code></a></li>
   <li><a href="#grantDestinationDefinitionToWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/grant_definition</code></a></li>
   <li><a href="#listDestinationDefinitions"><code><span class="http-method">post</span> /v1/destination_definitions/list</code></a></li>
   <li><a href="#listDestinationDefinitionsForWorkspace"><code><span class="http-method">post</span> /v1/destination_definitions/list_for_workspace</code></a></li>
@@ -344,6 +345,7 @@ font-style: italic;
   <li><a href="#deleteCustomSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete_custom</code></a></li>
   <li><a href="#deleteSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/delete</code></a></li>
   <li><a href="#getSourceDefinition"><code><span class="http-method">post</span> /v1/source_definitions/get</code></a></li>
+  <li><a href="#getSourceDefinitionForWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/get_for_workspace</code></a></li>
   <li><a href="#grantSourceDefinitionToWorkspace"><code><span class="http-method">post</span> /v1/source_definitions/grant_definition</code></a></li>
   <li><a href="#listLatestSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_latest</code></a></li>
   <li><a href="#listPrivateSourceDefinitions"><code><span class="http-method">post</span> /v1/source_definitions/list_private</code></a></li>
@@ -2768,7 +2770,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">CustomDestinationDefinitionDelete <a href="#CustomDestinationDefinitionDelete">CustomDestinationDefinitionDelete</a> (required)</div>
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -2935,6 +2937,93 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getDestinationDefinitionForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/destination_definitions/get_for_workspace</code></pre></div>
+    <div class="method-summary">Get a destinationDefinition that is configured for the given workspace (<span class="nickname">getDestinationDefinitionForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="grantDestinationDefinitionToWorkspace"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2951,7 +3040,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">DestinationDefinitionGrantUpdate <a href="#DestinationDefinitionGrantUpdate">DestinationDefinitionGrantUpdate</a> (required)</div>
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -3479,7 +3568,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">DestinationDefinitionGrantUpdate <a href="#DestinationDefinitionGrantUpdate">DestinationDefinitionGrantUpdate</a> (required)</div>
+      <div class="param">DestinationDefinitionIdWithWorkspaceId <a href="#DestinationDefinitionIdWithWorkspaceId">DestinationDefinitionIdWithWorkspaceId</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -6596,7 +6685,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">CustomSourceDefinitionDelete <a href="#CustomSourceDefinitionDelete">CustomSourceDefinitionDelete</a> (required)</div>
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -6763,6 +6852,93 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="getSourceDefinitionForWorkspace"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/source_definitions/get_for_workspace</code></pre></div>
+    <div class="method-summary">Get a sourceDefinition that is configured for the given workspace (<span class="nickname">getSourceDefinitionForWorkspace</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "resourceRequirements" : {
+    "default" : {
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
+    },
+    "jobSpecific" : [ {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    }, {
+      "resourceRequirements" : {
+        "cpu_limit" : "cpu_limit",
+        "memory_request" : "memory_request",
+        "memory_limit" : "memory_limit",
+        "cpu_request" : "cpu_request"
+      }
+    } ]
+  },
+  "documentationUrl" : "https://openapi-generator.tech",
+  "dockerImageTag" : "dockerImageTag",
+  "releaseDate" : "2000-01-23",
+  "dockerRepository" : "dockerRepository",
+  "name" : "name",
+  "icon" : "icon",
+  "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="grantSourceDefinitionToWorkspace"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -6779,7 +6955,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">SourceDefinitionGrantUpdate <a href="#SourceDefinitionGrantUpdate">SourceDefinitionGrantUpdate</a> (required)</div>
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -7307,7 +7483,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">SourceDefinitionGrantUpdate <a href="#SourceDefinitionGrantUpdate">SourceDefinitionGrantUpdate</a> (required)</div>
+      <div class="param">SourceDefinitionIdWithWorkspaceId <a href="#SourceDefinitionIdWithWorkspaceId">SourceDefinitionIdWithWorkspaceId</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -9501,10 +9677,8 @@ font-style: italic;
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
     <li><a href="#CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a></li>
-    <li><a href="#CustomDestinationDefinitionDelete"><code>CustomDestinationDefinitionDelete</code> - </a></li>
     <li><a href="#CustomDestinationDefinitionUpdate"><code>CustomDestinationDefinitionUpdate</code> - </a></li>
     <li><a href="#CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a></li>
-    <li><a href="#CustomSourceDefinitionDelete"><code>CustomSourceDefinitionDelete</code> - </a></li>
     <li><a href="#CustomSourceDefinitionUpdate"><code>CustomSourceDefinitionUpdate</code> - </a></li>
     <li><a href="#DataType"><code>DataType</code> - </a></li>
     <li><a href="#DbMigrationExecutionRead"><code>DbMigrationExecutionRead</code> - </a></li>
@@ -9515,8 +9689,8 @@ font-style: italic;
     <li><a href="#DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a></li>
     <li><a href="#DestinationCreate"><code>DestinationCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionCreate"><code>DestinationDefinitionCreate</code> - </a></li>
-    <li><a href="#DestinationDefinitionGrantUpdate"><code>DestinationDefinitionGrantUpdate</code> - </a></li>
     <li><a href="#DestinationDefinitionIdRequestBody"><code>DestinationDefinitionIdRequestBody</code> - </a></li>
+    <li><a href="#DestinationDefinitionIdWithWorkspaceId"><code>DestinationDefinitionIdWithWorkspaceId</code> - </a></li>
     <li><a href="#DestinationDefinitionRead"><code>DestinationDefinitionRead</code> - </a></li>
     <li><a href="#DestinationDefinitionReadList"><code>DestinationDefinitionReadList</code> - </a></li>
     <li><a href="#DestinationDefinitionSpecificationRead"><code>DestinationDefinitionSpecificationRead</code> - </a></li>
@@ -9580,8 +9754,8 @@ font-style: italic;
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
     <li><a href="#SourceCreate"><code>SourceCreate</code> - </a></li>
     <li><a href="#SourceDefinitionCreate"><code>SourceDefinitionCreate</code> - </a></li>
-    <li><a href="#SourceDefinitionGrantUpdate"><code>SourceDefinitionGrantUpdate</code> - </a></li>
     <li><a href="#SourceDefinitionIdRequestBody"><code>SourceDefinitionIdRequestBody</code> - </a></li>
+    <li><a href="#SourceDefinitionIdWithWorkspaceId"><code>SourceDefinitionIdWithWorkspaceId</code> - </a></li>
     <li><a href="#SourceDefinitionRead"><code>SourceDefinitionRead</code> - </a></li>
     <li><a href="#SourceDefinitionReadList"><code>SourceDefinitionReadList</code> - </a></li>
     <li><a href="#SourceDefinitionSpecificationRead"><code>SourceDefinitionSpecificationRead</code> - </a></li>
@@ -9921,14 +10095,6 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="CustomDestinationDefinitionDelete"><code>CustomDestinationDefinitionDelete</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
     <h3><a name="CustomDestinationDefinitionUpdate"><code>CustomDestinationDefinitionUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -9942,14 +10108,6 @@ font-style: italic;
     <div class="field-items">
       <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">sourceDefinition </div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionCreate">SourceDefinitionCreate</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="CustomSourceDefinitionDelete"><code>CustomSourceDefinitionDelete</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10039,18 +10197,18 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="DestinationDefinitionGrantUpdate"><code>DestinationDefinitionGrantUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
     <h3><a name="DestinationDefinitionIdRequestBody"><code>DestinationDefinitionIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationDefinitionIdWithWorkspaceId"><code>DestinationDefinitionIdWithWorkspaceId</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -10598,18 +10756,18 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="SourceDefinitionGrantUpdate"><code>SourceDefinitionGrantUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
     <h3><a name="SourceDefinitionIdRequestBody"><code>SourceDefinitionIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceDefinitionIdWithWorkspaceId"><code>SourceDefinitionIdWithWorkspaceId</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

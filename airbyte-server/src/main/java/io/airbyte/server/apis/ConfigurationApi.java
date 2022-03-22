@@ -17,10 +17,8 @@ import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.CustomDestinationDefinitionCreate;
-import io.airbyte.api.model.CustomDestinationDefinitionDelete;
 import io.airbyte.api.model.CustomDestinationDefinitionUpdate;
 import io.airbyte.api.model.CustomSourceDefinitionCreate;
-import io.airbyte.api.model.CustomSourceDefinitionDelete;
 import io.airbyte.api.model.CustomSourceDefinitionUpdate;
 import io.airbyte.api.model.DbMigrationExecutionRead;
 import io.airbyte.api.model.DbMigrationReadList;
@@ -28,8 +26,8 @@ import io.airbyte.api.model.DbMigrationRequestBody;
 import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
-import io.airbyte.api.model.DestinationDefinitionGrantUpdate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
@@ -68,8 +66,8 @@ import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
-import io.airbyte.api.model.SourceDefinitionGrantUpdate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
@@ -342,17 +340,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    return null;
+  }
+
+  @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
     return execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(sourceDefinitionCreate));
   }
 
   @Override
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
-    return null;
-  }
-
-  @Override
-  public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(final SourceDefinitionGrantUpdate sourceDefinitionGrantUpdate) {
     return null;
   }
 
@@ -375,12 +373,17 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public void deleteCustomSourceDefinition(final CustomSourceDefinitionDelete customSourceDefinitionDelete) {
+  public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
 
   }
 
   @Override
-  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionGrantUpdate sourceDefinitionOptInUpdate) {
+  public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    return null;
+  }
+
+  @Override
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
 
   }
 
@@ -524,18 +527,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public DestinationDefinitionRead getDestinationDefinitionForWorkspace(
+                                                                        final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
+    return null;
+  }
+
+  @Override
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
     return execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(destinationDefinitionCreate));
   }
 
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
-    return null;
-  }
-
-  @Override
-  public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
-                                                                                final DestinationDefinitionGrantUpdate destinationDefinitionOptInUpdate) {
     return null;
   }
 
@@ -558,19 +561,26 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public void deleteCustomDestinationDefinition(final CustomDestinationDefinitionDelete customDestinationDefinitionDelete) {
+  public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
 
   }
 
   @Override
-  public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionGrantUpdate destinationDefinitionOptInUpdate) {
+  public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
+                                                                                final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
+    return null;
+  }
+
+  @Override
+  public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
 
   }
 
   // DESTINATION SPECIFICATION
 
   @Override
-  public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
+  public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(
+                                                                                      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
   }
 

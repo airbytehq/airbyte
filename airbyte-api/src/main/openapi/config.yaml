@@ -417,6 +417,29 @@ paths:
                 $ref: "#/components/schemas/SourceDefinitionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/get_for_workspace:
+    post:
+      tags:
+        - source_definition
+      summary: Get a sourceDefinition that is configured for the given workspace
+      operationId: getSourceDefinitionForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/update_custom:
     post:
       tags:
@@ -449,7 +472,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CustomSourceDefinitionDelete"
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "204":
@@ -468,7 +491,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceDefinitionGrantUpdate"
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "200":
@@ -491,7 +514,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceDefinitionGrantUpdate"
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "204":
@@ -916,6 +939,29 @@ paths:
                 $ref: "#/components/schemas/DestinationDefinitionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/get_for_workspace:
+    post:
+      tags:
+        - destination_definition
+      summary: Get a destinationDefinition that is configured for the given workspace
+      operationId: getDestinationDefinitionForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/update_custom:
     post:
       tags:
@@ -948,7 +994,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CustomDestinationDefinitionDelete"
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "204":
@@ -967,7 +1013,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationDefinitionGrantUpdate"
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "200":
@@ -990,7 +1036,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationDefinitionGrantUpdate"
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "204":
@@ -2479,7 +2525,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceDefinition:
           $ref: "#/components/schemas/SourceDefinitionUpdate"
-    CustomSourceDefinitionDelete:
+    SourceDefinitionIdWithWorkspaceId:
       type: object
       required:
         - sourceDefinitionId
@@ -2508,16 +2554,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PrivateSourceDefinitionRead"
-    SourceDefinitionGrantUpdate:
-      type: object
-      required:
-        - sourceDefinitionId
-        - workspaceId
-      properties:
-        sourceDefinitionId:
-          $ref: "#/components/schemas/SourceDefinitionId"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
     # SOURCE SPECIFICATION
     SourceDefinitionSpecification:
       description: The specification for what values are required to configure the sourceDefinition.
@@ -2822,7 +2858,7 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         destinationDefinition:
           $ref: "#/components/schemas/DestinationDefinitionUpdate"
-    CustomDestinationDefinitionDelete:
+    DestinationDefinitionIdWithWorkspaceId:
       type: object
       required:
         - destinationDefinitionId
@@ -2851,16 +2887,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PrivateDestinationDefinitionRead"
-    DestinationDefinitionGrantUpdate:
-      type: object
-      required:
-        - destinationDefinitionId
-        - workspaceId
-      properties:
-        destinationDefinitionId:
-          $ref: "#/components/schemas/DestinationDefinitionId"
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
     # DESTINATION DEFINITION SPECIFICATION
     DestinationDefinitionSpecification:
       description: The specification for what values are required to configure the destinationDefinition.
