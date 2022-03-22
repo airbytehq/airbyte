@@ -819,6 +819,7 @@ public class AcceptanceTests {
     boolean hasRedacted = false;
 
     for (final String line : serverLogLines) {
+      System.out.println("line = " + line);
       assertFalse(line.contains(SOURCE_PASSWORD));
 
       if (line.contains("REDACTED")) {
