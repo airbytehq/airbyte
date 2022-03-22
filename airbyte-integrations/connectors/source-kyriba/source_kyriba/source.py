@@ -40,8 +40,8 @@ class KyribaClient:
         auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         response = requests.post(self.url, auth=auth, data=data)
         response.raise_for_status()
-        access_token = response.json()["access_token"]
-        return TokenAuthenticator(access_token)
+        self.access_token = response.json()["access_token"]
+        return TokenAuthenticator(self.access_token)
 
 
 # Basic full refresh stream
