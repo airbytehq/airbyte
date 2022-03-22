@@ -299,7 +299,7 @@ class TemporalClientTest {
 
       when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
       when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
-      doThrow(new IllegalStateException("Force illegal state")).when(mConnectionManagerWorkflow).deleteConnection();
+      doThrow(new IllegalStateException("Force illegal state")).when(temporalClient).getConnectionUpdateWorkflow(CONNECTION_ID);
 
       temporalClient.deleteConnection(CONNECTION_ID);
 

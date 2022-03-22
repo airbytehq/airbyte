@@ -467,7 +467,8 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, name);
   }
 
-  private ConnectionManagerWorkflow getConnectionUpdateWorkflow(final UUID connectionId) {
+  @VisibleForTesting
+  ConnectionManagerWorkflow getConnectionUpdateWorkflow(final UUID connectionId) {
     final boolean workflowReachable = isWorkflowReachable(getConnectionManagerName(connectionId));
 
     if (!workflowReachable) {
