@@ -86,6 +86,20 @@
         "description": "Developer token associated with user.",
         "airbyte_secret": true
       },
+      "tenant_id": {
+        "type": "string",
+        "title": "Tenant ID",
+        "description": "The Tenant ID of your Microsoft Advertising developer application.",
+        "airbyte_secret": true,
+        "default": "common"
+      },
+      "redirect_uri": {
+        "type": "string",
+        "title": "Redirect URI",
+        "description": "The Redirect URI of your Microsoft Advertising developer application.",
+        "airbyte_secret": true,
+        "default": ""
+      },
       "refresh_token": {
         "type": "string",
         "title": "Refresh Token",

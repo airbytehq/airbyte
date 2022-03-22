@@ -40,6 +40,8 @@ class Client:
         customer_id: str,
         client_secret: str,
         client_id: str,
+        tenant_id: str,
+        redirect_uri: str,
         refresh_token: str,
         reports_start_date: str,
         hourly_reports: bool,
@@ -52,7 +54,8 @@ class Client:
         self.authentication = OAuthWebAuthCodeGrant(
             client_id,
             client_secret,
-            "",
+            redirect_uri,
+            tenant=tenant_id,
         )
 
         self.refresh_token = refresh_token
