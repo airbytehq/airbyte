@@ -38,13 +38,13 @@ class BambooHrStream(HttpStream, ABC):
         """
         pass
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
-
 
 class MetaFieldsStream(BambooHrStream):
     def path(self, **kwargs) -> str:
         return "meta/fields"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()
 
 
 class EmployeesDirectoryStream(BambooHrStream):
@@ -63,8 +63,76 @@ class EmployeesDirectoryStream(BambooHrStream):
             "properties": properties,
         }
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()["employees"]
+
     def path(self, **kwargs) -> str:
         return "employees/directory"
+
+
+class CustomReportsStream(BambooHrStream):
+    def __init__(self, *args, **kwargs):
+        self._schema = None
+        super().__init__(*args, **kwargs)
+
+    @property
+    def schema(self):
+        if not self._schema:
+            self._schema = self.get_json_schema()
+        return self._schema
+
+    def _get_json_schema_from_config(self):
+        if self.config.get("custom_reports_fields"):
+            properties = {
+                field.strip(): {"type": ["null", "string"]}
+                for field
+                in self.config.get("custom_reports_fields").split(",")
+            }
+        else:
+            properties = {}
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": properties,
+        }
+
+    def _get_json_schema_from_file(self):
+        return super().get_json_schema()
+
+    @staticmethod
+    def _union_schemas(schema1, schema2):
+        schema1["properties"] = {**schema1["properties"], **schema2["properties"]}
+        return schema1
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        Returns the JSON schema.
+
+        The final schema is constructed by first generating a schema for the fields
+        in the config and, if default fields should be included, adding these to the
+        schema.
+        """
+        schema = self._get_json_schema_from_config()
+        if self.config.get("custom_reports_include_default_fields"):
+            default_schema = self._get_json_schema_from_file()
+            schema = self._union_schemas(default_schema, schema)
+        return schema
+
+    def path(self, **kwargs) -> str:
+        return "reports/custom"
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
+        return {
+            "title": "Airbyte",
+            "fields": list(self.schema["properties"].keys())
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()["employees"]
 
 
 class SourceBambooHr(AbstractSource):
@@ -91,9 +159,11 @@ class SourceBambooHr(AbstractSource):
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
-        Attempts to fetch the fields from the meta/fields endpoint.
+        Verifies the config and attempts to fetch the fields from the meta/fields endpoint.
         """
         config = SourceBambooHr.add_authenticator_to_config(config)
+        if not config.get("custom_reports_fields") and not config.get("custom_reports_include_default_fields"):
+            return False, AttributeError("`custom_reports_fields` cannot be empty if `custom_reports_include_default_fields` is false")
         try:
             list(MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh))
             return True, None
@@ -104,4 +174,5 @@ class SourceBambooHr(AbstractSource):
         config = SourceBambooHr.add_authenticator_to_config(config)
         return [
             EmployeesDirectoryStream(config),
+            CustomReportsStream(config),
         ]
