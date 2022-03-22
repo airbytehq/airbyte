@@ -12,8 +12,7 @@ import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Products, Stream, Workflows, split_properties
-from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Engagements, Products, Workflows, split_properties
+from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Engagements, Products, Stream, Workflows, split_properties
 
 NUMBER_OF_PROPERTIES = 2000
 
