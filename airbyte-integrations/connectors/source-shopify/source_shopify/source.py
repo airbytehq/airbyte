@@ -299,8 +299,17 @@ class CustomCollections(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
-class IncrementalByIDShopifyStream(IncrementalShopifyStream):
+class Collects(IncrementalShopifyStream):
+    """
+    Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
+    https://shopify.dev/docs/admin-api/rest/reference/products/collect
 
+    The Collect stream is the link between Products and Collections, if the Collection is created for Products,
+    the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh -
+    we would use the since_id specificaly for this stream.
+    """
+
+    data_field = "collects"
     cursor_field = "id"
     order_field = "id"
     filter_field = "since_id"
@@ -321,23 +330,7 @@ class IncrementalByIDShopifyStream(IncrementalShopifyStream):
         return params
 
 
-class Collects(IncrementalByIDShopifyStream):
-    """
-    Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
-    https://shopify.dev/docs/admin-api/rest/reference/products/collect
-
-    The Collect stream is the link between Products and Collections, if the Collection is created for Products,
-    the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh -
-    we would use the since_id specificaly for this stream.
-    """
-
-    data_field = "collects"
-
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
-
-
-class BalanceTransactions(IncrementalByIDShopifyStream):
+class BalanceTransactions(IncrementalShopifyStream):
 
     """
     PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
@@ -345,9 +338,24 @@ class BalanceTransactions(IncrementalByIDShopifyStream):
     """
 
     data_field = "transactions"
+    cursor_field = "id"
+    order_field = "id"
+    filter_field = "since_id"
 
     def path(self, **kwargs) -> str:
         return f"shopify_payments/balance/{self.data_field}.json"
+    
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        # If there is a next page token then we should only send pagination-related parameters.
+        if not next_page_token and not stream_state:
+            params[self.filter_field] = 0
+        return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
 class OrderRefunds(ShopifySubstream):
     parent_stream_class: object = Orders
