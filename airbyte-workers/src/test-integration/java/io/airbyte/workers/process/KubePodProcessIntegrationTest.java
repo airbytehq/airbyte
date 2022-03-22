@@ -41,6 +41,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
@@ -169,7 +170,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  @Test
+  @RepeatedTest(5)
   public void testPortsReintroducedIntoPoolOnlyOnce() throws Exception {
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
 
@@ -201,7 +202,12 @@ public class KubePodProcessIntegrationTest {
       process.exitValue();
     }
 
-    // stop taking from available ports
+    assertEquals(0, process.exitValue());
+
+    // wait for the background loop to actually take the ports re-offered by the closure of the process
+    Thread.sleep(1000);
+
+    // interrupt background thread
     executor.shutdownNow();
 
     // prior to fixing this race condition, the close method would offer ports every time it was called.

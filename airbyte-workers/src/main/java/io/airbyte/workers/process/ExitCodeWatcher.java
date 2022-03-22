@@ -37,9 +37,9 @@ public class ExitCodeWatcher implements Watcher<Pod> {
     try {
       if (!exitCodeRetrieved && KubePodProcess.isTerminal(resource)) {
         final ContainerStatus mainContainerStatus = resource.getStatus().getContainerStatuses()
-                .stream()
-                .filter(containerStatus -> containerStatus.getName().equals(KubePodProcess.MAIN_CONTAINER_NAME))
-                .collect(MoreCollectors.onlyElement());
+            .stream()
+            .filter(containerStatus -> containerStatus.getName().equals(KubePodProcess.MAIN_CONTAINER_NAME))
+            .collect(MoreCollectors.onlyElement());
 
         if (mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null) {
           final int exitCode = mainContainerStatus.getState().getTerminated().getExitCode();
@@ -50,7 +50,7 @@ public class ExitCodeWatcher implements Watcher<Pod> {
       }
     } catch (Exception e) {
       String podName = null;
-      if(resource.getMetadata() != null) {
+      if (resource.getMetadata() != null) {
         podName = resource.getMetadata().getName();
       }
 

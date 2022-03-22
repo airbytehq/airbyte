@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.process;
 
-import com.google.common.collect.MoreCollectors;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -616,8 +615,6 @@ public class KubePodProcess extends Process implements KubePod {
       throw new RuntimeException(e);
     }
 
-    close();
-
     return exitValue();
   }
 
@@ -690,6 +687,8 @@ public class KubePodProcess extends Process implements KubePod {
     Exceptions.swallow(this.podWatch::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
+    System.out.println("stdoutLocalPort = " + stdoutLocalPort);
+    System.out.println("stderrLocalPort = " + stderrLocalPort);
     KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);
     KubePortManagerSingleton.getInstance().offer(stderrLocalPort);
 
@@ -708,7 +707,8 @@ public class KubePodProcess extends Process implements KubePod {
           .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
           .collect(Collectors.toList());
 
-      return mainContainerStatuses.size() == 1 &&  mainContainerStatuses.get(0).getState() != null && mainContainerStatuses.get(0).getState().getTerminated() != null;
+      return mainContainerStatuses.size() == 1 && mainContainerStatuses.get(0).getState() != null
+          && mainContainerStatuses.get(0).getState().getTerminated() != null;
     } else {
       return false;
     }
@@ -738,8 +738,7 @@ public class KubePodProcess extends Process implements KubePod {
   @Override
   public int exitValue() {
     // getReturnCode throws IllegalThreadException if the Kube pod has not exited;
-    // close() is only called if the Kube pod ha
-    // s terminated.
+    // close() is only called if the Kube pod has terminated.
     final var returnCode = getReturnCode();
     // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
     // indicates that all kernel resources were shut down.
