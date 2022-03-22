@@ -6,15 +6,16 @@ import { Button } from "components";
 import { useServiceForm } from "../serviceFormContext";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import TestingConnectionError from "./TestingConnectionError";
+import { TestingConnectionError } from "./TestingConnectionError";
 
 type IProps = {
+  formType: "source" | "destination";
   isSubmitting: boolean;
+  isTestConnectionInProgress: boolean;
   isValid: boolean;
   dirty: boolean;
   resetForm: () => void;
   onRetest?: () => void;
-  formType: "source" | "destination";
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
 };
@@ -22,7 +23,6 @@ type IProps = {
 const Controls = styled.div`
   margin-top: 34px;
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: center;
 `;
@@ -33,6 +33,7 @@ const ButtonContainer = styled.span`
 
 const EditControls: React.FC<IProps> = ({
   isSubmitting,
+  isTestConnectionInProgress,
   isValid,
   dirty,
   resetForm,
@@ -44,8 +45,11 @@ const EditControls: React.FC<IProps> = ({
   const { unfinishedFlows } = useServiceForm();
 
   if (isSubmitting) {
-    return <TestingConnectionSpinner />;
+    return (
+      <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} />
+    );
   }
+
   const showStatusMessage = () => {
     if (errorMessage) {
       return <TestingConnectionError errorMessage={errorMessage} />;

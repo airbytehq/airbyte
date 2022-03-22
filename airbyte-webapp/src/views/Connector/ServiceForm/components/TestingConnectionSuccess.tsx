@@ -23,13 +23,11 @@ const Success = styled(StatusIcon)`
   font-size: 17px;
 `;
 
-const TestingConnectionSuccess: React.FC = () => {
-  return (
-    <LoadingContainer data-id="success-result">
-      <Success success />
-      <FormattedMessage id="form.successTests" />
-    </LoadingContainer>
-  );
-};
+const TestingConnectionSuccess: React.FC = () => (
+  <LoadingContainer data-id="success-result">
+    <Success success />
+    <FormattedMessage id="form.successTests" />
+  </LoadingContainer>
+);
 
 export default TestingConnectionSuccess;

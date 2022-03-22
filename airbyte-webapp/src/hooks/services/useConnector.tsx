@@ -6,6 +6,13 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 import { Connector } from "core/domain/connector";
 import { useSourceDefinitionList } from "./useSourceDefinition";
 import { useDestinationDefinitionList } from "./useDestinationDefinition";
+import { DestinationService } from "../../core/domain/connector/DestinationService";
+import { useConfig } from "../../config";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useInitService } from "../../services/useInitService";
+import { SourceService } from "../../core/domain/connector/SourceService";
+import { useMutation } from "react-query";
+import { ConnectionConfiguration } from "../../core/domain/connection";
 
 type ConnectorService = {
   hasNewVersions: boolean;
@@ -81,4 +88,74 @@ const useConnector = (): ConnectorService => {
   };
 };
 
+function useGetDestinationService(): DestinationService {
+  const { apiUrl } = useConfig();
+
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+
+  return useInitService(
+    () => new DestinationService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
+}
+
+function useGetSourceService(): SourceService {
+  const { apiUrl } = useConfig();
+
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+
+  return useInitService(
+    () => new SourceService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
+}
+
+type CheckConnectorParams = { signal: AbortSignal } & (
+  | { selectedConnectorId: string }
+  | {
+      selectedConnectorId: string;
+      connectionConfiguration: ConnectionConfiguration;
+    }
+  | {
+      selectedConnectorDefinitionId: string;
+      connectionConfiguration: ConnectionConfiguration;
+    }
+);
+
+const useCheckConnector = (formType: "source" | "destination") => {
+  const destinationService = useGetDestinationService();
+  const sourceService = useGetSourceService();
+
+  return useMutation(async (params: CheckConnectorParams) => {
+    const payload: Record<string, unknown> = {};
+
+    if ("connectionConfiguration" in params) {
+      payload.connectionConfiguration = params.connectionConfiguration;
+    }
+
+    if (formType === "destination") {
+      if ("selectedConnectorId" in params) {
+        payload.destinationId = params.selectedConnectorId;
+      }
+
+      if ("selectedConnectorDefinitionId" in params) {
+        payload.destinationDefinitionId = params.selectedConnectorDefinitionId;
+      }
+
+      return await destinationService.check_connection(payload);
+    }
+
+    if ("selectedConnectorId" in params) {
+      payload.sourceId = params.selectedConnectorId;
+    }
+
+    if ("selectedConnectorDefinitionId" in params) {
+      payload.sourceDefinitionId = params.selectedConnectorDefinitionId;
+    }
+
+    return await sourceService.check_connection(payload);
+  });
+};
+
+export { useCheckConnector };
 export default useConnector;

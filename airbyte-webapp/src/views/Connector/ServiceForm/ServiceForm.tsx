@@ -23,8 +23,12 @@ import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServ
 import {
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
+  ConnectorSpecification,
+  Scheduler,
 } from "core/domain/connector";
 import { isDefined } from "utils/common";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { useCheckConnector } from "hooks/services/useConnector";
 
 export type ServiceFormProps = {
   formType: "source" | "destination";
@@ -32,13 +36,11 @@ export type ServiceFormProps = {
   selectedConnector?: ConnectorDefinitionSpecification;
   onServiceSelect?: (id: string) => void;
   onSubmit: (values: ServiceFormValues) => void;
-  onRetest?: (values: ServiceFormValues) => void;
   isLoading?: boolean;
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
   formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
-  additionBottomControls?: React.ReactNode;
   fetchingConnectorError?: Error | null;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
@@ -83,6 +85,46 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
   return null;
 };
 
+const useTestConnector = (
+  props: ServiceFormProps
+): {
+  loading: boolean;
+  isSuccess: boolean;
+  error: any;
+  f: (v?: ServiceFormValues) => Promise<Scheduler>;
+} => {
+  const { mutateAsync, isLoading, error, isSuccess } = useCheckConnector(
+    props.formType
+  );
+
+  const controller = new AbortController();
+  const signal = controller.signal;
+
+  return {
+    loading: isLoading,
+    isSuccess,
+    error: error,
+    f: async (values) => {
+      if (values) {
+        const selectedConnectorDefinitionId: any = props.selectedConnector
+          ? ConnectorSpecification.id(props.selectedConnector)
+          : undefined;
+
+        const fun = mutateAsync({
+          connectionConfiguration: values.connectionConfiguration,
+          selectedConnectorDefinitionId,
+        });
+
+        return fun;
+      } else {
+        return mutateAsync({
+          selectedConnectorId: "e2152054-cb99-41b8-ae81-f5f45363bb12",
+        });
+      }
+    },
+  };
+};
+
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
   const {
@@ -91,8 +133,13 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     onSubmit,
     isLoading,
     selectedConnector,
-    onRetest,
   } = props;
+
+  const {
+    f: testConnector,
+    error,
+    loading: isTestConnectionInProgress,
+  } = useTestConnector(props);
 
   const specifications = useBuildInitialSchema(selectedConnector);
 
@@ -170,21 +217,12 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const onFormSubmit = useCallback(
     async (values) => {
       const valuesToSend = getValues(values);
+
+      await testConnector(valuesToSend);
+
       return onSubmit(valuesToSend);
     },
-    [getValues, onSubmit]
-  );
-
-  const onRetestForm = useCallback(
-    async (values) => {
-      if (!onRetest) {
-        return null;
-      }
-      const valuesToSend = getValues(values);
-
-      return onRetest(valuesToSend);
-    },
-    [onRetest, getValues]
+    [getValues, testConnector, onSubmit]
   );
 
   return (
@@ -195,7 +233,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}
     >
-      {({ values, setSubmitting }) => (
+      {({ setSubmitting }) => (
         <ServiceFormContextProvider
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
@@ -210,9 +248,13 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} />
           <FormRoot
             {...props}
+            errorMessage={
+              props.errorMessage || (error && createFormErrorMessage(error))
+            }
+            isTestConnectionInProgress={isTestConnectionInProgress}
             onRetest={async () => {
               setSubmitting(true);
-              await onRetestForm(values);
+              await testConnector();
               setSubmitting(false);
             }}
             formFields={formFields}

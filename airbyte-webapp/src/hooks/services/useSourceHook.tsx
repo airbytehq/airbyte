@@ -1,10 +1,8 @@
-import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 
 import SourceResource from "core/resources/Source";
 import { RoutePaths } from "pages/routes";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
 
@@ -26,10 +24,6 @@ type SourceService = {
     values: ValuesProps;
     sourceId: string;
   }) => Promise<Source>;
-  checkSourceConnection: (checkSourceConnectionPayload: {
-    sourceId: string;
-    values?: ValuesProps;
-  }) => Promise<Scheduler>;
   createSource: (createSourcePayload: {
     values: ValuesProps;
     sourceConnector?: ConnectorProps;
@@ -49,10 +43,6 @@ const useSource = (): SourceService => {
   const { workspace } = useWorkspace();
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
   const analyticsService = useAnalyticsService();
-
-  const sourceCheckConnectionShape = useFetcher(
-    SchedulerResource.sourceCheckConnectionShape()
-  );
 
   const updatesource = useFetcher(SourceResource.partialUpdateShape());
 
@@ -75,10 +65,10 @@ const useSource = (): SourceService => {
     });
 
     try {
-      await sourceCheckConnectionShape({
-        sourceDefinitionId: sourceConnector?.sourceDefinitionId,
-        connectionConfiguration: values.connectionConfiguration,
-      });
+      // await sourceCheckConnectionShape({
+      //   sourceDefinitionId: sourceConnector?.sourceDefinitionId,
+      //   connectionConfiguration: values.connectionConfiguration,
+      // });
 
       // Try to crete source
       const result = await createSourcesImplementation(
@@ -120,11 +110,11 @@ const useSource = (): SourceService => {
     values,
     sourceId,
   }) => {
-    await sourceCheckConnectionShape({
-      name: values.name,
-      sourceId,
-      connectionConfiguration: values.connectionConfiguration,
-    });
+    // await sourceCheckConnectionShape({
+    //   name: values.name,
+    //   sourceId,
+    //   connectionConfiguration: values.connectionConfiguration,
+    // });
 
     return await updatesource(
       {
@@ -137,28 +127,6 @@ const useSource = (): SourceService => {
       }
     );
   };
-
-  const checkSourceConnection = useCallback(
-    async ({
-      sourceId,
-      values,
-    }: {
-      sourceId: string;
-      values?: ValuesProps;
-    }) => {
-      if (values) {
-        return await sourceCheckConnectionShape({
-          connectionConfiguration: values.connectionConfiguration,
-          name: values.name,
-          sourceId: sourceId,
-        });
-      }
-      return await sourceCheckConnectionShape({
-        sourceId,
-      });
-    },
-    [sourceCheckConnectionShape]
-  );
 
   const recreateSource: SourceService["recreateSource"] = async ({
     values,
@@ -216,7 +184,6 @@ const useSource = (): SourceService => {
     updateSource,
     recreateSource,
     deleteSource,
-    checkSourceConnection,
   };
 };
 

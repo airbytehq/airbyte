@@ -29,19 +29,19 @@ const LoadingMessage = styled.div`
 const FormRoot: React.FC<{
   formFields: FormBlock;
   hasSuccess?: boolean;
-  additionBottomControls?: React.ReactNode;
+  isTestConnectionInProgress: boolean;
   errorMessage?: React.ReactNode;
   fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
 }> = ({
+  isTestConnectionInProgress,
   onRetest,
   formFields,
   successMessage,
   errorMessage,
   fetchingConnectorError,
   hasSuccess,
-  additionBottomControls,
 }) => {
   const {
     resetForm,
@@ -72,6 +72,7 @@ const FormRoot: React.FC<{
 
       {isEditMode ? (
         <EditControls
+          isTestConnectionInProgress={isTestConnectionInProgress}
           isSubmitting={isSubmitting}
           errorMessage={errorMessage}
           formType={formType}
@@ -86,12 +87,12 @@ const FormRoot: React.FC<{
         />
       ) : (
         <CreateControls
+          isTestConnectionInProgress={isTestConnectionInProgress}
           isSubmitting={isSubmitting}
           errorMessage={errorMessage}
+          formType={formType}
           isLoadSchema={isLoadingSchema}
           fetchingConnectorError={fetchingConnectorError}
-          formType={formType}
-          additionBottomControls={additionBottomControls}
           hasSuccess={hasSuccess}
         />
       )}

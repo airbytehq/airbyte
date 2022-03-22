@@ -5,17 +5,19 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import TestingConnectionError from "./TestingConnectionError";
-import FetchingConnectorError from "./FetchingConnectorError";
+import {
+  TestingConnectionError,
+  FetchingConnectorError,
+} from "./TestingConnectionError";
 
 type IProps = {
-  formType: "source" | "destination" | "connection";
+  formType: "source" | "destination";
   isSubmitting: boolean;
+  isTestConnectionInProgress: boolean;
+  errorMessage?: React.ReactNode;
   hasSuccess?: boolean;
   isLoadSchema?: boolean;
-  errorMessage?: React.ReactNode;
   fetchingConnectorError?: Error | null;
-  additionBottomControls?: React.ReactNode;
 };
 
 const ButtonContainer = styled.div`
@@ -25,21 +27,27 @@ const ButtonContainer = styled.div`
   justify-content: space-between;
 `;
 
+const SubmitButton = styled(Button)`
+  margin-left: auto;
+`;
+
 const CreateControls: React.FC<IProps> = ({
+  isTestConnectionInProgress,
   isSubmitting,
   formType,
   hasSuccess,
   errorMessage,
   fetchingConnectorError,
   isLoadSchema,
-  additionBottomControls,
 }) => {
-  if (hasSuccess) {
-    return <TestingConnectionSuccess />;
+  if (isSubmitting) {
+    return (
+      <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} />
+    );
   }
 
-  if (isSubmitting) {
-    return <TestingConnectionSpinner />;
+  if (hasSuccess) {
+    return <TestingConnectionSuccess />;
   }
 
   return (
@@ -48,13 +56,9 @@ const CreateControls: React.FC<IProps> = ({
         <TestingConnectionError errorMessage={errorMessage} />
       )}
       {fetchingConnectorError && <FetchingConnectorError />}
-      {!errorMessage && !fetchingConnectorError && <div />}
-      <div>
-        {additionBottomControls || null}
-        <Button type="submit" disabled={isLoadSchema}>
-          <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
-        </Button>
-      </div>
+      <SubmitButton type="submit" disabled={isLoadSchema}>
+        <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
+      </SubmitButton>
     </ButtonContainer>
   );
 };
