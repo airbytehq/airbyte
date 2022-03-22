@@ -56,26 +56,26 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
     def __init__(self, authenticator: "requests.auth.AuthBase" = None, config: Mapping[str, Any] = None):
         super().__init__(authenticator)
         self._config = config
+        self._state = {}
         self._start_datetime = self._config.get("start_datetime") or "1970-01-01T00:00:00+00:00"
-        self._cursor_value = None
 
     @property
     def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {self.cursor_field: self._cursor_value}
-        else:
-            return {self.cursor_field: self._start_datetime}
+        if self._state:
+            return self._state
+        return {self.cursor_field: self._start_datetime}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value
+        self._state = value
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        record = None
         for record in super().read_records(*args, **kwargs):
+            current_cursor_value = datetime.datetime.fromisoformat(self.state[self.cursor_field])
+            latest_cursor_value = datetime.datetime.fromisoformat(record[self.cursor_field])
+            new_cursor_value = max(latest_cursor_value, current_cursor_value)
+            self.state = {self.cursor_field: new_cursor_value.isoformat("T", "seconds")}
             yield record
-        if record:
-            self.state = record[self.cursor_field]
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

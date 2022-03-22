@@ -112,23 +112,29 @@ class FieldMeta(FromDictMixin):
         return {"title": self.display_label}
 
     def _picklist_items(self):
+        default_list = [None]
         if not self.pick_list_values:
-            return []
-        return [pick_item.actual_value for pick_item in self.pick_list_values]
+            return default_list
+        return default_list + [pick_item.display_value for pick_item in self.pick_list_values]
 
     def _boolean_field(self):
         return {"type": ["null", "boolean"], **self._default_type_kwargs()}
 
     def _integer_field(self):
-        return {"type": ["null", "int"], **self._default_type_kwargs()}
+        return {"type": ["null", "integer"], **self._default_type_kwargs()}
 
     def _double_field(self):
-        typedef = {"type": ["null", "int"], **self._default_type_kwargs()}
+        typedef = {"type": ["null", "number"], **self._default_type_kwargs()}
         if self.decimal_place:
             typedef["multipleOf"] = Decimal("0.1") ** self.decimal_place
         return typedef
 
     def _string_field(self):
+        if self.api_name == "Reminder":
+            # this is a special case. although datatype = `picklist`,
+            # actual values do not correspond to the values in the list
+            return {"type": ["null", "string"], "format": "date-time", **self._default_type_kwargs()}
+
         typedef = {"type": ["null", "string"], "maxLength": self.length, **self._default_type_kwargs()}
         if self.data_type == ZohoDataType.website:
             typedef["format"] = "uri"
@@ -146,6 +152,19 @@ class FieldMeta(FromDictMixin):
 
     def _jsonarray_field(self):
         typedef = {"type": "array", **self._default_type_kwargs()}
+        if self.api_name in ("Product_Details", "Pricing_Details"):
+            # these two fields are said to be text, but are actually complex objects
+            typedef["items"] = {"type": "object"}
+            return typedef
+        if self.api_name == "Tag":
+            # `Tag` is defined as string, but is actually an object
+            typedef["items"] = {
+                "type": ["object"],
+                "additionalProperties": False,
+                "required": ["name", "id"],
+                "properties": {"name": {"type": "string"}, "id": {"type": "string"}},
+            }
+            return typedef
         if self.data_type in (ZohoDataType.text, *ZohoDataType.numeric_string_types()):
             typedef["items"] = {"type": "string"}
             if self.data_type in ZohoDataType.numeric_string_types():
@@ -153,7 +172,7 @@ class FieldMeta(FromDictMixin):
         if self.data_type == ZohoDataType.multiselectpicklist:
             typedef["minItems"] = 1
             typedef["uniqueItems"] = True
-            items = {"type": "string"}
+            items = {"type": ["null", "string"]}
             if self.pick_list_values:
                 items["enum"] = self._picklist_items()
             typedef["items"] = items
@@ -161,7 +180,7 @@ class FieldMeta(FromDictMixin):
 
     def _jsonobject_field(self):
         lookup_typedef = {
-            "type": "object",
+            "type": ["null", "object"],
             "additionalProperties": False,
             "required": ["name", "id"],
             "properties": {"name": {"type": ["null", "string"]}, "id": {"type": "string"}},
@@ -175,7 +194,7 @@ class FieldMeta(FromDictMixin):
             owner_lookup_typedef["properties"]["email"] = {"type": "string", "format": "email"}
             return owner_lookup_typedef
         # exact specification unknown
-        return {"type": "object"}
+        return {"type": ["null", "object"]}
 
     @property
     def schema(self):
@@ -195,7 +214,7 @@ class ModuleMeta(FromDictMixin):
     def schema(self):
         if not self.fields:
             raise IncompleteMetaDataException("Not enough data")
-        required = ["id"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
+        required = ["id", "Modified_Time"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
-        properties = {"id": {"type": "str"}, "Modified_Time": {"type": "str", "format": "date-time"}, **field_to_properties}
+        properties = {"id": {"type": "string"}, "Modified_Time": {"type": "string", "format": "date-time"}, **field_to_properties}
         return Schema(description=self.module_name, properties=properties, required=required)
