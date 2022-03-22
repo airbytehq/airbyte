@@ -112,7 +112,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     final String query = getListQuery(stageName, stagingPath, filename);
     LOGGER.debug("Executing query: {}", query);
     final boolean result;
-    try (final Stream<JsonNode> stream = database.query(query)) {
+    try (final Stream<JsonNode> stream = database.unsafeQuery(query)) {
       result = stream.findAny().isPresent();
     }
     return result;
