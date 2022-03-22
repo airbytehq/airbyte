@@ -14,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +35,7 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -41,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,11 +180,22 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
 
   @Test
   public void testDumpConfigsWithoutSecret() throws Exception {
+    final ConnectorSpecification mockedConnectorSpec = new ConnectorSpecification()
+        .withConnectionSpecification(
+            Jsons.emptyObject());
+    doReturn(new StandardDestinationDefinition()
+        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_DESTINATION_DEFINITION), any(), any());
+    doReturn(new StandardSourceDefinition()
+        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_SOURCE_DEFINITION), any(), any());
+
     when(featureFlags.exposeSecretsInExport()).thenReturn(false);
     writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
     writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
     writeDestinationWithDestinationConnection(configPersistence, DESTINATION_S3);
-    configPersistence.dumpConfigs();
+    final Map<String, Stream<JsonNode>> result = configPersistence.dumpConfigs();
+    result.values().forEach(stream -> {
+      stream.collect(Collectors.toList());
+    });
     verify(jsonSecretsProcessor, times(3)).maskSecrets(any(), any());
   }
 
