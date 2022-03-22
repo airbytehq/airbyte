@@ -18,7 +18,6 @@ import io.airbyte.integrations.destination.s3.jsonl.JsonLSerializedBuffer;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.ParquetSerializedBuffer;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +43,8 @@ public class SerializedBufferFactory {
         return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), () -> createStorageFunction.apply(".json.gz"));
       }
       case PARQUET -> {
-        return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config), () -> createStorageFunction.apply(".parquet"));
+        return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config),
+            () -> createStorageFunction.apply(".parquet"));
       }
       default -> {
         throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));

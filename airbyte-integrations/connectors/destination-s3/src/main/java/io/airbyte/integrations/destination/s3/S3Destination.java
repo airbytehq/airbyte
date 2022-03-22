@@ -98,7 +98,7 @@ public class S3Destination extends BaseConnector implements Destination {
         (long) StreamTransferManagerHelper.DEFAULT_PART_SIZE_MB);
     boolean success = false;
     try (final MultiPartOutputStream outputStream = manager.getMultiPartOutputStreams().get(0);
-          final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
+        final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {
       final String oneMegaByteString = "a".repeat(500_000);
       // write a file larger than the 5 MB, which is the default part size, to make sure it is a multipart
       // upload

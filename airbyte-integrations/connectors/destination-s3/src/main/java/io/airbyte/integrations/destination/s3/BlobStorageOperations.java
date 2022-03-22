@@ -11,8 +11,6 @@ import org.joda.time.DateTime;
 
 public interface BlobStorageOperations {
 
-  String getBucketObjectName(String namespace, String streamName);
-
   String getBucketObjectPath(String namespace, String streamName, DateTime writeDatetime, String customFormat);
 
   /**

@@ -7,67 +7,50 @@ package io.airbyte.integrations.destination.s3;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
-import org.joda.time.DateTime;
 
 /**
  * Write configuration POJO for blob storage destinations
  */
 public class WriteConfig {
 
-  private final String streamName;
-
   private final String namespace;
-
+  private final String streamName;
   private final String outputNamespace;
-  private final String outputBucket;
+  private final String outputBucketPath;
   private final DestinationSyncMode syncMode;
-  private final DateTime writeDatetime;
-  private final String customOutputFormat;
   private final List<String> storedFiles;
 
-  public WriteConfig(final String streamName,
-                     final String namespace,
+  public WriteConfig(final String namespace,
+                     final String streamName,
                      final String outputNamespace,
-                     final String outputBucket,
-                     final DestinationSyncMode syncMode,
-                     final DateTime writeDatetime,
-                     final String customOutputFormat) {
-    this.streamName = streamName;
+                     final String outputBucketPath,
+                     final DestinationSyncMode syncMode) {
     this.namespace = namespace;
+    this.streamName = streamName;
     this.outputNamespace = outputNamespace;
-    this.outputBucket = outputBucket;
+    this.outputBucketPath = outputBucketPath;
     this.syncMode = syncMode;
-    this.writeDatetime = writeDatetime;
-    this.customOutputFormat = customOutputFormat;
     this.storedFiles = new ArrayList<>();
-  }
-
-  public String getStreamName() {
-    return streamName;
   }
 
   public String getNamespace() {
     return namespace;
   }
 
+  public String getStreamName() {
+    return streamName;
+  }
+
   public String getOutputNamespace() {
     return outputNamespace;
   }
 
-  public String getOutputBucket() {
-    return outputBucket;
+  public String getOutputBucketPath() {
+    return outputBucketPath;
   }
 
   public DestinationSyncMode getSyncMode() {
     return syncMode;
-  }
-
-  public String getCustomOutputFormat() {
-    return customOutputFormat;
-  }
-
-  public DateTime getWriteDatetime() {
-    return writeDatetime;
   }
 
   public List<String> getStoredFiles() {
@@ -88,9 +71,8 @@ public class WriteConfig {
         "streamName=" + streamName +
         ", namespace=" + namespace +
         ", outputNamespace=" + outputNamespace +
-        ", outputBucket=" + outputBucket +
+        ", outputBucketPath=" + outputBucketPath +
         ", syncMode=" + syncMode +
-        ", customOutputFormat=" + customOutputFormat +
         '}';
   }
 

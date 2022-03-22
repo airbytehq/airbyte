@@ -16,7 +16,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
-import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -85,7 +84,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    */
   protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
     final String outputPrefix = s3StorageOperations.getBucketObjectPath(
-        namespace,
+        config.getBucketPath(),
         streamName,
         DateTime.now(DateTimeZone.UTC),
         S3DestinationConstants.DEFAULT_PATH_FORMAT);

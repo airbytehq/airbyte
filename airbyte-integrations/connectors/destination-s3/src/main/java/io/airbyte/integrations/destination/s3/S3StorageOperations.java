@@ -46,13 +46,6 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public String getBucketObjectName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
-  }
-
-  @Override
   public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
     final String namespaceStr = nameTransformer.convertStreamName(isNotBlank(namespace) ? namespace : "");
     final String streamNameStr = nameTransformer.convertStreamName(streamName);
@@ -60,6 +53,12 @@ public class S3StorageOperations implements BlobStorageOperations {
         customPathFormat
             .replaceAll(Pattern.quote("${NAMESPACE}"), namespaceStr)
             .replaceAll(Pattern.quote("${STREAM_NAME}"), streamNameStr)
+            .replaceAll(Pattern.quote("${YEAR}"), String.format("%s", writeDatetime.year().get()))
+            .replaceAll(Pattern.quote("${MONTH}"), String.format("%02d", writeDatetime.monthOfYear().get()))
+            .replaceAll(Pattern.quote("${DAY}"), String.format("%02d", writeDatetime.dayOfMonth().get()))
+            .replaceAll(Pattern.quote("${HOUR}"), String.format("%02d", writeDatetime.hourOfDay().get()))
+            .replaceAll(Pattern.quote("${MINUTE}"), String.format("%02d", writeDatetime.minuteOfHour().get()))
+            .replaceAll(Pattern.quote("${SECOND}"), String.format("%02d", writeDatetime.secondOfMinute().get()))
             .replaceAll("/+", "/"));
   }
 
