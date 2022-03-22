@@ -137,6 +137,8 @@ public class MockData {
         .withIcon("icon-1")
         .withSpec(connectorSpecification)
         .withTombstone(false)
+        .withPublic(true)
+        .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
     final StandardSourceDefinition standardSourceDefinition2 = new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
@@ -174,6 +176,8 @@ public class MockData {
         .withIcon("icon-3")
         .withSpec(connectorSpecification)
         .withTombstone(false)
+        .withPublic(true)
+        .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
     final StandardDestinationDefinition standardDestinationDefinition2 = new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)

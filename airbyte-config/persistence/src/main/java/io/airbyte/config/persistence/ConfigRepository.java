@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
@@ -187,6 +188,14 @@ public class ConfigRepository {
     return sourceDefinitions;
   }
 
+  public List<StandardSourceDefinition> listPublicSourceDefinitions(final boolean includeTombstone) throws IOException {
+    return listStandardActorDefinitions(
+        ActorType.source,
+        DbConverter::buildStandardSourceDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstone),
+        ACTOR_DEFINITION.PUBLIC.eq(true));
+  }
+
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
@@ -246,6 +255,14 @@ public class ConfigRepository {
     }
 
     return destinationDefinitions;
+  }
+
+  public List<StandardDestinationDefinition> listPublicDestinationDefinitions(final boolean includeTombstone) throws IOException {
+    return listStandardActorDefinitions(
+        ActorType.destination,
+        DbConverter::buildStandardDestinationDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstone),
+        ACTOR_DEFINITION.PUBLIC.eq(true));
   }
 
   public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
@@ -315,6 +332,20 @@ public class ConfigRepository {
         .set(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID, actorDefinitionId)
         .set(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID, workspaceId)
         .execute());
+  }
+
+  private <T> List<T> listStandardActorDefinitions(final ActorType actorType,
+                                                   final Function<Record, T> recordToActorDefinition,
+                                                   final Condition... conditions)
+      throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx.select(asterisk()).from(ACTOR_DEFINITION)
+        .where(conditions)
+        .and(ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType))
+        .fetch());
+
+    return records.stream()
+        .map(recordToActorDefinition)
+        .toList();
   }
 
   /**
