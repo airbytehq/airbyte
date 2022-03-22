@@ -126,6 +126,7 @@ class TestBaseInsightsStream:
                     "2010-01-01",
                     "2010-01-02",
                 ],
+                "time_increment": 1,
             },
             {
                 AdsInsights.cursor_field: "2010-10-03",
@@ -152,6 +153,7 @@ class TestBaseInsightsStream:
         actual_state = stream.state
         actual_state["slices"] = sorted(actual_state.get("slices", []))
         state["slices"] = sorted(state.get("slices", []))
+        state["time_increment"] = 1
 
         assert actual_state == state
 

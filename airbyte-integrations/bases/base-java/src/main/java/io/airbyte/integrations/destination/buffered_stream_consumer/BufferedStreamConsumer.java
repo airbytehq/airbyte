@@ -13,14 +13,12 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
+import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -51,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Throughout the lifecycle of the consumer, messages get promoted from buffered to flushed to
  * committed. A record message when it is received is immediately buffered. When the buffer fills
- * up, all buffered records are flushed out of memory using the user-provided recordWriter. When
+ * up, all buffered records are flushed out of memory using the user-provided recordBuffer. When
  * this flush happens, a state message is moved from pending to flushed. On close, if the
  * user-provided onClose function is successful, then the flushed state record is considered
  * committed and is then emitted. We expect this class to only ever emit either 1 state message (in
@@ -63,11 +61,11 @@ import org.slf4j.LoggerFactory;
  * When a record is "flushed" it is moved from the docker container to the destination. By
  * convention, it is usually placed in some sort of temporary storage on the destination (e.g. a
  * temporary database or file store). The logic in close handles committing the temporary
- * representation data to the final store (e.g. final table). In the case of Copy destinations they
- * often have additional temporary stores. The common pattern for copy destination is that flush
- * pushes the data into cloud storage and then close copies from cloud storage to a temporary table
- * AND then copies from the temporary table into the final table. This abstraction is blind to that
- * detail as it implementation detail of how copy destinations implement close.
+ * representation data to the final store (e.g. final table). In the case of staging destinations
+ * they often have additional temporary stores. The common pattern for staging destination is that
+ * flush pushes the data into a staging area in cloud storage and then close copies from staging to
+ * a temporary table AND then copies from the temporary table into the final table. This abstraction
+ * is blind to the detail of how staging destinations implement their close.
  * </p>
  */
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
@@ -75,19 +73,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
 
   private final VoidCallable onStart;
-  private final RecordWriter recordWriter;
-  private final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter;
   private final CheckedConsumer<Boolean, Exception> onClose;
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final long maxQueueSizeInBytes;
-  private final RecordSizeEstimator recordSizeEstimator;
-  private long bufferSizeInBytes;
-  private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer;
-  private String fileName;
+  private final BufferingStrategy bufferingStrategy;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -97,38 +89,21 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
-                                final RecordWriter recordWriter,
+                                final BufferingStrategy bufferingStrategy,
                                 final CheckedConsumer<Boolean, Exception> onClose,
                                 final ConfiguredAirbyteCatalog catalog,
-                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
-                                final long maxQueueSizeInBytes) {
-    this(outputRecordCollector, onStart, recordWriter, null, onClose, catalog,
-        isValidRecord, maxQueueSizeInBytes);
-  }
-
-  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
-                                final VoidCallable onStart,
-                                final RecordWriter recordWriter,
-                                final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
-                                final CheckedConsumer<Boolean, Exception> onClose,
-                                final ConfiguredAirbyteCatalog catalog,
-                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
-                                final long maxQueueSizeInBytes) {
+                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
     this.outputRecordCollector = outputRecordCollector;
-    this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
-    this.recordWriter = recordWriter;
-    this.checkAndRemoveRecordWriter = checkAndRemoveRecordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
-    this.bufferSizeInBytes = 0;
     this.streamToIgnoredRecordCount = new HashMap<>();
-    this.streamBuffer = new HashMap<>();
-    this.recordSizeEstimator = new RecordSizeEstimator();
+    this.bufferingStrategy = bufferingStrategy;
+    bufferingStrategy.registerFlushAllEventHook(this::flushQueueToDestination);
   }
 
   @Override
@@ -159,16 +134,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(recordMessage);
-      if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
-        flushQueueToDestination();
-        bufferSizeInBytes = 0;
-      }
-
-      final List<AirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
-      bufferedRecords.add(message.getRecord());
-      bufferSizeInBytes += messageSizeInBytes;
-
+      bufferingStrategy.addRecord(stream, message);
     } else if (message.getType() == Type.STATE) {
       pendingState = message;
     } else {
@@ -177,20 +143,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   }
 
-  private void flushQueueToDestination() throws Exception {
-    LOGGER.info("Flushing buffer: {} bytes", bufferSizeInBytes);
-
-    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
-      for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
-        LOGGER.info("Flushing {}: {} records", entry.getKey().getName(), entry.getValue().size());
-        recordWriter.accept(entry.getKey(), entry.getValue());
-        if (checkAndRemoveRecordWriter != null) {
-          fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
-        }
-      }
-    }, Map.of("bufferSizeInBytes", bufferSizeInBytes));
-    streamBuffer = new HashMap<>();
-
+  private void flushQueueToDestination() {
     if (pendingState != null) {
       lastFlushedState = pendingState;
       pendingState = null;
@@ -215,8 +168,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.error("executing on failed close procedure.");
     } else {
       LOGGER.info("executing on success close procedure.");
-      flushQueueToDestination();
+      bufferingStrategy.flushAll();
     }
+    bufferingStrategy.close();
 
     try {
       // if no state was emitted (i.e. full refresh), if there were still no failures, then we can

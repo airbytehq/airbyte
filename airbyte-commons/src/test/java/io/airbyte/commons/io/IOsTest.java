@@ -75,7 +75,7 @@ class IOsTest {
         "line7",
         "line8");
 
-    final Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), true));
+    final Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), StandardCharsets.UTF_8, true));
 
     for (final String line : Iterables.concat(head, expectedTail)) {
       writer.write(line + "\n");

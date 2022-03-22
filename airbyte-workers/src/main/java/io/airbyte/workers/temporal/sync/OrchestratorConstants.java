@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import com.uber.m3.util.ImmutableSet;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.util.Set;
@@ -17,45 +18,48 @@ public class OrchestratorConstants {
   private static final String S3_PATH_STYLE_ACCESS = "S3_PATH_STYLE_ACCESS";
 
   // set of env vars necessary for the container orchestrator app to run
-  public static final Set<String> ENV_VARS_TO_TRANSFER = Set.of(
-      EnvConfigs.WORKER_ENVIRONMENT,
-      EnvConfigs.JOB_KUBE_TOLERATIONS,
-      EnvConfigs.JOB_KUBE_CURL_IMAGE,
-      EnvConfigs.JOB_KUBE_BUSYBOX_IMAGE,
-      EnvConfigs.JOB_KUBE_SOCAT_IMAGE,
-      EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY,
-      EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET,
-      EnvConfigs.JOB_KUBE_NODE_SELECTORS,
-      EnvConfigs.DOCKER_NETWORK,
-      EnvConfigs.LOCAL_DOCKER_MOUNT,
-      EnvConfigs.WORKSPACE_DOCKER_MOUNT,
-      EnvConfigs.WORKSPACE_ROOT,
-      EnvConfigs.JOB_KUBE_NAMESPACE,
-      EnvConfigs.JOB_MAIN_CONTAINER_CPU_REQUEST,
-      EnvConfigs.JOB_MAIN_CONTAINER_CPU_LIMIT,
-      EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_REQUEST,
-      EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
-      EnvConfigs.JOB_DEFAULT_ENV_MAP,
-      EnvConfigs.LOCAL_ROOT,
-      LOG_LEVEL,
-      LogClientSingleton.GCS_LOG_BUCKET,
-      LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
-      LogClientSingleton.S3_MINIO_ENDPOINT,
-      S3_PATH_STYLE_ACCESS,
-      LogClientSingleton.S3_LOG_BUCKET,
-      LogClientSingleton.AWS_ACCESS_KEY_ID,
-      LogClientSingleton.AWS_SECRET_ACCESS_KEY,
-      LogClientSingleton.S3_LOG_BUCKET_REGION,
-      EnvConfigs.STATE_STORAGE_GCS_BUCKET_NAME,
-      EnvConfigs.STATE_STORAGE_GCS_APPLICATION_CREDENTIALS,
-      EnvConfigs.STATE_STORAGE_MINIO_ENDPOINT,
-      EnvConfigs.STATE_STORAGE_MINIO_BUCKET_NAME,
-      EnvConfigs.STATE_STORAGE_MINIO_ACCESS_KEY,
-      EnvConfigs.STATE_STORAGE_MINIO_SECRET_ACCESS_KEY,
-      EnvConfigs.STATE_STORAGE_S3_BUCKET_NAME,
-      EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
-      EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
-      EnvConfigs.STATE_STORAGE_S3_REGION);
+  public static final Set<String> ENV_VARS_TO_TRANSFER = new ImmutableSet.Builder<String>()
+      .addAll(EnvConfigs.JOB_SHARED_ENVS.keySet())
+      .addAll(Set.of(
+          EnvConfigs.WORKER_ENVIRONMENT,
+          EnvConfigs.JOB_KUBE_TOLERATIONS,
+          EnvConfigs.JOB_KUBE_CURL_IMAGE,
+          EnvConfigs.JOB_KUBE_BUSYBOX_IMAGE,
+          EnvConfigs.JOB_KUBE_SOCAT_IMAGE,
+          EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY,
+          EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET,
+          EnvConfigs.JOB_KUBE_NODE_SELECTORS,
+          EnvConfigs.DOCKER_NETWORK,
+          EnvConfigs.LOCAL_DOCKER_MOUNT,
+          EnvConfigs.WORKSPACE_DOCKER_MOUNT,
+          EnvConfigs.WORKSPACE_ROOT,
+          EnvConfigs.JOB_KUBE_NAMESPACE,
+          EnvConfigs.JOB_MAIN_CONTAINER_CPU_REQUEST,
+          EnvConfigs.JOB_MAIN_CONTAINER_CPU_LIMIT,
+          EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_REQUEST,
+          EnvConfigs.JOB_MAIN_CONTAINER_MEMORY_LIMIT,
+          EnvConfigs.JOB_DEFAULT_ENV_MAP,
+          EnvConfigs.LOCAL_ROOT,
+          LOG_LEVEL,
+          LogClientSingleton.GCS_LOG_BUCKET,
+          LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS,
+          LogClientSingleton.S3_MINIO_ENDPOINT,
+          S3_PATH_STYLE_ACCESS,
+          LogClientSingleton.S3_LOG_BUCKET,
+          LogClientSingleton.AWS_ACCESS_KEY_ID,
+          LogClientSingleton.AWS_SECRET_ACCESS_KEY,
+          LogClientSingleton.S3_LOG_BUCKET_REGION,
+          EnvConfigs.STATE_STORAGE_GCS_BUCKET_NAME,
+          EnvConfigs.STATE_STORAGE_GCS_APPLICATION_CREDENTIALS,
+          EnvConfigs.STATE_STORAGE_MINIO_ENDPOINT,
+          EnvConfigs.STATE_STORAGE_MINIO_BUCKET_NAME,
+          EnvConfigs.STATE_STORAGE_MINIO_ACCESS_KEY,
+          EnvConfigs.STATE_STORAGE_MINIO_SECRET_ACCESS_KEY,
+          EnvConfigs.STATE_STORAGE_S3_BUCKET_NAME,
+          EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
+          EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
+          EnvConfigs.STATE_STORAGE_S3_REGION))
+      .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
   public static final String INIT_FILE_INPUT = "input.json";
