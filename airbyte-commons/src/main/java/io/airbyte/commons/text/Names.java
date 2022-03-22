@@ -20,7 +20,7 @@ public class Names {
    */
   public static String toAlphanumericAndUnderscore(final String s) {
     return Normalizer.normalize(s, Normalizer.Form.NFKD)
-        .replaceAll("\\p{M}", "")
+        .replaceAll("\\p{M}", "") // P{M} matches a code point that is not a combining mark (unicode)
         .replaceAll("\\s+", "_")
         .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
   }

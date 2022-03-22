@@ -15,7 +15,7 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.util.ConfigTestUtils;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
-import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import java.util.List;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileConstants;
@@ -115,7 +115,7 @@ class GcsAvroFormatConfigTest {
     assertEquals("AVRO", formatConfig.getFormat().name());
     assertEquals(6, formatConfig.getPartSize());
     // Assert that is set properly in config
-    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
+    final StreamTransferManager streamTransferManager = StreamTransferManagerHelper.getDefault(
         gcsDestinationConfig.getBucketName(), "objectKey", null,
         gcsDestinationConfig.getFormatConfig().getPartSize());
 
@@ -134,7 +134,7 @@ class GcsAvroFormatConfigTest {
         .getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
-    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
+    final StreamTransferManager streamTransferManager = StreamTransferManagerHelper.getDefault(
         gcsDestinationConfig.getBucketName(), "objectKey", null,
         gcsDestinationConfig.getFormatConfig().getPartSize());
 

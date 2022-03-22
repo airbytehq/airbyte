@@ -37,8 +37,6 @@ import org.slf4j.LoggerFactory;
 public class S3ConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3ConsumerFactory.class);
-  private static final String DEFAULT_PATH_FORMAT = "${NAMESPACE}/${STREAM_NAME}";
-
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
@@ -76,7 +74,7 @@ public class S3ConsumerFactory {
       final String streamName = abStream.getName();
       final String outputBucket = namingResolver.getRawTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
-      final String customOutputFormat = config.has("path_format") ? config.get("path_format").asText() : DEFAULT_PATH_FORMAT;
+      final String customOutputFormat = config.has("path_format") ? config.get("path_format").asText() : S3DestinationConstants.DEFAULT_PATH_FORMAT;
 
       final WriteConfig writeConfig =
           new WriteConfig(streamName, abStream.getNamespace(), outputNamespace, outputBucket, syncMode, SYNC_DATETIME, customOutputFormat);

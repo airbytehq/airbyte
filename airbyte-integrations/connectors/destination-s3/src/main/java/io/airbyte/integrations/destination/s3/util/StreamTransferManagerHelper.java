@@ -9,9 +9,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3StreamTransferManagerHelper {
+public class StreamTransferManagerHelper {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(S3StreamTransferManagerHelper.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(StreamTransferManagerHelper.class);
 
   // See this doc about how they affect memory usage:
   // https://alexmojaki.github.io/s3-stream-upload/javadoc/apidocs/alex/mojaki/s3upload/StreamTransferManager.html

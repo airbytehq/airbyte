@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -54,10 +54,12 @@ public class S3StorageOperations implements BlobStorageOperations {
 
   @Override
   public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
+    final String namespaceStr = nameTransformer.convertStreamName(isNotBlank(namespace) ? namespace : "");
+    final String streamNameStr = nameTransformer.convertStreamName(streamName);
     return nameTransformer.applyDefaultCase(
         customPathFormat
-            .replaceAll(Pattern.quote("${NAMESPACE}"), isNotBlank(namespace) ? namespace : "")
-            .replaceAll(Pattern.quote("${STREAM_NAME}"), isNotBlank(streamName) ? streamName : "")
+            .replaceAll(Pattern.quote("${NAMESPACE}"), namespaceStr)
+            .replaceAll(Pattern.quote("${STREAM_NAME}"), streamNameStr)
             .replaceAll("/+", "/"));
   }
 
@@ -105,7 +107,7 @@ public class S3StorageOperations implements BlobStorageOperations {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
     final String objectKey = String.format("%s%s", objectPath, recordsData.getFilename());
-    final StreamTransferManager uploadManager = S3StreamTransferManagerHelper
+    final StreamTransferManager uploadManager = StreamTransferManagerHelper
         .getDefault(bucket, objectKey, s3Client, partSize)
         .checkIntegrity(true)
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)

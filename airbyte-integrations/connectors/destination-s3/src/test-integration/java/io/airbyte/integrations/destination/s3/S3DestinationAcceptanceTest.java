@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +50,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   protected JsonNode configJson;
   protected S3DestinationConfig config;
   protected AmazonS3 s3Client;
+  protected S3StorageOperations s3StorageOperations;
 
   protected S3DestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
@@ -81,8 +84,11 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
   protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
-    final String outputPrefix = S3OutputPathHelper
-        .getOutputPrefix(config.getBucketPath(), namespace, streamName);
+    final String outputPrefix = s3StorageOperations.getBucketObjectPath(
+        namespace,
+        streamName,
+        DateTime.now(DateTimeZone.UTC),
+        S3DestinationConstants.DEFAULT_PATH_FORMAT);
     final List<S3ObjectSummary> objectSummaries = s3Client
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
@@ -120,6 +126,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
     this.s3Client = config.getS3Client();
+    this.s3StorageOperations = new S3StorageOperations(new S3NameTransformer(), s3Client, config);
   }
 
   /**

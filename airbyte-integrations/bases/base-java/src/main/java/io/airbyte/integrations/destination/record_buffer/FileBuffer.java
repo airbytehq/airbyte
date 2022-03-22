@@ -33,10 +33,12 @@ public class FileBuffer implements BufferStorage {
   // stored/open for writing)
   public static final int MAX_CONCURRENT_STREAM_IN_BUFFER = 10;
 
+  private final String fileExtension;
   private File tempFile;
   private OutputStream outputStream;
 
-  public FileBuffer() {
+  public FileBuffer(final String fileExtension) {
+    this.fileExtension = fileExtension;
     tempFile = null;
     outputStream = null;
   }
@@ -44,7 +46,7 @@ public class FileBuffer implements BufferStorage {
   @Override
   public OutputStream getOutputStream() throws IOException {
     if (outputStream == null || tempFile == null) {
-      tempFile = Files.createTempFile(UUID.randomUUID().toString(), ".csv.gz").toFile();
+      tempFile = Files.createTempFile(UUID.randomUUID().toString(), fileExtension).toFile();
       outputStream = new FileOutputStream(tempFile);
     }
     return outputStream;

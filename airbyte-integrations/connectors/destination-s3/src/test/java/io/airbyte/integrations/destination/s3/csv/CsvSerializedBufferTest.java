@@ -43,25 +43,26 @@ public class CsvSerializedBufferTest {
       .withData(MESSAGE_DATA)
       .withEmittedAt(System.currentTimeMillis());
   private static final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
+  private static final String CSV_FILE_EXTENSION = ".csv";
 
   @Test
   public void testUncompressedDefaultCsvFormatWriter() throws Exception {
-    runTest(new InMemoryBuffer(), CSVFormat.DEFAULT, false, 395L, 405L);
+    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), CSVFormat.DEFAULT, false, 395L, 405L);
   }
 
   @Test
   public void testUncompressedCsvWriter() throws Exception {
-    runTest(new InMemoryBuffer(), CSVFormat.newFormat(','), false, 355L, 365L);
+    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), CSVFormat.newFormat(','), false, 355L, 365L);
   }
 
   @Test
   public void testCompressedCsvWriter() throws Exception {
-    runTest(new InMemoryBuffer(), CSVFormat.newFormat(','), true, 175L, 190L);
+    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), CSVFormat.newFormat(','), true, 175L, 190L);
   }
 
   @Test
   public void testCompressedCsvFileWriter() throws Exception {
-    runTest(new FileBuffer(), CSVFormat.newFormat(','), true, 175L, 190L);
+    runTest(new FileBuffer(CSV_FILE_EXTENSION), CSVFormat.newFormat(','), true, 175L, 190L);
   }
 
   private static void runTest(final BufferStorage buffer,

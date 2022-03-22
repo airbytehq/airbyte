@@ -15,9 +15,8 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -44,7 +43,7 @@ public class S3Destination extends BaseConnector implements Destination {
 
   public S3Destination(final S3DestinationConfigFactory configFactory) {
     this.configFactory = configFactory;
-    this.nameTranformer = new StandardNameTransformer();
+    this.nameTranformer = new S3NameTransformer();
   }
 
   public static void main(final String[] args) throws Exception {
@@ -92,11 +91,11 @@ public class S3Destination extends BaseConnector implements Destination {
     LOGGER.info("Started testing if all required credentials assigned to user for multipart upload");
 
     final String testFile = "test_" + System.currentTimeMillis();
-    final StreamTransferManager manager = S3StreamTransferManagerHelper.getDefault(
+    final StreamTransferManager manager = StreamTransferManagerHelper.getDefault(
         bucketName,
         testFile,
         s3Client,
-        (long) S3StreamTransferManagerHelper.DEFAULT_PART_SIZE_MB);
+        (long) StreamTransferManagerHelper.DEFAULT_PART_SIZE_MB);
     boolean success = false;
     try (final MultiPartOutputStream outputStream = manager.getMultiPartOutputStreams().get(0);
           final CSVPrinter csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), CSVFormat.DEFAULT)) {

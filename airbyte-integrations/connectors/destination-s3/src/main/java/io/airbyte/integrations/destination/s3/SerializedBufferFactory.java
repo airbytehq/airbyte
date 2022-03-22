@@ -19,6 +19,7 @@ import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.ParquetSerializedBuffer;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,23 +28,23 @@ public class SerializedBufferFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(SerializedBufferFactory.class);
 
   public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> getCreateFunction(final JsonNode config,
-                                                                                                                                             final Callable<BufferStorage> createStorageFunction) {
+                                                                                                                                             final Function<String, BufferStorage> createStorageFunction) {
     final JsonNode formatConfig = config.get("format");
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     final S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     switch (formatType) {
       case AVRO -> {
-        return AvroSerializedBuffer.createFunction(new S3AvroFormatConfig(formatConfig), createStorageFunction);
+        return AvroSerializedBuffer.createFunction(new S3AvroFormatConfig(formatConfig), () -> createStorageFunction.apply(".avro"));
       }
       case CSV -> {
-        return CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(formatConfig), createStorageFunction);
+        return CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(formatConfig), () -> createStorageFunction.apply(".csv.gz"));
       }
       case JSONL -> {
-        return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), createStorageFunction);
+        return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), () -> createStorageFunction.apply(".json.gz"));
       }
       case PARQUET -> {
-        return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config), createStorageFunction);
+        return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config), () -> createStorageFunction.apply(".parquet"));
       }
       default -> {
         throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
