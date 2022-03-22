@@ -303,6 +303,7 @@ public class KubePodProcess extends Process implements KubePod {
    * heavy-handed compared to the 10 lines here.
    */
   private static void waitForInitPodToRun(final KubernetesClient client, final Pod podDefinition) throws InterruptedException {
+    // todo: this could use the watcher instead of waitUntilConditions
     LOGGER.info("Waiting for init container to be ready before copying files...");
     final PodResource<Pod> pod =
         client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
@@ -501,9 +502,25 @@ public class KubePodProcess extends Process implements KubePod {
         .endSpec()
         .build();
 
+    exitCodeFuture = new CompletableFuture<>();
+
     LOGGER.info("Creating pod...");
     val start = System.currentTimeMillis();
+    // todo: can we create watch before hand?
+
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
+
+    // create the watch before the initialization runs
+    podWatch = fabricClient.resource(podDefinition).watch(new ExitCodeWatcher(
+        exitCodeFuture::complete,
+        exception -> {
+          LOGGER.info(prependPodInfo(
+              String.format("Unable to find pod to retrieve exit value. Defaulting to  value %s. This is expected if the job was cancelled.",
+                  KILLED_EXIT_CODE),
+              namespace, podName));
+
+          exitCodeFuture.complete(KILLED_EXIT_CODE);
+        }));
 
     waitForInitPodToRun(fabricClient, podDefinition);
 
@@ -523,19 +540,6 @@ public class KubePodProcess extends Process implements KubePod {
       return isReady || isTerminal(p);
     }, 20, TimeUnit.MINUTES);
     DogStatsDMetricSingleton.recordTimeGlobal(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
-
-    exitCodeFuture = new CompletableFuture<>();
-
-    podWatch = fabricClient.resource(podDefinition).watch(new ExitCodeWatcher(
-        exitCodeFuture::complete,
-        exception -> {
-          LOGGER.info(prependPodInfo(
-              String.format("Unable to find pod to retrieve exit value. Defaulting to  value %s. This is expected if the job was cancelled.",
-                  KILLED_EXIT_CODE),
-              namespace, podName));
-
-          exitCodeFuture.complete(KILLED_EXIT_CODE);
-        }));
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -689,20 +693,22 @@ public class KubePodProcess extends Process implements KubePod {
     KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);
     KubePortManagerSingleton.getInstance().offer(stderrLocalPort);
 
-    LOGGER.info(prependPodInfo("Closed", podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName()));
+    LOGGER.info(prependPodInfo("Closed all resources for pod",
+        podDefinition.getMetadata().getNamespace(),
+        podDefinition.getMetadata().getName()));
   }
 
   public static boolean isTerminal(final Pod pod) {
     if (pod.getStatus() != null) {
       // Check if "main" container has terminated, as that defines whether the parent process has
       // terminated.
-      final ContainerStatus mainContainerStatus = pod.getStatus()
+      final List<ContainerStatus> mainContainerStatuses = pod.getStatus()
           .getContainerStatuses()
           .stream()
           .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
-          .collect(MoreCollectors.onlyElement());
+          .collect(Collectors.toList());
 
-      return mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null;
+      return mainContainerStatuses.size() == 1 &&  mainContainerStatuses.get(0).getState() != null && mainContainerStatuses.get(0).getState().getTerminated() != null;
     } else {
       return false;
     }
@@ -741,10 +747,6 @@ public class KubePodProcess extends Process implements KubePod {
     // Further, since the local resources are used to talk to Kubernetes resources, shut local resources
     // down after Kubernetes resources are shut down, regardless of Kube termination status.
     close();
-
-    LOGGER.info(prependPodInfo("Closed all resources for pod",
-        podDefinition.getMetadata().getNamespace(),
-        podDefinition.getMetadata().getName()));
 
     return returnCode;
   }
