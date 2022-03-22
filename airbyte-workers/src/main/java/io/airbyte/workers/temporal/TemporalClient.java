@@ -272,7 +272,7 @@ public class TemporalClient {
           .build();
 
       final BatchRequest signalRequest = client.newSignalWithStartRequest();
-      signalRequest.add(connectionManagerWorkflow::run, input);
+      signalRequest.add(connectionManagerWorkflow::run, input); // todo: check if this is necessary
       signalRequest.add(connectionManagerWorkflow::deleteConnection);
       final WorkflowExecution workflowExecution = client.signalWithStart(signalRequest);
       // todo add logging about workflow execution? do i need to sleep to confirm connection has started
