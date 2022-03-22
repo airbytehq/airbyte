@@ -70,24 +70,20 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-
 {{/*
-Get the Postgresql credentials secret.
+Get the Postgresql credentials secret name.
 */}}
-{{- define "airbyte.postgresql.secretName" -}}
-{{- if and (.Values.postgresql.enabled) (not .Values.postgresql.existingSecret) -}}
-    {{- printf "%s" (include "airbyte.postgresql.fullname" .) -}}
-{{- else if and (.Values.postgresql.enabled) (.Values.postgresql.existingSecret) -}}
-    {{- printf "%s" .Values.postgresql.existingSecret -}}
+{{- define "airbyte.database.secret.name" -}}
+{{- if .Values.postgresql.enabled -}}
+    {{ template "postgresql.secretName" .Subcharts.postgresql }}
 {{- else }}
     {{- if .Values.externalDatabase.existingSecret -}}
         {{- printf "%s" .Values.externalDatabase.existingSecret -}}
     {{- else -}}
-        {{ printf "%s-%s" .Release.Name "externaldb" }}
+        {{ printf "%s-%s" (include "common.names.fullname" .) "secrets" }}
     {{- end -}}
 {{- end -}}
 {{- end -}}
-
 
 {{/*
 Add environment variables to configure database values
@@ -111,9 +107,9 @@ Add environment variables to configure database values
 {{- end -}}
 
 {{/*
-Add environment variables to configure database values
+Get the Postgresql credentials secret password key
 */}}
-{{- define "airbyte.database.existingsecret.key" -}}
+{{- define "airbyte.database.secret.passwordKey" -}}
 {{- if .Values.postgresql.enabled -}}
     {{- printf "%s" "postgresql-password" -}}
 {{- else -}}
@@ -124,7 +120,7 @@ Add environment variables to configure database values
             {{- printf "%s" "postgresql-password" -}}
         {{- end -}}
     {{- else -}}
-        {{- printf "%s" "postgresql-password" -}}
+        {{- printf "%s" "DATABASE_PASSWORD" -}}
     {{- end -}}
 {{- end -}}
 {{- end -}}

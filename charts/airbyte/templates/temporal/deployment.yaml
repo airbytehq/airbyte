@@ -49,19 +49,11 @@ spec:
             secretKeyRef:
               name: {{ include "common.names.fullname" . }}-secrets
               key: DATABASE_USER
-        {{- if .Values.postgresql.enabled }}
         - name: POSTGRES_PWD
           valueFrom:
             secretKeyRef:
-              name: {{ include "common.names.fullname" . }}-secrets
-              key: DATABASE_PASSWORD
-        {{- else }}
-        - name: POSTGRES_PWD
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "airbyte.postgresql.secretName" . }}
-              key: {{ include "airbyte.database.existingsecret.key" . }}
-        {{- end }}
+              name: {{ include "airbyte.database.secret.name" . }}
+              key: {{ include "airbyte.database.secret.passwordKey" . }}
         - name: POSTGRES_SEEDS
           value: {{ include "airbyte.database.host" . }}
         - name: DYNAMIC_CONFIG_FILE_PATH
