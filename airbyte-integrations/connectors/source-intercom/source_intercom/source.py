@@ -318,8 +318,7 @@ class ConversationParts(ChildStreamMixin, IncrementalIntercomStream):
         records = super().parse_response(response, stream_state, **kwargs)
         conversation_id = response.json().get('id')
         for conversation_part in records:
-            if 'conversation_id' not in conversation_part:
-                conversation_part['conversation_id'] = conversation_id
+            conversation_part.setdefault('conversation_id', conversation_id)
             yield conversation_part
 
 
