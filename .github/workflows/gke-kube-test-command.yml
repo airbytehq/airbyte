@@ -142,4 +142,3 @@ jobs:
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
           label: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.ec2-instance-id }}
-
