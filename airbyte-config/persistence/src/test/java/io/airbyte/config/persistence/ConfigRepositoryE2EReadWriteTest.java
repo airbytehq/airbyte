@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -35,9 +36,12 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -183,6 +187,41 @@ public class ConfigRepositoryE2EReadWriteTest {
     assertTrue(retrievedTombstonedWorkspace.isPresent());
 
     assertEquals(tombstonedWorkspace, retrievedTombstonedWorkspace.get());
+  }
+
+  @Test
+  public void testUpdateConnectionOperationIds() throws Exception {
+    final StandardSync sync = MockData.standardSyncs().get(0);
+    final List<UUID> existingOperationIds = sync.getOperationIds();
+    final UUID connectionId = sync.getConnectionId();
+
+    // this test only works as intended when there are multiple operationIds
+    assertTrue(existingOperationIds.size() > 1);
+
+    // first, remove all associated operations
+    Set<UUID> expectedOperationIds = Collections.emptySet();
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    Set<UUID> actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+
+    // now, add back one operation
+    expectedOperationIds = Collections.singleton(existingOperationIds.get(0));
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+
+    // finally, remove the first operation while adding back in the rest
+    expectedOperationIds = existingOperationIds.stream().skip(1).collect(Collectors.toSet());
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+  }
+
+  private Set<UUID> fetchOperationIdsForConnectionId(final UUID connectionId) throws SQLException {
+    return database.query(ctx -> ctx
+        .selectFrom(CONNECTION_OPERATION)
+        .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+        .fetchSet(CONNECTION_OPERATION.OPERATION_ID));
   }
 
 }

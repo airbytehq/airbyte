@@ -121,6 +121,7 @@ public class ArchiveHandlerTest {
     seedPersistence = YamlSeedConfigPersistence.getDefault();
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
     featureFlags = mock(FeatureFlags.class);
+    when(featureFlags.exposeSecretsInExport()).thenReturn(true);
     configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor, featureFlags);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
