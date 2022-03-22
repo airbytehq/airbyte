@@ -27,6 +27,7 @@ import io.sentry.NoOpTransaction;
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
 import io.sentry.SpanStatus;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +173,7 @@ public class IntegrationRunner {
   static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
-    final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
+    final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
     consumer.start();
     while (input.hasNext()) {
       final String inputString = input.next();
@@ -189,7 +190,6 @@ public class IntegrationRunner {
     watchForOrphanThreads(
         () -> consumeWriteStream(consumer),
         () -> System.exit(FORCED_EXIT_CODE),
-        true,
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
@@ -210,7 +210,6 @@ public class IntegrationRunner {
   @VisibleForTesting
   static void watchForOrphanThreads(final Procedure runMethod,
                                     final Runnable exitHook,
-                                    final boolean sentryEnabled,
                                     final int interruptTimeDelay,
                                     final TimeUnit interruptTimeUnit,
                                     final int exitTimeDelay,
@@ -248,9 +247,7 @@ public class IntegrationRunner {
           // So, we schedule an interrupt hook after a fixed time delay instead...
           scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
         }
-        if (!sentryEnabled) {
-          Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
-        }
+        Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
         scheduledExecutorService.schedule(() -> {
           if (ThreadUtils.getAllThreads().stream()
               .anyMatch(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(currentThread.getName()))) {

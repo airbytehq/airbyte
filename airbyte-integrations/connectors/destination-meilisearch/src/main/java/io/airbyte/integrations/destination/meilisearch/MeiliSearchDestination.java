@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -98,11 +99,10 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
     return new BufferedStreamConsumer(
         outputRecordCollector,
         () -> LOGGER.info("Starting write to MeiliSearch."),
-        recordWriterFunction(indexNameToIndex),
+        new InMemoryRecordBufferingStrategy(recordWriterFunction(indexNameToIndex), MAX_BATCH_SIZE_BYTES),
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
-        (data) -> true,
-        MAX_BATCH_SIZE_BYTES);
+        (data) -> true);
   }
 
   private static Map<String, Index> createIndices(final ConfiguredAirbyteCatalog catalog, final Client client) throws Exception {
@@ -129,7 +129,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         .anyMatch(actualIndexName -> actualIndexName.equals(indexName));
   }
 
-  private static RecordWriter recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
+  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
     return (namePair, records) -> {
       final String resolvedIndexName = getIndexName(namePair.getName());
       if (!indexNameToWriteConfig.containsKey(resolvedIndexName)) {

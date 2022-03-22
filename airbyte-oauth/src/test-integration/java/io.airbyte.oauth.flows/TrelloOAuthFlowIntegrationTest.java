@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -73,7 +74,7 @@ public class TrelloOAuthFlowIntegrationTest {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     final String clientId = credentialsJson.get("client_id").asText();
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
@@ -147,7 +148,7 @@ public class TrelloOAuthFlowIntegrationTest {
           t.sendResponseHeaders(500, response.length());
         }
         final OutputStream os = t.getResponseBody();
-        os.write(response.getBytes());
+        os.write(response.getBytes(StandardCharsets.UTF_8));
         os.close();
       } catch (final RuntimeException | IOException e) {
         LOGGER.error("Failed to parse from body {}", query, e);

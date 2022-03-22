@@ -3,7 +3,8 @@
 # This install scripts currently only works for ZSH and Bash profiles.
 # It creates an octavia alias in your profile bound to a docker run command
 
-VERSION=dev
+VERSION=0.1.0
+OCTAVIA_ENV_FILE=${HOME}/.octavia
 
 detect_profile() {
     if [ "${SHELL#*bash}" != "$SHELL" ]; then
@@ -42,9 +43,20 @@ pull_image() {
     docker pull airbyte/octavia-cli:${VERSION} > /dev/null 2>&1
 }
 
+add_octavia_comment_to_profile() {
+    printf "\n# OCTAVIA CLI\n" >> ${DETECTED_PROFILE}
+}
+
+create_octavia_env_file() {
+    echo "OCTAVIA_ENV_FILE=${OCTAVIA_ENV_FILE}"  >> ${DETECTED_PROFILE}
+    touch ${OCTAVIA_ENV_FILE}
+    echo "🐙 - 💾 The octavia env file was created at ${OCTAVIA_ENV_FILE}"
+}
+
+
 add_alias() {
-    echo 'alias octavia="pwd | xargs -I {} docker run --rm -v {}:/home/octavia-project --network host -e AIRBYTE_URL="\${AIRBYTE_URL}" -e AIRBYTE_WORKSPACE_ID="\${AIRBYTE_WORKSPACE_ID}" airbyte/octavia-cli:'${VERSION}'"'  >> ~/.zshrc
-    echo "🐙 - 🎉 octavia alias was added to ${DETECTED_PROFILE} , please open a new terminal window or run source ${DETECTED_PROFILE}"
+    echo 'alias octavia="pwd | xargs -o -I {} docker run -i --rm -v {}:/home/octavia-project --network host --env-file \${OCTAVIA_ENV_FILE} airbyte/octavia-cli:'${VERSION}'"'  >> ${DETECTED_PROFILE}
+    echo "🐙 - 🎉 octavia alias was added to ${DETECTED_PROFILE}, please open a new terminal window or run source ${DETECTED_PROFILE}"
 }
 
 install() {
@@ -62,6 +74,8 @@ update_or_install() {
             install
         fi
     else
+        add_octavia_comment_to_profile
+        create_octavia_env_file
         install
     fi
 }
