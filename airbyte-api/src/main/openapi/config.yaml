@@ -2519,7 +2519,7 @@ components:
       type: object
       required:
         - workspaceId
-        - sourceDefinitionUpdate
+        - sourceDefinition
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
@@ -2852,7 +2852,7 @@ components:
       type: object
       required:
         - workspaceId
-        - destinationDefinitionUpdate
+        - destinationDefinition
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
