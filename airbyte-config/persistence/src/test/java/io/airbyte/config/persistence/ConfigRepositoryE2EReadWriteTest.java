@@ -231,9 +231,35 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
+  public void testSourceDefinitionGrants() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSourceDefinition grantableDefinition1 = MockData.standardSourceDefinitions().get(1);
+    final StandardSourceDefinition customDefinition = MockData.standardSourceDefinitions().get(3);
+
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getSourceDefinitionId(), workspaceId);
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1.getSourceDefinitionId(), workspaceId);
+    final List<StandardSourceDefinition> actualGrantedDefinitions = configRepository
+        .listGrantedSourceDefinitions(workspaceId, false);
+    assertThat(actualGrantedDefinitions).hasSameElementsAs(List.of(grantableDefinition1, customDefinition));
+  }
+
+  @Test
   public void testListPublicDestinationDefinitions() throws IOException {
     final List<StandardDestinationDefinition> actualDefinitions = configRepository.listPublicDestinationDefinitions(false);
     assertEquals(List.of(MockData.standardDestinationDefinitions().get(0)), actualDefinitions);
+  }
+
+  @Test
+  public void testDestinationDefinitionGrants() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardDestinationDefinition grantableDefinition1 = MockData.standardDestinationDefinitions().get(1);
+    final StandardDestinationDefinition customDefinition = MockData.standardDestinationDefinitions().get(3);
+
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getDestinationDefinitionId(), workspaceId);
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1.getDestinationDefinitionId(), workspaceId);
+    final List<StandardDestinationDefinition> actualGrantedDefinitions = configRepository
+        .listGrantedDestinationDefinitions(workspaceId, false);
+    assertThat(actualGrantedDefinitions).hasSameElementsAs(List.of(grantableDefinition1, customDefinition));
   }
 
 }
