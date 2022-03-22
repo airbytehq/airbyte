@@ -24,8 +24,8 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   }
 
   @Override
-  public boolean hideSecretsInExport() {
-    return Boolean.parseBoolean(System.getenv("HIDE_SECRETS_IN_EXPORT"));
+  public boolean exposeSecretsInExport() {
+    return Boolean.parseBoolean(System.getenv("EXPOSE_SECRETS_IN_EXPORT"));
   }
 
 }

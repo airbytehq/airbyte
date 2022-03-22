@@ -163,13 +163,22 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     writeSource(configPersistence, SOURCE_GITHUB);
     writeSource(configPersistence, SOURCE_POSTGRES);
     writeDestination(configPersistence, DESTINATION_S3);
-    // when(jsonSecretsProcessor.maskSecrets(any(), any())).thenCallRealMethod();
     final Map<String, Stream<JsonNode>> actual = configPersistence.dumpConfigs();
     final Map<String, Stream<JsonNode>> expected = Map.of(
         STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
         STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, actual);
   }
+
+  // @Test
+  // public void testDumpConfigsWithoutSecret() throws Exception {
+  // when(featureFlags.exposeSecretsInExport()).thenReturn(false);
+  // writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
+  // writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
+  // writeDestinationWithDestinationConnection(configPersistence, DESTINATION_S3);
+  // configPersistence.dumpConfigs();
+  // verify(jsonSecretsProcessor, times(3)).maskSecrets(any(), any());
+  // }
 
   @Test
   public void testGetConnectorRepositoryToInfoMap() throws Exception {

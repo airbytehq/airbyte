@@ -1583,23 +1583,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       result.put(ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
           standardSourceDefinitionWithMetadata
               .stream()
-              .map(configWitMetadata -> {
-                if (!featureFlags.hideSecretsInExport()) {
-                  return Jsons.jsonNode(configWitMetadata.getConfig());
-                }
-
-                try {
-                  final StandardSourceDefinition standardSourceDefinition = getConfig(
-                      ConfigSchema.STANDARD_SOURCE_DEFINITION,
-                      configWitMetadata.getConfigId(),
-                      StandardSourceDefinition.class);
-                  final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
-                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWitMetadata.getConfig()), connectionSpecs);
-                  return sanitizedConfig;
-                } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
-                  throw new RuntimeException(e);
-                }
-              }));
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
     }
     final List<ConfigWithMetadata<StandardDestinationDefinition>> standardDestinationDefinitionWithMetadata =
         listStandardDestinationDefinitionWithMetadata();
@@ -1607,39 +1592,56 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       result.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
           standardDestinationDefinitionWithMetadata
               .stream()
-              .map(configWitMetadata -> {
-                if (!featureFlags.hideSecretsInExport()) {
-                  return Jsons.jsonNode(configWitMetadata.getConfig());
-                }
-
-                try {
-                  final StandardDestinationDefinition standardDestinationDefinition = getConfig(
-                      ConfigSchema.STANDARD_DESTINATION_DEFINITION,
-                      configWitMetadata.getConfigId(),
-                      StandardDestinationDefinition.class);
-                  final JsonNode connectionSpecs = standardDestinationDefinition.getSpec().getConnectionSpecification();
-                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWitMetadata.getConfig()), connectionSpecs);
-                  return sanitizedConfig;
-                } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
-                  throw new RuntimeException(e);
-                }
-              }));
+              .map(ConfigWithMetadata::getConfig)
+              .map(Jsons::jsonNode));
     }
     final List<ConfigWithMetadata<SourceConnection>> sourceConnectionWithMetadata = listSourceConnectionWithMetadata();
     if (!sourceConnectionWithMetadata.isEmpty()) {
       result.put(ConfigSchema.SOURCE_CONNECTION.name(),
           sourceConnectionWithMetadata
               .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
+              .map(configWithMetadata -> {
+                if (featureFlags.exposeSecretsInExport()) {
+                  return Jsons.jsonNode(configWithMetadata.getConfig());
+                }
+
+                try {
+                  final UUID sourceDefinitionId = configWithMetadata.getConfig().getSourceDefinitionId();
+                  final StandardSourceDefinition standardSourceDefinition = getConfig(
+                      ConfigSchema.STANDARD_SOURCE_DEFINITION,
+                      sourceDefinitionId.toString(),
+                      StandardSourceDefinition.class);
+                  final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
+                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+                  return sanitizedConfig;
+                } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
+                  throw new RuntimeException(e);
+                }
+              }));
     }
     final List<ConfigWithMetadata<DestinationConnection>> destinationConnectionWithMetadata = listDestinationConnectionWithMetadata();
     if (!destinationConnectionWithMetadata.isEmpty()) {
       result.put(ConfigSchema.DESTINATION_CONNECTION.name(),
           destinationConnectionWithMetadata
               .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
+              .map(configWithMetadata -> {
+                if (featureFlags.exposeSecretsInExport()) {
+                  return Jsons.jsonNode(configWithMetadata.getConfig());
+                }
+
+                try {
+                  final UUID destinationDefinition = configWithMetadata.getConfig().getDestinationDefinitionId();
+                  final StandardDestinationDefinition standardDestinationDefinition = getConfig(
+                      ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+                      destinationDefinition.toString(),
+                      StandardDestinationDefinition.class);
+                  final JsonNode connectionSpecs = standardDestinationDefinition.getSpec().getConnectionSpecification();
+                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+                  return sanitizedConfig;
+                } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
+                  throw new RuntimeException(e);
+                }
+              }));
     }
     final List<ConfigWithMetadata<SourceOAuthParameter>> sourceOauthParamWithMetadata = listSourceOauthParamWithMetadata();
     if (!sourceOauthParamWithMetadata.isEmpty()) {
