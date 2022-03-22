@@ -21,12 +21,16 @@ This source is capable of syncing the following tables and their data:
 
 * [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
 * [ad\_group\_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
+* [ad\_group\_ad\_labels](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad_label)
 * [ad\_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
+* [ad\_group\_labels](https://developers.google.com/google-ads/api/fields/v8/ad_group_label)
 * [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
+* [campaign\_labels](https://developers.google.com/google-ads/api/fields/v8/campaign_label)
 * [click\_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
 * [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
 * [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
 
+Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels.
 
 #### Report Tables
 
