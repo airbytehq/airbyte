@@ -4,10 +4,9 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
 import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -50,8 +49,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.TimeZone;
