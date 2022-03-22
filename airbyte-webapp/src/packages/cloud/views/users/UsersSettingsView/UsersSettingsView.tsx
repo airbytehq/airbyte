@@ -71,7 +71,8 @@ export const UsersSettingsView: React.FC = () => {
         ),
         headerHighlighted: true,
         accessor: "userId",
-        Cell: (_: CellProps<User>) => "admin",
+        // todo (cgardens) - internally we call them admins, but since there is only one level, externally we don't show that distinction to avoid confusing users.
+        Cell: (_: CellProps<User>) => "user",
       },
       {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
