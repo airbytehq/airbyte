@@ -508,7 +508,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return null;
+    return execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
