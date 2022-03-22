@@ -4,6 +4,7 @@
 
 import pytest
 from source_hubspot.source import SourceHubspot
+from source_hubspot.streams import API
 
 NUMBER_OF_PROPERTIES = 2000
 
@@ -49,3 +50,8 @@ def creds_with_wrong_permissions():
 @pytest.fixture(name="fake_properties_list")
 def fake_properties_list():
     return [f"property_number_{i}" for i in range(NUMBER_OF_PROPERTIES)]
+
+
+@pytest.fixture(name="api")
+def api(some_credentials):
+    return API(some_credentials)
