@@ -192,7 +192,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
     for (AirbyteMessage message : messages) {
       if (message.getType() == Type.RECORD) {
         var iterator = message.getRecord().getData().fieldNames();
-        if (iterator.hasNext()) {
+        while (iterator.hasNext()) {
           var fieldName = iterator.next();
           if (message.getRecord().getData().get(fieldName).isContainerNode()) {
             message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {

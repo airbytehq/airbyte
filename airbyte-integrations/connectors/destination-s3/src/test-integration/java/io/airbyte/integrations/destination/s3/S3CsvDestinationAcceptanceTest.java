@@ -10,6 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -105,6 +108,15 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog,
+      List<AirbyteMessage> messages, String defaultSchema) throws Exception {
+    final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
+    deserializeNestedObjects(messages, actualMessages);
+
+    assertSameMessages(messages, actualMessages, false);
   }
 
 }

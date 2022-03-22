@@ -181,6 +181,10 @@
                 "format": "date-time"
               }
             }
+          },
+          "datetime_nested": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

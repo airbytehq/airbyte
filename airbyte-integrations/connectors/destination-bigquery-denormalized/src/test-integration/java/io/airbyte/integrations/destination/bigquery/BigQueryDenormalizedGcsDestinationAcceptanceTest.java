@@ -12,9 +12,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.StreamSupport;
@@ -71,17 +77,28 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
     var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
         Spliterator.ORDERED), false).toList();
     data.removeAll();
-    fields.forEach(field -> {
-      var key = field.getKey();
-      if (dateTimeFieldNames.containsKey(key)) {
-        switch (dateTimeFieldNames.get(key)) {
-          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(field.getValue().asText()));
-          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
-        }
-      } else {
-        data.set(key.toLowerCase(), field.getValue());
+    fields.forEach(field -> convertField(field, field.getValue(), dateTimeFieldNames, data));
+  }
+
+  private void convertField(Entry<String, JsonNode> field, JsonNode fieldValue, Map<String, String> dateTimeFieldNames, ObjectNode messageData) {
+    if (fieldValue.isContainerNode()) {
+      var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(fieldValue.fields(),
+          Spliterator.ORDERED), false).toList();
+      fields.forEach(f -> convertField(f, f.getValue(), dateTimeFieldNames, messageData));
+    }
+    var key = field.getKey();
+    if (fieldValue.isContainerNode()) {
+      var dataCopy = messageData.deepCopy();
+      messageData.removeAll();
+      messageData.set(key, dataCopy);
+    } else if (dateTimeFieldNames.containsKey(key)) {
+      switch (dateTimeFieldNames.get(key)) {
+        case DATE_TIME -> messageData.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(fieldValue.asText()) / 1000000);
+        case DATE -> messageData.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(fieldValue.asText()));
       }
-    });
+    } else {
+      messageData.set(key.toLowerCase(), field.getValue());
+    }
   }
 
   @Override
@@ -89,9 +106,27 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
                                  JsonNode expectedValue,
                                  JsonNode actualValue) {
     if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
-      Assertions.assertEquals(expectedValue.asLong() / 1000000, actualValue.asLong());
+      Assertions.assertEquals(expectedValue.asLong(), actualValue.asLong());
     } else {
       super.assertSameValue(key, expectedValue, actualValue);
+    }
+  }
+
+  @Override
+  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
+    for (AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        var iterator = message.getRecord().getData().fieldNames();
+        if (iterator.hasNext()) {
+          var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
+              var data = message.getRecord().getData().get(fieldName).get(f);
+              ((ObjectNode) message.getRecord().getData()).put(fieldName, String.format("[FieldValue{attribute=PRIMITIVE, value=%s}]", data.isNumber() ? data.asText() + ".0" : data.asText()));
+            });
+          }
+        }
+      }
     }
   }
 
