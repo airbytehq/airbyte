@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.CustomSourceDefinitionCreate;
 import io.airbyte.api.model.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
@@ -294,12 +295,62 @@ class SourceDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(create);
+    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createPrivateSourceDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository)
         .writeStandardSourceDefinition(sourceDefinition.withReleaseDate(null).withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM));
+  }
+
+  @Test
+  @DisplayName("createCustomSourceDefinition should correctly create a sourceDefinition")
+  void testCreateCustomSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
+    final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
+    final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+
+    when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
+    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+        sourceDefinition.getSpec(),
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
+    final SourceDefinitionCreate create = new SourceDefinitionCreate()
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(sourceDefinition.getIcon())
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final CustomSourceDefinitionCreate customCreate = new CustomSourceDefinitionCreate()
+        .sourceDefinition(create)
+        .workspaceId(workspaceId);
+
+    final SourceDefinitionRead expectedRead = new SourceDefinitionRead()
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.CUSTOM)
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(customCreate);
+
+    assertEquals(expectedRead, actualRead);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(configRepository).writeStandardSourceDefinition(sourceDefinition
+        .withReleaseDate(null)
+        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+        .withCustom(true));
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        sourceDefinition.getSourceDefinitionId(),
+        workspaceId);
   }
 
   @Test
