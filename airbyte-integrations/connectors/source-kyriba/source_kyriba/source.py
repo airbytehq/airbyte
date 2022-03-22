@@ -25,8 +25,8 @@ class KyribaClient:
         auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         response = requests.post(self.url, auth=auth, data=data)
         response.raise_for_status()
-        access_token = response.json()["access_token"]
-        return TokenAuthenticator(access_token)
+        self.access_token = response.json()["access_token"]
+        return TokenAuthenticator(self.access_token)
 
 
 # Basic full refresh stream
@@ -66,9 +66,8 @@ class KyribaStream(HttpStream):
         # Kyriba uses basic auth to generate an expiring bearer token
         # There is no refresh token, so users need to log in again when the token expires
         if response.status_code == 401:
-            auth = self.client.login()
-            self._session.auth = auth
-            response.request.auth = auth
+            self._session.auth = self.client.login()
+            response.request.headers["Authorization"] = f"Bearer {self.client.access_token}"
             # change the response status code to 571, so should_give_up in rate_limiting.py
             # does not evaluate to true
             response.status_code = 571
