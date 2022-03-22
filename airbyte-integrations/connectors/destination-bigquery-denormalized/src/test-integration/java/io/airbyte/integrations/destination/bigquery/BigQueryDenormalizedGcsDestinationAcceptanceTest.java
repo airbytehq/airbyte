@@ -66,7 +66,6 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
         .build());
   }
 
-
   @Override
   public boolean requiresDateTimeConversionForSync() {
     return true;
@@ -122,7 +121,8 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
           if (message.getRecord().getData().get(fieldName).isContainerNode()) {
             message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
               var data = message.getRecord().getData().get(fieldName).get(f);
-              ((ObjectNode) message.getRecord().getData()).put(fieldName, String.format("[FieldValue{attribute=PRIMITIVE, value=%s}]", data.isNumber() ? data.asText() + ".0" : data.asText()));
+              ((ObjectNode) message.getRecord().getData()).put(fieldName,
+                  String.format("[FieldValue{attribute=PRIMITIVE, value=%s}]", data.isNumber() ? data.asText() + ".0" : data.asText()));
             });
           }
         }

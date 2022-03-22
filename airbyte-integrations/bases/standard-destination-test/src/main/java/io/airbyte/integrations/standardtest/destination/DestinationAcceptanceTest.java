@@ -77,8 +77,8 @@ import java.util.Spliterators;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
@@ -1141,9 +1141,10 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
       final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema,
           stream.getJsonSchema())
-          .stream()
-          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema)
-              .withData(data)).toList();
+              .stream()
+              .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema)
+                  .withData(data))
+              .toList();
       actualMessages.addAll(msgList);
     }
 
@@ -1548,13 +1549,16 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
   }
 
   /**
-   * Converts serialized json blob for nested object to real json object.
-   * E.g. {"key": "{\"nestedObject\" : \"one\"}"} will be converted to {"key": {"nestedObject" : "one"}}
-   * This method goes through @messages and store names of nested object fields to the set. After that it goes through
+   * Converts serialized json blob for nested object to real json object. E.g. {"key":
+   * "{\"nestedObject\" : \"one\"}"} will be converted to {"key": {"nestedObject" : "one"}} This
+   * method goes through @messages and store names of nested object fields to the set. After that it
+   * goes through
+   *
    * @actualMessages and deserialize jsonb string fields from set, to JsonNode
    *
    * @param messages from edge_case_messages.txt
-   * @param actualMessages fetched messages from destination which could contain serialized json objects
+   * @param actualMessages fetched messages from destination which could contain serialized json
+   *        objects
    */
   protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
     HashSet<String> nestedFieldNames = new HashSet<>();
@@ -1583,4 +1587,5 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
       }
     }
   }
+
 }

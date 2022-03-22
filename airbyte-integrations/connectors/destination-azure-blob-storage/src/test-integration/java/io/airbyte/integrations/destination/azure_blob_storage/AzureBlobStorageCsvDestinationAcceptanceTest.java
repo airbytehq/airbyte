@@ -134,7 +134,9 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
 
   @Override
   protected void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog,
-      List<AirbyteMessage> messages, String defaultSchema) throws Exception {
+                                                         List<AirbyteMessage> messages,
+                                                         String defaultSchema)
+      throws Exception {
     final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
     deserializeNestedObjects(messages, actualMessages);
 
