@@ -34,17 +34,22 @@ public class ExitCodeWatcher implements Watcher<Pod> {
   public void eventReceived(Action action, Pod resource) {
     log.info("processing action " + action);
 
-    if (!exitCodeRetrieved && KubePodProcess.isTerminal(resource)) {
-      final ContainerStatus mainContainerStatus = resource.getStatus().getContainerStatuses()
-          .stream()
-          .filter(containerStatus -> containerStatus.getName().equals(KubePodProcess.MAIN_CONTAINER_NAME))
-          .collect(MoreCollectors.onlyElement());
+    try {
+      if (!exitCodeRetrieved && KubePodProcess.isTerminal(resource)) {
+        final ContainerStatus mainContainerStatus = resource.getStatus().getContainerStatuses()
+                .stream()
+                .filter(containerStatus -> containerStatus.getName().equals(KubePodProcess.MAIN_CONTAINER_NAME))
+                .collect(MoreCollectors.onlyElement());
 
-      if (mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null) {
-        final int exitCode = mainContainerStatus.getState().getTerminated().getExitCode();
-        onExitCode.accept(exitCode);
-        exitCodeRetrieved = true;
+        if (mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null) {
+          final int exitCode = mainContainerStatus.getState().getTerminated().getExitCode();
+          log.info("Processing event with exit code " + exitCode + " for pod " + resource.getMetadata().getName());
+          onExitCode.accept(exitCode);
+          exitCodeRetrieved = true;
+        }
       }
+    } catch (Exception e) {
+      log.error("ExitCodeWatcher event handling failed", e);
     }
   }
 
