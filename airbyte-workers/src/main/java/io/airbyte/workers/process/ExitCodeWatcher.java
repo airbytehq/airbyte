@@ -43,13 +43,18 @@ public class ExitCodeWatcher implements Watcher<Pod> {
 
         if (mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null) {
           final int exitCode = mainContainerStatus.getState().getTerminated().getExitCode();
-          log.info("Processing event with exit code " + exitCode + " for pod " + resource.getMetadata().getName());
+          log.info("Processing event with exit code " + exitCode + " for pod: " + resource.getMetadata().getName());
           onExitCode.accept(exitCode);
           exitCodeRetrieved = true;
         }
       }
     } catch (Exception e) {
-      log.error("ExitCodeWatcher event handling failed", e);
+      String podName = null;
+      if(resource.getMetadata() != null) {
+        podName = resource.getMetadata().getName();
+      }
+
+      log.error("ExitCodeWatcher event handling failed for pod: " + podName, e);
     }
   }
 

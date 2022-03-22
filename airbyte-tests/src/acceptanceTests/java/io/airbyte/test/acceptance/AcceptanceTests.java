@@ -533,6 +533,7 @@ public class AcceptanceTests {
   // assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   // }
 
+  @Disabled // todo: remove
   @Test
   @Order(9)
   public void testIncrementalSync() throws Exception {
