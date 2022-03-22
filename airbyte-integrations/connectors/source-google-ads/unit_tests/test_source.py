@@ -3,11 +3,14 @@
 #
 
 import pytest
+from airbyte_cdk import AirbyteLogger
 from freezegun import freeze_time
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, chunk_date_range
+
+from .common import MockErroringGoogleAdsClient, MockGoogleAdsClient
 
 
 # Test chunck date range without end date
@@ -351,3 +354,85 @@ def test_google_type_conversion(config):
     schema_properties = final_schema.get("properties")
     for prop, value in schema_properties.items():
         assert desired_mapping[prop] == value.get("type"), f"{prop} should be {value}"
+
+
+def test_checkConnection_should_pass_when_configValid(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+    source = SourceGoogleAds()
+    check_successful, message = source.check_connection(
+        AirbyteLogger(),
+        {
+            "credentials": {
+                "developer_token": "fake_developer_token",
+                "client_id": "fake_client_id",
+                "client_secret": "fake_client_secret",
+                "refresh_token": "fake_refresh_token",
+            },
+            "customer_id": "fake_customer_id",
+            "start_date": "2022-01-01",
+            "conversion_window_days": 14,
+            "custom_queries": [
+                {
+                    "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
+                    "primary_key": None,
+                    "cursor_field": "campaign.start_date",
+                    "table_name": "happytable",
+                },
+                {
+                    "query": "SELECT segments.ad_destination_type, segments.ad_network_type, segments.day_of_week, customer.auto_tagging_enabled, customer.id, metrics.conversions, campaign.start_date FROM campaign",
+                    "primary_key": "customer.id",
+                    "cursor_field": None,
+                    "table_name": "unhappytable",
+                },
+                {
+                    "query": "SELECT ad_group.targeting_setting.target_restrictions FROM ad_group",
+                    "primary_key": "customer.id",
+                    "cursor_field": None,
+                    "table_name": "ad_group_custom",
+                },
+            ],
+        },
+    )
+    assert check_successful
+    assert message is None
+
+
+def test_checkConnection_should_fail_when_apiCallFails(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockErroringGoogleAdsClient)
+    source = SourceGoogleAds()
+    check_successful, message = source.check_connection(
+        AirbyteLogger(),
+        {
+            "credentials": {
+                "developer_token": "fake_developer_token",
+                "client_id": "fake_client_id",
+                "client_secret": "fake_client_secret",
+                "refresh_token": "fake_refresh_token",
+            },
+            "customer_id": "fake_customer_id",
+            "start_date": "2022-01-01",
+            "conversion_window_days": 14,
+            "custom_queries": [
+                {
+                    "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
+                    "primary_key": None,
+                    "cursor_field": "campaign.start_date",
+                    "table_name": "happytable",
+                },
+                {
+                    "query": "SELECT segments.ad_destination_type, segments.ad_network_type, segments.day_of_week, customer.auto_tagging_enabled, customer.id, metrics.conversions, campaign.start_date FROM campaign",
+                    "primary_key": "customer.id",
+                    "cursor_field": None,
+                    "table_name": "unhappytable",
+                },
+                {
+                    "query": "SELECT ad_group.targeting_setting.target_restrictions FROM ad_group",
+                    "primary_key": "customer.id",
+                    "cursor_field": None,
+                    "table_name": "ad_group_custom",
+                },
+            ],
+        },
+    )
+    assert not check_successful
+    assert message.startswith("Unable to connect to Google Ads API with the provided credentials")
