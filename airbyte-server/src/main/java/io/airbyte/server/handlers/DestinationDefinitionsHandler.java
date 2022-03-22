@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.CustomDestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
@@ -160,8 +161,31 @@ public class DestinationDefinitionsHandler {
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createCustomDestinationDefinition(final DestinationDefinitionCreate destinationDefCreate)
+  public DestinationDefinitionRead createPrivateDestinationDefinition(final DestinationDefinitionCreate destinationDefCreate)
       throws JsonValidationException, IOException {
+    final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(destinationDefCreate)
+        .withPublic(false)
+        .withCustom(false);
+    configRepository.writeStandardDestinationDefinition(destinationDefinition);
+
+    return buildDestinationDefinitionRead(destinationDefinition);
+  }
+
+  public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate)
+      throws JsonValidationException, IOException {
+    final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(
+        customDestinationDefinitionCreate.getDestinationDefinition())
+            .withPublic(false)
+            .withCustom(true);
+    configRepository.writeStandardDestinationDefinition(destinationDefinition);
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        destinationDefinition.getDestinationDefinitionId(),
+        customDestinationDefinitionCreate.getWorkspaceId());
+
+    return buildDestinationDefinitionRead(destinationDefinition);
+  }
+
+  private StandardDestinationDefinition destinationDefinitionFromCreate(final DestinationDefinitionCreate destinationDefCreate) throws IOException {
     final ConnectorSpecification spec = getSpecForImage(
         destinationDefCreate.getDockerRepository(),
         destinationDefCreate.getDockerImageTag());
@@ -178,10 +202,7 @@ public class DestinationDefinitionsHandler {
         .withTombstone(false)
         .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
-
-    configRepository.writeStandardDestinationDefinition(destinationDefinition);
-
-    return buildDestinationDefinitionRead(destinationDefinition);
+    return destinationDefinition;
   }
 
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate)

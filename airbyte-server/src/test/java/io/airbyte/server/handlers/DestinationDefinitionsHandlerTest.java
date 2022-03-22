@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.CustomDestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
@@ -297,13 +298,63 @@ class DestinationDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.ResourceRequirements()
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
 
-    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createCustomDestinationDefinition(create);
+    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createPrivateDestinationDefinition(create);
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
     verify(configRepository).writeStandardDestinationDefinition(destination
         .withReleaseDate(null)
         .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM));
+  }
+
+  @Test
+  @DisplayName("createCustomDestinationDefinition should correctly create a destinationDefinition")
+  void testCreateCustomDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
+    final StandardDestinationDefinition destination = generateDestinationDefinition();
+    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+
+    when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
+    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+        destination.getSpec(),
+        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
+
+    final DestinationDefinitionCreate create = new DestinationDefinitionCreate()
+        .name(destination.getName())
+        .dockerRepository(destination.getDockerRepository())
+        .dockerImageTag(destination.getDockerImageTag())
+        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .icon(destination.getIcon())
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final CustomDestinationDefinitionCreate customCreate = new CustomDestinationDefinitionCreate()
+        .destinationDefinition(create)
+        .workspaceId(workspaceId);
+
+    final DestinationDefinitionRead expectedRead = new DestinationDefinitionRead()
+        .name(destination.getName())
+        .dockerRepository(destination.getDockerRepository())
+        .dockerImageTag(destination.getDockerImageTag())
+        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .destinationDefinitionId(destination.getDestinationDefinitionId())
+        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
+        .releaseStage(ReleaseStage.CUSTOM)
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createCustomDestinationDefinition(customCreate);
+
+    assertEquals(expectedRead, actualRead);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(configRepository).writeStandardDestinationDefinition(destination
+        .withReleaseDate(null)
+        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
+        .withCustom(true));
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        destination.getDestinationDefinitionId(),
+        workspaceId);
   }
 
   @Test
