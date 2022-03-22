@@ -11,6 +11,7 @@
         "title": "Authentication Mechanism",
         "description": "Choose how to authenticate to GitHub",
         "type": "object",
+        "order": 0,
         "oneOf": [
           {
             "type": "object",
@@ -54,6 +55,14 @@
           }
         ]
       },
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "description": "The date from which you'd like to replicate data for GitHub in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "order": 1
+      },
       "repository": {
         "type": "string",
         "examples": [
@@ -62,20 +71,15 @@
           "airbytehq/airbyte"
         ],
         "title": "GitHub Repositories",
-        "description": "Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories."
-      },
-      "start_date": {
-        "type": "string",
-        "title": "Start Date",
-        "description": "The date from which you'd like to replicate data for GitHub in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
-        "examples": ["2021-03-01T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        "description": "Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.",
+        "order": 2
       },
       "branch": {
         "type": "string",
         "title": "Branch",
         "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
-        "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled."
+        "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
+        "order": 3
       },
       "page_size_for_large_streams": {
         "type": "integer",
@@ -83,7 +87,8 @@
         "minimum": 1,
         "maximum": 100,
         "default": 10,
-        "description": "The Github connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30."
+        "description": "The Github connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.",
+        "order": 4
       }
     }
   },
