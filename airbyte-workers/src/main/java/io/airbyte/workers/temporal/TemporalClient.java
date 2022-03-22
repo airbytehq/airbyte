@@ -257,9 +257,11 @@ public class TemporalClient {
       final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
       connectionManagerWorkflow.deleteConnection();
     } catch (final IllegalStateException e) {
-      log.info("Create new workflow and sent delete signal", e); // todo make better logging message
-      final ConnectionManagerWorkflow connectionManagerWorkflow =
-          getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+      log.info("Connection in an illegal state; Creating new workflow and sending delete signal");
+
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getWorkflowOptionsWithWorkflowId(ConnectionManagerWorkflow.class,
+          TemporalJobType.CONNECTION_UPDATER, getConnectionManagerName(connectionId));
+
       final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
           .connectionId(connectionId)
           .jobId(null)
@@ -275,6 +277,7 @@ public class TemporalClient {
       signalRequest.add(connectionManagerWorkflow::run, input); // todo: check if this is necessary
       signalRequest.add(connectionManagerWorkflow::deleteConnection);
       final WorkflowExecution workflowExecution = client.signalWithStart(signalRequest);
+
       // todo add logging about workflow execution? do i need to sleep to confirm connection has started
       // and received signal?
     }
