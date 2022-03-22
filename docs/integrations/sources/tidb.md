@@ -96,7 +96,7 @@ TiDB data types are mapped to the following data types when synchronizing data:
 | `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
 | `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
 | `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59. |
-| `year`                                    | year string            | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)     |
+| `year`                                    | year string            | [Doc](https://docs.pingcap.com/tidb/stable/data-type-date-and-time#year-type)     |
 | `char`, `varchar` with non-binary charset | string                 |                                                              |
 | `char`, `varchar` with binary charset     | base64 binary string   |                                                              |
 | `tinyblob`                                | base64 binary string   |                                                              |
