@@ -75,7 +75,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 ### Data type mapping
 
-TiDB data types are mapped to the following data types when synchronizing data:
+[TiDB data types](https://docs.pingcap.com/tidb/stable/data-type-overview) are mapped to the following data types when synchronizing data:
 
 | TiDB Type                                 | Resulting Type         | Notes                                                        |
 | :---------------------------------------- |:-----------------------| :----------------------------------------------------------- |
