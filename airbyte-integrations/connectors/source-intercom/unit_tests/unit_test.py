@@ -94,8 +94,8 @@ def test_conversation_part_has_conversation_id(requests_mock):
                 {"type": "conversation_part", "id": "13740311965"},
                 {"type": "conversation_part", "id": "13740312024"},
             ],
-            "total_count": 2
-        }
+            "total_count": 2,
+        },
     }
     url = "https://api.intercom.io/conversations/151272900024304"
     requests_mock.get(url, json=response_body)
@@ -103,8 +103,8 @@ def test_conversation_part_has_conversation_id(requests_mock):
     stream1 = ConversationParts(authenticator=NoAuth())
 
     record_count = 0
-    for record in stream1.read_records(sync_mode=SyncMode.incremental, stream_slice={'id':'151272900024304'}):
-        assert record['conversation_id'] == '151272900024304'
+    for record in stream1.read_records(sync_mode=SyncMode.incremental, stream_slice={"id": "151272900024304"}):
+        assert record["conversation_id"] == "151272900024304"
         record_count += 1
 
     assert record_count == 2
