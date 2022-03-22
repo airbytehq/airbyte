@@ -78,7 +78,7 @@ def test_switch_to_standard_endpoint_if_scroll_expired(requests_mock):
     assert stream1._endpoint_type == Companies.EndpointType.standard
 
 
-def test_switch_to_standard_endpoint_if_scroll_expired(requests_mock):
+def test_conversation_part_has_conversation_id(requests_mock):
     """
     Test shows that conversation_part records include the `conversation_id` field.
     """
