@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
@@ -307,6 +308,13 @@ public class ConfigRepository {
       persistence.deleteConfig(connectorType, connectorIdGetter.apply(connector).toString());
     }
     persistence.deleteConfig(definitionType, definitionId.toString());
+  }
+
+  public void writeActorDefinitionWorkspaceGrant(final UUID actorDefinitionId, final UUID workspaceId) throws IOException {
+    database.query(ctx -> ctx.insertInto(ACTOR_DEFINITION_WORKSPACE_GRANT)
+        .set(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID, actorDefinitionId)
+        .set(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID, workspaceId)
+        .execute());
   }
 
   /**
