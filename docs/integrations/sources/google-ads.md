@@ -30,7 +30,7 @@ This source is capable of syncing the following tables and their data:
 * [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
 * [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
 
-Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels.
+Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
 #### Report Tables
 
