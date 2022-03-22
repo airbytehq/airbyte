@@ -1128,18 +1128,26 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
                                                          final List<AirbyteMessage> messages,
                                                          final String defaultSchema)
       throws Exception {
+    final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
+
+    assertSameMessages(messages, actualMessages, false);
+  }
+
+  protected List<AirbyteRecordMessage> retrieveRawRecords(final AirbyteCatalog catalog, final String defaultSchema)
+      throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
-      final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
+      final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema,
+          stream.getJsonSchema())
           .stream()
-          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
-          .collect(Collectors.toList());
+          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema)
+              .withData(data)).toList();
       actualMessages.addAll(msgList);
     }
 
-    assertSameMessages(messages, actualMessages, false);
+    return actualMessages;
   }
 
   // ignores emitted at.
@@ -1425,20 +1433,20 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     final Map<String, String> fieldFormats = new HashMap<>();
 
     streams.stream().map(AirbyteStream::getJsonSchema).forEach(streamSchema -> {
-      putFieldsFromSchema(streamSchema, fieldFormats);
+      findDateTimeFields(streamSchema, fieldFormats);
     });
 
     return fieldFormats;
   }
 
-  private static void putFieldsFromSchema(JsonNode streamSchema, Map<String, String> fieldFormats) {
+  private static void findDateTimeFields(JsonNode streamSchema, Map<String, String> fieldFormats) {
     final JsonNode fieldDefinitions = streamSchema.get("properties");
     final Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
     while (iterator.hasNext()) {
       Map.Entry<String, JsonNode> entry = iterator.next();
       if (entry.getValue().has("type") && entry.getValue().get("type").asText().equals("object")
           && entry.getValue().has("properties")) {
-        putFieldsFromSchema(entry.getValue(), fieldFormats);
+        findDateTimeFields(entry.getValue(), fieldFormats);
       }
       if (entry.getValue().has("format")) {
         String format = entry.getValue().get("format").asText();
@@ -1539,12 +1547,21 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     return airbyteMessages;
   }
 
+  /**
+   * Converts serialized json blob for nested object to real json object.
+   * E.g. {"key": "{\"nestedObject\" : \"one\"}"} will be converted to {"key": {"nestedObject" : "one"}}
+   * This method goes through @messages and store names of nested object fields to the set. After that it goes through
+   * @actualMessages and deserialize jsonb string fields from set, to JsonNode
+   *
+   * @param messages from edge_case_messages.txt
+   * @param actualMessages fetched messages from destination which could contain serialized json objects
+   */
   protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
     HashSet<String> nestedFieldNames = new HashSet<>();
     for (AirbyteMessage message : messages) {
       if (message.getType() == Type.RECORD) {
         var iterator = message.getRecord().getData().fieldNames();
-        if (iterator.hasNext()) {
+        while (iterator.hasNext()) {
           var fieldName = iterator.next();
           if (message.getRecord().getData().get(fieldName).isContainerNode()) {
             nestedFieldNames.add(fieldName);
@@ -1555,9 +1572,9 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     if (actualMessages != null) {
       for (AirbyteRecordMessage message : actualMessages) {
         nestedFieldNames.stream().filter(name -> message.getData().has(name)).forEach(name -> {
-          var data = message.getData().get(name).asText();
+          String data = message.getData().get(name).asText();
           try {
-            ((ObjectNode) message.getData()).put(name,
+            ((ObjectNode) message.getData()).set(name,
                 new ObjectMapper().readTree(data));
           } catch (JsonProcessingException e) {
             e.printStackTrace();
