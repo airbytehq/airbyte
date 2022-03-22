@@ -13,7 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -170,15 +174,15 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     assertSameConfigDump(expected, actual);
   }
 
-  // @Test
-  // public void testDumpConfigsWithoutSecret() throws Exception {
-  // when(featureFlags.exposeSecretsInExport()).thenReturn(false);
-  // writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
-  // writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
-  // writeDestinationWithDestinationConnection(configPersistence, DESTINATION_S3);
-  // configPersistence.dumpConfigs();
-  // verify(jsonSecretsProcessor, times(3)).maskSecrets(any(), any());
-  // }
+  @Test
+  public void testDumpConfigsWithoutSecret() throws Exception {
+    when(featureFlags.exposeSecretsInExport()).thenReturn(false);
+    writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
+    writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
+    writeDestinationWithDestinationConnection(configPersistence, DESTINATION_S3);
+    configPersistence.dumpConfigs();
+    verify(jsonSecretsProcessor, times(3)).maskSecrets(any(), any());
+  }
 
   @Test
   public void testGetConnectorRepositoryToInfoMap() throws Exception {
