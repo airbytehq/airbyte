@@ -66,13 +66,12 @@ class KyribaStream(HttpStream):
         # Kyriba uses basic auth to generate an expiring bearer token
         # There is no refresh token, so users need to log in again when the token expires
         if response.status_code == 401:
-            old_tokens = self._session.auth
-            self._session.auth = self.client.login()
-            new_tokens = self._session.auth._tokens
-            print(f"Token comparison: {old_tokens == new_tokens}")
-            # change the response status code to 429, so should_give_up in rate_limiting.py
+            auth = self.client.login()
+            self._session.auth = auth
+            response.request.auth = auth
+            # change the response status code to 571, so should_give_up in rate_limiting.py
             # does not evaluate to true
-            response.status_code = 429
+            response.status_code = 571
             return True
         return response.status_code == 429 or 500 <= response.status_code < 600
 
