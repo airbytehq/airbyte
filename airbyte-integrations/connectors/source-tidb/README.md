@@ -45,7 +45,7 @@ Place integration tests in `src/test-integration/...`
 
 #### Acceptance Tests
 Airbyte has a standard test suite that all source connectors must pass. Implement the `TODO`s in
-`src/test-integration/java/io/airbyte/integrations/sources/tiDBSourceAcceptanceTest.java`.
+`src/test-integration/java/io/airbyte/integrations/sources/TiDBSourceAcceptanceTest.java`.
 
 ### Using gradle to run tests
 All commands should be run from airbyte project root.
