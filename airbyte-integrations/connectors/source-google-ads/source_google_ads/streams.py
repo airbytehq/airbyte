@@ -241,6 +241,7 @@ class CampaignLabels(GoogleAdsStream):
     def __init__(self, api):
         super().__init__(api)
 
+    # Note that this is a string type. Google doesn't return a more convenient identifier.
     primary_key = ["campaign_label.resource_name"]
 
 
@@ -260,6 +261,7 @@ class AdGroupLabels(GoogleAdsStream):
     def __init__(self, api):
         super().__init__(api)
 
+    # Note that this is a string type. Google doesn't return a more convenient identifier.
     primary_key = ["ad_group_label.resource_name"]
 
 
@@ -279,6 +281,7 @@ class AdGroupAdLabels(GoogleAdsStream):
     def __init__(self, api):
         super().__init__(api)
 
+    # Note that this is a string type. Google doesn't return a more convenient identifier.
     primary_key = ["ad_group_ad_label.resource_name"]
 
 
