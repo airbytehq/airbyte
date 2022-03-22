@@ -6,15 +6,7 @@ package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.SourceCreate;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.SourceSearch;
-import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.*;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
@@ -115,17 +107,23 @@ public class SourceHandler {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
-  public SourceRead cloneSource(final SourceIdRequestBody sourceIdRequestBody)
+  public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read source configuration from db
-    final SourceRead sourceToClone = buildSourceReadWithSecrets(sourceIdRequestBody.getSourceId());
+    final SourceRead sourceToClone = buildSourceReadWithSecrets(sourceCloneRequestBody.getSourceId());
+
+    String sourceName = sourceCloneRequestBody.getName();
+
+    if (sourceName == null) {
+      final String copyText = " (Copy)";
+      sourceName = sourceToClone.getName() + copyText;
+    }
 
     // persist
     final UUID sourceId = uuidGenerator.get();
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceIdRequestBody.getSourceId());
+    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceCloneRequestBody.getSourceId());
     final ConnectorSpecification spec = sourceDef.getSpec();
-    final String copyText = " (Copy)";
-    final String sourceName = sourceToClone.getName() + copyText;
+
     persistSourceConnection(
         sourceName,
         sourceToClone.getSourceDefinitionId(),

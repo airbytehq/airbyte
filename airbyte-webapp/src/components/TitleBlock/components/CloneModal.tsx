@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useIntl, FormattedMessage } from "react-intl";
 
@@ -9,7 +9,7 @@ export type IProps = {
   name: string;
   type: "source" | "destination";
   onClose: () => void;
-  onClone: () => void;
+  onClone: (name: string) => void;
 };
 
 const Content = styled.div`
@@ -29,10 +29,11 @@ const ButtonWithMargin = styled(Button)`
 
 const CloneModal: React.FC<IProps> = ({ onClose, type, name, onClone }) => {
   const { formatMessage } = useIntl();
+  const [newName, setNewName] = useState(`${name} (Copy)`);
 
   const onSuccess = () => {
     onClose();
-    onClone();
+    onClone(newName);
   };
 
   return (
@@ -45,10 +46,12 @@ const CloneModal: React.FC<IProps> = ({ onClose, type, name, onClone }) => {
       <Content>
         <LabeledInput
           label={<FormattedMessage id={`form.${type}Name.placeholder`} />}
-          disabled
           message={<FormattedMessage id={`tables.new${type}HelpText`} />}
           type="text"
-          value={`${name} (Copy)`}
+          value={newName}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setNewName(e.currentTarget.value);
+          }}
         />
         <ButtonContent>
           <ButtonWithMargin onClick={onClose} secondary>

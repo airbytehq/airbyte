@@ -100,6 +100,10 @@ type DestinationService = {
     destination: Destination;
     connectionsWithDestination: Connection[];
   }) => Promise<void>;
+  cloneDestination: (cloneDestinationPayload: {
+    destinationId: string;
+    name: string;
+  }) => Promise<Destination>;
 };
 
 const useDestination = (): DestinationService => {
@@ -121,6 +125,8 @@ const useDestination = (): DestinationService => {
   const recreatedestination = useFetcher(DestinationResource.recreateShape());
 
   const destinationDelete = useFetcher(DestinationResource.deleteShape());
+
+  const clonedestination = useFetcher(DestinationResource.cloneShape());
 
   const updateConnectionsStore = useFetcher(
     ConnectionResource.updateStoreAfterDeleteShape()
@@ -290,12 +296,23 @@ const useDestination = (): DestinationService => {
     push(RoutePaths.Destination);
   };
 
+  const cloneDestination: DestinationService["cloneDestination"] = async ({
+    destinationId,
+    name,
+  }) => {
+    return await clonedestination({
+      destinationId,
+      name,
+    });
+  };
+
   return {
     createDestination,
     updateDestination,
     recreateDestination,
     deleteDestination,
     checkDestinationConnection,
+    cloneDestination,
   };
 };
 

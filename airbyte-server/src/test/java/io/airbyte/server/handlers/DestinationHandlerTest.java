@@ -12,15 +12,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.DestinationCreate;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.DestinationSearch;
-import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.*;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
@@ -269,7 +261,7 @@ class DestinationHandlerTest {
         .connectionConfiguration(destinationConnection.getConfiguration())
         .destinationName(standardDestinationDefinition.getName());
 
-    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(destinationRead.getDestinationId());
+    DestinationCloneRequestBody destinationCloneRequestBody = new DestinationCloneRequestBody().destinationId(destinationRead.getDestinationId());
 
     when(uuidGenerator.get()).thenReturn(clonedConnection.getDestinationId());
     when(configRepository.getDestinationConnectionWithSecrets(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
@@ -282,7 +274,7 @@ class DestinationHandlerTest {
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(destinationConnection.getConfiguration());
 
-    final DestinationRead actualDestinationRead = destinationHandler.cloneDestination(destinationIdRequestBody);
+    DestinationRead actualDestinationRead = destinationHandler.cloneDestination(destinationCloneRequestBody);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
   }

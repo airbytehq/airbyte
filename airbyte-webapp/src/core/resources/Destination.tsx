@@ -70,6 +70,17 @@ export class DestinationResource extends BaseResource implements Destination {
         await this.fetch("post", `${super.rootUrl()}destinations/create`, body),
     };
   }
+
+  static cloneShape<T extends typeof Resource>(this: T) {
+    return {
+      ...super.detailShape(),
+      schema: this,
+      fetch: async (
+        body: Readonly<Record<string, unknown>>
+      ): Promise<Destination> =>
+        await this.fetch("post", `${super.rootUrl()}destinations/clone`, body),
+    };
+  }
 }
 
 export default DestinationResource;

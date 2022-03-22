@@ -7,15 +7,7 @@ package io.airbyte.server.handlers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.DestinationCreate;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.DestinationSearch;
-import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.*;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -153,16 +145,21 @@ public class DestinationHandler {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
-  public DestinationRead cloneDestination(final DestinationIdRequestBody destinationIdRequestBody)
+  public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read destination configuration from db
-    final DestinationRead destinationToClone = buildDestinationReadWithSecrets(destinationIdRequestBody.getDestinationId());
+    final DestinationRead destinationToClone = buildDestinationReadWithSecrets(destinationCloneRequestBody.getDestinationId());
     final ConnectorSpecification spec = getSpec(destinationToClone.getDestinationDefinitionId());
+
+    String destinationName = destinationCloneRequestBody.getName();
+
+    if (destinationName == null) {
+      final String copyText = " (Copy)";
+      destinationName = destinationToClone.getName() + copyText;
+    }
 
     // persist
     final UUID destinationId = uuidGenerator.get();
-    final String copyText = " (Copy)";
-    final String destinationName = destinationToClone.getName() + copyText;
     persistDestinationConnection(
         destinationName,
         destinationToClone.getDestinationDefinitionId(),

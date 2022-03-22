@@ -67,7 +67,10 @@ type SourceService = {
     source: Source;
     connectionsWithSource: Connection[];
   }) => Promise<void>;
-  cloneSource: (cloneSourcePayload: { sourceId: string }) => Promise<Source>;
+  cloneSource: (cloneSourcePayload: {
+    sourceId: string;
+    name: string;
+  }) => Promise<Source>;
 };
 
 const useSource = (): SourceService => {
@@ -166,9 +169,13 @@ const useSource = (): SourceService => {
     );
   };
 
-  const cloneSource: SourceService["cloneSource"] = async ({ sourceId }) => {
+  const cloneSource: SourceService["cloneSource"] = async ({
+    sourceId,
+    name,
+  }) => {
     return await clonesource({
       sourceId,
+      name,
     });
   };
 

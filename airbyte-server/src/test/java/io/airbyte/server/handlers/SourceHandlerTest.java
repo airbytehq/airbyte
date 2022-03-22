@@ -12,18 +12,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.SourceCreate;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.SourceSearch;
-import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.*;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceConnection;
@@ -185,7 +174,7 @@ class SourceHandlerTest {
     final SourceRead expectedClonedSourceRead = SourceHelpers.getSourceRead(clonedConnection, standardSourceDefinition);
     final SourceRead sourceRead = SourceHelpers.getSourceRead(sourceConnection, standardSourceDefinition);
 
-    final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(sourceRead.getSourceId());
+    SourceCloneRequestBody sourceCloneRequestBody = new SourceCloneRequestBody().sourceId(sourceRead.getSourceId());
 
     when(uuidGenerator.get()).thenReturn(clonedConnection.getSourceId());
     when(configRepository.getSourceConnectionWithSecrets(sourceConnection.getSourceId())).thenReturn(sourceConnection);
@@ -197,7 +186,7 @@ class SourceHandlerTest {
     when(secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), sourceDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(sourceConnection.getConfiguration());
 
-    final SourceRead actualSourceRead = sourceHandler.cloneSource(sourceIdRequestBody);
+    SourceRead actualSourceRead = sourceHandler.cloneSource(sourceCloneRequestBody);
 
     assertEquals(expectedClonedSourceRead, actualSourceRead);
   }

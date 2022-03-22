@@ -98,9 +98,10 @@ const SourceSettings: React.FC<IProps> = ({
     return breakPaths.join("/");
   };
 
-  const onClone = async () => {
+  const onClone = async (name: string) => {
     const { sourceId }: Source = await cloneSource({
       sourceId: currentSource.sourceId,
+      name,
     });
 
     // Replace/Push functions are not updating the form so had to refresh the page

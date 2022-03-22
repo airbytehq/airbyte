@@ -504,7 +504,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceIdRequestBody"
+              $ref: "#/components/schemas/SourceCloneRequestBody"
         required: true
       responses:
         "200":
@@ -925,7 +925,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationIdRequestBody"
+              $ref: "#/components/schemas/DestinationCloneRequestBody"
         required: true
       responses:
         "200":
@@ -2269,6 +2269,16 @@ components:
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
+    SourceCloneRequestBody:
+      type: object
+      required:
+        - sourceId
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        name:
+          type: string
+          description: Set the name for the cloned source
     SourceConfiguration:
       description: The values required to configure the source. The schema for this must match the schema return by source_definition_specifications/get for the source.
       example: { user: "charles" }
@@ -2493,6 +2503,16 @@ components:
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+    DestinationCloneRequestBody:
+      type: object
+      required:
+        - destinationId
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
+        name:
+          type: string
+          description: "Set the name for cloned destination"
     DestinationConfiguration:
       description: The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
       example: { user: "charles" }

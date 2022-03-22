@@ -12,7 +12,7 @@ import CloneModal from "./components/CloneModal";
 type IProps = {
   type: "source" | "destination";
   name: string;
-  onClone: () => void;
+  onClone: (name: string) => void;
 };
 
 const TitleBlockComponent = styled(ContentCard)`
