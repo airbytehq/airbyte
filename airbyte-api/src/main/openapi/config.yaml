@@ -998,7 +998,7 @@ paths:
         required: true
       responses:
         "204":
-          description: The redestination was deleted successfully.
+          description: The destination was deleted successfully.
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
