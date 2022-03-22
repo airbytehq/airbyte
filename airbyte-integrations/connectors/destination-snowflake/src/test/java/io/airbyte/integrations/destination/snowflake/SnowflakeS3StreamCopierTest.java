@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -78,7 +80,11 @@ class SnowflakeS3StreamCopierTest {
     }
 
     copier.copyStagingFileToTemporaryTable();
-    final List<List<String>> partition = Lists.partition(new ArrayList<>(copier.getStagingWritersByFile().keySet()), 1000);
+    Set<String> stagingFiles = copier.getStagingFiles();
+    // check the use of all files for staging
+    Assertions.assertTrue(stagingFiles.size() > 1);
+
+    final List<List<String>> partition = Lists.partition(new ArrayList<>(stagingFiles), 1000);
     for (final List<String> files : partition) {
       verify(db).execute(String.format(
           "COPY INTO fake-schema.%s FROM '%s' "
