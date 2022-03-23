@@ -20,7 +20,7 @@ This Source is capable of syncing the following core Streams:
 * [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
 * [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
 * [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-* [Tickets](https://developer.zendesk.com/rest_api/docs/support/tickets)
+* [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based)
 * [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits)
 * [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export)
 * [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields)
@@ -102,6 +102,7 @@ Simply proceed by pressing "Authenticate your Account" and complete the authenti
 
 | Version  | Date       | Pull Request | Subject                                                |
 |:---------|:-----------| :-----       |:-------------------------------------------------------|
+| `0.2.3`  | 2022-03-23 | [11349](https://github.com/airbytehq/airbyte/pull/11349) | Fixed the bug when Tickets stream didn't return deleted records
 | `0.2.2`  | 2022-03-17 | [11237](https://github.com/airbytehq/airbyte/pull/11237) | Fixed the bug when TicketComments stream didn't return all records
 | `0.2.1`  | 2022-03-15 | [11162](https://github.com/airbytehq/airbyte/pull/11162) | Added support of OAuth2.0 authentication method
 | `0.2.0`  | 2022-03-01 | [9456](https://github.com/airbytehq/airbyte/pull/9456) | Update source to use future requests                   |
