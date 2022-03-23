@@ -7,6 +7,7 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -39,6 +40,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -261,6 +263,51 @@ class DestinationDefinitionsHandlerTest {
 
     final DestinationDefinitionRead actualDestinationDefinitionRead =
         destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody);
+
+    assertEquals(expectedDestinationDefinitionRead, actualDestinationDefinitionRead);
+  }
+
+  @Test
+  @DisplayName("getDestinationDefinitionForWorkspace should throw an exception for a missing grant")
+  void testGetDefinitionWithoutGrantForWorkspace() throws IOException {
+    when(configRepository.workspaceCanUseDefinition(destinationDefinition.getDestinationDefinitionId(), workspaceId))
+        .thenReturn(false);
+
+    final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId = new DestinationDefinitionIdWithWorkspaceId()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .workspaceId(workspaceId);
+
+    assertThrows(IdNotFoundKnownException.class,
+        () -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
+  }
+
+  @Test
+  @DisplayName("getDestinationDefinitionForWorkspace should return the destination if the grant exists")
+  void testGetDefinitionWithGrantForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.workspaceCanUseDefinition(destinationDefinition.getDestinationDefinitionId(), workspaceId))
+        .thenReturn(true);
+    when(configRepository.getStandardDestinationDefinition(destinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(destinationDefinition);
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId = new DestinationDefinitionIdWithWorkspaceId()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .workspaceId(workspaceId);
+
+    final DestinationDefinitionRead actualDestinationDefinitionRead = destinationDefinitionsHandler
+        .getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId);
 
     assertEquals(expectedDestinationDefinitionRead, actualDestinationDefinitionRead);
   }
