@@ -1601,10 +1601,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           sourceConnectionWithMetadata
               .stream()
               .map(configWithMetadata -> {
-                if (featureFlags.exposeSecretsInExport()) {
-                  return Jsons.jsonNode(configWithMetadata.getConfig());
-                }
-
                 try {
                   final UUID sourceDefinitionId = configWithMetadata.getConfig().getSourceDefinitionId();
                   final StandardSourceDefinition standardSourceDefinition = getConfig(
@@ -1612,7 +1608,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                       sourceDefinitionId.toString(),
                       StandardSourceDefinition.class);
                   final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
-                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+                  final JsonNode sanitizedConfig = jsonSecretsProcessor.transformJson(Jsons.jsonNode(configWithMetadata.getConfig()),
+                      connectionSpecs, !featureFlags.exposeSecretsInExport());
                   return sanitizedConfig;
                 } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
                   throw new RuntimeException(e);
@@ -1624,10 +1621,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       final Stream<JsonNode> jsonNodeStream = destinationConnectionWithMetadata
           .stream()
           .map(configWithMetadata -> {
-            if (featureFlags.exposeSecretsInExport()) {
-              return Jsons.jsonNode(configWithMetadata.getConfig());
-            }
-
             try {
               final UUID destinationDefinition = configWithMetadata.getConfig().getDestinationDefinitionId();
               final StandardDestinationDefinition standardDestinationDefinition = getConfig(
@@ -1635,7 +1628,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                   destinationDefinition.toString(),
                   StandardDestinationDefinition.class);
               final JsonNode connectionSpec = standardDestinationDefinition.getSpec().getConnectionSpecification();
-              final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
+              final JsonNode sanitizedConfig = jsonSecretsProcessor.transformJson(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec,
+                  !featureFlags.exposeSecretsInExport());
               return sanitizedConfig;
             } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
               throw new RuntimeException(e);

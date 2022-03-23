@@ -37,6 +37,14 @@ public class JsonSecretsProcessor {
   @VisibleForTesting
   static String SECRETS_MASK = "**********";
 
+  public JsonNode transformJson(final JsonNode obj, final JsonNode schema, final boolean maskSecrets) {
+    JsonNode result = obj;
+    if (maskSecrets) {
+      result = maskSecrets(obj, schema);
+    }
+    return result;
+  }
+
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
    * input schema are masked.
@@ -49,7 +57,7 @@ public class JsonSecretsProcessor {
    */
   // todo: fix bug where this doesn't handle non-oneof nesting or just arrays
   // see: https://github.com/airbytehq/airbyte/issues/6393
-  public JsonNode maskSecrets(final JsonNode obj, final JsonNode schema) {
+  JsonNode maskSecrets(final JsonNode obj, final JsonNode schema) {
     // if schema is an object and has a properties field
     if (!canBeProcessed(schema)) {
       return obj;

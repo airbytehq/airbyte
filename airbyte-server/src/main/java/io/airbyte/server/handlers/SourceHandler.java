@@ -250,8 +250,8 @@ public class SourceHandler {
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(
-        sourceConnection.getConfiguration(), spec.getConnectionSpecification());
+    final JsonNode sanitizedConfig = secretsProcessor.transformJson(
+        sourceConnection.getConfiguration(), spec.getConnectionSpecification(), true);
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
