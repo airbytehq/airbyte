@@ -61,7 +61,7 @@ public class SnowflakeDatabase {
     final JsonNode credentials = config.get("credentials");
     if (credentials != null && credentials.has("auth_type") && "OAuth2.0".equals(
         credentials.get("auth_type").asText())) {
-      LOGGER.info("OAuth login mode is used");
+      LOGGER.debug("OAuth login mode is used");
       // OAuth login option is selected on UI
       final String accessToken;
       try {
@@ -83,11 +83,11 @@ public class SnowflakeDatabase {
       properties.put("username", username);
 
       // thread to keep the refresh token up to date
-      SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.schedule(getRefreshTokenTask(dataSource),
-          PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
+      SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(getRefreshTokenTask(dataSource),
+          PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
 
     } else if (credentials != null && credentials.has("password")) {
-      LOGGER.info("User/password login mode is used");
+      LOGGER.debug("User/password login mode is used");
       // Username and pass login option is selected on UI
       dataSource.setUsername(username);
       dataSource.setPassword(credentials.get("password").asText());
