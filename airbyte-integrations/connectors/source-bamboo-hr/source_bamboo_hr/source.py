@@ -17,8 +17,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 class BambooHrStream(HttpStream, ABC):
-    primary_key = "id"
-
     def __init__(self, config: Mapping[str, Any]) -> None:
         self.config = config
         super().__init__(authenticator=config["authenticator"])
@@ -40,6 +38,8 @@ class BambooHrStream(HttpStream, ABC):
 
 
 class MetaFieldsStream(BambooHrStream):
+    primary_key = None
+
     def path(self, **kwargs) -> str:
         return "meta/fields"
 
@@ -48,6 +48,8 @@ class MetaFieldsStream(BambooHrStream):
 
 
 class EmployeesDirectoryStream(BambooHrStream):
+    primary_key = "id"
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()["employees"]
 
@@ -56,6 +58,8 @@ class EmployeesDirectoryStream(BambooHrStream):
 
 
 class CustomReportsStream(BambooHrStream):
+    primary_key = None
+
     def __init__(self, *args, **kwargs):
         self._schema = None
         super().__init__(*args, **kwargs)
@@ -140,7 +144,7 @@ class SourceBambooHr(AbstractSource):
         if not config.get("custom_reports_fields") and not config.get("custom_reports_include_default_fields"):
             return False, AttributeError("`custom_reports_fields` cannot be empty if `custom_reports_include_default_fields` is false")
         try:
-            list(MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh))
+            next(MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             return False, e
