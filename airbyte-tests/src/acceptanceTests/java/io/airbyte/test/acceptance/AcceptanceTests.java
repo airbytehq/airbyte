@@ -1017,7 +1017,7 @@ public class AcceptanceTests {
           .getAttempts()
           .size();
 
-      // it should be able to accomplish the resume without an additional attempt!
+      // it should be able to accomplish the resume without an additional attempt! a
       assertEquals(1, numAttempts);
     }
   }
