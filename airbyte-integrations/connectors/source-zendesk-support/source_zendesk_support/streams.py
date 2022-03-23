@@ -373,7 +373,7 @@ class SourceZendeskTicketExportStream(SourceZendeskSupportCursorPaginationStream
     sideload_param: str = None
     
     @staticmethod
-    def check_start_time_param(requested_start_time: Union[int, str], value: int = 1):
+    def check_start_time_param(requested_start_time: int, value: int = 1):
         """
         Requesting tickets in the future is not allowed, hits 400 - bad request.
         We get current UNIX timestamp minus `value` from now(), default = 1 (minute).
