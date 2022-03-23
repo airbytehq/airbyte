@@ -66,6 +66,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
               allowUpdateConnectors && Connector.hasNewerVersion(row.original)
             }
             isDeprecated={Connector.isDeprecated(row.original)}
+            releaseStage={row.original.releaseStage}
           />
         ),
       },

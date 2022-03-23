@@ -4,6 +4,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button, DropDownRow, H3, H5 } from "components";
 import { Popout } from "components/base/Popout/Popout";
+import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+import { ReleaseStage } from "core/domain/connector";
 
 type IProps = {
   type: "source" | "destination";
@@ -12,6 +14,7 @@ type IProps = {
   entity: string;
   entityName: string;
   entityIcon?: React.ReactNode;
+  releaseStage?: ReleaseStage;
 };
 
 const Content = styled.div`
@@ -23,6 +26,9 @@ const Content = styled.div`
 `;
 
 const EntityType = styled(H5)`
+  display: flex;
+  gap: 6px;
+  align-items: center;
   color: ${({ theme }) => theme.greyColor55};
 `;
 
@@ -30,10 +36,10 @@ const EntityInfo = styled(Content)`
   justify-content: left;
   padding-top: 15px;
   padding-bottom: 39px;
+  gap: 15px;
 `;
 
 const EntityIcon = styled.div`
-  margin-right: 15px;
   height: 40px;
   width: 40px;
 `;
@@ -45,6 +51,7 @@ const TableItemTitle: React.FC<IProps> = ({
   entity,
   entityName,
   entityIcon,
+  releaseStage,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const options = [
@@ -64,7 +71,10 @@ const TableItemTitle: React.FC<IProps> = ({
         {entityIcon && <EntityIcon>{entityIcon}</EntityIcon>}
         <div>
           <H3 bold>{entityName}</H3>
-          <EntityType>{entity}</EntityType>
+          <EntityType>
+            <span>{entity}</span>
+            <ReleaseStageBadge stage={releaseStage} />
+          </EntityType>
         </div>
       </EntityInfo>
       <Content>
