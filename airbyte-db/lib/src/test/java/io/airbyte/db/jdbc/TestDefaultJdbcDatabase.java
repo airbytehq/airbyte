@@ -81,7 +81,7 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testResultSetQuery() throws SQLException {
-    final Stream<JsonNode> actual = database.resultSetQuery(
+    final Stream<JsonNode> actual = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
         sourceOperations::rowToJson);
     final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
@@ -92,7 +92,7 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testQuery() throws SQLException {
-    final Stream<JsonNode> actual = database.query(
+    final Stream<JsonNode> actual = database.unsafeQuery(
         connection -> connection.prepareStatement("SELECT * FROM id_and_name;"),
         sourceOperations::rowToJson);
 

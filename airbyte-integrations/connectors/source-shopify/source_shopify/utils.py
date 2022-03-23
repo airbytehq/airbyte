@@ -20,6 +20,7 @@ SCOPES_MAPPING = {
     "read_locations": ["Locations"],
     "read_inventory": ["InventoryItems", "InventoryLevels"],
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
+    "read_shopify_payments_payouts": ["BalanceTransactions"],
 }
 
 
