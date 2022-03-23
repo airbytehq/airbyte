@@ -16,11 +16,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
+import io.airbyte.api.model.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
@@ -258,6 +260,40 @@ class DestinationDefinitionsHandlerTest {
 
     verify(destinationHandler).deleteDestination(destination);
     verify(configRepository).writeStandardDestinationDefinition(updatedDestinationDefinition);
+  }
+
+  @Test
+  @DisplayName("grantDestinationDefinitionToWorkspace should correctly create a workspace grant")
+  void testGrantDestinationDefinitionToWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.getStandardDestinationDefinition(destinationDefinition.getDestinationDefinitionId()))
+        .thenReturn(destinationDefinition);
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final PrivateDestinationDefinitionRead expectedPrivateDestinationDefinitionRead =
+        new PrivateDestinationDefinitionRead().destinationDefinition(expectedDestinationDefinitionRead).granted(true);
+
+    final PrivateDestinationDefinitionRead actualPrivateDestinationDefinitionRead =
+        destinationDefinitionsHandler.grantDestinationDefinitionToWorkspace(
+            new DestinationDefinitionIdWithWorkspaceId()
+                .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+                .workspaceId(workspaceId));
+
+    assertEquals(expectedPrivateDestinationDefinitionRead, actualPrivateDestinationDefinitionRead);
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        destinationDefinition.getDestinationDefinitionId(),
+        workspaceId);
   }
 
   @Nested
