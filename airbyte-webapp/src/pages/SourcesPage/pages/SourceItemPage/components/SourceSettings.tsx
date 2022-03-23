@@ -61,7 +61,7 @@ const SourceSettings: React.FC<IProps> = ({
           ...currentSource,
           serviceType: currentSource.sourceDefinitionId,
         }}
-        selectedConnector={sourceDefinitionSpecification}
+        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       />
       <DeleteBlock type="source" onDelete={onDelete} />
     </Content>

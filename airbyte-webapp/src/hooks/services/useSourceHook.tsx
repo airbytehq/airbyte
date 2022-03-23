@@ -109,14 +109,8 @@ const useSource = (): SourceService => {
   const updateSource: SourceService["updateSource"] = async ({
     values,
     sourceId,
-  }) => {
-    // await sourceCheckConnectionShape({
-    //   name: values.name,
-    //   sourceId,
-    //   connectionConfiguration: values.connectionConfiguration,
-    // });
-
-    return await updatesource(
+  }) =>
+    await updatesource(
       {
         sourceId: sourceId,
       },
@@ -126,7 +120,6 @@ const useSource = (): SourceService => {
         connectionConfiguration: values.connectionConfiguration,
       }
     );
-  };
 
   const recreateSource: SourceService["recreateSource"] = async ({
     values,

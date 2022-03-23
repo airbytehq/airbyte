@@ -13,11 +13,13 @@ import {
 type IProps = {
   formType: "source" | "destination";
   isSubmitting: boolean;
-  isTestConnectionInProgress: boolean;
   errorMessage?: React.ReactNode;
   hasSuccess?: boolean;
   isLoadSchema?: boolean;
   fetchingConnectorError?: Error | null;
+
+  isTestConnectionInProgress: boolean;
+  onCancelTesting?: () => void;
 };
 
 const ButtonContainer = styled.div`
@@ -39,10 +41,14 @@ const CreateControls: React.FC<IProps> = ({
   errorMessage,
   fetchingConnectorError,
   isLoadSchema,
+  onCancelTesting,
 }) => {
   if (isSubmitting) {
     return (
-      <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} />
+      <TestingConnectionSpinner
+        isCancellable={isTestConnectionInProgress}
+        onCancelTesting={onCancelTesting}
+      />
     );
   }
 

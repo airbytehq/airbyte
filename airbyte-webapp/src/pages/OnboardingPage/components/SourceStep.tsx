@@ -93,7 +93,7 @@ const SourceStep: React.FC<IProps> = ({
         availableServices={availableServices}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
-        selectedConnector={sourceDefinitionSpecification}
+        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
         isLoading={isLoading}
       />
     </>

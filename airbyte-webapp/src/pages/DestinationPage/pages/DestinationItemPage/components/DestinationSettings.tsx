@@ -67,7 +67,7 @@ const DestinationsSettings: React.FC<IProps> = ({
           ...currentDestination,
           serviceType: Connector.id(destinationDefinition),
         }}
-        selectedConnector={destinationSpecification}
+        selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}
       />
       <DeleteBlock type="destination" onDelete={onDelete} />

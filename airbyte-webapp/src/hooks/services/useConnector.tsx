@@ -1,18 +1,18 @@
 import { useFetcher } from "rest-hooks";
 import { useMemo } from "react";
+import { useMutation } from "react-query";
 
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { Connector } from "core/domain/connector";
+import { Connector, Scheduler } from "core/domain/connector";
 import { useSourceDefinitionList } from "./useSourceDefinition";
 import { useDestinationDefinitionList } from "./useDestinationDefinition";
-import { DestinationService } from "../../core/domain/connector/DestinationService";
-import { useConfig } from "../../config";
-import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useInitService } from "../../services/useInitService";
-import { SourceService } from "../../core/domain/connector/SourceService";
-import { useMutation } from "react-query";
-import { ConnectionConfiguration } from "../../core/domain/connection";
+import { DestinationService } from "core/domain/connector/DestinationService";
+import { useConfig } from "config";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
+import { SourceService } from "core/domain/connector/SourceService";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 type ConnectorService = {
   hasNewVersions: boolean;
@@ -114,6 +114,7 @@ type CheckConnectorParams = { signal: AbortSignal } & (
   | { selectedConnectorId: string }
   | {
       selectedConnectorId: string;
+      name: string;
       connectionConfiguration: ConnectionConfiguration;
     }
   | {
@@ -126,36 +127,48 @@ const useCheckConnector = (formType: "source" | "destination") => {
   const destinationService = useGetDestinationService();
   const sourceService = useGetSourceService();
 
-  return useMutation(async (params: CheckConnectorParams) => {
-    const payload: Record<string, unknown> = {};
+  return useMutation<Scheduler, Error, CheckConnectorParams>(
+    async (params: CheckConnectorParams) => {
+      const payload: Record<string, unknown> = {};
 
-    if ("connectionConfiguration" in params) {
-      payload.connectionConfiguration = params.connectionConfiguration;
-    }
+      if ("connectionConfiguration" in params) {
+        payload.connectionConfiguration = params.connectionConfiguration;
+      }
 
-    if (formType === "destination") {
+      if ("name" in params) {
+        payload.name = params.name;
+      }
+
+      if (formType === "destination") {
+        if ("selectedConnectorId" in params) {
+          payload.destinationId = params.selectedConnectorId;
+        }
+
+        if ("selectedConnectorDefinitionId" in params) {
+          payload.destinationDefinitionId =
+            params.selectedConnectorDefinitionId;
+        }
+
+        return await destinationService.check_connection(payload, {
+          signal: params.signal,
+        });
+      }
+
       if ("selectedConnectorId" in params) {
-        payload.destinationId = params.selectedConnectorId;
+        payload.sourceId = params.selectedConnectorId;
       }
 
       if ("selectedConnectorDefinitionId" in params) {
-        payload.destinationDefinitionId = params.selectedConnectorDefinitionId;
+        payload.sourceDefinitionId = params.selectedConnectorDefinitionId;
       }
 
-      return await destinationService.check_connection(payload);
+      return await sourceService.check_connection(payload, {
+        signal: params.signal,
+      });
     }
-
-    if ("selectedConnectorId" in params) {
-      payload.sourceId = params.selectedConnectorId;
-    }
-
-    if ("selectedConnectorDefinitionId" in params) {
-      payload.sourceDefinitionId = params.selectedConnectorDefinitionId;
-    }
-
-    return await sourceService.check_connection(payload);
-  });
+  );
 };
 
 export { useCheckConnector };
+export type { CheckConnectorParams };
 export default useConnector;

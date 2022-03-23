@@ -15,7 +15,6 @@ const Error = styled(StatusIcon)`
 
 const ErrorBlock = styled.div`
   display: flex;
-  justify-content: right;
   align-items: center;
   font-weight: 600;
   font-size: 12px;

@@ -1,30 +1,52 @@
 import React, { useState } from "react";
+import { FormattedMessage } from "react-intl";
 
 import { ContentCard } from "components";
 import JobItem from "components/JobItem";
 
-import ServiceForm from "../ServiceForm";
-import { ServiceFormProps } from "../ServiceForm/ServiceForm";
+import {
+  ServiceForm,
+  ServiceFormProps,
+  ServiceFormValues,
+} from "views/Connector/ServiceForm";
 import { JobInfo } from "core/domain/job/Job";
-import { ServiceFormValues } from "../ServiceForm/types";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { FormattedMessage } from "react-intl";
+import { Scheduler } from "core/domain/connector";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { useTestConnector } from "./useTestConnector";
+
+export type ConnectorCardProvidedProps = {
+  isTestConnectionInProgress: boolean;
+  isSuccess: boolean;
+  onStopTesting: () => void;
+  testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
+};
 
 const ConnectorCard: React.FC<
   {
     title?: React.ReactNode;
     full?: boolean;
     jobInfo?: JobInfo | null;
-  } & ServiceFormProps
-> = ({ title, full, jobInfo, ...props }) => {
+  } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps>
+> = ({ title, full, jobInfo, onSubmit, ...props }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(
     null
   );
-  const onSubmit = async (values: ServiceFormValues) => {
+
+  const {
+    testConnector,
+    isTestConnectionInProgress,
+    onStopTesting,
+    // isSuccess,
+    error,
+  } = useTestConnector(props);
+
+  const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
     try {
-      await props.onSubmit(values);
+      await testConnector(values);
+      await onSubmit(values);
 
       setSaved(true);
     } catch (e) {
@@ -39,7 +61,13 @@ const ConnectorCard: React.FC<
     <ContentCard title={title} full={full}>
       <ServiceForm
         {...props}
-        onSubmit={onSubmit}
+        errorMessage={
+          props.errorMessage || (error && createFormErrorMessage(error))
+        }
+        isTestConnectionInProgress={isTestConnectionInProgress}
+        onStopTesting={onStopTesting}
+        testConnector={testConnector}
+        onSubmit={onHandleSubmit}
         successMessage={
           props.successMessage ||
           (saved && props.isEditMode && (
