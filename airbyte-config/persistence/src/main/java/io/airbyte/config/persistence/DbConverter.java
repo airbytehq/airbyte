@@ -20,6 +20,7 @@ import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
+import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
@@ -127,6 +128,14 @@ public class DbConverter {
         .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
         .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
         .withDestinationDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
+  }
+
+  public static SourceOAuthParameter buildSourceOAuthParameter(final Record record) {
+    return new SourceOAuthParameter()
+        .withOauthParameterId(record.get(ACTOR_OAUTH_PARAMETER.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
+        .withSourceDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
   }
 
 }

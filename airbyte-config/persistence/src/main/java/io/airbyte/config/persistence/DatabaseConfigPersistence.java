@@ -477,7 +477,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<SourceOAuthParameter>> sourceOAuthParameters = new ArrayList<>();
     for (final Record record : result) {
-      final SourceOAuthParameter sourceOAuthParameter = buildSourceOAuthParameter(record);
+      final SourceOAuthParameter sourceOAuthParameter = DbConverter.buildSourceOAuthParameter(record);
       sourceOAuthParameters.add(new ConfigWithMetadata<>(
           record.get(ACTOR_OAUTH_PARAMETER.ID).toString(),
           ConfigSchema.SOURCE_OAUTH_PARAM.name(),
@@ -486,14 +486,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           sourceOAuthParameter));
     }
     return sourceOAuthParameters;
-  }
-
-  private SourceOAuthParameter buildSourceOAuthParameter(final Record record) {
-    return new SourceOAuthParameter()
-        .withOauthParameterId(record.get(ACTOR_OAUTH_PARAMETER.ID))
-        .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
-        .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
-        .withSourceDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
   }
 
   private List<ConfigWithMetadata<DestinationOAuthParameter>> listDestinationOauthParamWithMetadata() throws IOException {
