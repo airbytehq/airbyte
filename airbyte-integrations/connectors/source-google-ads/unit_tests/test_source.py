@@ -402,7 +402,6 @@ def test_checkConnection_should_fail_when_apiCallFails(mocker):
     # https://docs.python.org/3/library/unittest.mock.html#where-to-patch
     mocker.patch("source_google_ads.source.GoogleAds", MockErroringGoogleAdsClient)
     source = SourceGoogleAds()
-
     check_successful, message = source.check_connection(
         AirbyteLogger(),
         {
