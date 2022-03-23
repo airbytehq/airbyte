@@ -21,10 +21,8 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalTime;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDatabase.class);
-  private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7;
+  private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
 
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
@@ -86,7 +84,7 @@ public class SnowflakeDatabase {
 
       // thread to keep the refresh token up to date
       SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.schedule(getRefreshTokenTask(dataSource),
-          PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.SECONDS);
+          PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
 
     } else if (credentials != null && credentials.has("password")) {
       LOGGER.info("User/password login mode is used");
