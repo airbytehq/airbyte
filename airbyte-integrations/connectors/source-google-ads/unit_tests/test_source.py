@@ -356,7 +356,7 @@ def test_google_type_conversion(config):
         assert desired_mapping[prop] == value.get("type"), f"{prop} should be {value}"
 
 
-def test_checkConnection_should_pass_when_configValid(mocker):
+def test_check_connection_should_pass_when_config_valid(mocker):
     mocker.patch("source_google_ads.source.GoogleAds", MockGoogleAdsClient)
     source = SourceGoogleAds()
     check_successful, message = source.check_connection(
@@ -397,7 +397,7 @@ def test_checkConnection_should_pass_when_configValid(mocker):
     assert message is None
 
 
-def test_checkConnection_should_fail_when_apiCallFails(mocker):
+def test_check_connection_should_fail_when_api_call_fails(mocker):
     # We patch the object inside source.py because that's the calling context
     # https://docs.python.org/3/library/unittest.mock.html#where-to-patch
     mocker.patch("source_google_ads.source.GoogleAds", MockErroringGoogleAdsClient)
