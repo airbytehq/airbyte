@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +51,7 @@ public class SnowflakeDatabase {
       .connectTimeout(Duration.ofSeconds(10))
       .build();
 
-  private static DataSource createDataSource(final JsonNode config) {
+  private static HikariDataSource createDataSource(final JsonNode config) {
     final HikariDataSource dataSource = new HikariDataSource();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
@@ -82,7 +83,10 @@ public class SnowflakeDatabase {
       properties.put("token", accessToken);
       // the username is required for DBT normalization in OAuth connection
       properties.put("username", username);
-      SnowflakeDestination.isAlive = true; // is used to enable another thread to refresh oauth token
+
+      // thread to keep the refresh token up to date
+      SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.schedule(getRefreshTokenTask(dataSource),
+          PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.SECONDS);
 
     } else if (credentials != null && credentials.has("password")) {
       LOGGER.info("User/password login mode is used");
@@ -123,7 +127,6 @@ public class SnowflakeDatabase {
     dataSource.setDriverClassName(DRIVER_CLASS_NAME);
     dataSource.setJdbcUrl(jdbcUrl.toString());
     dataSource.setDataSourceProperties(properties);
-    new DbConfigurationLoader(dataSource).start();
     return dataSource;
   }
 
@@ -173,46 +176,21 @@ public class SnowflakeDatabase {
     return new DefaultJdbcDatabase(dataSource);
   }
 
-  private static class DbConfigurationLoader extends Thread {
+  private static Runnable getRefreshTokenTask(final HikariDataSource dataSource){
+    return () -> {
+      LOGGER.info("Refresh token process started");
+      var props = dataSource.getDataSourceProperties();
+      try {
+        var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
+            props.getProperty("client_id"), props.getProperty("client_secret"),
+            props.getProperty("refresh_token"));
+        props.setProperty("token", token);
 
-    private final HikariDataSource hikariDataSource;
-    LocalTime timeToCountFrom = LocalTime.now();
-
-    public DbConfigurationLoader(HikariDataSource hikariDataSource) {
-      this.hikariDataSource = hikariDataSource;
-    }
-
-    @Override
-    public void run() {
-      LOGGER.info("Refresh token thread's started");
-
-      while (SnowflakeDestination.isAlive) {
-        // refresh token every 7 minutes
-        if (LocalTime.now().plusMinutes(PAUSE_BETWEEN_TOKEN_REFRESH_MIN).isAfter(timeToCountFrom)) {
-          var properties = hikariDataSource.getDataSourceProperties();
-          try {
-            var token = getAccessTokenUsingRefreshToken(properties.getProperty("host"),
-                properties.getProperty("client_id"), properties.getProperty("client_secret"),
-                properties.getProperty("refresh_token"));
-            properties.setProperty("token", token);
-
-            timeToCountFrom = LocalTime.now();
-            LOGGER.info("New refresh token has been obtained");
-          } catch (IOException e) {
-            LOGGER.error("Failed to obtain a fresh accessToken:" + e);
-          }
-        }
-
-        // made some pause to do not use much resources, but if set it higher - then some processes will
-        // fail by timeout errors
-        try {
-          TimeUnit.SECONDS.sleep(10);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
+        LOGGER.info("New refresh token has been obtained");
+      } catch (IOException e) {
+        LOGGER.error("Failed to obtain a fresh accessToken:" + e);
       }
-    }
-
+    };
   }
 
 }
