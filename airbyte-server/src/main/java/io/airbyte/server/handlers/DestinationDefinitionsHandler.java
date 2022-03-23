@@ -234,4 +234,11 @@ public class DestinationDefinitionsHandler {
         .granted(true);
   }
 
+  public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId(),
+        destinationDefinitionIdWithWorkspaceId.getWorkspaceId());
+  }
+
 }

@@ -296,6 +296,17 @@ class DestinationDefinitionsHandlerTest {
         workspaceId);
   }
 
+  @Test
+  @DisplayName("revokeDestinationDefinitionFromWorkspace should correctly delete a workspace grant")
+  void testRevokeDestinationDefinitionFromWorkspace() throws IOException {
+    destinationDefinitionsHandler.revokeDestinationDefinitionFromWorkspace(new DestinationDefinitionIdWithWorkspaceId()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .workspaceId(workspaceId));
+    verify(configRepository).deleteActorDefinitionWorkspaceGrant(
+        destinationDefinition.getDestinationDefinitionId(),
+        workspaceId);
+  }
+
   @Nested
   @DisplayName("listLatest")
   class listLatest {

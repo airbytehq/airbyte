@@ -576,7 +576,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-
+    execute(() -> {
+      destinationDefinitionsHandler.revokeDestinationDefinitionFromWorkspace(destinationDefinitionIdWithWorkspaceId);
+      return null;
+    });
   }
 
   // DESTINATION SPECIFICATION
