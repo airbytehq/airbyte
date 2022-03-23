@@ -130,8 +130,7 @@ public class DestinationDefinitionsHandler {
       throws IOException {
     return toDestinationDefinitionReadList(MoreLists.concat(
         configRepository.listPublicDestinationDefinitions(false),
-        configRepository.listGrantedDestinationDefinitions(
-            workspaceIdRequestBody.getWorkspaceId(), false)));
+        configRepository.listGrantedDestinationDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
   }
 
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)

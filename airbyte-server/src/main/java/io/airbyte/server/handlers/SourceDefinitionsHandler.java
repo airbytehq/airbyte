@@ -126,8 +126,7 @@ public class SourceDefinitionsHandler {
       throws IOException {
     return toSourceDefinitionReadList(MoreLists.concat(
         configRepository.listPublicSourceDefinitions(false),
-        configRepository.listGrantedSourceDefinitions(
-            workspaceIdRequestBody.getWorkspaceId(), false)));
+        configRepository.listGrantedSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
   }
 
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
