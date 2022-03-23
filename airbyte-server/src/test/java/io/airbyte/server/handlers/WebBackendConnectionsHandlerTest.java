@@ -333,7 +333,7 @@ class WebBackendConnectionsHandlerTest {
   @Test
   public void testWebBackendGetConnectionNoRefreshCatalog()
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final WebBackendConnectionRead result =  testWebBackendGetConnection(false);
+    final WebBackendConnectionRead result = testWebBackendGetConnection(false);
     verify(schedulerHandler, never()).discoverSchemaForSourceFromSourceId(any());
     assertEquals(expected, result);
   }
