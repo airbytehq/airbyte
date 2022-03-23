@@ -14,7 +14,7 @@ and coalesce(
     cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >= (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ this }}),
     {# -- if {{ col_emitted_at }} is NULL in either table, the previous comparison would evaluate to NULL, #}
     {# -- so we coalesce and make sure the row is always returned for incremental processing instead #}
-    1)
+    true)
 {% endif %}
 {%- endmacro -%}
 
@@ -33,6 +33,16 @@ and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
 and ((select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ this }}) is null
   or cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
      (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ this }}))
+{% endif %}
+{%- endmacro -%}
+
+{%- macro clickhouse__incremental_clause(col_emitted_at) -%}
+{% if is_incremental() %}
+and coalesce(
+    cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >= (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ this }}),
+    {# -- if {{ col_emitted_at }} is NULL in either table, the previous comparison would evaluate to NULL, #}
+    {# -- so we coalesce and make sure the row is always returned for incremental processing instead #}
+    1)
 {% endif %}
 {%- endmacro -%}
 
