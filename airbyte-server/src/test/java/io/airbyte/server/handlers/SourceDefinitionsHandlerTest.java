@@ -15,9 +15,11 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
@@ -253,6 +255,40 @@ class SourceDefinitionsHandlerTest {
 
     verify(sourceHandler).deleteSource(source);
     verify(configRepository).writeStandardSourceDefinition(updatedSourceDefinition);
+  }
+
+  @Test
+  @DisplayName("grantSourceDefinitionToWorkspace should correctly create a workspace grant")
+  void testGrantSourceDefinitionToWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))
+        .thenReturn(sourceDefinition);
+
+    final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final PrivateSourceDefinitionRead expectedPrivateSourceDefinitionRead =
+        new PrivateSourceDefinitionRead().sourceDefinition(expectedSourceDefinitionRead).granted(true);
+
+    final PrivateSourceDefinitionRead actualPrivateSourceDefinitionRead =
+        sourceDefinitionsHandler.grantSourceDefinitionToWorkspace(
+            new SourceDefinitionIdWithWorkspaceId()
+                .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+                .workspaceId(workspaceId));
+
+    assertEquals(expectedPrivateSourceDefinitionRead, actualPrivateSourceDefinitionRead);
+    verify(configRepository).writeActorDefinitionWorkspaceGrant(
+        sourceDefinition.getSourceDefinitionId(),
+        workspaceId);
   }
 
   @Nested
