@@ -1,23 +1,16 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-import pytest
 
+import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import Status
-from source_bamboo_hr.source import SourceBambooHr
-from source_bamboo_hr.source import EmployeesDirectoryStream
-from source_bamboo_hr.source import CustomReportsStream
+from source_bamboo_hr.source import CustomReportsStream, EmployeesDirectoryStream, SourceBambooHr
 
 
 @pytest.fixture
 def config():
-    return {
-        "api_key": "foo",
-        "subdomain": "bar",
-        "authenticator": "baz",
-        "custom_reports_include_default_fields": True
-    }
+    return {"api_key": "foo", "subdomain": "bar", "authenticator": "baz", "custom_reports_include_default_fields": True}
 
 
 def test_source_bamboo_hr_client_wrong_credentials():
@@ -40,16 +33,14 @@ def test_custom_reports_stream_get_json_schema_from_config(config):
             "one": {"type": ["null", "string"]},
             "two": {"type": ["null", "string"]},
             "three": {"type": ["null", "string"]},
-        }
+        },
     }
 
 
 def test_custom_reports_stream_union_schemas():
     schema1 = {"properties": {"one": 1, "two": 2}}
     schema2 = {"properties": {"two": 2, "three": 3}}
-    assert CustomReportsStream._union_schemas(schema1, schema2) == {
-        "properties": {"one": 1, "two": 2, "three": 3}
-    }
+    assert CustomReportsStream._union_schemas(schema1, schema2) == {"properties": {"one": 1, "two": 2, "three": 3}}
 
 
 def test_custom_reports_stream_request_body_json(config):

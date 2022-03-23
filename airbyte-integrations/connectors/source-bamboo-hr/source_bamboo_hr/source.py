@@ -48,21 +48,6 @@ class MetaFieldsStream(BambooHrStream):
 
 
 class EmployeesDirectoryStream(BambooHrStream):
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Logic taken from the previous implementation.
-        https://github.com/airbytehq/airbyte/blob/387d6d05453eab73968cbb6c8170d7d8d0dd25bc/airbyte-integrations/connectors/source-bamboo-hr/source_bamboo_hr/source.py#L98
-        """
-        records = MetaFieldsStream(config=self.config).read_records(sync_mode=SyncMode.full_refresh)
-        properties = {}
-        for record in records:
-            properties[record.get("alias", record["name"])] = {"type": ["null", "string"]}
-        return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": properties,
-        }
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()["employees"]
 
@@ -83,11 +68,7 @@ class CustomReportsStream(BambooHrStream):
 
     def _get_json_schema_from_config(self):
         if self.config.get("custom_reports_fields"):
-            properties = {
-                field.strip(): {"type": ["null", "string"]}
-                for field
-                in self.config.get("custom_reports_fields").split(",")
-            }
+            properties = {field.strip(): {"type": ["null", "string"]} for field in self.config.get("custom_reports_fields").split(",")}
         else:
             properties = {}
         return {
@@ -126,10 +107,7 @@ class CustomReportsStream(BambooHrStream):
         return "POST"
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        return {
-            "title": "Airbyte",
-            "fields": list(self.schema["properties"].keys())
-        }
+        return {"title": "Airbyte", "fields": list(self.schema["properties"].keys())}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()["employees"]
@@ -144,10 +122,7 @@ class SourceBambooHr(AbstractSource):
         The API token is concatenated with `:x` and the resulting string is base-64 encoded.
         See https://documentation.bamboohr.com/docs#authentication
         """
-        return TokenAuthenticator(
-            token=base64.b64encode(f"{api_key}:x".encode("utf-8")).decode("utf-8"),
-            auth_method="Basic"
-        )
+        return TokenAuthenticator(token=base64.b64encode(f"{api_key}:x".encode("utf-8")).decode("utf-8"), auth_method="Basic")
 
     @staticmethod
     def add_authenticator_to_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
