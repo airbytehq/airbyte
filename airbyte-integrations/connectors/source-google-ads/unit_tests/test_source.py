@@ -398,7 +398,9 @@ def test_checkConnection_should_pass_when_configValid(mocker):
 
 
 def test_checkConnection_should_fail_when_apiCallFails(mocker):
-    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockErroringGoogleAdsClient)
+    # We patch the object inside source.py because that's the calling context
+    # https://docs.python.org/3/library/unittest.mock.html#where-to-patch
+    mocker.patch("source_google_ads.source.GoogleAds", MockErroringGoogleAdsClient)
     source = SourceGoogleAds()
     check_successful, message = source.check_connection(
         AirbyteLogger(),
