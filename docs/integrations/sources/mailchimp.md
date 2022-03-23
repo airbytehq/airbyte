@@ -4,7 +4,10 @@
 
 ### Output schema
 
-The Mailchimp connector can be used to sync data for Mailchimp [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info) and [Campaigns](https://mailchimp.com/developer/api/marketing/campaigns/get-campaign-info/). The linked Mailchimp documentation contains detailed description on the fields in each entity.
+The Mailchimp connector can be used to sync data for Mailchimp [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info),
+[Campaigns](https://mailchimp.com/developer/api/marketing/campaigns/get-campaign-info/),
+and [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/). 
+The linked Mailchimp documentation contains a detailed description of the fields in each entity.
 
 Please [create a Github issue](https://github.com/airbytehq/airbyte/issues/new/choose) to request support for syncing more Mailchimp entities.
 
@@ -21,22 +24,25 @@ Please [create a Github issue](https://github.com/airbytehq/airbyte/issues/new/c
 ### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Coming soon |  |
-| Replicate Incremental Deletes | Coming soon |  |
-| SSL connection | Yes | Enabled by default |
-| Namespaces | No |  |
+| :--- |:---------------------| :--- |
+| Full Refresh Sync | Yes                  |  |
+| Incremental Sync | Yes                  |  |
+| Replicate Incremental Deletes | Coming soon          |  |
+| SSL connection | Yes                  | Enabled by default |
+| Namespaces | No                   |  |
 
 ### Performance considerations
 
-At the time of this writing, [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read form its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API. This means that Airbyte will not be able to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
+At the time of this writing, [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) 
+on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous 
+connections to its API. This means that Airbyte will not be able to run more than 10 concurrent syncs from Mailchimp 
+using API keys generated from the same account.
 
 ## Getting started
 
 ### Requirements
 
-For Apikey authorithation:
+For Apikey authorization:
 * Mailchimp account 
 * Mailchimp API key
 
@@ -47,14 +53,15 @@ For OAuth authorization:
 
 ### Setup guide
 
-To start syncing Mailchimp data with Airbyte, you'll need two things:
+To start syncing Mailchimp data with Airbyte, you'll need to retrieve credentials. 
+According to the requirements you can use an API key or OAuth2.0 application.
 
-1. Your Mailchimp username. Often this is just the email address or username you use to sign into Mailchimp. 
-2. A Mailchimp API Key. Follow the [Mailchimp documentation for generating an API key](https://mailchimp.com/help/about-api-keys/).
+If you want to use an API key, please follow these Mailchimp steps:
+* [Create account](https://mailchimp.com/developer/marketing/guides/quick-start/#create-an-account)
+* [Generate API key](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key)
 
-OR
-1. Register an app in [Mailchimp](https://us2.admin.mailchimp.com/account/oauth2/).
-2. Specify client_id and client_secret.
+If you want to use [OAuth2.0](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/) creds, 
+please [register your application](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#register-your-application).
 
 ## Changelog
 
