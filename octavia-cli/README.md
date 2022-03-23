@@ -90,7 +90,7 @@ We decided to package the CLI in a docker image with portability in mind.
 ### As a command available in your bash profile
 
 ```bash
-curl -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
+curl -s -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
 ```
 
 This script:
@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v ./my_octavia_project_directory:/home/octavia-project --network host --env-file ~/.octavia airbyte/octavia-cli:latest
+docker run --name octavia-cli -i --rm -v ./my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:latest
 ```
 
 ### Using `docker-compose`
