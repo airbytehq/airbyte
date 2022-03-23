@@ -63,12 +63,12 @@ const useDestination = (): DestinationServiceApi => {
     values,
     destinationConnector,
   }) => {
-    analyticsService.track("New Destination - Action", {
-      action: "Test a connector",
-      connector_destination: destinationConnector?.name,
-      connector_destination_definition_id:
-        destinationConnector?.destinationDefinitionId,
-    });
+    // analyticsService.track("New Destination - Action", {
+    //   action: "Test a connector",
+    //   connector_destination: destinationConnector?.name,
+    //   connector_destination_definition_id:
+    //     destinationConnector?.destinationDefinitionId,
+    // });
 
     try {
       // Try to crete destination

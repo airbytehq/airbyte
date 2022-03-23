@@ -59,9 +59,10 @@ const useSource = (): SourceService => {
     });
 
     try {
-      // await sourceCheckConnectionShape({
-      //   sourceDefinitionId: sourceConnector?.sourceDefinitionId,
-      //   connectionConfiguration: values.connectionConfiguration,
+      // analyticsService.track("New Source - Action", {
+      //   action: "Test a connector",
+      //   connector_source: sourceConnector?.name,
+      //   connector_source_definition_id: sourceConnector?.sourceDefinitionId,
       // });
 
       // Try to crete source
