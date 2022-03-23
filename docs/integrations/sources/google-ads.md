@@ -21,12 +21,16 @@ This source is capable of syncing the following tables and their data:
 
 * [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
 * [ad\_group\_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
+* [ad\_group\_ad\_labels](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad_label)
 * [ad\_groups](https://developers.google.com/google-ads/api/fields/v8/ad_group)
+* [ad\_group\_labels](https://developers.google.com/google-ads/api/fields/v8/ad_group_label)
 * [campaigns](https://developers.google.com/google-ads/api/fields/v8/campaign)
+* [campaign\_labels](https://developers.google.com/google-ads/api/fields/v8/campaign_label)
 * [click\_view](https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView)
 * [keyword](https://developers.google.com/google-ads/api/fields/v8/keyword_view)
 * [geographic](https://developers.google.com/google-ads/api/fields/v8/geographic_view)
 
+Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
 #### Report Tables
 
@@ -102,6 +106,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version  | Date       | Pull Request | Subject                                                                                      |
 |:---------|:-----------| :--- |:---------------------------------------------------------------------------------------------|
+| `0.1.30` | 2022-03-23 | [11221](https://github.com/airbytehq/airbyte/pull/11221) | Add `*_labels` streams to fetch the label text rather than their IDs                         |
 | `0.1.29` | 2022-03-22 | [10919](https://github.com/airbytehq/airbyte/pull/10919) | Fix user location report schema and add to acceptance tests                                  |
 | `0.1.28` | 2022-02-25 | [10372](https://github.com/airbytehq/airbyte/pull/10372) | Add network fields to click view stream                                                      |
 | `0.1.27` | 2022-02-16 | [10315](https://github.com/airbytehq/airbyte/pull/10315) | Make `ad_group_ads` and other streams support incremental sync.                              |
