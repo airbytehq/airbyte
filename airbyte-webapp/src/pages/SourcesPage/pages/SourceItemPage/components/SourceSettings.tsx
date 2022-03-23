@@ -56,6 +56,7 @@ const SourceSettings: React.FC<IProps> = ({
         isEditMode
         onSubmit={onSubmit}
         formType="source"
+        connector={currentSource}
         availableServices={[sourceDefinition]}
         formValues={{
           ...currentSource,

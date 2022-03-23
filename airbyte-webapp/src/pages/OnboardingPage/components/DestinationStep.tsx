@@ -90,7 +90,6 @@ const DestinationStep: React.FC<IProps> = ({
       <ConnectorCard
         full
         formType="destination"
-        allowChangeConnector
         onServiceSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         hasSuccess={hasSuccess}

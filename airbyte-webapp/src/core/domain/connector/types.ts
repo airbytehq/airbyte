@@ -121,6 +121,8 @@ export interface Destination {
   connectionConfiguration: ConnectionConfiguration;
 }
 
+export type ConnectorT = Destination | Source;
+
 export interface Scheduler {
   status: string;
   message: string;

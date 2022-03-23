@@ -103,7 +103,6 @@ const DestinationForm: React.FC<IProps> = ({
           ? { serviceType: destinationDefinitionId }
           : undefined
       }
-      allowChangeConnector
       title={<FormattedMessage id="onboarding.destinationSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />

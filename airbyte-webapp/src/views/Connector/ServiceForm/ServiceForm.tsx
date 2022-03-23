@@ -74,7 +74,6 @@ export type ServiceFormProps = {
   onSubmit: (values: ServiceFormValues) => void;
   isLoading?: boolean;
   isEditMode?: boolean;
-  allowChangeConnector?: boolean;
   formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
   fetchingConnectorError?: Error | null;
@@ -139,7 +138,6 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             }
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
-            allowChangeConnector={props.allowChangeConnector}
             isEditMode={props.isEditMode}
             onOpenRequestConnectorModal={toggleOpenRequestModal}
           />
@@ -151,7 +149,6 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       selectedConnectorDefinitionSpecification?.documentationUrl,
       props.onServiceSelect,
       props.availableServices,
-      props.allowChangeConnector,
       props.isEditMode,
       toggleOpenRequestModal,
     ]

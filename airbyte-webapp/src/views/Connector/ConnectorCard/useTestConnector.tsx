@@ -1,18 +1,23 @@
 import { useRef } from "react";
 
 import { ServiceFormValues } from "views/Connector/ServiceForm";
+import { ConnectorHelper, Scheduler } from "core/domain/connector";
+import { ConnectorT } from "core/domain/connector/types";
 import {
-  ConnectorDefinitionSpecification,
-  ConnectorSpecification,
-  Scheduler,
-} from "core/domain/connector";
-import { useCheckConnector } from "hooks/services/useConnector";
+  CheckConnectorParams,
+  useCheckConnector,
+} from "hooks/services/useConnector";
 
-export const useTestConnector = (props: {
-  formType: "source" | "destination";
-  isEditMode?: boolean;
-  selectedConnector?: ConnectorDefinitionSpecification;
-}): {
+export const useTestConnector = (
+  props: {
+    formType: "source" | "destination";
+  } & (
+    | { isEditMode: true; connector: ConnectorT }
+    | {
+        isEditMode?: false;
+      }
+  )
+): {
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
@@ -38,30 +43,44 @@ export const useTestConnector = (props: {
 
       abortControllerRef.current = controller;
 
-      if (values) {
-        if (props.selectedConnector && !props.isEditMode) {
-          return mutateAsync({
-            connectionConfiguration: values.connectionConfiguration,
-            signal: controller.signal,
-            selectedConnectorDefinitionId: ConnectorSpecification.id(
-              props.selectedConnector
-            ),
-          });
-        } else {
-          return mutateAsync({
+      let payload: CheckConnectorParams | null = null;
+
+      if (props.isEditMode) {
+        // When we are editing current connector
+        if (values) {
+          payload = {
             connectionConfiguration: values.connectionConfiguration,
             name: values.name,
-            selectedConnectorId: "e2152054-cb99-41b8-ae81-f5f45363bb12",
+            selectedConnectorId: ConnectorHelper.id(props.connector),
             signal: controller.signal,
-          });
+          };
+        } else {
+          // just testing current connection
+          payload = {
+            selectedConnectorId: ConnectorHelper.id(props.connector),
+            signal: controller.signal,
+          };
         }
       } else {
-        return mutateAsync({
-          // TODO: FIXME
-          selectedConnectorId: "e2152054-cb99-41b8-ae81-f5f45363bb12",
-          signal: controller.signal,
-        });
+        // creating new connection
+        if (values) {
+          payload = {
+            connectionConfiguration: values.connectionConfiguration,
+            signal: controller.signal,
+            selectedConnectorDefinitionId: values.serviceType,
+          };
+        }
       }
+
+      if (!payload) {
+        console.error(
+          "Unexpected state met: no connectorId or connectorDefinitionId provided"
+        );
+
+        throw new Error("Unexpected state met");
+      }
+
+      return mutateAsync(payload);
     },
   };
 };

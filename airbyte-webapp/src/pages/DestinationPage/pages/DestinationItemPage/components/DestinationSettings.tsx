@@ -67,6 +67,7 @@ const DestinationsSettings: React.FC<IProps> = ({
           ...currentDestination,
           serviceType: Connector.id(destinationDefinition),
         }}
+        connector={currentDestination}
         selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}
       />

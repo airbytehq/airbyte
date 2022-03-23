@@ -17,10 +17,11 @@ class DestinationService extends AirbyteRequestService {
     },
     requestParams?: RequestInit
   ): Promise<Scheduler> {
-    const url =
-      !params.destinationId || !params.connectionConfiguration
-        ? `${this.url}/check_connection`
-        : `${this.url}check_connection_for_update`;
+    const url = !params.destinationId
+      ? `scheduler/${this.url}/check_connection`
+      : params.connectionConfiguration
+      ? `${this.url}/check_connection_for_update`
+      : `${this.url}/check_connection`;
 
     const result = await this.fetch<Scheduler>(url, params, requestParams);
 

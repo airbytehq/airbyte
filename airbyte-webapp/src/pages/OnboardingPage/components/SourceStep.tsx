@@ -86,7 +86,6 @@ const SourceStep: React.FC<IProps> = ({
       <ConnectorCard
         full
         jobInfo={LogsRequestError.extractJobInfo(error)}
-        allowChangeConnector
         onServiceSelect={onServiceSelect}
         onSubmit={onSubmitForm}
         formType="source"

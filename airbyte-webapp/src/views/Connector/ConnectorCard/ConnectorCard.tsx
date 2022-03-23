@@ -11,7 +11,7 @@ import {
 } from "views/Connector/ServiceForm";
 import { JobInfo } from "core/domain/job/Job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { Scheduler } from "core/domain/connector";
+import { ConnectorT, Scheduler } from "core/domain/connector";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useTestConnector } from "./useTestConnector";
 
@@ -27,7 +27,14 @@ const ConnectorCard: React.FC<
     title?: React.ReactNode;
     full?: boolean;
     jobInfo?: JobInfo | null;
-  } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps>
+  } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
+    (
+      | {
+          isEditMode: true;
+          connector: ConnectorT;
+        }
+      | { isEditMode?: false }
+    )
 > = ({ title, full, jobInfo, onSubmit, ...props }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(
@@ -38,7 +45,6 @@ const ConnectorCard: React.FC<
     testConnector,
     isTestConnectionInProgress,
     onStopTesting,
-    // isSuccess,
     error,
   } = useTestConnector(props);
 

@@ -1,5 +1,13 @@
-import { isSourceDefinition, isSourceDefinitionSpecification } from "./source";
-import { ConnectorDefinition, ConnectorDefinitionSpecification } from "./types";
+import {
+  isSource,
+  isSourceDefinition,
+  isSourceDefinitionSpecification,
+} from "./source";
+import {
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+  ConnectorT,
+} from "./types";
 import { DEV_IMAGE_TAG } from "./constants";
 
 export class Connector {
@@ -19,6 +27,12 @@ export class Connector {
         connector.latestDockerImageTag !== connector.dockerImageTag) ||
       connector.dockerImageTag === DEV_IMAGE_TAG
     );
+  }
+}
+
+export class ConnectorHelper {
+  static id(connector: ConnectorT): string {
+    return isSource(connector) ? connector.sourceId : connector.destinationId;
   }
 }
 

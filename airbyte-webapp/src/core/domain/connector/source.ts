@@ -1,9 +1,15 @@
 import {
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
+  ConnectorT,
+  Source,
   SourceDefinition,
   SourceDefinitionSpecification,
 } from "./types";
+
+export function isSource(connector: ConnectorT): connector is Source {
+  return "sourceId" in connector;
+}
 
 export function isSourceDefinition(
   connector: ConnectorDefinition

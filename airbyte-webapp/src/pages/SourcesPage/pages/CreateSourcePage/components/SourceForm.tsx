@@ -99,7 +99,6 @@ const SourceForm: React.FC<IProps> = ({
           ? { serviceType: sourceDefinitionId, name: "" }
           : undefined
       }
-      allowChangeConnector
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />

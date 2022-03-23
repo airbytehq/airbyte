@@ -16,10 +16,11 @@ class SourceService extends AirbyteRequestService {
     },
     requestParams?: RequestInit
   ): Promise<Scheduler> {
-    const url =
-      params.sourceId && params.connectionConfiguration
-        ? `${this.url}/check_connection_for_update`
-        : `${this.url}/check_connection`;
+    const url = !params.sourceId
+      ? `scheduler/${this.url}/check_connection`
+      : params.connectionConfiguration
+      ? `${this.url}/check_connection_for_update`
+      : `${this.url}/check_connection`;
 
     const result = await this.fetch<Scheduler>(url, params, requestParams);
 
