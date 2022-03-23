@@ -142,8 +142,7 @@ public class CsvSerializedBufferTest {
               // remove uuid
               .substring(UUID.randomUUID().toString().length() + 1)
               // remove timestamp
-              .replaceAll("\\A[0-9]+,", "")
-          );
+              .replaceAll("\\A[0-9]+,", ""));
         }
         actualData = tmpData.toString();
       }

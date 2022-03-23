@@ -35,11 +35,11 @@ import org.apache.parquet.hadoop.util.HadoopOutputFile;
 /**
  * This class handles some AVRO to PARQUET conversion in an intermediate temporary file.
  *
- * When the writer receives a {@link ParquetSerializedBuffer#flushWriter()} call,
- * the data is transferred from the temporary file to the OutputStream that was
- * provided when calling {@link ParquetSerializedBuffer#createWriter(OutputStream)}.
- * (Note that this OutputStream could also be coming from a {@link io.airbyte.integrations.destination.record_buffer.FileBuffer}
- * (an implementation of {@link BufferStorage}). So it would effectively use two temporary files to
+ * When the writer receives a {@link ParquetSerializedBuffer#flushWriter()} call, the data is
+ * transferred from the temporary file to the OutputStream that was provided when calling
+ * {@link ParquetSerializedBuffer#createWriter(OutputStream)}. (Note that this OutputStream could
+ * also be coming from a {@link io.airbyte.integrations.destination.record_buffer.FileBuffer} (an
+ * implementation of {@link BufferStorage}). So it would effectively use two temporary files to
  * buffer data (unless we could convert the FileBuffer into a {@link HadoopOutputFile}).
  *
  * Closing this writer will delete the temporary parquet file.
@@ -80,7 +80,7 @@ public class ParquetSerializedBuffer extends BaseSerializedBuffer {
     this.outputStream = outputStream;
     tempFile = UUID.randomUUID() + ".parquet";
     parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile
-            .fromPath(new org.apache.hadoop.fs.Path(tempFile), new Configuration()))
+        .fromPath(new org.apache.hadoop.fs.Path(tempFile), new Configuration()))
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())
@@ -117,4 +117,5 @@ public class ParquetSerializedBuffer extends BaseSerializedBuffer {
         createStorageFunction.call(),
         s3DestinationConfig, stream, catalog);
   }
+
 }

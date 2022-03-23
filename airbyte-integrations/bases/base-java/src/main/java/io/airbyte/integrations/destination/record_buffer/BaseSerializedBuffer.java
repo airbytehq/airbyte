@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +64,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * destination.
    */
   protected abstract void flushWriter() throws IOException;
+
   protected abstract void closeWriter() throws IOException;
 
   public SerializableBuffer withCompression(final boolean useCompression) {

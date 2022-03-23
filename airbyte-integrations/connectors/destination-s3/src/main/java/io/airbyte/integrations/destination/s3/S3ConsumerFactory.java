@@ -108,7 +108,8 @@ public class S3ConsumerFactory {
           AirbyteSentry.executeWithTracing("PrepareStreamStorage",
               () -> storageOperations.dropBucketObject(outputBucketPath),
               Map.of("namespace", Objects.requireNonNullElse(namespace, "null"), "stream", stream, "storage", outputBucketPath));
-          LOGGER.info("Clearing storage area in destination completed for namespace {} stream {} bucketObject {}", namespace, stream, outputBucketPath);
+          LOGGER.info("Clearing storage area in destination completed for namespace {} stream {} bucketObject {}", namespace, stream,
+              outputBucketPath);
         }
       }
       LOGGER.info("Preparing storage area in destination completed.");

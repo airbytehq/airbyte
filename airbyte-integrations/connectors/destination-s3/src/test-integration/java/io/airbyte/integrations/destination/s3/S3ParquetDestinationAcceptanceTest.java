@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import java.io.IOException;

@@ -9,7 +9,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,7 +40,8 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (final BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(object.getObjectContent()), StandardCharsets.UTF_8))) {
+      try (final BufferedReader reader =
+          new BufferedReader(new InputStreamReader(new GZIPInputStream(object.getObjectContent()), StandardCharsets.UTF_8))) {
         String line;
         while ((line = reader.readLine()) != null) {
           jsonRecords.add(Jsons.deserialize(line).get(JavaBaseConstants.COLUMN_NAME_DATA));
