@@ -129,9 +129,8 @@ public class MockData {
     return Arrays.asList(workspace1, workspace2, workspace3);
   }
 
-  public static List<StandardSourceDefinition> standardSourceDefinitions() {
-    final ConnectorSpecification connectorSpecification = connectorSpecification();
-    final StandardSourceDefinition standardSourceDefinition1 = new StandardSourceDefinition()
+  public static StandardSourceDefinition publicSourceDefinition() {
+    return new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withSourceType(SourceType.API)
         .withName("random-source-1")
@@ -139,12 +138,15 @@ public class MockData {
         .withDockerRepository("repository-1")
         .withDocumentationUrl("documentation-url-1")
         .withIcon("icon-1")
-        .withSpec(connectorSpecification)
+        .withSpec(connectorSpecification())
         .withTombstone(false)
         .withPublic(true)
         .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
-    final StandardSourceDefinition standardSourceDefinition2 = new StandardSourceDefinition()
+  }
+
+  public static StandardSourceDefinition grantableSourceDefinition1() {
+    return new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withSourceType(SourceType.DATABASE)
         .withName("random-source-2")
@@ -155,7 +157,10 @@ public class MockData {
         .withTombstone(false)
         .withPublic(false)
         .withCustom(false);
-    final StandardSourceDefinition standardSourceDefinition3 = new StandardSourceDefinition()
+  }
+
+  public static StandardSourceDefinition grantableSourceDefinition2() {
+    return new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_3)
         .withSourceType(SourceType.DATABASE)
         .withName("random-source-3")
@@ -166,7 +171,10 @@ public class MockData {
         .withTombstone(false)
         .withPublic(false)
         .withCustom(false);
-    final StandardSourceDefinition standardSourceDefinition4 = new StandardSourceDefinition()
+  }
+
+  public static StandardSourceDefinition customSourceDefinition() {
+    return new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_4)
         .withSourceType(SourceType.DATABASE)
         .withName("random-source-4")
@@ -177,7 +185,14 @@ public class MockData {
         .withTombstone(false)
         .withPublic(false)
         .withCustom(true);
-    return Arrays.asList(standardSourceDefinition1, standardSourceDefinition2, standardSourceDefinition3, standardSourceDefinition4);
+  }
+
+  public static List<StandardSourceDefinition> standardSourceDefinitions() {
+    return Arrays.asList(
+        publicSourceDefinition(),
+        grantableSourceDefinition1(),
+        grantableSourceDefinition2(),
+        customSourceDefinition());
   }
 
   private static ConnectorSpecification connectorSpecification() {
@@ -193,55 +208,69 @@ public class MockData {
         .withSupportsNormalization(true);
   }
 
-  public static List<StandardDestinationDefinition> standardDestinationDefinitions() {
-    final ConnectorSpecification connectorSpecification = connectorSpecification();
-    final StandardDestinationDefinition standardDestinationDefinition1 = new StandardDestinationDefinition()
+  public static StandardDestinationDefinition publicDestinationDefinition() {
+    return new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withName("random-destination-1")
         .withDockerImageTag("tag-3")
         .withDockerRepository("repository-3")
         .withDocumentationUrl("documentation-url-3")
         .withIcon("icon-3")
-        .withSpec(connectorSpecification)
+        .withSpec(connectorSpecification())
         .withTombstone(false)
         .withPublic(true)
         .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
-    final StandardDestinationDefinition standardDestinationDefinition2 = new StandardDestinationDefinition()
+  }
+
+  public static StandardDestinationDefinition grantableDestinationDefinition1() {
+    return new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withName("random-destination-2")
         .withDockerImageTag("tag-4")
         .withDockerRepository("repository-4")
         .withDocumentationUrl("documentation-url-4")
         .withIcon("icon-4")
-        .withSpec(connectorSpecification)
+        .withSpec(connectorSpecification())
         .withTombstone(false)
         .withPublic(false)
         .withCustom(false);
-    final StandardDestinationDefinition standardDestinationDefinition3 = new StandardDestinationDefinition()
+  }
+
+  public static StandardDestinationDefinition grantableDestinationDefinition2() {
+    return new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_3)
         .withName("random-destination-3")
         .withDockerImageTag("tag-33")
         .withDockerRepository("repository-33")
         .withDocumentationUrl("documentation-url-33")
         .withIcon("icon-3")
-        .withSpec(connectorSpecification)
+        .withSpec(connectorSpecification())
         .withTombstone(false)
         .withPublic(false)
         .withCustom(false);
-    final StandardDestinationDefinition standardDestinationDefinition4 = new StandardDestinationDefinition()
+  }
+
+  public static StandardDestinationDefinition cusstomDestinationDefinition() {
+    return new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_4)
         .withName("random-destination-4")
         .withDockerImageTag("tag-44")
         .withDockerRepository("repository-44")
         .withDocumentationUrl("documentation-url-44")
         .withIcon("icon-4")
-        .withSpec(connectorSpecification)
+        .withSpec(connectorSpecification())
         .withTombstone(false)
         .withPublic(false)
         .withCustom(true);
-    return Arrays.asList(standardDestinationDefinition1, standardDestinationDefinition2, standardDestinationDefinition3,
-        standardDestinationDefinition4);
+  }
+
+  public static List<StandardDestinationDefinition> standardDestinationDefinitions() {
+    return Arrays.asList(
+        publicDestinationDefinition(),
+        grantableDestinationDefinition1(),
+        grantableDestinationDefinition2(),
+        cusstomDestinationDefinition());
   }
 
   public static List<SourceConnection> sourceConnections() {

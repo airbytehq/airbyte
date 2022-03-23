@@ -227,14 +227,14 @@ public class ConfigRepositoryE2EReadWriteTest {
   @Test
   public void testListPublicSourceDefinitions() throws IOException {
     final List<StandardSourceDefinition> actualDefinitions = configRepository.listPublicSourceDefinitions(false);
-    assertEquals(List.of(MockData.standardSourceDefinitions().get(0)), actualDefinitions);
+    assertEquals(List.of(MockData.publicSourceDefinition()), actualDefinitions);
   }
 
   @Test
   public void testSourceDefinitionGrants() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    final StandardSourceDefinition grantableDefinition1 = MockData.standardSourceDefinitions().get(1);
-    final StandardSourceDefinition customDefinition = MockData.standardSourceDefinitions().get(3);
+    final StandardSourceDefinition grantableDefinition1 = MockData.grantableSourceDefinition1();
+    final StandardSourceDefinition customDefinition = MockData.customSourceDefinition();
 
     configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getSourceDefinitionId(), workspaceId);
     configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1.getSourceDefinitionId(), workspaceId);
@@ -246,14 +246,14 @@ public class ConfigRepositoryE2EReadWriteTest {
   @Test
   public void testListPublicDestinationDefinitions() throws IOException {
     final List<StandardDestinationDefinition> actualDefinitions = configRepository.listPublicDestinationDefinitions(false);
-    assertEquals(List.of(MockData.standardDestinationDefinitions().get(0)), actualDefinitions);
+    assertEquals(List.of(MockData.publicDestinationDefinition()), actualDefinitions);
   }
 
   @Test
   public void testDestinationDefinitionGrants() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    final StandardDestinationDefinition grantableDefinition1 = MockData.standardDestinationDefinitions().get(1);
-    final StandardDestinationDefinition customDefinition = MockData.standardDestinationDefinitions().get(3);
+    final StandardDestinationDefinition grantableDefinition1 = MockData.grantableDestinationDefinition1();
+    final StandardDestinationDefinition customDefinition = MockData.cusstomDestinationDefinition();
 
     configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getDestinationDefinitionId(), workspaceId);
     configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1.getDestinationDefinitionId(), workspaceId);
