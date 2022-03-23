@@ -23,6 +23,7 @@ import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceReadList;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
@@ -60,6 +61,7 @@ class SourceDefinitionsHandlerTest {
   private SynchronousSchedulerClient schedulerSynchronousClient;
   private AirbyteGithubStore githubStore;
   private SourceHandler sourceHandler;
+  private UUID workspaceId;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -69,6 +71,7 @@ class SourceDefinitionsHandlerTest {
     schedulerSynchronousClient = spy(SynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
     sourceHandler = mock(SourceHandler.class);
+    workspaceId = UUID.randomUUID();
 
     sourceDefinition = generateSourceDefinition();
 
@@ -129,6 +132,48 @@ class SourceDefinitionsHandlerTest {
                 .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList = sourceDefinitionsHandler.listSourceDefinitions();
+
+    assertEquals(
+        Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
+        actualSourceDefinitionReadList.getSourceDefinitions());
+  }
+
+  @Test
+  @DisplayName("listSourceDefinitionsForWorkspace should return the right list")
+  void testListSourceDefinitionsForWorkspace() throws IOException, URISyntaxException {
+    final StandardSourceDefinition sourceDefinition2 = generateSourceDefinition();
+
+    when(configRepository.listPublicSourceDefinitions(false)).thenReturn(Lists.newArrayList(sourceDefinition));
+    when(configRepository.listGrantedSourceDefinitions(workspaceId, false)).thenReturn(Lists.newArrayList(sourceDefinition2));
+
+    final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition2.getSourceDefinitionId())
+        .name(sourceDefinition2.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionReadList actualSourceDefinitionReadList =
+        sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(new WorkspaceIdRequestBody().workspaceId(workspaceId));
 
     assertEquals(
         Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
