@@ -357,7 +357,7 @@ def test_google_type_conversion(config):
 
 
 def test_checkConnection_should_pass_when_configValid(mocker):
-    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+    mocker.patch("source_google_ads.source.GoogleAds", MockGoogleAdsClient)
     source = SourceGoogleAds()
     check_successful, message = source.check_connection(
         AirbyteLogger(),

@@ -21,8 +21,9 @@ class MockGoogleAdsService:
 
 
 class MockGoogleAdsClient:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, credentials, **kwargs):
+        self.config = credentials
+        self.customer_ids = ["1"]
 
     def get_type(self, type):
         return MockSearchRequest()
@@ -33,6 +34,9 @@ class MockGoogleAdsClient:
     @staticmethod
     def load_from_dict(config):
         return MockGoogleAdsClient(config)
+
+    def send_request(self, query, customer_id):
+        yield from ()
 
 
 class MockErroringGoogleAdsService:
