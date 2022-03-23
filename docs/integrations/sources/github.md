@@ -76,7 +76,7 @@ The Github connector should not run into Github API limitations under normal usa
 
 * Github Account;
 * **Authentication** - Select from 2 authentication methods:
-    * **Authenticate via GitHub (OAuth)** - Authentication method which better suits for Airbyte Cloud, click [Authenticate your account] button to get `access_token`;
+    * **Authenticate via GitHub (OAuth)** - Only available in Airbyte Cloud. Authenticate by clicking the "Authenticate your account" button;
     * **Authenticate with Personal Access Token** - Use this method for Airbyte Open-Source. Log into GitHub and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`;
 * **Start Date** - The date from which you'd like to replicate data for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
 * **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`;
