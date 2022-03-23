@@ -37,7 +37,7 @@ class MockGoogleAdsClient:
 
 class MockErroringGoogleAdsService:
     def search(self, search_request):
-        raise GoogleAdsException("This mocked class always returns an error")
+        raise make_google_ads_exception(1)
 
 
 def make_google_ads_exception(failure_code: int):
