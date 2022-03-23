@@ -106,6 +106,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version  | Date       | Pull Request | Subject                                                                                      |
 |:---------|:-----------| :--- |:---------------------------------------------------------------------------------------------|
+| `0.1.30` | 2022-03-23 | [11221](https://github.com/airbytehq/airbyte/pull/11221) | Add `*_labels` streams to fetch the label text rather than their IDs                         |
 | `0.1.29` | 2022-03-22 | [10919](https://github.com/airbytehq/airbyte/pull/10919) | Fix user location report schema and add to acceptance tests                                  |
 | `0.1.28` | 2022-02-25 | [10372](https://github.com/airbytehq/airbyte/pull/10372) | Add network fields to click view stream                                                      |
 | `0.1.27` | 2022-02-16 | [10315](https://github.com/airbytehq/airbyte/pull/10315) | Make `ad_group_ads` and other streams support incremental sync.                              |
