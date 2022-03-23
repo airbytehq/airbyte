@@ -43,8 +43,7 @@ public class SerializedBufferFactory {
         return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), () -> createStorageFunction.apply(".json"));
       }
       case PARQUET -> {
-        return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config),
-            () -> createStorageFunction.apply(".parquet"));
+        return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config));
       }
       default -> {
         throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));

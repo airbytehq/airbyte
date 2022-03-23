@@ -4,11 +4,9 @@
 
 package io.airbyte.integrations.destination.s3.parquet;
 
-import com.amazonaws.util.IOUtils;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
-import io.airbyte.integrations.destination.record_buffer.BufferStorage;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
@@ -16,13 +14,13 @@ import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
@@ -31,39 +29,36 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This class handles some AVRO to PARQUET conversion in an intermediate temporary file.
+ * The {@link io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer} class
+ * abstracts the {@link io.airbyte.integrations.destination.record_buffer.BufferStorage} from the
+ * details of the format the data is going to be stored in.
  *
- * When the writer receives a {@link ParquetSerializedBuffer#flushWriter()} call, the data is
- * transferred from the temporary file to the OutputStream that was provided when calling
- * {@link ParquetSerializedBuffer#createWriter(OutputStream)}. (Note that this OutputStream could
- * also be coming from a {@link io.airbyte.integrations.destination.record_buffer.FileBuffer} (an
- * implementation of {@link BufferStorage}). So it would effectively use two temporary files to
- * buffer data (unless we could convert the FileBuffer into a {@link HadoopOutputFile}).
- *
- * Closing this writer will delete the temporary parquet file.
+ * Unfortunately, the Parquet library doesn't allow us to manipulate the output stream and forces us
+ * to go through {@link HadoopOutputFile} instead. So we can't benefit from the abstraction
+ * described above. Therefore, we re-implement the necessary methods to be used as
+ * {@link SerializableBuffer}, while data will be buffered in such a hadoop file.
  */
-public class ParquetSerializedBuffer extends BaseSerializedBuffer {
+public class ParquetSerializedBuffer implements SerializableBuffer {
 
-  private final Schema schema;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ParquetSerializedBuffer.class);
+
   private final AvroRecordFactory avroRecordFactory;
-  private final S3DestinationConfig config;
-  private String tempFile;
-  private ParquetWriter<Record> parquetWriter;
-  private OutputStream outputStream;
+  private final ParquetWriter<Record> parquetWriter;
+  private final Path bufferFile;
+  private InputStream inputStream;
+  private Long lastByteCount;
+  private boolean isClosed;
 
-  public ParquetSerializedBuffer(final BufferStorage bufferStorage,
-                                 final S3DestinationConfig config,
+  public ParquetSerializedBuffer(final S3DestinationConfig config,
                                  final AirbyteStreamNameNamespacePair stream,
                                  final ConfiguredAirbyteCatalog catalog)
-      throws Exception {
-    super(bufferStorage);
-    // disable compression stream as it is already handled by this
-    withCompression(false);
-    this.config = config;
+      throws IOException {
     final JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-    schema = schemaConverter.getAvroSchema(catalog.getStreams()
+    final Schema schema = schemaConverter.getAvroSchema(catalog.getStreams()
         .stream()
         .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
         .findFirst()
@@ -71,16 +66,12 @@ public class ParquetSerializedBuffer extends BaseSerializedBuffer {
         .getStream()
         .getJsonSchema(),
         stream.getName(), stream.getNamespace());
+    bufferFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet");
+    Files.deleteIfExists(bufferFile);
     avroRecordFactory = new AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER);
-  }
-
-  @Override
-  protected void createWriter(final OutputStream outputStream) throws IOException {
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    this.outputStream = outputStream;
-    tempFile = UUID.randomUUID() + ".parquet";
     parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile
-        .fromPath(new org.apache.hadoop.fs.Path(tempFile), new Configuration()))
+        .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), new Configuration()))
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())
@@ -89,33 +80,85 @@ public class ParquetSerializedBuffer extends BaseSerializedBuffer {
         .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
         .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
+    inputStream = null;
+    isClosed = false;
+    lastByteCount = 0L;
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage recordMessage) throws IOException {
-    parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), recordMessage));
-  }
-
-  @Override
-  protected void flushWriter() throws IOException {
-    parquetWriter.close();
-    try (final FileInputStream tempStream = new FileInputStream(tempFile)) {
-      IOUtils.copy(tempStream, outputStream);
-      outputStream.flush();
+  public long accept(final AirbyteRecordMessage recordMessage) throws Exception {
+    if (inputStream == null && !isClosed) {
+      final long startCount = getByteCount();
+      parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), recordMessage));
+      return getByteCount() - startCount;
+    } else {
+      throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
     }
   }
 
   @Override
-  protected void closeWriter() throws IOException {
-    parquetWriter.close();
-    Files.deleteIfExists(Path.of(tempFile));
+  public void flush() throws Exception {
+    if (inputStream == null && !isClosed) {
+      getByteCount();
+      parquetWriter.close();
+      inputStream = new FileInputStream(bufferFile.toFile());
+      LOGGER.info("Finished writing data to {}", getFilename());
+    }
   }
 
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3DestinationConfig s3DestinationConfig,
-                                                                                                                                          final Callable<BufferStorage> createStorageFunction) {
-    return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> new ParquetSerializedBuffer(
-        createStorageFunction.call(),
-        s3DestinationConfig, stream, catalog);
+  @Override
+  public long getByteCount() {
+    if (inputStream != null) {
+      // once the parquetWriter is closed, we can't query how many bytes are in it, so we cache the last
+      // count
+      return lastByteCount;
+    }
+    lastByteCount = parquetWriter.getDataSize();
+    return lastByteCount;
+  }
+
+  @Override
+  public String getFilename() throws IOException {
+    return bufferFile.getFileName().toString();
+  }
+
+  @Override
+  public File getFile() throws IOException {
+    return bufferFile.toFile();
+  }
+
+  @Override
+  public InputStream getInputStream() {
+    return inputStream;
+  }
+
+  @Override
+  public long getMaxTotalBufferSizeInBytes() {
+    return FileBuffer.MAX_TOTAL_BUFFER_SIZE_BYTES;
+  }
+
+  @Override
+  public long getMaxPerStreamBufferSizeInBytes() {
+    return FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES;
+  }
+
+  @Override
+  public int getMaxConcurrentStreamsInBuffer() {
+    return FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER;
+  }
+
+  @Override
+  public void close() throws Exception {
+    if (!isClosed) {
+      inputStream.close();
+      Files.deleteIfExists(bufferFile);
+      isClosed = true;
+    }
+  }
+
+  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3DestinationConfig s3DestinationConfig) {
+    return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> new ParquetSerializedBuffer(s3DestinationConfig,
+        stream, catalog);
   }
 
 }
