@@ -68,7 +68,17 @@ class Report(ImpactAdvertisersReportStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         result = response_json.get("Records", [])
-        yield from result
+
+        # Redshift does not like capital cases in json keys
+        # Normalizing it to all lower
+        formatted_result = []
+        for item in result:
+            new_result = {}
+            for key in item.keys():
+                new_result[key.lower()] = item[key]
+            formatted_result.append(new_result)
+
+        yield from formatted_result
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -93,7 +103,17 @@ class MediaPartners(ImpactAdvertisersReportStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         result = response_json.get("MediaPartners", [])
-        yield from result
+
+        # Redshift does not like capital cases in json keys
+        # Normalizing it to all lower
+        formatted_result = []
+        for item in result:
+            new_result = {}
+            for key in item.keys():
+                new_result[key.lower()] = item[key]
+            formatted_result.append(new_result)
+
+        yield from formatted_result
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
