@@ -6,7 +6,12 @@ package io.airbyte.integrations.destination.bigquery.uploader;
 
 import static com.amazonaws.util.StringUtils.UTF8;
 
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.CsvOptions;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.JobInfo.WriteDisposition;
+import com.google.cloud.bigquery.LoadJobConfiguration;
+import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
@@ -31,7 +36,8 @@ public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWr
     return LoadJobConfiguration.builder(tmpTable, writer.getFileLocation())
         .setFormatOptions(csvOptions)
         .setSchema(recordFormatter.getBigQuerySchema())
-        .setWriteDisposition(syncMode)
+        // always append to the tmp table, because we may upload the data in small batches
+        .setWriteDisposition(WriteDisposition.WRITE_APPEND)
         .build();
   }
 

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.uploader;
 
 import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.avro.GcsAvroWriter;
@@ -26,7 +27,8 @@ public class GcsAvroBigQueryUploader extends AbstractGscBigQueryUploader<GcsAvro
   protected LoadJobConfiguration getLoadConfiguration() {
     return LoadJobConfiguration.builder(tmpTable, writer.getFileLocation()).setFormatOptions(FormatOptions.avro())
         .setSchema(recordFormatter.getBigQuerySchema())
-        .setWriteDisposition(syncMode)
+        // always append to the tmp table, because we may upload the data in small batches
+        .setWriteDisposition(WriteDisposition.WRITE_APPEND)
         .setUseAvroLogicalTypes(true)
         .build();
   }

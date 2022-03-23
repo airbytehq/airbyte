@@ -117,13 +117,12 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     }
   }
 
-  protected void uploadDataToTableFromTmpTable() throws Exception {
+  protected void uploadDataToTableFromTmpTable() {
     LOGGER.info("Replication finished with no explicit errors. Copying data from tmp tables to permanent");
     if (syncMode.equals(JobInfo.WriteDisposition.WRITE_APPEND)) {
       partitionIfUnpartitioned(table);
     }
-    copyTable(tmpTable, table,
-        syncMode);
+    copyTable(tmpTable, table, syncMode);
   }
 
   private void partitionIfUnpartitioned(final TableId destinationTableId) {
