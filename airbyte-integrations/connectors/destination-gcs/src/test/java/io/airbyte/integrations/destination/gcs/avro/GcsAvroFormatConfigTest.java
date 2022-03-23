@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.util.ConfigTestUtils;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
@@ -139,7 +140,7 @@ class GcsAvroFormatConfigTest {
         gcsDestinationConfig.getFormatConfig().getPartSize());
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
+    assertEquals(MB * S3DestinationConstants.DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
 }
