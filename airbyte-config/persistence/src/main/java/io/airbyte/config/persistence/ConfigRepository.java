@@ -14,6 +14,7 @@ import static org.jooq.impl.DSL.asterisk;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
@@ -36,6 +37,8 @@ import io.airbyte.config.State;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -66,12 +69,6 @@ public class ConfigRepository {
 
   private final ConfigPersistence persistence;
   private final ExceptionWrappingDatabase database;
-
-  // todo (cgardens) - very bad that this exposed. usages should be removed. do not use it.
-  @Deprecated
-  public ExceptionWrappingDatabase getDatabase() {
-    return database;
-  }
 
   public ConfigRepository(final ConfigPersistence persistence, final Database database) {
     this.persistence = persistence;
@@ -436,6 +433,44 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
   }
 
+  /**
+   * Updates {@link io.airbyte.db.instance.configs.jooq.tables.ConnectionOperation} records for the
+   * given {@code connectionId}.
+   *
+   * @param connectionId ID of the associated connection to update operations for
+   * @param newOperationIds Set of all operationIds that should be associated to the connection
+   * @throws IOException
+   */
+  public void updateConnectionOperationIds(final UUID connectionId, final Set<UUID> newOperationIds) throws IOException {
+    database.transaction(ctx -> {
+      final Set<UUID> existingOperationIds = ctx
+          .selectFrom(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+          .fetchSet(CONNECTION_OPERATION.OPERATION_ID);
+
+      final Set<UUID> existingOperationIdsToKeep = Sets.intersection(existingOperationIds, newOperationIds);
+
+      // DELETE existing connection_operation records that aren't in the input list
+      final Set<UUID> operationIdsToDelete = Sets.difference(existingOperationIds, existingOperationIdsToKeep);
+
+      ctx.deleteFrom(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+          .and(CONNECTION_OPERATION.OPERATION_ID.in(operationIdsToDelete))
+          .execute();
+
+      // INSERT connection_operation records that are in the input list and don't yet exist
+      final Set<UUID> operationIdsToAdd = Sets.difference(newOperationIds, existingOperationIdsToKeep);
+
+      operationIdsToAdd.forEach(operationId -> ctx
+          .insertInto(CONNECTION_OPERATION)
+          .columns(CONNECTION_OPERATION.ID, CONNECTION_OPERATION.CONNECTION_ID, CONNECTION_OPERATION.OPERATION_ID)
+          .values(UUID.randomUUID(), connectionId, operationId)
+          .execute());
+
+      return null;
+    });
+  }
+
   public SourceOAuthParameter getSourceOAuthParams(final UUID SourceOAuthParameterId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameterId.toString(), SourceOAuthParameter.class);
@@ -737,6 +772,19 @@ public class ConfigRepository {
    */
   public void loadDataNoSecrets(final ConfigPersistence seedPersistenceWithoutSecrets) throws IOException {
     persistence.loadData(seedPersistenceWithoutSecrets);
+  }
+
+  /**
+   * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit
+   * metrics without exposing the underlying database connection.
+   */
+
+  public List<ReleaseStage> getSrcIdAndDestIdToReleaseStages(final UUID srcId, final UUID dstId) throws IOException {
+    return database.query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
+  }
+
+  public List<ReleaseStage> getJobIdToReleaseStages(final long jobId) throws IOException {
+    return database.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
   }
 
 }
