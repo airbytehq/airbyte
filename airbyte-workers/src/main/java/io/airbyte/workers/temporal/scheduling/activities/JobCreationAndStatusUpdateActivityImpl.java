@@ -21,7 +21,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
-import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.MetricsRegistry;
 import io.airbyte.scheduler.models.Job;
@@ -98,7 +97,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   }
 
   private void emitSrcIdDstIdToReleaseStagesMetric(final UUID srcId, final UUID dstId) throws IOException {
-    final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
+    final var releaseStages = configRepository.getSrcIdAndDestIdToReleaseStages(srcId, dstId);
     if (releaseStages == null || releaseStages.size() == 0) {
       return;
     }
@@ -263,7 +262,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   }
 
   private void emitJobIdToReleaseStagesMetric(final MetricsRegistry metric, final long jobId) throws IOException {
-    final var releaseStages = configRepository.getDatabase().query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
+    final var releaseStages = configRepository.getJobIdToReleaseStages(jobId);
     if (releaseStages == null || releaseStages.size() == 0) {
       return;
     }
