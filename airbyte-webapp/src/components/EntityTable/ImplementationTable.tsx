@@ -100,9 +100,9 @@ const ImplementationTable: React.FC<IProps> = ({
           <>
             <FormattedMessage id="tables.connector" />
             <SortButton
-              wasActive={sortBy === "entity"}
+              wasActive={sortBy === "connector"}
               lowToLarge={sortOrder === SortOrderEnum.ASC}
-              onClick={() => onSortClick("entity")}
+              onClick={() => onSortClick("connector")}
             />
           </>
         ),
@@ -116,7 +116,16 @@ const ImplementationTable: React.FC<IProps> = ({
         ),
       },
       {
-        Header: <FormattedMessage id={`tables.${entity}ConnectWith`} />,
+        Header: (
+          <>
+            <FormattedMessage id={`tables.${entity}ConnectWith`} />
+            <SortButton
+              wasActive={sortBy === "destination"}
+              lowToLarge={sortOrder === SortOrderEnum.ASC}
+              onClick={() => onSortClick("destination")}
+            />
+          </>
+        ),
         accessor: "connectEntities",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
           <ConnectEntitiesCell
