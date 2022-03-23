@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +95,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
   }
 
+  @Override
   public String getFilename() throws IOException {
     if (useCompression) {
       return bufferStorage.getFilename() + ".gz";
@@ -101,7 +103,13 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     return bufferStorage.getFilename();
   }
 
+  @Override
   public File getFile() throws IOException {
+    if (useCompression && !bufferStorage.getFilename().endsWith(".gz")) {
+      if (bufferStorage.getFile().renameTo(new File(bufferStorage.getFilename() + ".gz"))) {
+        LOGGER.info("Renaming compressed file to include .gz file extension");
+      }
+    }
     return bufferStorage.getFile();
   }
 
@@ -144,14 +152,17 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
   }
 
+  @Override
   public long getMaxTotalBufferSizeInBytes() {
     return bufferStorage.getMaxTotalBufferSizeInBytes();
   }
 
+  @Override
   public long getMaxPerStreamBufferSizeInBytes() {
     return bufferStorage.getMaxPerStreamBufferSizeInBytes();
   }
 
+  @Override
   public int getMaxConcurrentStreamsInBuffer() {
     return bufferStorage.getMaxConcurrentStreamsInBuffer();
   }
