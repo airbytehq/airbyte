@@ -41,13 +41,6 @@ type DestinationService = {
     values: ValuesProps;
     destinationConnector?: ConnectorProps;
   }) => Promise<Destination>;
-  recreateDestination: ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => Promise<Destination>;
   deleteDestination: ({
     destination,
     connectionsWithDestination,
@@ -72,8 +65,6 @@ const useDestination = (): DestinationService => {
   const updatedestination = useFetcher(
     DestinationResource.partialUpdateShape()
   );
-
-  const recreatedestination = useFetcher(DestinationResource.recreateShape());
 
   const destinationDelete = useFetcher(DestinationResource.deleteShape());
 
@@ -172,38 +163,6 @@ const useDestination = (): DestinationService => {
     );
   };
 
-  const recreateDestination = async ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => {
-    return await recreatedestination(
-      {
-        destinationId,
-      },
-      {
-        name: values.name,
-        destinationId,
-        connectionConfiguration: values.connectionConfiguration,
-        workspaceId: workspace.workspaceId,
-        destinationDefinitionId: values.serviceType,
-      },
-      // Method used only in onboarding.
-      // Replace all destination List to new item in UpdateParams (to change id)
-      [
-        [
-          DestinationResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (newdestinationId: string) => ({
-            destinations: [newdestinationId],
-          }),
-        ],
-      ]
-    );
-  };
-
   const checkDestinationConnection = useCallback(
     async ({
       destinationId,
@@ -248,7 +207,6 @@ const useDestination = (): DestinationService => {
   return {
     createDestination,
     updateDestination,
-    recreateDestination,
     deleteDestination,
     checkDestinationConnection,
   };
