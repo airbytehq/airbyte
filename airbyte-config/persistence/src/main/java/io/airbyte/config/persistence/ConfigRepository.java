@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
@@ -59,6 +60,7 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
+import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
@@ -187,6 +189,24 @@ public class ConfigRepository {
     return sourceDefinitions;
   }
 
+  public List<StandardSourceDefinition> listPublicSourceDefinitions(final boolean includeTombstone) throws IOException {
+    return listStandardActorDefinitions(
+        ActorType.source,
+        DbConverter::buildStandardSourceDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstone),
+        ACTOR_DEFINITION.PUBLIC.eq(true));
+  }
+
+  public List<StandardSourceDefinition> listGrantedSourceDefinitions(final UUID workspaceId, final boolean includeTombstones)
+      throws IOException {
+    return listActorDefinitionsJoinedWithGrants(
+        workspaceId,
+        JoinType.JOIN,
+        ActorType.source,
+        DbConverter::buildStandardSourceDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
+  }
+
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
@@ -246,6 +266,24 @@ public class ConfigRepository {
     }
 
     return destinationDefinitions;
+  }
+
+  public List<StandardDestinationDefinition> listPublicDestinationDefinitions(final boolean includeTombstone) throws IOException {
+    return listStandardActorDefinitions(
+        ActorType.destination,
+        DbConverter::buildStandardDestinationDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstone),
+        ACTOR_DEFINITION.PUBLIC.eq(true));
+  }
+
+  public List<StandardDestinationDefinition> listGrantedDestinationDefinitions(final UUID workspaceId, final boolean includeTombstones)
+      throws IOException {
+    return listActorDefinitionsJoinedWithGrants(
+        workspaceId,
+        JoinType.JOIN,
+        ActorType.destination,
+        DbConverter::buildStandardDestinationDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
   }
 
   public void writeStandardDestinationDefinition(final StandardDestinationDefinition destinationDefinition)
@@ -330,6 +368,40 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID.eq(actorDefinitionId))
         .and(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId))
         .execute());
+  }
+
+  private <T> List<T> listStandardActorDefinitions(final ActorType actorType,
+                                                   final Function<Record, T> recordToActorDefinition,
+                                                   final Condition... conditions)
+      throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx.select(asterisk()).from(ACTOR_DEFINITION)
+        .where(conditions)
+        .and(ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType))
+        .fetch());
+
+    return records.stream()
+        .map(recordToActorDefinition)
+        .toList();
+  }
+
+  private <T> List<T> listActorDefinitionsJoinedWithGrants(final UUID workspaceId,
+                                                           final JoinType joinType,
+                                                           final ActorType actorType,
+                                                           final Function<Record, T> recordToReturnType,
+                                                           final Condition... conditions)
+      throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx.select(asterisk()).from(ACTOR_DEFINITION)
+        .join(ACTOR_DEFINITION_WORKSPACE_GRANT, joinType)
+        .on(ACTOR_DEFINITION.ID.eq(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID),
+            ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId))
+        .where(conditions)
+        .and(ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType))
+        .and(ACTOR_DEFINITION.PUBLIC.eq(false))
+        .fetch());
+
+    return records.stream()
+        .map(recordToReturnType)
+        .toList();
   }
 
   /**
