@@ -36,16 +36,6 @@ and ((select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() 
 {% endif %}
 {%- endmacro -%}
 
-{%- macro clickhouse__incremental_clause(col_emitted_at) -%}
-{% if is_incremental() %}
-and coalesce(
-    cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >= (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ this }}),
-    {# -- if {{ col_emitted_at }} is NULL in either table, the previous comparison would evaluate to NULL, #}
-    {# -- so we coalesce and make sure the row is always returned for incremental processing instead #}
-    1)
-{% endif %}
-{%- endmacro -%}
-
 {% macro get_max_normalized_cursor(col_emitted_at) %}
 {% if execute and is_incremental() %}
  {% if env_var('INCREMENTAL_CURSOR', 'UNSET') == 'UNSET' %}
