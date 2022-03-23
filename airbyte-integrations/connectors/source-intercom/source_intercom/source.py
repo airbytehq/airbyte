@@ -6,7 +6,7 @@ from abc import ABC
 from datetime import datetime
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qsl, urlparse
+from urllib.parse import parse_qsl, urlparse, urljoin
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -426,7 +426,7 @@ class SourceIntercom(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         authenticator = VersionApiAuthenticator(token=config["access_token"])
         try:
-            url = f"{IntercomStream.url_base}/tags"
+            url = urljoin(IntercomStream.url_base, "/tags")
             auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
             session = requests.get(url, headers=auth_headers)
             session.raise_for_status()
