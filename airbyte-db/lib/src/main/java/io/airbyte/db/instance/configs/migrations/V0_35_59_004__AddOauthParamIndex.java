@@ -20,7 +20,8 @@ public class V0_35_59_004__AddOauthParamIndex extends BaseJavaMigration {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
 
     final DSLContext ctx = DSL.using(context.getConnection());
-    ctx.createIndexIfNotExists("actor_oauth_parameter_workspace_definition_idx").on("actor_oauth_parameter", "workspace_id", "actor_definition_id");
+    ctx.createIndexIfNotExists("actor_oauth_parameter_workspace_definition_idx").on("actor_oauth_parameter", "workspace_id", "actor_definition_id")
+        .execute();
   }
 
 }
