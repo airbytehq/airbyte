@@ -59,6 +59,7 @@ class DestinationDefinitionsHandlerTest {
   private SynchronousSchedulerClient schedulerSynchronousClient;
   private AirbyteGithubStore githubStore;
   private DestinationHandler destinationHandler;
+  private UUID workspaceId;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -69,6 +70,7 @@ class DestinationDefinitionsHandlerTest {
     schedulerSynchronousClient = spy(SynchronousSchedulerClient.class);
     githubStore = mock(AirbyteGithubStore.class);
     destinationHandler = mock(DestinationHandler.class);
+    workspaceId = UUID.randomUUID();
 
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(
         configRepository,
