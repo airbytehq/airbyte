@@ -1634,8 +1634,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                   ConfigSchema.STANDARD_DESTINATION_DEFINITION,
                   destinationDefinition.toString(),
                   StandardDestinationDefinition.class);
-              final JsonNode connectionSpecs = standardDestinationDefinition.getSpec().getConnectionSpecification();
-              final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+              final JsonNode connectionSpec = standardDestinationDefinition.getSpec().getConnectionSpecification();
+              final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
               return sanitizedConfig;
             } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
               throw new RuntimeException(e);
