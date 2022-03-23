@@ -101,8 +101,9 @@ class SourceGoogleAds(AbstractSource):
                 for customer_id in google_api.customer_ids:
                     google_api.send_request(req_q, customer_id=customer_id)
             return True, None
-        except GoogleAdsException as error:
-            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
+        except GoogleAdsException as exception:
+            error_messages = ", ".join([error.message for error in exception.failure.errors])
+            return False, f"Unable to connect to Google Ads API with the provided credentials - {error_messages}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
