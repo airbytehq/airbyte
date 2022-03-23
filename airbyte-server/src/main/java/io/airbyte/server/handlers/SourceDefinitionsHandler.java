@@ -32,6 +32,7 @@ import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
@@ -156,6 +157,16 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
+  public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final UUID definitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
+    final UUID workspaceId = sourceDefinitionIdWithWorkspaceId.getWorkspaceId();
+    if (!configRepository.workspaceCanUseDefinition(definitionId, workspaceId)) {
+      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
+    }
+    return getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
+  }
+
   public SourceDefinitionRead createPrivateSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
       throws JsonValidationException, IOException {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(sourceDefinitionCreate)
@@ -222,12 +233,24 @@ public class SourceDefinitionsHandler {
         .withIcon(currentSourceDefinition.getIcon())
         .withSpec(spec)
         .withTombstone(currentSourceDefinition.getTombstone())
+        .withPublic(currentSourceDefinition.getPublic())
+        .withCustom(currentSourceDefinition.getCustom())
         .withReleaseStage(currentSourceDefinition.getReleaseStage())
         .withReleaseDate(currentSourceDefinition.getReleaseDate())
         .withResourceRequirements(updatedResourceReqs);
 
     configRepository.writeStandardSourceDefinition(newSource);
     return buildSourceDefinitionRead(newSource);
+  }
+
+  public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID definitionId = customSourceDefinitionUpdate.getSourceDefinition().getSourceDefinitionId();
+    final UUID workspaceId = customSourceDefinitionUpdate.getWorkspaceId();
+    if (!configRepository.workspaceCanUseCustomDefinition(definitionId, workspaceId)) {
+      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
+    }
+    return updateSourceDefinition(customSourceDefinitionUpdate.getSourceDefinition());
   }
 
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -245,6 +268,16 @@ public class SourceDefinitionsHandler {
 
     persistedSourceDefinition.withTombstone(true);
     configRepository.writeStandardSourceDefinition(persistedSourceDefinition);
+  }
+
+  public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID definitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
+    final UUID workspaceId = sourceDefinitionIdWithWorkspaceId.getWorkspaceId();
+    if (!configRepository.workspaceCanUseCustomDefinition(definitionId, workspaceId)) {
+      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
+    }
+    deleteSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
   }
 
   private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {

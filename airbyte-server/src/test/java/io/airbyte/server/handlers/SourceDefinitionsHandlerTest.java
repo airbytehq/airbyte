@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -40,6 +41,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -258,6 +260,50 @@ class SourceDefinitionsHandlerTest {
         new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinition.getSourceDefinitionId());
 
     final SourceDefinitionRead actualSourceDefinitionRead = sourceDefinitionsHandler.getSourceDefinition(sourceDefinitionIdRequestBody);
+
+    assertEquals(expectedSourceDefinitionRead, actualSourceDefinitionRead);
+  }
+
+  @Test
+  @DisplayName("getSourceDefinitionForWorkspace should throw an exception for a missing grant")
+  void testGetDefinitionWithoutGrantForWorkspace() throws IOException {
+    when(configRepository.workspaceCanUseDefinition(sourceDefinition.getSourceDefinitionId(), workspaceId))
+        .thenReturn(false);
+
+    final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId = new SourceDefinitionIdWithWorkspaceId()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .workspaceId(workspaceId);
+
+    assertThrows(IdNotFoundKnownException.class, () -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
+  }
+
+  @Test
+  @DisplayName("getSourceDefinitionForWorkspace should return the source if the grant exists")
+  void testGetDefinitionWithGrantForWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException, URISyntaxException {
+    when(configRepository.workspaceCanUseDefinition(sourceDefinition.getSourceDefinitionId(), workspaceId))
+        .thenReturn(true);
+    when(configRepository.getStandardSourceDefinition(sourceDefinition.getSourceDefinitionId()))
+        .thenReturn(sourceDefinition);
+
+    final SourceDefinitionRead expectedSourceDefinitionRead = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId = new SourceDefinitionIdWithWorkspaceId()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .workspaceId(workspaceId);
+
+    final SourceDefinitionRead actualSourceDefinitionRead = sourceDefinitionsHandler
+        .getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId);
 
     assertEquals(expectedSourceDefinitionRead, actualSourceDefinitionRead);
   }
