@@ -45,17 +45,16 @@ This connector outputs the following incremental streams:
 
 ### Notes
 
-1. Only 4 streams from above 17 incremental streams \(`comments`, `commits`, `issues` and `review comments`\) are pure incremental meaning that they:
+1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from above 17 incremental streams are pure incremental meaning that they:
    * read only new records;
    * output only new records.
 
-     Other 13 incremental streams are also incremental but with one difference, they:
-
+2. Other 13 incremental streams are also incremental but with one difference, they:
    * read all records;
    * output only new records.
+   Please, consider this behaviour when using those 13 incremental streams because it may affect you API call limits.
 
-     Please, consider this behaviour when using those 13 incremental streams because it may affect you API call limits.
-2. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+3. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
 
 ### Features
 
@@ -76,15 +75,17 @@ The Github connector should not run into Github API limitations under normal usa
 ### Requirements
 
 * Github Account;
-* `access_token` - Github Personal Access Token wih the necessary permissions \(described below\);
-* `start_date` - start date for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
-* `repository` - Space-delimited list of GitHub repositories/organizations which looks like `<owner>/<repo> <organization>/* <organization_new>/* <owner_new>/<repo_new>`.
+* **Authentication** - Select from 2 authentication methods:
+    * **Authenticate via GitHub (OAuth)** - Authentication method which better suits for Airbyte Cloud, click [Authenticate your account] button to get `access_token`;
+    * **Authenticate with Personal Access Token** - Use this method for Airbyte Open-Source. Log into GitHub and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`;
+* **Start Date** - The date from which you'd like to replicate data for streams: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`;
+* **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`;
+* **Branch** - Optional space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`);
+* **Page size for large streams** - The Github connector contains several streams with a large load. The page size of such streams depends on the size of your repository. Recommended to specify values between 10 and 30.
 
-**Note**: if you want to specify the organization to receive data from all its repositories, then you should specify it according to the following pattern: `<organization>/*`
+### Permissions and scopes
 
-### Setup guide
-
-Log into Github and then generate a [personal access token](https://github.com/settings/tokens).
+If you use OAuth authentication method, the oauth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **workflow**. For [personal access token](https://github.com/settings/tokens) it need to manually select needed scopes.
 
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 
