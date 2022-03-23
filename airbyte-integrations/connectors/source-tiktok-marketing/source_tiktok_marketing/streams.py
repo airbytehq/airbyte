@@ -37,18 +37,23 @@ T = TypeVar("T")
 
 # Hierarchy of classes
 # TiktokStream
-# ├── ListAdvertiserIdsStream
-# └── FullRefreshTiktokStream
-#     ├── Advertisers
-#     └── IncrementalTiktokStream
-#         ├── AdGroups
-#         ├── Ads
-#         ├── Campaigns
-#         └── BasicReports
-#             ├── AdsReports
-#             ├── AdvertisersReports
-#             ├── CampaignsReports
-#             └── AdGroupsReports
+# ├─ListAdvertiserIdsStream
+# └─FullRefreshTiktokStream
+#   ├─Advertisers                             (1 advertisers)
+#   └─IncrementalTiktokStream
+#     ├─AdGroups                              (2 ad_groups)
+#     ├─Ads                                   (3 ads)
+#     ├─Campaigns                             (4 campaigns)
+#     └─BasicReports
+#       ├─AdsReports                          (5 ads_reports)
+#       ├─AdvertisersReports                  (6 advertisers_reports)
+#       ├─CampaignsReports                    (7 campaigns_reports)
+#       ├─AdGroupsReports                     (8 ad_groups_reports)
+#       └─AudienceReport
+#         ├─AdGroupAudienceReports            (9 ad_group_audience_reports)
+#         ├─AdsAudienceReports                (10 ads_audience_reports)
+#         ├─AdvertisersAudienceReports        (11 advertisers_audience_reports)
+#         └─CampaignsAudienceReportsByCountry (12 campaigns_audience_reports_by_country)
 
 
 @total_ordering
