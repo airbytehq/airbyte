@@ -83,7 +83,7 @@
       },
       "page_size_for_large_streams": {
         "type": "integer",
-        "title": "Page size for large streams",
+        "title": "Page size for large streams (Optional)",
         "minimum": 1,
         "maximum": 100,
         "default": 10,
