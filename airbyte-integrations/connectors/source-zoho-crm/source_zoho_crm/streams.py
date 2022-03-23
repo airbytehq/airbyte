@@ -4,7 +4,6 @@
 
 import concurrent.futures
 import datetime
-import logging
 import math
 from abc import ABC
 from dataclasses import asdict
@@ -16,8 +15,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 from .types import FieldMeta, ModuleMeta, ZohoPickListItem
-
-logger = logging.getLogger(__name__)
 
 
 class ZohoCrmStream(HttpStream, ABC):
@@ -94,19 +91,12 @@ class ZohoStreamFactory:
         self._config = config
 
     def _init_modules_meta(self) -> List[ModuleMeta]:
-        response = self.api.modules_settings()
-        if not response.status_code == 200:
-            return []
-        modules_meta_json = response.json()["modules"]
+        modules_meta_json = self.api.modules_settings()
         modules = [ModuleMeta.from_dict(module) for module in modules_meta_json]
         return list(filter(lambda module: module.api_supported, modules))
 
     def _populate_fields_meta(self, module: ModuleMeta):
-        response = self.api.fields_settings(module.api_name)
-        if not response.status_code == 200:
-            logger.warning(f"{module} fields data inaccessible: HTTP status {response.status_code}")
-            return
-        fields_meta_json = response.json()["fields"]
+        fields_meta_json = self.api.fields_settings(module.api_name)
         fields_meta = []
         for field in fields_meta_json:
             pick_list_values = field.get("pick_list_values", [])
@@ -116,13 +106,8 @@ class ZohoStreamFactory:
         module.fields = fields_meta
 
     def _populate_module_meta(self, module: ModuleMeta):
-        response = self.api.module_settings(module.api_name)
-        if not response.status_code == 200:
-            logger.warning(f"{module} meta data inaccessible: HTTP status {response.status_code}")
-            return
-        module_meta_json = response.json()["modules"]
-        module_meta_json = next(iter(module_meta_json), None)
-        module.update_from_dict(module_meta_json)
+        module_meta_json = self.api.module_settings(module.api_name)
+        module.update_from_dict(next(iter(module_meta_json), None))
 
     def produce(self) -> List[HttpStream]:
         modules = self._init_modules_meta()

@@ -6,7 +6,7 @@ import copy
 import dataclasses
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, MutableMapping, Optional, Union
 
 import six
 
@@ -25,10 +25,10 @@ class Schema:
 
 class ZohoBaseType(Enum):
     @classmethod
-    def all(cls):
+    def all(cls) -> List[str]:
         return list(map(lambda f: f.value, cls))
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if type(other) is type(self):
             return super().__eq__(other)
         if type(other) in six.string_types:
@@ -69,24 +69,24 @@ class ZohoDataType(ZohoBaseType):
     ALARM = "ALARM"
 
     @classmethod
-    def numeric_string_types(cls):
+    def numeric_string_types(cls) -> Iterable["ZohoDataType"]:
         return cls.autonumber, cls.bigint
 
 
 class FromDictMixin:
     @classmethod
-    def _field_names(cls):
+    def _field_names(cls) -> Iterable[str]:
         return [field.name for field in dataclasses.fields(cls)]
 
     @classmethod
-    def _filter_by_names(cls, dct):
+    def _filter_by_names(cls, dct: Dict[Any, Any]) -> Dict[Any, Any]:
         return {key: val for key, val in dct.items() if key in cls._field_names()}
 
     @classmethod
-    def from_dict(cls, dct):
+    def from_dict(cls, dct: MutableMapping[Any, Any]) -> object:
         return cls(**cls._filter_by_names(dct))
 
-    def update_from_dict(self, dct):
+    def update_from_dict(self, dct: MutableMapping[Any, Any]):
         for key, val in self._filter_by_names(dct).items():
             setattr(self, key, val)
 
@@ -95,6 +95,9 @@ class FromDictMixin:
 class ZohoPickListItem(FromDictMixin):
     display_value: str
     actual_value: str
+
+
+FieldType = Dict[Any, Any]
 
 
 @dataclasses.dataclass
@@ -108,28 +111,28 @@ class FieldMeta(FromDictMixin):
     display_label: str
     pick_list_values: Optional[List[ZohoPickListItem]]
 
-    def _default_type_kwargs(self):
+    def _default_type_kwargs(self) -> Dict[str, str]:
         return {"title": self.display_label}
 
-    def _picklist_items(self):
+    def _picklist_items(self) -> Iterable[Union[str, None]]:
         default_list = [None]
         if not self.pick_list_values:
             return default_list
         return default_list + [pick_item.display_value for pick_item in self.pick_list_values]
 
-    def _boolean_field(self):
+    def _boolean_field(self) -> FieldType:
         return {"type": ["null", "boolean"], **self._default_type_kwargs()}
 
-    def _integer_field(self):
+    def _integer_field(self) -> FieldType:
         return {"type": ["null", "integer"], **self._default_type_kwargs()}
 
-    def _double_field(self):
+    def _double_field(self) -> FieldType:
         typedef = {"type": ["null", "number"], **self._default_type_kwargs()}
         if self.decimal_place:
-            typedef["multipleOf"] = Decimal("0.1") ** self.decimal_place
+            typedef["multipleOf"] = float(Decimal("0.1") ** self.decimal_place)
         return typedef
 
-    def _string_field(self):
+    def _string_field(self) -> FieldType:
         if self.api_name == "Reminder":
             # this is a special case. although datatype = `picklist`,
             # actual values do not correspond to the values in the list
@@ -150,7 +153,7 @@ class FieldMeta(FromDictMixin):
             typedef["enum"] = self._picklist_items()
         return typedef
 
-    def _jsonarray_field(self):
+    def _jsonarray_field(self) -> FieldType:
         typedef = {"type": "array", **self._default_type_kwargs()}
         if self.api_name in ("Product_Details", "Pricing_Details"):
             # these two fields are said to be text, but are actually complex objects
@@ -159,7 +162,7 @@ class FieldMeta(FromDictMixin):
         if self.api_name == "Tag":
             # `Tag` is defined as string, but is actually an object
             typedef["items"] = {
-                "type": ["object"],
+                "type": "object",
                 "additionalProperties": False,
                 "required": ["name", "id"],
                 "properties": {"name": {"type": "string"}, "id": {"type": "string"}},
@@ -178,7 +181,7 @@ class FieldMeta(FromDictMixin):
             typedef["items"] = items
         return typedef
 
-    def _jsonobject_field(self):
+    def _jsonobject_field(self) -> FieldType:
         lookup_typedef = {
             "type": ["null", "object"],
             "additionalProperties": False,
@@ -197,7 +200,7 @@ class FieldMeta(FromDictMixin):
         return {"type": ["null", "object"]}
 
     @property
-    def schema(self):
+    def schema(self) -> FieldType:
         if self.json_type in ZohoJsonType.all():
             return getattr(self, f"_{self.json_type}_field")()
         raise UnknownDataTypeException(f"{self.json_type}:{self.data_type}")
@@ -211,7 +214,7 @@ class ModuleMeta(FromDictMixin):
     fields: Optional[Iterable[FieldMeta]] = dataclasses.field(default_factory=list)
 
     @property
-    def schema(self):
+    def schema(self) -> Schema:
         if not self.fields:
             raise IncompleteMetaDataException("Not enough data")
         required = ["id", "Modified_Time"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]

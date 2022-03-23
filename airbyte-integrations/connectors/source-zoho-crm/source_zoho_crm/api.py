@@ -2,12 +2,15 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from types import MappingProxyType
-from typing import Any, Mapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import requests
 
 from .auth import ZohoOauth2Authenticator
+
+logger = logging.getLogger(__name__)
 
 
 class ZohoAPI:
@@ -64,22 +67,27 @@ class ZohoAPI:
             domain = f"{prefix}.{domain}"
         return f"{schema}://{domain}"
 
-    def module_settings(self, module_name: str) -> "requests.models.Response":
-        path = f"/crm/v2/settings/modules/{module_name}"
-        return requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header())
+    def _json_from_path(self, path: str, key: str, params: MutableMapping[str, str] = None) -> List[MutableMapping[Any, Any]]:
+        response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header(), params=params or {})
+        if not response.status_code == 200:
+            logger.warning(f"{key.capitalize()} meta data inaccessible: HTTP status {response.status_code}")
+            return []
+        return response.json()[key]
 
-    def modules_settings(self) -> "requests.models.Response":
-        path = "/crm/v2/settings/modules"
-        return requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header())
+    def module_settings(self, module_name: str) -> List[MutableMapping[Any, Any]]:
+        return self._json_from_path(f"/crm/v2/settings/modules/{module_name}", "modules")
 
-    def fields_settings(self, module_name: str) -> "requests.models.Response":
-        path = "/crm/v2/settings/fields"
-        return requests.get(url=f"{self.api_url}{path}", params={"module": module_name}, headers=self.authenticator.get_auth_header())
+    def modules_settings(self) -> List[MutableMapping[Any, Any]]:
+        return self._json_from_path("/crm/v2/settings/modules", "modules")
+
+    def fields_settings(self, module_name: str) -> List[MutableMapping[Any, Any]]:
+        return self._json_from_path("/crm/v2/settings/fields", "fields", params={"module": module_name})
 
     def check_connection(self) -> Tuple[bool, Any]:
-        http_response = self.modules_settings()
+        path = "/crm/v2/settings/modules"
+        response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header())
         try:
-            http_response.raise_for_status()
+            response.raise_for_status()
         except requests.exceptions.HTTPError as exc:
             return False, exc.response.content
         return True, None
