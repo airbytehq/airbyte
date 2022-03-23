@@ -118,34 +118,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  /**
-   * Strategy:
-   * <p>
-   * 1. Create a temporary table for each stream
-   * </p>
-   * <p>
-   * 2. Write records to each stream directly (the bigquery client handles managing when to push the
-   * records over the network)
-   * </p>
-   * <p>
-   * 4. Once all records have been written close the writers, so that any remaining records are
-   * flushed.
-   * </p>
-   * <p>
-   * 5. Copy the temp tables to the final table name (overwriting if necessary).
-   * </p>
-   *
-   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
-   *        "password": "super secure" }
-   * @param catalog - schema of the incoming messages.
-   * @return consumer that writes singer messages to the database.
-   */
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
-      throws IOException {
-    return getRecordConsumer(getUploaderMap(config, catalog), outputRecordCollector);
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    return new BigQueryRecordConsumer(outputRecordCollector, null, catalog);
   }
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final JsonNode config,
@@ -194,11 +171,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected String getTargetTableName(final String streamName) {
     return namingResolver.getRawTableName(streamName);
-  }
-
-  protected AirbyteMessageConsumer getRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
   }
 
   public static void main(final String[] args) throws Exception {
