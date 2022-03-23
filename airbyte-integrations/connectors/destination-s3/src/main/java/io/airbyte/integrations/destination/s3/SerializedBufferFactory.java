@@ -37,10 +37,10 @@ public class SerializedBufferFactory {
         return AvroSerializedBuffer.createFunction(new S3AvroFormatConfig(formatConfig), () -> createStorageFunction.apply(".avro"));
       }
       case CSV -> {
-        return CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(formatConfig), () -> createStorageFunction.apply(".csv.gz"));
+        return CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(formatConfig), () -> createStorageFunction.apply(".csv"));
       }
       case JSONL -> {
-        return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), () -> createStorageFunction.apply(".json.gz"));
+        return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), () -> createStorageFunction.apply(".json"));
       }
       case PARQUET -> {
         return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config),

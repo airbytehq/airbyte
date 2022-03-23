@@ -49,8 +49,12 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void closeWriter() {
+  protected void flushWriter() {
     printWriter.flush();
+  }
+
+  @Override
+  protected void closeWriter() {
     printWriter.close();
   }
 

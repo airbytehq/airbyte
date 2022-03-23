@@ -106,7 +106,7 @@ public class SnowflakeDestinationTest {
         mockDb,
         sqlOperations,
         new SnowflakeSQLNameTransformer(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(".csv.gz")),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(".csv")),
         config,
         getCatalog());
     doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());

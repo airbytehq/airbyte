@@ -63,6 +63,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * an InputStream to read from instead. This is used when flushing the buffer into some other
    * destination.
    */
+  protected abstract void flushWriter() throws IOException;
   protected abstract void closeWriter() throws IOException;
 
   public SerializableBuffer withCompression(final boolean useCompression) {
@@ -94,6 +95,9 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   }
 
   public String getFilename() throws IOException {
+    if (useCompression) {
+      return bufferStorage.getFilename() + ".gz";
+    }
     return bufferStorage.getFilename();
   }
 
@@ -113,12 +117,13 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   @Override
   public void flush() throws IOException {
     if (inputStream == null && !isClosed) {
-      closeWriter();
+      flushWriter();
       if (compressedBuffer != null) {
         LOGGER.info("Wrapping up compression and write GZIP trailer data.");
         compressedBuffer.flush();
         compressedBuffer.close();
       }
+      closeWriter();
       bufferStorage.close();
       inputStream = convertToInputStream();
       LOGGER.info("Finished writing data to {} ({})", getFilename(), FileUtils.byteCountToDisplaySize(byteCounter.getCount()));

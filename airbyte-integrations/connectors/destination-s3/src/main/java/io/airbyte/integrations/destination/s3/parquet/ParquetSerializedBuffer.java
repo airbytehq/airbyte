@@ -99,6 +99,10 @@ public class ParquetSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
+  protected void flushWriter() {
+  }
+
+  @Override
   protected void closeWriter() throws IOException {
     parquetWriter.close();
   }

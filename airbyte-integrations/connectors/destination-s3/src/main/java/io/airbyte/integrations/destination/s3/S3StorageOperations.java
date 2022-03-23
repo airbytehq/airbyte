@@ -111,16 +111,16 @@ public class S3StorageOperations implements BlobStorageOperations {
         .checkIntegrity(true)
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
-    boolean hasFailed = false;
+    boolean succeeded = false;
     try (final MultiPartOutputStream outputStream = uploadManager.getMultiPartOutputStreams().get(0);
         final InputStream dataStream = recordsData.getInputStream()) {
       dataStream.transferTo(outputStream);
+      succeeded = true;
     } catch (final Exception e) {
       LOGGER.error("Failed to load data into storage {}", objectPath, e);
-      hasFailed = true;
       throw new RuntimeException(e);
     } finally {
-      if (hasFailed) {
+      if (!succeeded) {
         uploadManager.abort();
       } else {
         uploadManager.complete();
@@ -133,13 +133,8 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public void dropBucketObject(final String streamName) {
-    LOGGER.info("Dropping bucket object {}...", streamName);
-    final String bucket = s3Config.getBucketName();
-    if (s3Client.doesObjectExist(bucket, streamName)) {
-      s3Client.deleteObject(bucket, streamName);
-    }
-    LOGGER.info("Bucket object {} has been deleted...", streamName);
+  public void dropBucketObject(final String objectPath) {
+    cleanUpBucketObject(objectPath, List.of());
   }
 
   @Override

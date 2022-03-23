@@ -52,6 +52,11 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
+  protected void flushWriter() throws IOException {
+    dataFileWriter.flush();
+  }
+
+  @Override
   protected void closeWriter() throws IOException {
     dataFileWriter.close();
   }

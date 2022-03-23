@@ -103,11 +103,13 @@ public class S3ConsumerFactory {
         final String namespace = writeConfig.getNamespace();
         final String stream = writeConfig.getStreamName();
         final String outputBucketPath = writeConfig.getOutputBucketPath();
-        LOGGER.info("Preparing storage area in destination started for namespace {} stream {}: bucket: {}", namespace, stream, outputBucketPath);
-        AirbyteSentry.executeWithTracing("PrepareStreamStorage",
-            () -> storageOperations.createBucketObjectIfNotExists(outputBucketPath),
-            Map.of("namespace", Objects.requireNonNullElse(namespace, "null"), "stream", stream, "storage", outputBucketPath));
-        LOGGER.info("Preparing storage area in destination completed for namespace {} stream {}", namespace, stream);
+        if (writeConfig.getSyncMode().equals(DestinationSyncMode.OVERWRITE)) {
+          LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {}", namespace, stream, outputBucketPath);
+          AirbyteSentry.executeWithTracing("PrepareStreamStorage",
+              () -> storageOperations.dropBucketObject(outputBucketPath),
+              Map.of("namespace", Objects.requireNonNullElse(namespace, "null"), "stream", stream, "storage", outputBucketPath));
+          LOGGER.info("Clearing storage area in destination completed for namespace {} stream {} bucketObject {}", namespace, stream, outputBucketPath);
+        }
       }
       LOGGER.info("Preparing storage area in destination completed.");
     };
@@ -137,7 +139,7 @@ public class S3ConsumerFactory {
         writer.flush();
         writeConfig.addStoredFile(storageOperations.uploadRecordsToBucket(
             writer,
-            writeConfig.getNamespace(),
+            writeConfig.getOutputNamespace(),
             writeConfig.getStreamName(),
             writeConfig.getOutputBucketPath()));
       } catch (final Exception e) {

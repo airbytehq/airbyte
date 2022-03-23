@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
@@ -49,6 +50,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   protected JsonNode configJson;
   protected S3DestinationConfig config;
   protected AmazonS3 s3Client;
+  protected NamingConventionTransformer nameTransformer;
   protected S3StorageOperations s3StorageOperations;
 
   protected S3DestinationAcceptanceTest(final S3Format outputFormat) {
@@ -70,6 +72,14 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
+  protected String getDefaultSchema(final JsonNode config) {
+    if (config.get("s3_bucket_path") == null) {
+      return null;
+    }
+    return config.get("s3_bucket_path").asText();
+  }
+
+  @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode baseJson = getBaseConfigJson();
     final JsonNode failCheckJson = Jsons.clone(baseJson);
@@ -83,16 +93,18 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
   protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
+    final String namespaceStr = nameTransformer.getNamespace(namespace);
+    final String streamNameStr = nameTransformer.getIdentifier(streamName);
     final String outputPrefix = s3StorageOperations.getBucketObjectPath(
-        config.getBucketPath(),
-        streamName,
+        namespaceStr,
+        streamNameStr,
         DateTime.now(DateTimeZone.UTC),
         S3DestinationConstants.DEFAULT_PATH_FORMAT);
     final List<S3ObjectSummary> objectSummaries = s3Client
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
         .stream()
-        .filter(o -> o.getKey().contains(AvroConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+        .filter(o -> o.getKey().contains(streamNameStr + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(
@@ -125,7 +137,8 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
     this.s3Client = config.getS3Client();
-    this.s3StorageOperations = new S3StorageOperations(new S3NameTransformer(), s3Client, config);
+    this.nameTransformer = new S3NameTransformer();
+    this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, config);
   }
 
   /**

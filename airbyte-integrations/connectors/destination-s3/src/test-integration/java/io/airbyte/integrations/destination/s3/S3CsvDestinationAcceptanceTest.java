@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
+import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -36,7 +39,7 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
   @Override
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
-        "format_type", S3Format.CSV,
+        "format_type", outputFormat,
         "flattening", Flattening.ROOT_LEVEL.getValue()));
   }
 
@@ -94,14 +97,14 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (final Reader in = new InputStreamReader(new GzipCompressorInputStream(object.getObjectContent()), StandardCharsets.UTF_8)) {
-        final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-            .withQuoteMode(QuoteMode.NON_NUMERIC)
-            .withFirstRecordAsHeader()
-            .parse(in);
-        StreamSupport.stream(records.spliterator(), false)
-            .forEach(r -> jsonRecords.add(getJsonNode(r.toMap(), fieldTypes)));
+      try (final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+          final Reader in = new InputStreamReader(new GZIPInputStream(object.getObjectContent()), StandardCharsets.UTF_8)) {
+          final Iterable<CSVRecord> records = CSVFormat.DEFAULT
+              .withQuoteMode(QuoteMode.NON_NUMERIC)
+              .withFirstRecordAsHeader()
+              .parse(in);
+          StreamSupport.stream(records.spliterator(), false)
+              .forEach(r -> jsonRecords.add(getJsonNode(r.toMap(), fieldTypes)));
       }
     }
 
