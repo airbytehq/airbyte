@@ -10,10 +10,13 @@
       "spreadsheet_id": {
         "type": "string",
         "title": "Spreadsheet ID",
-        "description": "The ID of the spreadsheet to be replicated."
+        "description": "The ID of the spreadsheet to be replicated. The ID is found in the URL of your spreadsheet, typically between \"/d/\" and \"/edit\"",
+        "examples": ["1hLd9Qqti5XyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb"]
       },
       "credentials": {
         "type": "object",
+        "title": "Credentials",
+        "description": "Google API Credentials for connecting to Google Sheets and Google Drive APIs",
         "oneOf": [
           {
             "title": "Authenticate via Google (OAuth)",

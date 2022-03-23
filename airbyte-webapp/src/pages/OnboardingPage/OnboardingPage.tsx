@@ -81,8 +81,8 @@ const OnboardingPage: React.FC = () => {
     {}
   );
 
-  const { createSource, recreateSource } = useSource();
-  const { createDestination, recreateDestination } = useDestination();
+  const { createSource } = useSource();
+  const { createDestination } = useDestination();
   const { finishOnboarding } = useWorkspace();
 
   const [successRequest, setSuccessRequest] = useState(false);
@@ -132,14 +132,7 @@ const OnboardingPage: React.FC = () => {
         const sourceConnector = getSourceDefinitionById(values.serviceType);
 
         try {
-          if (!!sources.length) {
-            await recreateSource({
-              values,
-              sourceId: sources[0].sourceId,
-            });
-          } else {
-            await createSource({ values, sourceConnector });
-          }
+          await createSource({ values, sourceConnector });
 
           setSuccessRequest(true);
           setTimeout(() => {
@@ -173,17 +166,10 @@ const OnboardingPage: React.FC = () => {
         );
 
         try {
-          if (!!destinations.length) {
-            await recreateDestination({
-              values,
-              destinationId: destinations[0].destinationId,
-            });
-          } else {
-            await createDestination({
-              values,
-              destinationConnector,
-            });
-          }
+          await createDestination({
+            values,
+            destinationConnector,
+          });
 
           setSuccessRequest(true);
           setTimeout(() => {
