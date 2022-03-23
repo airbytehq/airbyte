@@ -79,7 +79,7 @@ Be aware that `refresh token` will expire in 90 days. You need to repeat auth pr
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.0 | 2022-03-22 | [9510](https://github.com/airbytehq/airbyte/pull/9510) | Added optional Redirect URI & Tenant ID to spec |
+| 0.1.4 | 2022-03-22 | [9510](https://github.com/airbytehq/airbyte/pull/9510) | Added optional Redirect URI & Tenant ID to spec |
 | 0.1.3 | 2022-01-14 | [9510](https://github.com/airbytehq/airbyte/pull/9510) | Fixed broken dependency that blocked connector's operations |
 | 0.1.2 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
 | 0.1.1 | 2021-08-31 | [5750](https://github.com/airbytehq/airbyte/pull/5750) | Added reporting streams\) |
