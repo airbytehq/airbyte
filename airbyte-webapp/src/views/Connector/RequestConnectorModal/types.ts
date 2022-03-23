@@ -1,6 +1,6 @@
 export type Values = {
   connectorType: string;
   name: string;
-  website: string;
+  additionalInfo?: string;
   email?: string;
 };

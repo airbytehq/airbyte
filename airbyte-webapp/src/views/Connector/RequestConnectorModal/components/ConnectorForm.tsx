@@ -37,7 +37,7 @@ type ConnectorFormProps = {
 const requestConnectorValidationSchema = yup.object().shape({
   connectorType: yup.string().required("form.empty.error"),
   name: yup.string().required("form.empty.error"),
-  website: yup.string().required("form.empty.error"),
+  additionalInfo: yup.string(),
   email: yup.string().email("form.email.error").required("form.empty.error"),
 });
 
@@ -61,7 +61,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
       initialValues={{
         connectorType: currentValues?.connectorType || "",
         name: currentValues?.name || "",
-        website: currentValues?.website || "",
+        additionalInfo: currentValues?.additionalInfo || "",
         email: currentValues?.email || "",
       }}
       validateOnBlur={true}
@@ -96,38 +96,39 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
             )}
           </Field>
           <Field name="name">
-            {({ field, meta }: FieldProps<string>) => (
+            {({ field, meta, form }: FieldProps<string, Values>) => (
               <ControlLabelsWithMargin
                 error={!!meta.error && meta.touched}
-                label={<FormattedMessage id="connector.name" />}
-                message={<FormattedMessage id="connector.name.message" />}
+                label={
+                  form.values.connectorType === "destination" ? (
+                    <FormattedMessage id="connector.requestConnector.destination.name" />
+                  ) : (
+                    <FormattedMessage id="connector.requestConnector.source.name" />
+                  )
+                }
               >
                 <Input
                   {...field}
                   autoFocus
                   error={!!meta.error && meta.touched}
                   type="text"
-                  placeholder={formatMessage({
-                    id: "connector.name.placeholder",
-                  })}
                 />
               </ControlLabelsWithMargin>
             )}
           </Field>
-          <Field name="website">
+          <Field name="additionalInfo">
             {({ field, meta }: FieldProps<string>) => (
               <ControlLabelsWithMargin
                 error={!!meta.error && meta.touched}
-                label={<FormattedMessage id="connector.website" />}
-                message={<FormattedMessage id="connector.website.message" />}
+                label={<FormattedMessage id="connector.additionalInfo" />}
+                message={
+                  <FormattedMessage id="connector.additionalInfo.message" />
+                }
               >
                 <Input
                   {...field}
                   type="text"
                   error={!!meta.error && meta.touched}
-                  placeholder={formatMessage({
-                    id: "connector.website.placeholder",
-                  })}
                 />
               </ControlLabelsWithMargin>
             )}

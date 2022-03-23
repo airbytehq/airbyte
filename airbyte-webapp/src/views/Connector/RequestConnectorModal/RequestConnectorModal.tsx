@@ -12,6 +12,7 @@ import { Values } from "./types";
 type RequestConnectorModalProps = {
   onClose: () => void;
   connectorType: "source" | "destination";
+  initialName?: string;
 };
 const Content = styled.div`
   width: 492px;
@@ -21,6 +22,7 @@ const Content = styled.div`
 const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
   onClose,
   connectorType,
+  initialName,
 }) => {
   const [hasFeedback, setHasFeedback] = useState(false);
   const { requestConnector } = useRequestConnector();
@@ -46,9 +48,9 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
           onSubmit={onSubmit}
           onCancel={onClose}
           currentValues={{
-            connectorType: connectorType,
-            name: "",
-            website: "",
+            connectorType,
+            name: initialName ?? "",
+            additionalInfo: "",
             email: workspace.email,
           }}
           hasFeedback={hasFeedback}
