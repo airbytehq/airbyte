@@ -71,8 +71,8 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & IProps> = ({
   const config = useConfig();
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
-  const removeBaseUrl = (url: { path: string }) => {
-    if (url.path.startsWith("../../")) {
+  const removeBaseUrl = (url: { path?: string }) => {
+    if (url.path?.startsWith("../../")) {
       return url.path.replace("../../", `${config.integrationUrl}/`);
     }
     return url.path;
