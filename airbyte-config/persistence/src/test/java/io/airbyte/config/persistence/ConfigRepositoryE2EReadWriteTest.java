@@ -233,6 +233,9 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     configRepository.writeActorDefinitionWorkspaceGrant(definitionId, workspaceId);
     assertTrue(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+
+    configRepository.deleteActorDefinitionWorkspaceGrant(definitionId, workspaceId);
+    assertFalse(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
   }
 
 }
