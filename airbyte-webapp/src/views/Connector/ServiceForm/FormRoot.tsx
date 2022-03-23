@@ -31,7 +31,7 @@ const FormRoot: React.FC<{
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error;
+  fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
 }> = ({
