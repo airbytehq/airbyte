@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": ["project_id", "dataset_id"],
+    "required": ["project_id", "dataset_id", "credentials_json"],
     "additionalProperties": true,
     "properties": {
       "big_query_client_buffer_size_mb": {
