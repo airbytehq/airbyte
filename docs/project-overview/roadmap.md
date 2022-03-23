@@ -6,7 +6,7 @@ description: 'Here''s what''s coming in the next few days, weeks, months, and ye
 
 ## Coming within a few days
 
-Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/milestones) and our [Roadmap for Connectors](https://github.com/airbytehq/airbyte/projects/3) on GitHub. You'll see the features we're currently working on or about to. You may also give us insights, by adding your own issues and voting for specific features / integrations.
+Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/milestones) and our [Roadmap for Connectors](https://github.com/airbytehq/airbyte/projects/1) on GitHub. You'll see the features we're currently working on or about to. You may also give us insights, by adding your own issues and voting for specific features / integrations.
 
 ## Coming within a few weeks / months
 
