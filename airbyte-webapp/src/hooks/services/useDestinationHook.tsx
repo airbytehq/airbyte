@@ -32,13 +32,6 @@ type DestinationServiceApi = {
     values: ValuesProps;
     destinationConnector?: ConnectorProps;
   }) => Promise<Destination>;
-  recreateDestination: ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => Promise<Destination>;
   deleteDestination: ({
     destination,
     connectionsWithDestination,
@@ -60,20 +53,15 @@ const useDestination = (): DestinationServiceApi => {
     DestinationResource.partialUpdateShape()
   );
 
-  const recreatedestination = useFetcher(DestinationResource.recreateShape());
-
   const destinationDelete = useFetcher(DestinationResource.deleteShape());
 
   const updateConnectionsStore = useFetcher(
     ConnectionResource.updateStoreAfterDeleteShape()
   );
 
-  const createDestination = async ({
+  const createDestination: DestinationServiceApi["createDestination"] = async ({
     values,
     destinationConnector,
-  }: {
-    values: ValuesProps;
-    destinationConnector?: ConnectorProps;
   }) => {
     analyticsService.track("New Destination - Action", {
       action: "Test a connector",
@@ -144,44 +132,9 @@ const useDestination = (): DestinationServiceApi => {
       }
     );
 
-  const recreateDestination = async ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => {
-    return await recreatedestination(
-      {
-        destinationId,
-      },
-      {
-        name: values.name,
-        destinationId,
-        connectionConfiguration: values.connectionConfiguration,
-        workspaceId: workspace.workspaceId,
-        destinationDefinitionId: values.serviceType,
-      },
-      // Method used only in onboarding.
-      // Replace all destination List to new item in UpdateParams (to change id)
-      [
-        [
-          DestinationResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (newdestinationId: string) => ({
-            destinations: [newdestinationId],
-          }),
-        ],
-      ]
-    );
-  };
-
-  const deleteDestination = async ({
+  const deleteDestination: DestinationServiceApi["deleteDestination"] = async ({
     destination,
     connectionsWithDestination,
-  }: {
-    destination: Destination;
-    connectionsWithDestination: Connection[];
   }) => {
     await destinationDelete({
       destinationId: destination.destinationId,
@@ -198,7 +151,6 @@ const useDestination = (): DestinationServiceApi => {
   return {
     createDestination,
     updateDestination,
-    recreateDestination,
     deleteDestination,
   };
 };
