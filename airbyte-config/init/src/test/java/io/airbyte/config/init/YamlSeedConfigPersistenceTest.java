@@ -45,6 +45,7 @@ public class YamlSeedConfigPersistenceTest {
     assertEquals("mysql.svg", mysqlSource.getIcon());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/sources/mysql"), mysqlSource.getSpec().getDocumentationUrl());
     assertEquals(true, mysqlSource.getPublic());
+    assertEquals(false, mysqlSource.getCustom());
 
     // destination
     final String s3DestinationId = "4816b78f-1489-44c1-9060-4b19d5fa9362";
@@ -56,6 +57,7 @@ public class YamlSeedConfigPersistenceTest {
     assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
     assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
     assertEquals(true, s3Destination.getPublic());
+    assertEquals(false, s3Destination.getCustom());
   }
 
   @Test
