@@ -85,6 +85,7 @@ class SourceGoogleAds(AbstractSource):
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
+
             account_info = self.get_account_info(google_api, config)
             is_manager_account = self.is_manager_account(account_info)
 
