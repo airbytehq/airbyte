@@ -54,12 +54,15 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -785,6 +788,14 @@ public class ConfigRepository {
 
   public List<ReleaseStage> getJobIdToReleaseStages(final long jobId) throws IOException {
     return database.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
+  }
+
+  private Condition includeTombstones(final Field<Boolean> tombstoneField, final boolean includeTombstones) {
+    if (includeTombstones) {
+      return DSL.trueCondition();
+    } else {
+      return tombstoneField.eq(false);
+    }
   }
 
 }
