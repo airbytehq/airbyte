@@ -226,4 +226,11 @@ public class SourceDefinitionsHandler {
         .granted(true);
   }
 
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
+  }
+
 }

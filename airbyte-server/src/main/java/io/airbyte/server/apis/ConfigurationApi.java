@@ -384,7 +384,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-
+    execute(() -> {
+      sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(sourceDefinitionIdWithWorkspaceId);
+      return null;
+    });
   }
 
   // SOURCE SPECIFICATION

@@ -291,6 +291,17 @@ class SourceDefinitionsHandlerTest {
         workspaceId);
   }
 
+  @Test
+  @DisplayName("revokeSourceDefinitionFromWorkspace should correctly delete a workspace grant")
+  void testRevokeSourceDefinitionFromWorkspace() throws IOException {
+    sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(new SourceDefinitionIdWithWorkspaceId()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .workspaceId(workspaceId));
+    verify(configRepository).deleteActorDefinitionWorkspaceGrant(
+        sourceDefinition.getSourceDefinitionId(),
+        workspaceId);
+  }
+
   @Nested
   @DisplayName("listLatest")
   class listLatest {
