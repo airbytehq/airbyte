@@ -13,5 +13,5 @@ RUN pip install .
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.30
+LABEL io.airbyte.version=0.1.31
 LABEL io.airbyte.name=airbyte/source-google-ads
