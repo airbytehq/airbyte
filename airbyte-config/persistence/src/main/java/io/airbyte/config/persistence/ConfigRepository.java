@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -609,14 +608,18 @@ public class ConfigRepository {
   }
 
   public Optional<SourceOAuthParameter> getSourceOAuthParamByDefinitionIdOptional(final UUID workspaceId, final UUID sourceDefinitionId)
-      throws JsonValidationException, IOException {
-    for (final SourceOAuthParameter oAuthParameter : listSourceOAuthParam()) {
-      if (sourceDefinitionId.equals(oAuthParameter.getSourceDefinitionId()) &&
-          Objects.equals(workspaceId, oAuthParameter.getWorkspaceId())) {
-        return Optional.of(oAuthParameter);
-      }
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_OAUTH_PARAMETER);
+      return query.where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.source),
+          ACTOR_OAUTH_PARAMETER.WORKSPACE_ID.eq(workspaceId),
+          ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(sourceDefinitionId)).fetch();
+    });
+
+    if (result.size() == 0) {
+      return Optional.empty();
     }
-    return Optional.empty();
+    return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
   }
 
   public void writeSourceOAuthParam(final SourceOAuthParameter SourceOAuthParameter) throws JsonValidationException, IOException {
