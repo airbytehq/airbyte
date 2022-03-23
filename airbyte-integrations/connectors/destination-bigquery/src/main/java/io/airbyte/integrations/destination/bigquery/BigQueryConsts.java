@@ -25,6 +25,8 @@ public class BigQueryConsts {
   public static final String KEEP_GCS_FILES_VAL = "Keep all tmp files in GCS";
   public static final String PART_SIZE = "part_size_mb";
 
+  public static final String NAMESPACE_PREFIX = "n";
+
   // tests
   public static final String BIGQUERY_BASIC_CONFIG = "basic_bigquery_config";
   public static final String GCS_CONFIG = "gcs_config";

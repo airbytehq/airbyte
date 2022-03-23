@@ -51,7 +51,7 @@ jobs:
     environment: more-secrets
     steps:
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
           export_default_credentials: true
@@ -111,7 +111,9 @@ jobs:
       - name: Create Sentry Release
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
-          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}" --auto --ignore-missing
+          # The --ignore-empty flag is not ideal but necessary, because we need to run this command from forked repos,
+          # which do not have Sentry integration, and thus Sentry cannot find the proper commit history.
+          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}" --auto --ignore-missing --ignore-empty
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j

@@ -9,16 +9,25 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
 
   @Override
-  protected String applyDefaultCase(final String input) {
+  public String applyDefaultCase(final String input) {
     return input.toUpperCase();
   }
 
-  public String getStageName(String schemaName, String outputTableName) {
-    return schemaName.concat(outputTableName).replaceAll("-", "_").toUpperCase();
-  }
+  /**
+   * The first character can only be alphanumeric or an underscore.
+   */
+  @Override
+  public String convertStreamName(final String input) {
+    if (input == null) {
+      return null;
+    }
 
-  public String getStagingPath(String schemaName, String tableName, String currentSyncPath) {
-    return (getStageName(schemaName, tableName) + "/staged/" + currentSyncPath).toUpperCase();
+    final String normalizedName = super.convertStreamName(input);
+    if (normalizedName.substring(0, 1).matches("[A-Za-z_]")) {
+      return normalizedName;
+    } else {
+      return "_" + normalizedName;
+    }
   }
 
 }

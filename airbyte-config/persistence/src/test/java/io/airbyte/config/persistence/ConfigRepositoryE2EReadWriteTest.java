@@ -5,8 +5,11 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
@@ -18,8 +21,6 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
-import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
@@ -27,15 +28,17 @@ import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,12 +63,9 @@ public class ConfigRepositoryE2EReadWriteTest {
 
   @BeforeEach
   void setup() throws IOException, JsonValidationException {
-    final var secretPersistence = new MemorySecretPersistence();
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database));
-    configRepository =
-        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence),
-            database));
+    configRepository = spy(new ConfigRepository(configPersistence, database));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -79,13 +79,11 @@ public class ConfigRepositoryE2EReadWriteTest {
     for (final StandardDestinationDefinition destinationDefinition : MockData.standardDestinationDefinitions()) {
       configRepository.writeStandardDestinationDefinition(destinationDefinition);
     }
-    final ConnectorSpecification specification = new ConnectorSpecification()
-        .withConnectionSpecification(Jsons.deserialize("{}"));
-    for (final SourceConnection connection : MockData.sourceConnections()) {
-      configRepository.writeSourceConnection(connection, specification);
+    for (final SourceConnection source : MockData.sourceConnections()) {
+      configRepository.writeSourceConnectionNoSecrets(source);
     }
-    for (final DestinationConnection connection : MockData.destinationConnections()) {
-      configRepository.writeDestinationConnection(connection, specification);
+    for (final DestinationConnection destination : MockData.destinationConnections()) {
+      configRepository.writeDestinationConnectionNoSecrets(destination);
     }
     for (final StandardSyncOperation operation : MockData.standardSyncOperations()) {
       configRepository.writeStandardSyncOperation(operation);
@@ -128,9 +126,7 @@ public class ConfigRepositoryE2EReadWriteTest {
         .withName("SomeConnector")
         .withWorkspaceId(workspace.getWorkspaceId())
         .withConfiguration(Jsons.deserialize("{}"));
-    final ConnectorSpecification specification = new ConnectorSpecification()
-        .withConnectionSpecification(Jsons.deserialize("{}"));
-    configRepository.writeSourceConnection(source, specification);
+    configRepository.writeSourceConnectionNoSecrets(source);
 
     final AirbyteCatalog actorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING));
     configRepository.writeActorCatalogFetchEvent(
@@ -164,6 +160,61 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
     assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
+  }
+
+  @Test
+  public void testGetWorkspaceBySlug()
+      throws IOException {
+
+    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
+    final StandardWorkspace tombstonedWorkspace = MockData.standardWorkspaces().get(2);
+    final Optional<StandardWorkspace> retrievedWorkspace = configRepository.getWorkspaceBySlugOptional(workspace.getSlug(), false);
+    final Optional<StandardWorkspace> retrievedTombstonedWorkspaceNoTombstone =
+        configRepository.getWorkspaceBySlugOptional(tombstonedWorkspace.getSlug(), false);
+    final Optional<StandardWorkspace> retrievedTombstonedWorkspace = configRepository.getWorkspaceBySlugOptional(tombstonedWorkspace.getSlug(), true);
+
+    assertTrue(retrievedWorkspace.isPresent());
+    assertEquals(workspace, retrievedWorkspace.get());
+
+    assertFalse(retrievedTombstonedWorkspaceNoTombstone.isPresent());
+    assertTrue(retrievedTombstonedWorkspace.isPresent());
+
+    assertEquals(tombstonedWorkspace, retrievedTombstonedWorkspace.get());
+  }
+
+  @Test
+  public void testUpdateConnectionOperationIds() throws Exception {
+    final StandardSync sync = MockData.standardSyncs().get(0);
+    final List<UUID> existingOperationIds = sync.getOperationIds();
+    final UUID connectionId = sync.getConnectionId();
+
+    // this test only works as intended when there are multiple operationIds
+    assertTrue(existingOperationIds.size() > 1);
+
+    // first, remove all associated operations
+    Set<UUID> expectedOperationIds = Collections.emptySet();
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    Set<UUID> actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+
+    // now, add back one operation
+    expectedOperationIds = Collections.singleton(existingOperationIds.get(0));
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+
+    // finally, remove the first operation while adding back in the rest
+    expectedOperationIds = existingOperationIds.stream().skip(1).collect(Collectors.toSet());
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+  }
+
+  private Set<UUID> fetchOperationIdsForConnectionId(final UUID connectionId) throws SQLException {
+    return database.query(ctx -> ctx
+        .selectFrom(CONNECTION_OPERATION)
+        .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+        .fetchSet(CONNECTION_OPERATION.OPERATION_ID));
   }
 
 }

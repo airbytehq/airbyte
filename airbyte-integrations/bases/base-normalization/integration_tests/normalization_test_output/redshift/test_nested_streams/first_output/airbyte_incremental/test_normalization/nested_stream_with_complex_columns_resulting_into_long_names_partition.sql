@@ -6,6 +6,7 @@
     
     
       compound sortkey(_airbyte_emitted_at)
+    
   as (
     
 with __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab1 as (
