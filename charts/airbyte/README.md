@@ -266,7 +266,7 @@ Helm charts for Airbyte.
 | `logs.s3.bucketRegion`             | Region of the bucket (must be empty if using minio)    | `""`               |
 | `logs.gcs.bucket`                  | GCS bucket name                                        | `""`               |
 | `logs.gcs.credentials`             | The path the GCS creds are written to                  | `""`               |
-
+| `logs.gcs.credentialsJson`         | Base64 encoded json GCP credentials file contents      | `""`               |
 
 ### Minio chart overwrites
 
