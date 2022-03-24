@@ -85,8 +85,8 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
 };
 
 /**
- * A componen that will observe whenever the serviceType (selected connector)
- * changes and changes the name of the connector to match the connector definition name.
+ * A component that will observe whenever the serviceType (selected connector)
+ * changes and set the name of the connector to match the connector definition name.
  */
 const SetDefaultName: React.FC<{
   availableConnectors: ConnectorDefinition[];
