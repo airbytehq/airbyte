@@ -45,7 +45,7 @@ This connector outputs the following incremental streams:
 
 ### Notes
 
-1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from above 17 incremental streams are pure incremental meaning that they:
+1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the above 17 incremental streams are pure incremental meaning that they:
    * read only new records;
    * output only new records.
 
