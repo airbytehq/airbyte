@@ -9,10 +9,12 @@ import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -226,6 +228,26 @@ public class DestinationDefinitionsHandler {
     } catch (final Exception e) {
       return null;
     }
+  }
+
+  public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
+                                                                                final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardDestinationDefinition standardDestinationDefinition =
+        configRepository.getStandardDestinationDefinition(destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId(),
+        destinationDefinitionIdWithWorkspaceId.getWorkspaceId());
+    return new PrivateDestinationDefinitionRead()
+        .destinationDefinition(buildDestinationDefinitionRead(standardDestinationDefinition))
+        .granted(true);
+  }
+
+  public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId(),
+        destinationDefinitionIdWithWorkspaceId.getWorkspaceId());
   }
 
 }
