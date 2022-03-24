@@ -81,3 +81,24 @@ def find_key_inside_schema(schema_item: Union[dict, list, str], key: str = "$ref
             item = find_key_inside_schema(schema_object_value, key)
             if item is not None:
                 return item
+
+
+def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
+    """Find at least one keyword in a schema, skip object properties"""
+
+    def _find_keyword(schema, key, _skip=False):
+        if isinstance(schema, list):
+            for v in schema:
+                _find_keyword(v, key)
+        elif isinstance(schema, dict):
+            for k, v in schema.items():
+                if k == key and not _skip:
+                    raise StopIteration
+                rec_skip = k == "properties" and schema.get("type") == "object"
+                _find_keyword(v, key, rec_skip)
+
+    try:
+        _find_keyword(schema, key)
+    except StopIteration:
+        return True
+    return False

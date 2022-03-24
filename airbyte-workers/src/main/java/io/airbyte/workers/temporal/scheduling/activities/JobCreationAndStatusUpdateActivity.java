@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -21,6 +23,7 @@ public interface JobCreationAndStatusUpdateActivity {
   class JobCreationInput {
 
     private UUID connectionId;
+    private boolean reset;
 
   }
 
@@ -72,10 +75,29 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class AttemptNumberCreationOutput {
+
+    private int attemptNumber;
+
+  }
+
+  /**
+   * Create a new attempt for a given job ID
+   *
+   * @param input POJO containing the jobId
+   * @return A POJO containing the attemptNumber
+   */
+  @ActivityMethod
+  AttemptNumberCreationOutput createNewAttemptNumber(AttemptCreationInput input) throws RetryableException;
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobSuccessInput {
 
     private long jobId;
     private int attemptId;
+    private StandardSyncOutput standardSyncOutput;
 
   }
 
@@ -88,9 +110,27 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class JobSuccessInputWithAttemptNumber {
+
+    private long jobId;
+    private int attemptNumber;
+    private StandardSyncOutput standardSyncOutput;
+
+  }
+
+  /**
+   * Set a job status as successful
+   */
+  @ActivityMethod
+  void jobSuccessWithAttemptNumber(JobSuccessInputWithAttemptNumber input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobFailureInput {
 
     private long jobId;
+    private String reason;
 
   }
 
@@ -107,6 +147,8 @@ public interface JobCreationAndStatusUpdateActivity {
 
     private long jobId;
     private int attemptId;
+    private StandardSyncOutput standardSyncOutput;
+    private AttemptFailureSummary attemptFailureSummary;
 
   }
 
@@ -119,9 +161,29 @@ public interface JobCreationAndStatusUpdateActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  class AttemptNumberFailureInput {
+
+    private long jobId;
+    private int attemptNumber;
+    private StandardSyncOutput standardSyncOutput;
+    private AttemptFailureSummary attemptFailureSummary;
+
+  }
+
+  /**
+   * Set an attempt status as failed
+   */
+  @ActivityMethod
+  void attemptFailureWithAttemptNumber(AttemptNumberFailureInput input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class JobCancelledInput {
 
     private long jobId;
+    private int attemptId;
+    private AttemptFailureSummary attemptFailureSummary;
 
   }
 
@@ -130,5 +192,34 @@ public interface JobCreationAndStatusUpdateActivity {
    */
   @ActivityMethod
   void jobCancelled(JobCancelledInput input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class JobCancelledInputWithAttemptNumber {
+
+    private long jobId;
+    private int attemptNumber;
+    private AttemptFailureSummary attemptFailureSummary;
+
+  }
+
+  /**
+   * Set a job status as cancelled
+   */
+  @ActivityMethod
+  void jobCancelledWithAttemptNumber(JobCancelledInputWithAttemptNumber input);
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class ReportJobStartInput {
+
+    private long jobId;
+
+  }
+
+  @ActivityMethod
+  void reportJobStart(ReportJobStartInput reportJobStartInput);
 
 }

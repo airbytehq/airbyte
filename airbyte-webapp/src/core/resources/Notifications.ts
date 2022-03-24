@@ -23,8 +23,6 @@ export default class NotificationsResource
   ): MutateShape<SchemaDetail<Notifications>> {
     return {
       ...super.partialUpdateShape(),
-      getFetchKey: (params) =>
-        "POST /notifications/try" + JSON.stringify(params),
       fetch: async (params) =>
         this.fetch("post", `${this.url(params)}/try`, params),
       schema: this,

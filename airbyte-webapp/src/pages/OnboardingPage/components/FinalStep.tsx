@@ -13,6 +13,7 @@ import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import Status from "core/statuses";
 import useWorkspace from "hooks/services/useWorkspace";
+import { useConfig } from "config";
 
 type FinalStepProps = {
   connectionId: string;
@@ -35,11 +36,13 @@ const Videos = styled.div`
 `;
 
 const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
+  const config = useConfig();
   const { sendFeedback } = useWorkspace();
   const {
     feedbackPassed,
     passFeedback,
-    useCases,
+    visibleUseCases,
+    useCaseLinks,
     skipCase,
   } = useOnboardingService();
   const connection = useResource(ConnectionResource.detailShape(), {
@@ -58,6 +61,11 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
       setIsOpen(true);
     }
   }, [connection.latestSyncJobStatus, feedbackPassed]);
+
+  const onSkipFeedback = () => {
+    passFeedback();
+    setIsOpen(false);
+  };
 
   const onSendFeedback = (feedback: string) => {
     sendFeedback({
@@ -81,7 +89,7 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
         <VideoItem
           small
           description={<FormattedMessage id="onboarding.exploreDemo" />}
-          videoId="sKDviQrOAbU"
+          link={config.ui.demoLink}
           img="/videoCover.png"
         />
       </Videos>
@@ -93,26 +101,26 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
         <FormattedMessage
           id="onboarding.useCases"
           values={{
-            name: (...name: React.ReactNode[]) => (
+            name: (name: React.ReactNode[]) => (
               <HighlightedText>{name}</HighlightedText>
             ),
           }}
         />
       </Title>
 
-      {useCases &&
-        useCases.map((item, key) => (
-          <UseCaseBlock
-            key={item}
-            count={key + 1}
-            onSkip={skipCase}
-            id={item}
-          />
-        ))}
+      {visibleUseCases?.map((item, key) => (
+        <UseCaseBlock
+          key={item}
+          count={key + 1}
+          href={useCaseLinks[item]}
+          onSkip={skipCase}
+          id={item}
+        />
+      ))}
 
       {isOpen ? (
         <SyncCompletedModal
-          onClose={() => setIsOpen(false)}
+          onClose={onSkipFeedback}
           onPassFeedback={onSendFeedback}
         />
       ) : null}

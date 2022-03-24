@@ -13,7 +13,7 @@ import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
@@ -26,10 +26,10 @@ public class ProductionWriterFactory implements GcsWriterFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public S3Writer create(final GcsDestinationConfig config,
-                         final AmazonS3 s3Client,
-                         final ConfiguredAirbyteStream configuredStream,
-                         final Timestamp uploadTimestamp)
+  public DestinationFileWriter create(final GcsDestinationConfig config,
+                                      final AmazonS3 s3Client,
+                                      final ConfiguredAirbyteStream configuredStream,
+                                      final Timestamp uploadTimestamp)
       throws Exception {
     final S3Format format = config.getFormatConfig().getFormat();
 

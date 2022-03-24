@@ -15,6 +15,9 @@ sourceControl {
     gitRepository("https://github.com/airbytehq/json-avro-converter.git") {
         producesModule("tech.allegro.schema.json2avro:converter")
     }
+    gitRepository("https://github.com/airbytehq/jsongenerator.git") {
+        producesModule("net.jimblackler:jsongenerator")
+    }
 }
 
 rootProject.name = 'airbyte'
@@ -40,7 +43,7 @@ include ':airbyte-commons-docker'
 include ':airbyte-config:models' // reused by acceptance tests in connector base.
 include ':airbyte-db:lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
-include ':airbyte-metrics'
+include ':airbyte-metrics:lib'
 include ':airbyte-oauth'
 include ':airbyte-protocol:models'
 include ':airbyte-queue'
@@ -62,13 +65,14 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-config:init'
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'
-    include ':airbyte-webapp-e2e-tests'
+    include ':airbyte-metrics:reporter'
     include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
     include ':airbyte-temporal'
     include ':airbyte-tests'
     include ':airbyte-webapp'
+    include ':airbyte-webapp-e2e-tests'
 }
 
 // connectors base

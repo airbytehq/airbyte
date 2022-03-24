@@ -147,8 +147,8 @@ class TestTransformConfig:
             "priority": "interactive",
             "keyfile_json": {"type": "service_account-json"},
             "location": "EU",
-            "retries": 1,
-            "threads": 32,
+            "retries": 3,
+            "threads": 8,
         }
 
         actual_keyfile = actual_output["keyfile_json"]
@@ -167,12 +167,47 @@ class TestTransformConfig:
             "project": "my_project_id",
             "dataset": "my_dataset_id",
             "priority": "interactive",
-            "retries": 1,
-            "threads": 32,
+            "retries": 3,
+            "threads": 8,
         }
 
         assert expected_output == actual_output
         assert extract_schema(actual_output) == "my_dataset_id"
+
+    def test_transform_bigquery_with_embedded_project_id(self):
+        input = {"project_id": "my_project_id", "dataset_id": "my_project_id:my_dataset_id"}
+
+        actual_output = TransformConfig().transform_bigquery(input)
+        expected_output = {
+            "type": "bigquery",
+            "method": "oauth",
+            "project": "my_project_id",
+            "dataset": "my_dataset_id",
+            "priority": "interactive",
+            "retries": 3,
+            "threads": 8,
+        }
+
+        assert expected_output == actual_output
+        assert extract_schema(actual_output) == "my_dataset_id"
+
+    def test_transform_bigquery_with_embedded_mismatched_project_id(self):
+        input = {"project_id": "my_project_id", "dataset_id": "bad_project_id:my_dataset_id"}
+
+        try:
+            TransformConfig().transform_bigquery(input)
+            assert False, "transform_bigquery should have raised an exception"
+        except ValueError:
+            pass
+
+    def test_transform_bigquery_with_invalid_format(self):
+        input = {"project_id": "my_project_id", "dataset_id": "foo:bar:baz"}
+
+        try:
+            TransformConfig().transform_bigquery(input)
+            assert False, "transform_bigquery should have raised an exception"
+        except ValueError:
+            pass
 
     def test_transform_postgres(self):
         input = {
@@ -192,7 +227,7 @@ class TestTransformConfig:
             "pass": "password123",
             "port": 5432,
             "schema": "public",
-            "threads": 32,
+            "threads": 8,
             "user": "a user",
         }
 
@@ -225,7 +260,7 @@ class TestTransformConfig:
             "pass": "password123",
             "port": port,
             "schema": "public",
-            "threads": 32,
+            "threads": 8,
             "user": "a user",
         }
 
@@ -252,7 +287,11 @@ class TestTransformConfig:
             "query_tag": "normalization",
             "role": "AIRBYTE_ROLE",
             "schema": "AIRBYTE_SCHEMA",
-            "threads": 32,
+            "threads": 5,
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
             "type": "snowflake",
             "user": "AIRBYTE_USER",
             "warehouse": "AIRBYTE_WAREHOUSE",
@@ -313,6 +352,23 @@ class TestTransformConfig:
         # DBT schema is equivalent to MySQL database
         assert extract_schema(actual) == "my_db"
 
+    def test_transform_clickhouse(self):
+        input = {"host": "airbyte.io", "port": 9440, "database": "default", "username": "ch", "password": "password1234", "ssl": True}
+
+        actual = TransformConfig().transform_clickhouse(input)
+        expected = {
+            "type": "clickhouse",
+            "host": "airbyte.io",
+            "port": 9440,
+            "schema": "default",
+            "user": "ch",
+            "password": "password1234",
+            "secure": True,
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "default"
+
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
         input = {
@@ -332,7 +388,7 @@ class TestTransformConfig:
             "pass": "password123",
             "port": 5432,
             "schema": "public",
-            "threads": 32,
+            "threads": 8,
             "user": "a user",
         }
         actual = TransformConfig().transform(DestinationType.postgres, input)

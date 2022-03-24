@@ -12,7 +12,6 @@ import useDestination, {
 import useConnection, {
   useConnectionList,
 } from "hooks/services/useConnectionHook";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
@@ -30,6 +29,7 @@ import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { RoutePaths } from "pages/routes";
+import { JobInfo } from "../../core/domain/job/Job";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -65,6 +65,7 @@ const OnboardingPage: React.FC = () => {
 
   useEffect(() => {
     analyticsService.page("Onboarding Page");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { sources } = useSourceList();
@@ -80,8 +81,8 @@ const OnboardingPage: React.FC = () => {
     {}
   );
 
-  const { createSource, recreateSource } = useSource();
-  const { createDestination, recreateDestination } = useDestination();
+  const { createSource } = useSource();
+  const { createDestination } = useDestination();
   const { finishOnboarding } = useWorkspace();
 
   const [successRequest, setSuccessRequest] = useState(false);
@@ -131,14 +132,7 @@ const OnboardingPage: React.FC = () => {
         const sourceConnector = getSourceDefinitionById(values.serviceType);
 
         try {
-          if (!!sources.length) {
-            await recreateSource({
-              values,
-              sourceId: sources[0].sourceId,
-            });
-          } else {
-            await createSource({ values, sourceConnector });
-          }
+          await createSource({ values, sourceConnector });
 
           setSuccessRequest(true);
           setTimeout(() => {
@@ -156,7 +150,6 @@ const OnboardingPage: React.FC = () => {
           availableServices={sourceDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          // source={sources.length && !successRequest ? sources[0] : undefined}
         />
       );
     }
@@ -173,17 +166,10 @@ const OnboardingPage: React.FC = () => {
         );
 
         try {
-          if (!!destinations.length) {
-            await recreateDestination({
-              values,
-              destinationId: destinations[0].destinationId,
-            });
-          } else {
-            await createDestination({
-              values,
-              destinationConnector,
-            });
-          }
+          await createDestination({
+            values,
+            destinationConnector,
+          });
 
           setSuccessRequest(true);
           setTimeout(() => {
@@ -201,9 +187,6 @@ const OnboardingPage: React.FC = () => {
           availableServices={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          // destination={
-          //   destinations.length && !successRequest ? destinations[0] : undefined
-          // }
         />
       );
     }
@@ -243,6 +226,7 @@ const OnboardingPage: React.FC = () => {
         <StepsCounter steps={steps} currentStep={currentStep} />
 
         <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+
         <Footer>
           <Button secondary onClick={() => handleFinishOnboarding()}>
             {currentStep === StepType.FINAl ? (

@@ -6,9 +6,10 @@ package io.airbyte.integrations.destination.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -17,18 +18,24 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
+
+  protected static final Logger LOGGER = LoggerFactory.getLogger(S3Consumer.class);
 
   private final S3DestinationConfig s3DestinationConfig;
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final S3WriterFactory writerFactory;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final Map<AirbyteStreamNameNamespacePair, S3Writer> streamNameAndNamespaceToWriters;
+  private final Map<AirbyteStreamNameNamespacePair, DestinationFileWriter> streamNameAndNamespaceToWriters;
 
   private AirbyteMessage lastStateMessage = null;
 
@@ -49,7 +56,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      final S3Writer writer = writerFactory
+      final DestinationFileWriter writer = writerFactory
           .create(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
       writer.initialize();
 
@@ -85,8 +92,20 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void close(final boolean hasFailed) throws Exception {
-    for (final S3Writer handler : streamNameAndNamespaceToWriters.values()) {
-      handler.close(hasFailed);
+    LOGGER.debug("Closing consumer with writers = {}", streamNameAndNamespaceToWriters);
+    List<Exception> exceptionsThrown = new ArrayList<>();
+    for (var entry : streamNameAndNamespaceToWriters.entrySet()) {
+      final DestinationFileWriter handler = entry.getValue();
+      LOGGER.debug("Closing writer {}", entry.getKey());
+      try {
+        handler.close(hasFailed);
+      } catch (Exception e) {
+        exceptionsThrown.add(e);
+        LOGGER.error("Exception while closing writer {}", entry.getKey(), e);
+      }
+    }
+    if (!exceptionsThrown.isEmpty()) {
+      throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
     }
     // S3 stream uploader is all or nothing if a failure happens in the destination.
     if (!hasFailed) {

@@ -22,4 +22,9 @@ public record S3CopyConfig(boolean purgeStagingData, S3DestinationConfig s3Confi
     }
   }
 
+  public static S3CopyConfig getS3CopyConfig(final JsonNode config) {
+    return new S3CopyConfig(S3CopyConfig.shouldPurgeStagingData(config),
+        S3DestinationConfig.getS3DestinationConfig(config));
+  }
+
 }

@@ -9,13 +9,17 @@
     "properties": {
       "spreadsheet_id": {
         "type": "string",
-        "description": "The ID of the spreadsheet to be replicated."
+        "title": "Spreadsheet ID",
+        "description": "The ID of the spreadsheet to be replicated. The ID is found in the URL of your spreadsheet, typically between \"/d/\" and \"/edit\"",
+        "examples": ["1hLd9Qqti5XyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb"]
       },
       "credentials": {
         "type": "object",
+        "title": "Credentials",
+        "description": "Google API Credentials for connecting to Google Sheets and Google Drive APIs",
         "oneOf": [
           {
-            "title": "Authenticate via Google (Oauth)",
+            "title": "Authenticate via Google (OAuth)",
             "type": "object",
             "required": [
               "auth_type",
@@ -31,19 +35,19 @@
               "client_id": {
                 "title": "Client ID",
                 "type": "string",
-                "description": "The Client ID of your developer application",
+                "description": "The Client ID of your Google Sheets developer application.",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "The client secret of your developer application",
+                "description": "The Client Secret of your Google Sheets developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
-                "description": "A refresh token generated using the above client ID and secret",
+                "description": "The token for obtaining new access token.",
                 "airbyte_secret": true
               }
             }
@@ -59,7 +63,8 @@
               },
               "service_account_info": {
                 "type": "string",
-                "description": "The JSON key of the service account to use for authorization",
+                "title": "Service Account Information.",
+                "description": "The JSON key of the service account to use for authorization.",
                 "airbyte_secret": true,
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
