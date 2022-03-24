@@ -130,12 +130,15 @@ class TwitterAdsStream(HttpStream, ABC):
 
                 for item in result_data:
                     item['params'] = result_params.get('params')
-
+                
                 results.append(result_data)
 
-
-
             results =[ item for sublist in results for item in sublist]
+
+            for item in results:
+                for each in item['id_data']:
+                    each['id'] = item['id']
+                    each['params'] = item['params']
 
             return results
         else:
