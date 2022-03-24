@@ -5,6 +5,7 @@
 
 from typing import Any, List, Mapping, Tuple
 
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -39,14 +40,17 @@ from .streams import (
 
 class SourceGitlab(AbstractSource):
     def _generate_main_streams(self, config: Mapping[str, Any]) -> Tuple[GitlabStream, GitlabStream]:
-        gids = list(filter(None, config["groups"].split(" ")))
-        pids = list(filter(None, config["projects"].split(" ")))
-
-        if not pids and not gids:
-            raise Exception("Either groups or projects need to be provided for connect to Gitlab API")
-
         auth = TokenAuthenticator(token=config["private_token"])
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
+
+        pids = list(filter(None, config.get("projects").split(" ")))
+        gids = config.get("groups")
+
+        if gids:
+            gids = list(filter(None, gids.split(" ")))
+        else:
+            gids = self._get_group_list(**auth_params)
+
         groups = Groups(group_ids=gids, **auth_params)
         if gids:
             projects = GroupProjects(project_ids=pids, parent_stream=groups, **auth_params)
@@ -54,6 +58,27 @@ class SourceGitlab(AbstractSource):
             projects = Projects(project_ids=pids, **auth_params)
 
         return groups, projects
+
+    def _get_group_list(self, **kwargs):
+        headers = kwargs["authenticator"].get_auth_header()
+
+        ids = []
+        has_next = True
+        # First request params
+        per_page = 50
+        next_page = 1
+
+        while has_next:
+            response = requests.get(f'https://{kwargs["api_url"]}/api/v4/groups?page={next_page}&per_page={per_page}', headers=headers)
+            next_page = response.headers.get("X-Next-Page")
+            per_page = response.headers.get("X-Per-Page")
+            results = response.json()
+
+            items = map(lambda i: i["full_path"].replace("/", "%2f"), results)
+            ids.extend(items)
+            has_next = "X-Next-Page" in response.headers and response.headers["X-Next-Page"] != ""
+
+        return ids
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
