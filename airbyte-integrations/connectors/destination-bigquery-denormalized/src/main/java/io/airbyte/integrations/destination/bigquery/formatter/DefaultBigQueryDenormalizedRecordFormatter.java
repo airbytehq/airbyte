@@ -27,9 +27,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,6 +34,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryRecordFormatter {
 
@@ -70,8 +69,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     Preconditions.checkArgument(modifiedSchema.isObject() && modifiedSchema.has(PROPERTIES_FIELD));
     ObjectNode properties = (ObjectNode) modifiedSchema.get(PROPERTIES_FIELD);
     Jsons.keys(properties).stream()
-            .peek(addToRefList(properties))
-            .forEach(key -> properties.replace(key, getFileDefinition(properties.get(key))));
+        .peek(addToRefList(properties))
+        .forEach(key -> properties.replace(key, getFileDefinition(properties.get(key))));
     return modifiedSchema;
   }
 
@@ -270,7 +269,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
       list = reader.readValue(fieldDefinition.get(fieldName));
     } catch (IOException e) {
       throw new IllegalStateException(
-              String.format("Failed to read and process the following field - %s", fieldDefinition));
+          String.format("Failed to read and process the following field - %s", fieldDefinition));
     }
     ObjectNode objectNode = mapper.createObjectNode();
     list.forEach(field -> {
@@ -278,10 +277,10 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     });
 
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put("type", "object")
-            .put(PROPERTIES_FIELD, objectNode)
-            .put("additionalProperties", false)
-            .build());
+        .put("type", "object")
+        .put(PROPERTIES_FIELD, objectNode)
+        .put("additionalProperties", false)
+        .build());
   }
 
   private static Builder getField(final StandardNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {

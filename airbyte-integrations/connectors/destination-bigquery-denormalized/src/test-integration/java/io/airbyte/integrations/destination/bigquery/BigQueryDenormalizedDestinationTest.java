@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.NESTED_ARRAY_FIELD;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormatsWithEmptyList;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormatsWithNull;
@@ -55,7 +54,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -394,7 +392,7 @@ class BigQueryDenormalizedDestinationTest {
       if (jsonNode.isArray()) {
         jsonNode.forEach(arrayNodeValue -> resultSet.add(arrayNodeValue.textValue()));
       } else if (jsonNode.isObject()) {
-        resultSet.addAll(extractJsonValues(jsonNode, NESTED_ARRAY_FIELD));
+        resultSet.addAll(extractJsonValues(jsonNode, "big_query_array"));
       } else {
         resultSet.add(jsonNode.textValue());
       }
