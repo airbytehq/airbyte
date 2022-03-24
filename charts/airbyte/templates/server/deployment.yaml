@@ -39,92 +39,84 @@ spec:
         - name: AIRBYTE_VERSION
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: AIRBYTE_VERSION
         - name: CONFIG_ROOT
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: CONFIG_ROOT
-        {{- if .Values.postgresql.enabled }}
-        - name: DATABASE_PASSWORD
-          valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
-              key: DATABASE_PASSWORD
-        {{- else }}
         - name: DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "airbyte.postgresql.secretName" . }}
-              key: {{ include "airbyte.database.existingsecret.key" . }}
-        {{- end }}
+              name: {{ include "airbyte.database.secret.name" . }}
+              key: {{ include "airbyte.database.secret.passwordKey" . }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: DATABASE_URL
         - name: DATABASE_USER
           valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}-secrets
               key: DATABASE_USER
         - name: TRACKING_STRATEGY
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: TRACKING_STRATEGY
         - name: WORKER_ENVIRONMENT
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: WORKER_ENVIRONMENT
         - name: WORKSPACE_ROOT
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: WORKSPACE_ROOT
         - name: WEBAPP_URL
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: WEBAPP_URL
         - name: TEMPORAL_HOST
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: TEMPORAL_HOST
         - name: LOG_LEVEL
           value: "{{ .Values.server.log.level }}"
         - name: JOB_MAIN_CONTAINER_CPU_REQUEST
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: JOB_MAIN_CONTAINER_CPU_REQUEST
         - name: JOB_MAIN_CONTAINER_CPU_LIMIT
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: JOB_MAIN_CONTAINER_CPU_LIMIT
         - name: JOB_MAIN_CONTAINER_MEMORY_REQUEST
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: JOB_MAIN_CONTAINER_MEMORY_REQUEST
         - name: JOB_MAIN_CONTAINER_MEMORY_LIMIT
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: JOB_MAIN_CONTAINER_MEMORY_LIMIT
         - name: S3_LOG_BUCKET
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: S3_LOG_BUCKET
         - name: S3_LOG_BUCKET_REGION
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: S3_LOG_BUCKET_REGION
         {{- if and .Values.logs.accessKey.existingSecret .Values.logs.accessKey.existingSecretKey }}
         - name: AWS_ACCESS_KEY_ID
@@ -135,8 +127,8 @@ spec:
         {{- else }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}-secrets
               key: AWS_ACCESS_KEY_ID
         {{- end }}
         {{- if and .Values.logs.secretKey.existingSecret .Values.logs.secretKey.existingSecretKey }}
@@ -148,39 +140,39 @@ spec:
         {{- else }}
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}-secrets
               key: AWS_SECRET_ACCESS_KEY
         {{- end }}
         - name: S3_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: S3_MINIO_ENDPOINT
         - name: S3_PATH_STYLE_ACCESS
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: S3_PATH_STYLE_ACCESS
         - name: GOOGLE_APPLICATION_CREDENTIALS
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: GOOGLE_APPLICATION_CREDENTIALS
         - name: GCS_LOG_BUCKET
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: GCS_LOG_BUCKET
         - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
         - name: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
         {{- if .Values.server.extraEnv }}
         {{ .Values.server.extraEnv | toYaml | nindent 8 }}
@@ -236,7 +228,7 @@ spec:
           claimName: {{ include "common.names.fullname" . }}-data
       - name: gcs-log-creds-volume
         secret:
-          secretName: gcs-log-creds
+          secretName: {{ include "common.names.fullname" . }}-gcs-log-creds
       {{- if .Values.server.extraVolumes }}
 {{ toYaml .Values.server.extraVolumes | nindent 6 }}
       {{- end }}
