@@ -100,7 +100,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # (Service limits section)
     REPORT_WAIT_TIMEOUT = timedelta(minutes=30).total_seconds
     # Format used to specify metric generation date over Amazon Ads API.
-    REPORT_DATE_FORMAT = "%Y%m%d"
+    REPORT_DATE_FORMAT = "YYYYMMDD"
     cursor_field = "reportDate"
 
     def __init__(self, config: AmazonAdsConfig, profiles: List[Profile], authenticator: Oauth2Authenticator):
@@ -267,7 +267,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :return List of days from start_report_date up until today in format
         specified by REPORT_DATE_FORMAT variable.
         """
-        now = datetime.utcnow()
+        now = pendulum.now(tz="UTC")
         if not start_report_date:
             start_report_date = now
 
@@ -277,7 +277,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
         for days in range(0, (now - start_report_date).days + 1):
             next_date = start_report_date + timedelta(days=days)
-            next_date = next_date.strftime(ReportStream.REPORT_DATE_FORMAT)
+            next_date = next_date.format(ReportStream.REPORT_DATE_FORMAT)
             yield next_date
 
     def stream_slices(
@@ -370,7 +370,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :param report_date requested date that stored in stream state.
         :return date parameter for Amazon Ads generate report.
         """
-        report_date = datetime.strptime(report_date, ReportStream.REPORT_DATE_FORMAT)
+        report_date = pendulum.from_format(report_date, ReportStream.REPORT_DATE_FORMAT)
         profile_tz = pytz.timezone(profile.timezone)
         profile_time = report_date.astimezone(profile_tz)
         return profile_time.strftime(ReportStream.REPORT_DATE_FORMAT)
