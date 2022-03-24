@@ -3,14 +3,14 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "last_contacted_at": {
