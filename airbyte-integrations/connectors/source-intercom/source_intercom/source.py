@@ -6,7 +6,7 @@ from abc import ABC
 from datetime import datetime
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qsl, urlparse, urljoin
+from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
