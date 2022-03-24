@@ -10,7 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
- 
+
 import requests
 from requests_oauthlib import OAuth1
 import urllib
@@ -94,10 +94,10 @@ class TwitterAdsStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
 
-    
+
         next_page_token = response.json()['next_cursor']
         return next_page_token
-    
+
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
@@ -106,7 +106,7 @@ class TwitterAdsStream(HttpStream, ABC):
         Usually contains common params e.g. pagination size etc.
         """
         return {"cursor": next_page_token}
-     
+
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -133,17 +133,20 @@ class TwitterAdsStream(HttpStream, ABC):
 
                 results.append(result_data)
 
-
-
             results =[ item for sublist in results for item in sublist]
 
-            return results
+            for item in results:
+                for each in item['id_data']:
+                    each['id'] = item['id']
+                    each['params'] = item['params']
+
+            return results[0]['id_data']
         else:
             response_json = response.json()
             result = response_json.get("data")
 
             return result
-        
+
 
 
 
@@ -189,7 +192,7 @@ class LineItems(TwitterAdsStream):
         account_id = self.account_id
 
         request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/line_items?count=1000"
-        
+
         return request_url
 
 class PromotedTweets(TwitterAdsStream):
@@ -210,7 +213,7 @@ class PromotedTweets(TwitterAdsStream):
         account_id = self.account_id
 
         request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/promoted_tweets?count=1000"
-        
+
         return request_url
 
 class AdsAnalyticsMetrics(TwitterAdsStream):
@@ -226,7 +229,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        
+
         auth = self.auth
         #ToDo: we need to specifiy a start/end time different from the one in the config as maximum time span is 45days for this endpoint, think about what we want/need here + make it as part of config?
         start_time = str((datetime.date.today() - datetime.timedelta(days=7)).strftime("%Y-%m-%d"))
@@ -237,7 +240,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         placements = self.placement
         segmentation = self.segmentation
         entity = "PROMOTED_TWEET"
-        
+
         # getting activie promoted tweet ids
         promoted_tweet_ids_url = "https://ads-api.twitter.com/9/stats/accounts/" + account_id + "/active_entities?"
         promoted_tweet_ids_params = urllib.parse.urlencode({"start_time": start_time, "end_time": end_time, "entity": entity})
@@ -249,7 +252,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         for each in response.json()['data']:
             promoted_tweet_ids.append(each["entity_id"])
 
- 
+
         promoted_tweet_ids = list(set(promoted_tweet_ids))
 
 
@@ -266,7 +269,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         metric_groups = ','.join(metric_groups)
 
         job_urls = []
-        job_success_urls = [] 
+        job_success_urls = []
         job_statuses = []
 
         # we need to do seperate requests for different placements. We might want to do this in seperate streams instead of Looping
@@ -291,12 +294,12 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
                 job_success_params = urllib.parse.urlencode({"job_id": job_id})
                 job_success_params = urllib.parse.unquote(job_success_params)
                 job_success_url = job_success_url + job_success_params
-            
+
                 job_success_response = requests.get(job_success_url, auth=auth)
                 job_success_response = job_success_response.json()
                 job_status = job_success_response['data'][0]['status']
                 job_url = job_success_response['data'][0]['url']
-                
+
                 job_urls.append(job_url)
                 job_success_urls.append(job_success_url)
                 job_statuses.append(job_status)
@@ -309,11 +312,11 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
                     job_success_response = job_success_response.json()
                     job_status = job_success_response['data'][0]['status']
                     job_url = job_success_response['data'][0]['url']
-                
+
                     job_urls.append(job_url)
 
 
-            
+
         # dropping none values from job_urls
         job_urls = [url for url in job_urls if url]
         self.job_urls = job_urls
@@ -395,7 +398,7 @@ class SourceTwitterAds(AbstractSource):
             return True, None
         else:
             return False,  "Unable to connect to Twitter Ads API with the provided credentials"
-             
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         TODO: Replace the streams below with your own streams.
