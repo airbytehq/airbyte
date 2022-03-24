@@ -42,7 +42,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 ## Getting started
 
-###Authentication Types
+### Authentication Types
 
 To access the Intercom API, you'll need an access token. How you get this token depends on if your app is for your own usage or for the public's usage.
 
