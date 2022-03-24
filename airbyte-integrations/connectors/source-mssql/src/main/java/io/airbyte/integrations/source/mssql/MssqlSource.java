@@ -94,7 +94,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.query(
+        final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
 
@@ -244,7 +244,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
+    final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
       final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
       ps.setString(1, config.get("database").asText());
@@ -267,7 +267,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
+    final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
       final String sql =
           "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
       final PreparedStatement ps = connection.prepareStatement(sql);
@@ -286,7 +286,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   // todo: ensure this works for Azure managed SQL (since it uses different sql server agent)
   protected void assertSqlServerAgentRunning(final JdbcDatabase database) throws SQLException {
     try {
-      final List<JsonNode> queryResponse = database.query(connection -> {
+      final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
         final String sql = "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%'";
         final PreparedStatement ps = connection.prepareStatement(sql);
         LOGGER.info(String
@@ -312,7 +312,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
+    final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
       final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
       ps.setString(1, config.get("database").asText());
