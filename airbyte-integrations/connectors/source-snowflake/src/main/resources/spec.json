@@ -4,13 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Snowflake Source Spec",
     "type": "object",
-    "required": [
-      "host",
-      "role",
-      "warehouse",
-      "database",
-      "schema"
-    ],
+    "required": ["host", "role", "warehouse", "database", "schema"],
     "additionalProperties": true,
     "properties": {
       "credentials": {

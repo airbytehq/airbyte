@@ -11,8 +11,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeJdbcStreamingQueryConfiguration;
-import io.airbyte.integrations.source.snowflake.SnowflakeOAuthUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -32,7 +32,6 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
   private HikariDataSource createDataSource(final JsonNode config) {
     HikariDataSource dataSource = new HikariDataSource();
     Properties properties = new Properties();
-    System.out.println("config ========================== " + config);
 
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:snowflake://%s/?", config.get("host").asText()));
@@ -56,7 +55,7 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
       properties.setProperty("client_secret", credentials.get("client_secret").asText());
       properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
       properties.setProperty("host", config.get("host").asText());
-      var accessToken = SnowflakeOAuthUtils.getAccessTokenUsingRefreshToken(
+      var accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
           config.get("host").asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
       properties.put("authenticator", "oauth");
