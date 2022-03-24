@@ -49,13 +49,8 @@ public class DatabricksDestination extends CopyDestination {
   @Override
   public void checkPersistence(final JsonNode config) {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
-    final S3DestinationConfig s3Config = getS3DestinationConfig(config);
+    final S3DestinationConfig s3Config = databricksConfig.getS3DestinationConfig();
     S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(getNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
-  }
-
-  private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
-    final JsonNode loadingMethod = config.get("data_source");
-    return S3DestinationConfig.getS3DestinationConfig(loadingMethod);
   }
 
   @Override
