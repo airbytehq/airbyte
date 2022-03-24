@@ -115,11 +115,10 @@ function main() {
     trap 'closessh' EXIT
 
     # We don't run dbt 1.0.x on all destinations (because their plugins don't support it yet)
-    # So we need to only pass `--event-buffer-size` if we have DBT 1.0.0
-    # For some reason, `dbt --version` outputs to stderr, so we need to redirect it to stdout
-    dbt --version 2>&1 | grep -q 'installed version: 1.0.0'
+    # So we need to only pass `--event-buffer-size` if it's supported by DBT.
+    dbt --help | grep -E -- '--event-buffer-size'
     if [ $? -eq 0 ]; then
-      echo -e "\nDBT 1.0.0 detected; using 10K event buffer size\n"
+      echo -e "\nDBT >=1.0.0 detected; using 10K event buffer size\n"
       dbt_additional_args="--event-buffer-size=10000"
     else
       dbt_additional_args=""
