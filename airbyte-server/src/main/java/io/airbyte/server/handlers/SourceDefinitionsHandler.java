@@ -12,6 +12,7 @@ import io.airbyte.api.model.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
@@ -237,6 +238,26 @@ public class SourceDefinitionsHandler {
     } catch (final Exception e) {
       return null;
     }
+  }
+
+  public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(
+                                                                      final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSourceDefinition standardSourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
+    return new PrivateSourceDefinitionRead()
+        .sourceDefinition(buildSourceDefinitionRead(standardSourceDefinition))
+        .granted(true);
+  }
+
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
   }
 
 }

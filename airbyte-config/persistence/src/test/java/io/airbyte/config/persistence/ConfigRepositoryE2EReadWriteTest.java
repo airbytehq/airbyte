@@ -227,6 +227,20 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
+  public void testActorDefinitionWorkspaceGrantExists() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final UUID definitionId = MockData.standardSourceDefinitions().get(0).getSourceDefinitionId();
+
+    assertFalse(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+
+    configRepository.writeActorDefinitionWorkspaceGrant(definitionId, workspaceId);
+    assertTrue(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+
+    configRepository.deleteActorDefinitionWorkspaceGrant(definitionId, workspaceId);
+    assertFalse(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+  }
+
+  @Test
   public void testListPublicSourceDefinitions() throws IOException {
     final List<StandardSourceDefinition> actualDefinitions = configRepository.listPublicSourceDefinitions(false);
     assertEquals(List.of(MockData.publicSourceDefinition()), actualDefinitions);
