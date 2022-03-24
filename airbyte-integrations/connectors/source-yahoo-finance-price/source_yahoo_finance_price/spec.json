@@ -4,18 +4,14 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Yahoo Finance Spec",
     "type": "object",
-    "required": [
-      "tickers"
-    ],
+    "required": ["tickers"],
     "additionalProperties": false,
     "properties": {
       "tickers": {
         "type": "string",
         "order": 0,
         "description": "Comma-separated identifiers for the stocks to be queried. Whitespaces are allowed.",
-        "examples": [
-          "AAPL, GOOGL, GEO.MI"
-        ]
+        "examples": ["AAPL, GOOGL, GEO.MI"]
       },
       "interval": {
         "title": "Interval",
