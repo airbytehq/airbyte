@@ -81,7 +81,8 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   public void flushAll() throws Exception {
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
-        LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(), FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
+        LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
+            FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
         recordWriter.accept(entry.getKey(), entry.getValue());
         if (checkAndRemoveRecordWriter != null) {
           fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);

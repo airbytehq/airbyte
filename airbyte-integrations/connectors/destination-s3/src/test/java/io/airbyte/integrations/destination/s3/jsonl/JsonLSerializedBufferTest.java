@@ -14,23 +14,17 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.InMemoryBuffer;
-import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.zip.GZIPInputStream;
-import org.apache.commons.csv.CSVFormat;
 import org.junit.jupiter.api.Test;
 
 public class JsonLSerializedBufferTest {
@@ -61,7 +55,7 @@ public class JsonLSerializedBufferTest {
 
   @Test
   public void testCompressedJsonLWriter() throws Exception {
-    runTest(new FileBuffer(JSON_FILE_EXTENSION), true,205L, 215L, getExpectedString());
+    runTest(new FileBuffer(JSON_FILE_EXTENSION), true, 205L, 215L, getExpectedString());
   }
 
   private static String getExpectedString() {
