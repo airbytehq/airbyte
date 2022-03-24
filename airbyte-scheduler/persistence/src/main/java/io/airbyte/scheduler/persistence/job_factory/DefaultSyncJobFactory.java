@@ -7,6 +7,7 @@ package io.airbyte.scheduler.persistence.job_factory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -23,13 +24,16 @@ import java.util.UUID;
 
 public class DefaultSyncJobFactory implements SyncJobFactory {
 
+  private final boolean connectorSpecificResourceDefaultsEnabled;
   private final DefaultJobCreator jobCreator;
   private final ConfigRepository configRepository;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
-  public DefaultSyncJobFactory(final DefaultJobCreator jobCreator,
+  public DefaultSyncJobFactory(final boolean connectorSpecificResourceDefaultsEnabled,
+                               final DefaultJobCreator jobCreator,
                                final ConfigRepository configRepository,
                                final OAuthConfigSupplier oAuthConfigSupplier) {
+    this.connectorSpecificResourceDefaultsEnabled = connectorSpecificResourceDefaultsEnabled;
     this.jobCreator = jobCreator;
     this.configRepository = configRepository;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
@@ -50,9 +54,10 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           destinationConnection.getWorkspaceId(),
           destinationConnection.getConfiguration());
       destinationConnection.withConfiguration(destinationConfiguration);
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-      final StandardDestinationDefinition destinationDefinition =
-          configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+      final StandardSourceDefinition sourceDefinition = configRepository
+          .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+      final StandardDestinationDefinition destinationDefinition = configRepository
+          .getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
 
       final String sourceImageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
       final String destinationImageName =
@@ -64,13 +69,24 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
         standardSyncOperations.add(standardSyncOperation);
       }
 
+      ActorDefinitionResourceRequirements sourceResourceRequirements = sourceDefinition.getResourceRequirements();
+      ActorDefinitionResourceRequirements destinationResourceRequirements = destinationDefinition.getResourceRequirements();
+
+      // for OSS users, make it possible to ignore default actor-level resource requirements
+      if (!connectorSpecificResourceDefaultsEnabled) {
+        sourceResourceRequirements = null;
+        destinationResourceRequirements = null;
+      }
+
       return jobCreator.createSyncJob(
           sourceConnection,
           destinationConnection,
           standardSync,
           sourceImageName,
           destinationImageName,
-          standardSyncOperations)
+          standardSyncOperations,
+          sourceResourceRequirements,
+          destinationResourceRequirements)
           .orElseThrow(() -> new IllegalStateException("We shouldn't be trying to create a new sync job if there is one running already."));
 
     } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {

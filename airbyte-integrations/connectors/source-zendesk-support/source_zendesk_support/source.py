@@ -9,6 +9,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_zendesk_support.streams import SourceZendeskException
 
 from .streams import (
     Brands,
@@ -20,7 +21,6 @@ from .streams import (
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
-    SourceZendeskException,
     Tags,
     TicketAudits,
     TicketComments,
@@ -51,11 +51,21 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
-        if config["auth_method"]["auth_method"] == "access_token":
-            return TokenAuthenticator(token=config["auth_method"]["access_token"])
-        elif config["auth_method"]["auth_method"] == "api_token":
-            return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
-        raise SourceZendeskException(f"Not implemented authorization method: {config['auth_method']}")
+
+        # old authentication flow support
+        auth_old = config.get("auth_method")
+        if auth_old:
+            if auth_old.get("auth_method") == "api_token":
+                return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
+        # new authentication flow
+        auth = config.get("credentials")
+        if auth:
+            if auth.get("credentials") == "oauth2.0":
+                return TokenAuthenticator(token=config["credentials"]["access_token"])
+            elif auth.get("credentials") == "api_token":
+                return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
+            else:
+                raise SourceZendeskException(f"Not implemented authorization method: {config['credentials']}")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -68,7 +78,7 @@ class SourceZendeskSupport(AbstractSource):
         auth = self.get_authenticator(config)
         settings = None
         try:
-            settings = UserSettingsStream(config["subdomain"], authenticator=auth).get_settings()
+            settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
         except requests.exceptions.RequestException as e:
             return False, e
 

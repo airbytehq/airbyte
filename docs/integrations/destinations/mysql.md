@@ -36,6 +36,11 @@ To use the MySQL destination, you'll need:
 * To sync data to MySQL **with** normalization MySQL database 8.0.0 or above
 * To sync data to MySQL **without** normalization you'll need MySQL 5.0 or above.
 
+#### Troubleshooting
+
+Some users reported that they could not connect to Amazon RDS MySQL or MariaDB. This can be diagnosed with the error message: `Cannot create a PoolableConnectionFactory`.
+To solve this issue add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
+
 #### Network Access
 
 Make sure your MySQL database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
@@ -103,31 +108,32 @@ Using this feature requires additional configuration, when creating the destinat
 
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-|:--------| :--- | :--- | :--- |
-| 0.1.17  | 2022-02-16 | [10362](https://github.com/airbytehq/airbyte/pull/10362) | Add jdbc_url_params support for optional JDBC parameters |
-| 0.1.16  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.15  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
+| Version | Date | Pull Request | Subject                                                                                             |
+|:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------|
+| 0.1.18  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
+| 0.1.17  | 2022-02-16 | [10362](https://github.com/airbytehq/airbyte/pull/10362) | Add jdbc_url_params support for optional JDBC parameters                                            |
+| 0.1.16  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                        |
+| 0.1.15  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                            |
 | 0.1.14  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
-| 0.1.13  | 2021-09-28 | [\#6506](https://github.com/airbytehq/airbyte/pull/6506) | Added support for MySQL destination via TLS/SSL |
-| 0.1.12  | 2021-09-24 | [\#6317](https://github.com/airbytehq/airbyte/pull/6317) | Added option to connect to DB via SSH |
-| 0.1.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
-| 0.1.10  | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names |
-| 0.1.7   | 2021-07-09 | [\#4651](https://github.com/airbytehq/airbyte/pull/4651) | Switch normalization flag on so users can use normalization. |
-| 0.1.6   | 2021-07-03 | [\#4531](https://github.com/airbytehq/airbyte/pull/4531) | Added normalization for MySQL. |
-| 0.1.5   | 2021-07-03 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` for kubernetes support. |
-| 0.1.4   | 2021-07-03 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) | Switched to get states from destination instead of source. |
-| 0.1.3   | 2021-07-03 | [\#3387](https://github.com/airbytehq/airbyte/pull/3387) | Fixed a bug for message length checking. |
-| 0.1.2   | 2021-07-03 | [\#3327](https://github.com/airbytehq/airbyte/pull/3327) | Fixed LSEP unicode characters. |
-| 0.1.1   | 2021-07-03 | [\#3289](https://github.com/airbytehq/airbyte/pull/3289) | Added support for outputting messages. |
-| 0.1.0   | 2021-05-06 | [\#3242](https://github.com/airbytehq/airbyte/pull/3242) | Added MySQL destination. |
-
+| 0.1.13  | 2021-09-28 | [\#6506](https://github.com/airbytehq/airbyte/pull/6506) | Added support for MySQL destination via TLS/SSL                                                     |
+| 0.1.12  | 2021-09-24 | [\#6317](https://github.com/airbytehq/airbyte/pull/6317) | Added option to connect to DB via SSH                                                               |
+| 0.1.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json                                                        |
+| 0.1.10  | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names                            |
+| 0.1.7   | 2021-07-09 | [\#4651](https://github.com/airbytehq/airbyte/pull/4651) | Switch normalization flag on so users can use normalization.                                        |
+| 0.1.6   | 2021-07-03 | [\#4531](https://github.com/airbytehq/airbyte/pull/4531) | Added normalization for MySQL.                                                                      |
+| 0.1.5   | 2021-07-03 | [\#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` for kubernetes support.                                                  |
+| 0.1.4   | 2021-07-03 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) | Switched to get states from destination instead of source.                                          |
+| 0.1.3   | 2021-07-03 | [\#3387](https://github.com/airbytehq/airbyte/pull/3387) | Fixed a bug for message length checking.                                                            |
+| 0.1.2   | 2021-07-03 | [\#3327](https://github.com/airbytehq/airbyte/pull/3327) | Fixed LSEP unicode characters.                                                                      |
+| 0.1.1   | 2021-07-03 | [\#3289](https://github.com/airbytehq/airbyte/pull/3289) | Added support for outputting messages.                                                              |
+| 0.1.0   | 2021-05-06 | [\#3242](https://github.com/airbytehq/airbyte/pull/3242) | Added MySQL destination.                                                                            |
 
 ## CHANGELOG destination-mysql-strict-encrypt
 
 | Version | Date | Pull Request                                             | Subject |
 |:--------| :---  |:---------------------------------------------------------| :--- |
-| 0.1.3 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
+| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.2   | 2021-12-01 | [\#8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
 | 0.1.1   | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)  | Improve handling of wide rows by buffering records based on their byte size rather than their count |
 | 0.1.0   | 06.10.2021 | [\#6763](https://github.com/airbytehq/airbyte/pull/6763) | Added destination-mysql-strict-encrypt that supports SSL connections only. |

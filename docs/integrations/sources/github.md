@@ -18,6 +18,7 @@ This connector outputs the following full refresh streams:
 * [Organizations](https://docs.github.com/en/rest/reference/orgs#get-an-organization)
 * [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 * [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
+* [Pull request commits](https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request)
 * [Repositories](https://docs.github.com/en/rest/reference/repos#list-organization-repositories)
 * [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
 * [Tags](https://docs.github.com/en/rest/reference/repos#list-repository-tags)
@@ -38,6 +39,9 @@ This connector outputs the following incremental streams:
 * [Releases](https://docs.github.com/en/rest/reference/repos#list-releases)
 * [Review comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
 * [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
+* [Deployments](https://docs.github.com/en/rest/reference/deployments#list-deployments)
+* [Project cards](https://docs.github.com/en/rest/reference/projects#list-project-cards)
+* [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 
 ### Notes
 
@@ -92,6 +96,9 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.22  | 2022-03-10 | [10878](https://github.com/airbytehq/airbyte/pull/10878) | Fix error handling for unavailable streams with 404 status code                                            |
+| 0.2.21  | 2022-03-04 | [10749](https://github.com/airbytehq/airbyte/pull/10749) | Add new stream `ProjectCards`                                                                              |
+| 0.2.20  | 2022-02-16 | [10385](https://github.com/airbytehq/airbyte/pull/10385) | Add new stream `Deployments`, `ProjectColumns`, `PullRequestCommits`                                       |
 | 0.2.19  | 2022-02-07 | [10211](https://github.com/airbytehq/airbyte/pull/10211) | Add human-readable error in case of incorrect organization or repo name                                    |
 | 0.2.18  | 2021-02-09 | [10193](https://github.com/airbytehq/airbyte/pull/10193) | Add handling secondary rate limits                                                                         |
 | 0.2.17  | 2021-02-02 | [9999](https://github.com/airbytehq/airbyte/pull/9999) | Remove BAD_GATEWAY code from backoff_time                                                                    |

@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   confirmPasswordReset,
+  updateProfile,
   applyActionCode,
   sendEmailVerification,
   EmailAuthProvider,
@@ -60,6 +61,7 @@ export class GoogleAuthService implements AuthService {
           case AuthErrorCodes.INVALID_EMAIL:
             throw new FieldError("email", ErrorCodes.Invalid);
           case AuthErrorCodes.USER_CANCELLED:
+          case AuthErrorCodes.USER_DISABLED:
             throw new FieldError("email", "disabled");
           case AuthErrorCodes.USER_DELETED:
             throw new FieldError("email", "notfound");
@@ -87,6 +89,13 @@ export class GoogleAuthService implements AuthService {
         throw err;
       }
     );
+  }
+
+  async updateProfile(displayName: string): Promise<void> {
+    if (this.auth.currentUser === null) {
+      throw new Error("Not able to update profile for not loggedIn user!");
+    }
+    return updateProfile(this.auth.currentUser, { displayName });
   }
 
   async reauthenticate(
@@ -117,11 +126,11 @@ export class GoogleAuthService implements AuthService {
         await updateEmail(user, email);
       } catch (e) {
         switch (e.code) {
-          case "auth/invalid-email":
+          case AuthErrorCodes.INVALID_EMAIL:
             throw new FieldError("email", ErrorCodes.Invalid);
-          case "auth/email-already-in-use":
+          case AuthErrorCodes.EMAIL_EXISTS:
             throw new FieldError("email", ErrorCodes.Duplicate);
-          case "auth/requires-recent-login":
+          case AuthErrorCodes.CREDENTIAL_TOO_OLD_LOGIN_AGAIN:
             throw new Error("auth/requires-recent-login");
         }
       }

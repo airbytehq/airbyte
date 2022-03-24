@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useIntl } from "react-intl";
-import { useLocation } from "react-use";
+import { useEffectOnce } from "react-use";
+import { useLocation } from "react-router-dom";
 
 import { useConfig } from "config";
 
@@ -25,6 +26,7 @@ import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Workspace } from "core/domain/workspace/Workspace";
+import { storeUtmFromQuery } from "utils/utmStorage";
 
 export enum RoutePaths {
   AuthFlow = "/auth_flow",
@@ -153,6 +155,12 @@ const RoutingWithWorkspace: React.FC = () => {
 };
 
 export const Routing: React.FC = () => {
+  const { search } = useLocation();
+
+  useEffectOnce(() => {
+    storeUtmFromQuery(search);
+  });
+
   // TODO: Remove this after it is verified there are no problems with current routing
   const OldRoutes = useMemo(
     () =>

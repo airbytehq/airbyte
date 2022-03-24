@@ -3,6 +3,7 @@
 #
 
 from .streams import (
+    Activities,
     AdAccount,
     AdCreatives,
     Ads,
@@ -34,4 +35,5 @@ __all__ = [
     "Campaigns",
     "Images",
     "Videos",
+    "Activities",
 ]

@@ -7,21 +7,27 @@ package io.airbyte.server.handlers;
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreLists;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
@@ -43,15 +49,13 @@ public class SourceDefinitionsHandler {
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final SourceHandler sourceHandler;
 
-  public SourceDefinitionsHandler(
-                                  final ConfigRepository configRepository,
+  public SourceDefinitionsHandler(final ConfigRepository configRepository,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
                                   final SourceHandler sourceHandler) {
     this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), sourceHandler);
   }
 
-  public SourceDefinitionsHandler(
-                                  final ConfigRepository configRepository,
+  public SourceDefinitionsHandler(final ConfigRepository configRepository,
                                   final Supplier<UUID> uuidSupplier,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
                                   final AirbyteGithubStore githubStore,
@@ -74,7 +78,9 @@ public class SourceDefinitionsHandler {
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()))
           .releaseStage(getReleaseStage(standardSourceDefinition))
-          .releaseDate(getReleaseDate(standardSourceDefinition));
+          .releaseDate(getReleaseDate(standardSourceDefinition))
+          .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardSourceDefinition.getResourceRequirements()));
+
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
@@ -118,6 +124,13 @@ public class SourceDefinitionsHandler {
     }
   }
 
+  public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    return toSourceDefinitionReadList(MoreLists.concat(
+        configRepository.listPublicSourceDefinitions(false),
+        configRepository.listGrantedSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
+  }
+
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
@@ -137,7 +150,8 @@ public class SourceDefinitionsHandler {
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
         .withTombstone(false)
-        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM);
+        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+        .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
 
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
@@ -156,6 +170,9 @@ public class SourceDefinitionsHandler {
     final ConnectorSpecification spec = specNeedsUpdate
         ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
         : currentSourceDefinition.getSpec();
+    final ActorDefinitionResourceRequirements updatedResourceReqs = sourceDefinitionUpdate.getResourceRequirements() != null
+        ? ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionUpdate.getResourceRequirements())
+        : currentSourceDefinition.getResourceRequirements();
 
     final StandardSourceDefinition newSource = new StandardSourceDefinition()
         .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
@@ -167,7 +184,8 @@ public class SourceDefinitionsHandler {
         .withSpec(spec)
         .withTombstone(currentSourceDefinition.getTombstone())
         .withReleaseStage(currentSourceDefinition.getReleaseStage())
-        .withReleaseDate(currentSourceDefinition.getReleaseDate());
+        .withReleaseDate(currentSourceDefinition.getReleaseDate())
+        .withResourceRequirements(updatedResourceReqs);
 
     configRepository.writeStandardSourceDefinition(newSource);
     return buildSourceDefinitionRead(newSource);
@@ -202,6 +220,26 @@ public class SourceDefinitionsHandler {
     } catch (final Exception e) {
       return null;
     }
+  }
+
+  public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(
+                                                                      final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSourceDefinition standardSourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
+    return new PrivateSourceDefinitionRead()
+        .sourceDefinition(buildSourceDefinitionRead(standardSourceDefinition))
+        .granted(true);
+  }
+
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
   }
 
 }

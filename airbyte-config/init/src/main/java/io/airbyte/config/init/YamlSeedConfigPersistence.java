@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
  */
 public class YamlSeedConfigPersistence implements ConfigPersistence {
 
-  public static Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
+  public static final Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
 
   private static final Map<AirbyteConfig, SeedType> CONFIG_SCHEMA_MAP = Map.of(
       ConfigSchema.STANDARD_SOURCE_DEFINITION, SeedType.STANDARD_SOURCE_DEFINITION,
@@ -56,16 +57,26 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     final Map<String, JsonNode> sourceSpecConfigs = getConfigs(seedResourceClass, SeedType.SOURCE_SPEC);
     final Map<String, JsonNode> fullSourceDefinitionConfigs = sourceDefinitionConfigs.entrySet().stream()
         .collect(Collectors.toMap(Entry::getKey, e -> {
-          final JsonNode withTombstone = addMissingTombstoneField(e.getValue());
-          return mergeSpecIntoDefinition(withTombstone, sourceSpecConfigs);
+          final JsonNode withMissingFields =
+              addMissingCustomField(
+                  addMissingPublicField(
+                      addMissingTombstoneField(e.getValue())));
+          final JsonNode output = mergeSpecIntoDefinition(withMissingFields, sourceSpecConfigs);
+          AirbyteConfigValidator.AIRBYTE_CONFIG_VALIDATOR.ensureAsRuntime(ConfigSchema.STANDARD_SOURCE_DEFINITION, output);
+          return output;
         }));
 
     final Map<String, JsonNode> destinationDefinitionConfigs = getConfigs(seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION);
     final Map<String, JsonNode> destinationSpecConfigs = getConfigs(seedResourceClass, SeedType.DESTINATION_SPEC);
     final Map<String, JsonNode> fullDestinationDefinitionConfigs = destinationDefinitionConfigs.entrySet().stream()
         .collect(Collectors.toMap(Entry::getKey, e -> {
-          final JsonNode withTombstone = addMissingTombstoneField(e.getValue());
-          return mergeSpecIntoDefinition(withTombstone, destinationSpecConfigs);
+          final JsonNode withMissingFields =
+              addMissingCustomField(
+                  addMissingPublicField(
+                      addMissingTombstoneField(e.getValue())));
+          final JsonNode output = mergeSpecIntoDefinition(withMissingFields, destinationSpecConfigs);
+          AirbyteConfigValidator.AIRBYTE_CONFIG_VALIDATOR.ensureAsRuntime(ConfigSchema.STANDARD_DESTINATION_DEFINITION, output);
+          return output;
         }));
 
     this.allSeedConfigs = ImmutableMap.<SeedType, Map<String, JsonNode>>builder()
@@ -97,6 +108,24 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
     final JsonNode currTombstone = definitionJson.get("tombstone");
     if (currTombstone == null || currTombstone.isNull()) {
       ((ObjectNode) definitionJson).set("tombstone", BooleanNode.FALSE);
+    }
+    return definitionJson;
+  }
+
+  private JsonNode addMissingPublicField(final JsonNode definitionJson) {
+    final JsonNode currPublic = definitionJson.get("public");
+    if (currPublic == null || currPublic.isNull()) {
+      // definitions loaded from seed yamls are by definition public
+      ((ObjectNode) definitionJson).set("public", BooleanNode.TRUE);
+    }
+    return definitionJson;
+  }
+
+  private JsonNode addMissingCustomField(final JsonNode definitionJson) {
+    final JsonNode currCustom = definitionJson.get("custom");
+    if (currCustom == null || currCustom.isNull()) {
+      // definitions loaded from seed yamls are by definition not custom
+      ((ObjectNode) definitionJson).set("custom", BooleanNode.FALSE);
     }
     return definitionJson;
   }
