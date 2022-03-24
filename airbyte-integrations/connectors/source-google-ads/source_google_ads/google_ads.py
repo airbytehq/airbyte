@@ -14,8 +14,11 @@ from proto.marshal.collections import Repeated, RepeatedComposite
 REPORT_MAPPING = {
     "accounts": "customer",
     "ad_group_ads": "ad_group_ad",
+    "ad_group_ad_labels": "ad_group_ad_label",
     "ad_groups": "ad_group",
+    "ad_group_labels": "ad_group_label",
     "campaigns": "campaign",
+    "campaign_labels": "campaign_label",
     "account_performance_report": "customer",
     "ad_group_ad_report": "ad_group_ad",
     "display_keyword_performance_report": "display_keyword_view",

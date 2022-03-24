@@ -30,6 +30,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -183,8 +184,8 @@ public class OperationsHandler {
         removeOperation(operationId);
       }
     }
-    standardSync.withOperationIds(operationIds);
-    configRepository.writeStandardSync(standardSync);
+
+    configRepository.updateConnectionOperationIds(standardSync.getConnectionId(), new HashSet<>(operationIds));
   }
 
   public void deleteOperation(final OperationIdRequestBody operationIdRequestBody)
