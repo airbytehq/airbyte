@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.35.58-alpha",
+  "version": "0.35.60-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -21,7 +21,6 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.1.17",
     "@fullstory/browser": "^1.5.0",
-    "@rest-hooks/legacy": "^2.0.5",
     "@sentry/react": "^6.17.9",
     "@sentry/tracing": "^6.17.9",
     "dayjs": "^1.10.7",

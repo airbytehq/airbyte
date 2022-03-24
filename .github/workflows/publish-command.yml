@@ -51,7 +51,7 @@ jobs:
     environment: more-secrets
     steps:
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
           export_default_credentials: true
