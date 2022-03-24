@@ -96,38 +96,65 @@ def test_apply_single_resource(patch_click, mocker, resource_was_created):
 @pytest.mark.parametrize(
     "force,user_validation,local_file_changed,expect_update,expected_reason",
     [
-        (True, True, True, True, "🚨 - Running update because the force mode is activated."),  # check if force has the top priority
-        (True, False, True, True, "🚨 - Running update because the force mode is activated."),  # check if force has the top priority
-        (True, False, False, True, "🚨 - Running update because the force mode is activated."),  # check if force has the top priority
-        (True, True, False, True, "🚨 - Running update because the force mode is activated."),  # check if force has the top priority
-        (
+        pytest.param(
+            True, True, True, True, "🚨 - Running update because the force mode is activated.", id="1 - Check if force has the top priority."
+        ),
+        pytest.param(
+            True,
+            False,
+            True,
+            True,
+            "🚨 - Running update because the force mode is activated.",
+            id="2 - Check if force has the top priority.",
+        ),
+        pytest.param(
+            True,
+            False,
+            False,
+            True,
+            "🚨 - Running update because the force mode is activated.",
+            id="3 - Check if force has the top priority.",
+        ),
+        pytest.param(
+            True,
+            True,
+            False,
+            True,
+            "🚨 - Running update because the force mode is activated.",
+            id="4 - Check if force has the top priority.",
+        ),
+        pytest.param(
             False,
             True,
             True,
             True,
             "🟢 - Running update because you validated the changes.",
-        ),  # check if user validation has priority over local file change
-        (
+            id="Check if user validation has priority over local file change.",
+        ),
+        pytest.param(
             False,
             False,
             True,
             False,
             "🔴 - Did not update because you refused the changes.",
-        ),  # check if user validation has priority over local file change
-        (
+            id="Check if user validation has priority over local file change.",
+        ),
+        pytest.param(
             False,
             None,
             True,
             True,
             "🟡 - Running update because a local file change was detected and a secret field might have been edited.",
-        ),  # check if local_file_changed runs even if user validation is None.
-        (
+            id="Check if local_file_changed runs even if user validation is None.",
+        ),
+        pytest.param(
             False,
             None,
             False,
             False,
             "😴 - Did not update because no change detected.",
-        ),  # check no update if no local change and user validation is None.
+            id="Check no update if no local change and user validation is None.",
+        ),
     ],
 )
 def test_should_update_resource(patch_click, mocker, force, user_validation, local_file_changed, expect_update, expected_reason):
