@@ -140,7 +140,7 @@ class TwitterAdsStream(HttpStream, ABC):
                     each['id'] = item['id']
                     each['params'] = item['params']
 
-            return results
+            return results[0]['id_data']
         else:
             response_json = response.json()
             result = response_json.get("data")
