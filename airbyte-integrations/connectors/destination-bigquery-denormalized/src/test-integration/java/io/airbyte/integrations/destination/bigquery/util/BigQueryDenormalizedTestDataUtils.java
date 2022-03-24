@@ -131,6 +131,22 @@ public class BigQueryDenormalizedTestDataUtils {
                                             }
                                         ]
                                     },
+                                    "all_of_field":{
+                                        "allOf":[
+                                            {
+                                                "type":"array",
+                                                "items":{
+                                                    "type":"integer"
+                                                }
+                                            },
+                                            {
+                                                "type":"string"
+                                            },
+                                            {
+                                                "type":"integer"
+                                            }
+                                        ]
+                                    },
                                     "job_title":{
                                         "type":[
                                             "null",
@@ -308,8 +324,19 @@ public class BigQueryDenormalizedTestDataUtils {
                                  "avatar": {
                                     "image_url": "url_to_avatar.jpg"
                                  },
-                                 "team_ids": [1, 2, 3],
-                                 "admin_ids": [2, 5],
+                                 "team_ids": {
+                                     "big_query_array": [1, 2, 3],
+                                     "big_query_null": null
+                                 },
+                                 "admin_ids": {
+                                     "big_query_array": [],
+                                     "big_query_null": null
+                                 },
+                                 "all_of_field": {
+                                     "big_query_array": [4, 5, 6],
+                                     "big_query_string": "Some text",
+                                     "big_query_integer": 42
+                                 },
                                  "job_title": "title",
                                  "has_inbox_seat": true,
                                  "away_mode_enabled": false,
@@ -323,6 +350,7 @@ public class BigQueryDenormalizedTestDataUtils {
                              {
                                  "name": "Mukola",
                                  "team_ids": null,
+                                 "all_of_field": null,
                                  "avatar": null
                              }
                              """);
@@ -332,7 +360,12 @@ public class BigQueryDenormalizedTestDataUtils {
     return Jsons.deserialize("""
                              {
                                  "name": "Sergii",
-                                 "team_ids": []
+                                 "team_ids": [],
+                                 "all_of_field": {
+                                     "big_query_array": [4, 5, 6],
+                                     "big_query_string": "Some text",
+                                     "big_query_integer": 42
+                                 }
                              }
                              """);
   }

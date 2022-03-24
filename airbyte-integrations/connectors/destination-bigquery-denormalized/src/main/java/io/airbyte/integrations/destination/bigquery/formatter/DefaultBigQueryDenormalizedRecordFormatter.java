@@ -4,7 +4,10 @@
 
 package io.airbyte.integrations.destination.bigquery.formatter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
@@ -24,22 +27,20 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryRecordFormatter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultBigQueryDenormalizedRecordFormatter.class);
-
-  private final Set<String> invalidKeys = new HashSet<>();
 
   public static final String NESTED_ARRAY_FIELD = "big_query_array";
   protected static final String PROPERTIES_FIELD = "properties";
@@ -49,8 +50,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   private static final String ARRAY_ITEMS_FIELD = "items";
   private static final String FORMAT_FIELD = "format";
   private static final String REF_DEFINITION_KEY = "$ref";
-
-  private final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
+  private static final ObjectMapper mapper = new ObjectMapper();
 
   public DefaultBigQueryDenormalizedRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
@@ -58,9 +58,21 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
-    populateEmptyArrays(jsonSchema);
-    surroundArraysByObjects(jsonSchema);
-    return jsonSchema;
+    var modifiedJsonSchema = formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
+    populateEmptyArrays(modifiedJsonSchema);
+    surroundArraysByObjects(modifiedJsonSchema);
+    return modifiedJsonSchema;
+  }
+
+  private JsonNode formatAllOfAndAnyOfFields(final StandardNameTransformer namingResolver, final JsonNode jsonSchema) {
+    LOGGER.info("getSchemaFields : " + jsonSchema + " namingResolver " + namingResolver);
+    final JsonNode modifiedSchema = jsonSchema.deepCopy();
+    Preconditions.checkArgument(modifiedSchema.isObject() && modifiedSchema.has(PROPERTIES_FIELD));
+    ObjectNode properties = (ObjectNode) modifiedSchema.get(PROPERTIES_FIELD);
+    Jsons.keys(properties).stream()
+            .peek(addToRefList(properties))
+            .forEach(key -> properties.replace(key, getFileDefinition(properties.get(key))));
+    return modifiedSchema;
   }
 
   private List<JsonNode> findArrays(final JsonNode node) {
@@ -242,19 +254,34 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
       return fieldDefinition;
     } else {
       if (fieldDefinition.has(ANY_OF_FIELD) && fieldDefinition.get(ANY_OF_FIELD).isArray()) {
-        var fieldOptional = MoreIterators.toList(fieldDefinition.get(ANY_OF_FIELD).elements()).stream().findFirst();
-        if (fieldOptional.isPresent()) {
-          return getFileDefinition(fieldOptional.get());
-        }
+        return allOfAndAnyOfFieldProcessing(ANY_OF_FIELD, fieldDefinition);
       }
       if (fieldDefinition.has(ALL_OF_FIELD) && fieldDefinition.get(ALL_OF_FIELD).isArray()) {
-        var fieldOptional = MoreIterators.toList(fieldDefinition.get(ALL_OF_FIELD).elements()).stream().findFirst();
-        if (fieldOptional.isPresent()) {
-          return getFileDefinition(fieldOptional.get());
-        }
+        return allOfAndAnyOfFieldProcessing(ALL_OF_FIELD, fieldDefinition);
       }
     }
     return fieldDefinition;
+  }
+
+  private static JsonNode allOfAndAnyOfFieldProcessing(final String fieldName, final JsonNode fieldDefinition) {
+    ObjectReader reader = mapper.readerFor(new TypeReference<List<JsonNode>>() {});
+    List<JsonNode> list;
+    try {
+      list = reader.readValue(fieldDefinition.get(fieldName));
+    } catch (IOException e) {
+      throw new IllegalStateException(
+              String.format("Failed to read and process the following field - %s", fieldDefinition));
+    }
+    ObjectNode objectNode = mapper.createObjectNode();
+    list.forEach(field -> {
+      objectNode.set("big_query_" + field.get("type").asText(), field);
+    });
+
+    return Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "object")
+            .put(PROPERTIES_FIELD, objectNode)
+            .put("additionalProperties", false)
+            .build());
   }
 
   private static Builder getField(final StandardNameTransformer namingResolver, final String key, final JsonNode fieldDefinition) {
