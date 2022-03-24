@@ -102,7 +102,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| `0.1.28` | 2022-02-16 | [10315]() | Updating the Version of google ads from 14.1.0 to 15.0.0 |
+| `0.1.28` | 2022-02-16 | [10315](https://github.com/airbytehq/airbyte/pull/11383) | Updating the Version of google ads from 14.1.0 to 15.0.0 |
 | `0.1.27` | 2022-02-16 | [10315](https://github.com/airbytehq/airbyte/pull/10315) | Make `ad_group_ads` and other streams support incremental sync. |
 | `0.1.26` | 2022-02-11 | [10150](https://github.com/airbytehq/airbyte/pull/10150) | Add support for multiple customer IDs. |
 | `0.1.25` | 2022-02-04 | [9812](https://github.com/airbytehq/airbyte/pull/9812) | Handle `EXPIRED_PAGE_TOKEN` exception and retry with updated state. |
