@@ -13,6 +13,45 @@ This source can sync data for the [Shopify API](https://help.shopify.com/en/api/
 
 This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
+## Troubleshooting
+
+Check out common troubleshooting issues for the BigQuery destination connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-shopify).
+
+### Output schema
+
+This Source is capable of syncing the following core Streams:
+
+* [Abandoned Checkouts](https://help.shopify.com/en/api/reference/orders/abandoned_checkouts)
+* [Collects](https://help.shopify.com/en/api/reference/products/collect)
+* [Custom Collections](https://help.shopify.com/en/api/reference/products/customcollection)
+* [Customers](https://help.shopify.com/en/api/reference/customers)
+* [Draft Orders](https://help.shopify.com/en/api/reference/orders/draftorder)
+* [Discount Codes](https://shopify.dev/docs/admin-api/rest/reference/discounts/discountcode)
+* [Metafields](https://help.shopify.com/en/api/reference/metafield)
+* [Orders](https://help.shopify.com/en/api/reference/orders)
+* [Orders Refunds](https://shopify.dev/api/admin/rest/reference/orders/refund)
+* [Orders Risks](https://shopify.dev/api/admin/rest/reference/orders/order-risk)
+* [Products](https://help.shopify.com/en/api/reference/products)
+* [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
+* [Balance Transactions](https://shopify.dev/api/admin-rest/2021-07/resources/transactions)
+* [Pages](https://help.shopify.com/en/api/reference/online-store/page)
+* [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
+* [Locations](https://shopify.dev/api/admin-rest/2021-10/resources/location)
+* [InventoryItems](https://shopify.dev/api/admin-rest/2021-10/resources/inventoryItem)
+* [InventoryLevels](https://shopify.dev/api/admin-rest/2021-10/resources/inventorylevel)
+* [Fulfillment Orders](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillmentorder)
+* [Fulfillments](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillment)
+* [Shop](https://shopify.dev/api/admin-rest/2021-07/resources/shop)
+
+#### NOTE:
+
+For better experience with `Incremental Refresh` the following is recommended:
+
+* `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
+* `Discount Codes` should be synced along with `Price Rules` stream.
+
+If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
+
 ### Data type mapping
 
 | Integration Type | Airbyte Type |
@@ -100,6 +139,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.36 | 2022-03-22 | [9850](https://github.com/airbytehq/airbyte/pull/9850) | Added `BalanceTransactions` stream |
 | 0.1.35 | 2022-03-07 | [10915](https://github.com/airbytehq/airbyte/pull/10915) | Fix a bug which caused `full-refresh` syncs of child REST entities configured for `incremental` |
 | 0.1.34 | 2022-03-02 | [10794](https://github.com/airbytehq/airbyte/pull/10794) | Minor specification re-order, fixed links in documentation |
 | 0.1.33 | 2022-02-17 | [10419](https://github.com/airbytehq/airbyte/pull/10419) | Fixed wrong field type for tax_exemptions for `Abandoned_checkouts` stream |
