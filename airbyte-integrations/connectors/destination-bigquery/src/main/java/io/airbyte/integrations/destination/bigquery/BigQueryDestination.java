@@ -78,6 +78,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
+        // TODO: use GcsDestination::check instead of writing our own custom logic to check perms
+        // this is not currently possible because using the Storage class to check perms requires
+        // a service account key, and the GCS destination does not accept a Service Account Key, 
+        // only an HMAC key
         final AirbyteConnectionStatus airbyteConnectionStatus = checkStorageIamPermissions(config);
         if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
           return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
