@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "airbyte.fullname" . }}-pod-sweeper
+  name: {{ include "common.names.fullname" . }}-pod-sweeper
   labels:
     {{- include "airbyte.labels" . | nindent 4 }}
   annotations:
@@ -87,7 +87,7 @@ spec:
         emptyDir: {}
       - name: sweep-pod-script
         configMap:
-          name: {{ include "airbyte.fullname" . }}-sweep-pod-script
+          name: {{ include "common.names.fullname" . }}-sweep-pod-script
           defaultMode: 0755
       {{- if .Values.podSweeper.extraVolumes }}
 {{ toYaml .Values.podSweeper.extraVolumes | nindent 6 }}
