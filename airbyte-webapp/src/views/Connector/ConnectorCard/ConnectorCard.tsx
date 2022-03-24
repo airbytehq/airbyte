@@ -11,9 +11,10 @@ import {
 } from "views/Connector/ServiceForm";
 import { JobInfo } from "core/domain/job/Job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectorT, Scheduler } from "core/domain/connector";
+import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useTestConnector } from "./useTestConnector";
+import { useAnalytics } from "hooks/services/Analytics";
 
 export type ConnectorCardProvidedProps = {
   isTestConnectionInProgress: boolean;
@@ -48,9 +49,32 @@ const ConnectorCard: React.FC<
     error,
   } = useTestConnector(props);
 
+  const analyticsService = useAnalytics().service;
+
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
+
+    const connector = props.availableServices.find(
+      (item) => Connector.id(item) === values.serviceType
+    );
+
     try {
+      if (connector) {
+        if (props.formType === "source") {
+          analyticsService.track("New Source - Action", {
+            action: "Test a connector",
+            connector_source: connector?.name,
+            connector_source_definition_id: Connector.id(connector),
+          });
+        } else {
+          analyticsService.track("New Destination - Action", {
+            action: "Test a connector",
+            connector_destination: connector?.name,
+            connector_destination_definition_id: Connector.id(connector),
+          });
+        }
+      }
+
       await testConnector(values);
       await onSubmit(values);
 
