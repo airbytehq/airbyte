@@ -2,6 +2,8 @@ import { ComponentMeta, ComponentStory } from "@storybook/react";
 
 import { ServiceForm } from "./ServiceForm";
 import { ContentCard } from "components";
+import { ConnectorSpecification } from "core/domain/connector";
+import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 
 const TempConnector = {
   name: "Service",
@@ -31,10 +33,16 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
   // Hack to allow devs to not specify sourceDefinitionId
   if (
     args.selectedConnectorDefinitionSpecification &&
-    !(args.selectedConnectorDefinitionSpecification as any).sourceDefinitionId
+    !ConnectorSpecification.id(args.selectedConnectorDefinitionSpecification)
   ) {
-    (args.selectedConnectorDefinitionSpecification as any).sourceDefinitionId =
-      TempConnector.sourceDefinitionId;
+    if (
+      isSourceDefinitionSpecification(
+        args.selectedConnectorDefinitionSpecification
+      )
+    ) {
+      args.selectedConnectorDefinitionSpecification.sourceDefinitionId =
+        TempConnector.sourceDefinitionId;
+    }
   }
 
   if (args.selectedConnectorDefinitionSpecification?.documentationUrl) {

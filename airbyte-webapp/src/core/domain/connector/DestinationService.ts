@@ -23,11 +23,13 @@ class DestinationService extends AirbyteRequestService {
       ? `${this.url}/check_connection_for_update`
       : `${this.url}/check_connection`;
 
-    const result = await this.fetch<Scheduler>(url, params, requestParams);
+    // migrated from rest-hooks. Needs proper fix to `Scheduler` type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await this.fetch<any>(url, params, requestParams);
 
     // If check connection for destination has status 'failed'
     if (result.status === Status.FAILED) {
-      const jobInfo: any = {
+      const jobInfo = {
         ...result.jobInfo,
         status: result.status,
       };
