@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class MoreLists {
 
@@ -33,6 +34,18 @@ public class MoreLists {
     final ArrayList<T> reversed = new ArrayList<>(list);
     Collections.reverse(reversed);
     return reversed;
+  }
+
+  /**
+   * Concatenate multiple lists into one list.
+   *
+   * @param lists to concatenate
+   * @param <T> type
+   * @return a new concatenated list
+   */
+  @SafeVarargs
+  public static <T> List<T> concat(final List<T>... lists) {
+    return Stream.of(lists).flatMap(List::stream).toList();
   }
 
 }
