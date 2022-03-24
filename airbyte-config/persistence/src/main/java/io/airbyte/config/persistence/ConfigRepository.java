@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -207,6 +208,18 @@ public class ConfigRepository {
         includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
   }
 
+  public List<Entry<StandardSourceDefinition, Boolean>> listGrantableSourceDefinitions(final UUID workspaceId,
+                                                                                       final boolean includeTombstones)
+      throws IOException {
+    return listActorDefinitionsJoinedWithGrants(
+        workspaceId,
+        JoinType.LEFT_OUTER_JOIN,
+        ActorType.source,
+        record -> actorDefinitionWithGrantStatus(record, DbConverter::buildStandardSourceDefinition),
+        ACTOR_DEFINITION.CUSTOM.eq(false),
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
+  }
+
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
@@ -283,6 +296,18 @@ public class ConfigRepository {
         JoinType.JOIN,
         ActorType.destination,
         DbConverter::buildStandardDestinationDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
+  }
+
+  public List<Entry<StandardDestinationDefinition, Boolean>> listGrantableDestinationDefinitions(final UUID workspaceId,
+                                                                                                 final boolean includeTombstones)
+      throws IOException {
+    return listActorDefinitionsJoinedWithGrants(
+        workspaceId,
+        JoinType.LEFT_OUTER_JOIN,
+        ActorType.destination,
+        record -> actorDefinitionWithGrantStatus(record, DbConverter::buildStandardDestinationDefinition),
+        ACTOR_DEFINITION.CUSTOM.eq(false),
         includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
   }
 
@@ -402,6 +427,13 @@ public class ConfigRepository {
     return records.stream()
         .map(recordToReturnType)
         .toList();
+  }
+
+  private <T> Entry<T, Boolean> actorDefinitionWithGrantStatus(final Record outerJoinRecord,
+                                                               final Function<Record, T> recordToActorDefinition) {
+    final T actorDefinition = recordToActorDefinition.apply(outerJoinRecord);
+    final boolean granted = outerJoinRecord.get(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID) != null;
+    return Map.entry(actorDefinition, granted);
   }
 
   /**

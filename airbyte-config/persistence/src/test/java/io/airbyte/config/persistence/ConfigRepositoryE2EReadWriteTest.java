@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -248,6 +250,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   public void testSourceDefinitionGrants() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final StandardSourceDefinition grantableDefinition1 = MockData.grantableSourceDefinition1();
+    final StandardSourceDefinition grantableDefinition2 = MockData.grantableSourceDefinition2();
     final StandardSourceDefinition customDefinition = MockData.customSourceDefinition();
 
     configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getSourceDefinitionId(), workspaceId);
@@ -255,6 +258,12 @@ public class ConfigRepositoryE2EReadWriteTest {
     final List<StandardSourceDefinition> actualGrantedDefinitions = configRepository
         .listGrantedSourceDefinitions(workspaceId, false);
     assertThat(actualGrantedDefinitions).hasSameElementsAs(List.of(grantableDefinition1, customDefinition));
+
+    final List<Entry<StandardSourceDefinition, Boolean>> actualGrantableDefinitions = configRepository
+        .listGrantableSourceDefinitions(workspaceId, false);
+    assertThat(actualGrantableDefinitions).hasSameElementsAs(List.of(
+        Map.entry(grantableDefinition1, true),
+        Map.entry(grantableDefinition2, false)));
   }
 
   @Test
@@ -267,6 +276,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   public void testDestinationDefinitionGrants() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     final StandardDestinationDefinition grantableDefinition1 = MockData.grantableDestinationDefinition1();
+    final StandardDestinationDefinition grantableDefinition2 = MockData.grantableDestinationDefinition2();
     final StandardDestinationDefinition customDefinition = MockData.cusstomDestinationDefinition();
 
     configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getDestinationDefinitionId(), workspaceId);
@@ -274,6 +284,12 @@ public class ConfigRepositoryE2EReadWriteTest {
     final List<StandardDestinationDefinition> actualGrantedDefinitions = configRepository
         .listGrantedDestinationDefinitions(workspaceId, false);
     assertThat(actualGrantedDefinitions).hasSameElementsAs(List.of(grantableDefinition1, customDefinition));
+
+    final List<Entry<StandardDestinationDefinition, Boolean>> actualGrantableDefinitions = configRepository
+        .listGrantableDestinationDefinitions(workspaceId, false);
+    assertThat(actualGrantableDefinitions).hasSameElementsAs(List.of(
+        Map.entry(grantableDefinition1, true),
+        Map.entry(grantableDefinition2, false)));
   }
 
 }
