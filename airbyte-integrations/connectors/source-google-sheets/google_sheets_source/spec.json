@@ -64,7 +64,7 @@
               "service_account_info": {
                 "type": "string",
                 "title": "Service Account Information.",
-                "description": "The JSON key of the service account to use for authorization.",
+                "description": "The JSON key of the service account to use for authorization. See <a href='https://github.com/airbytehq/airbyte/blob/master/docs/integrations/sources/google-sheets.md#setup-guide'>Setup Guide</a> for more details",
                 "airbyte_secret": true,
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
