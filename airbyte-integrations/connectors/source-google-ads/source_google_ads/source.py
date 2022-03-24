@@ -19,9 +19,12 @@ from .google_ads import GoogleAds
 from .streams import (
     AccountPerformanceReport,
     Accounts,
+    AdGroupAdLabels,
     AdGroupAdReport,
     AdGroupAds,
+    AdGroupLabels,
     AdGroups,
+    CampaignLabels,
     Campaigns,
     ClickView,
     DisplayKeywordPerformanceReport,
@@ -115,9 +118,12 @@ class SourceGoogleAds(AbstractSource):
 
         streams = [
             AdGroupAds(**incremental_stream_config),
+            AdGroupAdLabels(google_api),
             AdGroups(**incremental_stream_config),
+            AdGroupLabels(google_api),
             Accounts(**incremental_stream_config),
             Campaigns(**incremental_stream_config),
+            CampaignLabels(google_api),
             ClickView(**incremental_stream_config),
         ]
 
