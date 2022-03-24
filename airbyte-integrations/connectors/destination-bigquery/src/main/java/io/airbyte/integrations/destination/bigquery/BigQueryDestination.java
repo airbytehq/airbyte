@@ -109,19 +109,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build().getService();
       List<Boolean> permissionsCheckStatusList = storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS);
 
-      List<String> missedPermissions = StreamUtils
+      List<String> missingPermissions = StreamUtils
           .zipWithIndex(permissionsCheckStatusList.stream())
           .filter(i -> !i.getValue())
           .map(i -> REQUIRED_PERMISSIONS.get(Math.toIntExact(i.getIndex())))
           .collect(Collectors.toList());
 
-      if (!missedPermissions.isEmpty()) {
+      if (!missingPermissions.isEmpty()) {
         LOGGER.error("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
 
         return new AirbyteConnectionStatus()
             .withStatus(AirbyteConnectionStatus.Status.FAILED)
             .withMessage("Could not connect to the Gcs bucket with the provided configuration. "
-                + "Missed permissions: " + missedPermissions);
+                + "Missing permissions: " + missingPermissions);
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
 
