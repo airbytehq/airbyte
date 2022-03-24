@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,7 +70,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException {
+  void setup() throws IOException, JsonValidationException, SQLException {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
     featureFlags = mock(FeatureFlags.class);
@@ -100,6 +101,7 @@ public class ConfigRepositoryE2EReadWriteTest {
     for (final StandardSync sync : MockData.standardSyncs()) {
       configRepository.writeStandardSync(sync);
     }
+    database.transaction(ctx -> ctx.truncate(ACTOR_DEFINITION_WORKSPACE_GRANT).execute());
   }
 
   @AfterAll
@@ -290,6 +292,27 @@ public class ConfigRepositoryE2EReadWriteTest {
     assertThat(actualGrantableDefinitions).hasSameElementsAs(List.of(
         Map.entry(grantableDefinition1, true),
         Map.entry(grantableDefinition2, false)));
+  }
+
+  @Test
+  public void testWorkspaceCanUseDefinition() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final UUID publicDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
+    final UUID grantableDefinition1Id = MockData.grantableSourceDefinition1().getSourceDefinitionId();
+    final UUID grantableDefinition2Id = MockData.grantableSourceDefinition2().getSourceDefinitionId();
+    final UUID customDefinitionId = MockData.customSourceDefinition().getSourceDefinitionId();
+
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinitionId, workspaceId);
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1Id, workspaceId);
+
+    assertTrue(configRepository.workspaceCanUseDefinition(publicDefinitionId, workspaceId));
+    assertTrue(configRepository.workspaceCanUseDefinition(grantableDefinition1Id, workspaceId));
+    assertFalse(configRepository.workspaceCanUseDefinition(grantableDefinition2Id, workspaceId));
+    assertTrue(configRepository.workspaceCanUseDefinition(customDefinitionId, workspaceId));
+    assertFalse(configRepository.workspaceCanUseDefinition(new UUID(0L, 0L), workspaceId));
+
+    assertTrue(configRepository.workspaceCanUseCustomDefinition(customDefinitionId, workspaceId));
+    assertFalse(configRepository.workspaceCanUseCustomDefinition(grantableDefinition1Id, workspaceId));
   }
 
 }
