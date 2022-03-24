@@ -55,7 +55,19 @@ This connector outputs the following incremental streams:
    Please, consider this behaviour when using those 13 incremental streams because it may affect you API call limits.
 
 3. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+**The "Start Date" configuration option does not apply to the streams below, because the Github API does not include dates which can be used for filtering:**
 
+* `assignees`
+* `branches`
+* `collaborators`
+* `issue_labels`
+* `organizations`
+* `pull_request_commits`
+* `pull_request_stats`
+* `repositories`
+* `tags`
+* `teams`
+* `users`
 ### Features
 
 | Feature | Supported? |
