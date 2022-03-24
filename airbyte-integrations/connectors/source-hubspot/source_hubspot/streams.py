@@ -667,7 +667,7 @@ class IncrementalStream(Stream, ABC):
 
     @state.setter
     def state(self, value):
-        state_value = value[self.updated_at_field]
+        state_value = value.get(self.updated_at_field, self._state)
         self._state = (
             pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
             if isinstance(state_value, int)
