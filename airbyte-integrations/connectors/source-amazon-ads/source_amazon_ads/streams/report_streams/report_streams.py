@@ -5,7 +5,7 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 from enum import Enum
 from gzip import decompress
 from http import HTTPStatus
@@ -19,6 +19,7 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from pendulum import DateTime
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.spec import AmazonAdsConfig
@@ -258,7 +259,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return response
 
     @staticmethod
-    def get_report_date_ranges(start_report_date: Optional[datetime]) -> Iterable[str]:
+    def get_report_date_ranges(start_report_date: Optional[DateTime]) -> Iterable[str]:
         """
         Generates dates in YYYYMMDD format for each day started from
         start_report_date until current date (current date included)
