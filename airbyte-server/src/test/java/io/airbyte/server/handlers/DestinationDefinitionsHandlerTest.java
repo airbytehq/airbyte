@@ -23,6 +23,7 @@ import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationReadList;
 import io.airbyte.api.model.PrivateDestinationDefinitionRead;
+import io.airbyte.api.model.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -44,6 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -181,6 +183,57 @@ class DestinationDefinitionsHandlerTest {
     assertEquals(
         Lists.newArrayList(expectedDestinationDefinitionRead1, expectedDestinationDefinitionRead2),
         actualDestinationDefinitionReadList.getDestinationDefinitions());
+  }
+
+  @Test
+  @DisplayName("listPrivateDestinationDefinitions should return the right list")
+  void testListPrivateDestinationDefinitions() throws IOException, URISyntaxException {
+    final StandardDestinationDefinition destinationDefinition2 = generateDestinationDefinition();
+
+    when(configRepository.listGrantableDestinationDefinitions(workspaceId, false)).thenReturn(
+        Lists.newArrayList(
+            Map.entry(destinationDefinition, false),
+            Map.entry(destinationDefinition2, true)));
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead1 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition.getDestinationDefinitionId())
+        .name(destinationDefinition.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
+        .destinationDefinitionId(destinationDefinition2.getDestinationDefinitionId())
+        .name(destinationDefinition2.getName())
+        .dockerRepository(destinationDefinition.getDockerRepository())
+        .dockerImageTag(destinationDefinition.getDockerImageTag())
+        .documentationUrl(new URI(destinationDefinition.getDocumentationUrl()))
+        .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(destinationDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final PrivateDestinationDefinitionRead expectedDestinationDefinitionOptInRead1 =
+        new PrivateDestinationDefinitionRead().destinationDefinition(expectedDestinationDefinitionRead1).granted(false);
+
+    final PrivateDestinationDefinitionRead expectedDestinationDefinitionOptInRead2 =
+        new PrivateDestinationDefinitionRead().destinationDefinition(expectedDestinationDefinitionRead2).granted(true);
+
+    final PrivateDestinationDefinitionReadList actualDestinationDefinitionOptInReadList =
+        destinationDefinitionsHandler.listPrivateDestinationDefinitions(
+            new WorkspaceIdRequestBody().workspaceId(workspaceId));
+
+    assertEquals(
+        Lists.newArrayList(expectedDestinationDefinitionOptInRead1, expectedDestinationDefinitionOptInRead2),
+        actualDestinationDefinitionOptInReadList.getDestinationDefinitions());
   }
 
   @Test

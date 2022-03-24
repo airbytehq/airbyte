@@ -8,6 +8,7 @@ import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
@@ -37,6 +38,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -129,6 +131,22 @@ public class SourceDefinitionsHandler {
     return toSourceDefinitionReadList(MoreLists.concat(
         configRepository.listPublicSourceDefinitions(false),
         configRepository.listGrantedSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
+  }
+
+  public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<Entry<StandardSourceDefinition, Boolean>> standardSourceDefinitionBooleanMap =
+        configRepository.listGrantableSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false);
+    return toPrivateSourceDefinitionReadList(standardSourceDefinitionBooleanMap);
+  }
+
+  private static PrivateSourceDefinitionReadList toPrivateSourceDefinitionReadList(final List<Entry<StandardSourceDefinition, Boolean>> defs) {
+    final List<PrivateSourceDefinitionRead> reads = defs.stream()
+        .map(entry -> new PrivateSourceDefinitionRead()
+            .sourceDefinition(buildSourceDefinitionRead(entry.getKey()))
+            .granted(entry.getValue()))
+        .collect(Collectors.toList());
+    return new PrivateSourceDefinitionReadList().sourceDefinitions(reads);
   }
 
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
