@@ -4,18 +4,18 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Stripe Source Spec",
     "type": "object",
-    "required": ["spreadsheet_id"],
+    "required": ["spreadsheet_id","credentials"],
     "additionalProperties": true,
     "properties": {
       "spreadsheet_id": {
         "type": "string",
         "title": "Spreadsheet ID",
-        "description": "The ID of the spreadsheet to be replicated. The ID is found in the URL of your spreadsheet, typically between \"/d/\" and \"/edit\"",
+        "description": "The ID of the spreadsheet to be replicated. The ID is found in the URL of your spreadsheet, typically between \"/d/\" and \"/edit\". See <a href='https://docs.airbyte.com/integrations/sources/google-sheets#sheet-id'>this guide</a> for more details.",
         "examples": ["1hLd9Qqti5XyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb"]
       },
       "credentials": {
         "type": "object",
-        "title": "Credentials",
+        "title": "Authentication",
         "description": "Google API Credentials for connecting to Google Sheets and Google Drive APIs",
         "oneOf": [
           {
