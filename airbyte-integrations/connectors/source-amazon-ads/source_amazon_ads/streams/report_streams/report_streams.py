@@ -373,7 +373,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         report_date = pendulum.from_format(report_date, ReportStream.REPORT_DATE_FORMAT)
         profile_tz = pytz.timezone(profile.timezone)
         profile_time = report_date.astimezone(profile_tz)
-        return profile_time.strftime(ReportStream.REPORT_DATE_FORMAT)
+        return profile_time.format(ReportStream.REPORT_DATE_FORMAT)
 
     @backoff.on_exception(
         backoff.expo,

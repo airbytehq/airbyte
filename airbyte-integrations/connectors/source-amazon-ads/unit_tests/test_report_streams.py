@@ -270,6 +270,7 @@ def test_display_report_stream_init_too_many_requests(mocker, test_config):
 )
 @responses.activate
 def test_display_report_stream_backoff(mocker, test_config, modifiers, expected):
+    mocker.patch("time.sleep")
     setup_responses(init_response=REPORT_INIT_RESPONSE, metric_response=METRIC_RESPONSE)
 
     with freeze_time("2021-01-02 03:04:05") as frozen_time:
