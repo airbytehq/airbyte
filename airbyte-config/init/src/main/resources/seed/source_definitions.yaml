@@ -266,7 +266,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.1.29
+  dockerImageTag: 0.1.31
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -676,8 +676,8 @@
 - name: SalesLoft
   sourceDefinitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
   dockerRepository: airbyte/source-salesloft
-  dockerImageTag: 0.1.1
-  documentationUrl: https://docs.airbyte.io/integrations/sources/lever-onesignal
+  dockerImageTag: 0.1.2
+  documentationUrl: https://docs.airbyte.io/integrations/sources/salesloft
   icon: salesloft.svg
   sourceType: api
 - name: Salesforce
