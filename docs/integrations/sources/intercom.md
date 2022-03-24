@@ -44,7 +44,12 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 ### Setup guide
 
-Please read [How authenticate with OAuth](https://developers.intercom.com/building-apps/docs/authentication-types#section-o-auth)
+How configuring the connector in the Airbyte UI:
+
+1. Click Authenticate your account to sign in with Intercom and authorize your account.
+2. Approve authorize access.
+3. Fill in the `start date` field.
+4. You should be ready to sync data.
 
 ## Getting started (Airbyte OSS) 
 
