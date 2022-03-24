@@ -23,7 +23,6 @@ import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.ActorCatalog;
-import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -64,7 +63,6 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.JoinType;
 import org.jooq.Record;
-import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectJoinStep;
@@ -737,64 +735,6 @@ public class ConfigRepository {
     }
   }
 
-  public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
-                                                 final String configurationHash,
-                                                 final String connectorVersion)
-      throws JsonValidationException, IOException {
-    for (final ActorCatalogFetchEvent event : listActorCatalogFetchEvents()) {
-      if (event.getConnectorVersion().equals(connectorVersion)
-          && event.getConfigHash().equals(configurationHash)
-          && event.getActorId().equals(sourceId)) {
-        return getCatalogById(event.getActorCatalogId());
-      }
-    }
-    return Optional.empty();
-  }
-
-  public List<ActorCatalogFetchEvent> listActorCatalogFetchEvents()
-      throws JsonValidationException, IOException {
-    final List<ActorCatalogFetchEvent> actorCatalogFetchEvents = new ArrayList<>();
-
-    for (final ActorCatalogFetchEvent event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
-        ActorCatalogFetchEvent.class)) {
-      actorCatalogFetchEvents.add(event);
-    }
-    return actorCatalogFetchEvents;
-  }
-
-  public Optional<ActorCatalog> getCatalogById(final UUID catalogId)
-      throws IOException {
-    try {
-      return Optional.of(persistence.getConfig(ConfigSchema.ACTOR_CATALOG, catalogId.toString(),
-          ActorCatalog.class));
-    } catch (final ConfigNotFoundException e) {
-      return Optional.empty();
-    } catch (final JsonValidationException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  public Optional<ActorCatalog> findExistingCatalog(final ActorCatalog actorCatalog)
-      throws JsonValidationException, IOException {
-    for (final ActorCatalog fetchedCatalog : listActorCatalogs()) {
-      if (actorCatalog.getCatalogHash().equals(fetchedCatalog.getCatalogHash())) {
-        return Optional.of(fetchedCatalog);
-      }
-    }
-    return Optional.empty();
-  }
-
-  public List<ActorCatalog> listActorCatalogs()
-      throws JsonValidationException, IOException {
-    final List<ActorCatalog> actorCatalogs = new ArrayList<>();
-
-    for (final ActorCatalog event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG,
-        ActorCatalog.class)) {
-      actorCatalogs.add(event);
-    }
-    return actorCatalogs;
-  }
-
   private Map<UUID, AirbyteCatalog> findCatalogByHash(final String catalogHash, final DSLContext context) {
     final Result<Record2<UUID, JSONB>> records = context.select(ACTOR_CATALOG.ID, ACTOR_CATALOG.CATALOG)
         .from(ACTOR_CATALOG)
@@ -843,11 +783,11 @@ public class ConfigRepository {
     return catalogId;
   }
 
-  public Optional<AirbyteCatalog> getActorCatalog(final UUID actorId,
-                                                  final String actorVersion,
-                                                  final String configHash)
+  public Optional<ActorCatalog> getActorCatalog(final UUID actorId,
+                                                final String actorVersion,
+                                                final String configHash)
       throws IOException {
-    final Result<Record1<JSONB>> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG.CATALOG)
+    final Result<Record> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
         .from(ACTOR_CATALOG).join(ACTOR_CATALOG_FETCH_EVENT)
         .on(ACTOR_CATALOG.ID.eq(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID))
         .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(actorId))
@@ -856,8 +796,7 @@ public class ConfigRepository {
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
     if (records.size() >= 1) {
-      final JSONB record = records.get(0).get(ACTOR_CATALOG.CATALOG);
-      return Optional.of(Jsons.deserialize(record.toString(), AirbyteCatalog.class));
+      return Optional.of(DbConverter.buildActorCatalog(records.get(0)));
     }
     return Optional.empty();
 

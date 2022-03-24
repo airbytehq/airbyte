@@ -16,6 +16,7 @@ import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
@@ -153,24 +154,24 @@ public class ConfigRepositoryE2EReadWriteTest {
     configRepository.writeActorCatalogFetchEvent(
         actorCatalog, source.getSourceId(), "1.2.0", "ConfigHash");
 
-    final Optional<AirbyteCatalog> catalog =
+    final Optional<ActorCatalog> catalog =
         configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "ConfigHash");
     assertTrue(catalog.isPresent());
-    assertEquals(actorCatalog, catalog.get());
-    assertFalse(configRepository.getSourceCatalog(source.getSourceId(), "1.3.0", "ConfigHash").isPresent());
-    assertFalse(configRepository.getSourceCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash").isPresent());
+    assertEquals(actorCatalog, Jsons.object(catalog.get().getCatalog(), AirbyteCatalog.class));
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash").isPresent());
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash").isPresent());
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.3.0", "ConfigHash");
-    final Optional<AirbyteCatalog> catalogNewConnectorVersion =
+    final Optional<ActorCatalog> catalogNewConnectorVersion =
         configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash");
     assertTrue(catalogNewConnectorVersion.isPresent());
-    assertEquals(actorCatalog, catalogNewConnectorVersion.get());
+    assertEquals(actorCatalog, Jsons.object(catalogNewConnectorVersion.get().getCatalog(), AirbyteCatalog.class));
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", "OtherConfigHash");
-    final Optional<AirbyteCatalog> catalogNewConfig =
+    final Optional<ActorCatalog> catalogNewConfig =
         configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash");
     assertTrue(catalogNewConfig.isPresent());
-    assertEquals(actorCatalog, catalogNewConfig.get());
+    assertEquals(actorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
 
     final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
     assertEquals(1, catalogDbEntry);
