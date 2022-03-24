@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.46", "requests_oauthlib~=1.3.0", "pytz~=2
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "pytest-mock~=3.6.1",
+    "pytest-mock~=3.7.0",
     "jsonschema~=3.2.0",
     "responses~=0.13.3",
     "freezegun~=1.1.0",

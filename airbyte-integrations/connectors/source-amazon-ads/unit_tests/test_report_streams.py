@@ -190,8 +190,12 @@ def test_display_report_stream_init_failure(mocker, test_config):
         responses.POST, re.compile(r"https://advertising-api.amazon.com/sd/[a-zA-Z]+/report"), json={"error": "some error"}, status=400
     )
 
+    sleep_mock = mocker.patch("time.sleep")
     with pytest.raises(Exception):
         [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
+
+    assert sleep_mock.call_count == 4
+    assert len(responses.calls) == 5
 
 
 @responses.activate
