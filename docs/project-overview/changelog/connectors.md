@@ -153,7 +153,8 @@ New source:
 * [**WooCommerce**](https://docs.airbyte.io/integrations/sources/woocommerce)
 
 New feature:
-**MSSQL** destination: Now supports basic normalization
+
+* **MSSQL** destination: Now supports basic normalization
 
 ## 9/29/2021
 
