@@ -60,6 +60,19 @@ jobs:
             frontend:
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    run: |
+      ./tools/bin/find_non_rate_limited_PAT \
+        ${{ secrets.SUPERTOPHER_PAT }}
+        ${{ secrets.AIRBYTEIO_PAT }}
+        ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+        ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+        ${{ secrets.OCTAVIA_PAT }}
+    outputs:
+      pat:
 
   # Uncomment to debug.
   #  changes-output:
@@ -147,7 +160,9 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
-    needs: changes
+    needs:
+      - changes
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
       needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true'
@@ -166,7 +181,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{   find_valid_pat.pat }}
 
   build-connectors-base:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
