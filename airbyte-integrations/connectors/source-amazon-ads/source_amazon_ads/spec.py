@@ -4,6 +4,7 @@
 
 from typing import List
 
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
 from pydantic import BaseModel, Field
 from source_amazon_ads.constants import AmazonAdsRegion
 
@@ -11,6 +12,8 @@ from source_amazon_ads.constants import AmazonAdsRegion
 class AmazonAdsConfig(BaseModel):
     class Config:
         title = "Amazon Ads Spec"
+
+    auth_type: str = Field(default="oauth2.0", const=True, order=0, enum=["oauth2.0"])
 
     client_id: str = Field(
         name="Client ID",
@@ -79,3 +82,30 @@ class AmazonAdsConfig(BaseModel):
             schema["properties"]["region"].pop("allOf", None)
             schema["properties"]["region"].pop("$ref", None)
         return schema
+
+
+advanced_auth = AdvancedAuth(
+    auth_flow_type=AuthFlowType.oauth2_0,
+    predicate_key=["auth_type"],
+    predicate_value="oauth2.0",
+    oauth_config_specification=OAuthConfigSpecification(
+        complete_oauth_output_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {"refresh_token": {"type": "string", "path_in_connector_config": ["refresh_token"]}},
+        },
+        complete_oauth_server_input_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+        },
+        complete_oauth_server_output_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+            },
+        },
+    ),
+)

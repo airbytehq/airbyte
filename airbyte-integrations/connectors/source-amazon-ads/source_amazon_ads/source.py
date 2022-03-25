@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .schemas import Profile
-from .spec import AmazonAdsConfig
+from .spec import AmazonAdsConfig, advanced_auth
 from .streams import (
     Profiles,
     SponsoredBrandsAdGroups,
@@ -95,6 +95,7 @@ class SourceAmazonAds(AbstractSource):
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.io/integrations/sources/amazon-ads",
             connectionSpecification=AmazonAdsConfig.schema(),
+            advanced_auth=advanced_auth,
         )
 
     @staticmethod
