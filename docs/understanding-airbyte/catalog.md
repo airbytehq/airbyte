@@ -12,7 +12,7 @@ An `AirbyteCatalog` is a struct produced by the `discover` action of a source. I
 
 ## AirbyteStream
 
-This section will document the meaning of each field in an `AirbyteStream`
+This section documents the meaning of each field in an `AirbyteStream`.
 
 * `json_schema` - A [JsonSchema](https://json-schema.org/understanding-json-schema) representation of the stream.
 * `supported_sync_modes` - The sync modes the stream supports. By default, all sources support `FULL_REFRESH`. Even if this array is empty, it can be assumed that a source supports `FULL_REFRESH`. The allowed sync modes are `FULL_REFRESH` and `INCREMENTAL`.
@@ -21,7 +21,7 @@ This section will document the meaning of each field in an `AirbyteStream`
 
 ## ConfiguredAirbyteStream
 
-This section will document the meaning of each field in a `ConfiguredAirbyteStream`
+This section documents the meaning of each field in a `ConfiguredAirbyteStream`.
 
 * `stream` - The configured `AirbyteStream`.
 * `sync_mode` - The sync mode used to sync that stream. The value in this field MUST be present in the `supported_sync_modes` array for the discovered `AirbyteStream` of this stream.
@@ -32,7 +32,7 @@ This section will document the meaning of each field in a `ConfiguredAirbyteStre
 
 ## Logic for resolving the Cursor Field
 
-This section lays out how a cursor field is determined for a stream performing an `INCREMENTAL` sync.
+This section documents how a cursor field is determined for a stream performing an `INCREMENTAL` sync.
 
 * If `source_defined_cursor` in `AirbyteStream` is true, the source determines the cursor field internally. It cannot be overriden. If it is false, continue...
 * If `cursor_field` in `ConfiguredAirbyteStream` is set, the source uses that field as the cursor. If it is not set, continue...
