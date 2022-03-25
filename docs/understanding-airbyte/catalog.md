@@ -28,7 +28,7 @@ This section will document the meaning of each field in an `ConfiguredAirbyteStr
 * `cursor_field` - This field is an array of keys to a field in the schema that in the `INCREMENTAL` sync mode will be used to determine if a record is new or updated since the last sync.
   * If an `AirbyteStream` has `source_defined_cursor` set to `true`, then the `cursor_field` attribute in `ConfiguredAirbyteStream` will be ignored.
   * If an `AirbyteStream` defines a `default_cursor_field`, then the `cursor_field` attribute in `ConfiguredAirbyteStream` is not required, but if it is set, it will override the default value.
-  * If an `AirbyteStream` does not define a `cursor_field` or a `default_cursor_field`, then `ConfiguredAirbyteStream` must define a `cursor_field`.
+  * If an `AirbyteStream` does not define a `default_cursor_field` and has `source_defined_cursor` set to `false`, then `ConfiguredAirbyteStream` must define a `cursor_field`.
 
 ## Logic for resolving the Cursor Field
 
