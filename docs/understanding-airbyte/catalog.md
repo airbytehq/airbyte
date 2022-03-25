@@ -7,7 +7,7 @@ An `AirbyteCatalog` is a struct that is produced by the `discover` action of a s
 ## Cursor
 
 * The cursor is how sources track which records are new or updated since the last sync. 
-* A "cursor field" is the field that is used as a comparable for making this determination.
+* A "cursor field" is the field used to make this determination.
   * If a configuration requires a cursor field, it requires an array of strings that serves as a path to the desired field. e.g. if the structure of a stream is `{ value: 2, metadata: { updated_at: 2020-11-01 } }` the `default_cursor_field` might be `["metadata", "updated_at"]`.
 
 ## AirbyteStream
