@@ -344,6 +344,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
   }
 
+  // TODO: Deprecate this route in favor of createCustomSourceDefinition
+  // since all connector definitions created through the API are custom
   @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
     return execute(() -> sourceDefinitionsHandler.createPrivateSourceDefinition(sourceDefinitionCreate));
@@ -538,6 +540,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     return execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
   }
 
+  // TODO: Deprecate this route in favor of createCustomDestinationDefinition
+  // since all connector definitions created through the API are custom
   @Override
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
     return execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
