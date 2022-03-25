@@ -47,7 +47,7 @@ public class AmazonAdsOAuthFlow extends BaseOAuth2Flow {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
-          .addParameter("scope", "profile")
+          .addParameter("scope", "advertising::campaign_management")
           .addParameter("response_type", "code")
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
