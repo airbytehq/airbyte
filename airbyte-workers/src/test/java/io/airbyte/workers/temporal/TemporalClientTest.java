@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -43,9 +42,8 @@ import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.workflow.Functions.Func;
-import io.temporal.workflow.Functions.Proc1;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -263,28 +261,54 @@ class TemporalClientTest {
 
   }
 
-  @SuppressWarnings("unchecked")
-  @Test
+  @Nested
   @DisplayName("Test delete connection method.")
-  void testDeleteConnection() {
-    final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+  class DeleteConnection {
 
-    doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
-    when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test delete connection method.")
+    void testDeleteConnection() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
 
-    final JobSyncConfig syncConfig = new JobSyncConfig()
-        .withSourceDockerImage(IMAGE_NAME1)
-        .withSourceDockerImage(IMAGE_NAME2)
-        .withSourceConfiguration(Jsons.emptyObject())
-        .withDestinationConfiguration(Jsons.emptyObject())
-        .withOperationSequence(List.of())
-        .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
+      doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
+      when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
 
-    temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
-    temporalClient.deleteConnection(CONNECTION_ID);
+      final JobSyncConfig syncConfig = new JobSyncConfig()
+          .withSourceDockerImage(IMAGE_NAME1)
+          .withSourceDockerImage(IMAGE_NAME2)
+          .withSourceConfiguration(Jsons.emptyObject())
+          .withDestinationConfiguration(Jsons.emptyObject())
+          .withOperationSequence(List.of())
+          .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
 
-    verify(workflowClient, Mockito.never()).newSignalWithStartRequest();
-    verify(mConnectionManagerWorkflow).deleteConnection();
+      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
+      temporalClient.deleteConnection(CONNECTION_ID);
+
+      verify(workflowClient, Mockito.never()).newSignalWithStartRequest();
+      verify(mConnectionManagerWorkflow).deleteConnection();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test delete connection method when workflow is in an unexpected state")
+    void testDeleteConnectionInUnexpectedState() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final BatchRequest mBatchRequest = mock(BatchRequest.class);
+
+      doThrow(new IllegalStateException("Force illegal state")).when(temporalClient).getConnectionUpdateWorkflow(CONNECTION_ID);
+      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mConnectionManagerWorkflow);
+      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
+
+      temporalClient.deleteConnection(CONNECTION_ID);
+
+      // this is only called when getting existing workflow
+      verify(workflowClient, Mockito.never()).newWorkflowStub(any(), anyString());
+
+      verify(workflowClient).newSignalWithStartRequest();
+      verify(workflowClient).signalWithStart(mBatchRequest);
+    }
+
   }
 
 }
