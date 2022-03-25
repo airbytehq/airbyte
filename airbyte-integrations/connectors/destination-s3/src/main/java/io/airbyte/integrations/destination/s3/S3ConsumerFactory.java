@@ -79,8 +79,9 @@ public class S3ConsumerFactory {
       final String namespace = abStream.getNamespace();
       final String streamName = abStream.getName();
       final String outputNamespace = getOutputNamespace(abStream, config.get("s3_bucket_path").asText(), namingResolver);
-      final String customOutputFormat = config.has("s3_path_format") && !config.get("s3_path_format").asText().isBlank() ?
-          config.get("s3_path_format").asText() : S3DestinationConstants.DEFAULT_PATH_FORMAT;
+      final String customOutputFormat =
+          config.has("s3_path_format") && !config.get("s3_path_format").asText().isBlank() ? config.get("s3_path_format").asText()
+              : S3DestinationConstants.DEFAULT_PATH_FORMAT;
       final String outputBucketPath = storageOperations.getBucketObjectPath(outputNamespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       final WriteConfig writeConfig = new WriteConfig(namespace, streamName, outputNamespace, outputBucketPath, syncMode);

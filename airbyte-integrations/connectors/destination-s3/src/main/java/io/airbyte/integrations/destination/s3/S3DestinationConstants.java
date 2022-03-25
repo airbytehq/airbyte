@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
+
 public final class S3DestinationConstants {
 
   public static final String YYYY_MM_DD_FORMAT_STRING = "yyyy_MM_dd";
