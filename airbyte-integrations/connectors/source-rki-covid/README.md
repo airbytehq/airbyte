@@ -1,9 +1,21 @@
-# Rki Covid Source
+# RKI Covid Source
 
-This is the repository for the Rki Covid source connector, written in Python.
+This is the repository for the RkI (Robert Koch-Institut - von Marlon Lückert) Covid-19 source connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/rki-covid).
 
 ## Local development
+### Developed Streams (Endpoints)
+```
+Germany:
+    1. /germany
+    2. /germany/age-groups
+    3. /germany/history/cases/:days
+    4. /germany/history/incidence/:days
+    5. /germany/history/deaths/:days
+    6. /germany/history/recovered/:days
+    7. /germany/history/frozen-incidence/:days
+    8. /germany/history/hospitalization/:days
+```
 
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**

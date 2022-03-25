@@ -12,50 +12,11 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
-"""
-
 
 # Basic full refresh stream
 class RkiCovidStream(HttpStream, ABC):
-    """
-    TODO remove this comment
 
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
 
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class RkiCovidStream(HttpStream, ABC)` which is the current class
-    `class Customers(RkiCovidStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(RkiCovidStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalRkiCovidStream((RkiCovidStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # TODO: Fill in the url base. Required.
     url_base = "https://api.corona-zahlen.org/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -94,50 +55,31 @@ class RkiCovidStream(HttpStream, ABC):
 
 # class that contains main source germany | full-refresh
 class Germany(RkiCovidStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+    """Docs: https://api.corona-zahlen.org/germany"""
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         return "germany"
 
 
 # class that contains source age-groups in germany. | full-refresh
 class GermanyAgeGroups(RkiCovidStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+    """Docs: https://api.corona-zahlen.org/germany/age-groups"""
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         return "germany/age-groups"
 
 
 # Basic incremental stream
 class IncrementalRkiCovidStream(RkiCovidStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
     @property
@@ -161,11 +103,8 @@ class IncrementalRkiCovidStream(RkiCovidStream, ABC):
 
 # source: germany/history/cases/:days | Incremental
 class GermanyHistoryCases(IncrementalRkiCovidStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/cases/:days"""
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = None
 
     def __init__(self, config, **kwargs):
@@ -175,10 +114,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
+        date is cursor field in the stream.
         :return str: The name of the cursor field.
         """
         return "date"
@@ -188,24 +124,21 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
         current_state = current_stream_state.get(self.cursor_field) or latest_state
         return {self.cursor_field: max(latest_state, current_state)}
 
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json().get("data")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         if self.config.get('cases_in_days'):
             return "germany/history/cases/"+str(self.config.get('cases_in_days'))
         return "germany/history/cases/"
 
 
-
 # source: germany/history/incidence/:days | Incremental
 class GermanHistoryIncidence(IncrementalRkiCovidStream):
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/incidence/:days"""
 
     primary_key = None
 
@@ -216,10 +149,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
+        date is cursor field in the stream.
         :return str: The name of the cursor field.
         """
         return "date"
@@ -236,18 +166,14 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         if self.config.get('incidence_in_days'):
             return "germany/history/incidence/"+str(self.config.get('incidence_in_days'))
         return "germany/history/incidence/"
 
 
-
 # source: germany/history/deaths/:days | Incremental
 class GermanHistoryDeaths(IncrementalRkiCovidStream):
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/deaths/:days"""
 
     primary_key = None
 
@@ -258,10 +184,7 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
+        date is cursor field in the stream.
         :return str: The name of the cursor field.
         """
         return "date"
@@ -278,18 +201,14 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         if self.config.get('deaths_in_days'):
             return "germany/history/deaths/"+str(self.config.get('deaths_in_days'))
         return "germany/history/deaths/"
 
 
-
 # source: germany/history/recovered/:days | Incremental
 class GermanHistoryRecovered(IncrementalRkiCovidStream):
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/recovered/:days"""
 
     primary_key = None
 
@@ -300,10 +219,7 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
+        date is cursor field in the stream.
         :return str: The name of the cursor field.
         """
         return "date"
@@ -320,18 +236,14 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         if self.config.get('recovered_in_days'):
             return "germany/history/recovered/"+str(self.config.get('recovered_in_days'))
         return "germany/history/recovered/"
 
 
-
 # source: germany/history/frozen-incidence/:days | Incremental
 class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/frozen-incidence/:days"""
 
     primary_key = None
 
@@ -342,10 +254,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
+        date is cursor field in the stream.
         :return str: The name of the cursor field.
         """
         return "date"
@@ -362,10 +271,6 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         if self.config.get('frozen_incidence_in_days'):
             return "germany/history/frozen-incidence/"+str(self.config.get('frozen_incidence_in_days'))
         return "germany/history/frozen-incidence/"
@@ -373,6 +278,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
 
 # source: germany/history/hospitalization/:days | Incremental
 class GermanHistoryHospitalization(IncrementalRkiCovidStream):
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/hospitalization/:days"""
 
     primary_key = None
 
@@ -383,10 +289,7 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
     @property
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
+        date is cursor field in the stream.
         :return str: The name of the cursor field.
         """
         return "date"
@@ -403,10 +306,6 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         if self.config.get('hospitalization_in_days'):
             return "germany/history/hospitalization/"+str(self.config.get('hospitalization_in_days'))
         return "germany/history/hospitalization/"
@@ -455,36 +354,37 @@ class Employees(IncrementalRkiCovidStream):
 
 # Source
 class SourceRkiCovid(AbstractSource):
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
+        Testing connection availability for the connector.
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        req = requests.get(RkiCovidStream.url_base+'germany')
-        if req.status_code == 200:
-            return True, None
-        return False, req.reason
+        try:
+            req = requests.get(RkiCovidStream.url_base+'germany')
+            if req.status_code == 200:
+                return True, None
+            return False, req.reason
+        except Exception:
+            return False, "There is a problem in source check connection."
 
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
+        Defining streams to run.
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
 
-        return [Germany(),
-                GermanyAgeGroups(),
-                GermanyHistoryCases(config=config),
-                GermanHistoryIncidence(config=config),
-                GermanHistoryDeaths(config=config),
-                GermanHistoryRecovered(config=config),
-                GermanHistoryFrozenIncidence(config=config),
-                GermanHistoryHospitalization(config=config)]
+        return [
+            Germany(),
+            GermanyAgeGroups(),
+            GermanyHistoryCases(config=config),
+            GermanHistoryIncidence(config=config),
+            GermanHistoryDeaths(config=config),
+            GermanHistoryRecovered(config=config),
+            GermanHistoryFrozenIncidence(config=config),
+            GermanHistoryHospitalization(config=config)
+            ]
