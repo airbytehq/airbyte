@@ -21,7 +21,7 @@ This section will document the meaning of each field in an `AirbyteStream`
 
 ## ConfiguredAirbyteStream
 
-This section will document the meaning of each field in an `ConfiguredAirbyteStream`
+This section will document the meaning of each field in a `ConfiguredAirbyteStream`
 
 * `stream` - The `AirbyteStream` that it is configured.
 * `sync_mode` - The sync mode that will be used to sync that stream. The value in this field MUST be present in the `supported_sync_modes` array for the discovered `AirbyteStream` of this stream.
