@@ -297,20 +297,32 @@ public class ConfigRepositoryE2EReadWriteTest {
   @Test
   public void testWorkspaceCanUseDefinition() throws IOException {
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final UUID otherWorkspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
     final UUID publicDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
     final UUID grantableDefinition1Id = MockData.grantableSourceDefinition1().getSourceDefinitionId();
     final UUID grantableDefinition2Id = MockData.grantableSourceDefinition2().getSourceDefinitionId();
     final UUID customDefinitionId = MockData.customSourceDefinition().getSourceDefinitionId();
 
-    configRepository.writeActorDefinitionWorkspaceGrant(customDefinitionId, workspaceId);
-    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1Id, workspaceId);
-
+    // Can use public definitions
     assertTrue(configRepository.workspaceCanUseDefinition(publicDefinitionId, workspaceId));
+
+    // Can use granted definitions
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1Id, workspaceId);
     assertTrue(configRepository.workspaceCanUseDefinition(grantableDefinition1Id, workspaceId));
-    assertFalse(configRepository.workspaceCanUseDefinition(grantableDefinition2Id, workspaceId));
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinitionId, workspaceId);
     assertTrue(configRepository.workspaceCanUseDefinition(customDefinitionId, workspaceId));
+
+    // Cannot use private definitions without grant
+    assertFalse(configRepository.workspaceCanUseDefinition(grantableDefinition2Id, workspaceId));
+
+    // Cannot use other workspace's grants
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition2Id, otherWorkspaceId);
+    assertFalse(configRepository.workspaceCanUseDefinition(grantableDefinition2Id, workspaceId));
+
+    // Passing invalid IDs returns false
     assertFalse(configRepository.workspaceCanUseDefinition(new UUID(0L, 0L), workspaceId));
 
+    // workspaceCanUseCustomDefinition can only be true for custom definitions
     assertTrue(configRepository.workspaceCanUseCustomDefinition(customDefinitionId, workspaceId));
     assertFalse(configRepository.workspaceCanUseCustomDefinition(grantableDefinition1Id, workspaceId));
   }
