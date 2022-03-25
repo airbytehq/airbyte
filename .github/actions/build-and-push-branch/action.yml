@@ -1,0 +1,56 @@
+name: "Build and Push Branch"
+description: "Build jars and docker images tagged for a particular branch. Primarily used for running OSS branch code in Cloud."
+inputs:
+  branch_version_tag:
+    description: 'Used to tag jars and docker images with a branch-specific version (should use the form "oss-branch-<commit_hash>" to pass AirbyteVersion validation)'
+    required: true
+  dockerhub_token:
+    description: "Used to log in to dockerhub for pushing images"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-java@v1
+      with:
+        java-version: "17"
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: "16.13.0"
+
+    - name: Set up CI Gradle Properties
+      run: |
+        mkdir -p ~/.gradle/
+        cat > ~/.gradle/gradle.properties <<EOF
+        org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+          --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+          --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+          --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+          --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+        org.gradle.workers.max=8
+        org.gradle.vfs.watch=false
+        EOF
+      shell: bash
+
+    - name: Build
+      run: VERSION=${{ inputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew build --scan
+      shell: bash
+
+    - name: Publish to Maven Local
+      run: VERSION=${{ inputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew publishToMavenLocal
+      shell: bash
+
+    - name: Login to Docker (on Master)
+      uses: docker/login-action@v1
+      with:
+        username: airbytebot
+        password: ${{ inputs.dockerhub_token }}
+
+    - name: Push Docker Images
+      run: |
+        # push the minimum set of images required for Cloud
+        docker push airbyte/worker:${{ inputs.branch_version_tag }}
+        docker push airbyte/webapp:${{ inputs.branch_version_tag }}
+        docker push airbyte/metrics-reporter:${{ inputs.branch_version_tag }}
+        docker push airbyte/scheduler:${{ inputs.branch_version_tag }}
+      shell: bash
