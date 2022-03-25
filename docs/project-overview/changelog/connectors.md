@@ -10,7 +10,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
-## 1/28/2021
+## 1/28/2022
 
 New sources:
 
@@ -20,7 +20,7 @@ New sources:
 * [**PersistIq**](https://docs.airbyte.io/integrations/sources/persistiq)
 
 
-## 1/6/2021
+## 1/6/2022
 
 New sources:
 
