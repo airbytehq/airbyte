@@ -36,10 +36,7 @@ import useRouter from "hooks/useRouter";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { DefaultView } from "./views/DefaultView";
 import { hasFromState } from "utils/stateUtils";
-import {
-  FeatureItem,
-  useFeatureRegisterValues,
-} from "../../hooks/services/Feature";
+import { FeatureItem, useFeatureRegisterValues } from "hooks/services/Feature";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 

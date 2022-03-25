@@ -1,37 +1,43 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { Feature, FeatureItem, FeatureServiceApi } from "./types";
 import { useConfig } from "config";
+import { useDeepCompareEffect } from "react-use";
 
 const featureServiceContext = React.createContext<FeatureServiceApi | null>(
   null
 );
 
-export function FeatureService({
-  children,
-}: {
-  children: React.ReactNode;
-  features?: Feature[];
-}) {
+export function FeatureService({ children }: { children: React.ReactNode }) {
   const [additionFeatures, setAdditionFeatures] = useState<Feature[]>([]);
-  const { features: mainFeatures } = useConfig();
-  const features = useMemo(() => [...mainFeatures, ...additionFeatures], [
-    mainFeatures,
-    additionFeatures,
-  ]);
+  const { features: instanceWideFeatures } = useConfig();
+
+  const featureMethods = useMemo(() => {
+    return {
+      registerFeature: (newFeatures: Feature[]): void =>
+        setAdditionFeatures((oldFeatures) => [...oldFeatures, ...newFeatures]),
+      unregisterFeature: (unregisteredFeatures: FeatureItem[]): void => {
+        setAdditionFeatures((oldFeatures) =>
+          oldFeatures.filter(
+            (feature) => !unregisteredFeatures.includes(feature.id)
+          )
+        );
+      },
+    };
+  }, []);
+
+  const features = useMemo(
+    () => [...instanceWideFeatures, ...additionFeatures],
+    [instanceWideFeatures, additionFeatures]
+  );
 
   const featureService = useMemo(
     () => ({
       features,
       hasFeature: (featureId: FeatureItem): boolean =>
         !!features.find((feature) => feature.id === featureId),
-      registerFeature: (newFeatures: Feature[]): void =>
-        setAdditionFeatures([...additionFeatures, ...newFeatures]),
-      unregisterFeature: (features: FeatureItem[]): void =>
-        setAdditionFeatures(
-          additionFeatures.filter((feature) => features.includes(feature.id))
-        ),
+      ...featureMethods,
     }),
-    [features, additionFeatures, setAdditionFeatures]
+    [features, featureMethods]
   );
 
   return (
@@ -60,7 +66,7 @@ export const WithFeature: React.FC<{ featureId: FeatureItem }> = ({
 export const useFeatureRegisterValues = (props?: Feature[] | null): void => {
   const { registerFeature, unregisterFeature } = useFeatureService();
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     if (props) {
       registerFeature(props);
 
