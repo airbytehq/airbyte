@@ -47,6 +47,14 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     String contentType;
     Function<Map<String, String>, String> converter;
 
+    public String getContentType() {
+      return contentType;
+    }
+
+    public Function<Map<String, String>, String> getConverter() {
+      return converter;
+    }
+
     TOKEN_REQUEST_CONTENT_TYPE(final String contentType, final Function<Map<String, String>, String> converter) {
       this.contentType = contentType;
       this.converter = converter;
@@ -55,7 +63,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   protected final HttpClient httpClient;
-  private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
+  protected final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final Supplier<String> stateSupplier;
 
   public BaseOAuth2Flow(final ConfigRepository configRepository, final HttpClient httpClient) {
