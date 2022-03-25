@@ -2,6 +2,11 @@
   "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
   "notifications.error.health": "Cannot reach server",
 
+  "component.releaseStageBadge.beta.title": "Beta",
+  "component.releaseStageBadge.beta.tooltip": "<b>Beta connectors</b> are in development but stable and reliable and support is provided.",
+  "component.releaseStageBadge.alpha.title": "Alpha",
+  "component.releaseStageBadge.alpha.tooltip": "<b>Alpha connectors</b> are in development and support is not provided.",
+
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
   "sidebar.admin": "Admin",
