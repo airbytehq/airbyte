@@ -75,7 +75,7 @@ class TestDestination:
         except FileNotFoundError:
             pass
         yield state_path
-        # os.remove(state_path)
+        os.remove(state_path)
 
     @pytest.fixture
     def destination(self, api_client, workspace_id, destination_configuration_path, destination_state_path):
