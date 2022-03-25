@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,7 +48,7 @@ public class FileBuffer implements BufferStorage {
   public OutputStream getOutputStream() throws IOException {
     if (outputStream == null || tempFile == null) {
       tempFile = Files.createTempFile(UUID.randomUUID().toString(), fileExtension).toFile();
-      outputStream = new FileOutputStream(tempFile);
+      outputStream = new BufferedOutputStream(new FileOutputStream(tempFile));
     }
     return outputStream;
   }
