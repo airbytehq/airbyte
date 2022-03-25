@@ -294,6 +294,7 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
     # thus we can't implement an incremental logic for them
     """
 
+    page_size = 100
     primary_key = "id"
     response_list_name: str = None
 
