@@ -477,7 +477,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<SourceOAuthParameter>> sourceOAuthParameters = new ArrayList<>();
     for (final Record record : result) {
-      final SourceOAuthParameter sourceOAuthParameter = buildSourceOAuthParameter(record);
+      final SourceOAuthParameter sourceOAuthParameter = DbConverter.buildSourceOAuthParameter(record);
       sourceOAuthParameters.add(new ConfigWithMetadata<>(
           record.get(ACTOR_OAUTH_PARAMETER.ID).toString(),
           ConfigSchema.SOURCE_OAUTH_PARAM.name(),
@@ -486,14 +486,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           sourceOAuthParameter));
     }
     return sourceOAuthParameters;
-  }
-
-  private SourceOAuthParameter buildSourceOAuthParameter(final Record record) {
-    return new SourceOAuthParameter()
-        .withOauthParameterId(record.get(ACTOR_OAUTH_PARAMETER.ID))
-        .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
-        .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
-        .withSourceDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
   }
 
   private List<ConfigWithMetadata<DestinationOAuthParameter>> listDestinationOauthParamWithMetadata() throws IOException {
@@ -512,7 +504,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<DestinationOAuthParameter>> destinationOAuthParameters = new ArrayList<>();
     for (final Record record : result) {
-      final DestinationOAuthParameter destinationOAuthParameter = buildDestinationOAuthParameter(record);
+      final DestinationOAuthParameter destinationOAuthParameter = DbConverter.buildDestinationOAuthParameter(record);
       destinationOAuthParameters.add(new ConfigWithMetadata<>(
           record.get(ACTOR_OAUTH_PARAMETER.ID).toString(),
           ConfigSchema.DESTINATION_OAUTH_PARAM.name(),
@@ -521,14 +513,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           destinationOAuthParameter));
     }
     return destinationOAuthParameters;
-  }
-
-  private DestinationOAuthParameter buildDestinationOAuthParameter(final Record record) {
-    return new DestinationOAuthParameter()
-        .withOauthParameterId(record.get(ACTOR_OAUTH_PARAMETER.ID))
-        .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
-        .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
-        .withDestinationDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
   }
 
   private List<ConfigWithMetadata<StandardSyncOperation>> listStandardSyncOperationWithMetadata() throws IOException {
