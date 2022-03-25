@@ -350,6 +350,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+| 0.35.59-alpha   | 0.1.72 | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added Snowflake OAuth2.0 support |
 | 0.35.53-alpha   | 0.1.71 | 2022-03-14 | [\#11077](https://github.com/airbytehq/airbyte/pull/11077) | Enable BigQuery to handle project ID embedded inside dataset ID |
 | 0.35.49-alpha   | 0.1.70 | 2022-03-11 | [\#11051](https://github.com/airbytehq/airbyte/pull/11051) | Upgrade dbt to 1.0.0 (except for MySQL and Oracle) |
 | 0.35.45-alpha   | 0.1.69 | 2022-03-04 | [\#10754](https://github.com/airbytehq/airbyte/pull/10754) | Enable Clickhouse normalization over SSL |

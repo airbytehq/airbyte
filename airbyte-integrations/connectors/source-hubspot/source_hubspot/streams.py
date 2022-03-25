@@ -1090,12 +1090,12 @@ class Engagements(IncrementalStream):
         if self.state:
             params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
         return params
-    
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         return [None]
-    
+
     def read_records(
         self,
         sync_mode: SyncMode,
