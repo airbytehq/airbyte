@@ -293,7 +293,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
   frontend-build:
-    name: "Frontend: Builds"
+    name: "Frontend: Build"
     needs: start-frontend-runner
     runs-on: ${{ needs.start-frontend-runner.outputs.label }}
     steps:
