@@ -6,7 +6,7 @@ description: Do not miss the new connectors we support!
 
 **You can request new connectors directly** [**here**](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=)**.**
 
-Note: Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one.
+Note: Airbyte is not built on top of Singer but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables us to do, so we are building our own protocol that maintains compatibility with Singer's protocol.
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
