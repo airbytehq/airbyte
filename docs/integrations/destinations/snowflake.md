@@ -235,7 +235,7 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
-| 0.4.23  | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added OAuth support |
+| 0.4.24  | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added OAuth support |
 | 0.4.22  | 2022-03-18 | [\#10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |
 | 0.4.21  | 2022-03-18 | [\#11071](https://github.com/airbytehq/airbyte/pull/11071) | Switch to compressed on-disk buffering before staging to s3/internal stage |
 | 0.4.20  | 2022-03-14 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support |

@@ -131,10 +131,8 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
     }
     return result;
   }
-  // --------------------------------------------
 
   private String extractAuthorizeUrl(JsonNode inputOAuthConfiguration) {
-    // var url = inputOAuthConfiguration.get("authorize_url");
     var url = inputOAuthConfiguration.get("host");
     return url == null ? StringUtils.EMPTY : url.asText();
   }
