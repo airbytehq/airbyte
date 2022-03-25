@@ -334,7 +334,7 @@ jobs:
       - name: Build :airbyte-webapp
         run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
   frontend-test:
-    name: "Frontend: Run end-to-end Test"
+    name: "Frontend: Run End-to-End Tests"
     needs: frontend-build # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
     timeout-minutes: 120
