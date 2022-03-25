@@ -101,7 +101,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return database
-        .query(getPrivileges(database), sourceOperations::rowToJson)
+        .unsafeQuery(getPrivileges(database), sourceOperations::rowToJson)
         .map(this::getPrivilegeDto)
         .collect(Collectors.toSet());
   }

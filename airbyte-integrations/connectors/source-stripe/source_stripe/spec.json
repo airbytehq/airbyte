@@ -15,7 +15,7 @@
       },
       "client_secret": {
         "type": "string",
-        "title": "Client Secret",
+        "title": "Secret Key",
         "description": "Stripe API key (usually starts with 'sk_live_'; find yours <a href=\"https://dashboard.stripe.com/apikeys\">here</a>).",
         "airbyte_secret": true,
         "order": 1
@@ -33,7 +33,7 @@
         "title": "Lookback Window (in days)",
         "default": 0,
         "minimum": 0,
-        "description": "When set, the connector will always reload data from the past N days, where N is the value set here. This is useful if your data is updated after creation.",
+        "description": "When set, the connector will always reload data from the past N days, where N is the value set here. This is useful if your data is updated after creation. More info <a href=\"https://docs.airbyte.com/integrations/sources/stripe#requirements\">here</a>",
         "order": 3
       }
     }

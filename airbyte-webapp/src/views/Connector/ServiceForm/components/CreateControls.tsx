@@ -14,7 +14,7 @@ type IProps = {
   hasSuccess?: boolean;
   isLoadSchema?: boolean;
   errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error;
+  fetchingConnectorError?: Error | null;
   additionBottomControls?: React.ReactNode;
 };
 

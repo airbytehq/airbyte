@@ -5,10 +5,15 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -18,6 +23,7 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
@@ -30,9 +36,14 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +56,8 @@ public class ConfigRepositoryE2EReadWriteTest {
   private Database database;
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
+  private JsonSecretsProcessor jsonSecretsProcessor;
+  private FeatureFlags featureFlags;
 
   @BeforeAll
   public static void dbSetup() {
@@ -58,7 +71,9 @@ public class ConfigRepositoryE2EReadWriteTest {
   @BeforeEach
   void setup() throws IOException, JsonValidationException {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence(database));
+    jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
+    featureFlags = mock(FeatureFlags.class);
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
     configRepository = spy(new ConfigRepository(configPersistence, database));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
@@ -174,6 +189,107 @@ public class ConfigRepositoryE2EReadWriteTest {
     assertTrue(retrievedTombstonedWorkspace.isPresent());
 
     assertEquals(tombstonedWorkspace, retrievedTombstonedWorkspace.get());
+  }
+
+  @Test
+  public void testUpdateConnectionOperationIds() throws Exception {
+    final StandardSync sync = MockData.standardSyncs().get(0);
+    final List<UUID> existingOperationIds = sync.getOperationIds();
+    final UUID connectionId = sync.getConnectionId();
+
+    // this test only works as intended when there are multiple operationIds
+    assertTrue(existingOperationIds.size() > 1);
+
+    // first, remove all associated operations
+    Set<UUID> expectedOperationIds = Collections.emptySet();
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    Set<UUID> actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+
+    // now, add back one operation
+    expectedOperationIds = Collections.singleton(existingOperationIds.get(0));
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+
+    // finally, remove the first operation while adding back in the rest
+    expectedOperationIds = existingOperationIds.stream().skip(1).collect(Collectors.toSet());
+    configRepository.updateConnectionOperationIds(connectionId, expectedOperationIds);
+    actualOperationIds = fetchOperationIdsForConnectionId(connectionId);
+    assertEquals(expectedOperationIds, actualOperationIds);
+  }
+
+  private Set<UUID> fetchOperationIdsForConnectionId(final UUID connectionId) throws SQLException {
+    return database.query(ctx -> ctx
+        .selectFrom(CONNECTION_OPERATION)
+        .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
+        .fetchSet(CONNECTION_OPERATION.OPERATION_ID));
+  }
+
+  @Test
+  public void testActorDefinitionWorkspaceGrantExists() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final UUID definitionId = MockData.standardSourceDefinitions().get(0).getSourceDefinitionId();
+
+    assertFalse(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+
+    configRepository.writeActorDefinitionWorkspaceGrant(definitionId, workspaceId);
+    assertTrue(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+
+    configRepository.deleteActorDefinitionWorkspaceGrant(definitionId, workspaceId);
+    assertFalse(configRepository.actorDefinitionWorkspaceGrantExists(definitionId, workspaceId));
+  }
+
+  @Test
+  public void testListPublicSourceDefinitions() throws IOException {
+    final List<StandardSourceDefinition> actualDefinitions = configRepository.listPublicSourceDefinitions(false);
+    assertEquals(List.of(MockData.publicSourceDefinition()), actualDefinitions);
+  }
+
+  @Test
+  public void testSourceDefinitionGrants() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSourceDefinition grantableDefinition1 = MockData.grantableSourceDefinition1();
+    final StandardSourceDefinition grantableDefinition2 = MockData.grantableSourceDefinition2();
+    final StandardSourceDefinition customDefinition = MockData.customSourceDefinition();
+
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getSourceDefinitionId(), workspaceId);
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1.getSourceDefinitionId(), workspaceId);
+    final List<StandardSourceDefinition> actualGrantedDefinitions = configRepository
+        .listGrantedSourceDefinitions(workspaceId, false);
+    assertThat(actualGrantedDefinitions).hasSameElementsAs(List.of(grantableDefinition1, customDefinition));
+
+    final List<Entry<StandardSourceDefinition, Boolean>> actualGrantableDefinitions = configRepository
+        .listGrantableSourceDefinitions(workspaceId, false);
+    assertThat(actualGrantableDefinitions).hasSameElementsAs(List.of(
+        Map.entry(grantableDefinition1, true),
+        Map.entry(grantableDefinition2, false)));
+  }
+
+  @Test
+  public void testListPublicDestinationDefinitions() throws IOException {
+    final List<StandardDestinationDefinition> actualDefinitions = configRepository.listPublicDestinationDefinitions(false);
+    assertEquals(List.of(MockData.publicDestinationDefinition()), actualDefinitions);
+  }
+
+  @Test
+  public void testDestinationDefinitionGrants() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardDestinationDefinition grantableDefinition1 = MockData.grantableDestinationDefinition1();
+    final StandardDestinationDefinition grantableDefinition2 = MockData.grantableDestinationDefinition2();
+    final StandardDestinationDefinition customDefinition = MockData.cusstomDestinationDefinition();
+
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinition.getDestinationDefinitionId(), workspaceId);
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1.getDestinationDefinitionId(), workspaceId);
+    final List<StandardDestinationDefinition> actualGrantedDefinitions = configRepository
+        .listGrantedDestinationDefinitions(workspaceId, false);
+    assertThat(actualGrantedDefinitions).hasSameElementsAs(List.of(grantableDefinition1, customDefinition));
+
+    final List<Entry<StandardDestinationDefinition, Boolean>> actualGrantableDefinitions = configRepository
+        .listGrantableDestinationDefinitions(workspaceId, false);
+    assertThat(actualGrantableDefinitions).hasSameElementsAs(List.of(
+        Map.entry(grantableDefinition1, true),
+        Map.entry(grantableDefinition2, false)));
   }
 
 }

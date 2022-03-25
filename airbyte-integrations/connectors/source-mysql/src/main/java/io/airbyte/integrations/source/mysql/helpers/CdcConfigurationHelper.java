@@ -75,7 +75,7 @@ public class CdcConfigurationHelper {
 
   private static boolean isBinlogAvailable(String binlog, JdbcDatabase database) {
     try {
-      List<String> binlogs = database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
+      List<String> binlogs = database.unsafeResultSetQuery(connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
           resultSet -> resultSet.getString("Log_name")).collect(Collectors.toList());
 
       return !binlog.isEmpty() && binlogs.stream().anyMatch(e -> e.equals(binlog));
@@ -97,7 +97,7 @@ public class CdcConfigurationHelper {
 
   private static CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(String name, String value) {
     return database -> {
-      final List<String> result = database.resultSetQuery(connection -> {
+      final List<String> result = database.unsafeResultSetQuery(connection -> {
         final String sql = """
                            show variables where Variable_name = '%s'""".formatted(name);
 

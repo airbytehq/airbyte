@@ -7,15 +7,20 @@ package io.airbyte.server.handlers;
 import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.model.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreLists;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -33,6 +38,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -118,6 +124,29 @@ public class SourceDefinitionsHandler {
     } catch (final InterruptedException e) {
       throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
+  }
+
+  public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    return toSourceDefinitionReadList(MoreLists.concat(
+        configRepository.listPublicSourceDefinitions(false),
+        configRepository.listGrantedSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
+  }
+
+  public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<Entry<StandardSourceDefinition, Boolean>> standardSourceDefinitionBooleanMap =
+        configRepository.listGrantableSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false);
+    return toPrivateSourceDefinitionReadList(standardSourceDefinitionBooleanMap);
+  }
+
+  private static PrivateSourceDefinitionReadList toPrivateSourceDefinitionReadList(final List<Entry<StandardSourceDefinition, Boolean>> defs) {
+    final List<PrivateSourceDefinitionRead> reads = defs.stream()
+        .map(entry -> new PrivateSourceDefinitionRead()
+            .sourceDefinition(buildSourceDefinitionRead(entry.getKey()))
+            .granted(entry.getValue()))
+        .collect(Collectors.toList());
+    return new PrivateSourceDefinitionReadList().sourceDefinitions(reads);
   }
 
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -209,6 +238,26 @@ public class SourceDefinitionsHandler {
     } catch (final Exception e) {
       return null;
     }
+  }
+
+  public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(
+                                                                      final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSourceDefinition standardSourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
+    return new PrivateSourceDefinitionRead()
+        .sourceDefinition(buildSourceDefinitionRead(standardSourceDefinition))
+        .granted(true);
+  }
+
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId(),
+        sourceDefinitionIdWithWorkspaceId.getWorkspaceId());
   }
 
 }

@@ -3,6 +3,7 @@
 #
 
 
+import traceback
 from typing import Any, List, Mapping, Tuple, Union
 
 from airbyte_cdk import AirbyteLogger
@@ -18,9 +19,12 @@ from .google_ads import GoogleAds
 from .streams import (
     AccountPerformanceReport,
     Accounts,
+    AdGroupAdLabels,
     AdGroupAdReport,
     AdGroupAds,
+    AdGroupLabels,
     AdGroups,
+    CampaignLabels,
     Campaigns,
     ClickView,
     DisplayKeywordPerformanceReport,
@@ -93,16 +97,18 @@ class SourceGoogleAds(AbstractSource):
                 query = query.get("query")
 
                 if is_manager_account and self.is_metrics_in_custom_query(query):
-                    raise Exception(f"Metrics are not available for manager account. Check fields in your custom query: {query}")
+                    return False, f"Metrics are not available for manager account. Check fields in your custom query: {query}"
                 if CustomQuery.cursor_field in query:
-                    raise Exception(f"Custom query should not contain {CustomQuery.cursor_field}")
+                    return False, f"Custom query should not contain {CustomQuery.cursor_field}"
 
                 req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
                 for customer_id in google_api.customer_ids:
                     google_api.send_request(req_q, customer_id=customer_id)
             return True, None
-        except GoogleAdsException as error:
-            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error.failure)}"
+        except GoogleAdsException as exception:
+            error_messages = ", ".join([error.message for error in exception.failure.errors])
+            logger.error(traceback.format_exc())
+            return False, f"Unable to connect to Google Ads API with the provided credentials - {error_messages}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         google_api = GoogleAds(credentials=self.get_credentials(config), customer_id=config["customer_id"])
@@ -112,9 +118,12 @@ class SourceGoogleAds(AbstractSource):
 
         streams = [
             AdGroupAds(**incremental_stream_config),
+            AdGroupAdLabels(google_api),
             AdGroups(**incremental_stream_config),
+            AdGroupLabels(google_api),
             Accounts(**incremental_stream_config),
             Campaigns(**incremental_stream_config),
+            CampaignLabels(google_api),
             ClickView(**incremental_stream_config),
         ]
 
