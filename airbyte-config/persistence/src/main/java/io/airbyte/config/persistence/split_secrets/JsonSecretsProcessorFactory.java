@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,6 +13,7 @@ import lombok.Builder;
 
 @Builder
 public class JsonSecretsProcessorFactory {
+
   @Builder.Default
   private boolean maskSecrets = true;
 
@@ -18,7 +23,8 @@ public class JsonSecretsProcessorFactory {
   public JsonSecretsProcessor createJsonSecretsProcessor() {
     return new JsonSecretsProcessor() {
 
-      @Override public JsonNode maskSecrets(final JsonNode obj, final JsonNode schema) {
+      @Override
+      public JsonNode maskSecrets(final JsonNode obj, final JsonNode schema) {
         if (maskSecrets) {
           // if schema is an object and has a properties field
           if (!canBeProcessed(schema)) {
@@ -33,7 +39,8 @@ public class JsonSecretsProcessorFactory {
         return obj;
       }
 
-      @Override public JsonNode copySecrets(final JsonNode src, final JsonNode dst, final JsonNode schema) {
+      @Override
+      public JsonNode copySecrets(final JsonNode src, final JsonNode dst, final JsonNode schema) {
         if (copySecrets) {
           if (!canBeProcessed(schema)) {
             return dst;
@@ -91,6 +98,8 @@ public class JsonSecretsProcessorFactory {
 
         return src;
       }
+
     };
   }
+
 }

@@ -152,4 +152,5 @@ public abstract class JsonSecretsProcessor {
         && obj.get(TYPE_FIELD).asText().equals(ARRAY_TYPE_FIELD)
         && obj.has(ITEMS_FIELD);
   }
+
 }
