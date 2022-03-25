@@ -22,10 +22,6 @@ type ValuesProps = {
 type ConnectorProps = { name: string; sourceDefinitionId: string };
 
 type SourceService = {
-  recreateSource: (recreateSourcePayload: {
-    values: ValuesProps;
-    sourceId: string;
-  }) => Promise<Source>;
   checkSourceConnection: (checkSourceConnectionPayload: {
     sourceId: string;
     values?: ValuesProps;
@@ -55,8 +51,6 @@ const useSource = (): SourceService => {
   );
 
   const updatesource = useFetcher(SourceResource.partialUpdateShape());
-
-  const recreatesource = useFetcher(SourceResource.recreateShape());
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
 
@@ -160,35 +154,6 @@ const useSource = (): SourceService => {
     [sourceCheckConnectionShape]
   );
 
-  const recreateSource: SourceService["recreateSource"] = async ({
-    values,
-    sourceId,
-  }) => {
-    return await recreatesource(
-      {
-        sourceId: sourceId,
-      },
-      {
-        name: values.name,
-        sourceId,
-        connectionConfiguration: values.connectionConfiguration,
-        workspaceId: workspace.workspaceId,
-        sourceDefinitionId: values.serviceType,
-      },
-      // Method used only in onboarding.
-      // Replace all source List to new item in UpdateParams (to change id)
-      [
-        [
-          SourceResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (newsourceId: string) => ({
-            sources: [newsourceId],
-          }),
-        ],
-      ]
-    );
-  };
-
   const deleteSource: SourceService["deleteSource"] = async ({
     source,
     connectionsWithSource,
@@ -214,7 +179,6 @@ const useSource = (): SourceService => {
   return {
     createSource,
     updateSource,
-    recreateSource,
     deleteSource,
     checkSourceConnection,
   };
