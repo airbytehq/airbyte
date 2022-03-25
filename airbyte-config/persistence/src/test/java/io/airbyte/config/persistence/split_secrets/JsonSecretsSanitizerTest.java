@@ -161,7 +161,11 @@ public class JsonSecretsSanitizerTest {
           + "    }\n"
           + "  }");
 
-  JsonSecretsSanitizer processor = new JsonSecretsSanitizer();
+  JsonSecretsProcessor processor = JsonSecretsProcessorFactory.builder()
+      .copySecrets(true)
+      .maskSecrets(true)
+      .build()
+      .createJsonSecretsProcessor();
 
   @Test
   public void testCopySecrets() {
@@ -176,7 +180,7 @@ public class JsonSecretsSanitizerTest {
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
-        .put("secret1", JsonSecretsSanitizer.SECRETS_MASK)
+        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
         .put("secret2", "newvalue")
         .build());
 
@@ -203,7 +207,7 @@ public class JsonSecretsSanitizerTest {
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
-        .put("secret1", JsonSecretsSanitizer.SECRETS_MASK)
+        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
         .build());
 
     final JsonNode expected = dst.deepCopy();
@@ -225,7 +229,7 @@ public class JsonSecretsSanitizerTest {
 
     final JsonNode dstOneOf = Jsons.jsonNode(ImmutableMap.builder()
         .put("s3_bucket_name", "name")
-        .put("secret_access_key", JsonSecretsSanitizer.SECRETS_MASK)
+        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
         .build());
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("warehouse", "house")
@@ -250,7 +254,7 @@ public class JsonSecretsSanitizerTest {
 
     final JsonNode dstOneOf = Jsons.jsonNode(ImmutableMap.builder()
         .put("s3_bucket_name", "name")
-        .put("secret_access_key", JsonSecretsSanitizer.SECRETS_MASK)
+        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
         .build());
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("warehouse", "house")
@@ -281,7 +285,7 @@ public class JsonSecretsSanitizerTest {
         "client_id", "whatever",
         "format", parquetConfig));
 
-    final JsonNode actual = new JsonSecretsSanitizer().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
+    final JsonNode actual = processor.copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
   }
 
   private static Stream<Arguments> scenarioProvider() {

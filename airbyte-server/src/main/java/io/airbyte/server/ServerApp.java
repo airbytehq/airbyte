@@ -23,8 +23,7 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsSanitizer;
-import io.airbyte.config.persistence.split_secrets.NoOpJsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessorFactory;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -167,8 +166,11 @@ public class ServerApp implements ServerRunnable {
     LOGGER.info("Creating config repository...");
     final Database configDatabase = configsDatabaseInstance.getInitialized();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final JsonSecretsProcessor jsonSecretsProcessor =
-        featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
+    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessorFactory.builder()
+        .maskSecrets(!featureFlags.exposeSecretsInExport())
+        .copySecrets(true)
+        .build()
+        .createJsonSecretsProcessor();
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);

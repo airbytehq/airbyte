@@ -17,8 +17,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsSanitizer;
-import io.airbyte.config.persistence.split_secrets.NoOpJsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessorFactory;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -88,8 +87,11 @@ public class BootloaderApp {
         final Database configDatabase =
             new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
                 .getAndInitialize();
-        final JsonSecretsProcessor jsonSecretsProcessor =
-            featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
+        final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessorFactory.builder()
+            .maskSecrets(!featureFlags.exposeSecretsInExport())
+            .copySecrets(true)
+            .build()
+            .createJsonSecretsProcessor();
         final ConfigPersistence configPersistence =
             DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
         configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
@@ -118,8 +120,11 @@ public class BootloaderApp {
       runFlywayMigration(configs, configDatabase, jobDatabase);
       LOGGER.info("Ran Flyway migrations...");
 
-      final JsonSecretsProcessor jsonSecretsProcessor =
-          featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
+      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessorFactory.builder()
+          .maskSecrets(!featureFlags.exposeSecretsInExport())
+          .copySecrets(true)
+          .build()
+          .createJsonSecretsProcessor();
       final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
       final ConfigRepository configRepository =
           new ConfigRepository(configPersistence, configDatabase);

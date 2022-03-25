@@ -14,7 +14,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsSanitizer;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessorFactory;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -27,7 +27,11 @@ public class ConfigurationUpdate {
   private final JsonSecretsProcessor secretsProcessor;
 
   public ConfigurationUpdate(final ConfigRepository configRepository, final SecretsRepositoryReader secretsRepositoryReader) {
-    this(configRepository, secretsRepositoryReader, new JsonSecretsSanitizer());
+    this(configRepository, secretsRepositoryReader, JsonSecretsProcessorFactory.builder()
+        .maskSecrets(true)
+        .copySecrets(true)
+        .build()
+        .createJsonSecretsProcessor());
   }
 
   public ConfigurationUpdate(final ConfigRepository configRepository,
