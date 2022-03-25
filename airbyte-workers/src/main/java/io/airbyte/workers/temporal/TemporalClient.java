@@ -28,7 +28,6 @@ import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
-import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.BatchRequest;
@@ -464,12 +463,10 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
   }
 
-  @VisibleForTesting
-  public <T> T getExistingWorkflow(final Class<T> workflowClass, final String name) {
+  private <T> T getExistingWorkflow(final Class<T> workflowClass, final String name) {
     return client.newWorkflowStub(workflowClass, name);
   }
 
-  @VisibleForTesting
   ConnectionManagerWorkflow getConnectionUpdateWorkflow(final UUID connectionId) {
     final boolean workflowReachable = isWorkflowReachable(getConnectionManagerName(connectionId));
 
@@ -531,8 +528,7 @@ public class TemporalClient {
     }
   }
 
-  @VisibleForTesting
-  public static String getConnectionManagerName(final UUID connectionId) {
+  static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }
 
