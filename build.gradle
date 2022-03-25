@@ -30,6 +30,15 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
+// `version` is used as the application build version for artifacts like jars
+// `image_tag` is used as the docker tag applied to built images.
+// These values are the same for building an specific Airbyte release or branch via the 'VERSION' environment variable.
+// For local development builds, the 'VERSION' environment variable is unset, and built images are tagged with 'dev'.
+ext {
+    version = System.getenv("VERSION") ?: env.VERSION
+    image_tag = System.getenv("VERSION") ?: 'dev'
+}
+
 def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
     /*
     In java, we don't have a second linter/styling tool other than spotless so it doesn't really
@@ -129,9 +138,8 @@ spotless {
 check.dependsOn 'spotlessApply'
 
 @SuppressWarnings('GroovyAssignabilityCheck')
-def Task getDockerBuildTask(String artifactName, String projectDir) {
+def Task getDockerBuildTask(String artifactName, String projectDir, String buildVersion, String buildTag) {
     return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
-        def buildTag = System.getenv('VERSION') ?: 'dev'
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
         def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
@@ -145,6 +153,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir) {
         buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
         buildArgs.put('ALPINE_IMAGE', alpineImage)
         buildArgs.put('POSTGRES_IMAGE', postgresImage)
+        buildArgs.put('VERSION', buildVersion)
     })
 }
 
@@ -166,7 +175,7 @@ allprojects {
     group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
     project.archivesBaseName = "${project.group}-${project.name}"
 
-    version = env.VERSION
+    version = rootProject.ext.version
 }
 
 // Java projects common configurations

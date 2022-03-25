@@ -14,13 +14,13 @@ method takes 2 arguments:
 ## Adding a new docker build
 
 Once you have a `Dockerfile`, generating the docker image is done in the following way:
-- specify the artifact name and the project directory,
+- specify the artifact name, the project directory, and the version,
 - make sure that the Dockerfile is properly copied to the docker context dir before building the image
 - make the build docker task to depend on the `assemble` task.
 
 For example:
 ```groovy
-Task dockerBuildTask = getDockerBuildTask("cli", project.projectDir)
+Task dockerBuildTask = getDockerBuildTask("cli", project.projectDir, rootProject.ext.version)
 dockerBuildTask.dependsOn(copyDocker)
 assemble.dependsOn(dockerBuildTask)
 ```
@@ -37,7 +37,7 @@ task copyScripts(type: Copy) {
     into 'build/docker/bin/scripts'
 }
 
-Task dockerBuildTask = getDockerBuildTask("init", project.projectDir)
+Task dockerBuildTask = getDockerBuildTask("init", project.projectDir, rootProject.ext.version)
 dockerBuildTask.dependsOn(copyScripts)
 assemble.dependsOn(dockerBuildTask)
 ```
