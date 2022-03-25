@@ -166,7 +166,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ secrets.SUPERTOPHER_PAT }}
 
   build-connectors-base:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -264,7 +264,7 @@ jobs:
         uses: supertopher/ec2-github-runner@v13
         with:
           mode: stop
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ secrets.OCTAVIA_PAT }}
           label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
 
@@ -384,7 +384,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ secrets.OCTAVIA_PAT }}
   platform-build:
     name: "Platform: Build"
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
