@@ -27,11 +27,13 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 We gladly welcome all improvements existing on the codebase. 
 
 #### 1. Open an issue, or find a similar one.
-Before jumping into the code, we ask you to create an issue on [GitHub](https://github.com/airbytehq/airbyte/issues/new/choose) to explain what you want to achieve.
-It will enable our team to make sure your contributions do not overlap with existing works and will comply with the design orientation we are currently heading the product toward.
-If you don't receive an update from our team, please ping us on [Slack](https://slack.airbyte.io)!
-And finally, before opening the issue, please check first if [similar one](https://github.com/airbytehq/airbyte/issues) is already open (please filter with the *area/connectors* or *area/platform* labels).
-If you find a similar issue: assign the issue to yourself and add a comment to tell that you want to work on this.
+Before jumping into the code please first:
+1. Verify if an existing [GitHub issue](https://github.com/airbytehq/airbyte/issues) matches your contribution project (please filter with the *area/connectors* or *area/platform* labels).
+2. If you don't find an existing issue, [please create a new one](https://github.com/airbytehq/airbyte/issues/new/choose) to explain what you want to achieve.
+3. Assign the issue to yourself and add a comment to tell that you want to work on this.
+
+This will enable our team to make sure your contribution does not overlap with existing works and will comply with the design orientation we are currently heading the product toward.
+If you do not receive an update on the issue from our team, please ping us on [Slack](https://slack.airbyte.io)!
 
 #### 2. Let's code
 1. Fork our [GitHub repository](https://github.com/airbytehq/airbyte).
