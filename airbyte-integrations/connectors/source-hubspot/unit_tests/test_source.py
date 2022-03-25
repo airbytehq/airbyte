@@ -12,7 +12,7 @@ import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Products, Stream, Workflows, split_properties
+from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Engagements, Products, Stream, Workflows, split_properties
 
 NUMBER_OF_PROPERTIES = 2000
 
@@ -399,3 +399,106 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
     assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00+00:00"
+
+
+def test_engagements_stream_pagination_works(requests_mock, common_params):
+    """
+    Tests the engagements stream handles pagination correctly, for both
+    full_refresh and incremental sync modes.
+    """
+
+    # Mocking Request
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?hapikey=test_api_key&count=250", [
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250)],
+                "hasMore": True,
+                "offset": 250
+            },
+            "status_code": 200,
+        },
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250, 500)],
+                "hasMore": True,
+                "offset": 500
+            },
+            "status_code": 200,
+        },
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595251}} for y in range(500, 600)],
+                "hasMore": False
+            },
+            "status_code": 200,
+        }
+    ])
+
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", [
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
+                "hasMore": True,
+                "offset": 100
+            },
+            "status_code": 200,
+        },
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100, 200)],
+                "hasMore": True,
+                "offset": 200
+            },
+            "status_code": 200,
+        },
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(200, 250)],
+                "hasMore": False
+            },
+            "status_code": 200,
+        }
+    ])
+
+    # Create test_stream instance for full refresh.
+    test_stream = Engagements(**common_params)
+
+    records = list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
+    # The stream should handle pagination correctly and output 600 records.
+    assert len(records) == 600
+    assert test_stream.state["lastUpdated"] == 1641234595251
+
+    records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+    # The stream should handle pagination correctly and output 600 records.
+    assert len(records) == 250
+    assert test_stream.state["lastUpdated"] == 1641234595252
+
+
+def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
+    """
+    If there are more than 10,000 engagements that would be returned by the Hubspot recent engagements endpoint,
+    the Engagements instance should stop at the 10Kth record.
+    """
+
+    responses = [
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
+                "hasMore": True,
+                "offset": x*100
+            },
+            "status_code": 200,
+        }
+        for x in range(1, 102)
+    ]
+
+    # Create test_stream instance with some state
+    test_stream = Engagements(**common_params)
+    test_stream.state = {"lastUpdated": 1641234595251}
+
+    # Mocking Request
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
+    records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
+    # The stream should not attempt to get more than 10K records.
+    assert len(records) == 10000
+    assert test_stream.state["lastUpdated"] == +1641234595252
