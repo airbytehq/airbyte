@@ -52,7 +52,6 @@ public class ParquetSerializedBufferTest {
       Field.of("another field", JsonSchemaType.BOOLEAN),
       Field.of("nested_column", JsonSchemaType.OBJECT));
   private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
-  private static final String PARQUET_FILE_EXTENSION = ".parquet";
 
   @Test
   public void testUncompressedParquetWriter() throws Exception {
@@ -72,11 +71,16 @@ public class ParquetSerializedBufferTest {
             "compression_codec", "GZIP"),
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
-    runTest(195L, 295L, config, getExpectedString());
+    // TODO: Compressed parquet is the same size as uncompressed??
+    runTest(195L, 205L, config, getExpectedString());
   }
 
   private static String getExpectedString() {
-    return "{\"_airbyte_ab_id\": \"<UUID>\", \"_airbyte_emitted_at\": \"<timestamp>\", \"field1\": 10000.0, \"another_field\": true, \"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, \"column2\": \"string value\", \"_airbyte_additional_properties\": null}";
+    return "{\"_airbyte_ab_id\": \"<UUID>\", \"_airbyte_emitted_at\": \"<timestamp>\", "
+        + "\"field1\": 10000.0, \"another_field\": true, "
+        + "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, "
+        + "\"column2\": \"string value\", "
+        + "\"_airbyte_additional_properties\": null}";
   }
 
   private static void runTest(final Long minExpectedByte,

@@ -24,6 +24,7 @@ import java.util.UUID;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroParquetWriter;
@@ -102,7 +103,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
       getByteCount();
       parquetWriter.close();
       inputStream = new FileInputStream(bufferFile.toFile());
-      LOGGER.info("Finished writing data to {}", getFilename());
+      LOGGER.info("Finished writing data to {} ({})", getFilename(), FileUtils.byteCountToDisplaySize(getByteCount()));
     }
   }
 

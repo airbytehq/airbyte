@@ -75,7 +75,11 @@ public class AvroSerializedBufferTest {
   }
 
   private static String getExpectedString() {
-    return "{\"_airbyte_ab_id\": \"<UUID>\", \"_airbyte_emitted_at\": \"<timestamp>\", \"field1\": 10000.0, \"another_field\": true, \"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, \"column2\": \"string value\", \"_airbyte_additional_properties\": null}";
+    return "{\"_airbyte_ab_id\": \"<UUID>\", \"_airbyte_emitted_at\": \"<timestamp>\", "
+        + "\"field1\": 10000.0, \"another_field\": true, "
+        + "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, "
+        + "\"column2\": \"string value\", "
+        + "\"_airbyte_additional_properties\": null}";
   }
 
   private static void runTest(final BufferStorage buffer,
