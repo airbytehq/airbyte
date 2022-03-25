@@ -72,14 +72,14 @@ New sources:
 
 New features:
 
-**Exchange Rates** Source: add `ignore_weekends` option.
-**Facebook** Source: add the videos stream.
-**Freshdesk** Source: removed the limitation in streams pagination.
-**Jira** Source: add option to render fields in HTML format. 
-**MongoDB v2** Source: improve read performance. 
-**Pipedrive** Source: specify schema for "persons" stream. 
-**PostgreSQL** Source: exclude tables on which user doesn't have select privileges.
-**SurveyMonkey** Source: improve connection check.
+* **Exchange Rates** Source: add `ignore_weekends` option.
+* **Facebook** Source: add the videos stream.
+* **Freshdesk** Source: removed the limitation in streams pagination.
+* **Jira** Source: add option to render fields in HTML format. 
+* **MongoDB v2** Source: improve read performance. 
+* **Pipedrive** Source: specify schema for "persons" stream. 
+* **PostgreSQL** Source: exclude tables on which user doesn't have select privileges.
+* **SurveyMonkey** Source: improve connection check.
 
 ## 11/17/2021
 
@@ -94,8 +94,8 @@ New sources:
 
 New features:
 
-**MySQL** Source: Now has basic performance tests. 
-**Salesforce** Source: We now automatically transform and handle incorrect data for the anyType and calculated types.
+* **MySQL** Source: Now has basic performance tests. 
+* **Salesforce** Source: We now automatically transform and handle incorrect data for the anyType and calculated types.
 
 ## 11/11/2021
 
@@ -113,11 +113,11 @@ New sources:
 
 New features:
 
-**Shopify** Source: Now supports the FulfillmentOrders and Fulfillments streams.
-**Greenhouse** Source: Now supports the Demographics stream.
-**Recharge** Source: Broken requests should now be re-requested with improved backoff.
-**Stripe** Source: Now supports the checkout_sessions, checkout_sessions_line_item, and promotion_codes streams.
-**Db2** Source: Now supports SSL.
+* **Shopify** Source: Now supports the FulfillmentOrders and Fulfillments streams.
+* **Greenhouse** Source: Now supports the Demographics stream.
+* **Recharge** Source: Broken requests should now be re-requested with improved backoff.
+* **Stripe** Source: Now supports the checkout_sessions, checkout_sessions_line_item, and promotion_codes streams.
+* **Db2** Source: Now supports SSL.
 
 ## 11/3/2021
 
@@ -142,10 +142,10 @@ New sources:
 
 New features:
 
-**BigQuery** Destination: You can now run transformations in batches, preventing queries from hitting BigQuery limits. (contributed by @Andrés Bravo)
-**S3** Source: Memory and Performance optimizations, also some fancy new PyArrow CSV configuration options.
-**Zuora** Source: Now supports Unlimited as an option for the Data Query Live API.
-**Clickhouse** Source: Now supports SSL and connection via SSH tunneling.
+* **BigQuery** Destination: You can now run transformations in batches, preventing queries from hitting BigQuery limits. (contributed by @Andrés Bravo)
+* **S3** Source: Memory and Performance optimizations, also some fancy new PyArrow CSV configuration options.
+* **Zuora** Source: Now supports Unlimited as an option for the Data Query Live API.
+* **Clickhouse** Source: Now supports SSL and connection via SSH tunneling.
 
 ## 10/20/2021
 
@@ -165,16 +165,16 @@ New sources:
 
 New features:
 
-**MySQL** destination: Now supports connection via TLS/SSL 
-**BigQuery** (denormalized) destination: Supports reading BigQuery types such as date by reading the format field (contributed by @Nicolas Moreau)
-**Hubspot** source: Added contacts associations to the deals stream.
-**GitHub** source: Now supports pulling commits from user-specified branches.
-**Google Search Console** source: Now accepts admin email as input when using a service account key.
-**Greenhouse** source: Now identifies API streams it has access to if permissions are limited.
-**Marketo** source: Now Airbyte native.
-**S3** source: Now supports any source that conforms to the S3 protocol (Non-AWS S3).
-**Shopify** source: Now reports pre_tax_price on the line_items stream if you have Shopify Plus.
-**Stripe** source: Now actually uses the mandatory start_date config field for incremental syncs.
+* **MySQL** destination: Now supports connection via TLS/SSL 
+* **BigQuery** (denormalized) destination: Supports reading BigQuery types such as date by reading the format field (contributed by @Nicolas Moreau)
+* **Hubspot** source: Added contacts associations to the deals stream.
+* **GitHub** source: Now supports pulling commits from user-specified branches.
+* **Google Search Console** source: Now accepts admin email as input when using a service account key.
+* **Greenhouse** source: Now identifies API streams it has access to if permissions are limited.
+* **Marketo** source: Now Airbyte native.
+* **S3** source: Now supports any source that conforms to the S3 protocol (Non-AWS S3).
+* **Shopify** source: Now reports pre_tax_price on the line_items stream if you have Shopify Plus.
+* **Stripe** source: Now actually uses the mandatory start_date config field for incremental syncs.
 
 ## 9/16/2021
 
@@ -189,15 +189,15 @@ New sources:
 
 New features: 
 
-**Google Ads** source: You can now specify user-specified queries in GAQL.
-**GitHub** source: All streams with a parent stream use cached parent stream data when possible.
-**Shopify** source: Substantial performance improvements to the incremental sync mode.
-**Stripe** source: Now supports the PaymentIntents stream.
-**Pipedrive** source: Now supports the Organizations stream.
-**Sendgrid** source: Now supports the SingleSendStats stream.
-**Bing Ads** source: Now supports the Report stream.
-**GitHub** source: Now supports the Reactions stream.
-**MongoDB** source: Now Airbyte native!
+* **Google Ads** source: You can now specify user-specified queries in GAQL.
+* **GitHub** source: All streams with a parent stream use cached parent stream data when possible.
+* **Shopify** source: Substantial performance improvements to the incremental sync mode.
+* **Stripe** source: Now supports the PaymentIntents stream.
+* **Pipedrive** source: Now supports the Organizations stream.
+* **Sendgrid** source: Now supports the SingleSendStats stream.
+* **Bing Ads** source: Now supports the Report stream.
+* **GitHub** source: Now supports the Reactions stream.
+* **MongoDB** source: Now Airbyte native!
 
 ## 9/9/2021
 
