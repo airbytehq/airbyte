@@ -105,6 +105,7 @@ const SetDefaultName: React.FC = () => {
     if (selectedService) {
       setFieldValue("name", selectedService.name);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedService]);
 
   return null;
