@@ -7,7 +7,7 @@ import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
 import { FeatureService } from "hooks/services/Feature";
-import { ConfigServiceProvider, defaultConfig } from "config";
+import { configContext, defaultConfig } from "config";
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test
@@ -27,11 +27,11 @@ export function render(
     return (
       <ThemeProvider theme={{}}>
         <IntlProvider locale="en" messages={en}>
-          <ConfigServiceProvider defaultConfig={defaultConfig}>
+          <configContext.Provider value={{ config: defaultConfig }}>
             <FeatureService>
               <MemoryRouter>{children}</MemoryRouter>
             </FeatureService>
-          </ConfigServiceProvider>
+          </configContext.Provider>
         </IntlProvider>
       </ThemeProvider>
     );
