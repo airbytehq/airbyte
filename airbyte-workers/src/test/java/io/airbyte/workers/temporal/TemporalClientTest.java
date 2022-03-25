@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -43,6 +44,8 @@ import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.workflow.Functions.Func;
+import io.temporal.workflow.Functions.Proc1;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -260,52 +263,28 @@ class TemporalClientTest {
 
   }
 
-  @Nested
+  @SuppressWarnings("unchecked")
+  @Test
   @DisplayName("Test delete connection method.")
-  class DeleteConnection {
+  void testDeleteConnection() {
+    final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
 
-    @SuppressWarnings("unchecked")
-    @Test
-    void testDeleteConnection() {
-      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+    doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
+    when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
 
-      doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
+    final JobSyncConfig syncConfig = new JobSyncConfig()
+        .withSourceDockerImage(IMAGE_NAME1)
+        .withSourceDockerImage(IMAGE_NAME2)
+        .withSourceConfiguration(Jsons.emptyObject())
+        .withDestinationConfiguration(Jsons.emptyObject())
+        .withOperationSequence(List.of())
+        .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
 
-      when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
+    temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
+    temporalClient.deleteConnection(CONNECTION_ID);
 
-      final JobSyncConfig syncConfig = new JobSyncConfig()
-          .withSourceDockerImage(IMAGE_NAME1)
-          .withSourceDockerImage(IMAGE_NAME2)
-          .withSourceConfiguration(Jsons.emptyObject())
-          .withDestinationConfiguration(Jsons.emptyObject())
-          .withOperationSequence(List.of())
-          .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
-
-      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
-      temporalClient.deleteConnection(CONNECTION_ID);
-
-      verify(workflowClient, Mockito.never()).newSignalWithStartRequest();
-      verify(mConnectionManagerWorkflow).deleteConnection();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void testDeleteConnectionInUnexpectedState() {
-      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      final BatchRequest mBatchRequest = mock(BatchRequest.class);
-
-      doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
-
-      when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
-      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
-      doThrow(new IllegalStateException("Force illegal state")).when(temporalClient).getConnectionUpdateWorkflow(CONNECTION_ID);
-
-      temporalClient.deleteConnection(CONNECTION_ID);
-
-      verify(workflowClient).newSignalWithStartRequest();
-      verify(workflowClient).signalWithStart(mBatchRequest);
-    }
-
+    verify(workflowClient, Mockito.never()).newSignalWithStartRequest();
+    verify(mConnectionManagerWorkflow).deleteConnection();
   }
 
 }
