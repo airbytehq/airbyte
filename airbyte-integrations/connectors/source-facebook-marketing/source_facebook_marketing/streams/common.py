@@ -14,6 +14,7 @@ from facebook_business.exceptions import FacebookRequestError
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
 FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
+FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE = 2
 FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 FACEBOOK_CONNECTION_RESET_ERROR_CODE = 104
@@ -36,10 +37,22 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
+            temporary_oauth_error = exc.api_error_code() == FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE
             batch_timeout_error = exc.http_status() == http.client.BAD_REQUEST and exc.api_error_code() == FACEBOOK_BATCH_ERROR_CODE
             unknown_error = exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
             connection_reset_error = exc.api_error_code() == FACEBOOK_CONNECTION_RESET_ERROR_CODE
-            return any((exc.api_transient_error(), unknown_error, call_rate_limit_error, batch_timeout_error, connection_reset_error))
+            server_error = exc.http_status() == http.client.INTERNAL_SERVER_ERROR
+            return any(
+                (
+                    exc.api_transient_error(),
+                    unknown_error,
+                    call_rate_limit_error,
+                    batch_timeout_error,
+                    connection_reset_error,
+                    temporary_oauth_error,
+                    server_error,
+                )
+            )
         return True
 
     return backoff.on_exception(

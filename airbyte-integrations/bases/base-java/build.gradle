@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:models')
     implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-json-validation')
     api 'io.sentry:sentry:5.6.0'

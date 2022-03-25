@@ -9,19 +9,26 @@ import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.PrivateDestinationDefinitionRead;
+import io.airbyte.api.model.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
+import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreLists;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
@@ -31,6 +38,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -77,7 +85,8 @@ public class DestinationDefinitionsHandler {
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardDestinationDefinition.getIcon()))
           .releaseStage(getReleaseStage(standardDestinationDefinition))
-          .releaseDate(getReleaseDate(standardDestinationDefinition));
+          .releaseDate(getReleaseDate(standardDestinationDefinition))
+          .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardDestinationDefinition.getResourceRequirements()));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
@@ -121,29 +130,54 @@ public class DestinationDefinitionsHandler {
     }
   }
 
+  public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    return toDestinationDefinitionReadList(MoreLists.concat(
+        configRepository.listPublicDestinationDefinitions(false),
+        configRepository.listGrantedDestinationDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
+  }
+
+  public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<Entry<StandardDestinationDefinition, Boolean>> standardDestinationDefinitionBooleanMap =
+        configRepository.listGrantableDestinationDefinitions(workspaceIdRequestBody.getWorkspaceId(), false);
+    return toPrivateDestinationDefinitionReadList(standardDestinationDefinitionBooleanMap);
+  }
+
+  private static PrivateDestinationDefinitionReadList toPrivateDestinationDefinitionReadList(
+                                                                                             final List<Entry<StandardDestinationDefinition, Boolean>> defs) {
+    final List<PrivateDestinationDefinitionRead> reads = defs.stream()
+        .map(entry -> new PrivateDestinationDefinitionRead()
+            .destinationDefinition(buildDestinationDefinitionRead(entry.getKey()))
+            .granted(entry.getValue()))
+        .collect(Collectors.toList());
+    return new PrivateDestinationDefinitionReadList().destinationDefinitions(reads);
+  }
+
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildDestinationDefinitionRead(
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createCustomDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate)
+  public DestinationDefinitionRead createCustomDestinationDefinition(final DestinationDefinitionCreate destinationDefCreate)
       throws JsonValidationException, IOException {
     final ConnectorSpecification spec = getSpecForImage(
-        destinationDefinitionCreate.getDockerRepository(),
-        destinationDefinitionCreate.getDockerImageTag());
+        destinationDefCreate.getDockerRepository(),
+        destinationDefCreate.getDockerImageTag());
 
     final UUID id = uuidSupplier.get();
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
         .withDestinationDefinitionId(id)
-        .withDockerRepository(destinationDefinitionCreate.getDockerRepository())
-        .withDockerImageTag(destinationDefinitionCreate.getDockerImageTag())
-        .withDocumentationUrl(destinationDefinitionCreate.getDocumentationUrl().toString())
-        .withName(destinationDefinitionCreate.getName())
-        .withIcon(destinationDefinitionCreate.getIcon())
+        .withDockerRepository(destinationDefCreate.getDockerRepository())
+        .withDockerImageTag(destinationDefCreate.getDockerImageTag())
+        .withDocumentationUrl(destinationDefCreate.getDocumentationUrl().toString())
+        .withName(destinationDefCreate.getName())
+        .withIcon(destinationDefCreate.getIcon())
         .withSpec(spec)
         .withTombstone(false)
-        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM);
+        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
+        .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -162,6 +196,9 @@ public class DestinationDefinitionsHandler {
     final ConnectorSpecification spec = specNeedsUpdate
         ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
         : currentDestination.getSpec();
+    final ActorDefinitionResourceRequirements updatedResourceReqs = destinationDefinitionUpdate.getResourceRequirements() != null
+        ? ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefinitionUpdate.getResourceRequirements())
+        : currentDestination.getResourceRequirements();
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
@@ -173,7 +210,8 @@ public class DestinationDefinitionsHandler {
         .withSpec(spec)
         .withTombstone(currentDestination.getTombstone())
         .withReleaseStage(currentDestination.getReleaseStage())
-        .withReleaseDate(currentDestination.getReleaseDate());
+        .withReleaseDate(currentDestination.getReleaseDate())
+        .withResourceRequirements(updatedResourceReqs);
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     return buildDestinationDefinitionRead(newDestination);
@@ -209,6 +247,26 @@ public class DestinationDefinitionsHandler {
     } catch (final Exception e) {
       return null;
     }
+  }
+
+  public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
+                                                                                final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardDestinationDefinition standardDestinationDefinition =
+        configRepository.getStandardDestinationDefinition(destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId());
+    configRepository.writeActorDefinitionWorkspaceGrant(
+        destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId(),
+        destinationDefinitionIdWithWorkspaceId.getWorkspaceId());
+    return new PrivateDestinationDefinitionRead()
+        .destinationDefinition(buildDestinationDefinitionRead(standardDestinationDefinition))
+        .granted(true);
+  }
+
+  public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
+      throws IOException {
+    configRepository.deleteActorDefinitionWorkspaceGrant(
+        destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId(),
+        destinationDefinitionIdWithWorkspaceId.getWorkspaceId());
   }
 
 }

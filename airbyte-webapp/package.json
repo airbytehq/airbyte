@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.35.33-alpha",
+  "version": "0.35.60-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -21,7 +21,6 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.1.17",
     "@fullstory/browser": "^1.5.0",
-    "@rest-hooks/legacy": "^2.0.5",
     "@sentry/react": "^6.17.9",
     "@sentry/tracing": "^6.17.9",
     "dayjs": "^1.10.7",
@@ -46,7 +45,9 @@
     "react-use-intercom": "^1.5.0",
     "react-widgets": "^4.6.1",
     "recharts": "^2.1.9",
+    "rehype-slug": "^5.0.1",
     "rehype-urls": "^1.1.1",
+    "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
     "rest-hooks": "^5.0.20",
     "sanitize-html": "^2.7.0",
@@ -87,13 +88,13 @@
     "eslint-config-react-app": "^7.0.0",
     "eslint-plugin-jest": "^26.1.1",
     "eslint-plugin-prettier": "^4.0.0",
+    "express": "^4.17.3",
     "husky": "^4.2.3",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.4",
     "prettier": "2.2.1",
     "react-scripts": "^5.0.0",
     "react-select-event": "^5.3.0",
-    "storybook-addon-styled-component-theme": "^2.0.0",
     "tar": "^6.1.11",
     "tmpl": "^1.0.5",
     "typescript": "^4.5.0"
@@ -118,6 +119,11 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_moduels/(?!rehype-slug/.*)"
     ]
   }
 }

@@ -6,6 +6,7 @@
     
     
       compound sortkey(_airbyte_active_row,_airbyte_unique_key_scd,_airbyte_emitted_at)
+    
   as (
     
 -- depends_on: ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')

@@ -7,6 +7,7 @@ package io.airbyte.integrations.debezium.internals;
 import io.airbyte.db.DataTypeUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Properties;
@@ -50,7 +51,7 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
       if (x instanceof byte[]) {
-        return new String((byte[]) x);
+        return new String((byte[]) x, StandardCharsets.UTF_8);
       } else {
         return x.toString();
       }
@@ -62,7 +63,7 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
    * the doc, it should be done by driver, but it fails.
    */
   private Object convertDefaultValueNullDate(final RelationalColumn field) {
-    var defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
+    final var defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
     return (defaultValue == null && !field.isOptional() ? DataTypeUtils.toISO8601String(LocalDate.EPOCH) : defaultValue);
   }
 

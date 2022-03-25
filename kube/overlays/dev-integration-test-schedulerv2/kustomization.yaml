@@ -6,6 +6,10 @@ namespace: default
 bases:
   - ../../resources
 
+resources:
+  - sync-only-worker.yaml
+  - temporal-ui.yaml
+
 images:
   - name: airbyte/db
     newTag: dev

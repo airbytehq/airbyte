@@ -5,7 +5,7 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping
 
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -49,13 +49,12 @@ class FBMarketingStream(Stream, ABC):
         """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
-    def _execute_batch(self, batch: FacebookAdsApiBatch) -> FacebookAdsApiBatch:
+    def _execute_batch(self, batch: FacebookAdsApiBatch) -> None:
         """Execute batch, retry in case of failures"""
         while batch:
             batch = batch.execute()
             if batch:
                 logger.info("Retry failed requests in batch")
-        return batch
 
     def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
         """Execute list of requests in batches"""
@@ -71,9 +70,10 @@ class FBMarketingStream(Stream, ABC):
         for request in pending_requests:
             api_batch.add_request(request, success=success, failure=failure)
             if len(api_batch) == MAX_BATCH_SIZE:
-                api_batch = self._execute_batch(api_batch)
+                self._execute_batch(api_batch)
                 yield from records
                 records = []
+                api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
 
         self._execute_batch(api_batch)
         yield from records
@@ -224,23 +224,6 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
         self._cursor_value = pendulum.parse(value[self.cursor_field])
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """Override it to set initial state"""
-        if stream_state:
-            self.state = stream_state
-
-        yield from super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """Override it to return current state and update max_cursor_value everytime we get new record"""
-        record_cursor_value = pendulum.parse(latest_record[self.cursor_field])
-        self._max_cursor_value = self._max_cursor_value or record_cursor_value
-        self._max_cursor_value = max(self._max_cursor_value, record_cursor_value)
-
-        return self.state
-
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Don't have classic cursor filtering"""
         return {}
@@ -260,10 +243,14 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         """
         records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
         for record in records_iter:
-            if self._cursor_value and pendulum.parse(record[self.cursor_field]) < self._cursor_value:
+            record_cursor_value = pendulum.parse(record[self.cursor_field])
+            if self._cursor_value and record_cursor_value < self._cursor_value:
                 break
             if not self._include_deleted and record[AdImage.Field.status] == AdImage.Status.deleted:
                 continue
+
+            self._max_cursor_value = self._max_cursor_value or record_cursor_value
+            self._max_cursor_value = max(self._max_cursor_value, record_cursor_value)
             yield record.export_all_data()
 
         self._cursor_value = self._max_cursor_value

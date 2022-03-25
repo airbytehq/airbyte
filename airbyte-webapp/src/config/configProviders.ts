@@ -8,6 +8,7 @@ const windowConfigProvider: ConfigProvider = async () => {
       enabled: isDefined(window.TRACKING_STRATEGY)
         ? window.TRACKING_STRATEGY === "segment"
         : undefined,
+      token: window.SEGMENT_TOKEN,
     },
     apiUrl: window.API_URL,
     version: window.AIRBYTE_VERSION,

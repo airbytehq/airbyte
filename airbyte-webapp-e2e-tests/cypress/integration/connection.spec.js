@@ -1,4 +1,8 @@
 describe("Connection main actions", () => {
+  beforeEach(() => {
+    cy.initialSetupCompleted();
+  });
+
   it("Create new connection", () => {
     cy.createTestConnection("Test connection source cypress", "Test destination cypress");
 
@@ -6,7 +10,7 @@ describe("Connection main actions", () => {
     cy.get("div").contains("Test destination cypress").should("exist");
   });
 
-  it.only("Update connection", () => {
+  it("Update connection", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     cy.createTestConnection("Test update connection source cypress", "Test update connection destination cypress");

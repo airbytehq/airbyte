@@ -203,7 +203,7 @@ class TemporalClientTest {
 
     @Test
     public void testSynchronousResetConnection() {
-      ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final long jobId1 = 1L;
       final long jobId2 = 2L;
       final long jobId3 = 3L;
@@ -216,11 +216,11 @@ class TemporalClientTest {
           new JobInformation(jobId3, 0),
           new JobInformation(jobId3, 0));
 
-      doReturn(true).when(temporalClient).isWorkflowRunning(anyString());
+      doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
 
       when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
 
-      ManualSyncSubmissionResult manualSyncSubmissionResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
+      final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
 
       verify(mConnectionManagerWorkflow).resetConnection();
 

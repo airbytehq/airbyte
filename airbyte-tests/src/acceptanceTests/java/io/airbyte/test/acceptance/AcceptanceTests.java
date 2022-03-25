@@ -65,6 +65,7 @@ import io.airbyte.api.client.model.SourceDefinitionCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.SourceDefinitionRead;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
+import io.airbyte.api.client.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
@@ -149,7 +150,6 @@ public class AcceptanceTests {
 
   private static final Charset UTF8 = StandardCharsets.UTF_8;
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
-  private static final boolean IS_CONTAINER_ORCHESTRATOR = System.getenv().containsKey("CONTAINER_ORCHESTRATOR");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
   private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
   private static final boolean USE_EXTERNAL_DEPLOYMENT =
@@ -182,8 +182,6 @@ public class AcceptanceTests {
   private List<UUID> connectionIds;
   private List<UUID> destinationIds;
   private List<UUID> operationIds;
-
-  private static FeatureFlags featureFlags;
 
   private static KubernetesClient kubernetesClient = null;
 
@@ -224,7 +222,6 @@ public class AcceptanceTests {
       LOGGER.info("Using external deployment of airbyte.");
     }
 
-    featureFlags = new EnvVariableFeatureFlags();
   }
 
   @AfterAll
@@ -292,20 +289,22 @@ public class AcceptanceTests {
       destinationPsql.stop();
     }
 
-    for (final UUID sourceId : sourceIds) {
-      deleteSource(sourceId);
+    for (final UUID operationId : operationIds) {
+      deleteOperation(operationId);
     }
 
     for (final UUID connectionId : connectionIds) {
       disableConnection(connectionId);
     }
 
+    for (final UUID sourceId : sourceIds) {
+      deleteSource(sourceId);
+    }
+
     for (final UUID destinationId : destinationIds) {
       deleteDestination(destinationId);
     }
-    for (final UUID operationId : operationIds) {
-      deleteOperation(operationId);
-    }
+
   }
 
   @Test
@@ -490,10 +489,6 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
@@ -502,8 +497,20 @@ public class AcceptanceTests {
   @Test
   @Order(8)
   public void testCancelSync() throws Exception {
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+
+    final SourceRead source = createSource(
+        "E2E Test Source -" + UUID.randomUUID(),
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "INFINITE_FEED")
+            .put("message_interval", 1000)
+            .put("max_records", Duration.ofMinutes(5).toSeconds())
+            .build()));
+
     final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID sourceId = source.getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
     final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
@@ -512,12 +519,11 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+
+    // wait to get out of PENDING
+    final JobRead jobRead = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    assertEquals(JobStatus.RUNNING, jobRead.getStatus());
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
@@ -548,10 +554,6 @@ public class AcceptanceTests {
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
     LOGGER.info("Beginning testIncrementalSync() sync 1");
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -585,9 +587,9 @@ public class AcceptanceTests {
 
     LOGGER.info("Starting testIncrementalSync() reset");
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     if (featureFlags.usesNewScheduler()) {
-      waitForJob(apiClient.getJobsApi(), jobInfoRead.getJob(),
+      waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
           Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
     } else {
       waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
@@ -655,10 +657,6 @@ public class AcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
@@ -739,18 +737,8 @@ public class AcceptanceTests {
   @Test
   @Order(14)
   public void testCheckpointing() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
-
-    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
-        .createDestinationDefinition(new DestinationDefinitionCreate()
-            .name("E2E Test Destination")
-            .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-            .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
 
     final SourceRead source = createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -786,19 +774,17 @@ public class AcceptanceTests {
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null).getConnectionId();
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
-    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
     // wait to get out of running.
-    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
     // now cancel it so that we freeze state!
-    apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
+    try {
+      apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
+    } catch (Exception e) {}
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
@@ -839,18 +825,8 @@ public class AcceptanceTests {
   @Test
   @Order(16)
   public void testBackpressure() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
-
-    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
-        .createDestinationDefinition(new DestinationDefinitionCreate()
-            .name("E2E Test Destination")
-            .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-            .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
 
     final SourceRead source = createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -878,17 +854,13 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
-    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
     // wait to get out of running.
-    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
 
     final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(runningJob.getId()));
     final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
@@ -917,18 +889,8 @@ public class AcceptanceTests {
   @Order(17)
   @Disabled
   public void testFailureTimeout() throws Exception {
-    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
-
-    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
-        .createDestinationDefinition(new DestinationDefinitionCreate()
-            .name("E2E Test Destination")
-            .dockerRepository("airbyte/destination-e2e-test")
-            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-            .documentationUrl(URI.create("https://example.com")));
+    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = createE2eDestinationDefinition();
 
     final SourceRead source = createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -959,19 +921,15 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of pending.
-    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    final JobRead runningJob = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
 
     // wait for job for max of 3 minutes, by which time the job attempt should have failed
-    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING), Duration.ofMinutes(3));
 
     final JobIdRequestBody jobId = new JobIdRequestBody().id(runningJob.getId());
     final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(jobId);
@@ -993,40 +951,66 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
+    for (final var input : List.of("KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST", "KILL_ONLY_SYNC", "KILL_ONLY_NON_SYNC")) {
+      LOGGER.info("Checking " + input);
+
+      final UUID connectionId =
+          createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
+
+      JobInfoRead connectionSyncRead = null;
+
+      while (connectionSyncRead == null) {
+
+        try {
+          connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+        } catch (final Exception e) {
+          LOGGER.error("retrying after error", e);
+        }
+      }
+
+      Thread.sleep(10000);
+
+      switch (input) {
+        case "KILL_BOTH_NON_SYNC_SLIGHTLY_FIRST" -> {
+          LOGGER.info("Scaling down both workers at roughly the same time...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+          LOGGER.info("Scaling up both workers...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        }
+        case "KILL_ONLY_SYNC" -> {
+          LOGGER.info("Scaling down only sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(0, true);
+
+          LOGGER.info("Scaling up sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-sync-worker").scale(1);
+        }
+        case "KILL_ONLY_NON_SYNC" -> {
+          LOGGER.info("Scaling down only non-sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0, true);
+
+          LOGGER.info("Scaling up non-sync worker...");
+          kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
+        }
+      }
+
+      waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+
+      final long numAttempts = apiClient.getJobsApi()
+          .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
+          .getAttempts()
+          .size();
+
+      // it should be able to accomplish the resume without an additional attempt!
+      assertEquals(1, numAttempts);
     }
-
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    Thread.sleep(5000);
-
-    LOGGER.info("Scaling down workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
-    Thread.sleep(1000);
-
-    LOGGER.info("Scaling up workers...");
-    kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(1);
-
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndDestinationDbInSync(false);
-
-    final long numAttempts = apiClient.getJobsApi()
-        .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
-        .getAttempts()
-        .size();
-
-    // it should be able to accomplish the resume without an additional attempt!
-    assertEquals(1, numAttempts);
   }
 
   @Test
@@ -1045,12 +1029,8 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     Thread.sleep(5000);
 
@@ -1083,16 +1063,12 @@ public class AcceptanceTests {
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     LOGGER.info("Waiting for connection to be available in Temporal...");
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
 
     LOGGER.info("Run manual sync...");
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     LOGGER.info("Waiting for job to run...");
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     LOGGER.info("Scale down workers...");
     kubernetesClient.apps().deployments().inNamespace("default").withName("airbyte-worker").scale(0);
@@ -1131,16 +1107,12 @@ public class AcceptanceTests {
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     LOGGER.info("Waiting for connection to be available in Temporal...");
-    // Avoid Race condition with the new scheduler
-    if (featureFlags.usesNewScheduler()) {
-      waitForTemporalWorkflow(connectionId);
-    }
 
     LOGGER.info("Run manual sync...");
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     LOGGER.info("Waiting for job to run...");
-    waitForJob(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     LOGGER.info("Waiting for job to run a little...");
     Thread.sleep(5000);
@@ -1161,7 +1133,7 @@ public class AcceptanceTests {
             final JobInfoRead jobInfoRead = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
             LOGGER.info("jobInfoRead = " + jobInfoRead);
             return jobInfoRead;
-          } catch (ApiException e) {
+          } catch (final ApiException e) {
             LOGGER.error("Failed to read from api", e);
             throw e;
           }
@@ -1176,7 +1148,7 @@ public class AcceptanceTests {
   }
 
   private AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {
-    return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getCatalog();
+    return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
   }
 
   private void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
@@ -1430,6 +1402,22 @@ public class AcceptanceTests {
     return dbConfig;
   }
 
+  private SourceDefinitionRead createE2eSourceDefinition() throws ApiException {
+    return apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
+        .name("E2E Test Source")
+        .dockerRepository("airbyte/source-e2e-test")
+        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+        .documentationUrl(URI.create("https://example.com")));
+  }
+
+  private DestinationDefinitionRead createE2eDestinationDefinition() throws ApiException {
+    return apiClient.getDestinationDefinitionApi().createDestinationDefinition(new DestinationDefinitionCreate()
+        .name("E2E Test Destination")
+        .dockerRepository("airbyte/destination-e2e-test")
+        .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
+        .documentationUrl(URI.create("https://example.com")));
+  }
+
   private SourceRead createPostgresSource() throws ApiException {
     return createSource(
         "acceptanceTestDb-" + UUID.randomUUID(),
@@ -1500,7 +1488,7 @@ public class AcceptanceTests {
   }
 
   private static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {
-    final JobRead job = waitForJob(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
+    final JobRead job = waitWhileJobHasStatus(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
 
     if (!JobStatus.SUCCEEDED.equals(job.getStatus())) {
       // If a job failed during testing, show us why.
@@ -1514,13 +1502,16 @@ public class AcceptanceTests {
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
   }
 
-  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
+  private static JobRead waitWhileJobHasStatus(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
       throws InterruptedException, ApiException {
-    return waitForJob(jobsApi, originalJob, jobStatuses, Duration.ofMinutes(6));
+    return waitWhileJobHasStatus(jobsApi, originalJob, jobStatuses, Duration.ofMinutes(6));
   }
 
   @SuppressWarnings("BusyWait")
-  private static JobRead waitForJob(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses, final Duration maxWaitTime)
+  private static JobRead waitWhileJobHasStatus(final JobsApi jobsApi,
+                                               final JobRead originalJob,
+                                               final Set<JobStatus> jobStatuses,
+                                               final Duration maxWaitTime)
       throws InterruptedException, ApiException {
     JobRead job = originalJob;
 
@@ -1554,19 +1545,6 @@ public class AcceptanceTests {
   public enum Type {
     SOURCE,
     DESTINATION
-  }
-
-  private static void waitForTemporalWorkflow(final UUID connectionId) {
-    /*
-     * do { try { Thread.sleep(1000); } catch (InterruptedException e) { throw new RuntimeException(e);
-     * } } while
-     * (temporalClient.isWorkflowRunning(temporalClient.getConnectionManagerName(connectionId)));
-     */
-    try {
-      Thread.sleep(10 * 1000);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -23,7 +24,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterAll;
@@ -47,6 +50,17 @@ public class PostgresDestinationTest {
 
   private JsonNode config;
 
+  private static final Map<String, String> CONFIG_WITH_SSL = ImmutableMap.of(
+      "host", "localhost",
+      "port", "1337",
+      "username", "user",
+      "database", "db");
+
+  private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
+      CONFIG_WITH_SSL,
+      ImmutableMap.of(
+          "ssl", "false"));
+
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
@@ -61,6 +75,20 @@ public class PostgresDestinationTest {
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
+  }
+
+  @Test
+  void testDefaultParamsNoSSL() {
+    final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
+        Jsons.jsonNode(CONFIG_NO_SSL));
+    assertEquals(new HashMap<>(), defaultProperties);
+  }
+
+  @Test
+  void testDefaultParamsWithSSL() {
+    final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
+        Jsons.jsonNode(CONFIG_WITH_SSL));
+    assertEquals(PostgresDestination.SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the

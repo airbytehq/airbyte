@@ -65,13 +65,23 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withOperationSequence(config.getOperationSequence())
           .withCatalog(config.getConfiguredAirbyteCatalog())
           .withState(config.getState())
-          .withResourceRequirements(config.getResourceRequirements());
+          .withResourceRequirements(config.getResourceRequirements())
+          .withSourceResourceRequirements(config.getSourceResourceRequirements())
+          .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
     } catch (final Exception e) {
       throw new RetryableException(e);
     }
+  }
+
+  @Override
+  public GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(final SyncInputWithAttemptNumber input) {
+    return getSyncWorkflowInput(new SyncInput(
+        input.getAttemptNumber(),
+        input.getJobId(),
+        input.isReset()));
   }
 
 }

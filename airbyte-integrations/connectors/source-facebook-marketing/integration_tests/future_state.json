@@ -1,4 +1,8 @@
 {
+  "activities": {
+    "event_time": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
   "campaigns": {
     "updated_time": "2121-07-25T13:34:26Z",
     "include_deleted": true
@@ -35,7 +39,7 @@
     "date_start": "2121-07-25T13:34:26Z",
     "include_deleted": true
   },
-  "ads_insights_platfrom_and_device": {
+  "ads_insights_platform_and_device": {
     "date_start": "2121-07-25T13:34:26Z",
     "include_deleted": true
   },
@@ -43,7 +47,11 @@
     "date_start": "2121-07-25T13:34:26Z",
     "include_deleted": true
   },
-  "ads_insights_action_types": {
+  "ads_insights_action_type": {
+    "date_start": "2121-07-25T13:34:26Z",
+    "include_deleted": true
+  },
+  "custommy_custom_insights": {
     "date_start": "2121-07-25T13:34:26Z",
     "include_deleted": true
   }

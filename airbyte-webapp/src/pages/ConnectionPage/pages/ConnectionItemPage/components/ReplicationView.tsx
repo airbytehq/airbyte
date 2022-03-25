@@ -5,20 +5,18 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useAsyncFn } from "react-use";
 
-import { Button } from "components";
+import { Button, Card } from "components";
 import useConnection, {
   useConnectionLoad,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import TransferFormCard from "views/Connection/ConnectionForm/TransferFormCard";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import LoadingSchema from "components/LoadingSchema";
 
 import { equal } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
-import { CollapsibleCard } from "views/Connection/CollapsibleCard";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -31,23 +29,9 @@ const Content = styled.div`
   padding-bottom: 10px;
 `;
 
-const TitleContainer = styled.div<{ hasButton: boolean }>`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin: ${({ hasButton }) => (hasButton ? "-5px 0" : 0)};
-`;
-
 const TryArrow = styled(FontAwesomeIcon)`
   margin: 0 10px -1px 0;
   font-size: 14px;
-`;
-
-const Title = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 `;
 
 const Message = styled.div`
@@ -160,17 +144,7 @@ const ReplicationView: React.FC<IProps> = ({
 
   return (
     <Content>
-      <TransferFormCard connection={connection} />
-      <CollapsibleCard
-        collapsible
-        title={
-          <Title>
-            <TitleContainer hasButton={!activeUpdatingSchemaMode}>
-              <FormattedMessage id="connection.streams" />
-            </TitleContainer>
-          </Title>
-        }
-      >
+      <Card>
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
             isEditMode
@@ -187,7 +161,7 @@ const ReplicationView: React.FC<IProps> = ({
         ) : (
           <LoadingSchema />
         )}
-      </CollapsibleCard>
+      </Card>
       {isModalOpen ? (
         <ResetDataModal
           onClose={() => setIsUpdateModalOpen(false)}

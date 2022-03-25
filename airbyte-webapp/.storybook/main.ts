@@ -7,7 +7,6 @@ module.exports = {
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/preset-create-react-app",
-    "storybook-addon-styled-component-theme/dist",
   ],
   webpackFinal: (config) => {
     config.resolve.modules.push(process.cwd() + "/node_modules");

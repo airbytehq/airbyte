@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,7 @@ import org.junit.jupiter.api.Timeout;
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
 // Must have a timeout on this class because it tests child processes that may misbehave; otherwise
 // this can hang forever during failures.
-@Timeout(value = 5,
+@Timeout(value = 6,
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
 
@@ -196,7 +198,7 @@ public class KubePodProcessIntegrationTest {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("echo \"h\\\"i\"; sleep 1; echo hi2");
-    final var output = new String(process.getInputStream().readAllBytes());
+    final var output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     assertEquals("h\"i\nhi2\n", output);
     process.waitFor();
 
@@ -210,7 +212,7 @@ public class KubePodProcessIntegrationTest {
   public void testEnvMapSet() throws Exception {
     // start a finite process
     final Process process = getProcess("echo ENV_VAR_1=$ENV_VAR_1");
-    final var output = new String(process.getInputStream().readAllBytes());
+    final var output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     assertEquals("ENV_VAR_1=ENV_VALUE_1\n", output);
     process.waitFor();
 
@@ -343,8 +345,9 @@ public class KubePodProcessIntegrationTest {
         files,
         entrypoint,
         DEFAULT_RESOURCE_REQUIREMENTS,
-        Map.of(),
-        Map.of());
+        Collections.emptyMap(),
+        Collections.emptyMap(),
+        Collections.emptyMap());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {

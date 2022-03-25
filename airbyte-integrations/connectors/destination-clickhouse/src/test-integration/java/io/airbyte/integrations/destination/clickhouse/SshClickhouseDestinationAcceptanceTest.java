@@ -103,7 +103,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
         ClickhouseDestination.HOST_KEY,
         ClickhouseDestination.PORT_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabase(mangledConfig)
-            .query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+            .unsafeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
                 JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .collect(Collectors.toList()));
   }

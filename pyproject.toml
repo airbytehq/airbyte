@@ -50,10 +50,9 @@ use_parentheses = true
 
 [tool.mypy]
 platform = "linux"
-exclude = "build\nintegration_tests\nunit_tests"
+exclude = "(build|integration_tests|unit_tests)"
 
 # Optionals
-no_implicit_optional = true
 ignore_missing_imports = true
 
 # Strictness
