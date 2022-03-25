@@ -2290,8 +2290,8 @@ components:
           default: true
         slackConfiguration:
           $ref: "#/components/schemas/SlackNotificationConfiguration"
-        emailConfiguration:
-          $ref: "#/components/schemas/EmailNotificationConfiguration"
+        customerioConfiguration:
+          $ref: "#/components/schemas/CustomerioNotificationConfiguration"
     SlackNotificationConfiguration:
       type: object
       required:
@@ -2299,13 +2299,13 @@ components:
       properties:
         webhook:
           type: string
-    EmailNotificationConfiguration:
+    CustomerioNotificationConfiguration:
       type: object
     NotificationType:
       type: string
       enum:
         - slack
-        - email
+        - customerio
         # - webhook
     NotificationRead:
       type: object
