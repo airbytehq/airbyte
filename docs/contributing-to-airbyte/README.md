@@ -44,8 +44,7 @@ If you do not receive an update on the issue from our team, please ping us on [S
 ### 3. Open a pull request
 1. Rebase master with your branch before submitting a pull request.
 2. Open the pull request.
-3. Check [our review process](./#review-process) and make sure your PR complies with what we ask in the PR template.
-4. Wait for a review from a community maintainer or our team.
+3. Wait for a review from a community maintainer or our team.
 
 ### 4. Review process
 When we review, we look at:
