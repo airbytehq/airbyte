@@ -220,7 +220,7 @@ def test_create_resource(patch_click, mocker):
             False, True, True, True, True, True, id="No force, diff, local file change -> expect prompt, validation, expect update."
         ),
         pytest.param(
-            False, True, True, True, False, False, id="No force, diff, local file change -> expect prompt, no validation, expect update."
+            False, True, True, True, False, False, id="No force, diff, local file change -> expect prompt, no validation, no update."
         ),
         pytest.param(
             False, True, False, True, True, True, id="No force, diff, no local file change -> expect prompt, validation, expect update."
