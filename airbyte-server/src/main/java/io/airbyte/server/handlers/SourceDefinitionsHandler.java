@@ -178,14 +178,11 @@ public class SourceDefinitionsHandler {
   }
 
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate)
-      throws JsonValidationException, IOException {
+      throws IOException {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(customSourceDefinitionCreate.getSourceDefinition())
         .withPublic(false)
         .withCustom(true);
-    configRepository.writeStandardSourceDefinition(sourceDefinition);
-    configRepository.writeActorDefinitionWorkspaceGrant(
-        sourceDefinition.getSourceDefinitionId(),
-        customSourceDefinitionCreate.getWorkspaceId());
+    configRepository.writeCustomSourceDefinition(sourceDefinition, customSourceDefinitionCreate.getWorkspaceId());
 
     return buildSourceDefinitionRead(sourceDefinition);
   }

@@ -225,6 +225,15 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
 
+  public void writeCustomSourceDefinition(final StandardSourceDefinition sourceDefinition, final UUID workspaceId)
+      throws IOException {
+    database.transaction(ctx -> {
+      ConfigWriter.writeStandardSourceDefinition(List.of(sourceDefinition), ctx);
+      writeActorDefinitionWorkspaceGrant(sourceDefinition.getSourceDefinitionId(), workspaceId, ctx);
+      return null;
+    });
+  }
+
   public void deleteStandardSourceDefinition(final UUID sourceDefId) throws IOException {
     try {
       persistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefId.toString());
@@ -320,6 +329,15 @@ public class ConfigRepository {
         destinationDefinition);
   }
 
+  public void writeCustomDestinationDefinition(final StandardDestinationDefinition destinationDefinition, final UUID workspaceId)
+      throws IOException {
+    database.transaction(ctx -> {
+      ConfigWriter.writeStandardDestinationDefinition(List.of(destinationDefinition), ctx);
+      writeActorDefinitionWorkspaceGrant(destinationDefinition.getDestinationDefinitionId(), workspaceId, ctx);
+      return null;
+    });
+  }
+
   public void deleteStandardDestinationDefinition(final UUID destDefId) throws IOException {
     try {
       persistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDefId.toString());
@@ -375,10 +393,14 @@ public class ConfigRepository {
   }
 
   public void writeActorDefinitionWorkspaceGrant(final UUID actorDefinitionId, final UUID workspaceId) throws IOException {
-    database.query(ctx -> ctx.insertInto(ACTOR_DEFINITION_WORKSPACE_GRANT)
+    database.query(ctx -> writeActorDefinitionWorkspaceGrant(actorDefinitionId, workspaceId, ctx));
+  }
+
+  private int writeActorDefinitionWorkspaceGrant(final UUID actorDefinitionId, final UUID workspaceId, final DSLContext ctx) {
+    return ctx.insertInto(ACTOR_DEFINITION_WORKSPACE_GRANT)
         .set(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID, actorDefinitionId)
         .set(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID, workspaceId)
-        .execute());
+        .execute();
   }
 
   public boolean actorDefinitionWorkspaceGrantExists(final UUID actorDefinitionId, final UUID workspaceId) throws IOException {

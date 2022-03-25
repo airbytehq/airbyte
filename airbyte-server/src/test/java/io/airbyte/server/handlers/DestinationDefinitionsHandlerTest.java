@@ -395,12 +395,11 @@ class DestinationDefinitionsHandlerTest {
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
-    verify(configRepository).writeStandardDestinationDefinition(destination
-        .withReleaseDate(null)
-        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
-        .withCustom(true));
-    verify(configRepository).writeActorDefinitionWorkspaceGrant(
-        destination.getDestinationDefinitionId(),
+    verify(configRepository).writeCustomDestinationDefinition(
+        destination
+            .withReleaseDate(null)
+            .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
+            .withCustom(true),
         workspaceId);
   }
 

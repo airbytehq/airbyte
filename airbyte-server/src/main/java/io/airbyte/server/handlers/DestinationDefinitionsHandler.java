@@ -185,15 +185,12 @@ public class DestinationDefinitionsHandler {
   }
 
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate)
-      throws JsonValidationException, IOException {
+      throws IOException {
     final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(
         customDestinationDefinitionCreate.getDestinationDefinition())
             .withPublic(false)
             .withCustom(true);
-    configRepository.writeStandardDestinationDefinition(destinationDefinition);
-    configRepository.writeActorDefinitionWorkspaceGrant(
-        destinationDefinition.getDestinationDefinitionId(),
-        customDestinationDefinitionCreate.getWorkspaceId());
+    configRepository.writeCustomDestinationDefinition(destinationDefinition, customDestinationDefinitionCreate.getWorkspaceId());
 
     return buildDestinationDefinitionRead(destinationDefinition);
   }

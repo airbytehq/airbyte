@@ -390,12 +390,11 @@ class SourceDefinitionsHandlerTest {
 
     assertEquals(expectedRead, actualRead);
     verify(schedulerSynchronousClient).createGetSpecJob(imageName);
-    verify(configRepository).writeStandardSourceDefinition(sourceDefinition
-        .withReleaseDate(null)
-        .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
-        .withCustom(true));
-    verify(configRepository).writeActorDefinitionWorkspaceGrant(
-        sourceDefinition.getSourceDefinitionId(),
+    verify(configRepository).writeCustomSourceDefinition(
+        sourceDefinition
+            .withReleaseDate(null)
+            .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
+            .withCustom(true),
         workspaceId);
   }
 
