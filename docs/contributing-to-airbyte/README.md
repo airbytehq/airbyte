@@ -37,7 +37,7 @@ If you find a similar issue: assign the issue to yourself and add a comment to t
 1. Fork our [GitHub repository](https://github.com/airbytehq/airbyte).
 2. Open a branch for your work.
 3. Code, and please write **tests**.
-4. Run the acceptance tests.
+4. Ensure all tests pass. For connectors, this includes acceptance tests as well. 
 
 ### 3. Open a pull request
 1. Rebase master with your branch before submitting a pull request.
