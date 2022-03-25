@@ -24,6 +24,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsSanitizer;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -79,7 +80,7 @@ public class DestinationHandler {
         integrationSchemaValidation,
         connectionsHandler,
         UUID::randomUUID,
-        new JsonSecretsProcessor(),
+        new JsonSecretsSanitizer(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
@@ -276,7 +277,7 @@ public class DestinationHandler {
 
     // remove secrets from config before returning the read
     final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
-    dci.setConfiguration(secretsProcessor.transformJson(dci.getConfiguration(), spec.getConnectionSpecification(), true));
+    dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());

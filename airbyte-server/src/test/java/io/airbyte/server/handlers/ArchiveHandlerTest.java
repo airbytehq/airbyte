@@ -16,7 +16,6 @@ import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.api.model.ImportRequestBody;
 import io.airbyte.api.model.UploadRead;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -83,8 +82,6 @@ public class ArchiveHandlerTest {
   private DatabaseConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
   private JsonSecretsProcessor jsonSecretsProcessor;
-  private FeatureFlags featureFlags;
-
   private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
 
@@ -120,9 +117,7 @@ public class ArchiveHandlerTest {
     jobPersistence = new DefaultJobPersistence(jobDatabase);
     seedPersistence = YamlSeedConfigPersistence.getDefault();
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    featureFlags = mock(FeatureFlags.class);
-    when(featureFlags.exposeSecretsInExport()).thenReturn(true);
-    configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor, featureFlags);
+    configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
     configRepository = new ConfigRepository(configPersistence, configDatabase);

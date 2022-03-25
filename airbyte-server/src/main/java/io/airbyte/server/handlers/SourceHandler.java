@@ -23,6 +23,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsSanitizer;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -73,7 +74,7 @@ public class SourceHandler {
         integrationSchemaValidation,
         connectionsHandler,
         UUID::randomUUID,
-        new JsonSecretsProcessor(),
+        new JsonSecretsSanitizer(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
@@ -250,8 +251,7 @@ public class SourceHandler {
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor.transformJson(
-        sourceConnection.getConfiguration(), spec.getConnectionSpecification(), true);
+    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }

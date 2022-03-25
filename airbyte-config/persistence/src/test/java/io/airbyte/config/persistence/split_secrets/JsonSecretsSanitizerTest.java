@@ -19,7 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class JsonSecretsProcessorTest {
+public class JsonSecretsSanitizerTest {
 
   private static final JsonNode SCHEMA_ONE_LAYER = Jsons.deserialize(
       "{\n"
@@ -161,7 +161,7 @@ public class JsonSecretsProcessorTest {
           + "    }\n"
           + "  }");
 
-  JsonSecretsProcessor processor = new JsonSecretsProcessor();
+  JsonSecretsSanitizer processor = new JsonSecretsSanitizer();
 
   @Test
   public void testCopySecrets() {
@@ -176,7 +176,7 @@ public class JsonSecretsProcessorTest {
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
-        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
+        .put("secret1", JsonSecretsSanitizer.SECRETS_MASK)
         .put("secret2", "newvalue")
         .build());
 
@@ -203,7 +203,7 @@ public class JsonSecretsProcessorTest {
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
-        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
+        .put("secret1", JsonSecretsSanitizer.SECRETS_MASK)
         .build());
 
     final JsonNode expected = dst.deepCopy();
@@ -225,7 +225,7 @@ public class JsonSecretsProcessorTest {
 
     final JsonNode dstOneOf = Jsons.jsonNode(ImmutableMap.builder()
         .put("s3_bucket_name", "name")
-        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
+        .put("secret_access_key", JsonSecretsSanitizer.SECRETS_MASK)
         .build());
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("warehouse", "house")
@@ -250,7 +250,7 @@ public class JsonSecretsProcessorTest {
 
     final JsonNode dstOneOf = Jsons.jsonNode(ImmutableMap.builder()
         .put("s3_bucket_name", "name")
-        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
+        .put("secret_access_key", JsonSecretsSanitizer.SECRETS_MASK)
         .build());
     final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("warehouse", "house")
@@ -281,7 +281,7 @@ public class JsonSecretsProcessorTest {
         "client_id", "whatever",
         "format", parquetConfig));
 
-    final JsonNode actual = new JsonSecretsProcessor().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
+    final JsonNode actual = new JsonSecretsSanitizer().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
   }
 
   private static Stream<Arguments> scenarioProvider() {

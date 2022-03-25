@@ -19,6 +19,8 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsSanitizer;
+import io.airbyte.config.persistence.split_secrets.NoOpJsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -369,9 +371,9 @@ public class WorkerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final JsonSecretsProcessor jsonSecretsProcessor = new JsonSecretsProcessor();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor, featureFlags);
+    final JsonSecretsProcessor jsonSecretsProcessor = featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
     final Database jobDatabase = new JobsDatabaseInstance(

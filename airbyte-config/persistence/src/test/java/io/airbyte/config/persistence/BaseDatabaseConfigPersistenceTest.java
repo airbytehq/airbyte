@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -45,7 +44,6 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   protected static Database database;
   protected static DatabaseConfigPersistence configPersistence;
   protected static JsonSecretsProcessor jsonSecretsProcessor;
-  protected static FeatureFlags featureFlags;
 
   @BeforeAll
   public static void dbSetup() {
@@ -55,7 +53,6 @@ public abstract class BaseDatabaseConfigPersistenceTest {
         .withPassword("docker");
     container.start();
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    featureFlags = mock(FeatureFlags.class);
   }
 
   @AfterAll
