@@ -111,7 +111,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   private boolean checkStageObjectExists(final JdbcDatabase database, final String stageName, final String stagingPath, final String filename)
       throws SQLException {
     final String query = getListQuery(stageName, stagingPath, filename);
-    LOGGER.info("Executing query: {}", query);
+    LOGGER.debug("Executing query: {}", query);
     final boolean result;
     try (final Stream<JsonNode> stream = database.unsafeQuery(query)) {
       result = stream.findAny().isPresent();
