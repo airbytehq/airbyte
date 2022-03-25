@@ -19,7 +19,6 @@ class BigQuerySQLNameTransformerTest {
       "*_namespace", "__namespace",
       "_namespace", "_namespace");
 
-
   private static final Map<String, String> RAW_TO_NORMALIZED_NAMESPACES = Map.of(
       "name-space", "name_space",
       "spécial_character", "special_character",
