@@ -38,7 +38,7 @@ class ShopifyStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/"
-    
+
     @property
     def default_filter_field_value(self) -> Union[int, str]:
         # certain streams are using `since_id` field as `filter_field`, which requires to use `int` type,
@@ -320,7 +320,7 @@ class Collects(IncrementalShopifyStream):
     cursor_field = "id"
     order_field = "id"
     filter_field = "since_id"
-    
+
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
