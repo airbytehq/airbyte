@@ -27,7 +27,7 @@ interface Props {
 export const ReleaseStageBadge: React.FC<Props> = ({
   stage,
   small,
-  tooltip,
+  tooltip = true,
 }) => {
   if (
     !stage ||
@@ -38,12 +38,12 @@ export const ReleaseStageBadge: React.FC<Props> = ({
   }
 
   const badge = (
-    <Stage $small={small ?? false}>
+    <Stage $small={!!small}>
       <FormattedMessage id={`component.releaseStageBadge.${stage}.title`} />
     </Stage>
   );
 
-  return tooltip ?? true ? (
+  return tooltip ? (
     <ToolTip control={badge} cursor="help">
       <FormattedMessage id={`component.releaseStageBadge.${stage}.tooltip`} />
     </ToolTip>
