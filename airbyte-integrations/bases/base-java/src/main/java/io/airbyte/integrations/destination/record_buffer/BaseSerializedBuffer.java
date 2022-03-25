@@ -97,7 +97,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
 
   @Override
   public String getFilename() throws IOException {
-    if (useCompression) {
+    if (useCompression && !bufferStorage.getFilename().endsWith(".gz")) {
       return bufferStorage.getFilename() + ".gz";
     }
     return bufferStorage.getFilename();
