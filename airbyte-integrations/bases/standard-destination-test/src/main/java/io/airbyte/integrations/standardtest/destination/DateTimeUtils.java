@@ -174,6 +174,31 @@ public class DateTimeUtils {
   }
 
   /**
+   * Verify if the value is date or date-time
+   *
+   * @param value any string value
+   * @return true - if value is date/date-time, false - if value has any other format
+   */
+  public static boolean isDateTimeValue(String value) {
+    try {
+      ZonedDateTime.parse(value, FORMATTER);
+      return true;
+    } catch (DateTimeParseException ignored) {
+      try {
+        LocalDateTime.parse(value, FORMATTER);
+        return true;
+      } catch (DateTimeParseException exception) {
+        try {
+          LocalDate.parse(value, FORMATTER);
+          return true;
+        } catch (DateTimeParseException ex) {
+          return false;
+        }
+      }
+    }
+  }
+
+  /**
    * Parse the Json date type to Instant and applies function to convert instant to connector specific
    * date string. Only for test purposes!
    *

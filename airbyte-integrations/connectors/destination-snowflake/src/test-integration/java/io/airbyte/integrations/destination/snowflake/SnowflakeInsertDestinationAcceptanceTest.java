@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Disabled;
@@ -226,7 +227,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     data.removeAll();
     fields.forEach(field -> {
       var key = field.getKey();
-      if (dateTimeFieldNames.containsKey(key)) {
+      if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
         switch (dateTimeFieldNames.get(key)) {
           case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToSnowflakeFormat(field.getValue().asText()));
           case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormatWithZeroTime(field.getValue().asText()));

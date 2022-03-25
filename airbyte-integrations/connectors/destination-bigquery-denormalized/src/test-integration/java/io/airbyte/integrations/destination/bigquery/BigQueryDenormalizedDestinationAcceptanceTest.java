@@ -358,7 +358,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
       var dataCopy = messageData.deepCopy();
       messageData.removeAll();
       messageData.set(key, dataCopy);
-    } else if (dateTimeFieldNames.containsKey(key)) {
+    } else if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(fieldValue.asText())) {
       switch (dateTimeFieldNames.get(key)) {
         case DATE_TIME -> messageData.put(key.toLowerCase(), DateTimeUtils.convertToBigqueryDenormalizedFormat(fieldValue.asText()));
         case DATE -> messageData.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(fieldValue.asText()));

@@ -178,7 +178,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
     data.removeAll();
     fields.forEach(field -> {
       var key = field.getKey();
-      if (DATE.equals(dateTimeFieldNames.get(key))) {
+      if (DATE.equals(dateTimeFieldNames.get(key)) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
         data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
       } else {
         data.set(key.toLowerCase(), field.getValue());

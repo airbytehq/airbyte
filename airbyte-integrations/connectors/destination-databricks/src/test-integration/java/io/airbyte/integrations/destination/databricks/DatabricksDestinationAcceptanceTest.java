@@ -218,7 +218,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
       var dataCopy = data.deepCopy();
       data.removeAll();
       data.set(key, dataCopy);
-    } else if (dateTimeFieldNames.containsKey(key)) {
+    } else if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(fieldValue.asText())) {
       switch (dateTimeFieldNames.get(key)) {
         case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToDatabricksFormat(fieldValue.asText()));
         case DATE -> data.put(key.toLowerCase(), String.format("***\"member0\":%s,\"member1\":null***",

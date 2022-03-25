@@ -188,6 +188,25 @@
           }
         }
       }
+    },
+    {
+      "name": "stream_with_same_names_different_datatype",
+      "json_schema": {
+        "properties": {
+          "object": {
+            "type": "object",
+            "properties": {
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "created_at": {
+            "type": "integer"
+          }
+        }
+      }
     }
   ]
 }

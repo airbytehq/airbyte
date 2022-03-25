@@ -86,7 +86,7 @@ public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTe
     data.removeAll();
     fields.forEach(field -> {
       var key = field.getKey();
-      if (dateTimeFieldNames.containsKey(key)) {
+      if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
         switch (dateTimeFieldNames.get(key)) {
           case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(field.getValue().asText()));
           case DATE -> data.put(key.toLowerCase(), DateTimeUtils.getEpochDay(field.getValue().asText()));
