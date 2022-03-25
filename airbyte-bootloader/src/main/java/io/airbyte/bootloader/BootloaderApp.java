@@ -88,7 +88,8 @@ public class BootloaderApp {
         final Database configDatabase =
             new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
                 .getAndInitialize();
-        final JsonSecretsProcessor jsonSecretsProcessor = featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
+        final JsonSecretsProcessor jsonSecretsProcessor =
+            featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
         final ConfigPersistence configPersistence =
             DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
         configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
@@ -117,7 +118,8 @@ public class BootloaderApp {
       runFlywayMigration(configs, configDatabase, jobDatabase);
       LOGGER.info("Ran Flyway migrations...");
 
-      final JsonSecretsProcessor jsonSecretsProcessor = featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
+      final JsonSecretsProcessor jsonSecretsProcessor =
+          featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
       final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
       final ConfigRepository configRepository =
           new ConfigRepository(configPersistence, configDatabase);

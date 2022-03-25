@@ -26,7 +26,7 @@ public class JsonSecretsSanitizer implements JsonSecretsProcessor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSecretsSanitizer.class);
 
-    private static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
+  private static final JsonSchemaValidator VALIDATOR = new JsonSchemaValidator();
 
   @VisibleForTesting
   static String SECRETS_MASK = "**********";

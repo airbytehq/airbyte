@@ -199,7 +199,7 @@ class DestinationHandlerTest {
         new DestinationIdRequestBody().destinationId(expectedDestinationRead.getDestinationId());
 
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-            .thenReturn(destinationConnection.getConfiguration());
+        .thenReturn(destinationConnection.getConfiguration());
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
@@ -227,7 +227,7 @@ class DestinationHandlerTest {
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-            .thenReturn(destinationConnection.getConfiguration());
+        .thenReturn(destinationConnection.getConfiguration());
 
     final DestinationReadList actualDestinationRead = destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody);
 
@@ -251,7 +251,7 @@ class DestinationHandlerTest {
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-            .thenReturn(destinationConnection.getConfiguration());
+        .thenReturn(destinationConnection.getConfiguration());
 
     when(connectionsHandler.matchSearch(new DestinationSearch(), expectedDestinationRead)).thenReturn(true);
     DestinationReadList actualDestinationRead = destinationHandler.searchDestinations(new DestinationSearch());
@@ -294,7 +294,7 @@ class DestinationHandlerTest {
     when(configRepository.getDestinationDefinitionFromDestination(destinationConnection.getDestinationId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.maskSecrets(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification()))
-            .thenReturn(destinationConnection.getConfiguration());
+        .thenReturn(destinationConnection.getConfiguration());
 
     final DestinationRead actualDestinationRead = destinationHandler.cloneDestination(destinationIdRequestBody);
 

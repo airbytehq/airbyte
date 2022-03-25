@@ -167,7 +167,8 @@ public class ServerApp implements ServerRunnable {
     LOGGER.info("Creating config repository...");
     final Database configDatabase = configsDatabaseInstance.getInitialized();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final JsonSecretsProcessor jsonSecretsProcessor = featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
+    final JsonSecretsProcessor jsonSecretsProcessor =
+        featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);

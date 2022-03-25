@@ -372,7 +372,8 @@ public class WorkerApp {
         configs.getConfigDatabaseUrl())
             .getInitialized();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final JsonSecretsProcessor jsonSecretsProcessor = featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
+    final JsonSecretsProcessor jsonSecretsProcessor =
+        featureFlags.exposeSecretsInExport() ? new NoOpJsonSecretsProcessor() : new JsonSecretsSanitizer();
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
