@@ -270,7 +270,7 @@ jobs:
 
   ## Frontend Test
   # In case of self-hosted EC2 errors, remove this block.
-  start-frontend-test-runner:
+  start-frontend-runner:
     name: "Frontend: Start EC2 Runner"
     needs: changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
@@ -294,8 +294,8 @@ jobs:
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
   frontend-prepare:
     name: "Frontend: Prepare build environment"
-    needs: start-frontend-test-runner
-    runs-on: ${{ needs.start-frontend-test-runner.outputs.label }}
+    needs: start-frontend-runner
+    runs-on: ${{ needs.start-frontend-runner.outputs.label }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -328,15 +328,19 @@ jobs:
           EOF
   frontend-build:
     name: "Frontend: Build"
-    needs: frontend-prepare # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-frontend-test-runner.outputs.label }}
+    needs: 
+      - start-frontend-runner # required to have runner started
+      - frontend-prepare # required to start the main job after preparation is done
+    runs-on: ${{ needs.start-frontend-runner.outputs.label }}
     steps:
       - name: Build :airbyte-webapp
         run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
   frontend-test:
     name: "Frontend: Run End-to-End Tests"
-    needs: frontend-build # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
+    needs:
+      - start-frontend-runner # required to have runner started
+      - frontend-build # start only after the actual build has passed (to not run E2E tests and build in parallel)
+    runs-on: ${{ needs.start-frontend-runner.outputs.label }} # run the job on the newly created runner
     timeout-minutes: 120
     steps:
       - name: Build Platform Docker Images
@@ -347,18 +351,18 @@ jobs:
           CYPRESS_WEBAPP_KEY: ${{ secrets.CYPRESS_WEBAPP_KEY }}
         run: ./tools/bin/e2e_test.sh
   # In case of self-hosted EC2 errors, remove this block.
-  stop-frontend-test-runner:
+  stop-frontend-runner:
     name: "Frontend: Stop Runner"
     timeout-minutes: 10
     needs:
-      - start-frontend-test-runner # required to get output from the start-runner job
+      - start-frontend-runner # required to get output from the start-runner job
       - frontend-prepare
       - frontend-test # required to wait when the e2e-test job is done
       - frontend-build # required to wait when then build job is done
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-frontend-test-runner.result != 'skipped'}}
+    if: ${{ always() && needs.start-frontend-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -371,8 +375,8 @@ jobs:
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
-          label: ${{ needs.start-frontend-test-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-frontend-test-runner.outputs.ec2-instance-id }}
+          label: ${{ needs.start-frontend-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-frontend-runner.outputs.ec2-instance-id }}
 
   ## FOLLOWING BUILDS ARE ALL PLATFORM BUILDS.
 
