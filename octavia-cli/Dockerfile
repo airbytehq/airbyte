@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir .
 RUN useradd --create-home --shell /bin/bash octavia-cli
 USER octavia-cli
 
+WORKDIR /home/octavia-project
 ENTRYPOINT ["octavia"]
 
 LABEL io.airbyte.version=dev

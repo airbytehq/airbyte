@@ -45,20 +45,15 @@ spec:
         - name: DB_PORT
           value: {{ include "airbyte.database.port" . | quote }}
         - name: POSTGRES_USER
-          value: {{ include "airbyte.database.user" . }}
-        {{- if .Values.postgresql.enabled }}
-        - name: POSTGRES_PWD
           valueFrom:
-            configMapKeyRef:
-              name: airbyte-env
-              key: DATABASE_PASSWORD
-        {{- else }}
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}-secrets
+              key: DATABASE_USER
         - name: POSTGRES_PWD
           valueFrom:
             secretKeyRef:
-              name: {{ include "airbyte.postgresql.secretName" . }}
-              key: {{ include "airbyte.database.existingsecret.key" . }}
-        {{- end }}
+              name: {{ include "airbyte.database.secret.name" . }}
+              key: {{ include "airbyte.database.secret.passwordKey" . }}
         - name: POSTGRES_SEEDS
           value: {{ include "airbyte.database.host" . }}
         - name: DYNAMIC_CONFIG_FILE_PATH
@@ -109,7 +104,7 @@ spec:
       volumes:
       - name: airbyte-temporal-dynamicconfig
         configMap:
-          name: airbyte-temporal-dynamicconfig
+          name: {{ include "common.names.fullname" . }}-temporal-dynamicconfig
           items:
           - key: development.yaml
             path: development.yaml

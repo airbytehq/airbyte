@@ -231,6 +231,7 @@
     * [Building a Python Source](connector-development/tutorials/building-a-python-source.md)
     * [Building a Python Destination](connector-development/tutorials/building-a-python-destination.md)
     * [Building a Java Destination](connector-development/tutorials/building-a-java-destination.md)
+    * [Profile Java Connector Memory](connector-development/tutorials/profile-java-connector-memory.md)
   * [Connector Development Kit (Python)](connector-development/cdk-python/README.md)
     * [Basic Concepts](connector-development/cdk-python/basic-concepts.md)
     * [Defining Stream Schemas](connector-development/cdk-python/schemas.md)

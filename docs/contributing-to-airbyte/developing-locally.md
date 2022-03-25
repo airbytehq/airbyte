@@ -6,8 +6,7 @@ The following technologies are required to build Airbyte locally.
 2. `Node 16`
 3. `Python 3.7`
 4. `Docker`
-5. `Postgresql`
-6. `Jq`
+5. `Jq`
 
 {% hint style="info" %}
 Manually switching between different language versions can get hairy. We recommend using a version manager such as [`pyenv`](https://github.com/pyenv/pyenv) or [`jenv`](https://github.com/jenv/jenv).
@@ -83,12 +82,17 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
 ## Run acceptance tests
 
-To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
+To run acceptance \(end-to-end\) tests:
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew clean build
-VERSION=dev docker-compose up
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
+```
+
+Test containers start Airbyte locally, run the tests, and shutdown Airbyte after running the tests. If you want to run acceptance tests against local Airbyte that is not managed by the test containers, you need to set `USE_EXTERNAL_DEPLOYMENT` environment variable to true:
+
+```bash
+USE_EXTERNAL_DEPLOYMENT=true SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests 
 ```
 
 ## Run formatting automation/tests

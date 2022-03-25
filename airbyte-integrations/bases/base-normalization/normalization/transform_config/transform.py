@@ -128,10 +128,24 @@ class TransformConfig:
     def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
+
+        project_id = config["project_id"]
+        dataset_id = config["dataset_id"]
+
+        if ":" in config["dataset_id"]:
+            splits = config["dataset_id"].split(":")
+            if len(splits) > 2:
+                raise ValueError("Invalid format for dataset ID (expected at most one colon)")
+            project_id, dataset_id = splits
+            if project_id != config["project_id"]:
+                raise ValueError(
+                    f"Project ID in dataset ID did not match explicitly-provided project ID: {project_id} and {config['project_id']}"
+                )
+
         dbt_config = {
             "type": "bigquery",
-            "project": config["project_id"],
-            "dataset": config["dataset_id"],
+            "project": project_id,
+            "dataset": dataset_id,
             "priority": config.get("transformation_priority", "interactive"),
             "threads": 8,
             "retries": 3,
@@ -279,6 +293,7 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
+            "secure": config["ssl"],
         }
         if "password" in config:
             dbt_config["password"] = config["password"]

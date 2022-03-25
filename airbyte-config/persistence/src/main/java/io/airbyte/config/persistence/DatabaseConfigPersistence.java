@@ -22,39 +22,34 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.config.Notification;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
-import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.Schedule;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -86,14 +81,20 @@ import org.slf4j.LoggerFactory;
 public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private final ExceptionWrappingDatabase database;
+  private final JsonSecretsProcessor jsonSecretsProcessor;
+  private final FeatureFlags featureFlags;
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
 
-  public static ConfigPersistence createWithValidation(final Database database) {
-    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database));
+  public static ConfigPersistence createWithValidation(final Database database,
+                                                       final JsonSecretsProcessor jsonSecretsProcessor,
+                                                       final FeatureFlags featureFlags) {
+    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
   }
 
-  public DatabaseConfigPersistence(final Database database) {
+  public DatabaseConfigPersistence(final Database database, final JsonSecretsProcessor jsonSecretsProcessor, final FeatureFlags featureFlags) {
     this.database = new ExceptionWrappingDatabase(database);
+    this.jsonSecretsProcessor = jsonSecretsProcessor;
+    this.featureFlags = featureFlags;
   }
 
   @Override
@@ -322,12 +323,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<StandardWorkspace>> standardWorkspaces = new ArrayList<>();
     for (final Record record : result) {
-      final List<Notification> notificationList = new ArrayList<>();
-      final List fetchedNotifications = Jsons.deserialize(record.get(WORKSPACE.NOTIFICATIONS).data(), List.class);
-      for (final Object notification : fetchedNotifications) {
-        notificationList.add(Jsons.convertValue(notification, Notification.class));
-      }
-      final StandardWorkspace workspace = buildStandardWorkspace(record, notificationList);
+      final StandardWorkspace workspace = DbConverter.buildStandardWorkspace(record);
       standardWorkspaces.add(new ConfigWithMetadata<>(
           record.get(WORKSPACE.ID).toString(),
           ConfigSchema.STANDARD_WORKSPACE.name(),
@@ -336,24 +332,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           workspace));
     }
     return standardWorkspaces;
-  }
-
-  private StandardWorkspace buildStandardWorkspace(final Record record, final List<Notification> notificationList) {
-    return new StandardWorkspace()
-        .withWorkspaceId(record.get(WORKSPACE.ID))
-        .withName(record.get(WORKSPACE.NAME))
-        .withSlug(record.get(WORKSPACE.SLUG))
-        .withInitialSetupComplete(record.get(WORKSPACE.INITIAL_SETUP_COMPLETE))
-        .withCustomerId(record.get(WORKSPACE.CUSTOMER_ID))
-        .withEmail(record.get(WORKSPACE.EMAIL))
-        .withAnonymousDataCollection(record.get(WORKSPACE.ANONYMOUS_DATA_COLLECTION))
-        .withNews(record.get(WORKSPACE.SEND_NEWSLETTER))
-        .withSecurityUpdates(record.get(WORKSPACE.SEND_SECURITY_UPDATES))
-        .withDisplaySetupWizard(record.get(WORKSPACE.DISPLAY_SETUP_WIZARD))
-        .withTombstone(record.get(WORKSPACE.TOMBSTONE))
-        .withNotifications(notificationList)
-        .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
-        .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
   }
 
   private List<ConfigWithMetadata<StandardSourceDefinition>> listStandardSourceDefinitionWithMetadata() throws IOException {
@@ -373,7 +351,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<StandardSourceDefinition>> standardSourceDefinitions = new ArrayList<>();
 
     for (final Record record : result) {
-      final StandardSourceDefinition standardSourceDefinition = buildStandardSourceDefinition(record);
+      final StandardSourceDefinition standardSourceDefinition = DbConverter.buildStandardSourceDefinition(record);
       standardSourceDefinitions.add(new ConfigWithMetadata<>(
           record.get(ACTOR_DEFINITION.ID).toString(),
           ConfigSchema.STANDARD_SOURCE_DEFINITION.name(),
@@ -382,27 +360,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           standardSourceDefinition));
     }
     return standardSourceDefinitions;
-  }
-
-  private StandardSourceDefinition buildStandardSourceDefinition(final Record record) {
-    return new StandardSourceDefinition()
-        .withSourceDefinitionId(record.get(ACTOR_DEFINITION.ID))
-        .withDockerImageTag(record.get(ACTOR_DEFINITION.DOCKER_IMAGE_TAG))
-        .withIcon(record.get(ACTOR_DEFINITION.ICON))
-        .withDockerRepository(record.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
-        .withDocumentationUrl(record.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
-        .withName(record.get(ACTOR_DEFINITION.NAME))
-        .withSourceType(record.get(ACTOR_DEFINITION.SOURCE_TYPE) == null ? null
-            : Enums.toEnum(record.get(ACTOR_DEFINITION.SOURCE_TYPE, String.class), SourceType.class).orElseThrow())
-        .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
-        .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
-        .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
-            : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardSourceDefinition.ReleaseStage.class).orElseThrow())
-        .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
-            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
-        .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
-            ? null
-            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
   }
 
   private List<ConfigWithMetadata<StandardDestinationDefinition>> listStandardDestinationDefinitionWithMetadata() throws IOException {
@@ -422,7 +379,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<StandardDestinationDefinition>> standardDestinationDefinitions = new ArrayList<>();
 
     for (final Record record : result) {
-      final StandardDestinationDefinition standardDestinationDefinition = buildStandardDestinationDefinition(record);
+      final StandardDestinationDefinition standardDestinationDefinition = DbConverter.buildStandardDestinationDefinition(record);
       standardDestinationDefinitions.add(new ConfigWithMetadata<>(
           record.get(ACTOR_DEFINITION.ID).toString(),
           ConfigSchema.STANDARD_DESTINATION_DEFINITION.name(),
@@ -431,25 +388,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           standardDestinationDefinition));
     }
     return standardDestinationDefinitions;
-  }
-
-  private StandardDestinationDefinition buildStandardDestinationDefinition(final Record record) {
-    return new StandardDestinationDefinition()
-        .withDestinationDefinitionId(record.get(ACTOR_DEFINITION.ID))
-        .withDockerImageTag(record.get(ACTOR_DEFINITION.DOCKER_IMAGE_TAG))
-        .withIcon(record.get(ACTOR_DEFINITION.ICON))
-        .withDockerRepository(record.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
-        .withDocumentationUrl(record.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
-        .withName(record.get(ACTOR_DEFINITION.NAME))
-        .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
-        .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
-        .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
-            : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardDestinationDefinition.ReleaseStage.class).orElseThrow())
-        .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
-            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
-        .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
-            ? null
-            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
   }
 
   private List<ConfigWithMetadata<SourceConnection>> listSourceConnectionWithMetadata() throws IOException {
@@ -645,7 +583,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
     final List<ConfigWithMetadata<StandardSync>> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
-      final StandardSync standardSync = buildStandardSync(record);
+      final StandardSync standardSync = DbConverter.buildStandardSync(record, connectionOperationIds(record.get(CONNECTION.ID)));
       standardSyncs.add(new ConfigWithMetadata<>(
           record.get(CONNECTION.ID).toString(),
           ConfigSchema.STANDARD_SYNC.name(),
@@ -654,26 +592,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           standardSync));
     }
     return standardSyncs;
-  }
-
-  private StandardSync buildStandardSync(final Record record) throws IOException {
-    return new StandardSync()
-        .withConnectionId(record.get(CONNECTION.ID))
-        .withNamespaceDefinition(
-            Enums.toEnum(record.get(CONNECTION.NAMESPACE_DEFINITION, String.class), NamespaceDefinitionType.class)
-                .orElseThrow())
-        .withNamespaceFormat(record.get(CONNECTION.NAMESPACE_FORMAT))
-        .withPrefix(record.get(CONNECTION.PREFIX))
-        .withSourceId(record.get(CONNECTION.SOURCE_ID))
-        .withDestinationId(record.get(CONNECTION.DESTINATION_ID))
-        .withName(record.get(CONNECTION.NAME))
-        .withCatalog(Jsons.deserialize(record.get(CONNECTION.CATALOG).data(), ConfiguredAirbyteCatalog.class))
-        .withStatus(
-            record.get(CONNECTION.STATUS) == null ? null : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
-        .withSchedule(Jsons.deserialize(record.get(CONNECTION.SCHEDULE).data(), Schedule.class))
-        .withManual(record.get(CONNECTION.MANUAL))
-        .withOperationIds(connectionOperationIds(record.get(CONNECTION.ID)))
-        .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class));
   }
 
   private List<ConfigWithMetadata<StandardSyncState>> listStandardSyncStateWithMetadata() throws IOException {
@@ -889,6 +807,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                         io.airbyte.db.instance.configs.jooq.enums.SourceType.class).orElseThrow())
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
             .set(ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone())
+            .set(ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
+            .set(ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
             .set(ACTOR_DEFINITION.RELEASE_STAGE, standardSourceDefinition.getReleaseStage() == null ? null
                 : Enums.toEnum(standardSourceDefinition.getReleaseStage().value(),
                     io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
@@ -916,6 +836,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                         io.airbyte.db.instance.configs.jooq.enums.SourceType.class).orElseThrow())
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
             .set(ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone() != null && standardSourceDefinition.getTombstone())
+            .set(ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
+            .set(ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
             .set(ACTOR_DEFINITION.RELEASE_STAGE,
                 standardSourceDefinition.getReleaseStage() == null ? null
                     : Enums.toEnum(standardSourceDefinition.getReleaseStage().value(),
@@ -957,6 +879,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
             .set(ACTOR_DEFINITION.TOMBSTONE, standardDestinationDefinition.getTombstone())
+            .set(ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
+            .set(ACTOR_DEFINITION.CUSTOM, standardDestinationDefinition.getCustom())
             .set(ACTOR_DEFINITION.RELEASE_STAGE, standardDestinationDefinition.getReleaseStage() == null ? null
                 : Enums.toEnum(standardDestinationDefinition.getReleaseStage().value(),
                     io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
@@ -980,6 +904,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
             .set(ACTOR_DEFINITION.TOMBSTONE, standardDestinationDefinition.getTombstone() != null && standardDestinationDefinition.getTombstone())
+            .set(ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
+            .set(ACTOR_DEFINITION.CUSTOM, standardDestinationDefinition.getCustom())
             .set(ACTOR_DEFINITION.RELEASE_STAGE,
                 standardDestinationDefinition.getReleaseStage() == null ? null
                     : Enums.toEnum(standardDestinationDefinition.getReleaseStage().value(),
@@ -1641,16 +1567,49 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       result.put(ConfigSchema.SOURCE_CONNECTION.name(),
           sourceConnectionWithMetadata
               .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
+              .map(configWithMetadata -> {
+                if (featureFlags.exposeSecretsInExport()) {
+                  return Jsons.jsonNode(configWithMetadata.getConfig());
+                }
+
+                try {
+                  final UUID sourceDefinitionId = configWithMetadata.getConfig().getSourceDefinitionId();
+                  final StandardSourceDefinition standardSourceDefinition = getConfig(
+                      ConfigSchema.STANDARD_SOURCE_DEFINITION,
+                      sourceDefinitionId.toString(),
+                      StandardSourceDefinition.class);
+                  final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
+                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+                  return sanitizedConfig;
+                } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
+                  throw new RuntimeException(e);
+                }
+              }));
     }
     final List<ConfigWithMetadata<DestinationConnection>> destinationConnectionWithMetadata = listDestinationConnectionWithMetadata();
     if (!destinationConnectionWithMetadata.isEmpty()) {
-      result.put(ConfigSchema.DESTINATION_CONNECTION.name(),
-          destinationConnectionWithMetadata
-              .stream()
-              .map(ConfigWithMetadata::getConfig)
-              .map(Jsons::jsonNode));
+      final Stream<JsonNode> jsonNodeStream = destinationConnectionWithMetadata
+          .stream()
+          .map(configWithMetadata -> {
+            if (featureFlags.exposeSecretsInExport()) {
+              return Jsons.jsonNode(configWithMetadata.getConfig());
+            }
+
+            try {
+              final UUID destinationDefinition = configWithMetadata.getConfig().getDestinationDefinitionId();
+              final StandardDestinationDefinition standardDestinationDefinition = getConfig(
+                  ConfigSchema.STANDARD_DESTINATION_DEFINITION,
+                  destinationDefinition.toString(),
+                  StandardDestinationDefinition.class);
+              final JsonNode connectionSpec = standardDestinationDefinition.getSpec().getConnectionSpecification();
+              final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
+              return sanitizedConfig;
+            } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
+      result.put(ConfigSchema.DESTINATION_CONNECTION.name(), jsonNodeStream);
+
     }
     final List<ConfigWithMetadata<SourceOAuthParameter>> sourceOauthParamWithMetadata = listSourceOauthParamWithMetadata();
     if (!sourceOauthParamWithMetadata.isEmpty()) {
@@ -1693,17 +1652,17 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
               .map(Jsons::jsonNode));
     }
     final List<ConfigWithMetadata<ActorCatalog>> actorCatalogWithMetadata = listActorCatalogWithMetadata();
-    if (!standardSyncStateWithMetadata.isEmpty()) {
+    if (!actorCatalogWithMetadata.isEmpty()) {
       result.put(ConfigSchema.ACTOR_CATALOG.name(),
-          standardSyncStateWithMetadata
+          actorCatalogWithMetadata
               .stream()
               .map(ConfigWithMetadata::getConfig)
               .map(Jsons::jsonNode));
     }
     final List<ConfigWithMetadata<ActorCatalogFetchEvent>> actorCatalogFetchEventWithMetadata = listActorCatalogFetchEventWithMetadata();
-    if (!standardSyncStateWithMetadata.isEmpty()) {
+    if (!actorCatalogFetchEventWithMetadata.isEmpty()) {
       result.put(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT.name(),
-          standardSyncStateWithMetadata
+          actorCatalogFetchEventWithMetadata
               .stream()
               .map(ConfigWithMetadata::getConfig)
               .map(Jsons::jsonNode));
@@ -1801,6 +1760,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     .withDockerRepository(row.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
                     .withDocumentationUrl(row.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
                     .withName(row.get(ACTOR_DEFINITION.NAME))
+                    .withPublic(row.get(ACTOR_DEFINITION.PUBLIC))
+                    .withCustom(row.get(ACTOR_DEFINITION.CUSTOM))
                     .withSourceType(row.get(ACTOR_DEFINITION.SOURCE_TYPE) == null ? null
                         : Enums.toEnum(row.get(ACTOR_DEFINITION.SOURCE_TYPE, String.class), SourceType.class).orElseThrow())
                     .withSpec(Jsons.deserialize(row.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class)));
@@ -1812,6 +1773,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     .withDockerRepository(row.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
                     .withDocumentationUrl(row.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
                     .withName(row.get(ACTOR_DEFINITION.NAME))
+                    .withPublic(row.get(ACTOR_DEFINITION.PUBLIC))
+                    .withCustom(row.get(ACTOR_DEFINITION.CUSTOM))
                     .withSpec(Jsons.deserialize(row.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class)));
               } else {
                 throw new RuntimeException("Unknown Actor Type " + row.get(ACTOR_DEFINITION.ACTOR_TYPE));
@@ -1854,13 +1817,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       // Add new connector
       if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
         LOGGER.info("Adding new connector {}: {}", repository, latestDefinition);
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         newCount++;
         continue;
       }
@@ -1878,19 +1835,19 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       // Process connector in use
       if (connectorRepositoriesInUse.contains(repository)) {
-        if (newFields.size() == 0) {
+        final String latestImageTag = latestDefinition.get("dockerImageTag").asText();
+        if (hasNewPatchVersion(connectorInfo.dockerImageTag, latestImageTag)) {
+          // Update connector to the latest patch version
+          LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
+          writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
+          updatedCount++;
+        } else if (newFields.size() == 0) {
           LOGGER.info("Connector {} is in use and has all fields; skip updating", repository);
         } else {
           // Add new fields to the connector definition
           final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
           LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
-          if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-            writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardSourceDefinition.class)), ctx);
-          } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-            writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardDestinationDefinition.class)), ctx);
-          } else {
-            throw new RuntimeException("Unknown config type " + configType);
-          }
+          writeOrUpdateStandardDefinition(ctx, configType, definitionToUpdate);
           updatedCount++;
         }
         continue;
@@ -1901,25 +1858,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       if (hasNewVersion(connectorInfo.dockerImageTag, latestImageTag)) {
         // Update connector to the latest version
         LOGGER.info("Connector {} needs update: {} vs {}", repository, connectorInfo.dockerImageTag, latestImageTag);
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(latestDefinition, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         updatedCount++;
       } else if (newFields.size() > 0) {
         // Add new fields to the connector definition
         final JsonNode definitionToUpdate = getDefinitionWithNewFields(currentDefinition, latestDefinition, newFields);
         LOGGER.info("Connector {} has new fields: {}", repository, String.join(", ", newFields));
-        if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-          writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardSourceDefinition.class)), ctx);
-        } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-          writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definitionToUpdate, StandardDestinationDefinition.class)), ctx);
-        } else {
-          throw new RuntimeException("Unknown config type " + configType);
-        }
+        writeOrUpdateStandardDefinition(ctx, configType, definitionToUpdate);
         updatedCount++;
       } else {
         LOGGER.info("Connector {} does not need update: {}", repository, connectorInfo.dockerImageTag);
@@ -1927,6 +1872,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     }
 
     return new ConnectorCounter(newCount, updatedCount);
+  }
+
+  private void writeOrUpdateStandardDefinition(final DSLContext ctx,
+                                               final AirbyteConfig configType,
+                                               final JsonNode definition) {
+    if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+      writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
+    } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+      writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
+    } else {
+      throw new IllegalArgumentException("Unknown config type " + configType);
+    }
   }
 
   @VisibleForTesting
@@ -1954,6 +1911,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       LOGGER.error("Failed to check version: {} vs {}", currentVersion, latestVersion);
       return false;
     }
+  }
+
+  @VisibleForTesting
+  static boolean hasNewPatchVersion(final String currentVersion, final String latestVersion) {
+    return new AirbyteVersion(latestVersion).checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion(currentVersion));
   }
 
   static class ConnectorInfo {

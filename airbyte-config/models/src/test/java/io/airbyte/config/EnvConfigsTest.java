@@ -7,6 +7,7 @@ package io.airbyte.config;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -343,16 +344,27 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testEmptyEnvMapRetrieval() {
-    assertEquals(Map.of(), config.getJobDefaultEnvMap());
+  void testSharedJobEnvMapRetrieval() {
+    envMap.put(EnvConfigs.AIRBYTE_VERSION, "dev");
+    envMap.put(EnvConfigs.WORKER_ENVIRONMENT, WorkerEnvironment.KUBERNETES.name());
+    final Map<String, String> expected = Map.of("AIRBYTE_VERSION", "dev",
+        "AIRBYTE_ROLE", "",
+        "WORKER_ENVIRONMENT", "KUBERNETES");
+    assertEquals(expected, config.getJobDefaultEnvMap());
   }
 
   @Test
-  void testEnvMapRetrieval() {
+  void testAllJobEnvMapRetrieval() {
+    envMap.put(EnvConfigs.AIRBYTE_VERSION, "dev");
+    envMap.put(EnvConfigs.AIRBYTE_ROLE, "UNIT_TEST");
     envMap.put(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV1", "VAL1");
     envMap.put(EnvConfigs.JOB_DEFAULT_ENV_PREFIX + "ENV2", "VAL\"2WithQuotesand$ymbols");
 
-    final var expected = Map.of("ENV1", "VAL1", "ENV2", "VAL\"2WithQuotesand$ymbols");
+    final Map<String, String> expected = Map.of("ENV1", "VAL1",
+        "ENV2", "VAL\"2WithQuotesand$ymbols",
+        "AIRBYTE_VERSION", "dev",
+        "AIRBYTE_ROLE", "UNIT_TEST",
+        "WORKER_ENVIRONMENT", "DOCKER");
     assertEquals(expected, config.getJobDefaultEnvMap());
   }
 

@@ -30,6 +30,7 @@ import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
@@ -181,8 +182,9 @@ public class WebBackendConnectionsHandler {
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
-      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
+      final SourceDiscoverSchemaRequestBody discoverSchemaReadReq =
+          new SourceDiscoverSchemaRequestBody().sourceId(connection.getSourceId()).disableCache(true);
+      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
 
       final AirbyteCatalog original = connection.getSyncCatalog();
       final AirbyteCatalog discovered = discoverSchema.getCatalog();
@@ -247,6 +249,7 @@ public class WebBackendConnectionsHandler {
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
+
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
     return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
@@ -373,6 +376,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
     connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
     connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
+    connectionUpdate.name(webBackendConnectionUpdate.getName());
     connectionUpdate.operationIds(operationIds);
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());

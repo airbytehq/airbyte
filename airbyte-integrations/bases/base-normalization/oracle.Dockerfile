@@ -1,3 +1,4 @@
+# As of today, dbt-oracle doesn't support 1.0.0
 FROM fishtownanalytics/dbt:0.19.1
 
 USER root

@@ -20,6 +20,9 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -161,12 +164,16 @@ public class ServerApp implements ServerRunnable {
 
     LOGGER.info("Creating config repository...");
     final Database configDatabase = configsDatabaseInstance.getInitialized();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
+    final JsonSecretsProcessor jsonSecretsProcessor = new JsonSecretsProcessor();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor, featureFlags);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
-    final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
+    final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
+    final SecretsRepositoryWriter secretsRepositoryWriter =
+        new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
 
     LOGGER.info("Creating jobs persistence...");
     final Database jobDatabase = jobsDatabaseInstance.getInitialized();
@@ -186,12 +193,13 @@ public class ServerApp implements ServerRunnable {
     final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final SchedulerJobClient schedulerJobClient =
-        new DefaultSchedulerJobClient(jobPersistence,
+        new DefaultSchedulerJobClient(
+            configs.connectorSpecificResourceDefaultsEnabled(),
+            jobPersistence,
             new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()));
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final EventRunner eventRunner = new TemporalEventRunner(
         TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
 
@@ -202,6 +210,8 @@ public class ServerApp implements ServerRunnable {
         syncSchedulerClient,
         temporalService,
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         jobPersistence,
         seed,
         configDatabase,

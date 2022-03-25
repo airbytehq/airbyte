@@ -98,6 +98,16 @@ const schema: AirbyteJSONSchema = {
   },
 };
 
+jest.mock("hooks/services/Analytics");
+
+jest.mock("hooks/services/useWorkspace", () => ({
+  useCurrentWorkspace: () => ({
+    workspace: {
+      workspaceId: "workspaceId",
+    },
+  }),
+}));
+
 describe("Service Form", () => {
   describe("should display json schema specs", () => {
     let container: HTMLElement;

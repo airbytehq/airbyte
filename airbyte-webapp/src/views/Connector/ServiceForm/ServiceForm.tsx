@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo } from "react";
-import { Formik, setIn, useFormikContext } from "formik";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
 
@@ -39,7 +39,7 @@ export type ServiceFormProps = {
   formValues?: Partial<ServiceFormValues>;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
-  fetchingConnectorError?: Error;
+  fetchingConnectorError?: Error | null;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
 };
@@ -59,21 +59,33 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
 }) => {
   const { widgetsInfo } = useServiceForm();
   const { values, setValues } = useFormikContext();
-  const formInitialValues = useMemo(() => {
-    return Object.entries(widgetsInfo)
+
+  useEffect(() => {
+    // set all const fields to form field values, so we could send form
+    const constPatchedValues = Object.entries(widgetsInfo)
       .filter(([_, v]) => isDefined(v.const))
       .reduce((acc, [k, v]) => setIn(acc, k, v.const), values);
+
+    // set default fields as current values, so values could be populated correctly
+    // fix for https://github.com/airbytehq/airbyte/issues/6791
+    const defaultPatchedValues = Object.entries(widgetsInfo)
+      .filter(
+        ([k, v]) =>
+          isDefined(v.default) && !isDefined(getIn(constPatchedValues, k))
+      )
+      .reduce((acc, [k, v]) => setIn(acc, k, v.default), constPatchedValues);
+
+    setValues(defaultPatchedValues);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setValues(formInitialValues), [formInitialValues]);
 
   return null;
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
+  const [initialRequestName, setInitialRequestName] = useState<string>();
   const {
     formType,
     formValues,
@@ -121,7 +133,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             availableServices={props.availableServices}
             allowChangeConnector={props.allowChangeConnector}
             isEditMode={props.isEditMode}
-            onOpenRequestConnectorModal={toggleOpenRequestModal}
+            onOpenRequestConnectorModal={(name) => {
+              setInitialRequestName(name);
+              toggleOpenRequestModal();
+            }}
           />
         ),
       },
@@ -209,6 +224,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           {isOpenRequestModal && (
             <RequestConnectorModal
               connectorType={formType}
+              initialName={initialRequestName}
               onClose={toggleOpenRequestModal}
             />
           )}

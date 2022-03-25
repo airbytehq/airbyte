@@ -12,6 +12,8 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
@@ -32,6 +34,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   private static ConfigRepository configRepository;
   private static JobPersistence jobPersistence;
   private static ConfigPersistence seed;
+  private static SecretsRepositoryReader secretsRepositoryReader;
+  private static SecretsRepositoryWriter secretsRepositoryWriter;
   private static SchedulerJobClient schedulerJobClient;
   private static SynchronousSchedulerClient synchronousSchedulerClient;
   private static FileTtlManager archiveTtlManager;
@@ -52,6 +56,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
   public static void setValues(
                                final WorkflowServiceStubs temporalService,
                                final ConfigRepository configRepository,
+                               final SecretsRepositoryReader secretsRepositoryReader,
+                               final SecretsRepositoryWriter secretsRepositoryWriter,
                                final JobPersistence jobPersistence,
                                final ConfigPersistence seed,
                                final SchedulerJobClient schedulerJobClient,
@@ -73,6 +79,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.configRepository = configRepository;
     ConfigurationApiFactory.jobPersistence = jobPersistence;
     ConfigurationApiFactory.seed = seed;
+    ConfigurationApiFactory.secretsRepositoryReader = secretsRepositoryReader;
+    ConfigurationApiFactory.secretsRepositoryWriter = secretsRepositoryWriter;
     ConfigurationApiFactory.schedulerJobClient = schedulerJobClient;
     ConfigurationApiFactory.synchronousSchedulerClient = synchronousSchedulerClient;
     ConfigurationApiFactory.archiveTtlManager = archiveTtlManager;
@@ -100,6 +108,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.configRepository,
         ConfigurationApiFactory.jobPersistence,
         ConfigurationApiFactory.seed,
+        ConfigurationApiFactory.secretsRepositoryReader,
+        ConfigurationApiFactory.secretsRepositoryWriter,
         ConfigurationApiFactory.schedulerJobClient,
         ConfigurationApiFactory.synchronousSchedulerClient,
         ConfigurationApiFactory.archiveTtlManager,

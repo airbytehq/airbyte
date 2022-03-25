@@ -16,14 +16,15 @@ If configured by the user, the Facebook connector replicates records for campaig
 
 This Source is capable of syncing the following tables and their data:
 
+* [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
+* [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account)
+* [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
 * [AdSets](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
 * [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
-* [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
-* [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 * [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
-* [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account) 
+* [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 * [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
-* [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
+* [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
 You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
@@ -33,7 +34,7 @@ You can segment the AdInsights table into parts based on the following informati
 * Platform & Device
 * Region
 
-For more information, see the [Facebook Insights API documentation. ](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)\
+For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -57,19 +58,19 @@ Follow the [Facebook documentation for obtaining your Ad Account ID](https://www
 
 Visit the [Facebook Developers App hub](https://developers.facebook.com/apps/) and create an App and choose "Manage Business Integrations" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Enable the Marketing API for your app" section.
 
-From the App's Dashboard screen \(seen in the screenshot below\) enable the Marketing API for your app if it is not already setup.
+From the App's Dashboard screen (seen in the screenshot below) enable the Marketing API for your app if it is not already setup.
 
 ![](../../.gitbook/assets/facebook_marketing_api.png)
 
 #### API Access Token
 
-In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions \(`ads_management`, `ads_read`, `read_insights`\) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
+In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
 
 ![](../../.gitbook/assets/facebook_access_token.png)
 
 ### Request rate limit increase
 
-Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier \(the default tier for new apps\), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
+Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier (the default tier for new apps), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
 
 * Ads Management Standard Access
 * ads\_read
@@ -79,7 +80,7 @@ See the Facebook [documentation on Authorization](https://developers.facebook.co
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
 
-## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
+## Rate Limiting & Performance Considerations (Airbyte Open Source)
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
 
@@ -87,26 +88,27 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 ## Custom Insights
 In order to retrieve specific fields from Facebook Ads Insights combined with other breakdowns, there is a mechanism to allow you to choose which fields and breakdowns to sync.
-It is highly recommended to follow the [documenation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns), as there are limitations related to breakdowns. Some fields can not be requested and many others just work combined with specific fields, for example, the breakdown **app_id** is only supported with the **total_postbacks** field.
+It is highly recommended to follow the [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns), as there are limitations related to breakdowns. Some fields can not be requested and many others just work combined with specific fields, for example, the breakdown **app_id** is only supported with the **total_postbacks** field.
 By now, the only check done when setting up a source is to check if the fields, breakdowns and action breakdowns are within the ones provided by Facebook. This is, if you enter a good input, it's gonna be validated, but after, if the calls to Facebook API with those pareameters fails you will receive an error from the API.
 As a summary, custom insights allows to replicate only some fields, resulting in sync speed increase.
 
 #### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| Integration Type | Airbyte Type |
+| :--- | :--- |
+| `string` | `string` |
+| `number` | `number` |
+| `array` | `array` |
+| `object` | `object` |
 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.39  | 2022-03-09 | [10917](https://github.com/airbytehq/airbyte/pull/10917) | Retry connections when FB API returns error code 2 (temporary oauth error) |
+| 0.2.38  | 2022-03-08 | [10531](https://github.com/airbytehq/airbyte/pull/10531) | Add `time_increment` parameter to custom insights |
 | 0.2.37  | 2022-02-28 | [10655](https://github.com/airbytehq/airbyte/pull/10655) | Add Activities stream |
 | 0.2.36  | 2022-02-24 | [10588](https://github.com/airbytehq/airbyte/pull/10588) | Fix `execute_in_batch` for large amount of requests |
-| 0.2.35  | 2022-02-18 | [10348](https://github.com/airbytehq/airbyte/pull/10348) | Add 104 error code to backoff triggers |
+| 0.2.35  | 2022-02-18 | [10348](https://github.com/airbytehq/airbyte/pull/10348) | Add error code 104 to backoff triggers |
 | 0.2.34  | 2022-02-17 | [10180](https://github.com/airbytehq/airbyte/pull/9805) | Performance and reliability fixes |
 | 0.2.33  | 2021-12-28 | [10180](https://github.com/airbytehq/airbyte/pull/10180) | Add AdAccount and Images streams |
 | 0.2.32  | 2022-01-07 | [10138](https://github.com/airbytehq/airbyte/pull/10138) | Add `primary_key` for all insights streams. |

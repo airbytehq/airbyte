@@ -4,7 +4,7 @@
 
 package io.airbyte.scheduler.persistence.job_factory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,7 +72,7 @@ class DefaultSyncJobFactoryTest {
         .thenReturn(new StandardDestinationDefinition().withDestinationDefinitionId(destinationDefinitionId).withDockerRepository(dstDockerRepo)
             .withDockerImageTag(dstDockerTag));
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(jobCreator, configRepository, mock(OAuthConfigSupplier.class));
+    final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class));
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 

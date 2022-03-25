@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,6 +43,7 @@ import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SyncMode;
@@ -194,9 +196,12 @@ class WebBackendConnectionsHandlerTest {
             .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
 
-    final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateBasicApiCatalog();
+    final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateMultipleStreamsApiCatalog(2);
 
-    when(schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody)).thenReturn(
+    final SourceDiscoverSchemaRequestBody sourceDiscoverSchema = new SourceDiscoverSchemaRequestBody();
+    sourceDiscoverSchema.setSourceId(connectionRead.getSourceId());
+    sourceDiscoverSchema.setDisableCache(true);
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchema)).thenReturn(
         new SourceDiscoverSchemaRead()
             .jobInfo(mock(SynchronousJobRead.class))
             .catalog(modifiedCatalog));
@@ -300,21 +305,37 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expected, WebBackendConnectionRead);
   }
 
-  @Test
-  public void testWebBackendGetConnectionWithDiscovery() throws ConfigNotFoundException, IOException, JsonValidationException {
+  public WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
 
     final WebBackendConnectionRequestBody webBackendConnectionIdRequestBody = new WebBackendConnectionRequestBody();
     webBackendConnectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
-    webBackendConnectionIdRequestBody.setWithRefreshedCatalog(true);
+    if (withCatalogRefresh) {
+      webBackendConnectionIdRequestBody.setWithRefreshedCatalog(true);
+    }
 
     when(connectionsHandler.getConnection(connectionRead.getConnectionId())).thenReturn(connectionRead);
     when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
-    final WebBackendConnectionRead WebBackendConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
+    return wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
 
-    assertEquals(expectedWithNewSchema, WebBackendConnectionRead);
+  }
+
+  @Test
+  public void testWebBackendGetConnectionWithDiscovery() throws ConfigNotFoundException, IOException, JsonValidationException {
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true);
+    verify(schedulerHandler).discoverSchemaForSourceFromSourceId(any());
+    assertEquals(expectedWithNewSchema, result);
+  }
+
+  @Test
+  public void testWebBackendGetConnectionNoRefreshCatalog()
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WebBackendConnectionRead result = testWebBackendGetConnection(false);
+    verify(schedulerHandler, never()).discoverSchemaForSourceFromSourceId(any());
+    assertEquals(expected, result);
   }
 
   @Test
@@ -380,6 +401,7 @@ class WebBackendConnectionsHandlerTest {
         .operationIds(List.of(newOperationId))
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
+        .name(standardSync.getName())
         .syncCatalog(catalog)
         .withRefreshedCatalog(false);
 
@@ -393,6 +415,7 @@ class WebBackendConnectionsHandlerTest {
         .operationIds(operationIds)
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
+        .name(standardSync.getName())
         .syncCatalog(catalog);
 
     final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input, operationIds);
@@ -423,7 +446,7 @@ class WebBackendConnectionsHandlerTest {
   public void testForConnectionUpdateCompleteness() {
     final Set<String> handledMethods =
         Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
-            "resourceRequirements");
+            "resourceRequirements", "name");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
