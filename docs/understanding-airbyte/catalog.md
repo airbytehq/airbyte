@@ -32,7 +32,7 @@ This section will document the meaning of each field in a `ConfiguredAirbyteStre
 
 ## Logic for resolving the Cursor Field
 
-This section lays out how a cursor field is determined for a stream performing an `incremental` sync.
+This section lays out how a cursor field is determined for a stream performing an `INCREMENTAL` sync.
 
 * If `source_defined_cursor` in `AirbyteStream` is true, the source determines the cursor field internally. It cannot be overriden. If it is false, continue...
 * If `cursor_field` in `ConfiguredAirbyteStream` is set, the source uses that field as the cursor. If it is not set, continue...
