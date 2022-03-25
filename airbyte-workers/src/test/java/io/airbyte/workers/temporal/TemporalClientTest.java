@@ -54,7 +54,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.stubbing.OngoingStubbing;
 
 class TemporalClientTest {
 
@@ -304,7 +303,6 @@ class TemporalClientTest {
       temporalClient.deleteConnection(CONNECTION_ID);
 
       verify(workflowClient).newSignalWithStartRequest();
-//      verify(mBatchRequest).add(mConnectionManagerWorkflow::deleteConnection);
       verify(workflowClient).signalWithStart(mBatchRequest);
     }
 

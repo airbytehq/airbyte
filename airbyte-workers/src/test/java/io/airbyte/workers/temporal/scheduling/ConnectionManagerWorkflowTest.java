@@ -4,6 +4,10 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import static io.airbyte.workers.temporal.TemporalClient.getConnectionManagerName;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeastOnce;
 
 import io.airbyte.config.FailureReason.FailureOrigin;
@@ -11,6 +15,7 @@ import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
@@ -42,10 +47,14 @@ import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SyncWorkflowFaili
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SyncWorkflowWithActivityFailureException;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowNotFoundException;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.failure.ApplicationFailure;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -407,6 +416,55 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
 
       Mockito.verify(mConnectionDeletionActivity, Mockito.times(1)).deleteConnection(Mockito.any());
+    }
+
+    @Test
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that the connection is properly deleted even if the temporal workflow is in a bad state")
+    public void deleteConnectionInUnexpectedState() throws IOException {
+
+      final UUID connectionId = UUID.randomUUID();
+      final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_client_test");
+      final TemporalClient temporalClient = new TemporalClient(client, workspaceRoot, testEnv.getWorkflowService(), null);
+
+      // assert that we cannot reach the existing workflow
+      ConnectionManagerWorkflow connectionManagerWorkflow =
+          temporalClient.getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+      assertThrows(WorkflowNotFoundException.class, connectionManagerWorkflow::getState);
+
+      temporalClient.deleteConnection(connectionId);
+      testEnv.sleep(Duration.ofMinutes(1L));
+
+      // assert that we spin up a new workflow and delete the connection
+      connectionManagerWorkflow = temporalClient.getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+      assertTrue(connectionManagerWorkflow.getState().isDeleted());
+    }
+
+    @Test
+    @Timeout(value = 2,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that the connection is properly deleted")
+    public void deleteConnection() throws IOException {
+
+      final UUID connectionId = UUID.randomUUID();
+      final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_client_test");
+      final TemporalClient temporalClient = new TemporalClient(client, workspaceRoot, testEnv.getWorkflowService(), null);
+
+      temporalClient.submitConnectionUpdaterAsync(connectionId);
+      testEnv.sleep(Duration.ofMinutes(1L));
+
+      // assert connection is not deleted
+      ConnectionManagerWorkflow connectionManagerWorkflow =
+          temporalClient.getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+      assertFalse(connectionManagerWorkflow.getState().isDeleted());
+
+      temporalClient.deleteConnection(connectionId);
+      testEnv.sleep(Duration.ofMinutes(1L));
+
+      // assert that it is deleted
+      connectionManagerWorkflow = temporalClient.getExistingWorkflow(ConnectionManagerWorkflow.class, getConnectionManagerName(connectionId));
+      assertTrue(connectionManagerWorkflow.getState().isDeleted());
     }
 
   }

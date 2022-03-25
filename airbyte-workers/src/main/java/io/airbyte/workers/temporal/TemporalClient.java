@@ -466,7 +466,8 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
   }
 
-  private <T> T getExistingWorkflow(final Class<T> workflowClass, final String name) {
+  @VisibleForTesting
+  public <T> T getExistingWorkflow(final Class<T> workflowClass, final String name) {
     return client.newWorkflowStub(workflowClass, name);
   }
 
@@ -533,7 +534,7 @@ public class TemporalClient {
   }
 
   @VisibleForTesting
-  static String getConnectionManagerName(final UUID connectionId) {
+  public static String getConnectionManagerName(final UUID connectionId) {
     return "connection_manager_" + connectionId;
   }
 
