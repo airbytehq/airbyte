@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import pendulum
 import pytest
 from source_hubspot.streams import (
     Campaigns,
@@ -30,6 +31,41 @@ from source_hubspot.streams import (
 )
 
 from .utils import read_full_refresh, read_incremental
+
+
+def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_properties_list):
+    stream = ContactLists(**common_params)
+
+    responses = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "id": "test_id",
+                        "createdAt": "2022-03-25T16:43:11Z",
+                    },
+                ],
+            }
+        }
+    ]
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+
+    requests_mock.register_uri("GET", stream.url, responses)
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", properties_response)
+
+    _, stream_state = read_incremental(stream, {})
+
+    expected = int(pendulum.parse(common_params["start_date"]).timestamp() * 1000)
+
+    assert stream_state[stream.updated_at_field] == expected
 
 
 @pytest.mark.parametrize(
@@ -94,7 +130,7 @@ def test_streams_read(stream, endpoint, requests_mock, common_params, fake_prope
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
 
-    records = read_incremental(stream, {})
+    records, _ = read_incremental(stream, {})
 
     assert records
 
