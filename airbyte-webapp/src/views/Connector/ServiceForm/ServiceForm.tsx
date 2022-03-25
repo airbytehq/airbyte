@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
@@ -85,6 +85,7 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
+  const [initialRequestName, setInitialRequestName] = useState<string>();
   const {
     formType,
     formValues,
@@ -132,7 +133,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             availableServices={props.availableServices}
             allowChangeConnector={props.allowChangeConnector}
             isEditMode={props.isEditMode}
-            onOpenRequestConnectorModal={toggleOpenRequestModal}
+            onOpenRequestConnectorModal={(name) => {
+              setInitialRequestName(name);
+              toggleOpenRequestModal();
+            }}
           />
         ),
       },
@@ -220,6 +224,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           {isOpenRequestModal && (
             <RequestConnectorModal
               connectorType={formType}
+              initialName={initialRequestName}
               onClose={toggleOpenRequestModal}
             />
           )}
