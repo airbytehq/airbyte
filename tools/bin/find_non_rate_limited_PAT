@@ -37,7 +37,8 @@ for personal_access_token in $@
 
     # If GH rate limit response > 100
     if test $rate_limit_remaining -gt 100; then
-      echo -e "$blue_text""Curl-ing rate_limit for PAT:  \"$personal_access_token\"""$default_text"
+      echo -e "$blue_text""Found a good PAT!!""$default_text"
+
       echo "::set-output name=pat::$personal_access_token"
       exit 0
     else
