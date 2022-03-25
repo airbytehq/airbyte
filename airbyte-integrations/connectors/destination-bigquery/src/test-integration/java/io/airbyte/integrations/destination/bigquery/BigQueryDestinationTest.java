@@ -112,8 +112,7 @@ class BigQueryDestinationTest {
   private static Stream<Arguments> datasetIdResetterProvider() {
     // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
     return Stream.of(
-        Arguments.arguments(new DatasetIdResetter(config -> {
-        })),
+        Arguments.arguments(new DatasetIdResetter(config -> {})),
         Arguments.arguments(new DatasetIdResetter(
             config -> {
               final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
@@ -154,9 +153,9 @@ class BigQueryDestinationTest {
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
-                io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
-                io.airbyte.protocol.models.Field
-                    .of("id", JsonSchemaType.STRING))
+            io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
+            io.airbyte.protocol.models.Field
+                .of("id", JsonSchemaType.STRING))
             .withDestinationSyncMode(DestinationSyncMode.APPEND),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaType.STRING))));
 
