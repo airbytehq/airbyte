@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.s3.jsonl.JsonLSerializedBuffer;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.ParquetSerializedBuffer;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,32 +28,43 @@ public class SerializedBufferFactory {
   protected static final Logger LOGGER = LoggerFactory.getLogger(SerializedBufferFactory.class);
 
   /**
-   * When running a {@link io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy}, we usually need
-   * to instantiate new buffers when flushing data or when we receive data for a brand-new stream. This factory feels this need
-   * and @return the function responsible to create a new {@link SerializableBuffer} that handles the correct format using the underlying storage.
+   * When running a
+   * {@link io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy}, it would
+   * usually need to instantiate new buffers when flushing data or when it receives data for a
+   * brand-new stream. This factory fills this need and @return the function to be called on such
+   * events.
    *
-   * This factory determines which {@link S3FormatConfig} to use depending on the user provided @param config,
-   * The @param createStorageFunction is the constructor function to call when creating a new buffer where to store data.
-   * Note that we typically associate which format is being stored in the storage object thanks to its file extension.
+   * The factory is responsible for choosing the correct constructor function for a new
+   * {@link SerializableBuffer} that handles the correct serialized format of the data. It is
+   * configured by composition with another function to create a new {@link BufferStorage} where to
+   * store it.
+   *
+   * This factory determines which {@link S3FormatConfig} to use depending on the user provided @param
+   * config, The @param createStorageFunctionWithoutExtension is the constructor function to call when
+   * creating a new buffer where to store data. Note that we typically associate which format is being
+   * stored in the storage object thanks to its file extension.
    */
   public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> getCreateFunction(final JsonNode config,
-                                                                                                                                             final Function<String, BufferStorage> createStorageFunction) {
+                                                                                                                                             final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
     final JsonNode formatConfig = config.get("format");
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     final S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
-
     switch (formatType) {
       case AVRO -> {
-        return AvroSerializedBuffer.createFunction(new S3AvroFormatConfig(formatConfig), () -> createStorageFunction.apply(".avro"));
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".avro");
+        return AvroSerializedBuffer.createFunction(new S3AvroFormatConfig(formatConfig), createStorageFunctionWithExtension);
       }
       case CSV -> {
-        return CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(formatConfig), () -> createStorageFunction.apply(".csv.gz"));
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".csv.gz");
+        return CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(formatConfig), createStorageFunctionWithExtension);
       }
       case JSONL -> {
-        return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), () -> createStorageFunction.apply(".json.gz"));
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".jsonl.gz");
+        return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), createStorageFunctionWithExtension);
       }
       case PARQUET -> {
-        // we can't choose the type of buffer storage with parquet because of how the underlying hadoop library is imposing file usage.
+        // we can't choose the type of buffer storage with parquet because of how the underlying hadoop
+        // library is imposing file usage.
         return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config));
       }
       default -> {

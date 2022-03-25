@@ -47,8 +47,8 @@ public class S3StorageOperations implements BlobStorageOperations {
 
   @Override
   public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
-    final String namespaceStr = nameTransformer.convertStreamName(isNotBlank(namespace) ? namespace : "");
-    final String streamNameStr = nameTransformer.convertStreamName(streamName);
+    final String namespaceStr = nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
+    final String streamNameStr = nameTransformer.getIdentifier(streamName);
     return nameTransformer.applyDefaultCase(
         customPathFormat
             .replaceAll(Pattern.quote("${NAMESPACE}"), namespaceStr)
