@@ -402,7 +402,7 @@ public class ConfigRepository {
         workspaceId,
         JoinType.LEFT_OUTER_JOIN,
         ACTOR_DEFINITION.ID.eq(actorDefinitionId),
-        ACTOR_DEFINITION.PUBLIC.eq(true).or(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.isNotNull()));
+        ACTOR_DEFINITION.PUBLIC.eq(true).or(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId)));
     return records.isNotEmpty();
   }
 
