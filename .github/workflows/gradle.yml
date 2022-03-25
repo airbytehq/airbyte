@@ -292,8 +292,8 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
-  frontend-prepare:
-    name: "Frontend: Prepare build environment"
+  frontend-build:
+    name: "Frontend: Builds"
     needs: start-frontend-runner
     runs-on: ${{ needs.start-frontend-runner.outputs.label }}
     steps:
@@ -326,13 +326,7 @@ jobs:
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
-  frontend-build:
-    name: "Frontend: Build"
-    needs: 
-      - start-frontend-runner # required to have runner started
-      - frontend-prepare # required to start the main job after preparation is done
-    runs-on: ${{ needs.start-frontend-runner.outputs.label }}
-    steps:
+
       - name: Build :airbyte-webapp
         run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
   frontend-test:
@@ -356,7 +350,6 @@ jobs:
     timeout-minutes: 10
     needs:
       - start-frontend-runner # required to get output from the start-runner job
-      - frontend-prepare
       - frontend-test # required to wait when the e2e-test job is done
       - frontend-build # required to wait when then build job is done
     runs-on: ubuntu-latest
