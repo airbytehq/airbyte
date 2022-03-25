@@ -183,6 +183,7 @@ public class SnowflakeDatabase {
             props.getProperty("client_id"), props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);
+        dataSource.setDataSourceProperties(props);
 
         LOGGER.info("New refresh token has been obtained");
       } catch (IOException e) {
