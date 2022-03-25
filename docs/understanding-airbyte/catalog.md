@@ -25,7 +25,7 @@ This section documents the meaning of each field in a `ConfiguredAirbyteStream`.
 
 * `stream` - The configured `AirbyteStream`.
 * `sync_mode` - The sync mode used to sync that stream. The value in this field MUST be present in the `supported_sync_modes` array for the discovered `AirbyteStream` of this stream.
-* `cursor_field` - An array of keys to a field in the schema that in the `INCREMENTAL` sync mode will be used to determine if a record is new or updated since the last sync.
+* `cursor_field` - An array of keys to a field in the schema. If `sync_mode` is set to `INCREMENTAL` this field is used to determine if a record is new or updated since the last sync.
   * If an `AirbyteStream` has `source_defined_cursor` set to `true`, the `cursor_field` attribute in `ConfiguredAirbyteStream` is ignored.
   * If an `AirbyteStream` defines a `default_cursor_field`, the `cursor_field` attribute in `ConfiguredAirbyteStream` is not required, but if it is set, it overrides the default value.
   * If an `AirbyteStream` does not define a `default_cursor_field` and has `source_defined_cursor` set to `false`, `ConfiguredAirbyteStream` must define a `cursor_field`.
