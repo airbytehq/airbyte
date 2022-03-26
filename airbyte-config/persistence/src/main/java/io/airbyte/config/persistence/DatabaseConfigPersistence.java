@@ -85,10 +85,20 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   private final FeatureFlags featureFlags;
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
 
+  /**
+   * Entrypoint into DatabaseConfigPersistence. Except in testing, we should never be using it without
+   * it being decorated with validation classes.
+   *
+   * @param database - database where configs are stored
+   * @param jsonSecretsProcessor - for filtering secrets in export
+   * @param featureFlags - feature flags that govern secret export behavior
+   * @return database config persistence wrapped in validation decorators
+   */
   public static ConfigPersistence createWithValidation(final Database database,
                                                        final JsonSecretsProcessor jsonSecretsProcessor,
                                                        final FeatureFlags featureFlags) {
-    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
+    return new ClassEnforcingConfigPersistence(
+        new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags)));
   }
 
   public DatabaseConfigPersistence(final Database database, final JsonSecretsProcessor jsonSecretsProcessor, final FeatureFlags featureFlags) {
