@@ -90,7 +90,7 @@ public class CsvSerializedBufferTest {
   @Test
   public void testFlattenCompressedCsvFileWriter() throws Exception {
     final String expectedData = "true,string value,10000,{\"array_column\":[1,2,3]}";
-    runTest(new FileBuffer(CSV_FILE_EXTENSION), CSVFormat.newFormat(',').withRecordSeparator('\n'), true, 140L, 160L,
+    runTest(new FileBuffer(CSV_FILE_EXTENSION), CSVFormat.newFormat(',').withRecordSeparator('\n'), true, 135L, 150L,
         new S3CsvFormatConfig(Jsons.jsonNode(Map.of(
             "format_type", S3Format.CSV,
             "flattening", Flattening.ROOT_LEVEL.getValue()))),

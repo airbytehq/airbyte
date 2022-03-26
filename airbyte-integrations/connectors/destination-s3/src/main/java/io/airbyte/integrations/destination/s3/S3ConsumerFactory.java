@@ -39,6 +39,8 @@ public class S3ConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3ConsumerFactory.class);
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
+  private static final String PATH_FORMAT_FIELD = "s3_path_format";
+  private static final String BUCKET_PATH_FIELD = "s3_bucket_path";
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BlobStorageOperations storageOperations,
@@ -78,9 +80,9 @@ public class S3ConsumerFactory {
       final AirbyteStream abStream = stream.getStream();
       final String namespace = abStream.getNamespace();
       final String streamName = abStream.getName();
-      final String outputNamespace = getOutputNamespace(abStream, config.get("s3_bucket_path").asText(), namingResolver);
+      final String outputNamespace = getOutputNamespace(abStream, config.get(BUCKET_PATH_FIELD).asText(), namingResolver);
       final String customOutputFormat =
-          config.has("s3_path_format") && !config.get("s3_path_format").asText().isBlank() ? config.get("s3_path_format").asText()
+          config.has(PATH_FORMAT_FIELD) && !config.get(PATH_FORMAT_FIELD).asText().isBlank() ? config.get(PATH_FORMAT_FIELD).asText()
               : S3DestinationConstants.DEFAULT_PATH_FORMAT;
       final String outputBucketPath = storageOperations.getBucketObjectPath(outputNamespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
@@ -102,10 +104,10 @@ public class S3ConsumerFactory {
     return () -> {
       LOGGER.info("Preparing bucket in destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
-        final String namespace = writeConfig.getNamespace();
-        final String stream = writeConfig.getStreamName();
-        final String outputBucketPath = writeConfig.getOutputBucketPath();
         if (writeConfig.getSyncMode().equals(DestinationSyncMode.OVERWRITE)) {
+          final String namespace = writeConfig.getNamespace();
+          final String stream = writeConfig.getStreamName();
+          final String outputBucketPath = writeConfig.getOutputBucketPath();
           LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {}", namespace, stream, outputBucketPath);
           AirbyteSentry.executeWithTracing("PrepareStreamStorage",
               () -> storageOperations.dropBucketObject(outputBucketPath),

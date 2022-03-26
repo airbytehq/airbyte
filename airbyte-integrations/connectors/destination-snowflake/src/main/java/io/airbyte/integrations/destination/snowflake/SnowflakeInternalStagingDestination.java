@@ -94,7 +94,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         getDatabase(config),
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(".csv.gz")),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
         config,
         catalog);
   }

@@ -98,7 +98,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         getDatabase(config),
         new SnowflakeS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(".csv.gz")),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
         config,
         catalog);
   }

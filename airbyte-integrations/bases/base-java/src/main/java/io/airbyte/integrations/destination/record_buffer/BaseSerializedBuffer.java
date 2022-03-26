@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseSerializedBuffer implements SerializableBuffer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSerializedBuffer.class);
+  private static final String GZ_SUFFIX = ".gz";
 
   private final BufferStorage bufferStorage;
   private final CountingOutputStream byteCounter;
@@ -97,15 +98,15 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
 
   @Override
   public String getFilename() throws IOException {
-    if (useCompression && !bufferStorage.getFilename().endsWith(".gz")) {
-      return bufferStorage.getFilename() + ".gz";
+    if (useCompression && !bufferStorage.getFilename().endsWith(GZ_SUFFIX)) {
+      return bufferStorage.getFilename() + GZ_SUFFIX;
     }
     return bufferStorage.getFilename();
   }
 
   @Override
   public File getFile() throws IOException {
-    if (useCompression && !bufferStorage.getFilename().endsWith(".gz")) {
+    if (useCompression && !bufferStorage.getFilename().endsWith(GZ_SUFFIX)) {
       if (bufferStorage.getFile().renameTo(new File(bufferStorage.getFilename() + ".gz"))) {
         LOGGER.info("Renaming compressed file to include .gz file extension");
       }

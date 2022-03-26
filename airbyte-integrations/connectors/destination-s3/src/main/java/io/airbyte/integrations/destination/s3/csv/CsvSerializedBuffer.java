@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
+  public static final String CSV_GZ_SUFFIX = ".csv.gz";
+
   private final CsvSheetGenerator csvSheetGenerator;
   private CSVPrinter csvPrinter;
   private CSVFormat csvFormat;
