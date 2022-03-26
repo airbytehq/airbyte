@@ -5,16 +5,19 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.Schedule;
+import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
@@ -117,6 +120,22 @@ public class DbConverter {
         .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
             ? null
             : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
+  }
+
+  public static DestinationOAuthParameter buildDestinationOAuthParameter(final Record record) {
+    return new DestinationOAuthParameter()
+        .withOauthParameterId(record.get(ACTOR_OAUTH_PARAMETER.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
+        .withDestinationDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
+  }
+
+  public static SourceOAuthParameter buildSourceOAuthParameter(final Record record) {
+    return new SourceOAuthParameter()
+        .withOauthParameterId(record.get(ACTOR_OAUTH_PARAMETER.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
+        .withSourceDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
   }
 
 }
