@@ -46,6 +46,13 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/apify-dataset
   icon: apify.svg
   sourceType: api
+- name: AppsFlyer
+  sourceDefinitionId: a3462d45-735c-4a55-ae94-2b0de468f3d4
+  dockerRepository: airbyte/source-appsflyer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/appsflyer
+  icon: apify.svg
+  sourceType: api
 - name: Appstore
   sourceDefinitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
   dockerRepository: airbyte/source-appstore-singer
