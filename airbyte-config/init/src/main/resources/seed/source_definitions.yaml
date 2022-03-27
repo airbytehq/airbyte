@@ -51,7 +51,7 @@
   dockerRepository: airbyte/source-appsflyer
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/appsflyer
-  icon: apify.svg
+  icon: appsflyer.svg
   sourceType: api
 - name: Appstore
   sourceDefinitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
