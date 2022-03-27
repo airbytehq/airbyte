@@ -232,6 +232,10 @@ create unique index "actor_definition_workspace_gr_workspace_id_actor_definition
   "actor_definition_id" asc
 );
 create unique index "actor_oauth_parameter_pkey" on "public"."actor_oauth_parameter"("id" asc);
+create index "actor_oauth_parameter_workspace_definition_idx" on "public"."actor_oauth_parameter"(
+  "workspace_id" asc, 
+  "actor_definition_id" asc
+);
 create unique index "airbyte_configs_migrations_pk" on "public"."airbyte_configs_migrations"("installed_rank" asc);
 create index "airbyte_configs_migrations_s_idx" on "public"."airbyte_configs_migrations"("success" asc);
 create index "connection_destination_id_idx" on "public"."connection"("destination_id" asc);

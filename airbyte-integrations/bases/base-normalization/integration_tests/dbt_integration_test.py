@@ -401,30 +401,40 @@ class DbtIntegrationTest(object):
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
+        if normalization_image.startswith("airbyte/normalization-oracle") or normalization_image.startswith("airbyte/normalization-mysql"):
+            dbtAdditionalArgs = []
+        else:
+            dbtAdditionalArgs = ["--event-buffer-size=10000"]
+
         error_count = 0
-        commands = [
-            "docker",
-            "run",
-            "--rm",
-            "--init",
-            "-v",
-            f"{cwd}:/workspace",
-            "-v",
-            f"{cwd}/build:/build",
-            "-v",
-            f"{cwd}/logs:/logs",
-            "-v",
-            "/tmp:/tmp",
-            "--network",
-            "host",
-            "--entrypoint",
-            "/usr/local/bin/dbt",
-            "-i",
-            normalization_image,
-            command,
-            "--profiles-dir=/workspace",
-            "--project-dir=/workspace",
-        ]
+        commands = (
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--init",
+                "-v",
+                f"{cwd}:/workspace",
+                "-v",
+                f"{cwd}/build:/build",
+                "-v",
+                f"{cwd}/logs:/logs",
+                "-v",
+                "/tmp:/tmp",
+                "--network",
+                "host",
+                "--entrypoint",
+                "/usr/local/bin/dbt",
+                "-i",
+                normalization_image,
+            ]
+            + dbtAdditionalArgs
+            + [
+                command,
+                "--profiles-dir=/workspace",
+                "--project-dir=/workspace",
+            ]
+        )
         if force_full_refresh:
             commands.append("--full-refresh")
             command = f"{command} --full-refresh"

@@ -8,6 +8,7 @@ import EnabledControl from "./EnabledControl";
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
 import { Connection } from "core/resources/Connection";
+import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -16,12 +17,12 @@ const MainInfo = styled(ContentCard)`
 
 const Img = styled(ImageBlock)`
   display: inline-block;
-  margin-right: 6px;
 `;
 
 const SourceCell = styled(Cell)`
   display: flex;
   align-items: center;
+  gap: 6px;
 `;
 
 const EnabledCell = styled(Cell)`
@@ -63,10 +64,12 @@ const StatusMainInfo: React.FC<IProps> = ({
         <SourceCell flex={2}>
           <Img img={sourceDefinition?.icon} />
           {connection.source?.sourceName}
+          <ReleaseStageBadge stage={sourceDefinition?.releaseStage} />
         </SourceCell>
         <SourceCell flex={2}>
           <Img img={destinationDefinition?.icon} />
           {connection.destination?.destinationName}
+          <ReleaseStageBadge stage={destinationDefinition?.releaseStage} />
         </SourceCell>
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>
