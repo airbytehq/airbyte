@@ -105,7 +105,6 @@ class SourceAmazonAds(AbstractSource):
             client_id=config.client_id,
             client_secret=config.client_secret,
             refresh_token=config.refresh_token,
-            scopes=[config.scope],
         )
 
     @staticmethod
