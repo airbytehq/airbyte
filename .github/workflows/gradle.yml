@@ -123,6 +123,9 @@ jobs:
         run: |
           SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
 
+      - name: Publish
+        run: ./octavia-cli/publish.sh
+
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
