@@ -4,41 +4,22 @@
 
 package io.airbyte.integrations.destination.s3.util;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import java.text.Normalizer;
+import java.util.regex.Pattern;
 
-/**
- * When choosing identifiers names in destinations, extended Names can handle more special
- * characters than standard Names by using the quoting characters: "..."
- *
- * This class detects when such special characters are used and adds the appropriate quoting when
- * necessary.
- */
-public class S3NameTransformer extends ExtendedNameTransformer {
+public class S3NameTransformer extends StandardNameTransformer {
 
-  // Symbols "=" and "-" are required for AWS Glue crawler
-  // more details https://docs.aws.amazon.com/glue/latest/dg/crawler-s3-folder-table-partition.html
-  public static final String NON_ALPHANUMERIC_AND_UNDERSCORE_DASH_EQUAL_PATTERN = "[^\\p{Alnum}_=-]";
+  // see https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
+  private static final String S3_SAFE_CHARACTERS = "\\p{Alnum}/!_.*')(";
+  private static final String S3_SPECIAL_CHARACTERS = "&$@=;:+,?-";
+  private static final String S3_CHARACTER_PATTERN = "[^" + S3_SAFE_CHARACTERS + Pattern.quote(S3_SPECIAL_CHARACTERS) + "]";
 
-  /**
-   * Converts any UTF8 string to a string with only alphanumeric and "=", "-" and "_" characters
-   * without preserving accent characters.
-   *
-   * @param input string to convert
-   * @return cleaned string
-   */
+  @Override
   public String convertStreamName(final String input) {
-    if (input.contains("=")) {
-      // case AWS Glue crawler
-      // more details https://docs.aws.amazon.com/glue/latest/dg/crawler-s3-folder-table-partition.html
-      return Normalizer.normalize(input, Normalizer.Form.NFKD)
-          .replaceAll("\\p{M}", "")
-          .replaceAll("\\s+", "_")
-          .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_DASH_EQUAL_PATTERN, "_");
-    } else {
-      return super.convertStreamName(input);
-    }
-
+    return Normalizer.normalize(input, Normalizer.Form.NFKD)
+        .replaceAll("\\p{M}", "") // P{M} matches a code point that is not a combining mark (unicode)
+        .replaceAll(S3_CHARACTER_PATTERN, "_");
   }
 
 }

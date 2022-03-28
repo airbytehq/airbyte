@@ -55,7 +55,7 @@ public class StagingConsumerFactory {
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final JdbcDatabase database,
-                                       final StagingOperations sqlOperations,
+                                       final StagingOperations stagingOperations,
                                        final NamingConventionTransformer namingResolver,
                                        final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                        final JsonNode config,
@@ -63,12 +63,14 @@ public class StagingConsumerFactory {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
-        onStartFunction(database, sqlOperations, writeConfigs),
-        new SerializedBufferingStrategy(onCreateBuffer, catalog,
-            flushBufferFunction(database, sqlOperations, writeConfigs, catalog)),
-        onCloseFunction(database, sqlOperations, writeConfigs),
+        onStartFunction(database, stagingOperations, writeConfigs),
+        new SerializedBufferingStrategy(
+            onCreateBuffer,
+            catalog,
+            flushBufferFunction(database, stagingOperations, writeConfigs, catalog)),
+        onCloseFunction(database, stagingOperations, writeConfigs),
         catalog,
-        sqlOperations::isValidData);
+        stagingOperations::isValidData);
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,

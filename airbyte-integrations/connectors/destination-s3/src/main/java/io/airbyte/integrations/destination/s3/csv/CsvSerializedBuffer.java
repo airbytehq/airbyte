@@ -19,9 +19,12 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
 
 public class CsvSerializedBuffer extends BaseSerializedBuffer {
+
+  public static final String CSV_GZ_SUFFIX = ".csv.gz";
 
   private final CsvSheetGenerator csvSheetGenerator;
   private CSVPrinter csvPrinter;
@@ -55,8 +58,12 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void closeWriter() throws IOException {
+  protected void flushWriter() throws IOException {
     csvPrinter.flush();
+  }
+
+  @Override
+  protected void closeWriter() throws IOException {
     csvPrinter.close();
   }
 
@@ -64,9 +71,8 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
                                                                                                                                           final S3CsvFormatConfig config,
                                                                                                                                           final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
-      final CsvSheetGenerator csvSheetGenerator;
       if (config != null) {
-        csvSheetGenerator = CsvSheetGenerator.Factory.create(catalog.getStreams()
+        final CsvSheetGenerator csvSheetGenerator = CsvSheetGenerator.Factory.create(catalog.getStreams()
             .stream()
             .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
             .findFirst()
@@ -74,10 +80,14 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
             .getStream()
             .getJsonSchema(),
             config);
+        final CSVFormat csvSettings = CSVFormat.DEFAULT
+            .withQuoteMode(QuoteMode.NON_NUMERIC)
+            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
+        return new CsvSerializedBuffer(createStorageFunction.call(), csvSheetGenerator)
+            .withCsvFormat(csvSettings);
       } else {
-        csvSheetGenerator = new StagingDatabaseCsvSheetGenerator();
+        return new CsvSerializedBuffer(createStorageFunction.call(), new StagingDatabaseCsvSheetGenerator());
       }
-      return new CsvSerializedBuffer(createStorageFunction.call(), csvSheetGenerator);
     };
   }
 
