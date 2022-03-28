@@ -42,7 +42,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   public static final String CONFIG_PROJECT_ID = "project_id";
   public static final String CONFIG_CREDS = "credentials_json";
 
-  private final String quote = "";
+  private final String quote = "`";
   private JsonNode dbConfig;
   private final BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
