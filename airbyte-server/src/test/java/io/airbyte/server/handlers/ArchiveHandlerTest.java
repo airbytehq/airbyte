@@ -80,7 +80,7 @@ public class ArchiveHandlerTest {
   private JobPersistence jobPersistence;
   private SecretsRepositoryReader secretsRepositoryReader;
   private SecretsRepositoryWriter secretsRepositoryWriter;
-  private DatabaseConfigPersistence configPersistence;
+  private ConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
   private JsonSecretsProcessor jsonSecretsProcessor;
   private FeatureFlags featureFlags;
@@ -122,7 +122,7 @@ public class ArchiveHandlerTest {
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
     featureFlags = mock(FeatureFlags.class);
     when(featureFlags.exposeSecretsInExport()).thenReturn(true);
-    configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor, featureFlags);
+    configPersistence = DatabaseConfigPersistence.createWithValidation(jobDatabase, jsonSecretsProcessor, featureFlags);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
     configRepository = new ConfigRepository(configPersistence, configDatabase);

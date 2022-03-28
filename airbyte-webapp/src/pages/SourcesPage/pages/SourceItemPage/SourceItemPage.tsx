@@ -117,6 +117,7 @@ const SourceItemPage: React.FC = () => {
           entity={source.sourceName}
           entityName={source.name}
           entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
+          releaseStage={sourceDefinition.releaseStage}
         />
         {connectionsWithSource.length ? (
           <SourceConnectionTable connections={connectionsWithSource} />
