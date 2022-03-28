@@ -105,6 +105,17 @@ The following variables are relevant to both Docker and Kubernetes.
 8. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
 9. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
 
+#### Jobs specific
+
+A job specific variable overwrites the standard job variable.
+
+1. `SPEC_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+2. `CHECK_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2` 
+3. `DISCOVER_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+4. `SPEC_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+5. `CHECK_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+6. `DISCOVER_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+
 #### Worker
 1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.
 
