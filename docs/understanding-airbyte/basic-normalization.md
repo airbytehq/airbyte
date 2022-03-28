@@ -350,7 +350,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
-| 0.35.60-alpha   | 0.1.74 | 2022-03-28 | [\#TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Upgrade MySQL to dbt 1.0.0 |
+| 0.35.60-alpha   | 0.1.74 | 2022-03-28 | [\#11470](https://github.com/airbytehq/airbyte/pull/11470) | Upgrade MySQL to dbt 1.0.0 |
 | 0.35.60-alpha   | 0.1.73 | 2022-03-25 | [\#11267](https://github.com/airbytehq/airbyte/pull/11267) | Set `--event-buffer-size` to reduce memory usage |
 | 0.35.59-alpha   | 0.1.72 | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added Snowflake OAuth2.0 support |
 | 0.35.53-alpha   | 0.1.71 | 2022-03-14 | [\#11077](https://github.com/airbytehq/airbyte/pull/11077) | Enable BigQuery to handle project ID embedded inside dataset ID |
