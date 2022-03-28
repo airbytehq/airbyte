@@ -10,7 +10,13 @@ import pendulum
 import pytz
 import requests
 from source_zendesk_support.source import BasicApiTokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, END_OF_STREAM_KEY, BaseSourceZendeskSupportStream, TicketComments
+from source_zendesk_support.streams import (
+    DATETIME_FORMAT,
+    END_OF_STREAM_KEY,
+    BaseSourceZendeskSupportStream,
+    TicketComments,
+    SourceZendeskTicketExportStream,
+)
 
 # config
 STREAM_ARGS = {
@@ -77,6 +83,12 @@ def test_str2unixtime():
     expected = calendar.timegm(DATETIME_FROM_STR.utctimetuple())
     output = BaseSourceZendeskSupportStream.str2unixtime(DATETIME_STR)
     assert output == expected
+    
+def test_check_start_time_param():
+    expected = 1626936955
+    start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
+    output = SourceZendeskTicketExportStream.check_start_time_param(start_time)
+    assert output == expected
 
 
 def test_parse_next_page_number(requests_mock):
@@ -90,7 +102,7 @@ def test_parse_next_page_number(requests_mock):
 def test_next_page_token(requests_mock):
     # mocking the logic of next_page_token
     if STREAM_RESPONSE.get(END_OF_STREAM_KEY) is False:
-        expected = {"created_at": "1122334455"}
+        expected = {"created_at": 1122334455}
     else:
         expected = None
     requests_mock.get(STREAM_URL, json=STREAM_RESPONSE)

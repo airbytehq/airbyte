@@ -125,6 +125,7 @@ const DestinationItemPage: React.FC = () => {
               ? getIcon(destinationDefinition.icon)
               : null
           }
+          releaseStage={destinationDefinition.releaseStage}
         />
         {connectionsWithDestination.length ? (
           <DestinationConnectionTable

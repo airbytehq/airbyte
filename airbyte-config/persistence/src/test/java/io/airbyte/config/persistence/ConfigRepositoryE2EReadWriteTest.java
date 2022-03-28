@@ -17,7 +17,9 @@ import static org.mockito.Mockito.spy;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
@@ -101,6 +103,14 @@ public class ConfigRepositoryE2EReadWriteTest {
     for (final StandardSync sync : MockData.standardSyncs()) {
       configRepository.writeStandardSync(sync);
     }
+
+    for (final SourceOAuthParameter oAuthParameter : MockData.sourceOauthParameters()) {
+      configRepository.writeSourceOAuthParam(oAuthParameter);
+    }
+    for (final DestinationOAuthParameter oAuthParameter : MockData.destinationOauthParameters()) {
+      configRepository.writeDestinationOAuthParam(oAuthParameter);
+    }
+
     database.transaction(ctx -> ctx.truncate(ACTOR_DEFINITION_WORKSPACE_GRANT).execute());
   }
 
@@ -325,6 +335,49 @@ public class ConfigRepositoryE2EReadWriteTest {
     // workspaceCanUseCustomDefinition can only be true for custom definitions
     assertTrue(configRepository.workspaceCanUseCustomDefinition(customDefinitionId, workspaceId));
     assertFalse(configRepository.workspaceCanUseCustomDefinition(grantableDefinition1Id, workspaceId));
+  }
+
+  @Test
+  public void testGetDestinationOAuthByDefinitionId() throws IOException {
+
+    final DestinationOAuthParameter destinationOAuthParameter = MockData.destinationOauthParameters().get(0);
+    final Optional<DestinationOAuthParameter> result = configRepository.getDestinationOAuthParamByDefinitionIdOptional(
+        destinationOAuthParameter.getWorkspaceId(), destinationOAuthParameter.getDestinationDefinitionId());
+    assertTrue(result.isPresent());
+    assertEquals(destinationOAuthParameter, result.get());
+  }
+
+  @Test
+  public void testMissingDestinationOAuthByDefinitionId() throws IOException {
+    final UUID missingId = UUID.fromString("fc59cfa0-06de-4c8b-850b-46d4cfb65629");
+    final DestinationOAuthParameter destinationOAuthParameter = MockData.destinationOauthParameters().get(0);
+    Optional<DestinationOAuthParameter> result =
+        configRepository.getDestinationOAuthParamByDefinitionIdOptional(destinationOAuthParameter.getWorkspaceId(), missingId);
+    assertFalse(result.isPresent());
+
+    result = configRepository.getDestinationOAuthParamByDefinitionIdOptional(missingId, destinationOAuthParameter.getDestinationDefinitionId());
+    assertFalse(result.isPresent());
+  }
+
+  @Test
+  public void testGetSourceOAuthByDefinitionId() throws IOException {
+    final SourceOAuthParameter sourceOAuthParameter = MockData.sourceOauthParameters().get(0);
+    final Optional<SourceOAuthParameter> result = configRepository.getSourceOAuthParamByDefinitionIdOptional(sourceOAuthParameter.getWorkspaceId(),
+        sourceOAuthParameter.getSourceDefinitionId());
+    assertTrue(result.isPresent());
+    assertEquals(sourceOAuthParameter, result.get());
+  }
+
+  @Test
+  public void testMissingSourceOAuthByDefinitionId() throws IOException {
+    final UUID missingId = UUID.fromString("fc59cfa0-06de-4c8b-850b-46d4cfb65629");
+    final SourceOAuthParameter sourceOAuthParameter = MockData.sourceOauthParameters().get(0);
+    Optional<SourceOAuthParameter> result =
+        configRepository.getSourceOAuthParamByDefinitionIdOptional(sourceOAuthParameter.getWorkspaceId(), missingId);
+    assertFalse(result.isPresent());
+
+    result = configRepository.getSourceOAuthParamByDefinitionIdOptional(missingId, sourceOAuthParameter.getSourceDefinitionId());
+    assertFalse(result.isPresent());
   }
 
 }
