@@ -225,7 +225,8 @@ jobs:
         run: |
           mkdir -p ~/.gradle/
           cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+          org.gradle.jvmargs=-Xmx8g -Xss4m \
+            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
@@ -296,7 +297,9 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-frontend-runner:
     name: "Frontend: Start EC2 Runner"
-    needs: changes
+    needs:
+      - changes
+      - find_a_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
       needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
@@ -315,7 +318,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
   frontend-build:
     name: "Frontend: Build"
     needs: start-frontend-runner

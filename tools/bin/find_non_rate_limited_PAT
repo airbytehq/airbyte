@@ -29,7 +29,7 @@ for personal_access_token in $@
 
     echo -e "$blue_text""first 4 lines of Curl response:\n$(echo $full_response | head -n4)\n\n""$default_text"
 
-    echo -e "$blue_text""Running jq '.resources.core.remaining' on full_response""$default_text"
+    echo -e "$blue_text""Running jq '.resources.core.remaining' on \$full_response""$default_text"
 
     rate_limit_remaining=$(echo "$full_response" | jq '.resources.core.remaining' )
 
@@ -37,9 +37,11 @@ for personal_access_token in $@
 
     # If GH rate limit response > 100
     if test $rate_limit_remaining -gt 100; then
+      # github actions will NOT pass a string that looks like a secret
+      base64_valid_pat=$(echo "$personal_access_token" | base64)
       echo -e "$blue_text""Found a good PAT!!""$default_text"
-
-      echo "::set-output name=pat::$personal_access_token"
+      # ::set-output name is a github action magic string for output
+      echo "::set-output name=pat::$base64_valid_pat" > /dev/null
       exit 0
     else
       echo -e "$red_text""Rate limit exceed for this PAT!""$default_text"
