@@ -9,6 +9,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
@@ -49,7 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -65,6 +66,7 @@ import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
+import org.jooq.SelectJoinStep;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,6 +209,18 @@ public class ConfigRepository {
         includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
   }
 
+  public List<Entry<StandardSourceDefinition, Boolean>> listGrantableSourceDefinitions(final UUID workspaceId,
+                                                                                       final boolean includeTombstones)
+      throws IOException {
+    return listActorDefinitionsJoinedWithGrants(
+        workspaceId,
+        JoinType.LEFT_OUTER_JOIN,
+        ActorType.source,
+        record -> actorDefinitionWithGrantStatus(record, DbConverter::buildStandardSourceDefinition),
+        ACTOR_DEFINITION.CUSTOM.eq(false),
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
+  }
+
   public void writeStandardSourceDefinition(final StandardSourceDefinition sourceDefinition) throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
@@ -283,6 +297,18 @@ public class ConfigRepository {
         JoinType.JOIN,
         ActorType.destination,
         DbConverter::buildStandardDestinationDefinition,
+        includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
+  }
+
+  public List<Entry<StandardDestinationDefinition, Boolean>> listGrantableDestinationDefinitions(final UUID workspaceId,
+                                                                                                 final boolean includeTombstones)
+      throws IOException {
+    return listActorDefinitionsJoinedWithGrants(
+        workspaceId,
+        JoinType.LEFT_OUTER_JOIN,
+        ActorType.destination,
+        record -> actorDefinitionWithGrantStatus(record, DbConverter::buildStandardDestinationDefinition),
+        ACTOR_DEFINITION.CUSTOM.eq(false),
         includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
   }
 
@@ -402,6 +428,13 @@ public class ConfigRepository {
     return records.stream()
         .map(recordToReturnType)
         .toList();
+  }
+
+  private <T> Entry<T, Boolean> actorDefinitionWithGrantStatus(final Record outerJoinRecord,
+                                                               final Function<Record, T> recordToActorDefinition) {
+    final T actorDefinition = recordToActorDefinition.apply(outerJoinRecord);
+    final boolean granted = outerJoinRecord.get(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID) != null;
+    return Map.entry(actorDefinition, granted);
   }
 
   /**
@@ -575,14 +608,18 @@ public class ConfigRepository {
   }
 
   public Optional<SourceOAuthParameter> getSourceOAuthParamByDefinitionIdOptional(final UUID workspaceId, final UUID sourceDefinitionId)
-      throws JsonValidationException, IOException {
-    for (final SourceOAuthParameter oAuthParameter : listSourceOAuthParam()) {
-      if (sourceDefinitionId.equals(oAuthParameter.getSourceDefinitionId()) &&
-          Objects.equals(workspaceId, oAuthParameter.getWorkspaceId())) {
-        return Optional.of(oAuthParameter);
-      }
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_OAUTH_PARAMETER);
+      return query.where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.source),
+          ACTOR_OAUTH_PARAMETER.WORKSPACE_ID.eq(workspaceId),
+          ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(sourceDefinitionId)).fetch();
+    });
+
+    if (result.size() == 0) {
+      return Optional.empty();
     }
-    return Optional.empty();
+    return Optional.of(DbConverter.buildSourceOAuthParameter(result.get(0)));
   }
 
   public void writeSourceOAuthParam(final SourceOAuthParameter SourceOAuthParameter) throws JsonValidationException, IOException {
@@ -600,14 +637,18 @@ public class ConfigRepository {
 
   public Optional<DestinationOAuthParameter> getDestinationOAuthParamByDefinitionIdOptional(final UUID workspaceId,
                                                                                             final UUID destinationDefinitionId)
-      throws JsonValidationException, IOException {
-    for (final DestinationOAuthParameter oAuthParameter : listDestinationOAuthParam()) {
-      if (destinationDefinitionId.equals(oAuthParameter.getDestinationDefinitionId()) &&
-          Objects.equals(workspaceId, oAuthParameter.getWorkspaceId())) {
-        return Optional.of(oAuthParameter);
-      }
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(ACTOR_OAUTH_PARAMETER);
+      return query.where(ACTOR_OAUTH_PARAMETER.ACTOR_TYPE.eq(ActorType.destination),
+          ACTOR_OAUTH_PARAMETER.WORKSPACE_ID.eq(workspaceId),
+          ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID.eq(destinationDefinitionId)).fetch();
+    });
+
+    if (result.size() == 0) {
+      return Optional.empty();
     }
-    return Optional.empty();
+    return Optional.of(DbConverter.buildDestinationOAuthParameter(result.get(0)));
   }
 
   public void writeDestinationOAuthParam(final DestinationOAuthParameter destinationOAuthParameter) throws JsonValidationException, IOException {
