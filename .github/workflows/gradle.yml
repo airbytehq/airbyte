@@ -261,7 +261,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@v15.0.5
         with:
           mode: stop
           github-token: ${{ secrets.AIRBYTEIO_PAT }}
@@ -393,7 +393,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@v15.0.5
         with:
           mode: stop
           github-token: ${{ secrets.AIRBYTEIO_PAT }}
@@ -534,7 +534,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@v15.0.5
         with:
           mode: stop
           github-token: ${{ secrets.AIRBYTEIO_PAT }}
@@ -658,7 +658,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@v15.0.5
         with:
           mode: stop
           github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
@@ -824,7 +824,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@v15.0.5
         with:
           mode: stop
           github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
@@ -957,7 +957,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@v15.0.5
         with:
           mode: stop
           github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
