@@ -194,6 +194,25 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+  vault:
+    image: vault:1.10.0
+    logging: *default-logging
+    container_name: airbyte-vault
+    restart: unless-stopped
+    volumes:
+      - ./vault/config:/vault/config
+      - ./vault/policies:/vault/policies
+      - ./vault/data:/vault/data
+    ports:
+      - 8200:8200
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_API_ADDR=http://0.0.0.0:8200
+      - VAULT_ADDRESS=http://0.0.0.0:8200
+      - VAULT_TOKEN=00000000-0000-0000-0000-000000000000
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.json
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}

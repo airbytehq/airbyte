@@ -14,6 +14,7 @@ dependencies {
 
     implementation 'commons-io:commons-io:2.7'
     implementation 'com.google.cloud:google-cloud-secretmanager:2.0.5'
+    implementation 'com.bettercloud:vault-java-driver:5.1.0'
 
     testImplementation "org.testcontainers:postgresql:1.15.3"
     testImplementation project(':airbyte-test-utils')

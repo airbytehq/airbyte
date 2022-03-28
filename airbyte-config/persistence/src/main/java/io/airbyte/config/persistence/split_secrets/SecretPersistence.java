@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
+import com.bettercloud.vault.VaultException;
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -66,7 +67,11 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
         return Optional.of(GoogleSecretManagerPersistence.getEphemeral(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
       }
       default -> {
-        return Optional.empty();
+        try {
+          return Optional.of(new VaultSecretPersistence());
+        } catch (final VaultException e) {
+          throw new IOException(e);
+        }
       }
     }
   }
