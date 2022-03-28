@@ -124,7 +124,7 @@ jobs:
           SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
 
       - name: Publish
-        run: ./octavia-cli/publish.sh
+        run: ./octavia-cli/publish.sh 0.1.1
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
