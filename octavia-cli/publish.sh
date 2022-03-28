@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -ux
-VERSION=0.35.60-alpha
+VERSION=$1
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 docker buildx create --name octavia_builder > /dev/null 2>&1
