@@ -67,3 +67,4 @@ This guide will walk through how to create the credentials you need to run this 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
 | 0.3.0 | 2022-01-05 | [7977](https://github.com/airbytehq/airbyte/pull/7977) | Migrate to Python CDK + add transaction stream |
+| 0.3.1 | 2022-03-28 | [10257](https://github.com/airbytehq/airbyte/pull/11468) | Fix for Capital One institute to support min last updated datetime  |
