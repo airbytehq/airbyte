@@ -36,11 +36,13 @@ public class InMemoryBuffer implements BufferStorage {
   // we limit number of stream being buffered simultaneously anyway
   public static final int MAX_CONCURRENT_STREAM_IN_BUFFER = 100;
 
+  private final String fileExtension;
   private final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
   private File tempFile;
   private String filename;
 
-  public InMemoryBuffer() {
+  public InMemoryBuffer(final String fileExtension) {
+    this.fileExtension = fileExtension;
     tempFile = null;
     filename = null;
   }
@@ -61,7 +63,7 @@ public class InMemoryBuffer implements BufferStorage {
   @Override
   public File getFile() throws IOException {
     if (tempFile == null) {
-      tempFile = Files.createTempFile(getFilename(), ".csv.gz").toFile();
+      tempFile = Files.createTempFile(getFilename(), fileExtension).toFile();
     }
     return tempFile;
   }
