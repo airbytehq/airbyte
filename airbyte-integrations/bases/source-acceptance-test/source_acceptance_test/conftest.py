@@ -9,7 +9,7 @@ import logging
 import os
 from logging import Logger
 from pathlib import Path
-from subprocess import run
+from subprocess import check_output, STDOUT, run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
@@ -25,7 +25,6 @@ from airbyte_cdk.models import (
 from docker import errors
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
-
 
 @pytest.fixture(name="base_path")
 def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
@@ -183,3 +182,17 @@ def detailed_logger() -> Logger:
     logger.log_json_list = lambda l: logger.info(json.dumps(list(l), indent=1))
     logger.handlers = [fh]
     return logger
+
+
+def pytest_sessionfinish(session, exitstatus):
+    # this is specifically for contributors to run tests locally and show success
+    # therefore if this fails for any reason we just treat as a no-op
+    try:
+        result = "PASSED" if session.testscollected > 0 and session.testsfailed == 0 else "FAILED"
+        print(
+            f"{session.startdir} - local SAT run - {result} - "
+            f"{check_output('git rev-parse HEAD', stderr=STDOUT, shell=True).decode('ascii').strip()}"
+        )
+    except Exception as e:
+        print(e)  # debug
+        pass
