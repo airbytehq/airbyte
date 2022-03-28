@@ -27,7 +27,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
   private CSVPrinter csvPrinter;
   private CSVFormat csvFormat;
 
-  protected CsvSerializedBuffer(final BufferStorage bufferStorage, final CsvSheetGenerator csvSheetGenerator) throws Exception {
+  public CsvSerializedBuffer(final BufferStorage bufferStorage, final CsvSheetGenerator csvSheetGenerator) throws Exception {
     super(bufferStorage);
     this.csvSheetGenerator = csvSheetGenerator;
     this.csvPrinter = null;

@@ -168,8 +168,6 @@ public class S3DestinationConfig {
   protected AmazonS3 createS3Client() {
     LOGGER.info("Creating S3 client...");
 
-    final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-
     if (accessKeyId.isEmpty() && !secretAccessKey.isEmpty()
         || !accessKeyId.isEmpty() && secretAccessKey.isEmpty()) {
       throw new RuntimeException("Either both accessKeyId and secretAccessKey should be provided, or neither");
@@ -179,7 +177,10 @@ public class S3DestinationConfig {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new InstanceProfileCredentialsProvider(false))
           .build();
-    } else if (endpoint == null || endpoint.isEmpty()) {
+    }
+
+    final AWSCredentials awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+    if (endpoint == null || endpoint.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .withRegion(bucketRegion)

@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDirectUploader extends AbstractBigQueryUploader<BigQueryTableWriter> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDirectUploader.class);
-
   public BigQueryDirectUploader(TableId table,
                                 TableId tmpTable,
                                 BigQueryTableWriter writer,

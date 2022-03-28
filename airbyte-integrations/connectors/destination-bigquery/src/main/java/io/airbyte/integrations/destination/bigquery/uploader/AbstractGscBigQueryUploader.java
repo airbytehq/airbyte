@@ -25,6 +25,9 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// - writer writes staging data to GCS
+// - uploadDataFromFileToTmpTable import staging data to tmp table
+// - uploadData import tmp table into final table
 public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWriter> extends AbstractBigQueryUploader<DestinationFileWriter> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGscBigQueryUploader.class);

@@ -98,14 +98,14 @@ public class BigQueryUploaderFactory {
             BigQueryUtils.getGcsAvroJsonNodeConfig(config));
     final JsonNode tmpTableSchema =
         (isDefaultAirbyteTmpSchema ? null : formatter.getJsonSchema());
-    final GcsAvroWriter gcsCsvWriter =
+    final GcsAvroWriter gcsAvroWriter =
         initGcsWriter(gcsDestinationConfig, configStream, tmpTableSchema);
-    gcsCsvWriter.initialize();
+    gcsAvroWriter.initialize();
 
     return new GcsAvroBigQueryUploader(
         targetTable,
         tmpTable,
-        gcsCsvWriter,
+        gcsAvroWriter,
         syncMode,
         gcsDestinationConfig,
         bigQuery,

@@ -15,6 +15,9 @@ import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
+import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.QuoteMode;
 
 public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWriter> {
 
@@ -27,6 +30,11 @@ public class GcsCsvBigQueryUploader extends AbstractGscBigQueryUploader<GcsCsvWr
                                 boolean isKeepFilesInGcs,
                                 BigQueryRecordFormatter recordFormatter) {
     super(table, tmpTable, writer, syncMode, gcsDestinationConfig, bigQuery, isKeepFilesInGcs, recordFormatter);
+  }
+
+  public static CSVFormat getCsvFormat(final CsvSheetGenerator csvSheetGenerator) {
+    return CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
+        .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
   }
 
   @Override

@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.Objects.isNull;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
@@ -13,6 +11,8 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.common.base.Charsets;
+import io.airbyte.commons.functional.CheckedBiConsumer;
+import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -25,9 +25,18 @@ import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRec
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
+import io.airbyte.integrations.destination.bigquery.uploader.GcsCsvBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.gcs.GcsDestination;
+import io.airbyte.integrations.destination.jdbc.WriteConfig;
+import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
+import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
+import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
+import io.airbyte.integrations.destination.s3.csv.NoFlatteningSheetGenerator;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -39,6 +48,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +61,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public BigQueryDestination() {
     namingResolver = new BigQuerySQLNameTransformer();
+  }
+
+  public static void main(final String[] args) throws Exception {
+    final Destination destination = new BigQueryDestination();
+    new IntegrationRunner(destination).run(args);
   }
 
   @Override
@@ -102,15 +117,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       if (BigQueryUtils.isUsingJsonCredentials(config)) {
         // handle the credentials json being passed as a json object or a json object already serialized as
         // a string.
-        final String credentialsString =
-            config.get(BigQueryConsts.CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-                : config.get(BigQueryConsts.CONFIG_CREDS).asText();
+        final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
+            ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
+            : config.get(BigQueryConsts.CONFIG_CREDS).asText();
         credentials = ServiceAccountCredentials
             .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
       }
       return bigQueryBuilder
           .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setCredentials(credentials != null ? credentials : ServiceAccountCredentials.getApplicationDefault())
           .build()
           .getService();
     } catch (final IOException e) {
@@ -122,7 +137,43 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new BigQueryRecordConsumer(outputRecordCollector, null, catalog);
+    return new BigQueryRecordConsumer(outputRecordCollector, getBufferingStrategy(catalog), catalog);
+  }
+
+  private BufferingStrategy getBufferingStrategy(final ConfiguredAirbyteCatalog catalog) {
+    return new SerializedBufferingStrategy(
+        createBufferFunction(),
+        catalog,
+        flushBufferFunction());
+  }
+
+  final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createBufferFunction() {
+    final CsvSheetGenerator csvSheetGenerator = new NoFlatteningSheetGenerator();
+    return (stream, catalog) -> new CsvSerializedBuffer(new FileBuffer(), csvSheetGenerator)
+        .withCsvFormat(GcsCsvBigQueryUploader.getCsvFormat(csvSheetGenerator));
+  }
+
+  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction() {
+    return (stream, buffer) -> {
+      LOGGER.info("Flushing buffer for stream {} ({}) to staging", stream.getName(), FileUtils.byteCountToDisplaySize(buffer.getByteCount()));
+      if (!pairToWriteConfig.containsKey(stream)) {
+        throw new IllegalArgumentException(
+            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
+      }
+
+      final WriteConfig writeConfig = pairToWriteConfig.get(stream);
+      final String schemaName = writeConfig.getOutputSchemaName();
+      final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+      final String stagingPath =
+          stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
+      try (buffer) {
+        buffer.flush();
+        writeConfig.addStagedFile(stagingOperations.uploadRecordsToStage(database, buffer, schemaName, stageName, stagingPath));
+      } catch (final Exception e) {
+        LOGGER.error("Failed to flush and upload buffer to stage:", e);
+        throw new RuntimeException("Failed to upload buffer to stage", e);
+      }
+    };
   }
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final JsonNode config,
@@ -153,9 +204,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * BigQuery might have different structure of the Temporary table. If this method returns TRUE,
-   * temporary table will have only three common Airbyte attributes. In case of FALSE, temporary table
-   * structure will be in line with Airbyte message JsonSchema.
+   * BigQuery might have different structure of the Temporary table. If this method returns TRUE, temporary table will have only three common Airbyte
+   * attributes. In case of FALSE, temporary table structure will be in line with Airbyte message JsonSchema.
    *
    * @return use default AirbyteSchema or build using JsonSchema
    */
@@ -171,11 +221,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected String getTargetTableName(final String streamName) {
     return namingResolver.getRawTableName(streamName);
-  }
-
-  public static void main(final String[] args) throws Exception {
-    final Destination destination = new BigQueryDestination();
-    new IntegrationRunner(destination).run(args);
   }
 
 }
