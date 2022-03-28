@@ -7,7 +7,7 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_intercom.source import Companies, Contacts, IntercomStream
+from source_intercom.source import Companies, Contacts, ConversationParts, IntercomStream
 
 test_data = [
     (
@@ -76,3 +76,35 @@ def test_switch_to_standard_endpoint_if_scroll_expired(requests_mock):
         records += list(stream1.read_records(sync_mode=SyncMode, stream_slice=slice))
 
     assert stream1._endpoint_type == Companies.EndpointType.standard
+
+
+def test_conversation_part_has_conversation_id(requests_mock):
+    """
+    Test shows that conversation_part records include the `conversation_id` field.
+    """
+
+    response_body = {
+        "type": "conversation",
+        "id": "151272900024304",
+        "created_at": 1647365706,
+        "updated_at": 1647366443,
+        "conversation_parts": {
+            "type": "conversation_part.list",
+            "conversation_parts": [
+                {"type": "conversation_part", "id": "13740311965"},
+                {"type": "conversation_part", "id": "13740312024"},
+            ],
+            "total_count": 2,
+        },
+    }
+    url = "https://api.intercom.io/conversations/151272900024304"
+    requests_mock.get(url, json=response_body)
+
+    stream1 = ConversationParts(authenticator=NoAuth())
+
+    record_count = 0
+    for record in stream1.read_records(sync_mode=SyncMode.incremental, stream_slice={"id": "151272900024304"}):
+        assert record["conversation_id"] == "151272900024304"
+        record_count += 1
+
+    assert record_count == 2

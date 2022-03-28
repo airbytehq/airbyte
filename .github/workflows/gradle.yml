@@ -267,7 +267,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v13
+        uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
           github-token: ${{ secrets.AIRBYTEIO_PAT }}
@@ -276,8 +276,8 @@ jobs:
 
   ## Frontend Test
   # In case of self-hosted EC2 errors, remove this block.
-  start-frontend-test-runner:
-    name: "Frontend: Start Test EC2 Runner"
+  start-frontend-runner:
+    name: "Frontend: Start EC2 Runner"
     needs: changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
@@ -297,11 +297,49 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+  frontend-build:
+    name: "Frontend: Build"
+    needs: start-frontend-runner
+    runs-on: ${{ needs.start-frontend-runner.outputs.label }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-python: "false"
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "17"
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "16.13.0"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Build :airbyte-webapp
+        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
   frontend-test:
-    name: "Frontend: Run Test"
-    needs: start-frontend-test-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
+    name: "Frontend: Run End-to-End Tests"
+    needs:
+      - start-frontend-runner # required to have runner started
+    runs-on: ${{ needs.start-frontend-runner.outputs.label }} # run the job on the newly created runner
     timeout-minutes: 120
     steps:
       - name: Checkout Airbyte
@@ -342,16 +380,17 @@ jobs:
           CYPRESS_WEBAPP_KEY: ${{ secrets.CYPRESS_WEBAPP_KEY }}
         run: ./tools/bin/e2e_test.sh
   # In case of self-hosted EC2 errors, remove this block.
-  stop-frontend-test-runner:
-    name: "Frontend: Stop Test Runner"
+  stop-frontend-runner:
+    name: "Frontend: Stop Runner"
     timeout-minutes: 10
     needs:
-      - start-frontend-test-runner # required to get output from the start-runner job
-      - frontend-test # required to wait when the main job is done
+      - start-frontend-runner # required to get output from the start-runner job
+      - frontend-test # required to wait when the e2e-test job is done
+      - frontend-build # required to wait when then build job is done
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-frontend-test-runner.result != 'skipped'}}
+    if: ${{ always() && needs.start-frontend-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -360,12 +399,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v13
+        uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
-          label: ${{ needs.start-frontend-test-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-frontend-test-runner.outputs.ec2-instance-id }}
+          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          label: ${{ needs.start-frontend-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-frontend-runner.outputs.ec2-instance-id }}
 
   ## FOLLOWING BUILDS ARE ALL PLATFORM BUILDS.
 
@@ -501,7 +540,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v13
+        uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
           github-token: ${{ secrets.AIRBYTEIO_PAT }}
@@ -529,7 +568,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
   platform-new-scheduler-acceptance:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-new-scheduler-acceptance-runner # required to start the main job when the runner is ready
@@ -625,10 +664,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v13
+        uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
           label: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.ec2-instance-id }}
 
@@ -656,7 +695,7 @@ jobs:
           ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
   kube-acceptance-test:
     name: "Platform: Acceptance Tests (Kube)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -791,10 +830,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v13
+        uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
           label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
 
@@ -822,7 +861,7 @@ jobs:
           ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
   kube-acceptance-test-v2:
     name: "Platform: Acceptance Tests (Kube v2)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -924,9 +963,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v13
+        uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
           label: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.ec2-instance-id }}
