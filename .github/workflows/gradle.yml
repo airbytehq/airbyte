@@ -174,7 +174,7 @@ jobs:
       - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
-      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' ||       needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
+      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
