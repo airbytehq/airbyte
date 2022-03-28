@@ -286,7 +286,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.6
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
@@ -420,7 +420,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.6
         with:
           mode: stop
           github-token: ${{ secrets.AIRBYTEIO_PAT }}
@@ -564,7 +564,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.6
         with:
           mode: stop
           github-token: ${{ secrets.AIRBYTEIO_PAT }}
@@ -688,7 +688,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.6
         with:
           mode: stop
           github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
@@ -854,7 +854,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.6
         with:
           mode: stop
           github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
@@ -987,7 +987,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.6
         with:
           mode: stop
           github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
