@@ -123,7 +123,7 @@ jobs:
         run: |
           SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
 
-      - name: Run End-to-End Acceptance Tests
+      - name: Run integration tests
         run: ./tools/bin/acceptance_test_octavia.sh
 
       - name: Slack Notification - Failure
