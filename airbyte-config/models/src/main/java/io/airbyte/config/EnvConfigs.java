@@ -473,7 +473,7 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getJobKubeNodeSelectors() {
+  public Map<String, String> getJobKubeNodeSelectors() {
     return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
   }
 
@@ -483,7 +483,7 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getSpecJobKubeNodeSelectors() {
+  public Map<String, String> getSpecJobKubeNodeSelectors() {
     return splitKVPairsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
@@ -493,7 +493,7 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getCheckJobKubeNodeSelectors() {
+  public Map<String, String> getCheckJobKubeNodeSelectors() {
     return splitKVPairsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
@@ -503,7 +503,7 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors() {
+  public Map<String, String> getDiscoverJobKubeNodeSelectors() {
     return splitKVPairsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
@@ -518,7 +518,7 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of annotations
    */
   @Override
-  public Optional<Map<String, String>> getJobKubeAnnotations() {
+  public Map<String, String> getJobKubeAnnotations() {
     return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_ANNOTATIONS, ""));
   }
 
@@ -528,7 +528,7 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getSpecJobKubeAnnotations() {
+  public Map<String, String> getSpecJobKubeAnnotations() {
     return splitKVPairsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_ANNOTATIONS, ""));
   }
 
@@ -538,7 +538,7 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getCheckJobKubeAnnotations() {
+  public Map<String, String> getCheckJobKubeAnnotations() {
     return splitKVPairsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_ANNOTATIONS, ""));
   }
 
@@ -548,7 +548,7 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getDiscoverJobKubeAnnotations() {
+  public Map<String, String> getDiscoverJobKubeAnnotations() {
     return splitKVPairsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_ANNOTATIONS, ""));
   }
 
@@ -563,7 +563,7 @@ public class EnvConfigs implements Configs {
    * @param input string
    * @return map containing kv pairs
    */
-  public Optional<Map<String, String>> splitKVPairsFromEnvString(String input) {
+  public Map<String, String> splitKVPairsFromEnvString(String input) {
     if (input == null) {
       input = "";
     }
@@ -572,8 +572,7 @@ public class EnvConfigs implements Configs {
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
         .collect(Collectors.toMap(s -> s[0].trim(), s -> s[1].trim()));
-
-    return map.isEmpty() ? Optional.empty() : Optional.of(map);
+    return map.isEmpty() ? null : map;
   }
 
   @Override
