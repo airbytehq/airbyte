@@ -299,7 +299,7 @@ jobs:
     name: "Frontend: Start EC2 Runner"
     needs:
       - changes
-      - find_a_valid_pat
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
       needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
