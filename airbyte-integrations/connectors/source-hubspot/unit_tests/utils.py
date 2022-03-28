@@ -16,7 +16,7 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
         for record in records:
             stream_state = stream_instance.get_updated_state(stream_state, record)
             res.append(record)
-    return res
+    return res, stream_state
 
 
 def read_full_refresh(stream_instance: Stream):
