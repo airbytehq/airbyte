@@ -151,12 +151,13 @@ class BigQueryGcsDestinationTest extends BigQueryDestinationTest {
     }
   }
 
-
   @Override
   void testWritePartitionOverUnpartitioned(final DatasetIdResetter resetDatasetId) throws Exception {
     // This test is skipped for GCS staging mode because we load Avro data to BigQuery, but do not
     // use the use_avro_logical_types flag to automatically convert the Avro logical timestamp
     // type. Therefore, the emission timestamp, which should be used as the partition field, has
-    // an incorrect type. See https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#logical_types
+    // an incorrect type. See
+    // https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#logical_types
   }
+
 }

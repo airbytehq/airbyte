@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
@@ -45,6 +46,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -180,6 +182,56 @@ class SourceDefinitionsHandlerTest {
     assertEquals(
         Lists.newArrayList(expectedSourceDefinitionRead1, expectedSourceDefinitionRead2),
         actualSourceDefinitionReadList.getSourceDefinitions());
+  }
+
+  @Test
+  @DisplayName("listPrivateSourceDefinitions should return the right list")
+  void testListPrivateSourceDefinitions() throws IOException, URISyntaxException {
+    final StandardSourceDefinition sourceDefinition2 = generateSourceDefinition();
+
+    when(configRepository.listGrantableSourceDefinitions(workspaceId, false)).thenReturn(
+        Lists.newArrayList(
+            Map.entry(sourceDefinition, false),
+            Map.entry(sourceDefinition2, true)));
+
+    final SourceDefinitionRead expectedSourceDefinitionRead1 = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
+        .name(sourceDefinition.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
+        .sourceDefinitionId(sourceDefinition2.getSourceDefinitionId())
+        .name(sourceDefinition2.getName())
+        .dockerRepository(sourceDefinition.getDockerRepository())
+        .dockerImageTag(sourceDefinition.getDockerImageTag())
+        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
+        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
+        .releaseStage(ReleaseStage.fromValue(sourceDefinition.getReleaseStage().value()))
+        .releaseDate(LocalDate.parse(sourceDefinition.getReleaseDate()))
+        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.ResourceRequirements()
+                .cpuRequest(sourceDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
+
+    final PrivateSourceDefinitionRead expectedSourceDefinitionOptInRead1 =
+        new PrivateSourceDefinitionRead().sourceDefinition(expectedSourceDefinitionRead1).granted(false);
+
+    final PrivateSourceDefinitionRead expectedSourceDefinitionOptInRead2 =
+        new PrivateSourceDefinitionRead().sourceDefinition(expectedSourceDefinitionRead2).granted(true);
+
+    final PrivateSourceDefinitionReadList actualSourceDefinitionOptInReadList = sourceDefinitionsHandler.listPrivateSourceDefinitions(
+        new WorkspaceIdRequestBody().workspaceId(workspaceId));
+
+    assertEquals(
+        Lists.newArrayList(expectedSourceDefinitionOptInRead1, expectedSourceDefinitionOptInRead2),
+        actualSourceDefinitionOptInReadList.getSourceDefinitions());
   }
 
   @Test
