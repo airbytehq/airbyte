@@ -107,7 +107,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   @Override
   public File getFile() throws IOException {
     if (useCompression && !bufferStorage.getFilename().endsWith(GZ_SUFFIX)) {
-      if (bufferStorage.getFile().renameTo(new File(bufferStorage.getFilename() + ".gz"))) {
+      if (bufferStorage.getFile().renameTo(new File(bufferStorage.getFilename() + GZ_SUFFIX))) {
         LOGGER.info("Renaming compressed file to include .gz file extension");
       }
     }
