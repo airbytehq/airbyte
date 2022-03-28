@@ -3,6 +3,7 @@
 #
 
 import json
+import re
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
@@ -192,3 +193,13 @@ class Helpers(object):
             if len(cell_values) > idx and cell_values[idx].strip() != "":
                 return True
         return False
+
+    @staticmethod
+    def get_spreadsheet_id(id_or_url: str) -> str:
+        if re.match(r"(http://)|(https://)", id_or_url):
+            # This is a URL
+            m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
+            if m.group(2):
+                return m.group(2)
+        else:
+            return id_or_url
