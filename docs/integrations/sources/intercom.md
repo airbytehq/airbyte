@@ -44,7 +44,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 ### Setup guide
 
-How configuring the connector in the Airbyte UI:
+How to configure the connector in the Airbyte UI:
 
 1. Click Authenticate your account to sign in with Intercom and authorize your account.
 2. Fill in the `start date` field.
