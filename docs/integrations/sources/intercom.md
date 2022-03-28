@@ -47,7 +47,6 @@ The Intercom connector should not run into Intercom API limitations under normal
 How configuring the connector in the Airbyte UI:
 
 1. Click Authenticate your account to sign in with Intercom and authorize your account.
-2. Approve authorize access.
 3. Fill in the `start date` field.
 4. You should be ready to sync data.
 
