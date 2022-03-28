@@ -190,7 +190,10 @@ Helm charts for Airbyte.
 | ----------------------------- | -------------------------------------------------------------------- | -------------------- |
 | `bootloader.image.repository` | The repository to use for the airbyte bootloader image.              | `airbyte/bootloader` |
 | `bootloader.image.pullPolicy` | the pull policy to use for the airbyte bootloader image              | `IfNotPresent`       |
-| `bootloader.image.tag`        | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.35.60-alpha`       |
+| `bootloader.image.tag`        | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.35.60-alpha`      |
+| `bootloader.nodeSelector`     | Node labels for pod assignment                                       | `{}`                 |
+| `bootloader.tolerations`      | Tolerations for worker pod assignment.                               | `[]`                 |
+| `bootloader.affinity`         | Affinity and anti-affinity for worker pod assignment.                | `{}`                 |
 
 
 ### Temporal parameters

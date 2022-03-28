@@ -14,6 +14,15 @@ metadata:
 spec:
   serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
   restartPolicy: Never
+  {{- if .Values.bootloader.nodeSelector }}
+  nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.nodeSelector "context" $) | nindent 8 }}
+  {{- end }}
+  {{- if .Values.bootloader.tolerations }}
+  tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.tolerations "context" $) | nindent 8 }}
+  {{- end }}
+  {{- if .Values.bootloader.affinity }}
+  affinity: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.affinity "context" $) | nindent 8 }}
+  {{- end }}
   containers:
     - name: airbyte-bootloader-container
       image: {{ include "airbyte.bootloaderImage" . }}
