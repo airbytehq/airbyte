@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from datetime import datetime
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -62,7 +63,7 @@ class Germany(RkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "germany"
+        return "germany/"
 
 
 # class that contains source age-groups in germany. | full-refresh
@@ -110,6 +111,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
         self.config = config
+        self._cursor_value = None
 
     @property
     def cursor_field(self) -> str:
@@ -119,11 +121,24 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
         """
         return "date"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        return {self.cursor_field: max(latest_state, current_state)}
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return {self.cursor_field: str(self._cursor_value)}
 
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = value[self.cursor_field]
+
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            current_stream_state = record.get(self.cursor_field)
+            # print("self._cursor_value:", self._cursor_value, "current_stream_state:", current_stream_state)
+            if self._cursor_value:
+                latest_state = record.get(self.cursor_field)
+                self._cursor_value = max(self._cursor_value, latest_state)
+            yield record
+            self._cursor_value = current_stream_state
+            assert self._cursor_value == current_stream_state
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json().get("data")
@@ -161,7 +176,9 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
         return {self.cursor_field: max(latest_state, current_state)}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("data")
+        if response.json().get("data"):
+            return response.json().get("data")
+        pass
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -382,7 +399,7 @@ class SourceRkiCovid(AbstractSource):
             Germany(),
             GermanyAgeGroups(),
             GermanyHistoryCases(config=config),
-            GermanHistoryIncidence(config=config),
+            # GermanHistoryIncidence(config=config),
             GermanHistoryDeaths(config=config),
             GermanHistoryRecovered(config=config),
             GermanHistoryFrozenIncidence(config=config),
