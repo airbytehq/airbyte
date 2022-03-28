@@ -113,6 +113,94 @@ class Emails(IncrementalSalesloftStream):
         return "activities/emails"
 
 
+class Calls(IncrementalSalesloftStream):
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "activities/calls"
+
+
+class Accounts(IncrementalSalesloftStream):
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "accounts"
+
+
+class AccountStages(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "account_stages"
+
+
+class AccountTiers(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "account_tiers"
+
+
+class Actions(IncrementalSalesloftStream):
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "actions"
+
+
+class EmailTemplates(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "email_templates"
+
+
+class Import(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "imports"
+
+
+class Notes(IncrementalSalesloftStream):
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "notes"
+
+
+class PersonStages(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "person_stages"
+
+
+class PhoneNumberAssignments(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "phone_number_assignments"
+
+
+class Steps(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "steps"
+
+
+class TeamTemplates(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "team_templates"
+
+
 # Source
 class SourceSalesloft(AbstractSource):
     def _create_authenticator(self, config):
@@ -140,4 +228,16 @@ class SourceSalesloft(AbstractSource):
             People(authenticator=auth, **config),
             Users(authenticator=auth, **config),
             Emails(authenticator=auth, **config),
+            Calls(authenticator=auth, **config),
+            AccountStages(authenticator=auth, **config),
+            AccountTiers(authenticator=auth, **config),
+            Accounts(authenticator=auth, **config),
+            Actions(authenticator=auth, **config),
+            EmailTemplates(authenticator=auth, **config),
+            Import(authenticator=auth, **config),
+            Notes(authenticator=auth, **config),
+            PersonStages(authenticator=auth, **config),
+            PhoneNumberAssignments(authenticator=auth, **config),
+            Steps(authenticator=auth, **config),
+            TeamTemplates(authenticator=auth, **config),
         ]
