@@ -192,3 +192,36 @@ def test_read(stream, endpoint, response, expected, config, requests_mock):
         records += list(stream.read_records(sync_mode=SyncMode, stream_slice=slice))
 
     assert records == expected
+
+
+def test_conversation_part_has_conversation_id(requests_mock):
+    """
+    Test shows that conversation_part records include the `conversation_id` field.
+    """
+
+    response_body = {
+        "type": "conversation",
+        "id": "151272900024304",
+        "created_at": 1647365706,
+        "updated_at": 1647366443,
+        "conversation_parts": {
+            "type": "conversation_part.list",
+            "conversation_parts": [
+                {"type": "conversation_part", "id": "13740311965"},
+                {"type": "conversation_part", "id": "13740312024"},
+            ],
+            "total_count": 2,
+        },
+    }
+    url = "https://api.intercom.io/conversations/151272900024304"
+    requests_mock.get(url, json=response_body)
+
+    stream1 = ConversationParts(authenticator=NoAuth())
+
+    record_count = 0
+    for record in stream1.read_records(sync_mode=SyncMode.incremental, stream_slice={"id": "151272900024304"}):
+        assert record["conversation_id"] == "151272900024304"
+        record_count += 1
+
+    assert record_count == 2
+

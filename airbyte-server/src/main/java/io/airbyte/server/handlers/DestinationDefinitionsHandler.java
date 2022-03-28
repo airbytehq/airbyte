@@ -15,6 +15,7 @@ import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.PrivateDestinationDefinitionRead;
+import io.airbyte.api.model.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.ReleaseStage;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
@@ -37,6 +38,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -133,6 +135,23 @@ public class DestinationDefinitionsHandler {
     return toDestinationDefinitionReadList(MoreLists.concat(
         configRepository.listPublicDestinationDefinitions(false),
         configRepository.listGrantedDestinationDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
+  }
+
+  public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<Entry<StandardDestinationDefinition, Boolean>> standardDestinationDefinitionBooleanMap =
+        configRepository.listGrantableDestinationDefinitions(workspaceIdRequestBody.getWorkspaceId(), false);
+    return toPrivateDestinationDefinitionReadList(standardDestinationDefinitionBooleanMap);
+  }
+
+  private static PrivateDestinationDefinitionReadList toPrivateDestinationDefinitionReadList(
+                                                                                             final List<Entry<StandardDestinationDefinition, Boolean>> defs) {
+    final List<PrivateDestinationDefinitionRead> reads = defs.stream()
+        .map(entry -> new PrivateDestinationDefinitionRead()
+            .destinationDefinition(buildDestinationDefinitionRead(entry.getKey()))
+            .granted(entry.getValue()))
+        .collect(Collectors.toList());
+    return new PrivateDestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
