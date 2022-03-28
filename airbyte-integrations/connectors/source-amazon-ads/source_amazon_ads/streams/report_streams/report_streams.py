@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
- 
+
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -151,20 +151,18 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(
-                backoff.constant,
-                RetryableException,
-                max_time = self.report_wait_timeout
-            )(func)(self, *args, **kwargs)
+            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout)(func)(
+                self, *args, **kwargs
+            )
+
         return wrapped
-        
+
     def backoff_max_tries(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(
-                backoff.expo,
-                ReportGenerationFailure,
-                max_tries = self.report_generation_maximum_retries
-            )(func)(self, *args, **kwargs)
+            return backoff.on_exception(backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries)(func)(
+                self, *args, **kwargs
+            )
+
         return wrapped
 
     @backoff_max_tries
