@@ -62,6 +62,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-mailchimp", new MailchimpOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-shopify", new ShopifyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-tiktok-marketing", new TikTokMarketingOAuthFlow(configRepository, httpClient))
+        .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
         .build();
   }
 
