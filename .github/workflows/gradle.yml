@@ -291,7 +291,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.AIRBYTEIO_PAT }}
   frontend-build:
     name: "Frontend: Build"
     needs: start-frontend-runner
@@ -396,7 +396,7 @@ jobs:
         uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.AIRBYTEIO_PAT }}
           label: ${{ needs.start-frontend-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-frontend-runner.outputs.ec2-instance-id }}
 
@@ -562,7 +562,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
   platform-new-scheduler-acceptance:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-new-scheduler-acceptance-runner # required to start the main job when the runner is ready
@@ -661,7 +661,7 @@ jobs:
         uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
           label: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.ec2-instance-id }}
 
@@ -689,7 +689,7 @@ jobs:
           ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
   kube-acceptance-test:
     name: "Platform: Acceptance Tests (Kube)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -827,7 +827,7 @@ jobs:
         uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
           label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
 
@@ -855,7 +855,7 @@ jobs:
           ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
   kube-acceptance-test-v2:
     name: "Platform: Acceptance Tests (Kube v2)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -960,6 +960,6 @@ jobs:
         uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }}
+          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
           label: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.ec2-instance-id }}
