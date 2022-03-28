@@ -35,6 +35,9 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import sun.misc.Signal;
 
 /**
  * Entrypoint for the application responsible for launching containers and handling all message
@@ -49,6 +52,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ContainerOrchestratorApp {
+
+  public static final int MAX_SECONDS_TO_WAIT_FOR_FILE_COPY = 60;
 
   private final String application;
   private final Map<String, String> envMap;
@@ -74,6 +79,10 @@ public class ContainerOrchestratorApp {
         System.setProperty(envVar, envMap.get(envVar));
       }
     }
+
+    // make sure the new configuration is picked up
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    ctx.reconfigure();
 
     final var logClient = LogClientSingleton.getInstance();
     logClient.setJobMdc(
@@ -140,12 +149,25 @@ public class ContainerOrchestratorApp {
 
   public static void main(final String[] args) {
     try {
+      // otherwise the pod hangs on closing
+      Signal.handle(new Signal("TERM"), sig -> {
+        log.error("Received termination signal, failing...");
+        System.exit(1);
+      });
+
       // wait for config files to be copied
       final var successFile = Path.of(KubePodProcess.CONFIG_DIR, KubePodProcess.SUCCESS_FILE_NAME);
+      int secondsWaited = 0;
 
-      while (!successFile.toFile().exists()) {
+      while (!successFile.toFile().exists() && secondsWaited < MAX_SECONDS_TO_WAIT_FOR_FILE_COPY) {
         log.info("Waiting for config file transfers to complete...");
         Thread.sleep(1000);
+        secondsWaited++;
+      }
+
+      if (!successFile.toFile().exists()) {
+        log.error("Config files did not transfer within the maximum amount of time ({} seconds)!", MAX_SECONDS_TO_WAIT_FOR_FILE_COPY);
+        System.exit(1);
       }
 
       final var applicationName = JobOrchestrator.readApplicationName();
@@ -156,7 +178,8 @@ public class ContainerOrchestratorApp {
       final var app = new ContainerOrchestratorApp(applicationName, envMap, jobRunConfig, kubePodInfo);
       app.run();
     } catch (Throwable t) {
-      log.info("Orchestrator failed...", t);
+      log.error("Orchestrator failed...", t);
+      // otherwise the pod hangs on closing
       System.exit(1);
     }
   }

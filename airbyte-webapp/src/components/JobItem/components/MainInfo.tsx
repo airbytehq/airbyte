@@ -21,8 +21,8 @@ const MainView = styled(Row)<{
   light?: boolean;
 }>`
   cursor: pointer;
-  height: 59px;
-  padding: 10px 44px 10px ${({ light }) => (light ? 66 : 40)}px;
+  height: 75px;
+  padding: 15px 44px 10px ${({ light }) => (light ? 66 : 40)}px;
   justify-content: space-between;
   border-bottom: 1px solid
     ${({ theme, isOpen, isFailed }) =>
@@ -82,6 +82,11 @@ const Arrow = styled.div<{
     opacity: 1;
   }
 `;
+const Text = styled.div`
+  font-size: 12px;
+  font-weight: bold;
+  color: ${({ theme }) => theme.greyColor40};
+`;
 
 type IProps = {
   job: JobApiItem | JobInfo;
@@ -89,6 +94,7 @@ type IProps = {
   isOpen?: boolean;
   onExpand: () => void;
   isFailed?: boolean;
+  isPartialSuccess?: boolean;
   shortInfo?: boolean;
   light?: boolean;
 };
@@ -100,6 +106,7 @@ const MainInfo: React.FC<IProps> = ({
   onExpand,
   isFailed,
   shortInfo,
+  isPartialSuccess,
   light,
 }) => {
   const cancelJob = useCancelJob();
@@ -113,6 +120,21 @@ const MainInfo: React.FC<IProps> = ({
     job.status &&
     [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
 
+  const jobStatus = isPartialSuccess ? (
+    <FormattedMessage id="sources.partialSuccess" />
+  ) : (
+    <FormattedMessage id={`sources.${job.status}`} />
+  );
+
+  const getIcon = () => {
+    if (isPartialSuccess) {
+      return <ErrorSign warning />;
+    } else if (isFailed && !shortInfo) {
+      return <ErrorSign />;
+    }
+    return null;
+  };
+
   return (
     <MainView
       isOpen={isOpen}
@@ -122,14 +144,21 @@ const MainInfo: React.FC<IProps> = ({
     >
       <InfoCell>
         <Title isFailed={isFailed}>
-          {isFailed && !shortInfo && <ErrorSign />}
-          <FormattedMessage id={`sources.${job.status}`} />
+          {getIcon()}
+          {jobStatus}
           {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
-            <AttemptDetails
-              attempt={attempts[attempts.length - 1]}
-              configType={job.configType}
-            />
+            <div>
+              {attempts.length > 1 && (
+                <Text>
+                  <FormattedMessage id="sources.lastAttempt" />
+                </Text>
+              )}
+              <AttemptDetails
+                attempt={attempts[attempts.length - 1]}
+                configType={job.configType}
+              />
+            </div>
           ) : null}
         </Title>
       </InfoCell>

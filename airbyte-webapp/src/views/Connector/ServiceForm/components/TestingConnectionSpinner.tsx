@@ -1,31 +1,22 @@
 import React from "react";
 import styled from "styled-components";
-import { FormattedMessage } from "react-intl";
 
-import { Spinner } from "components";
+import { ProgressBar } from "components";
 
 const LoadingContainer = styled.div`
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 17px;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  margin-top: 34px;
+  margin: 34px 0 9px;
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
-const Loader = styled.div`
-  margin-right: 10px;
-`;
+// Progress Bar runs 2min for checking connections
+const PROGRESS_BAR_TIME = 60 * 2;
 
 const TestingConnectionSpinner: React.FC = () => {
   return (
     <LoadingContainer>
-      <Loader>
-        <Spinner />
-      </Loader>
-      <FormattedMessage id="form.testingConnection" />
+      <ProgressBar runTime={PROGRESS_BAR_TIME} />
     </LoadingContainer>
   );
 };

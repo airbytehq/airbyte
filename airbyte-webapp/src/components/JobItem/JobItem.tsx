@@ -1,15 +1,17 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useRef, useState } from "react";
 import styled from "styled-components";
+import { useEffectOnce } from "react-use";
 
 import { Spinner } from "components";
 
-import { JobInfo, JobListItem, Logs } from "core/domain/job/Job";
+import { JobInfo, JobListItem, Logs, Attempt } from "core/domain/job/Job";
 import Status from "core/statuses";
 
 import JobLogs from "./components/JobLogs";
 import ContentWrapper from "./components/ContentWrapper";
 import MainInfo from "./components/MainInfo";
 import { LogsDetails } from "./components/LogsDetails";
+import { useAttemptLink } from "./attemptLinkUtils";
 
 const Item = styled.div<{ isFailed: boolean; light?: boolean }>`
   border-bottom: ${({ light, theme }) =>
@@ -48,6 +50,20 @@ const JobCurrentLogs: React.FC<{
   return <LogsDetails {...props} path={path} />;
 };
 
+const isPartialSuccessCheck = (attempts: Attempt[]) => {
+  if (
+    attempts.length > 0 &&
+    attempts[attempts.length - 1].status === Status.FAILED
+  ) {
+    return attempts.some(
+      (attempt) =>
+        attempt.failureSummary && attempt.failureSummary.partialSuccess
+    );
+  } else {
+    return false;
+  }
+};
+
 type IProps = {
   shortInfo?: boolean;
   light?: boolean;
@@ -55,19 +71,34 @@ type IProps = {
 } & ({ job: JobListItem } | { jobInfo: JobInfo });
 
 const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const onExpand = () => setIsOpen(!isOpen);
-
   const jobMeta = isJobEntity(props) ? props.job.job : props.jobInfo;
+  const { jobId: linkedJobId } = useAttemptLink();
+  const [isOpen, setIsOpen] = useState(linkedJobId === String(jobMeta.id));
+  const onExpand = () => setIsOpen(!isOpen);
+  const scrollAnchor = useRef<HTMLDivElement>(null);
+
   const isFailed = jobMeta.status === Status.FAILED;
+  const isPartialSuccess = isJobEntity(props)
+    ? isPartialSuccessCheck(props.job.attempts)
+    : undefined;
+
+  useEffectOnce(() => {
+    if (linkedJobId) {
+      scrollAnchor.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  });
 
   return (
-    <Item isFailed={isFailed} light={props.light}>
+    <Item isFailed={isFailed} ref={scrollAnchor} light={props.light}>
       <MainInfo
         light={props.light}
         shortInfo={shortInfo}
         isOpen={isOpen}
         isFailed={isFailed}
+        isPartialSuccess={isPartialSuccess}
         onExpand={onExpand}
         job={jobMeta}
         attempts={isJobEntity(props) ? props.job.attempts : undefined}

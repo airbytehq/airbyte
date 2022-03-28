@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar } from "@fortawesome/free-regular-svg-icons";
 
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 

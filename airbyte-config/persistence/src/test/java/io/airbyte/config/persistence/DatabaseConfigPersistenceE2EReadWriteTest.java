@@ -5,11 +5,13 @@
 package io.airbyte.config.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -37,13 +39,13 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   @BeforeEach
   public void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence(database));
+
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
     MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-    database.query(ctx -> ctx
-        .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
+    truncateAllTables();
   }
 
   @AfterEach
@@ -63,22 +65,27 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
     standardSyncOperation();
     standardSync();
     standardSyncState();
+    standardActorCatalog();
     deletion();
   }
 
   private void deletion() throws ConfigNotFoundException, IOException, JsonValidationException {
-    // Deleting the workspace should delete everything except for definitions
-    configPersistence.deleteConfig(ConfigSchema.STANDARD_WORKSPACE, MockData.standardWorkspace().getWorkspaceId().toString());
+    // Deleting the workspace should delete everything except for definitions and catalogs
+    for (final StandardWorkspace standardWorkspace : MockData.standardWorkspaces()) {
+      configPersistence.deleteConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString());
+    }
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC_STATE, StandardSyncState.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, SourceConnection.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class).isEmpty());
+    assertTrue(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, ActorCatalogFetchEvent.class).isEmpty());
 
     assertFalse(configPersistence.listConfigs(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameter.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class).isEmpty());
     assertFalse(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class).isEmpty());
+    assertFalse(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class).isEmpty());
 
     for (final SourceOAuthParameter sourceOAuthParameter : MockData.sourceOauthParameters()) {
       configPersistence.deleteConfig(ConfigSchema.SOURCE_OAUTH_PARAM, sourceOAuthParameter.getOauthParameterId().toString());
@@ -100,6 +107,12 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
           .deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, standardDestinationDefinition.getDestinationDefinitionId().toString());
     }
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class).isEmpty());
+
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence
+          .deleteConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString());
+    }
+    assertTrue(configPersistence.listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class).isEmpty());
   }
 
   private void standardSyncState() throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -248,16 +261,44 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   private void standardWorkspace() throws JsonValidationException, IOException, ConfigNotFoundException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE,
-        MockData.standardWorkspace().getWorkspaceId().toString(),
-        MockData.standardWorkspace());
-    final StandardWorkspace standardWorkspace = configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE,
-        MockData.standardWorkspace().getWorkspaceId().toString(),
-        StandardWorkspace.class);
+    for (final StandardWorkspace standardWorkspace : MockData.standardWorkspaces()) {
+      configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE,
+          standardWorkspace.getWorkspaceId().toString(),
+          standardWorkspace);
+      final StandardWorkspace standardWorkspaceFromDb = configPersistence.getConfig(ConfigSchema.STANDARD_WORKSPACE,
+          standardWorkspace.getWorkspaceId().toString(), StandardWorkspace.class);
+      assertEquals(standardWorkspace, standardWorkspaceFromDb);
+    }
     final List<StandardWorkspace> standardWorkspaces = configPersistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class);
-    assertEquals(MockData.standardWorkspace(), standardWorkspace);
-    assertEquals(1, standardWorkspaces.size());
-    assertTrue(standardWorkspaces.contains(MockData.standardWorkspace()));
+    assertEquals(MockData.standardWorkspaces().size(), standardWorkspaces.size());
+    assertThat(MockData.standardWorkspaces()).hasSameElementsAs(standardWorkspaces);
+  }
+
+  public void standardActorCatalog() throws JsonValidationException, IOException, ConfigNotFoundException {
+
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+      final ActorCatalog retrievedActorCatalog = configPersistence.getConfig(
+          ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), ActorCatalog.class);
+      assertEquals(actorCatalog, retrievedActorCatalog);
+    } ;
+    final List<ActorCatalog> actorCatalogs = configPersistence
+        .listConfigs(ConfigSchema.ACTOR_CATALOG, ActorCatalog.class);
+    assertEquals(MockData.actorCatalogs().size(), actorCatalogs.size());
+    assertThat(MockData.actorCatalogs()).hasSameElementsAs(actorCatalogs);
+
+    for (final ActorCatalogFetchEvent actorCatalogFetchEvent : MockData.actorCatalogFetchEvents()) {
+      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
+          actorCatalogFetchEvent.getId().toString(), actorCatalogFetchEvent);
+      final ActorCatalogFetchEvent retrievedActorCatalogFetchEvent = configPersistence.getConfig(
+          ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, actorCatalogFetchEvent.getId().toString(),
+          ActorCatalogFetchEvent.class);
+      assertEquals(actorCatalogFetchEvent, retrievedActorCatalogFetchEvent);
+    }
+    final List<ActorCatalogFetchEvent> actorCatalogFetchEvents = configPersistence
+        .listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT, ActorCatalogFetchEvent.class);
+    assertEquals(MockData.actorCatalogFetchEvents().size(), actorCatalogFetchEvents.size());
+    assertThat(MockData.actorCatalogFetchEvents()).hasSameElementsAs(actorCatalogFetchEvents);
   }
 
 }

@@ -13,8 +13,8 @@ import type {
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
-import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { useInitService } from "packages/cloud/services/useInitService";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
 import { QueryObserverSuccessResult } from "react-query/types/core/types";
 
 export const workspaceKeys = {
@@ -45,6 +45,19 @@ export function useListCloudWorkspaces(): CloudWorkspace[] {
   return (useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
     service.listByUser(user.userId)
   ) as QueryObserverSuccessResult<CloudWorkspace[]>).data;
+}
+
+export function useListCloudWorkspacesAsync(): QueryObserverResult<
+  CloudWorkspace[]
+> {
+  const service = useGetWorkspaceService();
+  const user = useCurrentUser();
+
+  return useQuery<CloudWorkspace[]>(
+    workspaceKeys.lists(),
+    () => service.listByUser(user.userId),
+    { suspense: false }
+  );
 }
 
 export function useCreateWorkspace() {

@@ -4,6 +4,14 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+        default: master
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
         required: false
@@ -19,6 +27,9 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -43,6 +54,9 @@ jobs:
 
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
 
       - uses: actions/setup-java@v1
         with:
@@ -62,7 +76,7 @@ jobs:
           sudo apt-get install socat
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           project_id: ${{ secrets.GKE_TEST_PROJECT_ID }}
           service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
@@ -122,7 +136,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.3.0
+        uses: supertopher/ec2-github-runner@v15.0.4
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}

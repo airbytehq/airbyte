@@ -9,6 +9,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "stripe==2.56.0", "pendulum==1.2.0"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "requests-mock",
 ]
 
 setup(

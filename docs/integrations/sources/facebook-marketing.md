@@ -5,17 +5,26 @@
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | except AdCreatives |
+| Incremental Sync | Yes | except AdCreatives and AdAccount |
+
+##### Incremental Deletes Sync
+The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. 
+While a user could archive or delete an ad campaign, there is still a record of that campaign having existed in the Facebook Marketing API. 
+If configured by the user, the Facebook connector replicates records for campaigns or ads even if they were archived or deleted from the Facebook platform.
 
 ## Supported Tables
 
 This Source is capable of syncing the following tables and their data:
 
-* [AdSets](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
-* [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields) 
+* [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
+* [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account)
 * [AdCreatives](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)
-* [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields) 
-* [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/) 
+* [AdSets](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)
+* [Ads](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)
+* [AdInsights](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
+* [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
+* [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
+* [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
 You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
@@ -25,13 +34,13 @@ You can segment the AdInsights table into parts based on the following informati
 * Platform & Device
 * Region
 
-For more information, see the [Facebook Insights API documentation. ](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)\
+For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 
 ## Getting Started \(Airbyte Cloud\)
 
 1. Click `Authenticate your Facebook Marketing account`.
 2. Enter your Account ID. Learn how to find it are [here](https://www.facebook.com/business/help/1492627900875762).
-3. Enter a start date and your Insights settings.   
+3. Enter a start date and your Insights settings.
 4. You're done.
 
 ## Getting Started \(Airbyte Open-Source\)
@@ -49,19 +58,19 @@ Follow the [Facebook documentation for obtaining your Ad Account ID](https://www
 
 Visit the [Facebook Developers App hub](https://developers.facebook.com/apps/) and create an App and choose "Manage Business Integrations" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Enable the Marketing API for your app" section.
 
-From the App's Dashboard screen \(seen in the screenshot below\) enable the Marketing API for your app if it is not already setup.
+From the App's Dashboard screen (seen in the screenshot below) enable the Marketing API for your app if it is not already setup.
 
 ![](../../.gitbook/assets/facebook_marketing_api.png)
 
 #### API Access Token
 
-In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions \(`ads_management`, `ads_read`, `read_insights`\) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
+In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
 
 ![](../../.gitbook/assets/facebook_access_token.png)
 
 ### Request rate limit increase
 
-Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier \(the default tier for new apps\), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
+Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier (the default tier for new apps), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
 
 * Ads Management Standard Access
 * ads\_read
@@ -71,7 +80,7 @@ See the Facebook [documentation on Authorization](https://developers.facebook.co
 
 With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
 
-## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
+## Rate Limiting & Performance Considerations (Airbyte Open Source)
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
 
@@ -79,26 +88,34 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 ## Custom Insights
 In order to retrieve specific fields from Facebook Ads Insights combined with other breakdowns, there is a mechanism to allow you to choose which fields and breakdowns to sync.
-It is highly recommended to follow the [documenation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns), as there are limitations related to breakdowns. Some fields can not be requested and many others just work combined with specific fields, for example, the breakdown **app_id** is only supported with the **total_postbacks** field.
+It is highly recommended to follow the [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns), as there are limitations related to breakdowns. Some fields can not be requested and many others just work combined with specific fields, for example, the breakdown **app_id** is only supported with the **total_postbacks** field.
 By now, the only check done when setting up a source is to check if the fields, breakdowns and action breakdowns are within the ones provided by Facebook. This is, if you enter a good input, it's gonna be validated, but after, if the calls to Facebook API with those pareameters fails you will receive an error from the API.
 As a summary, custom insights allows to replicate only some fields, resulting in sync speed increase.
 
 #### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| Integration Type | Airbyte Type |
+| :--- | :--- |
+| `string` | `string` |
+| `number` | `number` |
+| `array` | `array` |
+| `object` | `object` |
 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.31  | 2021-12-28 | [](https://github.com/airbytehq/airbyte/pull/) | Fixed videos stream format field incorrect type |
-| 0.2.30  | 2021-12-20 | [8962](https://github.com/airbytehq/airbyte/pull/8962) | Added `asset_feed_spec` field to `ad creatives` stream |
-| 0.2.29  | 2021-12-17 | [8649](https://github.com/airbytehq/airbyte/pull/8649) | Retrive ad_creatives image as data encoded |
+| 0.2.40  | 2022-02-28 | [10698](https://github.com/airbytehq/airbyte/pull/10698) | Improve sleeps time in rate limit handler |
+| 0.2.39  | 2022-03-09 | [10917](https://github.com/airbytehq/airbyte/pull/10917) | Retry connections when FB API returns error code 2 (temporary oauth error) |
+| 0.2.38  | 2022-03-08 | [10531](https://github.com/airbytehq/airbyte/pull/10531) | Add `time_increment` parameter to custom insights |
+| 0.2.37  | 2022-02-28 | [10655](https://github.com/airbytehq/airbyte/pull/10655) | Add Activities stream |
+| 0.2.36  | 2022-02-24 | [10588](https://github.com/airbytehq/airbyte/pull/10588) | Fix `execute_in_batch` for large amount of requests |
+| 0.2.35  | 2022-02-18 | [10348](https://github.com/airbytehq/airbyte/pull/10348) | Add error code 104 to backoff triggers |
+| 0.2.34  | 2022-02-17 | [10180](https://github.com/airbytehq/airbyte/pull/9805) | Performance and reliability fixes |
+| 0.2.33  | 2021-12-28 | [10180](https://github.com/airbytehq/airbyte/pull/10180) | Add AdAccount and Images streams |
+| 0.2.32  | 2022-01-07 | [10138](https://github.com/airbytehq/airbyte/pull/10138) | Add `primary_key` for all insights streams. |
+| 0.2.31  | 2021-12-29 | [9138](https://github.com/airbytehq/airbyte/pull/9138) | Fix videos stream format field incorrect type |
+| 0.2.30  | 2021-12-20 | [8962](https://github.com/airbytehq/airbyte/pull/8962) | Add `asset_feed_spec` field to `ad creatives` stream |
+| 0.2.29  | 2021-12-17 | [8649](https://github.com/airbytehq/airbyte/pull/8649) | Retrieve ad_creatives image as data encoded |
 | 0.2.28  | 2021-12-13 | [8742](https://github.com/airbytehq/airbyte/pull/8742) | Fix for schema generation related to "breakdown" fields |
 | 0.2.27  | 2021-11-29 | [8257](https://github.com/airbytehq/airbyte/pull/8257) | Add fields to Campaign stream |
 | 0.2.26  | 2021-11-19 | [7855](https://github.com/airbytehq/airbyte/pull/7855) | Add Video stream |
@@ -107,7 +124,7 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 | 0.2.23  | 2021-11-08 | [7734](https://github.com/airbytehq/airbyte/pull/7734) | Resolve $ref field for discover schema |
 | 0.2.22  | 2021-11-05 | [7605](https://github.com/airbytehq/airbyte/pull/7605) | Add job retry logics to AdsInsights stream |
 | 0.2.21  | 2021-10-05 | [4864](https://github.com/airbytehq/airbyte/pull/4864) | Update insights streams with custom entries for fields, breakdowns and action_breakdowns |
-| 0.2.20 | 2021-10-04 | [6719](https://github.com/airbytehq/airbyte/pull/6719) | Update version of facebook\_bussiness package to 12.0 |
+| 0.2.20 | 2021-10-04 | [6719](https://github.com/airbytehq/airbyte/pull/6719) | Update version of facebook\_business package to 12.0 |
 | 0.2.19 | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
 | 0.2.18 | 2021-09-28 | [6499](https://github.com/airbytehq/airbyte/pull/6499) | Fix field values converting fail |
 | 0.2.17 | 2021-09-14 | [4978](https://github.com/airbytehq/airbyte/pull/4978) | Convert values' types according to schema types |
@@ -115,7 +132,7 @@ As a summary, custom insights allows to replicate only some fields, resulting in
 | 0.2.15 | 2021-09-14 | [5958](https://github.com/airbytehq/airbyte/pull/5958) | Fix url parsing and add report that exposes conversions |
 | 0.2.14 | 2021-07-19 | [4820](https://github.com/airbytehq/airbyte/pull/4820) | Improve the rate limit management |
 | 0.2.12 | 2021-06-20 | [3743](https://github.com/airbytehq/airbyte/pull/3743) | Refactor connector to use CDK: - Improve error handling. - Improve async job performance \(insights\). - Add new configuration parameter `insights_days_per_job`. - Rename stream `adsets` to `ad_sets`. - Refactor schema logic for insights, allowing to configure any possible insight stream. |
-| 0.2.10 | 2021-06-16 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Update version of facebook\_bussiness to 11.0 |
+| 0.2.10 | 2021-06-16 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Update version of facebook\_business to 11.0 |
 | 0.2.9 | 2021-06-10 | [3996](https://github.com/airbytehq/airbyte/pull/3996) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.2.8 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add 80000 as a rate-limiting error code |
 | 0.2.7 | 2021-06-03 | [3646](https://github.com/airbytehq/airbyte/pull/3646) | Add missing fields to AdInsights streams |

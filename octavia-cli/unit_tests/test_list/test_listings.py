@@ -16,11 +16,6 @@ from octavia_cli.list.listings import (
 )
 
 
-@pytest.fixture
-def mock_api_client(mocker):
-    return mocker.Mock()
-
-
 class TestBaseListing:
     @pytest.fixture
     def patch_base_class(self, mocker):

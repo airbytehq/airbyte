@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Reducer, useReducer, useMemo } from "react";
 import { ActionType } from "typesafe-actions";
 

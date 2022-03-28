@@ -31,12 +31,12 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     return Path.of("secrets/hubspot.json");
   }
 
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
+  protected OAuthFlowImplementation getFlowObject(final ConfigRepository configRepository) {
     return new HubspotOAuthFlow(configRepository, httpClient);
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+  protected OAuthFlowImplementation getFlowImplementation(final ConfigRepository configRepository, final HttpClient httpClient) {
     return new HubspotOAuthFlow(configRepository, httpClient);
   }
 
@@ -45,7 +45,7 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     int limit = 100;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(getCredentialsPath()));
+    final String fullConfigAsString = Files.readString(getCredentialsPath());
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
@@ -55,7 +55,7 @@ public class HubspotOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
             .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build()))));
-    var flowObject = getFlowImplementation(configRepository, httpClient);
+    final var flowObject = getFlowImplementation(configRepository, httpClient);
     final String url = flowObject.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing

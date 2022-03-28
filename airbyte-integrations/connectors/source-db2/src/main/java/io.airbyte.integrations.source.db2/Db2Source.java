@@ -90,9 +90,14 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return database
-        .query(getPrivileges(), sourceOperations::rowToJson)
+        .unsafeQuery(getPrivileges(), sourceOperations::rowToJson)
         .map(this::getPrivilegeDto)
         .collect(Collectors.toSet());
+  }
+
+  @Override
+  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+    return false;
   }
 
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {

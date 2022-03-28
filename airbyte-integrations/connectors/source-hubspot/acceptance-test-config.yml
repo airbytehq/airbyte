@@ -10,7 +10,7 @@ tests:
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
     - config_path: "integration_tests/invalid_config_oauth.json"
-      status: "exception"
+      status: "failed"
     - config_path: "integration_tests/invalid_config_wrong_title.json"
       status: "exception"
   discovery:
@@ -32,11 +32,6 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        subscription_changes: ["timestamp"]
-        email_events: ["timestamp"]
-        contact_lists: ["timestamp"]
-        property_history: ["timestamp"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/full_refresh_catalog.json"

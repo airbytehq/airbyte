@@ -24,12 +24,13 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.metrics.MetricSingleton;
+import io.airbyte.metrics.lib.DatadogClientConfiguration;
+import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -37,6 +38,7 @@ import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
@@ -44,7 +46,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -67,7 +68,7 @@ import org.slf4j.MDC;
  */
 public class SchedulerApp {
 
-  public static AtomicInteger PENDING_JOBS = new AtomicInteger();
+  public static final AtomicInteger PENDING_JOBS = new AtomicInteger();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
@@ -113,6 +114,8 @@ public class SchedulerApp {
   }
 
   public void start() throws IOException {
+    final Configs configs = new EnvConfigs();
+    final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     if (!featureFlags.usesNewScheduler()) {
       final ExecutorService workerThreadPool = Executors.newFixedThreadPool(submitterNumThreads, THREAD_FACTORY);
@@ -126,7 +129,12 @@ public class SchedulerApp {
           featureFlags);
       final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
       final TrackingClient trackingClient = TrackingClientSingleton.get();
-      final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient);
+      final JobScheduler jobScheduler = new JobScheduler(
+          configs.connectorSpecificResourceDefaultsEnabled(),
+          jobPersistence,
+          configRepository,
+          trackingClient,
+          workerConfigs);
       final JobSubmitter jobSubmitter = new JobSubmitter(
           workerThreadPool,
           jobPersistence,
@@ -241,11 +249,10 @@ public class SchedulerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase).withValidation();
-    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
-    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence);
+    final JsonSecretsProcessor jsonSecretsProcessor = new JsonSecretsProcessor();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor, featureFlags);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final JobCleaner jobCleaner = new JobCleaner(
@@ -269,8 +276,7 @@ public class SchedulerApp {
         TrackingClientSingleton.get());
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
-    final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    MetricSingleton.initializeMonitoringServiceDaemon("8082", mdc, configs.getPublishMetrics());
+    DogStatsDMetricSingleton.initialize(MetricEmittingApps.SCHEDULER, new DatadogClientConfiguration(configs));
 
     LOGGER.info("Launching scheduler...");
     new SchedulerApp(

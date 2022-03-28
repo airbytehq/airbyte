@@ -60,7 +60,12 @@ public class SecretsHelpers {
   public static SplitSecretConfig splitConfig(final UUID workspaceId,
                                               final JsonNode fullConfig,
                                               final ConnectorSpecification spec) {
-    return internalSplitAndUpdateConfig(UUID::randomUUID, workspaceId, (coordinate) -> Optional.empty(), Jsons.emptyObject(), fullConfig,
+    return internalSplitAndUpdateConfig(
+        UUID::randomUUID,
+        workspaceId,
+        (coordinate) -> Optional.empty(),
+        Jsons.emptyObject(),
+        fullConfig,
         spec.getConnectionSpecification());
   }
 
@@ -87,7 +92,12 @@ public class SecretsHelpers {
                                                        final JsonNode newFullConfig,
                                                        final ConnectorSpecification spec,
                                                        final ReadOnlySecretPersistence secretReader) {
-    return internalSplitAndUpdateConfig(UUID::randomUUID, workspaceId, secretReader, oldPartialConfig, newFullConfig,
+    return internalSplitAndUpdateConfig(
+        UUID::randomUUID,
+        workspaceId,
+        secretReader,
+        oldPartialConfig,
+        newFullConfig,
         spec.getConnectionSpecification());
   }
 
@@ -332,7 +342,7 @@ public class SecretsHelpers {
     final var secretValue = secretPersistence.read(coordinate);
 
     if (secretValue.isEmpty()) {
-      throw new RuntimeException("That secret was not found in the store!");
+      throw new RuntimeException(String.format("That secret was not found in the store! Coordinate: %s", coordinate.getFullCoordinate()));
     }
 
     return new TextNode(secretValue.get());

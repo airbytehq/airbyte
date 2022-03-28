@@ -41,7 +41,7 @@ const getTextColor = (props: IStyleProps) => {
     }
     return props.theme.primaryColor;
   } else if (props.secondary || props.iconOnly) {
-    return props.theme.greyColor60;
+    return props.theme.darkGreyColor;
   }
 
   return props.theme.whiteColor;

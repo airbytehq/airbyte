@@ -4,20 +4,22 @@
 
 
 import pytest
-from source_shopify.source import Orders
+from source_shopify.source import OrderRefunds, Orders
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 
-# Define the Stream class for the test
-STREAM = Orders(config={"authenticator": None})
+# Define the Stream instances for the tests
+SHOPIFY_STREAM = Orders(config={"authenticator": None})
+SHOPIFY_SUB_STREAM = OrderRefunds(config={"authenticator": None})
 
 
 @pytest.mark.parametrize(
     "stream, cur_stream_state, state_object, expected_output",
     [
         # When Full-Refresh: state_object: empty.
-        (STREAM, {STREAM.cursor_field: ""}, {}, {STREAM.name: {STREAM.cursor_field: ""}}),
+        (SHOPIFY_STREAM, {SHOPIFY_STREAM.cursor_field: ""}, {}, {SHOPIFY_STREAM.name: {SHOPIFY_STREAM.cursor_field: ""}}),
+        (SHOPIFY_SUB_STREAM, {SHOPIFY_SUB_STREAM.cursor_field: ""}, {}, {SHOPIFY_SUB_STREAM.name: {SHOPIFY_SUB_STREAM.cursor_field: ""}}),
     ],
-    ids=["Sync Started"],
+    ids=["Sync Started. Parent.", "Sync Started. Child."],
 )
 def test_full_refresh(stream, cur_stream_state, state_object, expected_output):
     """
@@ -35,20 +37,32 @@ def test_full_refresh(stream, cur_stream_state, state_object, expected_output):
     [
         # When start the incremental refresh, assuming we have the state of STREAM.
         (
-            STREAM,
-            {STREAM.cursor_field: "2021-01-01T01-01-01"},
+            SHOPIFY_STREAM,
+            {SHOPIFY_STREAM.cursor_field: "2021-01-01T01-01-01"},
             {},
-            {STREAM.name: {STREAM.cursor_field: "2021-01-01T01-01-01"}},
+            {SHOPIFY_STREAM.name: {SHOPIFY_STREAM.cursor_field: "2021-01-01T01-01-01"}},
+        ),
+        (
+            SHOPIFY_SUB_STREAM,
+            {SHOPIFY_SUB_STREAM.cursor_field: "2021-01-01T01-01-01"},
+            {},
+            {SHOPIFY_SUB_STREAM.name: {SHOPIFY_SUB_STREAM.cursor_field: "2021-01-01T01-01-01"}},
         ),
         # While doing the incremental refresh, we keeping the original state, even if the state is updated during the sync.
         (
-            STREAM,
-            {STREAM.cursor_field: "2021-01-05T02-02-02"},
+            SHOPIFY_STREAM,
+            {SHOPIFY_STREAM.cursor_field: "2021-01-05T02-02-02"},
             {},
-            {STREAM.name: {STREAM.cursor_field: "2021-01-05T02-02-02"}},
+            {SHOPIFY_STREAM.name: {SHOPIFY_STREAM.cursor_field: "2021-01-05T02-02-02"}},
+        ),
+        (
+            SHOPIFY_SUB_STREAM,
+            {SHOPIFY_SUB_STREAM.cursor_field: "2021-01-05T02-02-02"},
+            {},
+            {SHOPIFY_SUB_STREAM.name: {SHOPIFY_SUB_STREAM.cursor_field: "2021-01-05T02-02-02"}},
         ),
     ],
-    ids=["Sync Started", "Sync in progress"],
+    ids=["Sync Started. Parent", "Sync Started. Child", "Sync in progress. Parent", "Sync in progress. Child"],
 )
 def test_incremental_sync(stream, cur_stream_state, state_object, expected_output):
     """

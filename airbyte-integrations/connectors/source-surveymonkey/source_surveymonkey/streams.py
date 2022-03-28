@@ -21,9 +21,10 @@ class SurveymonkeyStream(HttpStream, ABC):
     primary_key = "id"
     data_field = "data"
 
-    def __init__(self, start_date: pendulum.datetime, **kwargs):
-        self._start_date = start_date
+    def __init__(self, start_date: pendulum.datetime, survey_ids: List[str], **kwargs):
         super().__init__(**kwargs)
+        self._start_date = start_date
+        self._survey_ids = survey_ids
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -132,11 +133,20 @@ class Surveys(IncrementalSurveymonkeyStream):
         return "surveys"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        # params = super().request_params(stream_state=stream_state, **kwargs)
+        survey_ids = self._survey_ids
         result = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in result:
-            substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
+            substream = SurveyDetails(
+                survey_id=record["id"], start_date=self._start_date, survey_ids=survey_ids, authenticator=self.authenticator
+            )
             child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
-            yield from child_record
+            if not survey_ids or record["id"] in survey_ids:
+                substream = SurveyDetails(
+                    survey_id=record["id"], start_date=self._start_date, survey_ids=survey_ids, authenticator=self.authenticator
+                )
+                child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
+                yield from child_record
 
 
 class SurveyDetails(SurveymonkeyStream):
@@ -157,9 +167,9 @@ class SurveyDetails(SurveymonkeyStream):
     So this way is very much better in terms of API limits.
     """
 
-    def __init__(self, survey_id, start_date, **kwargs):
+    def __init__(self, survey_id, start_date, survey_ids, **kwargs):
         self.survey_id = survey_id
-        super().__init__(start_date=start_date, **kwargs)
+        super().__init__(start_date=start_date, survey_ids=survey_ids, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"surveys/{self.survey_id}/details"
@@ -181,7 +191,7 @@ class SurveyPages(SurveymonkeyStream):
         return f"surveys/{survey_id}/details"
 
     def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
+        survey_stream = Surveys(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
         for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"survey_id": survey["id"]}
 
@@ -202,7 +212,7 @@ class SurveyQuestions(SurveymonkeyStream):
         return f"surveys/{survey_id}/details"
 
     def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
+        survey_stream = Surveys(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
         for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"survey_id": survey["id"]}
 
@@ -228,7 +238,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         return f"surveys/{survey_id}/responses/bulk"
 
     def stream_slices(self, **kwargs):
-        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
+        survey_stream = Surveys(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
         for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"survey_id": survey["id"]}
 

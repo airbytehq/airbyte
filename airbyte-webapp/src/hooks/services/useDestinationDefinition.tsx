@@ -14,4 +14,10 @@ const useDestinationDefinitionList = (): {
   });
 };
 
-export { useDestinationDefinitionList };
+const useDestinationDefinition = (id: string): DestinationDefinition => {
+  return useResource(DestinationDefinitionResource.detailShape(), {
+    destinationDefinitionId: id,
+  });
+};
+
+export { useDestinationDefinitionList, useDestinationDefinition };

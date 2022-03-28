@@ -186,7 +186,7 @@ class SwaggerParser(BaseLookerStream):
 
         if "format" in schema:
             if schema["format"] == "int64" and (not key or not key.endswith("id")):
-                updated_schema["multipleOf"] = 10 ** -16
+                updated_schema["multipleOf"] = 10**-16
                 object_type = "number"
             else:
                 updated_schema["format"] = schema["format"]

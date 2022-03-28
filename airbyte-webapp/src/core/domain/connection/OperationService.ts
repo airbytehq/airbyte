@@ -13,6 +13,7 @@ class OperationService extends AirbyteRequestService {
     const rs = ((await this.fetch(
       `${this.url}/check`,
       operation.operatorConfiguration
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     )) as any) as {
       status: "succeeded" | "failed";
       message: string;
@@ -23,6 +24,7 @@ class OperationService extends AirbyteRequestService {
       throw new Error("failed");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return rs as any;
   }
 }

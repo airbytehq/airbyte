@@ -35,7 +35,7 @@ def sources_connectors(ctx: click.Context):
     click.echo(definitions)
 
 
-@connectors.command(name="destination", help="Latest information on supported destinations.")
+@connectors.command(name="destinations", help="Latest information on supported destinations.")
 @click.pass_context
 def destinations_connectors(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]

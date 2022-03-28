@@ -11,6 +11,7 @@ type IProps = {
     id: string;
     name: string | React.ReactNode;
     status?: string;
+    isPartialSuccess?: boolean;
     onSelect?: () => void;
   }[];
 };

@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const uuid = require('uuid');
+const capitalCase = require('capital-case');
 
 const getSuccessMessage = function(connectorName, outputPath, additionalMessage){
     return `
@@ -42,6 +43,10 @@ module.exports = function (plop) {
   const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
   const pythonDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
+
+  plop.setHelper('capitalCase', function(name) {
+    return capitalCase.capitalCase(name);
+  });
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
@@ -250,12 +255,6 @@ module.exports = function (plop) {
         abortOnFail: true,
         templateFile: `${javaDestinationInput}/spec.json.hbs`,
         path: `${javaDestinationOutputRoot}/src/main/resources/spec.json`
-      },
-      {
-        type: 'add',
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/destination-definition.json.hbs`,
-        path: `${definitionRoot}/config/STANDARD_DESTINATION_DEFINITION/{{uuid}}.json`
       },
       {
         type: 'append',

@@ -281,7 +281,7 @@ New features:
 
 Bug fixes:
 
-* **Quickbooks** source: Now uses the number data type for decimal fields.
+* **QuickBooks** source: Now uses the number data type for decimal fields.
 * **HubSpot** source: Fixed `empty string` inside of the `number` and `float` datatypes.
 * **GitHub** source: Validation fixed on non-required fields.
 * **BigQuery** destination: Now supports processing of arrays of records properly.
@@ -591,7 +591,7 @@ Progress on connectors:
 
 * [**Zendesk Talk**](https://docs.airbyte.io/integrations/sources/zendesk-talk)
 * [**Iterable**](https://docs.airbyte.io/integrations/sources/iterable)
-* [**Quickbooks**](https://docs.airbyte.io/integrations/sources/quickbooks)
+* [**QuickBooks**](https://docs.airbyte.io/integrations/sources/quickbooks)
 
 Other progress on connectors:
 

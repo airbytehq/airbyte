@@ -22,10 +22,11 @@ public class GcsUtils {
                                             final boolean appendAirbyteFields) {
     LOGGER.info("Default schema.");
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
+    final String stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(namespace);
     SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
 
-    if (namespace != null) {
-      builder = builder.namespace(namespace);
+    if (stdNamespace != null) {
+      builder = builder.namespace(stdNamespace);
     }
 
     SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();

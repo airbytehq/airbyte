@@ -11,7 +11,14 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -174,8 +181,8 @@ public class ElasticsearchDestinationTest {
           CatalogHelpers.createConfiguredAirbyteStream(
               this.getStreamName(),
               this.getNamespace(),
-              Field.of("id", JsonSchemaPrimitive.NUMBER),
-              Field.of("name", JsonSchemaPrimitive.STRING))
+              Field.of("id", JsonSchemaType.NUMBER),
+              Field.of("name", JsonSchemaType.STRING))
               .withDestinationSyncMode(this.getSyncMode())
               .withPrimaryKey(this.getPrimaryKey())));
     }

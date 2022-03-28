@@ -37,18 +37,18 @@ This is dependent on your networking setup. The easiest way to verify if Airbyte
 
 #### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
 
-This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
+This step is optional but highly recommended for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
 To create a dedicated database user, run the following commands against your database:
 
 ```sql
-CREATE USER airbyte PASSWORD 'your_password_here';
+CREATE USER <username> PASSWORD 'your_password_here';
 ```
 
 Then give it access to the relevant schema:
 
 ```sql
-GRANT USAGE ON SCHEMA <schema_name> TO airbyte
+GRANT USAGE ON SCHEMA <schema_name> TO <username>
 ```
 
 Note that to replicate data from multiple Postgres schemas, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same db on multiple schemas.
@@ -58,9 +58,22 @@ Next, grant the user read-only access to the relevant tables. The simplest way i
 ```sql
 GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
 
-# Allow airbyte user to see tables created in the future
-ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO airbyte;
+-- Allow user to see tables created in the future
+ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <username>;
 ```
+
+Currently, there is no way to sync a subset of columns using the Postgres source connector.
+- When setting up a connection, you can only choose which tables to sync, but not columns.
+- If the user can only access a subset of columns, the connection check will pass. However, the data sync will fail with a `permission denied` exception.
+
+The short-term workaround for partial table syncing is to create a view on the specific columns, and grant the user read access to that view:
+
+```sql
+CREATE VIEW <view_name> as SELECT <columns> FROM <table>;
+GRANT SELECT ON TABLE <view_name> IN SCHEMA <schema_name> to <user_name>;
+```
+
+This issue is tracked in [\#9771](https://github.com/airbytehq/airbyte/issues/9771).
 
 #### 3. Optionally, set up CDC. Follow the guide [below](postgres.md#setting-up-cdc-for-postgres) to do so.
 
@@ -145,8 +158,8 @@ If you are syncing data from a server using the `postgres` Docker image, you wil
 Here is what these settings would look like in `postgresql.conf`:
 
 ```text
-wal_level = logical             
-max_wal_senders = 1             
+wal_level = logical
+max_wal_senders = 1
 max_replication_slots = 1
 ```
 
@@ -156,8 +169,8 @@ Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgre
 
 ### CDC on AWS Postgres RDS or Aurora
 
-* Go to the `Configuration` tab for your DB cluster. 
-* Find your cluster parameter group. You will either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy you will need to change your cluster's parameter group before restarting. 
+* Go to the `Configuration` tab for your DB cluster.
+* Find your cluster parameter group. You will either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy you will need to change your cluster's parameter group before restarting.
 * Within the parameter group page, search for `rds.logical_replication`. Select this row and click on the `Edit parameters` button. Set this value to `1`.
 * Wait for a maintenance window to automatically restart the instance or restart it manually.
 * Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgres).
@@ -257,6 +270,10 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.8   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
+| 0.4.7   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
+| 0.4.6   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.4.5   | 2022-02-08 | [10173](https://github.com/airbytehq/airbyte/pull/10173) | Improved  discovering tables in case if user does not have permissions to any table                                                                       |
 | 0.4.4   | 2022-01-26 | [9807](https://github.com/airbytehq/airbyte/pull/9807) | Update connector fields title/description                                                                       |
 | 0.4.3   | 2022-01-24 | [9554](https://github.com/airbytehq/airbyte/pull/9554) | Allow handling of java sql date in CDC                                                                          |
 | 0.4.2   | 2022-01-13 | [9360](https://github.com/airbytehq/airbyte/pull/9360) | Added schema selection                                                                                          |

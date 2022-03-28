@@ -13,6 +13,7 @@ class ConnectionService extends AirbyteRequestService {
     const rs = ((await this.fetch(`${this.url}/get`, {
       connectionId,
       withRefreshedCatalog,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     })) as any) as Connection;
 
     return rs;

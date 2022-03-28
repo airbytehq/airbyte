@@ -238,6 +238,10 @@
     },
     "campaign.video_brand_safety_suitability": {
       "type": ["null", "string"]
+    },
+    "segments.date": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

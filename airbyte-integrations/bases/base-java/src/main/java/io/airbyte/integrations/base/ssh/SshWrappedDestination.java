@@ -16,12 +16,16 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.List;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Decorates a Destination with an SSH Tunnel using the standard configuration that Airbyte uses for
  * configuring SSH.
  */
 public class SshWrappedDestination implements Destination {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SshWrappedDestination.class);
 
   private final Destination delegate;
   private final List<String> hostKey;
@@ -55,7 +59,15 @@ public class SshWrappedDestination implements Destination {
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
-    return AirbyteMessageConsumer.appendOnClose(delegate.getConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector), tunnel::close);
+    final AirbyteMessageConsumer delegateConsumer;
+    try {
+      delegateConsumer = delegate.getConsumer(tunnel.getConfigInTunnel(), catalog, outputRecordCollector);
+    } catch (final Exception e) {
+      LOGGER.error("Exception occurred while getting the delegate consumer, closing SSH tunnel", e);
+      tunnel.close();
+      throw e;
+    }
+    return AirbyteMessageConsumer.appendOnClose(delegateConsumer, tunnel::close);
   }
 
 }

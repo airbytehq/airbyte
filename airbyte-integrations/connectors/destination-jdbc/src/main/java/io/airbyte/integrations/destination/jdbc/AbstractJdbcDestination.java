@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -17,6 +18,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -26,13 +29,11 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
-
-  protected String getDriverClass() {
-    return driverClass;
-  }
 
   protected NamingConventionTransformer getNamingResolver() {
     return namingResolver;
@@ -89,8 +90,27 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
-        driverClass);
+        driverClass,
+        getConnectionProperties(config));
   }
+
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
+    final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
+    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
+    return MoreMaps.merge(customProperties, defaultProperties);
+  }
+
+  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
+                                                                    final Map<String, String> defaultParameters) {
+    for (final String key : defaultParameters.keySet()) {
+      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
+        throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
+      }
+    }
+  }
+
+  protected abstract Map<String, String> getDefaultConnectionProperties(final JsonNode config);
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 

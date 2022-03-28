@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -20,6 +21,10 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,12 +41,12 @@ class SnowflakeS3StreamCopierTest {
   private SnowflakeS3StreamCopier copier;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws Exception {
     s3Client = mock(AmazonS3Client.class, RETURNS_DEEP_STUBS);
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);
 
-    copier = new SnowflakeS3StreamCopier(
+    copier = (SnowflakeS3StreamCopier) new SnowflakeS3StreamCopierFactory().create(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
         "fake-staging-folder",
         "fake-schema",
@@ -60,7 +65,6 @@ class SnowflakeS3StreamCopierTest {
                 null)),
         new ExtendedNameTransformer(),
         sqlOperations,
-        UPLOAD_TIME,
         new ConfiguredAirbyteStream()
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
@@ -76,13 +80,19 @@ class SnowflakeS3StreamCopierTest {
     }
 
     copier.copyStagingFileToTemporaryTable();
+    Set<String> stagingFiles = copier.getStagingFiles();
+    // check the use of all files for staging
+    Assertions.assertTrue(stagingFiles.size() > 1);
 
-    for (String fileName : copier.getStagingWritersByFile().keySet()) {
-      verify(db).execute(String.format("COPY INTO fake-schema.%s FROM "
-          + "'s3://fake-bucket/%s'"
-          + " CREDENTIALS=(aws_key_id='fake-access-key-id' aws_secret_key='fake-secret-access-key') "
-          + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
-          copier.getTmpTableName(), fileName));
+    final List<List<String>> partition = Lists.partition(new ArrayList<>(stagingFiles), 1000);
+    for (final List<String> files : partition) {
+      verify(db).execute(String.format(
+          "COPY INTO fake-schema.%s FROM '%s' "
+              + "CREDENTIALS=(aws_key_id='fake-access-key-id' aws_secret_key='fake-secret-access-key') "
+              + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"') "
+              + "files = (" + copier.generateFilesList(files) + " );",
+          copier.getTmpTableName(),
+          copier.generateBucketPath()));
     }
 
   }

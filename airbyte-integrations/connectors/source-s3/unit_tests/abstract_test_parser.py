@@ -33,7 +33,7 @@ def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callabl
             snapshot = tracemalloc.take_snapshot()
 
             # only if we exceeded the quota, build log_messages with traces
-            first_size_in_megabytes = first_size / 1024 ** 2
+            first_size_in_megabytes = first_size / 1024**2
             if first_size_in_megabytes > max_memory_in_megabytes:
                 log_messages: List[str] = []
                 top_stats = snapshot.statistics("lineno")

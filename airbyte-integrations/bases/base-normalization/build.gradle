@@ -105,7 +105,7 @@ customIntegrationTests.dependsOn("customIntegrationTestPython")
 // TODO fix and use https://github.com/airbytehq/airbyte/issues/3192 instead
 task('mypyCheck', type: PythonTask) {
     module = "mypy"
-    command = "normalization --config-file ${project.rootProject.file('tools/python/.mypy.ini').absolutePath}"
+    command = "normalization --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
 
     dependsOn 'blackFormat'
 }

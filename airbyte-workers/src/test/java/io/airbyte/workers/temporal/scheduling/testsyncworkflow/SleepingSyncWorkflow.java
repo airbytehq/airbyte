@@ -15,6 +15,8 @@ import java.util.UUID;
 
 public class SleepingSyncWorkflow implements SyncWorkflow {
 
+  public static final Duration RUN_TIME = Duration.ofMinutes(10L);
+
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
                                 final IntegrationLauncherConfig sourceLauncherConfig,
@@ -22,7 +24,7 @@ public class SleepingSyncWorkflow implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    Workflow.sleep(Duration.ofMinutes(1));
+    Workflow.sleep(RUN_TIME);
 
     return new StandardSyncOutput();
   }

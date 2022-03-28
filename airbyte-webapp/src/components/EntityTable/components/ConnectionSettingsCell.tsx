@@ -6,6 +6,7 @@ import { faCog } from "@fortawesome/free-solid-svg-icons";
 import { RoutePaths } from "pages/routes";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Link } from "components";
+import { ConnectionSettingsRoutes } from "pages/ConnectionPage/pages/ConnectionItemPage/ConnectionSettingsRoutes";
 
 type IProps = {
   id: string;
@@ -36,7 +37,7 @@ const ConnectorCell: React.FC<IProps> = ({ id }) => {
     event.stopPropagation();
   };
 
-  const settingPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Connections}/${id}/${RoutePaths.Settings}`;
+  const settingPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Connections}/${id}/${ConnectionSettingsRoutes.REPLICATION}`;
   return (
     <Content onClick={openSettings}>
       <Link to={settingPath}>

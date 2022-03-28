@@ -1,10 +1,12 @@
 module.exports = {
+  core: {
+    builder: 'webpack5',
+  },
   stories: ["../src/**/*.stories.@(ts|tsx)"],
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/preset-create-react-app",
-    "storybook-addon-styled-component-theme/dist",
   ],
   webpackFinal: (config) => {
     config.resolve.modules.push(process.cwd() + "/node_modules");
