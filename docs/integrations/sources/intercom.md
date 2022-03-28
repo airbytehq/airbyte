@@ -48,7 +48,7 @@ How to configure the connector in the Airbyte UI:
 
 1. Click Authenticate your account to sign in with Intercom and authorize your account.
 2. Fill in the `start date` field.
-4. You should be ready to sync data.
+3. You should be ready to sync data.
 
 ## Getting started (Airbyte OSS) 
 
