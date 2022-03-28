@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
@@ -66,6 +66,25 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
   return null;
 };
 
+/**
+ * A component that will observe whenever the serviceType (selected connector)
+ * changes and set the name of the connector to match the connector definition name.
+ */
+const SetDefaultName: React.FC = () => {
+  const { setFieldValue } = useFormikContext();
+  const { selectedService } = useServiceForm();
+
+  useEffect(() => {
+    // Formik has an issue, that prevents us from setting a field value directly in code here
+    // It won't change the value at all, unless we push it one execution slot further with setTimeout
+    setTimeout(() => {
+      setFieldValue("name", selectedService?.name ?? "");
+    });
+  }, [selectedService, setFieldValue]);
+
+  return null;
+};
+
 export type ServiceFormProps = {
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
@@ -87,6 +106,7 @@ export type ServiceFormProps = {
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
+  const [initialRequestName, setInitialRequestName] = useState<string>();
   const {
     formType,
     formValues,
@@ -106,8 +126,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     () => ({
       type: "object",
       properties: {
-        name: { type: "string" },
         serviceType: { type: "string" },
+        ...(selectedConnector ? { name: { type: "string" } } : {}),
         ...Object.fromEntries(
           Object.entries({
             connectionConfiguration: isLoading ? null : specifications,
@@ -116,7 +136,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       },
       required: ["name", "serviceType"],
     }),
-    [isLoading, specifications]
+    [isLoading, selectedConnector, specifications]
   );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
@@ -139,7 +159,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
             isEditMode={props.isEditMode}
-            onOpenRequestConnectorModal={toggleOpenRequestModal}
+            onOpenRequestConnectorModal={(name) => {
+              setInitialRequestName(name);
+              toggleOpenRequestModal();
+            }}
           />
         ),
       },
@@ -200,7 +223,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           availableServices={props.availableServices}
           isEditMode={props.isEditMode}
           isLoadingSchema={props.isLoading}
+          serviceType={values.serviceType}
         >
+          <SetDefaultName />
           <FormikPatch />
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} />
           <FormRoot
@@ -218,6 +243,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           {isOpenRequestModal && (
             <RequestConnectorModal
               connectorType={formType}
+              initialName={initialRequestName}
               onClose={toggleOpenRequestModal}
             />
           )}
