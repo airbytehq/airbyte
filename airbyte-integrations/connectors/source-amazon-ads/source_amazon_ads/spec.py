@@ -67,7 +67,7 @@ class AmazonAdsConfig(BaseModel):
 
     report_wait_timeout: int = Field(
         name="Report Wait Timeout",
-        description="Timeout duration for Reports. Eg. 30",
+        description="Timeout duration in minutes for Reports. Eg. 30",
         default=30,
         examples=[30, 120],
     )
@@ -76,7 +76,7 @@ class AmazonAdsConfig(BaseModel):
         name="Report Geration Maximum Retries",
         description="Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
         default=5,
-        examples=[5,10,15],
+        examples=[5, 10, 15],
     )
 
     @classmethod
