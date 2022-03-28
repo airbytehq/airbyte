@@ -2,6 +2,7 @@ import { SyncSchema } from "core/domain/catalog";
 import { Operation } from "./operation";
 import { AirbyteJSONSchema } from "core/jsonSchema";
 import { Destination, Source } from "../connector";
+import Status from "core/statuses";
 
 type ConnectionConfiguration = unknown;
 
@@ -28,20 +29,26 @@ export type ScheduleProperties = {
   timeUnit: ConnectionSchedule;
 };
 
+export enum ConnectionStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  DEPRECATED = "deprecated",
+}
+
 export interface Connection {
   connectionId: string;
   name: string;
   prefix: string;
   sourceId: string;
   destinationId: string;
-  status: string;
+  status: ConnectionStatus;
   schedule: ScheduleProperties | null;
   syncCatalog: SyncSchema;
   latestSyncJobCreatedAt?: number | null;
   namespaceDefinition: ConnectionNamespaceDefinition;
   namespaceFormat: string;
   isSyncing?: boolean;
-  latestSyncJobStatus: string | null;
+  latestSyncJobStatus: Status | null;
   operationIds: string[];
 
   // WebBackend connection specific fields

@@ -16,8 +16,10 @@ import {
   Connection,
   ScheduleProperties,
   Operation,
+  ConnectionStatus,
 } from "core/domain/connection";
 import { Destination, Source } from "core/domain/connector";
+import Status from "core/statuses";
 
 export type { Connection, ScheduleProperties };
 
@@ -29,7 +31,7 @@ export default class ConnectionResource
   readonly prefix: string = "";
   readonly sourceId: string = "";
   readonly destinationId: string = "";
-  readonly status: string = "";
+  readonly status: ConnectionStatus = ConnectionStatus.INACTIVE;
   readonly message: string = "";
   readonly namespaceFormat: string = "";
   readonly namespaceDefinition: ConnectionNamespaceDefinition =
@@ -39,7 +41,7 @@ export default class ConnectionResource
   readonly source: Source = {} as Source;
   readonly destination: Destination = {} as Destination;
   readonly latestSyncJobCreatedAt: number | undefined | null = null;
-  readonly latestSyncJobStatus: string | null = null;
+  readonly latestSyncJobStatus: Status | null = null;
   readonly syncCatalog: SyncSchema = { streams: [] };
   readonly isSyncing: boolean = false;
   readonly operationIds: string[] = [];

@@ -5,8 +5,8 @@ import styled from "styled-components";
 import { Toggle } from "components";
 import { Connection } from "core/resources/Connection";
 import useConnection from "hooks/services/useConnectionHook";
-import { Status } from "components/EntityTable/types";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { ConnectionStatus } from "core/domain/connection";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -49,12 +49,14 @@ const EnabledControl: React.FC<IProps> = ({
       prefix: connection.prefix,
       operations: connection.operations,
       status:
-        connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
+        connection.status === ConnectionStatus.ACTIVE
+          ? ConnectionStatus.INACTIVE
+          : ConnectionStatus.ACTIVE,
     });
 
     analyticsService.track("Source - Action", {
       action:
-        connection.status === Status.ACTIVE
+        connection.status === ConnectionStatus.ACTIVE
           ? "Disable connection"
           : "Reenable connection",
       connector_source: connection.source?.sourceName,
@@ -71,7 +73,7 @@ const EnabledControl: React.FC<IProps> = ({
       <ToggleLabel htmlFor="toggle-enabled-source">
         <FormattedMessage
           id={
-            connection.status === Status.ACTIVE
+            connection.status === ConnectionStatus.ACTIVE
               ? "tables.enabled"
               : "tables.disabled"
           }
@@ -80,7 +82,7 @@ const EnabledControl: React.FC<IProps> = ({
       <Toggle
         disabled={disabled}
         onChange={onChangeStatus}
-        checked={connection.status === Status.ACTIVE}
+        checked={connection.status === ConnectionStatus.ACTIVE}
         id="toggle-enabled-source"
       />
     </Content>

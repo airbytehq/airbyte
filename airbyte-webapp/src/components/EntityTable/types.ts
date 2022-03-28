@@ -29,7 +29,7 @@ type ITableDataItem = {
   entityIcon?: string;
 };
 
-enum Status {
+enum EntityTableStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
   FAILED = "failed",
@@ -42,4 +42,4 @@ enum SortOrderEnum {
 }
 
 export type { ITableDataItem, EntityTableDataItem };
-export { Status, SortOrderEnum };
+export { EntityTableStatus, SortOrderEnum };

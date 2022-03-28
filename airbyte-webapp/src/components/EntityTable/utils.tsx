@@ -3,7 +3,7 @@ import Status from "core/statuses";
 import {
   ITableDataItem,
   EntityTableDataItem,
-  Status as ConnectionStatus,
+  EntityTableStatus,
 } from "./types";
 import {
   Destination,
@@ -11,6 +11,7 @@ import {
   Source,
   SourceDefinition,
 } from "core/domain/connector";
+import { ConnectionStatus } from "core/domain/connection";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
@@ -135,12 +136,12 @@ export const getConnectionTableData = (
 };
 
 export const getConnectionSyncStatus = (
-  status: string,
+  status: ConnectionStatus,
   lastSyncStatus: string | null
-): string | null => {
-  if (status === ConnectionStatus.INACTIVE) return ConnectionStatus.INACTIVE;
-  if (!lastSyncStatus) return ConnectionStatus.EMPTY;
-  if (lastSyncStatus === Status.FAILED) return ConnectionStatus.FAILED;
+): EntityTableStatus | null => {
+  if (status === ConnectionStatus.INACTIVE) return EntityTableStatus.INACTIVE;
+  if (!lastSyncStatus) return EntityTableStatus.EMPTY;
+  if (lastSyncStatus === Status.FAILED) return EntityTableStatus.FAILED;
 
-  return ConnectionStatus.ACTIVE;
+  return EntityTableStatus.ACTIVE;
 };

@@ -3,8 +3,8 @@ import { useFetcher } from "rest-hooks";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import useConnection from "hooks/services/useConnectionHook";
-import { Status } from "./types";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { ConnectionStatus } from "core/domain/connection";
 
 const useSyncActions = (): {
   changeStatus: (connection: Connection) => Promise<void>;
@@ -24,7 +24,9 @@ const useSyncActions = (): {
       namespaceFormat: connection.namespaceFormat,
       operations: connection.operations,
       status:
-        connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
+        connection.status === ConnectionStatus.ACTIVE
+          ? ConnectionStatus.INACTIVE
+          : ConnectionStatus.ACTIVE,
     });
 
     const frequency = FrequencyConfig.find(

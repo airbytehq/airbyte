@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 
-import { Status } from "../types";
+import { EntityTableStatus } from "../types";
 import StatusIcon from "components/StatusIcon";
 
 type AllConnectionsStatusCellProps = {
@@ -21,7 +21,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
   const active = useMemo(
     () =>
       connectEntities.filter(
-        (entity) => entity.lastSyncStatus === Status.ACTIVE
+        (entity) => entity.lastSyncStatus === EntityTableStatus.ACTIVE
       ),
     [connectEntities]
   );
@@ -29,7 +29,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
   const inactive = useMemo(
     () =>
       connectEntities.filter(
-        (entity) => entity.lastSyncStatus === Status.INACTIVE
+        (entity) => entity.lastSyncStatus === EntityTableStatus.INACTIVE
       ),
     [connectEntities]
   );
@@ -37,16 +37,13 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
   const failed = useMemo(
     () =>
       connectEntities.filter(
-        (entity) => entity.lastSyncStatus === Status.FAILED
+        (entity) => entity.lastSyncStatus === EntityTableStatus.FAILED
       ),
     [connectEntities]
   );
 
   const empty = useMemo(
-    () =>
-      connectEntities.filter(
-        (entity) => entity.lastSyncStatus === Status.EMPTY
-      ),
+    () => connectEntities.filter((entity) => !entity.lastSyncStatus),
     [connectEntities]
   );
 

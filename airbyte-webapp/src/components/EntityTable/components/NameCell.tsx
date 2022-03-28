@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 
 import StatusIcon from "components/StatusIcon";
 import ImageBlock from "components/ImageBlock";
-import { Status } from "../types";
+import { EntityTableStatus } from "../types";
 
 type IProps = {
   value: string;
@@ -41,15 +41,15 @@ const Image = styled(ImageBlock)`
 const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
   const formatMessage = useIntl().formatMessage;
   const title =
-    status === Status.EMPTY
+    status === EntityTableStatus.EMPTY
       ? formatMessage({
           id: "connection.noSyncData",
         })
-      : status === Status.INACTIVE
+      : status === EntityTableStatus.INACTIVE
       ? formatMessage({
           id: "connection.disabledConnection",
         })
-      : status === Status.ACTIVE
+      : status === EntityTableStatus.ACTIVE
       ? formatMessage({
           id: "connection.successSync",
         })
@@ -62,9 +62,9 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
       {status ? (
         <StatusIcon
           title={title}
-          empty={status === Status.EMPTY}
-          success={status === Status.ACTIVE}
-          inactive={status === Status.INACTIVE}
+          empty={status === EntityTableStatus.EMPTY}
+          success={status === EntityTableStatus.ACTIVE}
+          inactive={status === EntityTableStatus.INACTIVE}
         />
       ) : (
         <Space />

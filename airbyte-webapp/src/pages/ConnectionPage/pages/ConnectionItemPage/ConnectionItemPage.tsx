@@ -102,8 +102,8 @@ const ConnectionItemPage: React.FC = () => {
             element={<SettingsView connectionId={connectionId} />}
           />
           <Route
-            index
-            element={<Navigate to={ConnectionSettingsRoutes.STATUS} />}
+            path="*"
+            element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />}
           />
         </Routes>
       </Suspense>
