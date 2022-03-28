@@ -10,20 +10,30 @@ import com.bettercloud.vault.VaultException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class VaultSecretPersistence implements SecretPersistence {
 
-  final VaultConfig config = new VaultConfig().address("http://vault:8200")
-      .token("00000000-0000-0000-0000-000000000000")
+  final VaultConfig rootConfig = new VaultConfig().address("http://vault:8400")
+      // .nameSpace("secret/test")
+      // .token("3c9fd6be-7bc2-9d1f-6fb3-cd746c0fc4e8")
       .build();
-  final Vault vault = new Vault(config);
+  final Vault vault = new Vault(rootConfig);
 
-  public VaultSecretPersistence() throws VaultException {}
+  public VaultSecretPersistence() throws VaultException {
+    log.error("_____________________________: Unsealing");
+    // final SealResponse sealResponse = vault.seal()/* .withNameSpace("secret/test")
+    // */.unseal("3c9fd6be-7bc2-9d1f-6fb3-cd746c0fc4e8", true);
+    // log.error("_____________________________: Seal: " + sealResponse.getSealed());
+  }
 
   @Override
   public Optional<String> read(final SecretCoordinate coordinate) {
     try {
-
+      // final AuthResponse response = vault.auth().createToken(new
+      // TokenRequest().id(UUID.fromString("00000000-0000-0000-0000-000000000000")));
+      // response.getAuthClientToken()
       return Optional.ofNullable(vault.logical().read("secret/test").getData().get(coordinate.getFullCoordinate()));
     } catch (final VaultException e) {
       throw new RuntimeException(e);
