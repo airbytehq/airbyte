@@ -41,7 +41,7 @@ for personal_access_token in $@
       base64_valid_pat=$(echo "$personal_access_token" | base64)
       echo -e "$blue_text""Found a good PAT!!""$default_text"
       # ::set-output name is a github action magic string for output
-      echo "::set-output name=pat::$base64_valid_pat" > /dev/null
+      echo "::set-output name=pat::$base64_valid_pat"
       exit 0
     else
       echo -e "$red_text""Rate limit exceed for this PAT!""$default_text"
