@@ -14,5 +14,3 @@ USER octavia-cli
 WORKDIR /home/octavia-project
 ENTRYPOINT ["octavia"]
 
-LABEL io.airbyte.version=dev
-LABEL io.airbyte.name=airbyte/octavia-cli
