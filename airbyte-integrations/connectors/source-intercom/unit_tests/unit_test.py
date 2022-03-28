@@ -160,7 +160,7 @@ def test_streams(config):
             ConversationParts,
             "/conversations/id",
             {"id": "id", "conversation_parts": {"conversation_parts": [{"type": "conversation_part", "id": "id"}]}},
-            [{"id": "id", "type": "conversation_part"}],
+            [{"conversation_id": "id", "id": "id", "type": "conversation_part"}],
         ),
         (
             CompanyAttributes,
