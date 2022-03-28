@@ -838,7 +838,7 @@ jobs:
     name: "Platform: Start Scheduler V2 Kube Acceptance Test Runner"
     needs: changes
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    #    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master') todo
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:

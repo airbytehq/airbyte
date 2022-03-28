@@ -32,8 +32,6 @@ public class ExitCodeWatcher implements Watcher<Pod> {
 
   @Override
   public void eventReceived(Action action, Pod resource) {
-    log.info("processing action " + action);
-
     try {
       if (!exitCodeRetrieved && KubePodProcess.isTerminal(resource)) {
         final ContainerStatus mainContainerStatus = resource.getStatus().getContainerStatuses()

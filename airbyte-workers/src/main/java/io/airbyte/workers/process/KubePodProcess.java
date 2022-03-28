@@ -505,7 +505,6 @@ public class KubePodProcess extends Process implements KubePod {
 
     LOGGER.info("Creating pod...");
     val start = System.currentTimeMillis();
-    // todo: can we create watch before hand?
 
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
 
@@ -687,8 +686,6 @@ public class KubePodProcess extends Process implements KubePod {
     Exceptions.swallow(this.podWatch::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
-    System.out.println("stdoutLocalPort = " + stdoutLocalPort);
-    System.out.println("stderrLocalPort = " + stderrLocalPort);
     KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);
     KubePortManagerSingleton.getInstance().offer(stderrLocalPort);
 

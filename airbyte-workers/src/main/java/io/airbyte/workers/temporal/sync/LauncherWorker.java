@@ -140,9 +140,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                 fileMap,
                 portMap);
           } catch (final KubernetesClientException e) {
-            // todo: should we log e?
             throw new WorkerException(
-                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.", e);
+                "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.");
           }
         }
 

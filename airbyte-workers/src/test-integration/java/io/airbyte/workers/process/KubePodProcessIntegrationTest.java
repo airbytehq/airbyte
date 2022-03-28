@@ -441,8 +441,3 @@ public class KubePodProcessIntegrationTest {
   }
 
 }
-
-// todo: is there a race condition causing longer running jobs with more messages to fail
-// intermittently
-// todo: should we run a sync (just a sync, locally, using the replication worker and a kube pod
-// process?)
