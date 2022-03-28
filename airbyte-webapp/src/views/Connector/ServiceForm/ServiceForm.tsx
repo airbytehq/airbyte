@@ -127,7 +127,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       type: "object",
       properties: {
         serviceType: { type: "string" },
-        ...(selectedConnector ? { name: { type: "string" } } : {}),
+        ...(selectedConnectorDefinitionSpecification
+          ? { name: { type: "string" } }
+          : {}),
         ...Object.fromEntries(
           Object.entries({
             connectionConfiguration: isLoading ? null : specifications,
@@ -136,7 +138,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       },
       required: ["name", "serviceType"],
     }),
-    [isLoading, selectedConnector, specifications]
+    [isLoading, selectedConnectorDefinitionSpecification, specifications]
   );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
@@ -223,7 +225,6 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           availableServices={props.availableServices}
           isEditMode={props.isEditMode}
           isLoadingSchema={props.isLoading}
-          serviceType={values.serviceType}
         >
           <SetDefaultName />
           <FormikPatch />
