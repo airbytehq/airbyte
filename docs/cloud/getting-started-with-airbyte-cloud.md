@@ -6,11 +6,12 @@ This page guides you through setting up your Airbyte Cloud account, setting up a
 
 ## Set up your Airbyte Cloud account
 
-To use Airbyte Cloud, set up an Airbyte Cloud account and create a new workspace:
+To use Airbyte Cloud:
 
-1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide).
-<br> Airbyte Cloud offers a 14-day free trial with $1000 worth of credits, whichever expires first. For more information, see [Pricing](https://airbyte.com/pricing).
-2. On the [Workspaces](https://cloud.airbyte.io/workspaces) page, click **Create new workspace**. 
+1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide). 
+<br> *Note: Airbyte Cloud offers a 14-day free trial with $1000 worth of credits, whichever expires first. For more information, see [Pricing](https://airbyte.com/pricing).*
+
+2. Airbyte will send you an email with a verification link. On clicking the link, you'll be taken to your new workspace.
 <br>*A workspace lets you collaborate with team members and share resources across your team under a shared billing account.*
 
 You will be greeted with an onboarding tutorial to help you set up your first connection. If you haven’t set up a connection on Airbyte Cloud before, we highly recommend following the tutorial. If you are familiar with the connection setup process, click **Skip onboarding** and follow this guide to set up your next connection.
