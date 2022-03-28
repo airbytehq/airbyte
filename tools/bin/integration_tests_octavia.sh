@@ -6,9 +6,6 @@ set -e
 
 assert_root
 
-echo "Build platform..."
-SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
-
 echo "Starting app..."
 
 # Detach so we can run subsequent commands
