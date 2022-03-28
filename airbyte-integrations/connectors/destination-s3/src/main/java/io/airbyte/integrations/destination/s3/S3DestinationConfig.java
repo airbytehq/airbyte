@@ -177,6 +177,7 @@ public class S3DestinationConfig {
 
     if (accessKeyId.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
+          .withRegion(bucketRegion)
           .withCredentials(new InstanceProfileCredentialsProvider(false))
           .build();
     } else if (endpoint == null || endpoint.isEmpty()) {
@@ -189,8 +190,7 @@ public class S3DestinationConfig {
     final ClientConfiguration clientConfiguration = new ClientConfiguration();
     clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
-    return AmazonS3ClientBuilder
-        .standard()
+    return AmazonS3ClientBuilder.standard()
         .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, bucketRegion))
         .withPathStyleAccessEnabled(true)
         .withClientConfiguration(clientConfiguration)

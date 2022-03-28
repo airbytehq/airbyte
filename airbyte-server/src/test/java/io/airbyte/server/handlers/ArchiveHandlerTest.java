@@ -80,7 +80,7 @@ public class ArchiveHandlerTest {
   private JobPersistence jobPersistence;
   private SecretsRepositoryReader secretsRepositoryReader;
   private SecretsRepositoryWriter secretsRepositoryWriter;
-  private DatabaseConfigPersistence configPersistence;
+  private ConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
   private JsonSecretsProcessor jsonSecretsProcessor;
   private ConfigRepository configRepository;
