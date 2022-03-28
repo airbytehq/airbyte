@@ -310,6 +310,7 @@ class CashFlows(IncrementalKyribaStream):
     def request_params(self, stream_slice: Optional[Mapping[str, Any]], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs) or {}
         params["dateType"] = "UPDATE"
+        params["page.limit"] = 1000
         params = {**params, **stream_slice}
         return params
 
