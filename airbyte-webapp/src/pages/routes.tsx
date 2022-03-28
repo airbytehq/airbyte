@@ -1,8 +1,7 @@
 import React, { useMemo } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
-import { useLocation } from "react-router-dom";
 
 import { useConfig } from "config";
 
@@ -27,24 +26,7 @@ import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Workspace } from "core/domain/workspace/Workspace";
 import { storeUtmFromQuery } from "utils/utmStorage";
-
-export enum RoutePaths {
-  AuthFlow = "/auth_flow",
-  Root = "/",
-
-  Workspaces = "workspaces",
-  Preferences = "preferences",
-  Onboarding = "onboarding",
-  Connections = "connections",
-  Destination = "destination",
-  Source = "source",
-  Settings = "settings",
-
-  Connection = "connection",
-  ConnectionNew = "new-connection",
-  SourceNew = "new-source",
-  DestinationNew = "new-destination",
-}
+import { RoutePaths } from "./routePaths";
 
 function useDemo() {
   const { formatMessage } = useIntl();

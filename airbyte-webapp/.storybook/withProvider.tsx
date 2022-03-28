@@ -1,5 +1,4 @@
 import { MemoryRouter } from "react-router-dom";
-import * as React from "react";
 import { IntlProvider } from "react-intl";
 import { ThemeProvider } from "styled-components";
 
@@ -10,23 +9,34 @@ import messages from "../src/locales/en.json";
 import { FeatureService } from "../src/hooks/services/Feature";
 import { ConfigServiceProvider, defaultConfig } from "../src/config";
 import { ServicesProvider } from "../src/core/servicesProvider";
+import {
+  analyticsServiceContext,
+  AnalyticsServiceProviderValue,
+} from "../src/hooks/services/Analytics";
+
+const AnalyticsContextMock: AnalyticsServiceProviderValue = ({
+  analyticsContext: {},
+  setContext: () => {},
+  addContextProps: () => {},
+  removeContextProps: () => {},
+  service: {},
+} as unknown) as AnalyticsServiceProviderValue;
 
 export const withProviders = (getStory) => (
-  <ServicesProvider>
-    <MemoryRouter>
-      <IntlProvider messages={messages} locale={"en"}>
-        <ThemeProvider theme={theme}>
-          <ConfigServiceProvider
-            defaultConfig={defaultConfig}
-            providers={[]}
-          >
-            <FeatureService>
-              <GlobalStyle />
-              {getStory()}
-            </FeatureService>
-          </ConfigServiceProvider>
-        </ThemeProvider>
-      </IntlProvider>
-    </MemoryRouter>
-  </ServicesProvider>
+  <analyticsServiceContext.Provider value={AnalyticsContextMock}>
+    <ServicesProvider>
+      <MemoryRouter>
+        <IntlProvider messages={messages} locale={"en"}>
+          <ThemeProvider theme={theme}>
+            <ConfigServiceProvider defaultConfig={defaultConfig} providers={[]}>
+              <FeatureService>
+                <GlobalStyle />
+                {getStory()}
+              </FeatureService>
+            </ConfigServiceProvider>
+          </ThemeProvider>
+        </IntlProvider>
+      </MemoryRouter>
+    </ServicesProvider>
+  </analyticsServiceContext.Provider>
 );
