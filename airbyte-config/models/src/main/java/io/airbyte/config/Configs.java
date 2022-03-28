@@ -269,6 +269,7 @@ public interface Configs {
 
   /**
    * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
+   * Used for the sync job and as fallback in case job specific (spec, check, discover) node selectors are not defined.
    */
   Map<String, String> getJobKubeNodeSelectors();
 
@@ -289,6 +290,7 @@ public interface Configs {
 
   /**
    * Define one or more Job pod annotations. Each kv-pair is separated by a `,`.
+   * Used for the sync job and as fallback in case job specific (spec, check, discover) annotations are not defined.
    */
   Map<String, String> getJobKubeAnnotations();
 
