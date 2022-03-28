@@ -181,7 +181,7 @@ const ConnectionTable: React.FC<IProps> = ({
         ),
       },
     ],
-    [entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
+    [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
   );
 
   return (
