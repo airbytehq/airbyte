@@ -27,6 +27,13 @@
         "type": "string",
         "enum": ["sandbox", "development", "production"],
         "description": "The Plaid environment"
+      },
+      "min_last_updated_datetime": {
+        "title": "Min Last Updated Date",
+        "type": "string",
+        "description": "(Capital One Institutions Only) The oldest acceptable date from which balance should be pulled.",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
     }
   }
