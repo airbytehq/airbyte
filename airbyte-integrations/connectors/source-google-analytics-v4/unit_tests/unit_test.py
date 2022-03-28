@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import json
 import logging
 from pathlib import Path
@@ -113,7 +114,7 @@ def test_config():
     test_config["credentials"] = {
         "type": "Service",
     }
-    return test_config
+    return copy.deepcopy(test_config)
 
 
 def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
@@ -315,23 +316,18 @@ def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_
 
 @freeze_time("2021-11-30")
 def test_stream_slices_limited_by_current_date(test_config):
+    test_config["window_in_days"] = 14
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
-    stream_state = {"ga_date": "2050-05-01"}
+    stream_state = {"ga_date": "2021-11-25"}
     slices = g.stream_slices(stream_state=stream_state)
     current_date = pendulum.now().date().strftime("%Y-%m-%d")
 
-    assert len(slices) == 1
-    assert slices[0]["startDate"] == slices[0]["endDate"]
-    assert slices[0]["endDate"] == current_date
+    assert slices == [{"startDate": "2021-11-26", "endDate": current_date}]
 
 
 @freeze_time("2021-11-30")
-def test_stream_slices_start_from_current_date_if_abnornal_state_is_passed(test_config):
+def test_empty_stream_slice_if_abnormal_state_is_passed(test_config):
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
     stream_state = {"ga_date": "2050-05-01"}
     slices = g.stream_slices(stream_state=stream_state)
-    current_date = pendulum.now().date().strftime("%Y-%m-%d")
-
-    assert len(slices) == 1
-    assert slices[0]["startDate"] == slices[0]["endDate"]
-    assert slices[0]["startDate"] == current_date
+    assert slices == [None]

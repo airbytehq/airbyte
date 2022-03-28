@@ -14,6 +14,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import jwt
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -92,7 +93,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
     url_base = "https://analyticsreporting.googleapis.com/v4/"
     report_field = "reports"
-    data_fields = ["data", "rows"]
 
     map_type = dict(INTEGER="integer", FLOAT="number", PERCENT="number", TIME="number")
 
@@ -226,33 +226,29 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             ...]
         """
 
+        today = pendulum.now().date()
         start_date = pendulum.parse(self.start_date).date()
-        end_date = pendulum.now().date()
-
-        # Determine stream_state, if no stream_state we use start_date
         if stream_state:
-            start_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
+            prev_end_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
+            start_date = prev_end_date.add(days=1)
+        end_date = today
+        if start_date > end_date:
+            return [None]
 
-        # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
-        start_date = min(start_date, end_date)
         date_slices = []
-        while start_date <= end_date:
-            end_date_slice = start_date.add(days=self.window_in_days)
+        slice_start_date, slice_end_date = start_date, None
+        while slice_start_date <= end_date:
+            slice_end_date = slice_start_date.add(days=self.window_in_days)
             # limit the slice range with end_date
-            end_date_slice = min(end_date_slice, end_date)
-            date_slices.append({"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
-            # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
-            start_date = end_date_slice.add(days=1)
-        return date_slices
+            slice_end_date = min(slice_end_date, end_date)
+            date_slices.append({"startDate": self.to_datetime_str(slice_start_date), "endDate": self.to_datetime_str(slice_end_date)})
+            # start next slice 1 day after previous slice ended to prevent duplicate reads
+            slice_start_date = slice_end_date.add(days=1)
+        return date_slices or [None]
 
-    #   TODO: the method has to be updated for more logical and obvious
-    def get_data(self, data):  # type: ignore[no-untyped-def]
-        for data_field in self.data_fields:
-            if data and isinstance(data, dict):
-                data = data.get(data_field, [])
-            else:
-                return []
-        return data
+    @staticmethod
+    def report_rows(report_body: MutableMapping[Any, Any]) -> List[MutableMapping[Any, Any]]:
+        return report_body.get("data", {}).get("rows", [])
 
     def lookup_data_type(self, field_type: str, attribute: str) -> str:
         """
@@ -387,7 +383,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
             self.check_for_sampled_result(report.get("data", {}))
 
-            for row in self.get_data(report):
+            for row in self.report_rows(report):
                 record = {}
                 dimensions = row.get("dimensions", [])
                 metrics = row.get("metrics", [])
@@ -420,11 +416,35 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
     cursor_field = "ga_date"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Update the state value, default CDK method.
-        """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+    def __init__(self, config: MutableMapping):
+        super().__init__(config)
+        self._state = None
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._state:
+            return self._state
+        return {self.cursor_field: self.start_date}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if not stream_slice:
+            return []
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            current_cursor_value = pendulum.parse(self.state[self.cursor_field]).date()
+            latest_cursor_value = pendulum.parse(record[self.cursor_field]).date()
+            new_cursor_value = max(latest_cursor_value, current_cursor_value)
+            self.state = {self.cursor_field: self.to_datetime_str(new_cursor_value)}
+            yield record
 
 
 class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
