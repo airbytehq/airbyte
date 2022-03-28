@@ -1,7 +1,5 @@
 name: GKE Kube Acceptance Test
 on:
-  schedule:
-    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       repo:
@@ -13,7 +11,7 @@ on:
         required: false
         default: master
       comment-id:
-        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
 
 jobs:
@@ -60,11 +58,11 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "17"
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: "16.13.0"
 
       - name: Fix EC-2 Runner
         run: |
@@ -136,10 +134,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.3.0
+        uses: supertopher/ec2-github-runner@v15.0.5
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
           label: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.ec2-instance-id }}
-
