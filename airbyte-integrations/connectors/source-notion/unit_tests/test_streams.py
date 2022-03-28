@@ -3,6 +3,7 @@
 #
 
 from http import HTTPStatus
+import random
 from unittest.mock import MagicMock
 
 import pytest
@@ -100,38 +101,33 @@ def test_user_stream_handles_pagination_correclty(requests_mock):
 
     response_body = {
         "object": "list",
-        "results": [{"id": f"{x}"} for x in range(100)],
-        "next_cursor": "test_cursor_1",
+        "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(100)],
+        "next_cursor": "bc48234b-77b2-41a6-95a3-6a8abb7887d5",
         "has_more": True,
         "type": "user"
     }
-    url = "https://api.notion.com/v1/users?page_size=100"
-    requests_mock.get(url, json=response_body)
+    requests_mock.get("https://api.notion.com/v1/users?page_size=100", json=response_body)
 
     response_body = {
         "object": "list",
-        "results": [{"id": f"{x}"} for x in range(100, 200)],
-        "next_cursor": "test_cursor_2",
+        "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(100, 200)],
+        "next_cursor": "67030467-b97b-4729-8fd6-2fb33d012da4",
         "has_more": True,
         "type": "user"
     }
-    url = "https://api.notion.com/v1/users?page_size=100&start_cursor=test_cursor_1"
-    requests_mock.get(url, json=response_body)
+    requests_mock.get("https://api.notion.com/v1/users?page_size=100&start_cursor=bc48234b-77b2-41a6-95a3-6a8abb7887d5", json=response_body)
 
     response_body = {
         "object": "list",
-        "results": [{"id": f"{x}"} for x in range(200, 220)],
+        "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(200, 220)],
         "next_cursor": None,
         "has_more": False,
         "type": "user"
     }
-    url = "https://api.notion.com/v1/users?page_size=100&start_cursor=test_cursor_2"
-    requests_mock.get(url, json=response_body)
+    requests_mock.get("https://api.notion.com/v1/users?page_size=100&start_cursor=67030467-b97b-4729-8fd6-2fb33d012da4", json=response_body)
 
     stream = Users(config=MagicMock())
 
-    user_ids = set()
-    for record in stream.read_records(sync_mode=SyncMode.full_refresh):
-        user_ids.add(record["id"])
-
-    assert len(user_ids) == 220
+    records = stream.read_records(sync_mode=SyncMode.full_refresh)
+    records_length = sum(1 for _ in records)
+    assert records_length == 220
