@@ -54,7 +54,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -774,145 +773,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private void writeStandardSourceDefinition(final List<StandardSourceDefinition> configs) throws IOException {
     database.transaction(ctx -> {
-      writeStandardSourceDefinition(configs, ctx);
+      ConfigWriter.writeStandardSourceDefinition(configs, ctx);
       return null;
-    });
-  }
-
-  private void writeStandardSourceDefinition(final List<StandardSourceDefinition> configs, final DSLContext ctx) {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
-    configs.forEach((standardSourceDefinition) -> {
-      final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(ACTOR_DEFINITION)
-          .where(ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId())));
-
-      if (isExistingConfig) {
-        ctx.update(ACTOR_DEFINITION)
-            .set(ACTOR_DEFINITION.ID, standardSourceDefinition.getSourceDefinitionId())
-            .set(ACTOR_DEFINITION.NAME, standardSourceDefinition.getName())
-            .set(ACTOR_DEFINITION.DOCKER_REPOSITORY, standardSourceDefinition.getDockerRepository())
-            .set(ACTOR_DEFINITION.DOCKER_IMAGE_TAG, standardSourceDefinition.getDockerImageTag())
-            .set(ACTOR_DEFINITION.DOCUMENTATION_URL, standardSourceDefinition.getDocumentationUrl())
-            .set(ACTOR_DEFINITION.ICON, standardSourceDefinition.getIcon())
-            .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.source)
-            .set(ACTOR_DEFINITION.SOURCE_TYPE,
-                standardSourceDefinition.getSourceType() == null ? null
-                    : Enums.toEnum(standardSourceDefinition.getSourceType().value(),
-                        io.airbyte.db.instance.configs.jooq.enums.SourceType.class).orElseThrow())
-            .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
-            .set(ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone())
-            .set(ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
-            .set(ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
-            .set(ACTOR_DEFINITION.RELEASE_STAGE, standardSourceDefinition.getReleaseStage() == null ? null
-                : Enums.toEnum(standardSourceDefinition.getReleaseStage().value(),
-                    io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
-            .set(ACTOR_DEFINITION.RELEASE_DATE, standardSourceDefinition.getReleaseDate() == null ? null
-                : LocalDate.parse(standardSourceDefinition.getReleaseDate()))
-            .set(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
-                standardSourceDefinition.getResourceRequirements() == null ? null
-                    : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
-            .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
-            .where(ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId()))
-            .execute();
-
-      } else {
-        ctx.insertInto(ACTOR_DEFINITION)
-            .set(ACTOR_DEFINITION.ID, standardSourceDefinition.getSourceDefinitionId())
-            .set(ACTOR_DEFINITION.NAME, standardSourceDefinition.getName())
-            .set(ACTOR_DEFINITION.DOCKER_REPOSITORY, standardSourceDefinition.getDockerRepository())
-            .set(ACTOR_DEFINITION.DOCKER_IMAGE_TAG, standardSourceDefinition.getDockerImageTag())
-            .set(ACTOR_DEFINITION.DOCUMENTATION_URL, standardSourceDefinition.getDocumentationUrl())
-            .set(ACTOR_DEFINITION.ICON, standardSourceDefinition.getIcon())
-            .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.source)
-            .set(ACTOR_DEFINITION.SOURCE_TYPE,
-                standardSourceDefinition.getSourceType() == null ? null
-                    : Enums.toEnum(standardSourceDefinition.getSourceType().value(),
-                        io.airbyte.db.instance.configs.jooq.enums.SourceType.class).orElseThrow())
-            .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
-            .set(ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone() != null && standardSourceDefinition.getTombstone())
-            .set(ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
-            .set(ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
-            .set(ACTOR_DEFINITION.RELEASE_STAGE,
-                standardSourceDefinition.getReleaseStage() == null ? null
-                    : Enums.toEnum(standardSourceDefinition.getReleaseStage().value(),
-                        io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
-            .set(ACTOR_DEFINITION.RELEASE_DATE, standardSourceDefinition.getReleaseDate() == null ? null
-                : LocalDate.parse(standardSourceDefinition.getReleaseDate()))
-            .set(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
-                standardSourceDefinition.getResourceRequirements() == null ? null
-                    : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
-            .set(ACTOR_DEFINITION.CREATED_AT, timestamp)
-            .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
-            .execute();
-      }
     });
   }
 
   private void writeStandardDestinationDefinition(final List<StandardDestinationDefinition> configs) throws IOException {
     database.transaction(ctx -> {
-      writeStandardDestinationDefinition(configs, ctx);
+      ConfigWriter.writeStandardDestinationDefinition(configs, ctx);
       return null;
-    });
-  }
-
-  private void writeStandardDestinationDefinition(final List<StandardDestinationDefinition> configs, final DSLContext ctx) {
-    final OffsetDateTime timestamp = OffsetDateTime.now();
-    configs.forEach((standardDestinationDefinition) -> {
-      final boolean isExistingConfig = ctx.fetchExists(select()
-          .from(ACTOR_DEFINITION)
-          .where(ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId())));
-
-      if (isExistingConfig) {
-        ctx.update(ACTOR_DEFINITION)
-            .set(ACTOR_DEFINITION.ID, standardDestinationDefinition.getDestinationDefinitionId())
-            .set(ACTOR_DEFINITION.NAME, standardDestinationDefinition.getName())
-            .set(ACTOR_DEFINITION.DOCKER_REPOSITORY, standardDestinationDefinition.getDockerRepository())
-            .set(ACTOR_DEFINITION.DOCKER_IMAGE_TAG, standardDestinationDefinition.getDockerImageTag())
-            .set(ACTOR_DEFINITION.DOCUMENTATION_URL, standardDestinationDefinition.getDocumentationUrl())
-            .set(ACTOR_DEFINITION.ICON, standardDestinationDefinition.getIcon())
-            .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
-            .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
-            .set(ACTOR_DEFINITION.TOMBSTONE, standardDestinationDefinition.getTombstone())
-            .set(ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
-            .set(ACTOR_DEFINITION.CUSTOM, standardDestinationDefinition.getCustom())
-            .set(ACTOR_DEFINITION.RELEASE_STAGE, standardDestinationDefinition.getReleaseStage() == null ? null
-                : Enums.toEnum(standardDestinationDefinition.getReleaseStage().value(),
-                    io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
-            .set(ACTOR_DEFINITION.RELEASE_DATE, standardDestinationDefinition.getReleaseDate() == null ? null
-                : LocalDate.parse(standardDestinationDefinition.getReleaseDate()))
-            .set(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
-                standardDestinationDefinition.getResourceRequirements() == null ? null
-                    : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
-            .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
-            .where(ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
-            .execute();
-
-      } else {
-        ctx.insertInto(ACTOR_DEFINITION)
-            .set(ACTOR_DEFINITION.ID, standardDestinationDefinition.getDestinationDefinitionId())
-            .set(ACTOR_DEFINITION.NAME, standardDestinationDefinition.getName())
-            .set(ACTOR_DEFINITION.DOCKER_REPOSITORY, standardDestinationDefinition.getDockerRepository())
-            .set(ACTOR_DEFINITION.DOCKER_IMAGE_TAG, standardDestinationDefinition.getDockerImageTag())
-            .set(ACTOR_DEFINITION.DOCUMENTATION_URL, standardDestinationDefinition.getDocumentationUrl())
-            .set(ACTOR_DEFINITION.ICON, standardDestinationDefinition.getIcon())
-            .set(ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
-            .set(ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
-            .set(ACTOR_DEFINITION.TOMBSTONE, standardDestinationDefinition.getTombstone() != null && standardDestinationDefinition.getTombstone())
-            .set(ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
-            .set(ACTOR_DEFINITION.CUSTOM, standardDestinationDefinition.getCustom())
-            .set(ACTOR_DEFINITION.RELEASE_STAGE,
-                standardDestinationDefinition.getReleaseStage() == null ? null
-                    : Enums.toEnum(standardDestinationDefinition.getReleaseStage().value(),
-                        io.airbyte.db.instance.configs.jooq.enums.ReleaseStage.class).orElseThrow())
-            .set(ACTOR_DEFINITION.RELEASE_DATE, standardDestinationDefinition.getReleaseDate() == null ? null
-                : LocalDate.parse(standardDestinationDefinition.getReleaseDate()))
-            .set(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
-                standardDestinationDefinition.getResourceRequirements() == null ? null
-                    : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
-            .set(ACTOR_DEFINITION.CREATED_AT, timestamp)
-            .set(ACTOR_DEFINITION.UPDATED_AT, timestamp)
-            .execute();
-      }
     });
   }
 
@@ -1431,7 +1300,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       }
       if (configs.containsKey(ConfigSchema.STANDARD_SOURCE_DEFINITION)) {
         configs.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).map(c -> (StandardSourceDefinition) c)
-            .forEach(c -> writeStandardSourceDefinition(Collections.singletonList(c), ctx));
+            .forEach(c -> ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(c), ctx));
         originalConfigs.remove(ConfigSchema.STANDARD_SOURCE_DEFINITION);
       } else {
         LOGGER.warn(ConfigSchema.STANDARD_SOURCE_DEFINITION + " not found");
@@ -1439,7 +1308,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
       if (configs.containsKey(ConfigSchema.STANDARD_DESTINATION_DEFINITION)) {
         configs.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).map(c -> (StandardDestinationDefinition) c)
-            .forEach(c -> writeStandardDestinationDefinition(Collections.singletonList(c), ctx));
+            .forEach(c -> ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(c), ctx));
         originalConfigs.remove(ConfigSchema.STANDARD_DESTINATION_DEFINITION);
       } else {
         LOGGER.warn(ConfigSchema.STANDARD_DESTINATION_DEFINITION + " not found");
@@ -1872,9 +1741,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                                                final AirbyteConfig configType,
                                                final JsonNode definition) {
     if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-      writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
+      ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(Jsons.object(definition, StandardSourceDefinition.class)), ctx);
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
+      ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(Jsons.object(definition, StandardDestinationDefinition.class)), ctx);
     } else {
       throw new IllegalArgumentException("Unknown config type " + configType);
     }

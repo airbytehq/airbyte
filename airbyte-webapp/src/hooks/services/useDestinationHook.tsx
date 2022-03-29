@@ -2,12 +2,12 @@ import { useFetcher, useResource } from "rest-hooks";
 
 import DestinationResource from "core/resources/Destination";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import { RoutePaths } from "pages/routes";
 import useRouter from "../useRouter";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Destination } from "core/domain/connector";
+import { RoutePaths } from "../../pages/routePaths";
 
 type ValuesProps = {
   name: string;
