@@ -80,24 +80,17 @@ public class S3ConsumerFactory {
       final AirbyteStream abStream = stream.getStream();
       final String namespace = abStream.getNamespace();
       final String streamName = abStream.getName();
-      final String outputNamespace = getOutputNamespace(abStream, config.get(BUCKET_PATH_FIELD).asText(), namingResolver);
-      final String customOutputFormat =
-          config.has(PATH_FORMAT_FIELD) && !config.get(PATH_FORMAT_FIELD).asText().isBlank() ? config.get(PATH_FORMAT_FIELD).asText()
-              : S3DestinationConstants.DEFAULT_PATH_FORMAT;
-      final String outputBucketPath = storageOperations.getBucketObjectPath(outputNamespace, streamName, SYNC_DATETIME, customOutputFormat);
+      final String bucketPath = config.get(BUCKET_PATH_FIELD).asText();
+      final String customOutputFormat = String.join("/",
+              bucketPath,
+              config.has(PATH_FORMAT_FIELD) && !config.get(PATH_FORMAT_FIELD).asText().isBlank() ?
+                  config.get(PATH_FORMAT_FIELD).asText() : S3DestinationConstants.DEFAULT_PATH_FORMAT);
+      final String outputBucketPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
-      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, outputNamespace, outputBucketPath, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, outputBucketPath, syncMode);
       LOGGER.info("Write config: {}", writeConfig);
       return writeConfig;
     };
-  }
-
-  private static String getOutputNamespace(final AirbyteStream stream,
-                                           final String defaultDestNamespace,
-                                           final NamingConventionTransformer namingResolver) {
-    return stream.getNamespace() != null
-        ? namingResolver.getNamespace(stream.getNamespace())
-        : namingResolver.getNamespace(defaultDestNamespace);
   }
 
   private OnStartFunction onStartFunction(final BlobStorageOperations storageOperations, final List<WriteConfig> writeConfigs) {
@@ -144,7 +137,7 @@ public class S3ConsumerFactory {
         writer.flush();
         writeConfig.addStoredFile(storageOperations.uploadRecordsToBucket(
             writer,
-            writeConfig.getOutputNamespace(),
+            writeConfig.getNamespace(),
             writeConfig.getStreamName(),
             writeConfig.getOutputBucketPath()));
       } catch (final Exception e) {
