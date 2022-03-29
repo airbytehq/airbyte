@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 
 import SourceResource from "core/resources/Source";
-import { RoutePaths } from "pages/routes";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -11,6 +10,7 @@ import useWorkspace from "./useWorkspace";
 import useRouter from "hooks/useRouter";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Source } from "core/domain/connector";
+import { RoutePaths } from "../../pages/routePaths";
 
 type ValuesProps = {
   name: string;
