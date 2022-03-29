@@ -36,7 +36,9 @@ class SourceStripeAlex(AbstractSource):
         print(f"config: {config}")
         url_base = config["url_base"]
         primary_key = config["primary_key"]
-        return [Invoices(url_base=url_base, primary_key=primary_key)]
+        retry_factor = config["retry_factor"]
+        max_retries = config["max_retries"]
+        return [Invoices(url_base=url_base, primary_key=primary_key, retry_factor=retry_factor, max_retries=max_retries)]
 
     def _call_api(self, base_url, endpoint, headers, logger):
         url = f"https://{base_url}/{endpoint}"

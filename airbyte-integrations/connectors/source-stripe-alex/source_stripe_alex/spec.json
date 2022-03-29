@@ -59,6 +59,17 @@
         "title": "Primary key",
         "description": "Primary key FOR ALL streams. FIXME",
         "order": 7
+      },
+      "retry_factor": {
+        "type": "integer",
+        "title": "Retry factor",
+        "description": "Factor for exponential backoff policy",
+        "order": 8
+      },
+      "max_retries": {
+        "tyoe": "integer",
+        "title": "Max retries",
+        "description": "Maximum amount of retries for backoff policy"
       }
     }
   }

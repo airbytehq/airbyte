@@ -8,10 +8,12 @@ from airbyte_cdk.sources.streams.core import Stream
 # Basic full refresh stream
 class StripeAlexStream(HttpStream, ABC):
 
-    def __init__(self, *, url_base: str, primary_key: str):
+    def __init__(self, *, url_base: str, primary_key: str, retry_factor: float, max_retries: int):
         super().__init__()
         self._primary_key = primary_key
         self._url_base = url_base
+        self._retry_factor = retry_factor
+        self._max_retries = max_retries
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -44,6 +46,22 @@ class StripeAlexStream(HttpStream, ABC):
     @primary_key.setter
     def set_primary_key(self, value):
         self._primary_key = value
+
+    @property
+    def retry_factor(self) -> float:
+        return self._retry_factor
+
+    @retry_factor.setter
+    def set_retry_factor(self, value):
+        self.retry_factor = value
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return self._max_retries
+
+    @max_retries.setter
+    def set_max_retries(self, value):
+        self._max_retries = value
 
 
 class Invoices(StripeAlexStream):
