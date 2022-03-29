@@ -61,11 +61,7 @@ class DestinationAwsDatalake(Destination):
 
             for message in input_messages:
                 if message.type == Type.STATE:
-                    stream = message.record.stream
-                    streams[stream].add_to_datalake()
-                    self.logger.debug("Write is yielding")
                     yield message
-                    self.logger.debug("Write is back from yield")
                 else:
                     data = message.record.data
                     stream = message.record.stream
@@ -92,26 +88,26 @@ class DestinationAwsDatalake(Destination):
         try:
             aws_handler = AwsHandler(connector_config, self)
         except (ClientError, AttributeError) as e:
-            logger.error(f"""Could not create session on {connector_config._aws_account_id} Exception: {repr(e)}""")
-            message = f"""Could not authenticate using {connector_config._auth_mode} on Account {connector_config._aws_account_id} Exception: {repr(e)}"""
+            logger.error(f"""Could not create session on {connector_config.aws_account_id} Exception: {repr(e)}""")
+            message = f"""Could not authenticate using {connector_config.auth_mode} on Account {connector_config.aws_account_id} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
         try:
             aws_handler.head_bucket()
         except ClientError as e:
-            message = f"""Could not find bucket {connector_config._bucket_name} in aws://{connector_config._aws_account_id}:{connector_config._region} Exception: {repr(e)}"""
+            message = f"""Could not find bucket {connector_config.bucket_name} in aws://{connector_config.aws_account_id}:{connector_config.region} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
         with LakeformationTransaction(aws_handler) as tx:
-            table_location = "s3://" + connector_config._bucket_name + "/" + connector_config._bucket_prefix + "/" + "airbyte_test/"
+            table_location = "s3://" + connector_config.bucket_name + "/" + connector_config.bucket_prefix + "/" + "airbyte_test/"
             table = aws_handler.get_table(
                 txid=tx.txid,
-                database_name=connector_config._lakeformation_database_name,
+                database_name=connector_config.lakeformation_database_name,
                 table_name="airbyte_test",
                 location=table_location,
             )
         if table is None:
-            message = f"Could not create a table in database {connector_config._lakeformation_database_name}"
+            message = f"Could not create a table in database {connector_config.lakeformation_database_name}"
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)

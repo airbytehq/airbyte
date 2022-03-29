@@ -32,7 +32,7 @@ class StreamWriter:
         self._logger.debug(f"Appending message to table {self._table}")
         self._messages.append(message)
 
-    def generate_object_key(prefix=None):
+    def generate_object_key(self, prefix=None):
         salt = nanoid.generate(size=10)
         base = datetime.now().strftime("%Y%m%d%H%M%S")
         path = f"{base}.{salt}.json"

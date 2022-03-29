@@ -22,26 +22,26 @@ class AwsHandler:
     def __init__(self, connector_config, destination: Destination):
         self._connector_config: ConnectorConfig = connector_config
         self._destination: Destination = destination
-        self._bucket_name = connector_config._bucket_name
+        self._bucket_name = connector_config.bucket_name
         self.logger = self._destination.logger
 
         self.create_session()
-        self.s3_client = self.session.client("s3", region_name=connector_config._region)
+        self.s3_client = self.session.client("s3", region_name=connector_config.region)
         self.glue_client = self.session.client("glue")
         self.lf_client = self.session.client("lakeformation")
 
     @retry(stop_max_attempt_number=10, wait_random_min=1000, wait_random_max=2000)
     def create_session(self):
-        if self._connector_config._auth_mode == AuthMode.IAM_USER.value:
+        if self._connector_config.auth_mode == AuthMode.IAM_USER.value:
             self._session = boto3.Session(
-                aws_access_key_id=self._connector_config._aws_access_key,
-                aws_secret_access_key=self._connector_config._aws_secret_key,
-                region_name=self._connector_config._region,
+                aws_access_key_id=self._connector_config.aws_access_key,
+                aws_secret_access_key=self._connector_config.aws_secret_key,
+                region_name=self._connector_config.region,
             )
-        elif self._connector_config._auth_mode == AuthMode.IAM_ROLE.value:
+        elif self._connector_config.auth_mode == AuthMode.IAM_ROLE.value:
             client = boto3.client("sts")
             role = client.assume_role(
-                RoleArn=self._connector_config._role_arn,
+                RoleArn=self._connector_config.role_arn,
                 RoleSessionName="airbyte-destination-aws-datalake",
             )
             creds = role.get("Credentials", {})
@@ -49,7 +49,7 @@ class AwsHandler:
                 aws_access_key_id=creds.get("AccessKeyId"),
                 aws_secret_access_key=creds.get("SecretAccessKey"),
                 aws_session_token=creds.get("SessionToken"),
-                region_name=self._connector_config._region,
+                region_name=self._connector_config.region,
             )
 
     @property
@@ -225,7 +225,7 @@ class AwsHandler:
 
 class LakeformationTransaction:
     def __init__(self, aws_handler: AwsHandler):
-        self._aws_helper = aws_handler
+        self._aws_handler = aws_handler
         self._transaction = None
         self._logger = aws_handler.logger
 
@@ -235,19 +235,19 @@ class LakeformationTransaction:
 
     def cancel_transaction(self):
         self._logger.debug("Canceling Lakeformation Transaction")
-        self._aws_helper.lf_client.cancel_transaction(TransactionId=self.txid)
+        self._aws_handler.lf_client.cancel_transaction(TransactionId=self.txid)
 
     def commit_transaction(self):
         self._logger.debug("Commiting Lakeformation Transaction")
-        self._aws_helper.lf_client.commit_transaction(TransactionId=self.txid)
+        self._aws_handler.lf_client.commit_transaction(TransactionId=self.txid)
 
     def extend_transaction(self):
         self._logger.debug("Extending Lakeformation Transaction")
-        self._aws_helper.lf_client.extend_transaction(TransactionId=self.txid)
+        self._aws_handler.lf_client.extend_transaction(TransactionId=self.txid)
 
     def __enter__(self, transaction_type="READ_AND_WRITE"):
         self._logger.debug("Starting Lakeformation Transaction")
-        self._transaction = self._aws_helper.lf_client.start_transaction(TransactionType=transaction_type)
+        self._transaction = self._aws_handler.lf_client.start_transaction(TransactionType=transaction_type)
         self._logger.debug(f"Transaction id = {self.txid}")
         return self
 
