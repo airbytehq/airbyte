@@ -3,12 +3,7 @@
 set -ux
 VERSION=$1
 
-if [[ -z "${DOCKER_PASSWORD}" ]]; then
-  echo 'DOCKER_PASSWORD for airbytebot not set.';
-  exit 1;
-fi
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
-
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 docker run --privileged --rm tonistiigi/binfmt --install all
 docker build --push --tag airbyte/octavia-cli:${VERSION} ${SCRIPT_DIR}
