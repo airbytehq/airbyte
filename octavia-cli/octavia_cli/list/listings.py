@@ -46,12 +46,14 @@ class BaseListing(abc.ABC):
     def _list_fn(self):
         return getattr(self.api, self.list_function_name)
 
+
     @property
     def list_function_kwargs(self) -> dict:
-        return {}
-
-    def __init__(self, api_client: airbyte_api_client.ApiClient):
+        return {"workspace_id_request_body": WorkspaceIdRequestBody(workspace_id=self.workspace_id)}
+        
+    def __init__(self, api_client: airbyte_api_client.ApiClient, workspace_id: str):
         self.api_instance = self.api(api_client)
+        self.workspace_id = workspace_id
 
     def _parse_response(self, api_response) -> List[List[str]]:
         items = [[item[field] for field in self.fields_to_display] for item in api_response[self.list_field_in_response]]
@@ -70,41 +72,30 @@ class SourceConnectorsDefinitions(BaseListing):
     api = source_definition_api.SourceDefinitionApi
     fields_to_display = ["name", "dockerRepository", "dockerImageTag", "sourceDefinitionId"]
     list_field_in_response = "source_definitions"
-    list_function_name = "list_latest_source_definitions"
+    list_function_name = "list_source_definitions_for_workspace"
 
 
 class DestinationConnectorsDefinitions(BaseListing):
     api = destination_definition_api.DestinationDefinitionApi
     fields_to_display = ["name", "dockerRepository", "dockerImageTag", "destinationDefinitionId"]
     list_field_in_response = "destination_definitions"
-    list_function_name = "list_latest_destination_definitions"
+    list_function_name = "list_destination_definitions_for_workspace"
 
-
-class WorkspaceListing(BaseListing, abc.ABC):
-    def __init__(self, api_client: airbyte_api_client.ApiClient, workspace_id: str):
-        self.workspace_id = workspace_id
-        super().__init__(api_client)
-
-    @property
-    def list_function_kwargs(self) -> dict:
-        return {"workspace_id_request_body": WorkspaceIdRequestBody(workspace_id=self.workspace_id)}
-
-
-class Sources(WorkspaceListing):
+class Sources(BaseListing):
     api = source_api.SourceApi
     fields_to_display = ["name", "sourceName", "sourceId"]
     list_field_in_response = "sources"
     list_function_name = "list_sources_for_workspace"
 
 
-class Destinations(WorkspaceListing):
+class Destinations(BaseListing):
     api = destination_api.DestinationApi
     fields_to_display = ["name", "destinationName", "destinationId"]
     list_field_in_response = "destinations"
     list_function_name = "list_destinations_for_workspace"
 
 
-class Connections(WorkspaceListing):
+class Connections(BaseListing):
     api = connection_api.ConnectionApi
     fields_to_display = ["name", "connectionId", "status", "sourceId", "destinationId"]
     list_field_in_response = "connections"

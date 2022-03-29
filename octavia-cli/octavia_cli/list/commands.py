@@ -31,7 +31,8 @@ def workspace(ctx: click.Context):  # pragma: no cover
 @click.pass_context
 def sources_connectors(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
-    definitions = SourceConnectorsDefinitions(api_client)
+    workspace_id = ctx.obj["WORKSPACE_ID"]
+    definitions = SourceConnectorsDefinitions(api_client, workspace_id)
     click.echo(definitions)
 
 
@@ -39,7 +40,8 @@ def sources_connectors(ctx: click.Context):
 @click.pass_context
 def destinations_connectors(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
-    definitions = DestinationConnectorsDefinitions(api_client)
+    workspace_id = ctx.obj["WORKSPACE_ID"]
+    definitions = DestinationConnectorsDefinitions(api_client, workspace_id)
     click.echo(definitions)
 
 
