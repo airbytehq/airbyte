@@ -21,7 +21,7 @@ import {
 } from "core/domain/connection/operation";
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { Connection, ScheduleProperties } from "core/domain/connection";
 import {
   ConnectionNamespaceDefinition,
   ConnectionSchedule,

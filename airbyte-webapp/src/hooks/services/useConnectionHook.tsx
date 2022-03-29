@@ -13,7 +13,7 @@ import {
   WebBackendConnectionService,
 } from "core/domain/connection";
 
-import { ScheduleProperties } from "core/resources/Connection";
+import { ScheduleProperties } from "core/domain/connection";
 import { SyncSchema } from "core/domain/catalog";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
@@ -73,7 +73,7 @@ function useWebConnectionService(): WebBackendConnectionService {
   return useInitService(
     () => new WebBackendConnectionService(config.apiUrl, middlewares),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config]
+    [config, middlewares]
   );
 }
 
@@ -84,7 +84,7 @@ function useConnectionService(): ConnectionService {
   return useInitService(
     () => new ConnectionService(config.apiUrl, middlewares),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config]
+    [config, middlewares]
   );
 }
 

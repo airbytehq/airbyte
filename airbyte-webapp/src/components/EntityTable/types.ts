@@ -1,4 +1,4 @@
-import { ScheduleProperties } from "core/resources/Connection";
+import { ScheduleProperties } from "core/domain/connection";
 
 type EntityTableDataItem = {
   entityId: string;
