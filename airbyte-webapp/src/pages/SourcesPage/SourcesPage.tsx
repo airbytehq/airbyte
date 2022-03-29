@@ -1,13 +1,13 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { RoutePaths } from "pages/routes";
 import AllSourcesPage from "./pages/AllSourcesPage";
 import CreateSourcePage from "./pages/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
 import CreationFormPage from "pages/ConnectionPage/pages/CreationFormPage";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
+import { RoutePaths } from "../routePaths";
 
 const SourcesPage: React.FC = () => (
   <Routes>

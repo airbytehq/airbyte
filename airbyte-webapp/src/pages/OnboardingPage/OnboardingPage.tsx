@@ -28,8 +28,8 @@ import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
-import { RoutePaths } from "pages/routes";
 import { JobInfo } from "../../core/domain/job/Job";
+import { RoutePaths } from "../routePaths";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
