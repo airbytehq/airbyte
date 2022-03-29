@@ -36,6 +36,7 @@ type ArrayOfObjectsEditorProps<T extends { name: string }> = {
   onCancelEdit?: () => void;
   onDone?: () => void;
   onRemove: (index: number) => void;
+  disabled?: boolean;
 };
 
 function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
@@ -51,6 +52,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
     children,
     mainTitle,
     addButtonText,
+    disabled,
   } = props;
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [
     onStartEdit,
@@ -98,6 +100,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
         onAddItem={onAddItem}
         mainTitle={mainTitle}
         addButtonText={addButtonText}
+        disabled={disabled}
       />
       {items.length ? (
         <ItemsList>

@@ -13,12 +13,14 @@ type IProps = {
   streams: SyncSchemaStream[];
   destinationSupportedSyncModes: DestinationSyncMode[];
   onChangeStream: (stream: SyncSchemaStream) => void;
+  readOnly?: boolean;
 };
 
 const CatalogTree: React.FC<IProps> = ({
   streams,
   destinationSupportedSyncModes,
   onChangeStream,
+  readOnly,
 }) => {
   const onUpdateStream = useCallback(
     (id: string, newConfig: Partial<AirbyteStreamConfiguration>) => {
@@ -47,6 +49,7 @@ const CatalogTree: React.FC<IProps> = ({
           {({ form }: FieldProps<FormikConnectionFormValues>) => (
             <CatalogSection
               key={`schema.streams[${streamNode.id}].config`}
+              readOnly={readOnly}
               errors={form.errors}
               namespaceDefinition={form.values.namespaceDefinition}
               namespaceFormat={form.values.namespaceFormat}

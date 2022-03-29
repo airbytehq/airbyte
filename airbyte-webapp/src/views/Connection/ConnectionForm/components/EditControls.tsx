@@ -12,6 +12,7 @@ type IProps = {
   errorMessage?: React.ReactNode;
   editSchemeMode?: boolean;
   withLine?: boolean;
+  readOnly?: boolean;
 };
 
 const Warning = styled.div`
@@ -57,6 +58,7 @@ const EditControls: React.FC<IProps> = ({
   errorMessage,
   editSchemeMode,
   withLine,
+  readOnly,
 }) => {
   const showStatusMessage = () => {
     if (errorMessage) {
@@ -83,7 +85,8 @@ const EditControls: React.FC<IProps> = ({
             type="button"
             secondary
             disabled={
-              (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
+              ((isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)) ||
+              readOnly
             }
             onClick={resetForm}
           >
@@ -93,7 +96,8 @@ const EditControls: React.FC<IProps> = ({
             type="submit"
             isLoading={isSubmitting}
             disabled={
-              (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
+              ((isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)) ||
+              readOnly
             }
           >
             {editSchemeMode ? (

@@ -14,6 +14,7 @@ import {
 import { FormCard } from "views/Connection/FormCard";
 import {
   Connection,
+  ConnectionStatus,
   NormalizationType,
   Operation,
   OperatorType,
@@ -47,7 +48,8 @@ const NoSupportedTransformationCard = styled(ContentCard)`
 const CustomTransformationsCard: React.FC<{
   operations: Operation[];
   onSubmit: (newValue: { transformations?: Transformation[] }) => void;
-}> = ({ operations, onSubmit }) => {
+  readOnly?: boolean;
+}> = ({ operations, onSubmit, readOnly }) => {
   const defaultTransformation = useDefaultTransformation();
 
   const initialValues = useMemo(
@@ -67,11 +69,13 @@ const CustomTransformationsCard: React.FC<{
         enableReinitialize: true,
         onSubmit,
       }}
+      readOnly={readOnly}
     >
       <FieldArray name="transformations">
         {(formProps) => (
           <TransformationField
             defaultTransformation={defaultTransformation}
+            disabled={readOnly}
             {...formProps}
           />
         )}
@@ -83,7 +87,8 @@ const CustomTransformationsCard: React.FC<{
 const NormalizationCard: React.FC<{
   operations: Operation[];
   onSubmit: (newValue: { normalization?: NormalizationType }) => void;
-}> = ({ operations, onSubmit }) => {
+  readOnly?: boolean;
+}> = ({ operations, onSubmit, readOnly }) => {
   const initialValues = useMemo(
     () => ({
       normalization: getInitialNormalization(operations, true),
@@ -98,8 +103,13 @@ const NormalizationCard: React.FC<{
       }}
       title={<FormattedMessage id="connection.normalization" />}
       collapsible
+      readOnly={readOnly}
     >
-      <Field name="normalization" component={NormalizationField} />
+      <Field
+        name="normalization"
+        disabled={readOnly}
+        component={NormalizationField}
+      />
     </FormCard>
   );
 };
@@ -154,18 +164,22 @@ const TransformationView: React.FC<TransformationViewProps> = ({
     });
   };
 
+  const readOnly = connection.status === ConnectionStatus.DEPRECATED;
+
   return (
     <Content>
       {supportsNormalization && (
         <NormalizationCard
           operations={connection.operations}
           onSubmit={onSubmit}
+          readOnly={readOnly}
         />
       )}
       {supportsDbt && (
         <CustomTransformationsCard
           operations={connection.operations}
           onSubmit={onSubmit}
+          readOnly={readOnly}
         />
       )}
       {!supportsNormalization && !supportsDbt && (

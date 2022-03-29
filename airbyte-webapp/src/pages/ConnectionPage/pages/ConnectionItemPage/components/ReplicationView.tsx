@@ -16,7 +16,10 @@ import { ModalTypes } from "components/ResetDataModal/types";
 import LoadingSchema from "components/LoadingSchema";
 
 import { equal } from "utils/objects";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import {
+  ConnectionNamespaceDefinition,
+  ConnectionStatus,
+} from "core/domain/connection";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -80,6 +83,8 @@ const ReplicationView: React.FC<IProps> = ({
     ? connectionWithRefreshCatalog
     : initialConnection;
 
+  const actionsDisabled = connection?.status === ConnectionStatus.DEPRECATED;
+
   const onSubmit = async (values: ValuesProps) => {
     const initialSyncSchema = connection?.syncCatalog;
 
@@ -119,14 +124,17 @@ const ReplicationView: React.FC<IProps> = ({
     await refreshCatalog();
   };
 
-  const onExitRefreshCatalogMode = () => {
-    setActiveUpdatingSchemaMode(false);
-  };
+  const onExitRefreshCatalogMode = () => setActiveUpdatingSchemaMode(false);
 
   const renderUpdateSchemaButton = () => {
     if (!activeUpdatingSchemaMode) {
       return (
-        <Button onClick={onEnterRefreshCatalogMode} type="button" secondary>
+        <Button
+          disabled={actionsDisabled}
+          onClick={onEnterRefreshCatalogMode}
+          type="button"
+          secondary
+        >
           <TryArrow icon={faSyncAlt} />
           <FormattedMessage id="connection.updateSchema" />
         </Button>

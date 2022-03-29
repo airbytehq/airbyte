@@ -11,11 +11,13 @@ import StepsMenu from "components/StepsMenu";
 import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
+import { StepMenuItem } from "../../../../../components/StepsMenu/StepsMenu";
 
 type IProps = {
   source: Source;
   destination: Destination;
   currentStep: ConnectionSettingsRoutes;
+  readonly: boolean;
 };
 
 const Title = styled.div`
@@ -44,6 +46,7 @@ const ConnectionPageTitle: React.FC<IProps> = ({
   source,
   destination,
   currentStep,
+  readonly,
 }) => {
   const { push } = useRouter<{ id: string }>();
 
@@ -58,13 +61,13 @@ const ConnectionPageTitle: React.FC<IProps> = ({
     },
     {
       id: ConnectionSettingsRoutes.TRANSFORMATION,
-      name: <FormattedMessage id={"connectionForm.transformation.title"} />,
+      name: <FormattedMessage id="connectionForm.transformation.title" />,
     },
-    {
+    !readonly && {
       id: ConnectionSettingsRoutes.SETTINGS,
       name: <FormattedMessage id="sources.settings" />,
     },
-  ];
+  ].filter(Boolean) as StepMenuItem[];
 
   const onSelectStep = (id: string) => {
     if (id === ConnectionSettingsRoutes.STATUS) {

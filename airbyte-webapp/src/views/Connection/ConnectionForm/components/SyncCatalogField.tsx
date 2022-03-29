@@ -92,9 +92,10 @@ const LearnMoreLink = styled.a`
 type SchemaViewProps = {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
+  readOnly?: boolean;
 } & FieldProps<SyncSchemaStream[]>;
 
-const CatalogHeader: React.FC = () => {
+const CatalogHeader: React.FC<{ readOnly?: boolean }> = ({ readOnly }) => {
   const config = useConfig();
   const { onCheckAll, selectedBatchNodeIds, allChecked } = useBulkEdit();
 
@@ -105,6 +106,7 @@ const CatalogHeader: React.FC = () => {
           onChange={onCheckAll}
           indeterminate={selectedBatchNodeIds.length > 0 && !allChecked}
           checked={allChecked}
+          disabled={readOnly}
         />
       </CheckboxCell>
       <ArrowCell />
@@ -183,6 +185,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   additionalControl,
   field,
   form,
+  readOnly,
 }) => {
   const { value: streams, name: fieldName } = field;
 
@@ -230,13 +233,14 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       </HeaderBlock>
       <Search onSearch={setSearchString} />
       <StreamsContent>
-        <CatalogHeader />
+        <CatalogHeader readOnly={readOnly} />
         <CatalogSubheader />
         <BulkHeader
           destinationSupportedSyncModes={destinationSupportedSyncModes}
         />
         <TreeViewContainer>
           <CatalogTree
+            readOnly={readOnly}
             streams={filteredStreams}
             onChangeStream={onChangeStream}
             destinationSupportedSyncModes={destinationSupportedSyncModes}

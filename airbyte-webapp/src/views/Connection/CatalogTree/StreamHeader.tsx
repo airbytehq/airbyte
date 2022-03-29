@@ -36,6 +36,7 @@ interface StreamHeaderProps {
   }[];
   onSelectSyncMode: (selectedMode: DropDownRow.IDataItem) => void;
   onSelectStream: () => void;
+  readOnly?: boolean;
 
   primitiveFields: SyncSchemaField[];
 
@@ -64,6 +65,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   isRowExpanded,
   hasFields,
   onExpand,
+  readOnly,
 }) => {
   const {
     primaryKey,
@@ -86,7 +88,11 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   return (
     <>
       <CheckboxCell>
-        <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
+        <CheckBox
+          checked={isSelected}
+          onChange={selectForBulkEdit}
+          disabled={readOnly}
+        />
       </CheckboxCell>
       <ArrowCell>
         {hasFields ? (
@@ -99,6 +105,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       </ArrowCell>
       <HeaderCell flex={0.4}>
         <Toggle
+          disabled={readOnly}
           small
           checked={stream.config.selected}
           onChange={onSelectStream}
@@ -116,6 +123,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       </HeaderCell>
       <Cell flex={1.5}>
         <SyncSettingsDropdown
+          isDisabled={readOnly}
           value={syncSchema}
           options={availableSyncModes}
           onChange={onSelectSyncMode}
@@ -124,6 +132,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       <HeaderCell>
         {cursorType && (
           <PathPopout
+            disabled={readOnly}
             pathType={cursorType}
             paths={paths}
             path={cursorField}
@@ -137,6 +146,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       <HeaderCell ellipsis>
         {pkType && (
           <PathPopout
+            disabled={readOnly}
             pathType={pkType}
             paths={paths}
             path={primaryKey}

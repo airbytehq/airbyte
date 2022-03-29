@@ -18,6 +18,7 @@ import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/co
 import SettingsView from "./components/SettingsView";
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
+import { ConnectionStatus } from "core/domain/connection";
 
 const ConnectionItemPage: React.FC = () => {
   const params = useParams<{
@@ -49,6 +50,8 @@ const ConnectionItemPage: React.FC = () => {
     });
   };
 
+  const actionsDisabled = connection.status === ConnectionStatus.DEPRECATED;
+
   return (
     <MainPageWithScroll
       headTitle={
@@ -70,6 +73,7 @@ const ConnectionItemPage: React.FC = () => {
           source={source}
           destination={destination}
           currentStep={currentStep}
+          readonly={actionsDisabled}
         />
       }
     >
@@ -97,10 +101,12 @@ const ConnectionItemPage: React.FC = () => {
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           />
-          <Route
-            path={ConnectionSettingsRoutes.SETTINGS}
-            element={<SettingsView connectionId={connectionId} />}
-          />
+          {!actionsDisabled && (
+            <Route
+              path={ConnectionSettingsRoutes.SETTINGS}
+              element={<SettingsView connectionId={connectionId} />}
+            />
+          )}
           <Route
             path="*"
             element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />}

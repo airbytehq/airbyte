@@ -20,7 +20,10 @@ import useWorkspace from "hooks/services/useWorkspace";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 import { Connection, ScheduleProperties } from "core/resources/Connection";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import {
+  ConnectionNamespaceDefinition,
+  ConnectionStatus,
+} from "core/domain/connection";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import CreateControls from "./components/CreateControls";
 import SchemaField from "./components/SyncCatalogField";
@@ -177,6 +180,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
   const frequencies = useFrequencyDropdownData();
 
+  const readOnly = connection.status === ConnectionStatus.DEPRECATED;
+
   return (
     <Formik
       initialValues={initialValues}
@@ -201,6 +206,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 >
                   <DropDown
                     {...field}
+                    isDisabled={readOnly}
                     error={!!meta.error && meta.touched}
                     options={frequencies}
                     onChange={(item) => {
@@ -219,6 +225,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <Field
                 name="namespaceDefinition"
                 component={NamespaceDefinitionField}
+                disabled={readOnly}
               />
               <Field name="prefix">
                 {({ field }: FieldProps<string>) => (
@@ -233,6 +240,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   >
                     <Input
                       {...field}
+                      disabled={readOnly}
                       type="text"
                       placeholder={formatMessage({
                         id: `form.prefix.placeholder`,
@@ -273,6 +281,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 destDefinition.supportedDestinationSyncModes
               }
               additionalControl={additionalSchemaControl}
+              readOnly={readOnly}
               component={SchemaField}
             />
             {isEditMode ? (
@@ -285,6 +294,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                     onCancel();
                   }
                 }}
+                readOnly={readOnly}
                 successMessage={successMessage}
                 errorMessage={
                   errorMessage || !isValid

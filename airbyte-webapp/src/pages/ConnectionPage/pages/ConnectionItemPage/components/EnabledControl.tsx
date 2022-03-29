@@ -8,7 +8,7 @@ import useConnection from "hooks/services/useConnectionHook";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { ConnectionStatus } from "core/domain/connection";
 
-const ToggleLabel = styled.label`
+const ToggleLabel = styled.label<{ $disabled?: boolean }>`
   text-transform: uppercase;
   font-size: 14px;
   line-height: 19px;
@@ -17,7 +17,7 @@ const ToggleLabel = styled.label`
   display: inline-block;
   min-width: 75px;
   text-align: left;
-  cursor: pointer;
+  cursor: ${({ $disabled }) => ($disabled ? "default" : "pointer")};
 `;
 
 const Content = styled.div`
@@ -70,7 +70,7 @@ const EnabledControl: React.FC<IProps> = ({
 
   return (
     <Content>
-      <ToggleLabel htmlFor="toggle-enabled-source">
+      <ToggleLabel htmlFor="toggle-enabled-source" $disabled={disabled}>
         <FormattedMessage
           id={
             connection.status === ConnectionStatus.ACTIVE

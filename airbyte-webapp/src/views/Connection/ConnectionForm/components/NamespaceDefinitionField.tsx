@@ -23,10 +23,9 @@ const StreamOptions = [
   },
 ];
 
-const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({
-  field,
-  form,
-}) => {
+const NamespaceDefinitionField: React.FC<
+  FieldProps<string> & { disabled?: boolean }
+> = ({ field, form, disabled }) => {
   const [, meta] = useField(field.name);
 
   return (
@@ -44,6 +43,7 @@ const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({
         error={!!meta.error && meta.touched}
         options={StreamOptions}
         value={field.value}
+        isDisabled={disabled}
         onChange={({ value }) => form.setFieldValue(field.name, value)}
       />
     </ControlLabels>

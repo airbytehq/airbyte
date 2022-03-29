@@ -23,6 +23,7 @@ const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
 export type IndexerType = null | "required" | "sourceDefined";
 
 type PathPopoutProps = {
+  disabled?: boolean;
   paths: Path[];
   pathType: "required" | "sourceDefined";
   placeholder?: React.ReactNode;
@@ -58,6 +59,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
 
   return (
     <Popout
+      isDisabled={props.disabled}
       options={options}
       value={props.path}
       // @ts-expect-error need to solve issue with typings

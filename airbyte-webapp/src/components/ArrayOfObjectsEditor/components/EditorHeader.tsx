@@ -21,6 +21,7 @@ type EditorHeaderProps = {
   addButtonText?: React.ReactNode;
   itemsCount: number;
   onAddItem: () => void;
+  disabled?: boolean;
 };
 
 const EditorHeader: React.FC<EditorHeaderProps> = ({
@@ -28,6 +29,7 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
   onAddItem,
   mainTitle,
   addButtonText,
+  disabled,
 }) => {
   return (
     <Content>
@@ -39,6 +41,7 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
         type="button"
         onClick={onAddItem}
         data-testid="addItemButton"
+        disabled={disabled}
       >
         {addButtonText || <FormattedMessage id="form.addItems" />}
       </Button>

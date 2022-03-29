@@ -11,8 +11,9 @@ const TransformationField: React.FC<
   ArrayHelpers & {
     form: FormikProps<{ transformations: Transformation[] }>;
     defaultTransformation: Transformation;
+    disabled?: boolean;
   }
-> = ({ remove, push, replace, form, defaultTransformation }) => {
+> = ({ remove, push, replace, form, defaultTransformation, disabled }) => {
   const [editableItemIdx, setEditableItem] = useState<number | null>(null);
   return (
     <ArrayOfObjectsEditor
@@ -27,6 +28,7 @@ const TransformationField: React.FC<
       addButtonText={<FormattedMessage id="form.addTransformation" />}
       onRemove={remove}
       onStartEdit={(idx) => setEditableItem(idx)}
+      disabled={disabled}
     >
       {(editableItem) => (
         <TransformationForm

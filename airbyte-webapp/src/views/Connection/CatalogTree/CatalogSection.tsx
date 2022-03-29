@@ -55,6 +55,7 @@ type TreeViewRowProps = {
     id: string,
     newConfiguration: Partial<AirbyteStreamConfiguration>
   ) => void;
+  readOnly?: boolean;
 };
 
 const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
@@ -65,6 +66,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   prefix,
   errors,
   destinationSupportedSyncModes,
+  readOnly,
 }) => {
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
@@ -167,6 +169,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     <Section error={hasError} isSelected={isSelected}>
       <TreeRowWrapper>
         <StreamHeader
+          readOnly={readOnly}
           stream={streamNode}
           destNamespace={destNamespace}
           destName={prefix + streamNode.stream.name}

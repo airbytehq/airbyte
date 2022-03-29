@@ -14,10 +14,9 @@ const Normalization = styled.div`
 
 type NormalizationBlockProps = FieldProps<string>;
 
-const NormalizationField: React.FC<NormalizationBlockProps> = ({
-  form,
-  field,
-}) => {
+const NormalizationField: React.FC<
+  NormalizationBlockProps & { disabled?: boolean }
+> = ({ form, field, disabled }) => {
   const config = useConfig();
 
   return (
@@ -28,6 +27,7 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({
         label={<FormattedMessage id="form.rawData" />}
         value={NormalizationType.RAW}
         checked={field.value === NormalizationType.RAW}
+        disabled={disabled}
       />
       <LabeledRadioButton
         {...form.getFieldProps(field.name)}
@@ -35,6 +35,7 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({
         label={<FormattedMessage id="form.basicNormalization" />}
         value={NormalizationType.BASIC}
         checked={field.value === NormalizationType.BASIC}
+        disabled={disabled}
         message={
           <FormattedMessage
             id="form.basicNormalization.message"

@@ -17,6 +17,7 @@ import useConnection from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { ConnectionStatus } from "core/domain/connection";
 
 type IProps = {
   connection: Connection;
@@ -83,6 +84,8 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const onSync = () => syncConnection(connection);
   const onReset = () => resetConnection(connection.connectionId);
 
+  const actionsDisabled = connection.status === ConnectionStatus.DEPRECATED;
+
   return (
     <Content>
       <StatusMainInfo
@@ -96,12 +99,16 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
             <div>
-              <Button onClick={() => setIsModalOpen(true)}>
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                disabled={actionsDisabled}
+              >
                 <FormattedMessage id={"connection.resetData"} />
               </Button>
               <SyncButton
                 isLoading={isLoading}
                 wasActive={showFeedback}
+                disabled={actionsDisabled}
                 onClick={() => startAction({ action: onSync })}
               >
                 {showFeedback ? (
