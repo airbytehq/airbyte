@@ -31,11 +31,11 @@ import {
 } from "hooks/services/Analytics/useAnalyticsService";
 import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { DefaultView } from "./views/DefaultView";
 import { hasFromState } from "utils/stateUtils";
+import { RoutePaths } from "../../pages/routePaths";
 
 export const CloudRoutes = {
   Root: "/",

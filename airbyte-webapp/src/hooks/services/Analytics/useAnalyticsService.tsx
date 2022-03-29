@@ -13,7 +13,7 @@ export type AnalyticsServiceProviderValue = {
   service: AnalyticsService;
 };
 
-const analyticsServiceContext = React.createContext<AnalyticsServiceProviderValue | null>(
+export const analyticsServiceContext = React.createContext<AnalyticsServiceProviderValue | null>(
   null
 );
 
