@@ -73,7 +73,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         .put("username", config.get("username").asText())
         .put("password", config.get("password").asText())
         .put("schema", schema);
-    
+
     if (config.has(JDBC_URL_PARAMS_KEY)) {
       configBuilder.put("connection_properties", config.get(JDBC_URL_PARAMS_KEY));
     }

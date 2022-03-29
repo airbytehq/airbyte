@@ -190,9 +190,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-      .put("username", mssqlConfig.get("username").asText())
-      .put("password", mssqlConfig.get("password").asText())
-      .put("jdbc_url", jdbcUrl.toString());
+        .put("username", mssqlConfig.get("username").asText())
+        .put("password", mssqlConfig.get("password").asText())
+        .put("jdbc_url", jdbcUrl.toString());
 
     if (mssqlConfig.has(JDBC_URL_PARAMS_KEY)) {
       configBuilder.put("connection_properties", mssqlConfig.get(JDBC_URL_PARAMS_KEY));

@@ -55,8 +55,8 @@
         "order": 5
       },
       "jdbc_url_params": {
-        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
         "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
         "type": "string",
         "order": 6
       },
@@ -95,8 +95,7 @@
               "hostNameInCertificate": {
                 "title": "Host Name In Certificate",
                 "type": "string",
-                "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
-                "order": 7
+                "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate."
               }
             }
           }
