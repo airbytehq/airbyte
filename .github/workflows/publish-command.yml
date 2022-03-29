@@ -35,11 +35,10 @@ jobs:
         id: variables
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-             ${{ secrets.SUPERTOPHER_PAT }} \
-             ${{ secrets.AIRBYTEIO_PAT }} \
-             ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }} \
-             ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN_1 }} \
-             ${{ secrets.OCTAVIA_PAT }}
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
   ## Gradle Build
   # In case of self-hosted EC2 errors, remove this block.
   start-publish-image-runner:
