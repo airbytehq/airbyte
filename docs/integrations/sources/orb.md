@@ -52,7 +52,7 @@ an Orb Account and API Key.
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 0.1.2 | 2022-03-30 | [10839](https://github.com/airbytehq/airbyte/pull/10839) | Add cost basis to ledger entries + update expiration date
+| 0.1.2 | 2022-03-30 | [11528](https://github.com/airbytehq/airbyte/pull/11528) | Add cost basis to ledger entries + update expiration date
 | 0.1.1 | 2022-03-03 | [10839](https://github.com/airbytehq/airbyte/pull/10839) | Support ledger entries with numeric properties + schema fixes
 | 0.1.0 | 2022-02-01 | | New Source: Orb
 | :--- | :--- | :--- | :--- |
