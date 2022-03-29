@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 
-from source_mixpanel.streams import Cohorts, Engage, CohortMembers
+from source_mixpanel.source import Cohorts, Engage, CohortMembers
 
 logger = AirbyteLogger()
 
