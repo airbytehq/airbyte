@@ -10,12 +10,10 @@ import { useConfig } from "config";
 import {
   Connection,
   ConnectionNamespaceDefinition,
+  ScheduleProperties,
   WebBackendConnectionService,
 } from "core/domain/connection";
-
-import { ScheduleProperties } from "core/domain/connection";
 import { SyncSchema } from "core/domain/catalog";
-import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
@@ -24,6 +22,7 @@ import { Destination, Source, SourceDefinition } from "core/domain/connector";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
   all: ["connections"] as const,
@@ -245,7 +244,7 @@ const useUpdateConnection = () => {
 };
 
 const useConnectionList = (): ListConnection => {
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
 
   return (useQuery(connectionsKeys.lists(), () =>

@@ -7,11 +7,11 @@ import { Connection } from "core/domain/connection";
 import useRouter from "../useRouter";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
-import useWorkspace from "./useWorkspace";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Destination } from "core/domain/connector";
 import { RoutePaths } from "../../pages/routePaths";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 type ValuesProps = {
   name: string;
@@ -54,7 +54,7 @@ type DestinationService = {
 
 const useDestination = (): DestinationService => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const analyticsService = useAnalyticsService();
   const createDestinationsImplementation = useFetcher(
     DestinationResource.createShape()
@@ -223,7 +223,7 @@ const useDestination = (): DestinationService => {
 };
 
 const useDestinationList = (): { destinations: Destination[] } => {
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   return useResource(DestinationResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });

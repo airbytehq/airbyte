@@ -9,12 +9,12 @@ import DestinationsTable from "./components/DestinationsTable";
 import DestinationResource from "core/resources/Destination";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { RoutePaths } from "../../../routePaths";
 
 const AllDestinationsPage: React.FC = () => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });

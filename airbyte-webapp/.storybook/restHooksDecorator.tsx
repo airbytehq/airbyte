@@ -3,17 +3,7 @@ import { CacheProvider } from "@rest-hooks/core";
 import { Suspense } from "react";
 import { NetworkErrorBoundary } from "rest-hooks";
 
-import WorkspaceResource from "../src/core/resources/Workspace";
-
-const fixtures: Fixture[] = [
-  {
-    request: WorkspaceResource.detailShape(),
-    params: { workspaceId: undefined },
-    result: {
-      workspaceId: "story-book",
-    },
-  },
-];
+const fixtures: Fixture[] = [];
 
 export const MockDecorator = (getStory) => (
   <CacheProvider>

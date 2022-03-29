@@ -16,7 +16,7 @@ import {
   Label,
 } from "components";
 
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 import {
@@ -138,8 +138,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     isEditMode
   );
 
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues) => {
       const formValues: ConnectionFormValues = (connectionValidationSchema.cast(

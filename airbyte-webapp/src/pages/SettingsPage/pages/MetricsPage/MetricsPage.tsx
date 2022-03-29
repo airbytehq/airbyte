@@ -1,6 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import HeadTitle from "components/HeadTitle";
 import MetricsForm from "./components/MetricsForm";
 import useWorkspaceEditor from "../../components/useWorkspaceEditor";
@@ -8,8 +8,7 @@ import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 import { Content, SettingsCard } from "../SettingsComponents";
 
 const MetricsPage: React.FC = () => {
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const {
     errorMessage,
     successMessage,

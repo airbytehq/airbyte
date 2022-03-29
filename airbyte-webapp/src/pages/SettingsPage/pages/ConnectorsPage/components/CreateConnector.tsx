@@ -8,7 +8,7 @@ import useRouter from "hooks/useRouter";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 import CreateConnectorModal from "./CreateConnectorModal";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { RoutePaths } from "../../../../routePaths";
 
 type IProps = {
@@ -24,7 +24,7 @@ type ICreateProps = {
 
 const CreateConnector: React.FC<IProps> = ({ type }) => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const onChangeModalState = () => {

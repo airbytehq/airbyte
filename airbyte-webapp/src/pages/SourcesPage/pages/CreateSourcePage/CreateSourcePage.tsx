@@ -10,7 +10,7 @@ import useSource from "hooks/services/useSourceHook";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { JobInfo } from "core/domain/job/Job";
 
 const CreateSourcePage: React.FC = () => {
@@ -21,8 +21,7 @@ const CreateSourcePage: React.FC = () => {
     response: JobInfo;
   } | null>(null);
 
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {

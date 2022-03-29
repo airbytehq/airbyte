@@ -9,7 +9,7 @@ import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { RoutePaths } from "../../../../routePaths";
 
 type IProps = {
@@ -18,7 +18,7 @@ type IProps = {
 
 const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const { changeStatus, syncManualConnection } = useSyncActions();
 
   const { sourceDefinitions } = useResource(

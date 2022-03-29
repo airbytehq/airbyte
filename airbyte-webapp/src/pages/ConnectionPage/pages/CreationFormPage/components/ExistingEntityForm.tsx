@@ -7,7 +7,7 @@ import * as yup from "yup";
 
 import ContentCard from "components/ContentCard";
 import { DropDown, Button, ControlLabels } from "components";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import SourceResource from "core/resources/Source";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationResource from "core/resources/Destination";
@@ -42,8 +42,7 @@ const existingEntityValidationSchema = yup.object().shape({
 
 const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const formatMessage = useIntl().formatMessage;
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });

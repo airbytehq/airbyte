@@ -8,7 +8,7 @@ import useSource from "hooks/services/useSourceHook";
 // TODO: create separate component for source and destinations forms
 import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { ConnectionConfiguration } from "core/domain/connection";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 type IProps = {
   afterSubmit: () => void;
@@ -18,7 +18,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState(null);
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {

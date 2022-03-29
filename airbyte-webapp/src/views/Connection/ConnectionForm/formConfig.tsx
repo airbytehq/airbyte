@@ -27,7 +27,7 @@ import {
   ConnectionSchedule,
 } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 type FormikConnectionFormValues = {
@@ -55,8 +55,7 @@ const DEFAULT_SCHEDULE: ScheduleProperties = {
 };
 
 function useDefaultTransformation(): Transformation {
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   return {
     name: "My dbt transformations",
     workspaceId: workspace.workspaceId,

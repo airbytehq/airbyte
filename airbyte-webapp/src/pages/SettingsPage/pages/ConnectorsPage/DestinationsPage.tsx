@@ -7,11 +7,11 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 import { DestinationResource } from "core/resources/Destination";
 import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { DestinationDefinition } from "core/domain/connector";
 
 const DestinationsPage: React.FC = () => {
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const { destinationDefinitions } = useResource(

@@ -90,4 +90,13 @@ export default class DestinationDefinitionResource
       schema: this,
     };
   }
+
+  static createShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<DestinationDefinition>> {
+    return {
+      ...super.createShape(),
+      schema: this,
+    };
+  }
 }

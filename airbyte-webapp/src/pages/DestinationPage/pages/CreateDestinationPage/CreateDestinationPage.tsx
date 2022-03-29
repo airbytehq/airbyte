@@ -9,12 +9,12 @@ import useDestination from "hooks/services/useDestinationHook";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { JobInfo } from "../../../../core/domain/job/Job";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
     status: number;

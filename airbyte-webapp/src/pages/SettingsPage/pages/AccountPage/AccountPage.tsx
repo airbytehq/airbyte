@@ -1,14 +1,13 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 import HeadTitle from "components/HeadTitle";
 import AccountForm from "./components/AccountForm";
 import { Content, SettingsCard } from "../SettingsComponents";
 
 const AccountPage: React.FC = () => {
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const {
     errorMessage,
     successMessage,

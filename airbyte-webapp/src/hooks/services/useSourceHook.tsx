@@ -6,13 +6,13 @@ import SourceResource from "core/resources/Source";
 import { Connection } from "core/domain/connection";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
-import useWorkspace from "./useWorkspace";
 
 import useRouter from "hooks/useRouter";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Source } from "core/domain/connector";
-import { RoutePaths } from "../../pages/routePaths";
+import { RoutePaths } from "pages/routePaths";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 type ValuesProps = {
   name: string;
@@ -44,7 +44,7 @@ type SourceService = {
 
 const useSource = (): SourceService => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
   const analyticsService = useAnalyticsService();
 
@@ -195,7 +195,7 @@ const useSource = (): SourceService => {
 };
 
 const useSourceList = (): { sources: Source[] } => {
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   return useResource(SourceResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });

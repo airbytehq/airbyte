@@ -9,12 +9,12 @@ import SourcesTable from "./components/SourcesTable";
 import SourceResource from "core/resources/Source";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { RoutePaths } from "../../../routePaths";
 
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });
