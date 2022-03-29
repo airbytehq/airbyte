@@ -37,7 +37,11 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
         return Optional.of(GoogleSecretManagerPersistence.getLongLived(configs.getSecretStoreGcpProjectId(), configs.getSecretStoreGcpCredentials()));
       }
       default -> {
-        return Optional.empty();
+        try {
+          return Optional.of(new VaultSecretPersistence());
+        } catch (final VaultException e) {
+          throw new IOException(e);
+        }
       }
     }
   }
