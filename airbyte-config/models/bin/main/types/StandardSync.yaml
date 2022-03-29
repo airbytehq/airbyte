@@ -1,0 +1,73 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardSync.yaml
+title: StandardSync
+description: configuration required for sync for ALL sources
+type: object
+required:
+  - sourceId
+  - destinationId
+  - name
+  - catalog
+  - manual
+  - namespaceDefinition
+additionalProperties: false
+properties:
+  namespaceDefinition:
+    "$ref": NamespaceDefinitionType.yaml
+  namespaceFormat:
+    type: string
+    default: null
+    example: "${SOURCE_NAMESPACE}"
+  prefix:
+    description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+    type: string
+  sourceId:
+    type: string
+    format: uuid
+  destinationId:
+    type: string
+    format: uuid
+  operationIds:
+    type: array
+    items:
+      type: string
+      format: uuid
+  connectionId:
+    type: string
+    format: uuid
+  name:
+    type: string
+  catalog:
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+  status:
+    type: string
+    enum:
+      - active
+      - inactive
+      - deprecated
+  # Ideally schedule and manual should be a union, but java
+  # codegen does not handle the union type properly.
+  # When schedule is defined, manual should be false.
+  schedule:
+    type: object
+    required:
+      - timeUnit
+      - units
+    additionalProperties: false
+    properties:
+      timeUnit:
+        type: string
+        enum:
+          - minutes
+          - hours
+          - days
+          - weeks
+          - months
+      units:
+        type: integer
+  # When manual is true, schedule should be null, and will be ignored.
+  manual:
+    type: boolean
+  resourceRequirements:
+    "$ref": ResourceRequirements.yaml

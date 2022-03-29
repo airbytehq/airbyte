@@ -1,0 +1,25 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/JobOutput.yaml
+title: JobOutput
+description: job output
+type: object
+additionalProperties: false
+required:
+  - outputType
+properties:
+  outputType:
+    type: string
+    enum:
+      - checkConnection
+      - discoverCatalog
+      - getSpec
+      - sync
+  checkConnection:
+    "$ref": StandardCheckConnectionOutput.yaml
+  discoverCatalog:
+    "$ref": StandardDiscoverCatalogOutput.yaml
+  getSpec:
+    "$ref": StandardGetSpecOutput.yaml
+  sync:
+    "$ref": StandardSyncOutput.yaml

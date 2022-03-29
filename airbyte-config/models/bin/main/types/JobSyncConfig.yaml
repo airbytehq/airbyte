@@ -1,0 +1,61 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/JobSyncConfig.yaml
+title: JobSyncConfig
+description: job sync config
+type: object
+additionalProperties: false
+required:
+  - sourceConfiguration
+  - destinationConfiguration
+  - configuredAirbyteCatalog
+  - sourceDockerImage
+  - destinationDockerImage
+properties:
+  namespaceDefinition:
+    "$ref": NamespaceDefinitionType.yaml
+  namespaceFormat:
+    type: string
+    default: null
+    example: "${SOURCE_NAMESPACE}"
+  prefix:
+    description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+    type: string
+  sourceConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  destinationConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  configuredAirbyteCatalog:
+    description: the configured airbyte catalog
+    type: object
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+  sourceDockerImage:
+    description: Image name of the source with tag.
+    type: string
+  destinationDockerImage:
+    description: Image name of the destination with tag.
+    type: string
+  sourceResourceRequirements:
+    type: object
+    description: optional resource requirements to use in source container - this is used instead of `resourceRequirements` for the source container
+    existingJavaType: io.airbyte.config.ResourceRequirements
+  destinationResourceRequirements:
+    type: object
+    description: optional resource requirements to use in dest container - this is used instead of `resourceRequirements` for the dest container
+    existingJavaType: io.airbyte.config.ResourceRequirements
+  operationSequence:
+    description: Sequence of configurations of operations to apply as part of the sync
+    type: array
+    items:
+      "$ref": StandardSyncOperation.yaml
+  state:
+    description: optional state of the previous run. this object is defined per integration.
+    "$ref": State.yaml
+  resourceRequirements:
+    type: object
+    description: optional resource requirements to run sync workers - this is used for containers other than the source/dest containers
+    existingJavaType: io.airbyte.config.ResourceRequirements
