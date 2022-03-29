@@ -264,7 +264,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 attr_type = self.dimensions_ref[attribute]
             elif field_type == "metric":
                 # Custom Google Analytics Metrics {ga:goalXXStarts, ga:metricXX, ... }
-                # We always treat them as as strings as we can not be sure of their data type
+                # We always treat them as strings as we can not be sure of their data type
                 if attribute.startswith("ga:goal") and attribute.endswith(
                     ("Starts", "Completions", "Value", "ConversionRate", "Abandons", "AbandonRate")
                 ):
@@ -278,10 +278,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 attr_type = self.metrics_ref[attribute]
             else:
                 attr_type = None
-                self.logger.error(f"Unsuported GA type: {field_type}")
+                self.logger.error(f"Unsupported GA type: {field_type}")
         except KeyError:
             attr_type = None
-            self.logger.error(f"Unsuported GA {field_type}: {attribute}")
+            self.logger.error(f"Unsupported GA {field_type}: {attribute}")
 
         return self.map_type.get(attr_type, "string")
 

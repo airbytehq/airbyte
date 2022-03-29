@@ -11,7 +11,7 @@ from urllib.parse import unquote
 
 import pendulum
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from freezegun import freeze_time
 from source_google_analytics_v4.source import (
@@ -105,14 +105,43 @@ def mock_api_returns_is_data_golden_false(requests_mock):
     )
 
 
+@pytest.fixture
+def configured_catalog():
+    return ConfiguredAirbyteCatalog.parse_obj(json.loads(read_file("./configured_catalog.json")))
+
+
 @pytest.fixture()
 def test_config():
-    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
-    test_config["authenticator"] = NoAuth()
-    test_config["metrics"] = []
-    test_config["dimensions"] = []
+    test_conf = {
+        "view_id": "1234567",
+        "window_in_days": 1,
+        "authenticator": NoAuth(),
+        "metrics": [],
+        "start_date": pendulum.now().subtract(days=2).date().strftime("%Y-%m-%d"),
+        "dimensions": [],
+        "credentials": {
+            "type": "Service",
+        },
+    }
+    return copy.deepcopy(test_conf)
+
+
+@pytest.fixture()
+def test_config_auth_service(test_config):
     test_config["credentials"] = {
-        "type": "Service",
+        "auth_type": "Service",
+        "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
+    }
+    return copy.deepcopy(test_config)
+
+
+@pytest.fixture()
+def test_config_auth_client(test_config):
+    test_config["credentials"] = {
+        "auth_type": "Client",
+        "client_id": "client_id_val",
+        "client_secret": "client_secret_val",
+        "refresh_token": "refresh_token_val",
     }
     return copy.deepcopy(test_config)
 
@@ -145,42 +174,39 @@ def test_lookup_metrics_dimensions_data_type(test_config, metrics_dimensions_map
 def test_data_is_not_golden_is_logged_as_warning(
     mock_api_returns_is_data_golden_false,
     test_config,
+    configured_catalog,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
     caplog,
 ):
     source = SourceGoogleAnalyticsV4()
-    del test_config["custom_reports"]
-    catalog = ConfiguredAirbyteCatalog.parse_obj(json.loads(read_file("./configured_catalog.json")))
-    list(source.read(logging.getLogger(), test_config, catalog))
+    list(source.read(logging.getLogger(), test_config, configured_catalog))
     assert DATA_IS_NOT_GOLDEN_MSG in caplog.text
 
 
 def test_sampled_result_is_logged_as_warning(
     mock_api_returns_sampled_results,
     test_config,
+    configured_catalog,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
     caplog,
 ):
     source = SourceGoogleAnalyticsV4()
-    del test_config["custom_reports"]
-    catalog = ConfiguredAirbyteCatalog.parse_obj(json.loads(read_file("./configured_catalog.json")))
-    list(source.read(logging.getLogger(), test_config, catalog))
+    list(source.read(logging.getLogger(), test_config, configured_catalog))
     assert RESULT_IS_SAMPLED_MSG in caplog.text
 
 
 def test_no_regressions_for_result_is_sampled_and_data_is_golden_warnings(
     mock_api_returns_valid_records,
     test_config,
+    configured_catalog,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
     caplog,
 ):
     source = SourceGoogleAnalyticsV4()
-    del test_config["custom_reports"]
-    catalog = ConfiguredAirbyteCatalog.parse_obj(json.loads(read_file("./configured_catalog.json")))
-    list(source.read(logging.getLogger(), test_config, catalog))
+    list(source.read(logging.getLogger(), test_config, configured_catalog))
     assert RESULT_IS_SAMPLED_MSG not in caplog.text
     assert DATA_IS_NOT_GOLDEN_MSG not in caplog.text
 
@@ -188,6 +214,7 @@ def test_no_regressions_for_result_is_sampled_and_data_is_golden_warnings(
 @patch("source_google_analytics_v4.source.jwt")
 def test_check_connection_fails_jwt(
     jwt_encode_mock,
+    test_config_auth_service,
     mocker,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
@@ -197,17 +224,12 @@ def test_check_connection_fails_jwt(
     check_connection fails because of the API returns no records,
     then we assume than user doesn't have permission to read requested `view`
     """
-    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
-    del test_config["custom_reports"]
-    test_config["credentials"] = {
-        "auth_type": "Service",
-        "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
-    }
     source = SourceGoogleAnalyticsV4()
-    is_success, msg = source.check_connection(MagicMock(), test_config)
+    is_success, msg = source.check_connection(MagicMock(), test_config_auth_service)
     assert is_success is False
     assert (
-        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. Cannot retrieve data from that view ID."
+        msg
+        == f"Please check the permissions for the requested view_id: {test_config_auth_service['view_id']}. Cannot retrieve data from that view ID."
     )
     jwt_encode_mock.encode.assert_called()
     assert mock_auth_call.called
@@ -217,6 +239,7 @@ def test_check_connection_fails_jwt(
 @patch("source_google_analytics_v4.source.jwt")
 def test_check_connection_success_jwt(
     jwt_encode_mock,
+    test_config_auth_service,
     mocker,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
@@ -226,14 +249,8 @@ def test_check_connection_success_jwt(
     check_connection succeeds because of the API returns valid records for the latest date based slice,
     then we assume than user has permission to read requested `view`
     """
-    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
-    del test_config["custom_reports"]
-    test_config["credentials"] = {
-        "auth_type": "Service",
-        "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
-    }
     source = SourceGoogleAnalyticsV4()
-    is_success, msg = source.check_connection(MagicMock(), test_config)
+    is_success, msg = source.check_connection(MagicMock(), test_config_auth_service)
     assert is_success is True
     assert msg is None
     jwt_encode_mock.encode.assert_called()
@@ -244,6 +261,7 @@ def test_check_connection_success_jwt(
 @patch("source_google_analytics_v4.source.jwt")
 def test_check_connection_fails_oauth(
     jwt_encode_mock,
+    test_config_auth_client,
     mocker,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
@@ -253,19 +271,12 @@ def test_check_connection_fails_oauth(
     check_connection fails because of the API returns no records,
     then we assume than user doesn't have permission to read requested `view`
     """
-    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
-    del test_config["custom_reports"]
-    test_config["credentials"] = {
-        "auth_type": "Client",
-        "client_id": "client_id_val",
-        "client_secret": "client_secret_val",
-        "refresh_token": "refresh_token_val",
-    }
     source = SourceGoogleAnalyticsV4()
-    is_success, msg = source.check_connection(MagicMock(), test_config)
+    is_success, msg = source.check_connection(MagicMock(), test_config_auth_client)
     assert is_success is False
     assert (
-        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. Cannot retrieve data from that view ID."
+        msg
+        == f"Please check the permissions for the requested view_id: {test_config_auth_client['view_id']}. Cannot retrieve data from that view ID."
     )
     jwt_encode_mock.encode.assert_not_called()
     assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
@@ -279,6 +290,7 @@ def test_check_connection_fails_oauth(
 @patch("source_google_analytics_v4.source.jwt")
 def test_check_connection_success_oauth(
     jwt_encode_mock,
+    test_config_auth_client,
     mocker,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
@@ -288,16 +300,8 @@ def test_check_connection_success_oauth(
     check_connection succeeds because of the API returns valid records for the latest date based slice,
     then we assume than user has permission to read requested `view`
     """
-    test_config = json.loads(read_file("../integration_tests/sample_config.json"))
-    del test_config["custom_reports"]
-    test_config["credentials"] = {
-        "auth_type": "Client",
-        "client_id": "client_id_val",
-        "client_secret": "client_secret_val",
-        "refresh_token": "refresh_token_val",
-    }
     source = SourceGoogleAnalyticsV4()
-    is_success, msg = source.check_connection(MagicMock(), test_config)
+    is_success, msg = source.check_connection(MagicMock(), test_config_auth_client)
     assert is_success is True
     assert msg is None
     jwt_encode_mock.encode.assert_not_called()
@@ -315,19 +319,73 @@ def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_
 
 
 @freeze_time("2021-11-30")
-def test_stream_slices_limited_by_current_date(test_config):
+def test_stream_slices_limited_by_current_date(test_config, mock_metrics_dimensions_type_list_link):
     test_config["window_in_days"] = 14
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
     stream_state = {"ga_date": "2021-11-25"}
     slices = g.stream_slices(stream_state=stream_state)
     current_date = pendulum.now().date().strftime("%Y-%m-%d")
-
     assert slices == [{"startDate": "2021-11-26", "endDate": current_date}]
 
 
 @freeze_time("2021-11-30")
-def test_empty_stream_slice_if_abnormal_state_is_passed(test_config):
+def test_empty_stream_slice_if_abnormal_state_is_passed(test_config, mock_metrics_dimensions_type_list_link):
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
     stream_state = {"ga_date": "2050-05-01"}
     slices = g.stream_slices(stream_state=stream_state)
     assert slices == [None]
+
+
+def test_empty_slice_produces_no_records(test_config, mock_metrics_dimensions_type_list_link):
+    g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
+    old_state = copy.deepcopy(g.state)
+    records = g.read_records(sync_mode=SyncMode.incremental, stream_slice=None, stream_state={})
+    new_state = copy.deepcopy(g.state)
+    assert next(iter(records), None) is None
+    assert old_state == new_state == {g.cursor_field: g.start_date}
+
+
+@patch("source_google_analytics_v4.source.HttpStream.read_records")
+def test_state_saved_after_each_record(read_records_mock, test_config):
+    today_dt = pendulum.now().date()
+    yesterday = today_dt.subtract(days=1).strftime("%Y-%m-%d")
+    before_yesterday = today_dt.subtract(days=2).strftime("%Y-%m-%d")
+    today = today_dt.strftime("%Y-%m-%d")
+    record = {"ga_date": today}
+    # these are returned by GoogleAnalyticsV4TypesList().read_records on Stream init
+    dimensions_ref, metrics_ref = {}, {}
+    read_records_mock.side_effect = [dimensions_ref, metrics_ref], [record]
+    g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
+    assert g.state == {g.cursor_field: before_yesterday}
+    records = g.read_records(sync_mode=SyncMode.incremental, stream_slice={"startDate": yesterday, "endDate": today}, stream_state={})
+    assert next(iter(records), None) is record
+    assert g.state == {g.cursor_field: today}
+
+
+def test_connection_fail_invalid_reports_json(test_config):
+    source = SourceGoogleAnalyticsV4()
+    test_config["custom_reports"] = "[{'data': {'ga:foo': 'ga:bar'}}]"
+    ok, error = source.check_connection(logging.getLogger(), test_config)
+    assert not ok
+    assert "Invalid custom reports json structure." in error
+
+
+@pytest.mark.parametrize(
+    ("status", "json_resp"),
+    (
+        (403, {"error": "Your role is not not granted the permission for accessing this resource"}),
+        (500, {"error": "Internal server error, please contact support"}),
+    ),
+)
+def test_connection_fail_due_to_http_status(
+    mocker, test_config, requests_mock, mock_auth_call, mock_metrics_dimensions_type_list_link, status, json_resp
+):
+    mocker.patch("time.sleep")
+    requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", status_code=status, json=json_resp)
+    source = SourceGoogleAnalyticsV4()
+    ok, error = source.check_connection(logging.getLogger(), test_config)
+    assert not ok
+    if status == 403:
+        assert "Please check the permissions for the requested view_id" in error
+        assert test_config["view_id"] in error
+    assert json_resp["error"] in error
