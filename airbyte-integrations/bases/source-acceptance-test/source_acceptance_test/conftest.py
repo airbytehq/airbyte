@@ -185,14 +185,23 @@ def detailed_logger() -> Logger:
 
 
 def pytest_sessionfinish(session, exitstatus):
-    # this is specifically for contributors to run tests locally and show success
+    """ Called after whole test run finished, right before returning the exit status to the system.
+        https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
+    """
+    logger = logging.getLogger()
+
+    # this is specifically for contributors to run tests locally and show success for a git hash
     # therefore if this fails for any reason we just treat as a no-op
     try:
         result = "PASSED" if session.testscollected > 0 and session.testsfailed == 0 else "FAILED"
-        print(
-            f"{session.startdir} - local SAT run - {result} - "
+        print()  # create a line break
+        logger.info(
+            # session.startdir gives local path to the connector folder, so we can verify which cnctr was tested
+            f"{session.startdir} - SAT run - "
+            # using subprocess.check_output to run cmd to get git hash
             f"{check_output('git rev-parse HEAD', stderr=STDOUT, shell=True).decode('ascii').strip()}"
+            f" - {result}"
         )
     except Exception as e:
-        print(e)  # debug
+        logger.info(e)  # debug
         pass
