@@ -57,6 +57,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -225,6 +226,15 @@ public class ConfigRepository {
     persistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefinition.getSourceDefinitionId().toString(), sourceDefinition);
   }
 
+  public void writeCustomSourceDefinition(final StandardSourceDefinition sourceDefinition, final UUID workspaceId)
+      throws IOException {
+    database.transaction(ctx -> {
+      ConfigWriter.writeStandardSourceDefinition(List.of(sourceDefinition), ctx);
+      writeActorDefinitionWorkspaceGrant(sourceDefinition.getSourceDefinitionId(), workspaceId, ctx);
+      return null;
+    });
+  }
+
   public void deleteStandardSourceDefinition(final UUID sourceDefId) throws IOException {
     try {
       persistence.deleteConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefId.toString());
@@ -320,6 +330,15 @@ public class ConfigRepository {
         destinationDefinition);
   }
 
+  public void writeCustomDestinationDefinition(final StandardDestinationDefinition destinationDefinition, final UUID workspaceId)
+      throws IOException {
+    database.transaction(ctx -> {
+      ConfigWriter.writeStandardDestinationDefinition(List.of(destinationDefinition), ctx);
+      writeActorDefinitionWorkspaceGrant(destinationDefinition.getDestinationDefinitionId(), workspaceId, ctx);
+      return null;
+    });
+  }
+
   public void deleteStandardDestinationDefinition(final UUID destDefId) throws IOException {
     try {
       persistence.deleteConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destDefId.toString());
@@ -375,10 +394,14 @@ public class ConfigRepository {
   }
 
   public void writeActorDefinitionWorkspaceGrant(final UUID actorDefinitionId, final UUID workspaceId) throws IOException {
-    database.query(ctx -> ctx.insertInto(ACTOR_DEFINITION_WORKSPACE_GRANT)
+    database.query(ctx -> writeActorDefinitionWorkspaceGrant(actorDefinitionId, workspaceId, ctx));
+  }
+
+  private int writeActorDefinitionWorkspaceGrant(final UUID actorDefinitionId, final UUID workspaceId, final DSLContext ctx) {
+    return ctx.insertInto(ACTOR_DEFINITION_WORKSPACE_GRANT)
         .set(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID, actorDefinitionId)
         .set(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID, workspaceId)
-        .execute());
+        .execute();
   }
 
   public boolean actorDefinitionWorkspaceGrantExists(final UUID actorDefinitionId, final UUID workspaceId) throws IOException {
@@ -394,6 +417,26 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID.eq(actorDefinitionId))
         .and(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId))
         .execute());
+  }
+
+  public boolean workspaceCanUseDefinition(final UUID actorDefinitionId, final UUID workspaceId)
+      throws IOException {
+    final Result<Record> records = actorDefinitionsJoinedWithGrants(
+        workspaceId,
+        JoinType.LEFT_OUTER_JOIN,
+        ACTOR_DEFINITION.ID.eq(actorDefinitionId),
+        ACTOR_DEFINITION.PUBLIC.eq(true).or(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId)));
+    return records.isNotEmpty();
+  }
+
+  public boolean workspaceCanUseCustomDefinition(final UUID actorDefinitionId, final UUID workspaceId)
+      throws IOException {
+    final Result<Record> records = actorDefinitionsJoinedWithGrants(
+        workspaceId,
+        JoinType.JOIN,
+        ACTOR_DEFINITION.ID.eq(actorDefinitionId),
+        ACTOR_DEFINITION.CUSTOM.eq(true));
+    return records.isNotEmpty();
   }
 
   private <T> List<T> listStandardActorDefinitions(final ActorType actorType,
@@ -416,14 +459,12 @@ public class ConfigRepository {
                                                            final Function<Record, T> recordToReturnType,
                                                            final Condition... conditions)
       throws IOException {
-    final Result<Record> records = database.query(ctx -> ctx.select(asterisk()).from(ACTOR_DEFINITION)
-        .join(ACTOR_DEFINITION_WORKSPACE_GRANT, joinType)
-        .on(ACTOR_DEFINITION.ID.eq(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID),
-            ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId))
-        .where(conditions)
-        .and(ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType))
-        .and(ACTOR_DEFINITION.PUBLIC.eq(false))
-        .fetch());
+    final Result<Record> records = actorDefinitionsJoinedWithGrants(
+        workspaceId,
+        joinType,
+        ArrayUtils.addAll(conditions,
+            ACTOR_DEFINITION.ACTOR_TYPE.eq(actorType),
+            ACTOR_DEFINITION.PUBLIC.eq(false)));
 
     return records.stream()
         .map(recordToReturnType)
@@ -435,6 +476,18 @@ public class ConfigRepository {
     final T actorDefinition = recordToActorDefinition.apply(outerJoinRecord);
     final boolean granted = outerJoinRecord.get(ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID) != null;
     return Map.entry(actorDefinition, granted);
+  }
+
+  private Result<Record> actorDefinitionsJoinedWithGrants(final UUID workspaceId,
+                                                          final JoinType joinType,
+                                                          final Condition... conditions)
+      throws IOException {
+    return database.query(ctx -> ctx.select(asterisk()).from(ACTOR_DEFINITION)
+        .join(ACTOR_DEFINITION_WORKSPACE_GRANT, joinType)
+        .on(ACTOR_DEFINITION.ID.eq(ACTOR_DEFINITION_WORKSPACE_GRANT.ACTOR_DEFINITION_ID),
+            ACTOR_DEFINITION_WORKSPACE_GRANT.WORKSPACE_ID.eq(workspaceId))
+        .where(conditions)
+        .fetch());
   }
 
   /**
