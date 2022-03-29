@@ -14,4 +14,6 @@ public interface FeatureFlags {
 
   boolean autoDisablesFailingConnections();
 
+  boolean exposeSecretsInExport();
+
 }
