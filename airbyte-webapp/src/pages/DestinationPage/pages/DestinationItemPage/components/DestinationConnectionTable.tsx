@@ -3,7 +3,7 @@ import { useResource } from "rest-hooks";
 
 import { ConnectionTable } from "components/EntityTable";
 import useRouter from "hooks/useRouter";
-import { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import useSyncActions from "components/EntityTable/hooks";
 import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";

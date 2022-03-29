@@ -1,5 +1,9 @@
-import { useFetcher, useResource } from "rest-hooks";
-import { useMutation } from "react-query";
+import {
+  QueryObserverSuccessResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "react-query";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { useConfig } from "config";
@@ -9,21 +13,25 @@ import {
   WebBackendConnectionService,
 } from "core/domain/connection";
 
-import ConnectionResource, {
-  ScheduleProperties,
-} from "core/resources/Connection";
+import { ScheduleProperties } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import useRouter from "hooks/useRouter";
 
 import { equal } from "utils/objects";
 import { Destination, Source, SourceDefinition } from "core/domain/connector";
-import { RoutePaths } from "pages/routePaths";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
+
+export const connectionsKeys = {
+  all: ["connections"] as const,
+  lists: () => [...connectionsKeys.all, "list"] as const,
+  list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
+  detail: (connectionId: string) =>
+    [...connectionsKeys.all, "details", connectionId] as const,
+};
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -56,6 +64,8 @@ type UpdateConnection = {
   withRefreshedCatalog?: boolean;
 };
 
+export type ListConnection = { connections: Connection[] };
+
 function useWebConnectionService(): WebBackendConnectionService {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
@@ -84,9 +94,7 @@ export const useConnectionLoad = (
   connection: Connection;
   refreshConnectionCatalog: () => Promise<Connection>;
 } => {
-  const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId,
-  });
+  const connection = useGetConnection(connectionId);
 
   const connectionService = useWebConnectionService();
 
@@ -128,53 +136,40 @@ export const useResetConnection = () => {
   return useMutation((connectionId: string) => service.reset(connectionId));
 };
 
-const useConnection = (): {
-  createConnection: (conn: CreateConnectionProps) => Promise<Connection>;
-  updateConnection: (conn: UpdateConnection) => Promise<Connection>;
-  deleteConnection: (payload: { connectionId: string }) => Promise<void>;
-} => {
-  const { push } = useRouter();
-  const { workspace } = useWorkspace();
+const useGetConnection = (
+  connectionId: string,
+  options?: { refetchInterval: number }
+): Connection => {
+  const service = useWebConnectionService();
+
+  return (useQuery(
+    connectionsKeys.detail(connectionId),
+    () => service.getConnection(connectionId),
+    options
+  ) as QueryObserverSuccessResult<Connection>).data;
+};
+
+const useCreateConnection = () => {
+  const service = useWebConnectionService();
+  const queryClient = useQueryClient();
+
   const analyticsService = useAnalyticsService();
 
-  const createConnectionResource = useFetcher(ConnectionResource.createShape());
-  const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
-  const deleteConnectionResource = useFetcher(
-    ConnectionResource.deleteShapeItem()
-  );
-
-  const createConnection = async ({
-    values,
-    source,
-    destination,
-    sourceDefinition,
-    destinationDefinition,
-  }: CreateConnectionProps) => {
-    try {
-      const result = await createConnectionResource(
-        {},
-        {
-          sourceId: source?.sourceId,
-          destinationId: destination?.destinationId,
-          ...values,
-          status: "active",
-        },
-        [
-          [
-            ConnectionResource.listShape(),
-            { workspaceId: workspace.workspaceId },
-            (
-              newConnectionId: string,
-              connectionsIds: { connections: string[] }
-            ) => ({
-              connections: [
-                ...(connectionsIds?.connections || []),
-                newConnectionId,
-              ],
-            }),
-          ],
-        ]
-      );
+  return useMutation(
+    async (conn: CreateConnectionProps) => {
+      const {
+        values,
+        source,
+        destination,
+        sourceDefinition,
+        destinationDefinition,
+      } = conn;
+      const response = await service.create({
+        sourceId: source?.sourceId,
+        destinationId: destination?.destinationId,
+        ...values,
+        status: "active",
+      });
 
       const frequencyData = FrequencyConfig.find((item) =>
         equal(item.config, values.schedule)
@@ -190,69 +185,78 @@ const useConnection = (): {
           destinationDefinition?.destinationDefinitionId,
       });
 
-      return result;
-    } catch (e) {
-      throw e;
+      return response;
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(
+          connectionsKeys.lists(),
+          (lst: ListConnection | undefined) => ({
+            connections: [data, ...(lst?.connections ?? [])],
+          })
+        );
+      },
     }
-  };
-
-  const updateConnectionsStore = useFetcher(ConnectionResource.listShape());
-
-  const deleteConnection = async ({
-    connectionId,
-  }: {
-    connectionId: string;
-  }) => {
-    await deleteConnectionResource({}, { connectionId }, [
-      [
-        ConnectionResource.listShape(),
-        { workspaceId: workspace.workspaceId },
-        (cId: string, connectionsIds: { connections: string[] }) => {
-          const res = connectionsIds?.connections || [];
-          const index = res.findIndex((c) => c === cId);
-
-          return {
-            connections: [...res.slice(0, index), ...res.slice(index + 1)],
-          };
-        },
-      ],
-    ]);
-
-    await updateConnectionsStore({ workspaceId: workspace.workspaceId });
-
-    push(RoutePaths.Connections);
-  };
-
-  const updateConnection = async ({
-    withRefreshedCatalog,
-    ...formValues
-  }: UpdateConnection) => {
-    const withRefreshedCatalogCleaned = withRefreshedCatalog
-      ? { withRefreshedCatalog }
-      : null;
-
-    return await updateConnectionResource(
-      {},
-      {
-        ...formValues,
-        ...withRefreshedCatalogCleaned,
-      }
-    );
-  };
-
-  return {
-    createConnection,
-    updateConnection,
-    deleteConnection,
-  };
+  );
 };
 
-const useConnectionList = (): { connections: Connection[] } => {
-  const { workspace } = useWorkspace();
-  return useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
+const useDeleteConnection = () => {
+  const service = useConnectionService();
+  const queryClient = useQueryClient();
+
+  return useMutation((connectionId: string) => service.delete(connectionId), {
+    onSuccess: (_data, connectionId) => {
+      queryClient.removeQueries(connectionsKeys.detail(connectionId));
+      queryClient.setQueryData(
+        connectionsKeys.lists(),
+        (lst: ListConnection | undefined) =>
+          ({
+            connections:
+              lst?.connections.filter(
+                (conn) => conn.connectionId !== connectionId
+              ) ?? [],
+          } as ListConnection)
+      );
+    },
   });
 };
 
-export { useConnectionList };
-export default useConnection;
+const useUpdateConnection = () => {
+  const service = useWebConnectionService();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (conn: UpdateConnection) => {
+      const withRefreshedCatalogCleaned = conn.withRefreshedCatalog
+        ? { withRefreshedCatalog: conn.withRefreshedCatalog }
+        : null;
+
+      return service.update({ ...conn, ...withRefreshedCatalogCleaned });
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(
+          connectionsKeys.detail(data.connectionId),
+          data
+        );
+      },
+    }
+  );
+};
+
+const useConnectionList = (): ListConnection => {
+  const { workspace } = useWorkspace();
+  const service = useWebConnectionService();
+
+  return (useQuery(connectionsKeys.lists(), () =>
+    service.list(workspace.workspaceId)
+  ) as QueryObserverSuccessResult<{ connections: Connection[] }>).data;
+};
+
+export {
+  useConnectionList,
+  useGetConnection,
+  useUpdateConnection,
+  useCreateConnection,
+  useDeleteConnection,
+};

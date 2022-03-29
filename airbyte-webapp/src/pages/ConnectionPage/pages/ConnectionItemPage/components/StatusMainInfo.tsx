@@ -7,7 +7,7 @@ import { Header, Row, Cell } from "components/SimpleTableComponents";
 import EnabledControl from "./EnabledControl";
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
-import { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
 const MainInfo = styled(ContentCard)`

@@ -1,8 +1,9 @@
 import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
+import { useQueryClient } from "react-query";
 
 import SourceResource from "core/resources/Source";
-import ConnectionResource, { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
@@ -11,6 +12,7 @@ import useRouter from "hooks/useRouter";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Source } from "core/domain/connector";
 import { RoutePaths } from "../../pages/routePaths";
+import { connectionsKeys, ListConnection } from "./useConnectionHook";
 
 type ValuesProps = {
   name: string;
@@ -54,9 +56,7 @@ const useSource = (): SourceService => {
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
 
-  const updateConnectionsStore = useFetcher(
-    ConnectionResource.updateStoreAfterDeleteShape()
-  );
+  const queryClient = useQueryClient();
 
   const createSource: SourceService["createSource"] = async ({
     values,
@@ -169,8 +169,18 @@ const useSource = (): SourceService => {
     });
 
     // To delete connections with current source from local store
-    connectionsWithSource.map((item) =>
-      updateConnectionsStore({ connectionId: item.connectionId }, undefined)
+    const connectionIds = connectionsWithSource.map(
+      (item) => item.connectionId
+    );
+
+    queryClient.setQueryData(
+      connectionsKeys.lists(),
+      (ls: ListConnection | undefined) => ({
+        connections:
+          ls?.connections.filter((c) =>
+            connectionIds.includes(c.connectionId)
+          ) ?? [],
+      })
     );
 
     push(RoutePaths.Source);

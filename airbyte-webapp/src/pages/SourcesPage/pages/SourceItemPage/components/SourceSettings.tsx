@@ -5,7 +5,7 @@ import { useResource } from "rest-hooks";
 
 import useSource from "hooks/services/useSourceHook";
 import DeleteBlock from "components/DeleteBlock";
-import { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";

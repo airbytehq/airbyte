@@ -10,7 +10,10 @@ import JobItem from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
-import useConnection, { ValuesProps } from "hooks/services/useConnectionHook";
+import {
+  useCreateConnection,
+  ValuesProps,
+} from "hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "hooks/services/useSchemaHook";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
@@ -47,7 +50,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   additionBottomControls,
   noTitles,
 }) => {
-  const { createConnection } = useConnection();
+  const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
 
   const {

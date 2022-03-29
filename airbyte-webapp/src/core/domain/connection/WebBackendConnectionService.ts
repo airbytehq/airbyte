@@ -1,5 +1,6 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { Connection } from "./types";
+import { CommonRequestError } from "../../request/CommonRequestError";
 
 class WebBackendConnectionService extends AirbyteRequestService {
   get url() {
@@ -16,10 +17,32 @@ class WebBackendConnectionService extends AirbyteRequestService {
     });
   }
 
-  public async list(workspaceId: string): Promise<Connection[]> {
-    return await this.fetch<Connection[]>(`${this.url}/list`, {
+  public async list(
+    workspaceId: string
+  ): Promise<{ connections: Connection[] }> {
+    return await this.fetch<{ connections: Connection[] }>(`${this.url}/list`, {
       workspaceId,
     });
+  }
+
+  public async update(payload: Record<string, unknown>): Promise<Connection> {
+    const result = await this.fetch<any>(`${this.url}/update`, payload);
+
+    if (result.status === "failure") {
+      throw new CommonRequestError(result, result.message);
+    }
+
+    return result;
+  }
+
+  public async create(payload: Record<string, unknown>): Promise<Connection> {
+    const result = await this.fetch<any>(`${this.url}/create`, payload);
+
+    if (result.status === "failure") {
+      throw new CommonRequestError(result, result.message);
+    }
+
+    return result;
   }
 }
 

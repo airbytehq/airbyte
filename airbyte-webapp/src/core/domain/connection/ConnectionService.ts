@@ -1,5 +1,6 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { Connection } from "./types";
+import { CommonRequestError } from "../../request/CommonRequestError";
 
 class ConnectionService extends AirbyteRequestService {
   get url() {
@@ -20,6 +21,18 @@ class ConnectionService extends AirbyteRequestService {
     });
 
     return rs;
+  }
+
+  public async delete(connectionId: string): Promise<Connection> {
+    const result = await this.fetch<any>(`${this.url}/delete`, {
+      connectionId,
+    });
+
+    if (result.status === "failure") {
+      throw new CommonRequestError(result, result.message);
+    }
+
+    return result;
   }
 }
 

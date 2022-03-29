@@ -5,7 +5,7 @@ import { useResource } from "rest-hooks";
 
 import DeleteBlock from "components/DeleteBlock";
 import useDestination from "hooks/services/useDestinationHook";
-import { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 

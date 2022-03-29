@@ -1,21 +1,13 @@
-import {
-  FetchOptions,
-  FetchShape,
-  MutateShape,
-  ReadShape,
-  Resource,
-  SchemaDetail,
-} from "rest-hooks";
+import { FetchShape, Resource, SchemaDetail } from "rest-hooks";
 
 import { SyncSchema } from "core/domain/catalog";
-import { CommonRequestError } from "core/request/CommonRequestError";
 
 import BaseResource from "./BaseResource";
 import {
-  ConnectionNamespaceDefinition,
   Connection,
-  ScheduleProperties,
+  ConnectionNamespaceDefinition,
   Operation,
+  ScheduleProperties,
 } from "core/domain/connection";
 import { Destination, Source } from "core/domain/connector";
 
@@ -49,114 +41,6 @@ export default class ConnectionResource
   }
 
   static urlRoot = "connections";
-
-  static getFetchOptions(): FetchOptions {
-    return {
-      pollFrequency: 2500, // every 2,5 seconds
-    };
-  }
-
-  static detailShape<T extends typeof Resource>(
-    this: T
-  ): ReadShape<SchemaDetail<Connection>> {
-    return {
-      ...super.detailShape(),
-      fetch: async (
-        params: Readonly<Record<string, unknown>>
-      ): Promise<Connection> =>
-        await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/connections/get`,
-          params
-        ),
-      schema: this,
-    };
-  }
-
-  static updateShape<T extends typeof Resource>(
-    this: T
-  ): MutateShape<SchemaDetail<Connection>> {
-    return {
-      ...super.partialUpdateShape(),
-      fetch: async (
-        _: Readonly<Record<string, string | number>>,
-        body: Record<string, unknown>
-      ): Promise<Connection> => {
-        const result = await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/connections/update`,
-          body
-        );
-
-        if (result.status === "failure") {
-          throw new CommonRequestError(result, result.message);
-        }
-
-        return result;
-      },
-      schema: this,
-    };
-  }
-
-  static deleteShapeItem<T extends typeof Resource>(
-    this: T
-  ): MutateShape<SchemaDetail<Connection>> {
-    return {
-      ...super.deleteShape(),
-      fetch: async (
-        _: Readonly<Record<string, string>>,
-        body: Readonly<Record<string, unknown>>
-      ): Promise<Connection> => {
-        const result = await this.fetch(
-          "post",
-          `${super.rootUrl()}connections/delete`,
-          body
-        );
-
-        if (result.status === "failure") {
-          throw new CommonRequestError(result, result.message);
-        }
-
-        return result;
-      },
-      schema: this,
-    };
-  }
-
-  static createShape<T extends typeof Resource>(
-    this: T
-  ): MutateShape<SchemaDetail<Connection>> {
-    return {
-      ...super.createShape(),
-      schema: this,
-      fetch: async (
-        _: Readonly<Record<string, string>>,
-        body: Readonly<Record<string, unknown>>
-      ): Promise<Connection> =>
-        await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/connections/create`,
-          body
-        ),
-    };
-  }
-
-  static listShape<T extends typeof Resource>(
-    this: T
-  ): ReadShape<SchemaDetail<{ connections: Connection[] }>> {
-    return {
-      ...super.listShape(),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>
-      ): Promise<{ connections: Connection[] }> =>
-        await this.fetch(
-          "post",
-          `${super.rootUrl()}web_backend/connections/list`,
-          params
-        ),
-      schema: { connections: [this] },
-    };
-  }
 
   static updateStoreAfterDeleteShape<T extends typeof Resource>(
     this: T

@@ -9,7 +9,7 @@ import { useListJobs } from "services/job/JobService";
 
 import { Button, ContentCard, LoadingButton } from "components";
 import StatusMainInfo from "./StatusMainInfo";
-import { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import JobsList from "./JobsList";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";

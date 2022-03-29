@@ -6,9 +6,10 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useAsyncFn } from "react-use";
 
 import { Button, Card } from "components";
-import useConnection, {
+import {
   useConnectionLoad,
   useResetConnection,
+  useUpdateConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
@@ -63,7 +64,7 @@ const ReplicationView: React.FC<IProps> = ({
     syncCatalog: { streams: [] },
   });
 
-  const { updateConnection } = useConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: resetConnection } = useResetConnection();
 
   const onReset = () => resetConnection(connectionId);
