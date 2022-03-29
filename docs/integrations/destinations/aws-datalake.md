@@ -1,7 +1,8 @@
 # AWS Datalake
+
 ## Overview
 
-The AWS-Datalake destination connector allows you to sync data to AWS. It will write data as JSON files in S3 and 
+The AWS Datalake destination connector allows you to sync data to AWS. It will write data as JSON files in S3 and 
 update the Glue data catalog so that the data is available throughout other AWS services such as Athena, Glue jobs, EMR, 
 Redshift, etc.
 
@@ -23,13 +24,13 @@ and types in the destination table as in the source.
 ### Requirements
 
 To use this destination connector, you will need:
-* An AWS account
-* An S3 bucket where the data will be written
-* A Lakeformation database where tables will be created (one per stream)
+* A AWS account
+* A S3 bucket where the data will be written
+* A AWS Lake Formation database where tables will be created (one per stream)
 * AWS credentials in the form of either the pair Access key ID / Secret key ID or a role with the following permissions:
 
     * Writing objects in the S3 bucket
-    * Updating of the Lakeformation database
+    * Updating of the Lake Formation database
 
 See the setup guide for more information about the creation of the resources.
 
@@ -46,13 +47,13 @@ Feel free to skip this section if you already have an S3 bucket.
 
 You will find the instructions to create an S3 bucket [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html).
 
-#### Creating a Lakeformation Database
+#### Creating a Lake Formation Database
 
-Feel free to skip this section if you already have a Lakeformation Database.
+Feel free to skip this section if you already have a Lake Formation Database.
 
 You will find the instructions to create a Lakeformation Database [here](https://docs.aws.amazon.com/lake-formation/latest/dg/creating-database.html).
 
-#### Creating credentials
+#### Creating Credentials
 
 The AWS Datalake connector lets you authenticate with either a user or a role. In both case, you will have to make sure
 that appropriate policies are in place.
@@ -62,7 +63,7 @@ Feel free to skip this section if you already have appropriate credentials.
 **Option 1: Creating a user**
 
 You will find the instructions to create a user [here](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html).
-Make sure to select "Programmatic access" so that you get secret access keys.
+Make sure to select "Programmatic Access" so that you get secret access keys.
 
 
 **Option 2: Creating a role**
@@ -73,7 +74,7 @@ You will find the instructions to create a role [here](https://docs.aws.amazon.c
 
 The policy used by the user or the role must have access to the following services:
 
-* AWS Lakeformation
+* AWS Lake Formation
 * AWS Glue
 * AWS S3
 
@@ -98,3 +99,4 @@ following information to configure the destination:
 
 
 ## Changelog
+| 0.1.0 | 2022-03-29 | [\#10760](https://github.com/airbytehq/airbyte/pull/10760) | Initial release |
