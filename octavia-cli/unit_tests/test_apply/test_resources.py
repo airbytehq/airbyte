@@ -85,6 +85,7 @@ class TestBaseResource:
         mocker.patch.object(resources.BaseResource, "__abstractmethods__", set())
         mocker.patch.object(resources.BaseResource, "create_function_name", "create_resource")
         mocker.patch.object(resources.BaseResource, "resource_id_field", "resource_id")
+        mocker.patch.object(resources.BaseResource, "ResourceIdRequestBody")
         mocker.patch.object(resources.BaseResource, "search_function_name", "search_resource")
         mocker.patch.object(resources.BaseResource, "update_function_name", "update_resource")
         mocker.patch.object(resources.BaseResource, "resource_type", "universal_resource")
@@ -185,6 +186,20 @@ class TestBaseResource:
             assert state is None
 
     @pytest.mark.parametrize(
+        "resource_id",
+        [None, "foo"],
+    )
+    def test_resource_id_request_body(self, mocker, resource_id, resource):
+        mocker.patch.object(resources.BaseResource, "resource_id", resource_id)
+        if resource_id is None:
+            with pytest.raises(resources.NonExistingResourceError):
+                resource.resource_id_request_body
+                resource.ResourceIdRequestBody.assert_not_called()
+        else:
+            assert resource.resource_id_request_body == resource.ResourceIdRequestBody.return_value
+            resource.ResourceIdRequestBody.assert_called_with(resource_id)
+
+    @pytest.mark.parametrize(
         "was_created",
         [True, False],
     )
@@ -253,7 +268,6 @@ class TestSource:
     )
     def test_init(self, mocker, mock_api_client, local_configuration, state):
         assert resources.Source.__base__ == resources.BaseResource
-        mocker.patch.object(resources, "SourceIdRequestBody")
         mocker.patch.object(resources.Source, "resource_id", "foo")
         source = resources.Source(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         mocker.patch.object(source, "state", state)
@@ -278,8 +292,6 @@ class TestSource:
             assert source.search_payload == resources.SourceSearch(
                 source_definition_id=source.definition_id, workspace_id=source.workspace_id, source_id=source.state.resource_id
             )
-        assert source.resource_id_request_body == resources.SourceIdRequestBody.return_value
-        resources.SourceIdRequestBody.assert_called_with(source_id=source.resource_id)
 
     def test_get_comparable_configuration(self, mocker, mock_api_client, local_configuration):
         mock_base_comparable_configuration = mocker.Mock()
@@ -294,25 +306,27 @@ class TestSource:
         "resource_id",
         [None, "foo"],
     )
-    def test_resource_id_request_body(self, mocker, mock_api_client, resource_id, local_configuration):
-        mocker.patch.object(resources, "SourceIdRequestBody")
+    def test_source_discover_schema_request_body(self, mocker, mock_api_client, resource_id, local_configuration):
+        mocker.patch.object(resources, "SourceDiscoverSchemaRequestBody")
         mocker.patch.object(resources.Source, "resource_id", resource_id)
         source = resources.Source(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         if resource_id is None:
             with pytest.raises(resources.NonExistingResourceError):
-                source.resource_id_request_body
-                resources.SourceIdRequestBody.assert_not_called()
+                source.source_discover_schema_request_body
+                resources.SourceDiscoverSchemaRequestBody.assert_not_called()
         else:
-            assert source.resource_id_request_body == resources.SourceIdRequestBody.return_value
-            resources.SourceIdRequestBody.assert_called_with(source_id=source.resource_id)
+            assert source.source_discover_schema_request_body == resources.SourceDiscoverSchemaRequestBody.return_value
+            resources.SourceDiscoverSchemaRequestBody.assert_called_with(source.resource_id)
 
     def test_catalog(self, mocker, mock_api_client, local_configuration):
-        mocker.patch.object(resources.Source, "resource_id_request_body")
+        mocker.patch.object(resources.Source, "source_discover_schema_request_body")
         source = resources.Source(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
         source.api_instance = mocker.Mock()
         catalog = source.catalog
         assert catalog == source.api_instance.discover_schema_for_source.return_value.catalog
-        source.api_instance.discover_schema_for_source.assert_called_with(source.resource_id_request_body, _check_return_type=False)
+        source.api_instance.discover_schema_for_source.assert_called_with(
+            source.source_discover_schema_request_body, _check_return_type=False
+        )
 
 
 class TestDestination:
