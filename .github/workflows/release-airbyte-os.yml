@@ -66,7 +66,7 @@ jobs:
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
+          python-version: "3.8"
       - name: Save Old Version
         id: old_version
         run: |
