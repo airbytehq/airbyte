@@ -124,6 +124,8 @@ jobs:
           SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
 
       - name: Publish
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: ./octavia-cli/publish.sh 0.1.1
 
       - name: Slack Notification - Failure
