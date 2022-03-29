@@ -4,9 +4,7 @@ import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
 import DeleteBlock from "components/DeleteBlock";
-import useDestination, {
-  useDestinationDefinitionSpecificationLoadAsync,
-} from "hooks/services/useDestinationHook";
+import useDestination from "hooks/services/useDestinationHook";
 import { Connection } from "core/resources/Connection";
 import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
@@ -15,6 +13,7 @@ import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { Connector, Destination } from "core/domain/connector";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 
 const Content = styled.div`
   width: 100%;
@@ -36,7 +35,7 @@ const DestinationsSettings: React.FC<IProps> = ({
     null
   );
 
-  const destinationSpecification = useDestinationDefinitionSpecificationLoadAsync(
+  const destinationSpecification = useGetDestinationDefinitionSpecification(
     currentDestination.destinationDefinitionId
   );
 

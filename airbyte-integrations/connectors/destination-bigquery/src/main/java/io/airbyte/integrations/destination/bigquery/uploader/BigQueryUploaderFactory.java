@@ -29,17 +29,14 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BigQueryUploaderFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
-
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    final String schemaName =
-        BigQueryUtils.getSchema(uploaderConfig.getConfig(), uploaderConfig.getConfigStream());
+    final String schemaName = BigQueryUtils.getSchema(
+        uploaderConfig.getConfig(),
+        uploaderConfig.getConfigStream());
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingSchemas = new HashSet<>();
 

@@ -249,6 +249,18 @@ public interface Configs {
    */
   Map<String, String> getJobDefaultEnvMap();
 
+  /**
+   * Defines the number of consecutive job failures required before a connection is auto-disabled if
+   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   */
+  int getMaxFailedJobsInARowBeforeConnectionDisable();
+
+  /**
+   * Defines the required number of days with only failed jobs before a connection is auto-disabled if
+   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   */
+  int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
+
   // Jobs - Kube only
   /**
    * Define the check job container's minimum CPU request. Defaults to

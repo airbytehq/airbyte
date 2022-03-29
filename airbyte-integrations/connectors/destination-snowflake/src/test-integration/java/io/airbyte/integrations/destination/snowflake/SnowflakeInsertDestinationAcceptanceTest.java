@@ -14,35 +14,38 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
+
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
   private JsonNode config;
   private JdbcDatabase database;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -64,7 +67,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode invalidConfig = Jsons.clone(config);
-    ((ObjectNode) invalidConfig).put("password", "wrong password");
+    ((ObjectNode) invalidConfig.get("credentials")).put("password", "wrong password");
     return invalidConfig;
   }
 
@@ -74,7 +77,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
+    return retrieveRecordsFromTable(NAME_TRANSFORMER.getRawTableName(streamName), NAME_TRANSFORMER.getNamespace(namespace))
         .stream()
         .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
         .collect(Collectors.toList());
@@ -96,10 +99,20 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
+  protected boolean supportNamespaceTest() {
+    return true;
+  }
+
+  @Override
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.of(NAME_TRANSFORMER);
+  }
+
+  @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
       throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    final String schema = namingResolver.getIdentifier(namespace);
+    final String tableName = NAME_TRANSFORMER.getIdentifier(streamName);
+    final String schema = NAME_TRANSFORMER.getNamespace(namespace);
     // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
     // use quoted names
     // if (!tableName.startsWith("\"")) {
@@ -112,7 +125,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Override
   protected List<String> resolveIdentifier(final String identifier) {
     final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
+    final String resolved = NAME_TRANSFORMER.getIdentifier(identifier);
     result.add(identifier);
     result.add(resolved);
     if (!resolved.startsWith("\"")) {
@@ -125,14 +138,15 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
     return database.bufferedResultSetQuery(
         connection -> {
-          final ResultSet tableInfo = connection.createStatement()
-              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema));
-          assertTrue(tableInfo.next());
-          // check that we're creating permanent tables. DBT defaults to transient tables, which have
-          // `TRANSIENT` as the value for the `kind` column.
-          assertEquals("TABLE", tableInfo.getString("kind"));
-          return connection.createStatement()
-              .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+          try (final ResultSet tableInfo = connection.createStatement()
+              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema));) {
+            assertTrue(tableInfo.next());
+            // check that we're creating permanent tables. DBT defaults to transient tables, which have
+            // `TRANSIENT` as the value for the `kind` column.
+            assertEquals("TABLE", tableInfo.getString("kind"));
+            return connection.createStatement()
+                .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+          }
         },
         JdbcUtils.getDefaultSourceOperations()::rowToJson);
   }
@@ -157,6 +171,17 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     database.close();
   }
 
+  @Test
+  public void testBackwardCompatibilityAfterAddingOauth() {
+    final JsonNode deprecatedStyleConfig = Jsons.clone(config);
+    final JsonNode password = deprecatedStyleConfig.get("credentials").get("password");
+
+    ((ObjectNode) deprecatedStyleConfig).remove("credentials");
+    ((ObjectNode) deprecatedStyleConfig).set("password", password);
+
+    assertEquals(Status.SUCCEEDED, runCheckWithCatchedException(deprecatedStyleConfig));
+  }
+
   /**
    * This test is disabled because it is very slow, and should only be run manually for now.
    */
@@ -174,14 +199,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
-  }
-
-  private <T> T parseConfig(final String path, final Class<T> clazz) throws IOException {
-    return Jsons.deserialize(MoreResources.readResource(path), clazz);
-  }
-
-  private JsonNode parseConfig(final String path) throws IOException {
-    return Jsons.deserialize(MoreResources.readResource(path));
   }
 
 }

@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.staging;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.functional.CheckedBiConsumer;
+import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -15,8 +17,9 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
+import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -29,6 +32,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -38,8 +42,6 @@ public class StagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StagingConsumerFactory.class);
 
-  private static final long MAX_BATCH_SIZE_BYTES = 128 * 1024 * 1024; // 128mb
-  private final DateTime CURRENT_SYNC_PATH = DateTime.now(DateTimeZone.UTC);
   // using a random string here as a placeholder for the moment.
   // This would avoid mixing data in the staging area between different syncs (especially if they
   // manipulate streams with similar names)
@@ -48,24 +50,27 @@ public class StagingConsumerFactory {
   // in a previous attempt but failed to load to the warehouse for some reason (interrupted?) instead.
   // This would also allow other programs/scripts
   // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
-  private final String RANDOM_CONNECTION_ID = UUID.randomUUID().toString();
+  private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
+  private final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final JdbcDatabase database,
-                                       final StagingOperations sqlOperations,
+                                       final StagingOperations stagingOperations,
                                        final NamingConventionTransformer namingResolver,
+                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                        final JsonNode config,
                                        final ConfiguredAirbyteCatalog catalog) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
-
     return new BufferedStreamConsumer(
         outputRecordCollector,
-        onStartFunction(database, sqlOperations, writeConfigs),
-        recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
-        onCloseFunction(database, sqlOperations, writeConfigs),
+        onStartFunction(database, stagingOperations, writeConfigs),
+        new SerializedBufferingStrategy(
+            onCreateBuffer,
+            catalog,
+            flushBufferFunction(database, stagingOperations, writeConfigs, catalog)),
+        onCloseFunction(database, stagingOperations, writeConfigs),
         catalog,
-        sqlOperations::isValidData,
-        MAX_BATCH_SIZE_BYTES);
+        stagingOperations::isValidData);
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -88,7 +93,8 @@ public class StagingConsumerFactory {
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
-      final WriteConfig writeConfig = new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
+      final WriteConfig writeConfig =
+          new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode, SYNC_DATETIME);
       LOGGER.info("Write config: {}", writeConfig);
 
       return writeConfig;
@@ -99,37 +105,37 @@ public class StagingConsumerFactory {
                                         final String defaultDestSchema,
                                         final NamingConventionTransformer namingResolver) {
     return stream.getNamespace() != null
-        ? namingResolver.getIdentifier(stream.getNamespace())
-        : namingResolver.getIdentifier(defaultDestSchema);
+        ? namingResolver.getNamespace(stream.getNamespace())
+        : namingResolver.getNamespace(defaultDestSchema);
   }
 
-  private static OnStartFunction onStartFunction(final JdbcDatabase database,
-                                                 final StagingOperations stagingOperations,
-                                                 final List<WriteConfig> writeConfigs) {
+  private OnStartFunction onStartFunction(final JdbcDatabase database,
+                                          final StagingOperations stagingOperations,
+                                          final List<WriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
-
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
         final String tmpTable = writeConfig.getTmpTableName();
-        final String stage = stagingOperations.getStageName(schema, writeConfig.getOutputTableName());
+        final String stageName = stagingOperations.getStageName(schema, stream);
+        final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schema, stream, writeConfig.getWriteDatetime());
 
-        LOGGER.info("Preparing stage in destination started for schema {} stream {}: tmp table: {}, stage: {}",
-            schema, stream, tmpTable, stage);
+        LOGGER.info("Preparing staging area in destination started for schema {} stream {}: tmp table: {}, stage: {}",
+            schema, stream, tmpTable, stagingPath);
 
         AirbyteSentry.executeWithTracing("PrepareStreamStage",
             () -> {
               stagingOperations.createSchemaIfNotExists(database, schema);
               stagingOperations.createTableIfNotExists(database, schema, tmpTable);
-              stagingOperations.createStageIfNotExists(database, stage);
+              stagingOperations.createStageIfNotExists(database, stageName);
             },
-            Map.of("schema", schema, "stream", stream, "tmpTable", tmpTable, "stage", stage));
+            Map.of("schema", schema, "stream", stream, "tmpTable", tmpTable, "stage", stagingPath));
 
-        LOGGER.info("Preparing stage in destination completed for schema {} stream {}", schema, stream);
+        LOGGER.info("Preparing staging area in destination completed for schema {} stream {}", schema, stream);
       }
 
-      LOGGER.info("Preparing tables in destination completed.");
+      LOGGER.info("Preparing tmp tables in destination completed.");
     };
   }
 
@@ -137,16 +143,18 @@ public class StagingConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
-  private RecordWriter recordWriterFunction(final JdbcDatabase database,
-                                            final StagingOperations stagingOperations,
-                                            final List<WriteConfig> writeConfigs,
-                                            final ConfiguredAirbyteCatalog catalog) {
+  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
+                                                                                                               final JdbcDatabase database,
+                                                                                                               final StagingOperations stagingOperations,
+                                                                                                               final List<WriteConfig> writeConfigs,
+                                                                                                               final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
         writeConfigs.stream()
             .collect(Collectors.toUnmodifiableMap(
                 StagingConsumerFactory::toNameNamespacePair, Function.identity()));
 
-    return (pair, records) -> {
+    return (pair, writer) -> {
+      LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
@@ -154,9 +162,16 @@ public class StagingConsumerFactory {
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       final String schemaName = writeConfig.getOutputSchemaName();
-      final String tableName = writeConfig.getOutputTableName();
-      final String path = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, tableName, CURRENT_SYNC_PATH);
-      stagingOperations.insertRecords(database, records, schemaName, path);
+      final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+      final String stagingPath =
+          stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
+      try (writer) {
+        writer.flush();
+        writeConfig.addStagedFile(stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath));
+      } catch (final Exception e) {
+        LOGGER.error("Failed to flush and upload buffer to stage:", e);
+        throw new RuntimeException("Failed to upload buffer to stage", e);
+      }
     };
   }
 
@@ -166,24 +181,27 @@ public class StagingConsumerFactory {
     return (hasFailed) -> {
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
-        LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
+        LOGGER.info("Copying into tables in destination started for {} streams", writeConfigs.size());
 
         for (final WriteConfig writeConfig : writeConfigs) {
           final String schemaName = writeConfig.getOutputSchemaName();
           final String streamName = writeConfig.getStreamName();
           final String srcTableName = writeConfig.getTmpTableName();
           final String dstTableName = writeConfig.getOutputTableName();
-          final String path = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, dstTableName, CURRENT_SYNC_PATH);
-          LOGGER.info("Finalizing stream {}. schema {}, tmp table {}, final table {}, stage path {}",
-              streamName, schemaName, srcTableName, dstTableName, path);
+          final String stageName = stagingOperations.getStageName(schemaName, streamName);
+          final String stagingPath = stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, streamName, writeConfig.getWriteDatetime());
+          LOGGER.info("Copying stream {} of schema {} into tmp table {} to final table {} from stage path {} with {} file(s) [{}]",
+              streamName, schemaName, srcTableName, dstTableName, stagingPath, writeConfig.getStagedFiles().size(),
+              String.join(",", writeConfig.getStagedFiles()));
 
           try {
-            stagingOperations.copyIntoTmpTableFromStage(database, path, srcTableName, schemaName);
+            stagingOperations.copyIntoTmpTableFromStage(database, stageName, stagingPath, writeConfig.getStagedFiles(), srcTableName, schemaName);
           } catch (final Exception e) {
-            stagingOperations.cleanUpStage(database, path);
-            LOGGER.info("Cleaning stage path {}", path);
-            throw new RuntimeException("Failed to upload data from stage " + path, e);
+            stagingOperations.cleanUpStage(database, stageName, writeConfig.getStagedFiles());
+            LOGGER.info("Cleaning stage path {}", stagingPath);
+            throw new RuntimeException("Failed to upload data from stage " + stagingPath, e);
           }
+          writeConfig.clearStagedFiles();
 
           stagingOperations.createTableIfNotExists(database, schemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
@@ -198,7 +216,7 @@ public class StagingConsumerFactory {
         stagingOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");
       }
-      LOGGER.info("Cleaning tmp tables in destination started for {} streams", writeConfigs.size());
+      LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         final String tmpTableName = writeConfig.getTmpTableName();
@@ -206,13 +224,12 @@ public class StagingConsumerFactory {
             tmpTableName);
 
         stagingOperations.dropTableIfExists(database, schemaName, tmpTableName);
-        final String outputTableName = writeConfig.getOutputTableName();
-        final String stageName = stagingOperations.getStageName(schemaName, outputTableName);
+        final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
         LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
             stageName);
         stagingOperations.dropStageIfExists(database, stageName);
       }
-      LOGGER.info("Cleaning tmp tables and stages in destination completed.");
+      LOGGER.info("Cleaning up destination completed.");
     };
   }
 
