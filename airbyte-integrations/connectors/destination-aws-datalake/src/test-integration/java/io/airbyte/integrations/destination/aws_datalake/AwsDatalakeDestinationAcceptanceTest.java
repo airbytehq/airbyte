@@ -62,7 +62,7 @@ import software.amazon.awssdk.regions.Region;
 
 public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final String CONFIG_PATH = "secrets/source_config.json";
+  private static final String CONFIG_PATH = "secrets/config.json";
   private static final Logger LOGGER = LoggerFactory.getLogger(AwsDatalakeDestinationAcceptanceTest.class);
 
   private JsonNode configJson;
