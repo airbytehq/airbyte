@@ -6,59 +6,65 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "S3 Destination Spec",
     "type": "object",
-    "required": ["AuthMode", "AwsAccountId", "Region", "BucketName", "Prefix"],
+    "required": [
+      "auth_mode",
+      "aws_account_id",
+      "region",
+      "bucket_name",
+      "bucket_prefix"
+    ],
     "additionalProperties": false,
     "properties": {
-      "AwsAccountId": {
+      "aws_account_id": {
         "type": "string",
         "title": "Aws Account Id",
         "description": "target aws account id",
         "examples": ["111111111111"]
       },
-      "Region": {
+      "region": {
         "title": "Aws Region",
         "type": "string",
         "description": "Region name",
         "airbyte_secret": false
       },
-      "AuthMode": {
+      "auth_mode": {
         "title": "Authentication mode",
-        "Description": "Is authentication user based or role based?",
+        "description": "Authentication Mode can be USER based or ROLE based.",
         "type": "string",
         "examples": ["USER", "ROLE"]
       },
-      "RoleArn": {
+      "role_arn": {
         "title": "Target Role Arn",
         "type": "string",
         "description": "Will assume this role to write data to s3",
         "airbyte_secret": false
       },
-      "AccessKeyId": {
+      "aws_access_key_id": {
         "title": "Access Key Id",
         "type": "string",
         "description": "AWS User Access Key Id",
         "airbyte_secret": true
       },
-      "SecretAccessKey": {
+      "aws_secret_access_key": {
         "title": "Secret Access Key",
         "type": "string",
         "description": "Secret Access Key",
         "airbyte_secret": true
       },
-      "BucketName": {
+      "bucket_name": {
         "title": "S3 Bucket Name",
         "type": "string",
         "description": "Name of the bucket",
         "airbyte_secret": false
       },
-      "Prefix": {
+      "bucket_prefix": {
         "title": "Target S3 Bucket Prefix",
         "type": "string",
         "description": "S3 prefix",
         "airbyte_secret": false
       },
-      "DatabaseName": {
-        "title": "Database",
+      "lakeformation_database_name": {
+        "title": "Lakeformation Database Name",
         "type": "string",
         "description": "Which database to use",
         "airbyte_secret": false

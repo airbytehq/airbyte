@@ -27,7 +27,10 @@ package io.airbyte.integrations.destination.aws_datalake;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
 import java.util.List;
+import com.google.common.collect.ImmutableMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -59,8 +62,7 @@ import software.amazon.awssdk.regions.Region;
 
 public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Path CONFIG_PATH = Path.of("secrets/config.json");
-  private static final Path CONFIG_INVALID_CREDS_PATH = Path.of("secrets/config-invalid-credentials.json");
+  private static final String CONFIG_PATH = "secrets/source_config.json";
   private static final Logger LOGGER = LoggerFactory.getLogger(AwsDatalakeDestinationAcceptanceTest.class);
 
   private JsonNode configJson;
@@ -84,9 +86,16 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    // TODO return an invalid config which, when used to run the connector's check connection operation,
-    // should result in a failed connection check
-    return configInvalidCredentialsJson;
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("aws_account_id", "112233")
+        .put("auth_mode", "USER")
+        .put("region", "us-east-1")
+        .put("aws_access_key_id", "key-id-format")
+        .put("aws_secret_access_key", "secret-key")
+        .put("bucket_name", "test-bucket")
+        .put("bucket_prefix", "test")
+        .put("lakeformation_database_name", "lf_db")
+        .build());
   }
 
   @Override
@@ -158,21 +167,15 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
     return result;
   }
 
-  private JsonNode loadJsonFile(Path fileName) throws IOException {
-    if (!Files.exists(fileName)) {
-      throw new IllegalStateException(
-          "Must provide path to a proper config file. By default {module-root}/" + fileName.getFileName()
-              + ". Override by setting setting path with the proper constant.");
-    }
-    final String fileAsString = new String(Files.readAllBytes(fileName));
-    final JsonNode resJson = Jsons.deserialize(fileAsString);
-    return (resJson);
+  private JsonNode loadJsonFile(String fileName) throws IOException {
+    final JsonNode configFromSecrets = Jsons.deserialize(IOs.readFile(Path.of(fileName)));
+    return (configFromSecrets);
   }
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws IOException {
     configJson = loadJsonFile(CONFIG_PATH);
-    configInvalidCredentialsJson = loadJsonFile(CONFIG_INVALID_CREDS_PATH);
+    
 
     this.config = AwsDatalakeDestinationConfig.getAwsDatalakeDestinationConfig(configJson);
 

@@ -47,21 +47,21 @@ class AwsDatalakeDestinationTest {
   void testGetAwsDatalakeDestinationdbConfig() throws Exception {
     JsonNode json = Jsons.deserialize("""
                                       {
-                                        "Prefix": "test_prefix",
-                                        "Region": "test_region",
-                                        "AuthMode": "USER",
-                                        "BucketName": "test_bucket",
-                                        "AccessKeyId": "test_access_key",
-                                        "AwsAccountId": "test_account_id",
-                                        "DatabaseName": "test_database",
-                                        "SecretAccessKey": "test_secret"
+                                        "bucket_prefix": "test_prefix",
+                                        "region": "test_region",
+                                        "auth_mode": "USER",
+                                        "bucket_name": "test_bucket",
+                                        "aws_access_key_id": "test_access_key",
+                                        "aws_account_id": "test_account_id",
+                                        "lakeformation_database_name": "test_database",
+                                        "aws_secret_access_key": "test_secret"
                                       }""");
 
     var config = AwsDatalakeDestinationConfig.getAwsDatalakeDestinationConfig(json);
 
-    assertEquals(config.getPrefix(), "test_prefix1");
+    assertEquals(config.getBucketPrefix(), "test_prefix");
     assertEquals(config.getRegion(), "test_region");
-    assertEquals(config.getAccessKeyId(), "access_key");
-    assertEquals(config.getSecretAccessKey(), "test_access_key");
+    assertEquals(config.getAccessKeyId(), "test_access_key");
+    assertEquals(config.getSecretAccessKey(), "test_secret");
   }
 }

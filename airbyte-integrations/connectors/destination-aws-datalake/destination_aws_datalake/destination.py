@@ -1,47 +1,24 @@
-# MIT License
 #
-# Copyright (c) 2020 Airbyte
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
 
 
 import json
-
-from typing import Mapping, Any, Iterable
+from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status, Type
-
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 from botocore.exceptions import ClientError
-from .config_reader import ConnectorConfig
-from .airbyte_helper import StreamWriter
 
-from .aws_helpers import AwsHelper, LakeformationTransaction
+from .aws import AwsHandler, LakeformationTransaction
+from .config_reader import ConnectorConfig
+from .stream_writer import StreamWriter
 
 
 class DestinationAwsDatalake(Destination):
     def write(
-            self,
-            config: Mapping[str, Any],
-            configured_catalog: ConfiguredAirbyteCatalog,
-            input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
@@ -58,22 +35,22 @@ class DestinationAwsDatalake(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-        self.logger.debug(f"write method invoked")
+
         connector_config = ConnectorConfig(**config)
-        self.logger.debug(f"Creating AWS session")
+
         try:
-            aws_helper = AwsHelper(connector_config, self)
+            aws_handler = AwsHandler(connector_config, self)
         except ClientError as e:
             self.logger.error(f"Could not create session due to exception {repr(e)}")
             raise
-        self.logger.debug(f"AWS session creation OK")
+        self.logger.debug("AWS session creation OK")
 
-        with LakeformationTransaction(aws_helper) as tx:
+        with LakeformationTransaction(aws_handler) as tx:
             # creating stream writers
             streams = {
                 s.stream.name: StreamWriter(
                     name=s.stream.name,
-                    aws_helper=aws_helper,
+                    aws_handler=aws_handler,
                     tx=tx,
                     connector_config=connector_config,
                     schema=s.stream.json_schema["properties"],
@@ -81,19 +58,21 @@ class DestinationAwsDatalake(Destination):
                 )
                 for s in configured_catalog.streams
             }
+
             for message in input_messages:
                 if message.type == Type.STATE:
+                    stream = message.record.stream
                     streams[stream].add_to_datalake()
-                    self.logger.debug(f"Write is yielding")
+                    self.logger.debug("Write is yielding")
                     yield message
-                    self.logger.debug(f"Write is back from yield")
+                    self.logger.debug("Write is back from yield")
                 else:
                     data = message.record.data
                     stream = message.record.stream
                     streams[stream].append_message(json.dumps(data, default=str))
+
             for stream_name, stream in streams.items():
                 stream.add_to_datalake()
-
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -107,34 +86,32 @@ class DestinationAwsDatalake(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        self.logger.debug(f"check method invoked")
+
         connector_config = ConnectorConfig(**config)
-        logger.debug("Checking account")
+
         try:
-            aws_helper = AwsHelper(connector_config, self)
-        except ClientError as e:
-            logger.error(f"""Could not create session on {connector_config.AwsAccountId}
-Exception: {repr(e)}""")
-            message = f"""Could not authenticate using {connector_config.AuthMode} on Account {connector_config.AwsAccountId}
-Exception: {repr(e)}"""
+            aws_handler = AwsHandler(connector_config, self)
+        except (ClientError, AttributeError) as e:
+            logger.error(f"""Could not create session on {connector_config._aws_account_id} Exception: {repr(e)}""")
+            message = f"""Could not authenticate using {connector_config._auth_mode} on Account {connector_config._aws_account_id} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
-        logger.debug("Account OK")
-        logger.debug("Checking bucket")
+
         try:
-            aws_helper.head_bucket()
+            aws_handler.head_bucket()
         except ClientError as e:
-            message = f"""Could not find bucket {connector_config.BucketName} in aws://{connector_config.AwsAccountId}:{connector_config.Region}
-Exception: {repr(e)}"""
+            message = f"""Could not find bucket {connector_config._bucket_name} in aws://{connector_config._aws_account_id}:{connector_config._region} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
-        logger.debug("Bucket OK")
-        logger.debug("Checking Lakeformation")
-        with LakeformationTransaction(aws_helper) as tx:
-            table_location = "s3://" + connector_config.BucketName + "/" + connector_config.Prefix + "/" + "airbyte_test/"
-            table = aws_helper.get_table(
-                tx.txid, connector_config.DatabaseName, "airbyte_test", table_location
+
+        with LakeformationTransaction(aws_handler) as tx:
+            table_location = "s3://" + connector_config._bucket_name + "/" + connector_config._bucket_prefix + "/" + "airbyte_test/"
+            table = aws_handler.get_table(
+                txid=tx.txid,
+                database_name=connector_config._lakeformation_database_name,
+                table_name="airbyte_test",
+                location=table_location,
             )
         if table is None:
-            message = f"Could not create a table in database {connector_config.DatabaseName}"
+            message = f"Could not create a table in database {connector_config._lakeformation_database_name}"
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
-        logger.debug("Lakeformation OK")
+
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)

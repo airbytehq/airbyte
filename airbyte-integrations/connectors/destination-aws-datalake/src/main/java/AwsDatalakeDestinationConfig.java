@@ -56,11 +56,17 @@ public class AwsDatalakeDestinationConfig {
   }
 
   public static AwsDatalakeDestinationConfig getAwsDatalakeDestinationConfig(JsonNode config) {
-    var optAuthMode = config.get("AuthMode");
-    return new AwsDatalakeDestinationConfig(config.get("AwsAccountId").asText(), config.get("Region").asText(),
-        optAuthMode == null ? "" : optAuthMode.asText(), config.get("AccessKeyId").asText(),
-        config.get("SecretAccessKey").asText(), config.get("BucketName").asText(), config.get("Prefix").asText(),
-        config.get("DatabaseName").asText());
+    var optAuthMode = config.get("auth_mode");
+    return new AwsDatalakeDestinationConfig(
+        config.get("aws_account_id").asText(), 
+        config.get("region").asText(),
+        optAuthMode == null ? "" : optAuthMode.asText(), 
+        config.get("aws_access_key_id").asText(),
+        config.get("aws_secret_access_key").asText(), 
+        config.get("bucket_name").asText(), 
+        config.get("bucket_prefix").asText(),
+        config.get("lakeformation_database_name").asText()
+    );
   }
 
   public String getAwsAccountId() {

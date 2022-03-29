@@ -1,90 +1,79 @@
-import boto3
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 import enum
+
+import boto3
+from airbyte_cdk.destinations import Destination
 from botocore.exceptions import ClientError
 from retrying import retry
 
 from .config_reader import ConnectorConfig
 
-from airbyte_cdk.destinations import Destination
-
 
 class AuthMode(enum.Enum):
-    IAM_ROLE="ROLE"
-    IAM_USER="USER"
+    IAM_ROLE = "ROLE"
+    IAM_USER = "USER"
 
 
-class AwsHelper:
+class AwsHandler:
     COLUMNS_MAPPING = {"number": "float", "string": "string", "integer": "int"}
 
     def __init__(self, connector_config, destination: Destination):
         self._connector_config: ConnectorConfig = connector_config
         self._destination: Destination = destination
-        self._bucket_name = connector_config.BucketName
+        self._bucket_name = connector_config._bucket_name
         self.logger = self._destination.logger
 
-        # IAM session
         self.create_session()
-
-        # S3 client
-        self.s3_client = self.session.client("s3", region_name=connector_config.Region)
-
-        # Glue client
+        self.s3_client = self.session.client("s3", region_name=connector_config._region)
         self.glue_client = self.session.client("glue")
-
-        # LakeFormation
         self.lf_client = self.session.client("lakeformation")
 
-    # IAM
     @retry(stop_max_attempt_number=10, wait_random_min=1000, wait_random_max=2000)
     def create_session(self):
-        if self._connector_config.AuthMode == AuthMode.IAM_USER.value:
+        if self._connector_config._auth_mode == AuthMode.IAM_USER.value:
             self._session = boto3.Session(
-                aws_access_key_id=self._connector_config.AccessKeyId,
-                aws_secret_access_key=self._connector_config.SecretAccessKey,
-                region_name=self._connector_config.Region,
+                aws_access_key_id=self._connector_config._aws_access_key,
+                aws_secret_access_key=self._connector_config._aws_secret_key,
+                region_name=self._connector_config._region,
             )
-        elif self._connector_config.AuthMode == AuthMode.IAM_ROLE.value:
-            sts = boto3.client("sts")
-            creds = sts.assume_role(
-                RoleArn=self._connector_config.RoleArn,
+        elif self._connector_config._auth_mode == AuthMode.IAM_ROLE.value:
+            client = boto3.client("sts")
+            role = client.assume_role(
+                RoleArn=self._connector_config._role_arn,
                 RoleSessionName="airbyte-destination-aws-datalake",
             )
+            creds = role.get("Credentials", {})
             self._session = boto3.Session(
-                aws_access_key_id=creds.get("Credentials", {}).get("AccessKeyId", "-"),
-                aws_secret_access_key=creds.get("Credentials", {}).get(
-                    "SecretAccessKey", "-"
-                ),
-                aws_session_token=creds.get("Credentials", {}).get("SessionToken", "-"),
-                region_name=self._connector_config.Region,
+                aws_access_key_id=creds.get("AccessKeyId"),
+                aws_secret_access_key=creds.get("SecretAccessKey"),
+                aws_session_token=creds.get("SessionToken"),
+                region_name=self._connector_config._region,
             )
 
     @property
     def session(self) -> boto3.Session:
         return self._session
 
-    # S3
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def head_bucket(self):
         self.s3_client.head_bucket(Bucket=self._bucket_name)
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def head_object(self, object_key):
-        res = self.s3_client.head_object(Bucket=self._bucket_name, Key=object_key)
-        return res
+        return self.s3_client.head_object(Bucket=self._bucket_name, Key=object_key)
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def put_object(self, object_key, body):
-        res = self.s3_client.put_object(
-            Bucket=self._bucket_name, Key=object_key, Body="\n".join(body)
-        )
+        self.s3_client.put_object(Bucket=self._bucket_name, Key=object_key, Body="\n".join(body))
 
     @staticmethod
-    def batch_iterate(iterable, n = 1):
-        l = len(iterable)
-        for ndx in range(0, l, n):
-            yield iterable[ndx:min(ndx + n, l)]
+    def batch_iterate(iterable, n=1):
+        size = len(iterable)
+        for ndx in range(0, size, n):
+            yield iterable[ndx : min(ndx + n, size)]
 
-    # Glue
     def get_table(self, txid, database_name: str, table_name: str, location: str):
         table = None
         try:
@@ -98,29 +87,18 @@ class AwsHelper:
                         "Location": location,
                         "InputFormat": "org.apache.hadoop.mapred.TextInputFormat",
                         "OutputFormat": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
-                        "SerdeInfo": {
-                            "SerializationLibrary": "org.openx.data.jsonserde.JsonSerDe",
-                            "Parameters": {
-                                "paths": ","
-                            }
-                        },
+                        "SerdeInfo": {"SerializationLibrary": "org.openx.data.jsonserde.JsonSerDe", "Parameters": {"paths": ","}},
                     },
                     "PartitionKeys": [],
-                    "Parameters": {
-                        "classification": "json",
-                        "lakeformation.aso.status": "true"
-                    },
+                    "Parameters": {"classification": "json", "lakeformation.aso.status": "true"},
                 }
-                self.glue_client.create_table(
-                    DatabaseName=database_name,
-                    TableInput=table_input,
-                    TransactionId=txid
-                )
+                self.glue_client.create_table(DatabaseName=database_name, TableInput=table_input, TransactionId=txid)
                 table = self.glue_client.get_table(DatabaseName=database_name, Name=table_name, TransactionId=txid)
             else:
                 err = e.response["Error"]["Code"]
                 self.logger.error(f"An error occurred: {err}")
                 raise
+
         if table:
             return table
         else:
@@ -128,13 +106,11 @@ class AwsHelper:
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def update_table(self, database, table_info, transaction_id):
-        self.glue_client.update_table(
-            DatabaseName=database, TableInput=table_info, TransactionId=transaction_id
-        )
+        self.glue_client.update_table(DatabaseName=database, TableInput=table_info, TransactionId=transaction_id)
 
     def preprocess_type(self, property_type):
         if type(property_type) is list:
-            not_null_types = list(filter(lambda t : t != "null", property_type))
+            not_null_types = list(filter(lambda t: t != "null", property_type))
             if len(not_null_types) > 2:
                 return "string"
             else:
@@ -166,28 +142,20 @@ class AwsHelper:
 
         self.logger.info("Schema = " + repr(schema))
 
-        columns = [
-            {"Name": k, "Type": self.COLUMNS_MAPPING.get(self.preprocess_type(v["type"]), v["type"])}
-            for (k, v) in schema.items()
-        ]
+        columns = [{"Name": k, "Type": self.COLUMNS_MAPPING.get(self.preprocess_type(v["type"]), v["type"])} for (k, v) in schema.items()]
         if "StorageDescriptor" in table_info:
             table_info["StorageDescriptor"]["Columns"] = columns
         else:
             table_info["StorageDescriptor"] = {"Columns": columns}
         self.update_table(database, table_info, txid)
-        self.glue_client.update_table(
-            DatabaseName=database, TableInput=table_info, TransactionId=txid
-        )
+        self.glue_client.update_table(DatabaseName=database, TableInput=table_info, TransactionId=txid)
 
-    # LakeFormation
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def get_all_table_objects(self, txid, database, table):
         table_objects = []
 
         try:
-            res = self.lf_client.get_table_objects(
-                DatabaseName=database, TableName=table, TransactionId=txid
-            )
+            res = self.lf_client.get_table_objects(DatabaseName=database, TableName=table, TransactionId=txid)
         except ClientError as e:
             if e.response["Error"]["Code"] == "EntityNotFoundException":
                 return []
@@ -221,23 +189,21 @@ class AwsHelper:
         if len(write_ops) > 0:
             self.logger.debug(f"{len(write_ops)} objects to purge")
             for batch in self.batch_iterate(write_ops, 99):
-              self.logger.debug(f"Purging batch")
-              try:
-                self.lf_client.update_table_objects(
-                    TransactionId=txid,
-                    DatabaseName=database,
-                    TableName=table,
-                    WriteOperations=batch,
-                )
-              except ClientError as e:
-                self.logger.error(f"Could not delete object due to exception {repr(e)}")
-                raise
+                self.logger.debug("Purging batch")
+                try:
+                    self.lf_client.update_table_objects(
+                        TransactionId=txid,
+                        DatabaseName=database,
+                        TableName=table,
+                        WriteOperations=batch,
+                    )
+                except ClientError as e:
+                    self.logger.error(f"Could not delete object due to exception {repr(e)}")
+                    raise
         else:
             self.logger.debug("Table was empty, nothing to purge.")
 
-    def update_governed_table(
-            self, txid, database, table, bucket, object_key, etag, size
-    ):
+    def update_governed_table(self, txid, database, table, bucket, object_key, etag, size):
         self.logger.debug(f"Updating governed table {database}:{table}")
         write_ops = [
             {
@@ -258,10 +224,10 @@ class AwsHelper:
 
 
 class LakeformationTransaction:
-    def __init__(self, aws_helper: AwsHelper):
-        self._aws_helper = aws_helper
+    def __init__(self, aws_handler: AwsHandler):
+        self._aws_helper = aws_handler
         self._transaction = None
-        self._logger = aws_helper.logger
+        self._logger = aws_handler.logger
 
     @property
     def txid(self):

@@ -8,7 +8,6 @@ WORKDIR /airbyte/integration_code
 COPY destination_aws_datalake ./destination_aws_datalake
 COPY main.py ./
 COPY setup.py ./
-COPY boto3-preview /root/.aws/models/
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
