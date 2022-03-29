@@ -5,7 +5,6 @@ import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
-import { RoutePaths } from "pages/routes";
 import { useConfig } from "config";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
@@ -20,6 +19,7 @@ import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
 import ResourcesPopup from "./components/ResourcesPopup";
 import { NotificationIndicator } from "./NotificationIndicator";
+import { RoutePaths } from "../../../pages/routePaths";
 
 const Bar = styled.nav`
   width: 100px;

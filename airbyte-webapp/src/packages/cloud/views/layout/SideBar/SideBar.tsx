@@ -26,8 +26,8 @@ import ResourcesPopup, {
   Icon,
   Item,
 } from "views/layout/SideBar/components/ResourcesPopup";
-import { RoutePaths } from "pages/routes";
 import { FeatureItem, WithFeature } from "hooks/services/Feature";
+import { RoutePaths } from "../../../../../pages/routePaths";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;

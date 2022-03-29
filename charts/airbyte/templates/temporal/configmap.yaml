@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: airbyte-temporal-dynamicconfig
+  name: {{ include "common.names.fullname" . }}-temporal-dynamicconfig
 data:
   "development.yaml": |
     # when modifying, remember to update the docker-compose version of this file in temporal/dynamicconfig/development.yaml

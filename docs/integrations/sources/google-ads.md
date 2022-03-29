@@ -17,7 +17,7 @@ If you don't already have a developer token from Google Ads, make sure you follo
 
 This source is capable of syncing the following tables and their data:
 
-#### Main Tables
+### Main Tables
 
 * [accounts](https://developers.google.com/google-ads/api/fields/v8/customer)
 * [ad\_group\_ads](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad)
@@ -32,17 +32,18 @@ This source is capable of syncing the following tables and their data:
 
 Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
-#### Report Tables
+### Report Tables
 
 * [account\_performance\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 * [ad\_group\_ad\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
 * [display\_keyword\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
 * [display\_topics\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
 * [shopping\_performance\_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
+* [user_location_report](https://developers.google.com/google-ads/api/fields/v8/user_location_view)
 
 **Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
 
-**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v8/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account. 
+**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v8/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account.
 
 **Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad#segments.date) without time. Also, some report cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
@@ -56,10 +57,11 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 
 ## Getting Started \(Airbyte Open-Source\)
 
-#### Requirements
+### Requirements
 
-Google Ads Account with an approved Developer Token \(note: In order to get API access to Google Ads, you must have a "manager" account. This must be created separately from your standard account. You can find more information about this distinction in the [google ads docs](https://ads.google.com/home/tools/manager-accounts/).\)
+Google Ads Account with an approved Developer Token. \(note: In order to get API access to Google Ads, you must have a "manager" account; standard accounts cannot generate a Developer Token. This manager account must be created separately from your standard account. You can find more information about this distinction in the [Google Ads docs](https://support.google.com/google-ads/answer/6139186).\)
 
+You'll need to find these values. See the [setup guide](#setup-guide) for instructions.
 * developer\_token
 * client\_id
 * client\_secret
@@ -68,16 +70,16 @@ Google Ads Account with an approved Developer Token \(note: In order to get API 
 * customer\_id
 * login\_customer\_id \(you can find more information about this field in [Google Ads docs](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid)\)
 
-#### Setup guide
+### Setup guide
 
 This guide will provide information as if starting from scratch. Please skip over any steps you have already completed.
 
-* Create an Google Ads Account. Here are [Google's instruction](https://support.google.com/google-ads/answer/6366720) on how to create one.
-* Create an Google Ads MANAGER Account. Here are [Google's instruction](https://ads.google.com/home/tools/manager-accounts/) on how to create one.
-* You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
-* Apply for a developer token \(**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token)\) on your Manager account.  This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
-* Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/google-ads/api/docs/first-call/overview) on how to do this.
-* Select your `customer_id`. The `customer_id` refers to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in Google Ads UI. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
+1. Create an Google Ads Account. Here are [Google's instruction](https://support.google.com/google-ads/answer/6366720) on how to create one.
+2. Create an Google Ads MANAGER Account. Here are [Google's instruction](https://ads.google.com/home/tools/manager-accounts/) on how to create one.
+3. You should now have two Google Ads accounts: a normal account and a manager account. Link the Manager account to the normal account following [Google's documentation](https://support.google.com/google-ads/answer/7459601).
+4. Apply for a developer token \(**make sure you follow our** [**instructions**](google-ads.md#how-to-apply-for-the-developer-token)\) on your Manager account.  This token allows you to access your data from the Google Ads API. Here are [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token). The docs are a little unclear on this point, but you will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token, it has to be at least a basic developer token. It usually takes Google 24 hours to respond to these applications. This developer token is the value you will use in the `developer_token` field.
+5. Fetch your `client_id`, `client_secret`, and `refresh_token`. Google provides [instructions](https://developers.google.com/google-ads/api/docs/first-call/overview) on how to do this.
+6. Select your `customer_id`. The `customer_id` refers to the id of each of your Google Ads accounts. This is the 10 digit number in the top corner of the page when you are in Google Ads UI. The source will only pull data from the accounts for which you provide an id. If you are having trouble finding it, check out [Google's instructions](https://support.google.com/google-ads/answer/1704344).
 
 Wow! That was a lot of steps. We are working on making the OAuth flow for all of our connectors simpler \(allowing you to skip needing to get a `developer_token` and a `refresh_token` which are the most painful / time-consuming steps in this walkthrough\).
 
@@ -92,11 +94,9 @@ When you apply for a token, you need to mention:
 * That you have full access to the code base \(because we're open source\)
 * That you have full access to the server running the code \(because you're self-hosting Airbyte\)
 
-If for any reason the request gets denied, let us know and we will be able to unblock you.
-
 #### Understanding Google Ads Query Language
 
-The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)
+The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/docs/query/overview). You can add these as custom queries when configuring the Google Ads source.
 
 ## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
 
@@ -106,6 +106,8 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version  | Date       | Pull Request | Subject                                                                                      |
 |:---------|:-----------| :--- |:---------------------------------------------------------------------------------------------|
+| `0.1.32` | 2022-03-24 | [11371](https://github.com/airbytehq/airbyte/pull/11371) | Improve how connection check returns error messages                                          |
+| `0.1.31` | 2022-03-23 | [11301](https://github.com/airbytehq/airbyte/pull/11301) | Update docs and spec to clarify usage                                                        |
 | `0.1.30` | 2022-03-23 | [11221](https://github.com/airbytehq/airbyte/pull/11221) | Add `*_labels` streams to fetch the label text rather than their IDs                         |
 | `0.1.29` | 2022-03-22 | [10919](https://github.com/airbytehq/airbyte/pull/10919) | Fix user location report schema and add to acceptance tests                                  |
 | `0.1.28` | 2022-02-25 | [10372](https://github.com/airbytehq/airbyte/pull/10372) | Add network fields to click view stream                                                      |
@@ -134,4 +136,3 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 | `0.1.3`  | 2021-07-23 | [\#4788](https://github.com/airbytehq/airbyte/pull/4788) | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams |
 | `0.1.2`  | 2021-07-06 | [\#4539](https://github.com/airbytehq/airbyte/pull/4539) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                              |
 | `0.1.1`  | 2021-06-23 | [\#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix: Correctly declare required parameters`                                              |
-
