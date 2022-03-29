@@ -244,7 +244,7 @@ public class ConnectionsHandler {
         continue;
       }
 
-      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);
