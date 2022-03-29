@@ -4,12 +4,12 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Stripe Source Spec",
     "type": "object",
-    "required": ["base_url","api_key", "account_id", "start_date"],
+    "required": ["url_base","api_key", "account_id", "start_date"],
     "additionalProperties": false,
     "properties": {
-      "base_url": {
+      "url_base": {
         "type": "string",
-        "title": "Base URL",
+        "title": "URL base",
         "description": "Base URL of the endpoint to hit",
         "order": 0
       },
@@ -53,6 +53,12 @@
         "title": "Headers",
         "description": "Headers to pass",
         "order": 6
+      },
+      "primary_key": {
+        "type": "string",
+        "title": "Primary key",
+        "description": "Primary key FOR ALL streams. FIXME",
+        "order": 7
       }
     }
   }
