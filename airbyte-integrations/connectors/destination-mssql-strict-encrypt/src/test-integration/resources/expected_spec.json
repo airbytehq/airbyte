@@ -75,6 +75,7 @@
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "encrypted_trust_server_certificate",
                 "enum": ["encrypted_trust_server_certificate"],
                 "default": "encrypted_trust_server_certificate"
               }
@@ -89,13 +90,15 @@
             "properties": {
               "ssl_method": {
                 "type": "string",
+                "const": "encrypted_verify_certificate",
                 "enum": ["encrypted_verify_certificate"],
                 "default": "encrypted_verify_certificate"
               },
               "hostNameInCertificate": {
                 "title": "Host Name In Certificate",
                 "type": "string",
-                "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate."
+                "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
+                "order": 8
               }
             }
           }
