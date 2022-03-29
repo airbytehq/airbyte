@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:latest
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.35.61-alpha
 ```
 
 ### Using `docker-compose`
@@ -352,4 +352,4 @@ $ octavia apply
 
 | Version | Date       | Description      | PR                                                       |
 |---------|------------|------------------|----------------------------------------------------------|
-| 0.1.0   | 2022-04-07 | Alpha release    | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
+| 0.35.61 | 2022-04-07 | Alpha release    | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
