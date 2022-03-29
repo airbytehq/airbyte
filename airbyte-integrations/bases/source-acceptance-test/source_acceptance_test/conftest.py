@@ -9,7 +9,7 @@ import logging
 import os
 from logging import Logger
 from pathlib import Path
-from subprocess import check_output, STDOUT, run
+from subprocess import STDOUT, check_output, run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
@@ -25,6 +25,7 @@ from airbyte_cdk.models import (
 from docker import errors
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
+
 
 @pytest.fixture(name="base_path")
 def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
@@ -185,8 +186,8 @@ def detailed_logger() -> Logger:
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """ Called after whole test run finished, right before returning the exit status to the system.
-        https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
+    """Called after whole test run finished, right before returning the exit status to the system.
+    https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
     """
     logger = logging.getLogger()
 
