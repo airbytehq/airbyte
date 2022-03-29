@@ -14,7 +14,6 @@ import ConnectionResource, {
   ScheduleProperties,
 } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
-import { RoutePaths } from "pages/routes";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
@@ -24,6 +23,7 @@ import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 import { equal } from "utils/objects";
 import { Destination, Source, SourceDefinition } from "core/domain/connector";
+import { RoutePaths } from "../../pages/routePaths";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
