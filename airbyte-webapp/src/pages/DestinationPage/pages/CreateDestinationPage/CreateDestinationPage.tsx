@@ -1,32 +1,25 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
+
 import PageTitle from "components/PageTitle";
 import DestinationForm from "./components/DestinationForm";
 import useRouter from "hooks/useRouter";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useDestination from "hooks/services/useDestinationHook";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { JobInfo } from "../../../../core/domain/job/Job";
+import { JobInfo } from "core/domain/job";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
-  const workspace = useCurrentWorkspace();
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
     status: number;
     response: JobInfo;
   } | null>(null);
 
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { destinationDefinitions } = useDestinationDefinitionList();
   const { createDestination } = useDestination();
 
   const onSubmitDestinationForm = async (values: {

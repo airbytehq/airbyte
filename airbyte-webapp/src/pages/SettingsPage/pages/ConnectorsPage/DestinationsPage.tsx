@@ -1,47 +1,42 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { useFetcher, useResource } from "rest-hooks";
+import { useResource } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { DestinationResource } from "core/resources/Destination";
 import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { DestinationDefinition } from "core/domain/connector";
+import {
+  useDestinationDefinitionList,
+  useUpdateDestinationDefinition,
+} from "services/connector/DestinationDefinitionService";
 
 const DestinationsPage: React.FC = () => {
   const workspace = useCurrentWorkspace();
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const formatMessage = useIntl().formatMessage;
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { destinationDefinitions } = useDestinationDefinitionList();
   const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const updateDestinationDefinition = useFetcher(
-    DestinationDefinitionResource.updateShape()
-  );
+  const {
+    mutateAsync: updateDestinationDefinition,
+  } = useUpdateDestinationDefinition();
 
   const { hasNewDestinationVersion } = useConnector();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
-        await updateDestinationDefinition(
-          {},
-          {
-            destinationDefinitionId: id,
-            dockerImageTag: version,
-          }
-        );
+        await updateDestinationDefinition({
+          destinationDefinitionId: id,
+          dockerImageTag: version,
+        });
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
         const messageId =

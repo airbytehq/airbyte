@@ -12,21 +12,41 @@ class SourceDefinitionService extends AirbyteRequestService {
     });
   }
 
-  public list(workspaceId: string): Promise<SourceDefinition[]> {
-    return this.fetch<SourceDefinition[]>(`${this.url}/list`, {
+  public list(
+    workspaceId: string
+  ): Promise<{ sourceDefinitions: SourceDefinition[] }> {
+    return this.fetch(`${this.url}/list`, {
       workspaceId,
     });
   }
 
-  public listLatest(workspaceId: string): Promise<SourceDefinition[]> {
-    return this.fetch<SourceDefinition[]>(`${this.url}/list_latest`, {
+  public listLatest(
+    workspaceId: string
+  ): Promise<{ sourceDefinitions: SourceDefinition[] }> {
+    return this.fetch(`${this.url}/list_latest`, {
       workspaceId,
     });
   }
 
-  public update(body: SourceDefinition): Promise<SourceDefinition> {
+  public update(body: {
+    sourceDefinitionId: string;
+    dockerImageTag: string;
+  }): Promise<SourceDefinition> {
     return this.fetch<SourceDefinition>(`${this.url}/update`, body);
   }
+
+  public create(
+    body: CreateSourceDefinitionPayload
+  ): Promise<SourceDefinition> {
+    return this.fetch<SourceDefinition>(`${this.url}/create`, body);
+  }
 }
+
+export type CreateSourceDefinitionPayload = {
+  name: string;
+  documentationUrl: string;
+  dockerImageTag: string;
+  dockerRepository: string;
+};
 
 export { SourceDefinitionService };

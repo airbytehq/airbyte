@@ -2,7 +2,6 @@ import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import Breadcrumbs from "components/Breadcrumbs";
@@ -14,18 +13,21 @@ import {
   TableItemTitle,
 } from "components/ConnectorBlocks";
 import DestinationSettings from "./components/DestinationSettings";
-import LoadingPage from "components/LoadingPage";
 import SourceResource from "core/resources/Source";
-import MainPageWithScroll from "components/MainPageWithScroll";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { getIcon } from "utils/imageUtils";
-import ImageBlock from "components/ImageBlock";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import HeadTitle from "components/HeadTitle";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { DropDownRow } from "components";
-import { RoutePaths } from "../../../routePaths";
+import {
+  DropDownRow,
+  MainPageWithScroll,
+  LoadingPage,
+  ImageBlock,
+  PageTitle,
+} from "components";
+import { RoutePaths } from "pages/routePaths";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
 const DestinationItemPage: React.FC = () => {
   const { params, push } = useRouter<unknown, { id: string }>();
@@ -37,22 +39,14 @@ const DestinationItemPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
   });
 
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sourceDefinitions } = useSourceDefinitionList();
 
   const destination = useResource(DestinationResource.detailShape(), {
     destinationId: params.id,
   });
 
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    {
-      destinationDefinitionId: destination.destinationDefinitionId,
-    }
+  const destinationDefinition = useDestinationDefinition(
+    destination.destinationDefinitionId
   );
 
   const { connections } = useConnectionList();

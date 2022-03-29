@@ -1,6 +1,5 @@
 import React, { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
-import { useResource } from "rest-hooks";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
@@ -14,8 +13,6 @@ import {
   useSyncConnection,
 } from "hooks/services/useConnectionHook";
 import { ConnectionConfiguration } from "core/domain/connection";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useGetStepsConfig from "./useStepsConfig";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
@@ -31,6 +28,8 @@ import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { JobInfo } from "core/domain/job/Job";
 import { RoutePaths } from "../routePaths";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -72,15 +71,10 @@ const OnboardingPage: React.FC = () => {
   const { sources } = useSourceList();
   const { destinations } = useDestinationList();
   const { connections } = useConnectionList();
+  const { sourceDefinitions } = useSourceDefinitionList();
+  const { destinationDefinitions } = useDestinationDefinitionList();
+
   const { mutateAsync: syncConnection } = useSyncConnection();
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {}
-  );
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {}
-  );
 
   const { createSource } = useSource();
   const { createDestination } = useDestination();

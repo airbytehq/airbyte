@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { useResource } from "rest-hooks";
 
 import useRouter from "hooks/useRouter";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useDestination from "hooks/services/useDestinationHook";
 
 // TODO: create separate component for source and destinations forms
 import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 type IProps = {
   afterSubmit: () => void;
@@ -16,16 +14,10 @@ type IProps = {
 
 const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
-  const workspace = useCurrentWorkspace();
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState(null);
 
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { destinationDefinitions } = useDestinationDefinitionList();
   const { createDestination } = useDestination();
 
   const onSubmitDestinationForm = async (values: {

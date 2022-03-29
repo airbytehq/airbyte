@@ -2,17 +2,17 @@ import React, { useMemo } from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useResource } from "rest-hooks";
-import { Formik, Form, Field, FieldProps } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import ContentCard from "components/ContentCard";
-import { DropDown, Button, ControlLabels } from "components";
+import { Button, ControlLabels, DropDown } from "components";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import SourceResource from "core/resources/Source";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationResource from "core/resources/Destination";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import ImageBlock from "components/ImageBlock";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 type IProps = {
   type: "source" | "destination";
@@ -46,22 +46,13 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const { sources } = useResource(SourceResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sourceDefinitions } = useSourceDefinitionList();
 
   const { destinations } = useResource(DestinationResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
   const dropDownData = useMemo(() => {
     if (type === "source") {

@@ -1,18 +1,16 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
 import useSource from "hooks/services/useSourceHook";
 import DeleteBlock from "components/DeleteBlock";
-import { Connection } from "core/domain/connection";
+import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { ConnectionConfiguration } from "core/domain/connection";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { Source } from "core/domain/connector";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
 const Content = styled.div`
   max-width: 813px;
@@ -38,9 +36,10 @@ const SourceSettings: React.FC<IProps> = ({
   const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(
     currentSource.sourceDefinitionId
   );
-  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: currentSource.sourceDefinitionId,
-  });
+
+  const sourceDefinition = useSourceDefinition(
+    currentSource?.sourceDefinitionId
+  );
 
   const onSubmit = async (values: {
     name: string;

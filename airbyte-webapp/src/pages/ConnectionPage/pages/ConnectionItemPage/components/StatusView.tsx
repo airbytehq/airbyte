@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { useResource } from "rest-hooks";
 
 import { useListJobs } from "services/job/JobService";
 
@@ -18,8 +17,8 @@ import {
   useSyncConnection,
 } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
 type IProps = {
   connection: Connection;
@@ -57,23 +56,12 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
 
-  const sourceDefinition = useResource(
-    SourceDefinitionResource.detailShape(),
-    connection.source
-      ? {
-          sourceDefinitionId: connection.source.sourceDefinitionId,
-        }
-      : null
+  const sourceDefinition = useSourceDefinition(
+    connection?.source.sourceDefinitionId
   );
 
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    connection.destination
-      ? {
-          destinationDefinitionId:
-            connection.destination.destinationDefinitionId,
-        }
-      : null
+  const destinationDefinition = useDestinationDefinition(
+    connection.destination.destinationDefinitionId
   );
 
   const jobs = useListJobs({

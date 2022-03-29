@@ -18,8 +18,6 @@ import DestinationForm from "./components/DestinationForm";
 
 import SourceResource from "core/resources/Source";
 import DestinationResource from "core/resources/Destination";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import {
   Destination,
   DestinationDefinition,
@@ -27,6 +25,8 @@ import {
   SourceDefinition,
 } from "core/domain/connector";
 import { Connection } from "core/domain/connection";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -75,14 +75,7 @@ function usePreloadData(): {
       : null
   );
 
-  const sourceDefinition = useResource(
-    SourceDefinitionResource.detailShape(),
-    source
-      ? {
-          sourceDefinitionId: source.sourceDefinitionId,
-        }
-      : null
-  );
+  const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
   const destination = useResource(
     DestinationResource.detailShape(),
@@ -92,13 +85,8 @@ function usePreloadData(): {
         }
       : null
   );
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    destination
-      ? {
-          destinationDefinitionId: destination.destinationDefinitionId,
-        }
-      : null
+  const destinationDefinition = useDestinationDefinition(
+    destination?.destinationDefinitionId
   );
 
   return { source, sourceDefinition, destination, destinationDefinition };

@@ -1,17 +1,15 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
 import SourceForm from "./components/SourceForm";
 import useRouter from "hooks/useRouter";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useSource from "hooks/services/useSourceHook";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { JobInfo } from "core/domain/job/Job";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
@@ -21,13 +19,7 @@ const CreateSourcePage: React.FC = () => {
     response: JobInfo;
   } | null>(null);
 
-  const workspace = useCurrentWorkspace();
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sourceDefinitions } = useSourceDefinitionList();
   const { createSource } = useSource();
 
   const onSubmitSourceStep = async (values: {

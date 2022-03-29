@@ -1,5 +1,4 @@
 import React, { useCallback } from "react";
-import { useResource } from "rest-hooks";
 
 import { ConnectionTable } from "components/EntityTable";
 import useRouter from "hooks/useRouter";
@@ -7,10 +6,9 @@ import { Connection } from "core/domain/connection";
 import useSyncActions from "components/EntityTable/hooks";
 import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { RoutePaths } from "../../../../routePaths";
+import { RoutePaths } from "pages/routePaths";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 type IProps = {
   connections: Connection[];
@@ -18,22 +16,10 @@ type IProps = {
 
 const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
-  const workspace = useCurrentWorkspace();
   const { changeStatus, syncManualConnection } = useSyncActions();
 
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
-
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sourceDefinitions } = useSourceDefinitionList();
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
   const data = getConnectionTableData(
     connections,

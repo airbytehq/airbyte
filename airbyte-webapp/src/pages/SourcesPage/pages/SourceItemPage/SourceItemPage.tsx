@@ -19,14 +19,14 @@ import SourceSettings from "./components/SourceSettings";
 import SourceResource from "core/resources/Source";
 
 import DestinationResource from "core/resources/Destination";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationsDefinitionResource from "core/resources/DestinationDefinition";
 import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { RoutePaths } from "../../../routePaths";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
@@ -38,20 +38,13 @@ const SourceItemPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
   });
 
-  const { destinationDefinitions } = useResource(
-    DestinationsDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
   const source = useResource(SourceResource.detailShape(), {
     sourceId: query.id,
   });
 
-  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: source.sourceDefinitionId,
-  });
+  const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
   const { connections } = useConnectionList();
 
