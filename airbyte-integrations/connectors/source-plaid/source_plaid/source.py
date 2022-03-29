@@ -32,10 +32,15 @@ class PlaidStream(Stream):
         self.client = plaid_api.PlaidApi(api_client)
         self.access_token = config["access_token"]
         self.min_last_updated_datetime = datetime.datetime.strptime(
-            config.get("min_last_updated_datetime", "1970-01-01T00:00:00Z"),
-            '%Y-%m-%dT%H:%M:%S%z'
+            config.get(
+                "min_last_updated_datetime",
+                datetime.datetime.combine(
+                    datetime.date.fromtimestamp(0),
+                    datetime.datetime.min.time()
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
+            ),
+            "%Y-%m-%dT%H:%M:%S%z"
         )
-
 
 class BalanceStream(PlaidStream):
     @property

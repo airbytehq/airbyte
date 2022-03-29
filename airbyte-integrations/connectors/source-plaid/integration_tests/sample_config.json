@@ -3,5 +3,5 @@
   "api_key": "??",
   "client_id": "??",
   "plaid_env": "sandbox",
-  "min_last_updated_datetime": "2021-03-01T00:00:00Z"
+  "min_last_updated_datetime": "2021-03-01T00:00:00Z",
 }
