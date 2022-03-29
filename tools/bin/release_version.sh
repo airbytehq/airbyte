@@ -43,7 +43,5 @@ SUB_BUILD=PLATFORM ./gradlew publish
 VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
 echo "Completed building and publishing..."
 
-# TODO alafanechere: does SUB_BUILD=OCTAVIA_CLI ./gradlew publish would work?
-echo "Build and publish octavia-cli..."
 VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build
-./octavia-cli/publish.sh ${NEW_VERSION}
+./octavia-cli/publish.sh ${NEW_VERSION} ${GIT_REVISION}
