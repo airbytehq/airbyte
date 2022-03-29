@@ -5,7 +5,6 @@ import { useResource } from "rest-hooks";
 import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import ConnectionResource from "core/resources/Connection";
 import Breadcrumbs from "components/Breadcrumbs";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
 import DestinationResource from "core/resources/Destination";
@@ -26,6 +25,7 @@ import HeadTitle from "components/HeadTitle";
 import useWorkspace from "hooks/services/useWorkspace";
 import { DropDownRow } from "components";
 import { RoutePaths } from "../../../routePaths";
+import { useConnectionList } from "hooks/services/useConnectionHook";
 
 const DestinationItemPage: React.FC = () => {
   const { params, push } = useRouter<unknown, { id: string }>();
@@ -55,9 +55,7 @@ const DestinationItemPage: React.FC = () => {
     }
   );
 
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { connections } = useConnectionList();
 
   const onClickBack = () => push("..");
 

@@ -1,13 +1,12 @@
-import { useCallback, useMemo } from "react";
 import { useFetcher, useResource } from "rest-hooks";
+import { useMutation } from "react-query";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { useConfig } from "config";
 import {
   Connection,
-  ConnectionConfiguration,
   ConnectionNamespaceDefinition,
-  ConnectionService,
+  WebBackendConnectionService,
 } from "core/domain/connection";
 
 import ConnectionResource, {
@@ -18,12 +17,13 @@ import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import useRouter from "hooks/useRouter";
-import { useGetService } from "core/servicesProvider";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 import { equal } from "utils/objects";
 import { Destination, Source, SourceDefinition } from "core/domain/connector";
-import { RoutePaths } from "../../pages/routePaths";
+import { RoutePaths } from "pages/routePaths";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
+import { ConnectionService } from "core/domain/connection/ConnectionService";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -56,24 +56,26 @@ type UpdateConnection = {
   withRefreshedCatalog?: boolean;
 };
 
-type UpdateStateConnection = {
-  connection: Connection;
-  sourceName: string;
-  prefix: string;
-  connectionConfiguration: ConnectionConfiguration;
-  schedule: ScheduleProperties | null;
-};
+function useWebConnectionService(): WebBackendConnectionService {
+  const config = useConfig();
+  const middlewares = useDefaultRequestMiddlewares();
+
+  return useInitService(
+    () => new WebBackendConnectionService(config.apiUrl, middlewares),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [config]
+  );
+}
 
 function useConnectionService(): ConnectionService {
   const config = useConfig();
-  const middlewares = useGetService<RequestMiddleware[]>(
-    "DefaultRequestMiddlewares"
-  );
+  const middlewares = useDefaultRequestMiddlewares();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => new ConnectionService(config.apiUrl, middlewares), [
-    config,
-  ]);
+  return useInitService(
+    () => new ConnectionService(config.apiUrl, middlewares),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [config]
+  );
 }
 
 export const useConnectionLoad = (
@@ -86,7 +88,7 @@ export const useConnectionLoad = (
     connectionId,
   });
 
-  const connectionService = useConnectionService();
+  const connectionService = useWebConnectionService();
 
   const refreshConnectionCatalog = async () =>
     await connectionService.getConnection(connectionId, true);
@@ -97,12 +99,38 @@ export const useConnectionLoad = (
   };
 };
 
+export const useSyncConnection = () => {
+  const service = useConnectionService();
+  const analyticsService = useAnalyticsService();
+
+  return useMutation((connection: Connection) => {
+    const frequency = FrequencyConfig.find((item) =>
+      equal(item.config, connection.schedule)
+    );
+
+    analyticsService.track("Source - Action", {
+      action: "Full refresh sync",
+      connector_source: connection.source?.sourceName,
+      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_destination: connection.destination?.name,
+      connector_destination_definition_id:
+        connection.destination?.destinationDefinitionId,
+      frequency: frequency?.text,
+    });
+
+    return service.sync(connection.connectionId);
+  });
+};
+
+export const useResetConnection = () => {
+  const service = useConnectionService();
+
+  return useMutation((connectionId: string) => service.reset(connectionId));
+};
+
 const useConnection = (): {
   createConnection: (conn: CreateConnectionProps) => Promise<Connection>;
   updateConnection: (conn: UpdateConnection) => Promise<Connection>;
-  updateStateConnection: (conn: UpdateStateConnection) => Promise<void>;
-  resetConnection: (connId: string) => Promise<void>;
-  syncConnection: (conn: Connection) => Promise<void>;
   deleteConnection: (payload: { connectionId: string }) => Promise<void>;
 } => {
   const { push } = useRouter();
@@ -111,14 +139,9 @@ const useConnection = (): {
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
   const updateConnectionResource = useFetcher(ConnectionResource.updateShape());
-  const updateStateConnectionResource = useFetcher(
-    ConnectionResource.updateStateShape()
-  );
   const deleteConnectionResource = useFetcher(
     ConnectionResource.deleteShapeItem()
   );
-  const resetConnectionResource = useFetcher(ConnectionResource.reset());
-  const syncConnectionResource = useFetcher(ConnectionResource.syncShape());
 
   const createConnection = async ({
     values,
@@ -217,61 +240,10 @@ const useConnection = (): {
     );
   };
 
-  const updateStateConnection = async ({
-    connection,
-    sourceName,
-    connectionConfiguration,
-    schedule,
-    prefix,
-  }: UpdateStateConnection) => {
-    await updateStateConnectionResource(
-      {},
-      {
-        ...connection,
-        schedule,
-        prefix,
-        source: {
-          ...connection.source,
-          name: sourceName,
-          connectionConfiguration: connectionConfiguration,
-        },
-      }
-    );
-  };
-
-  const resetConnection = useCallback(
-    async (connectionId: string) => {
-      await resetConnectionResource({ connectionId });
-    },
-    [resetConnectionResource]
-  );
-
-  const syncConnection = async (connection: Connection) => {
-    const frequency = FrequencyConfig.find((item) =>
-      equal(item.config, connection.schedule)
-    );
-
-    analyticsService.track("Source - Action", {
-      action: "Full refresh sync",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
-      connector_destination_definition_id:
-        connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text,
-    });
-    await syncConnectionResource({
-      connectionId: connection.connectionId,
-    });
-  };
-
   return {
     createConnection,
     updateConnection,
-    updateStateConnection,
-    resetConnection,
     deleteConnection,
-    syncConnection,
   };
 };
 

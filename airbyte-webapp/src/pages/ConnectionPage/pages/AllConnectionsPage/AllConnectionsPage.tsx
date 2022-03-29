@@ -1,23 +1,18 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
-import { Button, MainPageWithScroll, PageTitle, LoadingPage } from "components";
-import ConnectionResource from "core/resources/Connection";
+import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
 import ConnectionsTable from "./components/ConnectionsTable";
 import useRouter from "hooks/useRouter";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import useWorkspace from "hooks/services/useWorkspace";
 import { RoutePaths } from "../../../routePaths";
+import { useConnectionList } from "hooks/services/useConnectionHook";
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
 
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { connections } = useConnectionList();
 
   const onClick = () => push(`${RoutePaths.ConnectionNew}`);
 

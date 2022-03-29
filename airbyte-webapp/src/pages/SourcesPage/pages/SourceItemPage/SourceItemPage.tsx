@@ -16,8 +16,6 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
-
-import ConnectionResource from "core/resources/Connection";
 import SourceResource from "core/resources/Source";
 
 import DestinationResource from "core/resources/Destination";
@@ -28,6 +26,7 @@ import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import useWorkspace from "hooks/services/useWorkspace";
 import { RoutePaths } from "../../../routePaths";
+import { useConnectionList } from "hooks/services/useConnectionHook";
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
@@ -54,9 +53,7 @@ const SourceItemPage: React.FC = () => {
     sourceDefinitionId: source.sourceDefinitionId,
   });
 
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { connections } = useConnectionList();
 
   const breadcrumbsData = [
     {

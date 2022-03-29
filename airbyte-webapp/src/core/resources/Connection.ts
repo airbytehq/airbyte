@@ -61,8 +61,6 @@ export default class ConnectionResource
   ): ReadShape<SchemaDetail<Connection>> {
     return {
       ...super.detailShape(),
-      getFetchKey: (params: { connectionId: string }) =>
-        "POST /web_backend/get" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, unknown>>
       ): Promise<Connection> =>
@@ -165,61 +163,7 @@ export default class ConnectionResource
   ): FetchShape<SchemaDetail<Connection>> {
     return {
       ...super.deleteShape(),
-      getFetchKey: (params: { connectionId: string }) =>
-        "POST /app/delete" + JSON.stringify(params),
       fetch: async (): Promise<null> => null,
-    };
-  }
-
-  static updateStateShape<T extends typeof Resource>(
-    this: T
-  ): MutateShape<SchemaDetail<Connection>> {
-    return {
-      ...super.partialUpdateShape(),
-      getFetchKey: (params: { connectionId: string }) =>
-        "POST /web_backend/update" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, string | number>>,
-        body: Partial<Connection>
-      ): Promise<Partial<Connection>> => {
-        return { ...params, ...body };
-      },
-    };
-  }
-
-  static reset<T extends typeof Resource>(
-    this: T
-  ): ReadShape<SchemaDetail<Connection>> {
-    return {
-      ...super.detailShape(),
-      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
-        "POST " + this.url(params) + "/reset" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<{ connectionId: string }>
-      ): Promise<{ connectionId: string }> => {
-        await this.fetch("post", `${this.url(params)}/reset`, params);
-        return {
-          connectionId: params.connectionId,
-        };
-      },
-    };
-  }
-
-  static syncShape<T extends typeof Resource>(
-    this: T
-  ): ReadShape<SchemaDetail<Connection>> {
-    return {
-      ...super.detailShape(),
-      getFetchKey: (params: Readonly<Record<string, unknown>>) =>
-        "POST " + this.url(params) + "/sync" + JSON.stringify(params),
-      fetch: async (
-        params: Readonly<Record<string, string>>
-      ): Promise<{ connectionId: string }> => {
-        await this.fetch("post", `${this.url(params)}/sync`, params);
-        return {
-          connectionId: params.connectionId,
-        };
-      },
     };
   }
 }

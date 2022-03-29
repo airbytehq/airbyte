@@ -13,7 +13,10 @@ import { Connection } from "core/resources/Connection";
 import JobsList from "./JobsList";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
-import useConnection from "hooks/services/useConnectionHook";
+import {
+  useResetConnection,
+  useSyncConnection,
+} from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
@@ -78,7 +81,8 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
     configTypes: ["sync", "reset_connection"],
   });
 
-  const { resetConnection, syncConnection } = useConnection();
+  const { mutateAsync: resetConnection } = useResetConnection();
+  const { mutateAsync: syncConnection } = useSyncConnection();
 
   const onSync = () => syncConnection(connection);
   const onReset = () => resetConnection(connection.connectionId);

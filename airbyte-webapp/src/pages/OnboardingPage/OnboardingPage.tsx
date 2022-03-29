@@ -9,8 +9,9 @@ import useSource, { useSourceList } from "hooks/services/useSourceHook";
 import useDestination, {
   useDestinationList,
 } from "hooks/services/useDestinationHook";
-import useConnection, {
+import {
   useConnectionList,
+  useSyncConnection,
 } from "hooks/services/useConnectionHook";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
@@ -28,7 +29,7 @@ import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
-import { JobInfo } from "../../core/domain/job/Job";
+import { JobInfo } from "core/domain/job/Job";
 import { RoutePaths } from "../routePaths";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
@@ -71,7 +72,7 @@ const OnboardingPage: React.FC = () => {
   const { sources } = useSourceList();
   const { destinations } = useDestinationList();
   const { connections } = useConnectionList();
-  const { syncConnection } = useConnection();
+  const { mutateAsync: syncConnection } = useSyncConnection();
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {}

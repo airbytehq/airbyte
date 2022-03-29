@@ -8,6 +8,7 @@ import { useAsyncFn } from "react-use";
 import { Button, Card } from "components";
 import useConnection, {
   useConnectionLoad,
+  useResetConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
@@ -62,7 +63,8 @@ const ReplicationView: React.FC<IProps> = ({
     syncCatalog: { streams: [] },
   });
 
-  const { updateConnection, resetConnection } = useConnection();
+  const { updateConnection } = useConnection();
+  const { mutateAsync: resetConnection } = useResetConnection();
 
   const onReset = () => resetConnection(connectionId);
 

@@ -3,18 +3,21 @@ import { Connection } from "./types";
 
 class ConnectionService extends AirbyteRequestService {
   get url() {
-    return "web_backend/connections";
+    return "connections";
   }
 
-  public async getConnection(
-    connectionId: string,
-    withRefreshedCatalog?: boolean
-  ): Promise<Connection> {
-    const rs = ((await this.fetch(`${this.url}/get`, {
+  public async sync(connectionId: string): Promise<unknown> {
+    const rs = await this.fetch<Connection>(`${this.url}/sync`, {
       connectionId,
-      withRefreshedCatalog,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    })) as any) as Connection;
+    });
+
+    return rs;
+  }
+
+  public async reset(connectionId: string): Promise<unknown> {
+    const rs = await this.fetch<Connection>(`${this.url}/reset`, {
+      connectionId,
+    });
 
     return rs;
   }
