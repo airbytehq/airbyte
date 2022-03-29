@@ -50,9 +50,6 @@ class CSVWriter:
 
             return temporary_gzip_file
 
-    def is_flushable(self):
-        return self._rows_count > FLUSHABLE_THRESHOLD
-
     def rows_count(self):
         return self._rows_count
 

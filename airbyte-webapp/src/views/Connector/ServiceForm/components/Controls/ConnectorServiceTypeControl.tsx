@@ -101,7 +101,11 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
     <components.MenuList {...props}>{children}</components.MenuList>
     <BottomElement>
       <Block
-        onClick={props.selectProps.selectProps.onOpenRequestConnectorModal}
+        onClick={() =>
+          props.selectProps.selectProps.onOpenRequestConnectorModal(
+            props.selectProps.inputValue
+          )
+        }
       >
         <FormattedMessage id="connector.requestConnectorBlock" />
       </Block>
@@ -161,7 +165,7 @@ const ConnectorServiceTypeControl: React.FC<{
   documentationUrl?: string;
   allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
-  onOpenRequestConnectorModal: () => void;
+  onOpenRequestConnectorModal: (initialName: string) => void;
 }> = ({
   property,
   formType,

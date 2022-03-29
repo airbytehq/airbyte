@@ -182,7 +182,8 @@ public class WebBackendConnectionsHandler {
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      final SourceDiscoverSchemaRequestBody discoverSchemaReadReq = new SourceDiscoverSchemaRequestBody().sourceId(connection.getSourceId());
+      final SourceDiscoverSchemaRequestBody discoverSchemaReadReq =
+          new SourceDiscoverSchemaRequestBody().sourceId(connection.getSourceId()).disableCache(true);
       final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
 
       final AirbyteCatalog original = connection.getSyncCatalog();

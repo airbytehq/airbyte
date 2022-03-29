@@ -15,7 +15,8 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, ConfiguredAirbyteCatalog, AirbyteMessage, Status, Type, \
     DestinationSyncMode
 from dotmap import DotMap
-from psycopg2.pool import ThreadedConnectionPool
+from psycopg2._psycopg import connection as Connection
+from psycopg2.pool import ThreadedConnectionPool, SimpleConnectionPool
 
 from destination_redshift_py.csv_writer import CSVWriter
 from destination_redshift_py.jsonschema_to_tables import JsonToTables, PARENT_CHILD_SPLITTER
@@ -92,7 +93,7 @@ class DestinationRedshiftPy(Destination):
         """
         for message in input_messages:
             if message.type == Type.STATE:
-                self._flush(force=True)
+                self._flush()
                 yield message
             elif message.type == Type.RECORD:
                 nested_record = DotMap({message.record.stream: message.record.data})
@@ -113,7 +114,6 @@ class DestinationRedshiftPy(Destination):
 
                 for node in nodes:
                     final_table = stream.final_tables[PARENT_CHILD_SPLITTER.join(node)]
-                    staging_table = stream.staging_tables[PARENT_CHILD_SPLITTER.join(node)]
 
                     def get_records(parents: Union[DotMap, List[DotMap]], method: str) -> List[DotMap]:
                         if not isinstance(parents, list):
@@ -151,14 +151,8 @@ class DestinationRedshiftPy(Destination):
                         csv_writer = self.csv_writers[final_table.name]
                         csv_writer.write(records)
 
-                        self._flush_csv_writer_to_destination(
-                            csv_writer=csv_writer,
-                            final_table=final_table,
-                            staging_table=staging_table,
-                            mode=stream.destination_sync_mode
-                        )
-
-        self._flush(force=True)
+        self._flush()
+        self.connection_pool.closeall()
 
     @staticmethod
     def _assign_id_and_emitted_at(records: List[DotMap], emitted_at: int, hashing_keys: List[str]):
@@ -220,7 +214,7 @@ class DestinationRedshiftPy(Destination):
                     cursor.execute(staging_table.create_statement(staging=True))
 
     def _create_pool(self, config: Mapping[str, Any]):
-        self.connection_pool = ThreadedConnectionPool(
+        self.connection_pool = SimpleConnectionPool(
             minconn=1,
             maxconn=config.get("max_connections"),
             host=config.get("host"),
@@ -230,11 +224,14 @@ class DestinationRedshiftPy(Destination):
             password=config.get("password")
         )
 
-    def _get_connection(self, autocommit: bool = False):
+    def _get_connection(self, autocommit: bool = False) -> Connection:
         connection = self.connection_pool.getconn()
         connection.autocommit = autocommit
 
         return connection
+
+    def _put_connection(self, connection: Connection):
+        self.connection_pool.putconn(connection)
 
     def _initialize_csv_writers(self):
         for stream in self.streams.values():
@@ -260,42 +257,41 @@ class DestinationRedshiftPy(Destination):
     def _initialize_iam_role_arn(self, iam_role_arn: str):
         self.iam_role_arn = iam_role_arn
 
-    def _flush(self, force: bool = False):
+    def _flush(self):
         for stream in self.streams.values():
             for key, final_table in stream.final_tables.items():
                 self._flush_csv_writer_to_destination(
                     csv_writer=self.csv_writers[final_table.name],
                     final_table=final_table,
                     staging_table=stream.staging_tables[key],
-                    mode=stream.destination_sync_mode,
-                    force=force
+                    mode=stream.destination_sync_mode
                 )
 
-    def _flush_csv_writer_to_destination(self, csv_writer: CSVWriter, final_table: Table, staging_table: Table, mode: DestinationSyncMode,
-                                         force: bool = False):
-        if csv_writer.is_flushable() or force:
-            rows_count = csv_writer.rows_count()
-            temporary_gzip_file = csv_writer.flush_gzipped()
+    def _flush_csv_writer_to_destination(self, csv_writer: CSVWriter, final_table: Table, staging_table: Table, mode: DestinationSyncMode):
+        rows_count = csv_writer.rows_count()
+        temporary_gzip_file = csv_writer.flush_gzipped()
 
-            if temporary_gzip_file:
-                logger.info(f"Flushing {rows_count} to destination")
+        if temporary_gzip_file:
+            logger.info(f"Flushing {rows_count} to destination")
 
-                connection = self._get_connection()
-                cursor = connection.cursor()
+            connection = self._get_connection()
+            cursor = connection.cursor()
 
-                s3_full_path = self.s3_object_manager.upload_file_to_s3(temporary_gzip_file.name)
-                CSVWriter.delete_gzip_file(temporary_gzip_file)
+            s3_full_path = self.s3_object_manager.upload_file_to_s3(temporary_gzip_file.name)
+            CSVWriter.delete_gzip_file(temporary_gzip_file)
 
-                if mode in [DestinationSyncMode.append, DestinationSyncMode.overwrite]:
-                    copy_statement = final_table.copy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
-                    cursor.execute(copy_statement)
-                else:
-                    copy_statement = staging_table.copy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
-                    cursor.execute(copy_statement)
+            if mode in [DestinationSyncMode.append, DestinationSyncMode.overwrite]:
+                copy_statement = final_table.copy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
+                cursor.execute(copy_statement)
+            else:
+                copy_statement = staging_table.copy_csv_gzip_statement(iam_role_arn=self.iam_role_arn, s3_full_path=s3_full_path)
+                cursor.execute(copy_statement)
 
-                    upsert_statements = final_table.upsert_statements(staging_table=staging_table)
-                    cursor.execute(upsert_statements)
+                upsert_statements = final_table.upsert_statements(staging_table=staging_table)
+                cursor.execute(upsert_statements)
 
-                self.s3_object_manager.delete_file_from_s3(s3_full_path)
+            connection.commit()
 
-                connection.commit()
+            self.s3_object_manager.delete_file_from_s3(s3_full_path)
+
+            self._put_connection(connection)

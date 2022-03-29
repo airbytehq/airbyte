@@ -211,7 +211,6 @@ class TransformConfig:
             "type": "snowflake",
             "account": account,
             "user": config["username"].upper(),
-            "password": config["password"],
             "role": config["role"].upper(),
             "database": config["database"].upper(),
             "warehouse": config["warehouse"].upper(),
@@ -224,6 +223,17 @@ class TransformConfig:
             "connect_retries": 3,
             "connect_timeout": 15,
         }
+
+        credentials = config.get("credentials", {})
+        if credentials.get("auth_type") == "OAuth2.0":
+            dbt_config["authenticator"] = "oauth"
+            dbt_config["oauth_client_id"] = credentials["client_id"]
+            dbt_config["oauth_client_secret"] = credentials["client_secret"]
+            dbt_config["token"] = credentials["refresh_token"]
+        elif credentials.get("password"):
+            dbt_config["password"] = credentials["password"]
+        else:
+            dbt_config["password"] = config["password"]
         return dbt_config
 
     @staticmethod

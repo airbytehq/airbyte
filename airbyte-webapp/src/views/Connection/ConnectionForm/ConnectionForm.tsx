@@ -16,7 +16,6 @@ import {
   Label,
 } from "components";
 
-import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
 import useWorkspace from "hooks/services/useWorkspace";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
@@ -35,6 +34,7 @@ import {
   useInitialValues,
 } from "./formConfig";
 import { OperationsSection } from "./components/OperationsSection";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 
 const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;
@@ -120,7 +120,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
   connection,
 }) => {
-  const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
+  const destDefinition = useGetDestinationDefinitionSpecification(
     connection.destination.destinationDefinitionId
   );
 
