@@ -6,11 +6,11 @@ import { FormattedMessage } from "react-intl";
 
 import { Source, Destination } from "core/domain/connector/types";
 import { H6, Link } from "components";
-import { RoutePaths } from "pages/routes";
 import StepsMenu from "components/StepsMenu";
 import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
+import { RoutePaths } from "../../../../routePaths";
 
 type IProps = {
   source: Source;
