@@ -6,7 +6,9 @@ This destination writes data to GCS bucket.
 
 The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
 
-## Sync Mode
+### Sync overview
+
+#### Features
 
 | Feature | Support | Notes |
 | :--- | :---: | :--- |
@@ -24,7 +26,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | GCS Region | string | See [here](https://cloud.google.com/storage/docs/locations) for all region codes. |
 | HMAC Key Access ID | string | HMAC key access ID . The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details. |
 | HMAC Key Secret | string | The corresponding secret for the access ID. It is a 40-character base-64 encoded string. |
-| Format | object | Format specific configuration. See below for details. |
+| Format | object | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema). |
 | Part Size | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize \* 10,000 blocks. |
 
 Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future.
@@ -190,7 +192,7 @@ The following configuration is available to configure the Parquet output:
 | `dictionary_page_size_kb` | integer | 1024 \(KB\) | **Dictionary Page Size** in KB. There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. |
 | `dictionary_encoding` | boolean | `true` | **Dictionary encoding**. This parameter controls whether dictionary encoding is turned on. |
 
-These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/documentation/latest/#configurations) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
+These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/docs/file-format/configurations) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
 
 #### Data schema
 
