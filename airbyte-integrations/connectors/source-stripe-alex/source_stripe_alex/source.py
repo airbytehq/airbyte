@@ -183,17 +183,10 @@ class Employees(IncrementalStripeAlexStream):
 # Source
 class SourceStripeAlex(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
+        headers = {k: v.format(**config) for k,v in config["headers"].items()}
+        res = self._call_api(config["base_url"], config["check_endpoint"], headers, logger)
+        connected = res.ok
+        return connected, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -204,3 +197,7 @@ class SourceStripeAlex(AbstractSource):
         # TODO remove the authenticator if not required.
         auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
+
+    def _call_api(self, base_url, endpoint, headers, logger):
+        url = f"https://{base_url}/{endpoint}"
+        return requests.get(url, headers=headers)
