@@ -22,7 +22,6 @@ import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 import { equal } from "utils/objects";
 import { Destination, Source, SourceDefinition } from "core/domain/connector";
-import { RoutePaths } from "../../pages/routePaths";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
