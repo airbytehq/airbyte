@@ -11,5 +11,5 @@ jobs:
     steps:
       - uses: harshithmullapudi/label-actions@75686c2b3de17244526f10a22424f319d0bc134f
         with:
-          github-token: ${{ secrets.LABEL_BOT_TOKEN }}
-          github-username: ${{ secrets.LABEL_BOT_USERNAME }}
+          github-token: ${{ secrets.OCTAVIA_PAT }}
+          github-username: octavia-squidington-iii
