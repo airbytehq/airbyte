@@ -64,10 +64,7 @@
             "type": "object",
             "title": "OAuth2.0",
             "order": 0,
-            "required": [
-              "access_token",
-              "refresh_token"
-            ],
+            "required": ["access_token", "refresh_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
