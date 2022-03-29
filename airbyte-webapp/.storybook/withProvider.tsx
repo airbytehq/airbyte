@@ -19,7 +19,9 @@ const AnalyticsContextMock: AnalyticsServiceProviderValue = ({
   setContext: () => {},
   addContextProps: () => {},
   removeContextProps: () => {},
-  service: {},
+  service: {
+    track: () => {},
+  },
 } as unknown) as AnalyticsServiceProviderValue;
 
 export const withProviders = (getStory) => (
