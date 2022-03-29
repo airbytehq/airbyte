@@ -168,7 +168,7 @@ public class ServerApp implements ServerRunnable {
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessorFactory.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())
-        .copySecrets(true)
+        .copySecrets(false)
         .build()
         .createJsonSecretsProcessor();
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);

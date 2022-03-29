@@ -194,7 +194,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     result.values().forEach(stream -> {
       stream.collect(Collectors.toList());
     });
-    verify(jsonSecretsProcessor, times(3)).maskSecrets(any(), any());
+    verify(jsonSecretsProcessor, times(3)).prepareSecretsForOutput(any(), any());
   }
 
   @Test

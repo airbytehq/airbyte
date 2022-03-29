@@ -42,7 +42,7 @@ public abstract class JsonSecretsProcessor {
    * @param schema Schema containing secret annotations
    * @param obj Object containing potentially secret fields
    */
-  public abstract JsonNode maskSecrets(final JsonNode obj, final JsonNode schema);
+  public abstract JsonNode prepareSecretsForOutput(final JsonNode obj, final JsonNode schema);
 
   /**
    * Returns a copy of the destination object in which any secret fields (as denoted by the input

@@ -331,7 +331,7 @@ public class JsonSecretsProcessorTest {
     final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
     final JsonNode expected = objectMapper.readTree(expectedIs);
 
-    final JsonNode actual = processor.maskSecrets(input, specs);
+    final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
 
     assertEquals(expected, actual);
   }
@@ -514,7 +514,7 @@ public class JsonSecretsProcessorTest {
       final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
       final JsonNode expected = objectMapper.readTree(expectedIs);
 
-      final JsonNode actual = processor.maskSecrets(input, specs);
+      final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
 
       assertEquals(expected, actual);
     }

@@ -24,13 +24,12 @@ public class JsonSecretsProcessorFactory {
     return new JsonSecretsProcessor() {
 
       @Override
-      public JsonNode maskSecrets(final JsonNode obj, final JsonNode schema) {
+      public JsonNode prepareSecretsForOutput(final JsonNode obj, final JsonNode schema) {
         if (maskSecrets) {
           // if schema is an object and has a properties field
           if (!canBeProcessed(schema)) {
             return obj;
           }
-          Preconditions.checkArgument(schema.isObject());
 
           final SecretKeys secretKeys = getAllSecretKeys(schema);
           return maskAllSecrets(obj, secretKeys);
@@ -60,7 +59,7 @@ public class JsonSecretsProcessorFactory {
 
             final JsonNode fieldSchema = properties.get(key);
             // We only copy the original secret if the destination object isn't attempting to overwrite it
-            // i.e: if the value of the secret isn't set to the mask
+            // I.e. if the destination object's value is set to the mask, then we can copy the original secret
             if (JsonSecretsProcessor.isSecret(fieldSchema) && dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK)) {
               dstCopy.set(key, src.get(key));
             } else if (dstCopy.has(key)) {
@@ -86,7 +85,7 @@ public class JsonSecretsProcessorFactory {
                 }
                 dstCopy.set(key, combinationCopy);
               } else {
-                // Otherwise, this is just a plain old json object; recurse into it.
+                // Otherwise, this is just a plain old json node; recurse into it. If it's not actually an object, the recursive call will exit immediately.
                 final JsonNode copiedField = copySecrets(src.get(key), dstCopy.get(key), fieldSchema);
                 dstCopy.set(key, copiedField);
               }

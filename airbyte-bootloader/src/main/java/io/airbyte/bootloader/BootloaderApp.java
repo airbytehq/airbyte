@@ -122,7 +122,7 @@ public class BootloaderApp {
 
       final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessorFactory.builder()
           .maskSecrets(!featureFlags.exposeSecretsInExport())
-          .copySecrets(true)
+          .copySecrets(false)
           .build()
           .createJsonSecretsProcessor();
       final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
