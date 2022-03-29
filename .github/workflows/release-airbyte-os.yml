@@ -89,7 +89,7 @@ jobs:
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          ./tools/bin/release_octavia.sh
+          ./tools/bin/release_version_octavia.sh
       - name: Save New Version
         id: new_version
         run: |
