@@ -122,7 +122,7 @@ class TwitterAdsStream(HttpStream, ABC):
                 with requests.get(job_url) as zipped_result:
                  json_bytes = gzip.open(BytesIO(zipped_result.content)).read()
 
-                json_str = json_bytes.decode('utf-8') 
+                json_str = json_bytes.decode('utf-8')
                 results_full = dict(json.loads(json_str))
 
                 result_data = results_full.get("data")
@@ -140,7 +140,7 @@ class TwitterAdsStream(HttpStream, ABC):
                     each['id'] = item['id']
                     each['params'] = item['params']
 
-            return results[0]['id_data']
+            return results
         else:
             response_json = response.json()
             result = response_json.get("data")
@@ -170,7 +170,7 @@ class Campaigns(TwitterAdsStream):
         account_id = self.account_id
 
         request_url = "https://ads-api.twitter.com/10/accounts/" + account_id + "/campaigns?count=1000"
-        
+
         return request_url
 
 class LineItems(TwitterAdsStream):
@@ -220,7 +220,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
-    primary_key = "id"
+    primary_key = None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
