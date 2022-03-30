@@ -5,15 +5,11 @@
 import http.client
 import logging
 import sys
-from datetime import datetime
-from enum import Enum
-from typing import Any, List, Optional, Union
+from typing import Any
 
 import backoff
 import pendulum
-from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.exceptions import FacebookRequestError
-from pydantic import Field
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
@@ -26,107 +22,6 @@ DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
 MAX_BATCH_SIZE = 50
 
 logger = logging.getLogger("airbyte")
-
-
-class AccountSelectionStrategyEnum(str, Enum):
-    all = "all"
-    subset = "subset"
-
-
-class AccountSelectionStrategyAll(BaseConfig):
-    """Fetch data for all available accounts."""
-
-    class Config:
-        title = "All accounts assigned to your user"
-
-    selection_strategy: str = Field(default=AccountSelectionStrategyEnum.all, const=AccountSelectionStrategyEnum.all)
-
-
-class AccountSelectionStrategySubset(BaseConfig):
-    """Fetch data for subset of account ids."""
-
-    class Config:
-        title = "Subset of your accounts"
-
-    selection_strategy: str = Field(default=AccountSelectionStrategyEnum.subset, const=AccountSelectionStrategyEnum.subset)
-    ids: List[str] = Field(title="IDs", description="List of accounts from which data will be fetched", min_items=1, uniqueItems=True)
-
-
-class InsightConfig(BaseConfig):
-
-    name: str = Field(description="The name value of insight")
-
-    fields: Optional[List[str]] = Field(description="A list of chosen fields for fields parameter", default=[])
-
-    breakdowns: Optional[List[str]] = Field(description="A list of chosen breakdowns for breakdowns", default=[])
-
-    action_breakdowns: Optional[List[str]] = Field(description="A list of chosen action_breakdowns for action_breakdowns", default=[])
-
-
-class ConnectorConfig(BaseConfig):
-    class Config:
-        title = "Source Facebook Marketing"
-
-    accounts: Union[AccountSelectionStrategyAll, AccountSelectionStrategySubset] = Field(
-        description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API."
-    )
-
-    access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information',
-        airbyte_secret=True,
-    )
-
-    start_date: datetime = Field(
-        description="The date from which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-25T00:00:00Z"],
-    )
-
-    end_date: Optional[datetime] = Field(
-        description="The date until which you'd like to replicate data for AdCreatives and AdInsights APIs, in the format YYYY-MM-DDT00:00:00Z. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the latest data.",
-        pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
-    )
-
-    fetch_thumbnail_images: bool = Field(
-        default=False, description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url"
-    )
-
-    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
-
-    insights_lookback_window: int = Field(
-        default=28,
-        description="The attribution window for the actions",
-        minimum=0,
-        maximum=28,
-    )
-
-    insights_days_per_job: int = Field(
-        default=7,
-        description="Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
-        minimum=1,
-        maximum=30,
-    )
-    custom_insights: Optional[List[InsightConfig]] = Field(
-        description="A list wich contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
-    )
-
-    @property
-    def account_selection_strategy(self):
-        return self.accounts.selection_strategy
-
-    @property
-    def account_selection_strategy_is_all(self):
-        return self.account_selection_strategy == AccountSelectionStrategyEnum.all
-
-    @property
-    def account_selection_strategy_is_subset(self):
-        return self.account_selection_strategy == AccountSelectionStrategyEnum.subset
-
-
-class FacebookAPIException(Exception):
-    """General class for all API errors"""
 
 
 class JobException(Exception):
