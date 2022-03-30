@@ -5,6 +5,7 @@
 import pytest
 from airbyte_cdk import AirbyteLogger
 from freezegun import freeze_time
+from pendulum import today
 from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
@@ -438,3 +439,11 @@ def test_check_connection_should_fail_when_api_call_fails(mocker):
     )
     assert not check_successful
     assert message.startswith("Unable to connect to Google Ads API with the provided credentials")
+
+
+def test_end_date_is_not_in_the_future():
+    source = SourceGoogleAds()
+    config = source.get_incremental_stream_config(
+        None, {"end_date": today().add(days=1).to_date_string(), "conversion_window_days": 14, "start_date": "2020-01-23"}
+    )
+    assert config.get("end_date") == today().to_date_string()

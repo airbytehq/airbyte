@@ -331,7 +331,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return null;
+    return execute(() -> sourceDefinitionsHandler.listPrivateSourceDefinitions(workspaceIdRequestBody));
   }
 
   @Override
@@ -341,17 +341,19 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    return null;
+    return execute(() -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
   }
 
+  // TODO: Deprecate this route in favor of createCustomSourceDefinition
+  // since all connector definitions created through the API are custom
   @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
-    return execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(sourceDefinitionCreate));
+    return execute(() -> sourceDefinitionsHandler.createPrivateSourceDefinition(sourceDefinitionCreate));
   }
 
   @Override
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
-    return null;
+    return execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(customSourceDefinitionCreate));
   }
 
   @Override
@@ -361,7 +363,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate) {
-    return null;
+    return execute(() -> sourceDefinitionsHandler.updateCustomSourceDefinition(customSourceDefinitionUpdate));
   }
 
   @Override
@@ -374,7 +376,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-
+    execute(() -> {
+      sourceDefinitionsHandler.deleteCustomSourceDefinition(sourceDefinitionIdWithWorkspaceId);
+      return null;
+    });
   }
 
   @Override
@@ -521,7 +526,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return null;
+    return execute(() -> destinationDefinitionsHandler.listPrivateDestinationDefinitions(workspaceIdRequestBody));
   }
 
   @Override
@@ -532,17 +537,19 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(
                                                                         final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return null;
+    return execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
   }
 
+  // TODO: Deprecate this route in favor of createCustomDestinationDefinition
+  // since all connector definitions created through the API are custom
   @Override
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
-    return execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(destinationDefinitionCreate));
+    return execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
   }
 
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
-    return null;
+    return execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
   }
 
   @Override
@@ -552,7 +559,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
-    return null;
+    return execute(() -> destinationDefinitionsHandler.updateCustomDestinationDefinition(customDestinationDefinitionUpdate));
   }
 
   @Override
@@ -565,7 +572,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-
+    execute(() -> {
+      destinationDefinitionsHandler.deleteCustomDestinationDefinition(destinationDefinitionIdWithWorkspaceId);
+      return null;
+    });
   }
 
   @Override

@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.35.59-alpha",
+  "version": "0.35.62-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -45,6 +45,7 @@
     "react-use-intercom": "^1.5.0",
     "react-widgets": "^4.6.1",
     "recharts": "^2.1.9",
+    "rehype-slug": "^5.0.1",
     "rehype-urls": "^1.1.1",
     "remark-frontmatter": "^4.0.1",
     "remark-gfm": "^3.0.0",
@@ -87,6 +88,7 @@
     "eslint-config-react-app": "^7.0.0",
     "eslint-plugin-jest": "^26.1.1",
     "eslint-plugin-prettier": "^4.0.0",
+    "express": "^4.17.3",
     "husky": "^4.2.3",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.4",
@@ -117,6 +119,11 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_moduels/(?!rehype-slug/.*)"
     ]
   }
 }
