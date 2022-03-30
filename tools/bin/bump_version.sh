@@ -4,7 +4,7 @@ PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 GIT_REVISION=$(git rev-parse HEAD)
 
 pip install bumpversion
-bumpversion --allow-dirty "$PART_TO_BUMP"
+bumpversion "$PART_TO_BUMP"
 
 NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 
