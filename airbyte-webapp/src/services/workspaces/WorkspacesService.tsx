@@ -5,7 +5,7 @@ import { useResetter, useResource } from "rest-hooks";
 import WorkspaceResource from "core/resources/Workspace";
 import useRouter from "hooks/useRouter";
 import { Workspace } from "core/domain/workspace/Workspace";
-import { RoutePaths } from "pages/routes";
+import { RoutePaths } from "../../pages/routePaths";
 
 type Context = {
   selectWorkspace: (workspaceId?: string | null | Workspace) => void;

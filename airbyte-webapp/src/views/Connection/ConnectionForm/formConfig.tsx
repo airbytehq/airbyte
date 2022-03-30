@@ -98,7 +98,11 @@ const connectionValidationSchema = yup
           id: yup
             .string()
             // This is required to get rid of id fields we are using to detect stream for edition
-            .strip(true),
+            .when(
+              "$isRequest",
+              (isRequest: boolean, schema: yup.StringSchema) =>
+                isRequest ? schema.strip(true) : schema
+            ),
           stream: yup.object(),
           config: yup
             .object({

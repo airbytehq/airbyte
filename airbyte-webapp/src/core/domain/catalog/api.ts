@@ -28,6 +28,9 @@ export type SyncSchemaStream = {
   stream: AirbyteStream;
   config: AirbyteStreamConfiguration;
 
+  /**
+   * This field is not returned from API and is used to track unique objects
+   */
   id: string;
 };
 
