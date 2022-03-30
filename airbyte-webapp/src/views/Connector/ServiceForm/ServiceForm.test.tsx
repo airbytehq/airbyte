@@ -108,7 +108,7 @@ jest.mock("hooks/services/useWorkspace", () => ({
   }),
 }));
 
-describe.skip("Service Form", () => {
+describe("Service Form", () => {
   describe("should display json schema specs", () => {
     let container: HTMLElement;
     beforeEach(() => {
