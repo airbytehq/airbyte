@@ -57,6 +57,11 @@
     cast({{ field }} as bit)
 {%- endmacro %}
 
+{# -- ClickHouse does not support converting string directly to Int8, it must go through int first #}
+{% macro clickhouse__cast_to_boolean(field) -%}
+    IF(lower({{ field }}) = 'true', 1, 0)
+{%- endmacro %}
+
 {# empty_string_to_null -------------------------------------------------     #}
 {% macro empty_string_to_null(field) -%}
     {{ return(adapter.dispatch('empty_string_to_null')(field)) }}

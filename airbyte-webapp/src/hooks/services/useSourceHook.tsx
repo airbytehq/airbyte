@@ -1,18 +1,16 @@
 import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
-import { useStatefulResource } from "@rest-hooks/legacy";
 
 import SourceResource from "core/resources/Source";
-import { RoutePaths } from "pages/routes";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import SourceDefinitionSpecificationResource from "core/resources/SourceDefinitionSpecification";
 import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
 
 import useRouter from "hooks/useRouter";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { Source, SourceDefinitionSpecification } from "core/domain/connector";
+import { Source } from "core/domain/connector";
+import { RoutePaths } from "../../pages/routePaths";
 
 type ValuesProps = {
   name: string;
@@ -23,34 +21,7 @@ type ValuesProps = {
 
 type ConnectorProps = { name: string; sourceDefinitionId: string };
 
-export const useSourceDefinitionSpecificationLoad = (
-  sourceDefinitionId: string
-): {
-  isLoading: boolean;
-  sourceDefinitionError?: Error;
-  sourceDefinitionSpecification?: SourceDefinitionSpecification;
-} => {
-  const {
-    loading: isLoading,
-    error: sourceDefinitionError,
-    data: sourceDefinitionSpecification,
-  } = useStatefulResource(
-    SourceDefinitionSpecificationResource.detailShape(),
-    sourceDefinitionId
-      ? {
-          sourceDefinitionId,
-        }
-      : null
-  );
-
-  return { sourceDefinitionSpecification, sourceDefinitionError, isLoading };
-};
-
 type SourceService = {
-  recreateSource: (recreateSourcePayload: {
-    values: ValuesProps;
-    sourceId: string;
-  }) => Promise<Source>;
   checkSourceConnection: (checkSourceConnectionPayload: {
     sourceId: string;
     values?: ValuesProps;
@@ -80,8 +51,6 @@ const useSource = (): SourceService => {
   );
 
   const updatesource = useFetcher(SourceResource.partialUpdateShape());
-
-  const recreatesource = useFetcher(SourceResource.recreateShape());
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
 
@@ -185,35 +154,6 @@ const useSource = (): SourceService => {
     [sourceCheckConnectionShape]
   );
 
-  const recreateSource: SourceService["recreateSource"] = async ({
-    values,
-    sourceId,
-  }) => {
-    return await recreatesource(
-      {
-        sourceId: sourceId,
-      },
-      {
-        name: values.name,
-        sourceId,
-        connectionConfiguration: values.connectionConfiguration,
-        workspaceId: workspace.workspaceId,
-        sourceDefinitionId: values.serviceType,
-      },
-      // Method used only in onboarding.
-      // Replace all source List to new item in UpdateParams (to change id)
-      [
-        [
-          SourceResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (newsourceId: string) => ({
-            sources: [newsourceId],
-          }),
-        ],
-      ]
-    );
-  };
-
   const deleteSource: SourceService["deleteSource"] = async ({
     source,
     connectionsWithSource,
@@ -239,7 +179,6 @@ const useSource = (): SourceService => {
   return {
     createSource,
     updateSource,
-    recreateSource,
     deleteSource,
     checkSourceConnection,
   };
