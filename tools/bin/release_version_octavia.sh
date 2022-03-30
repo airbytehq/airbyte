@@ -19,7 +19,7 @@ PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 # requires no git diffs to run
 # commits the bumped versions code to your branch
 pip install bumpversion
-# use the main .bumpversion.cfg  but only modify octavia files
+# use the main .bumpversion.cfg but only modify octavia files
 NEW_VERSION=$(bumpversion --list --no-configured-files "$PART_TO_BUMP" octavia-cli/install.sh octavia-cli/README.md octavia-cli/Dockerfile | grep new_version | sed -r s,"^.*=",,)
 GIT_REVISION=$(git rev-parse HEAD)
 [[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
@@ -29,3 +29,4 @@ echo "Building and publishing OCTAVIA version $NEW_VERSION for git revision $GIT
 VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build
 ./octavia-cli/publish.sh ${NEW_VERSION} ${GIT_REVISION}
 echo "Completed building and publishing OCTAVIA..."
+echo ::set-output name=NEW_VERSION::${NEW_VERSION}

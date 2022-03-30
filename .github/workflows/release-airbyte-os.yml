@@ -143,12 +143,7 @@ jobs:
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
-        run: |
-          ./tools/bin/release_version_octavia.sh
-      - name: Save New Version
-        id: new_version
-        run: |
-          echo ::set-output name=NEW_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
+        run: ./tools/bin/release_version_octavia.sh
       - name: Get PR Body
         id: pr_body
         env:
@@ -166,9 +161,9 @@ jobs:
           branch: bump-version-octavia
           branch-suffix: random
           delete-branch: true
-          title: Bump Octavia version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
+          title: Bump Octavia version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.release_octavia.outputs.NEW_VERSION }}
           body: ${{ steps.pr_body.outputs.PR_BODY }}
-          commit-message: Bump Octavia version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
+          commit-message: Bump Octavia version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.release_octavia.outputs.NEW_VERSION }}
       - name: PR Details
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
