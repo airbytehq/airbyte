@@ -1153,6 +1153,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(22)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testActionsWhenTemporalIsInTerminalState() throws Exception {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
     final WorkflowClient workflowCLient = WorkflowClient.newInstance(temporalService);
