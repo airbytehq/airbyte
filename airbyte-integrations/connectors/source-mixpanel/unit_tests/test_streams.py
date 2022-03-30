@@ -1,9 +1,12 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from unittest.mock import MagicMock
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-
-from source_mixpanel.source import Cohorts, Engage, CohortMembers
+from source_mixpanel.source import CohortMembers, Cohorts, Engage
 
 logger = AirbyteLogger()
 
@@ -15,9 +18,7 @@ def test_cohorts_stream_incremental(requests_mock):
 
     stream = Cohorts(authenticator=MagicMock())
 
-    records = stream.read_records(
-        sync_mode=SyncMode.incremental,
-        stream_state={"created": "2019-04-02 23:22:01"})
+    records = stream.read_records(sync_mode=SyncMode.incremental, stream_state={"created": "2019-04-02 23:22:01"})
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
@@ -28,10 +29,7 @@ def test_engage_stream_incremental(requests_mock):
 
     stream = Engage(authenticator=MagicMock())
 
-    records = stream.read_records(
-        sync_mode=SyncMode.incremental,
-        cursor_field=["created"],
-        stream_state={"created": "2008-12-12T11:20:47"})
+    records = stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state={"created": "2008-12-12T11:20:47"})
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
@@ -43,22 +41,14 @@ def test_cohort_members_stream_incremental(requests_mock):
 
     stream = CohortMembers(authenticator=MagicMock())
 
-    records = stream.read_records(
-        sync_mode=SyncMode.incremental,
-        cursor_field=["created"],
-        stream_state={"created": "2008-12-12T11:20:47"})
+    records = stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state={"created": "2008-12-12T11:20:47"})
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
 
 
 def setup_response(status, body):
-    return [
-        {
-            "json": body,
-            "status_code": status
-        }
-    ]
+    return [{"json": body, "status_code": status}]
 
 
 def engage_response():
@@ -79,7 +69,7 @@ def engage_response():
                     "$first_name": "Clark",
                     "$last_name": "Kent",
                     "$name": "Clark Kent",
-                }
+                },
             },
             {
                 "$distinct_id": "cd9d357f-3f06-4549-91bf-158bb598ee8a",
@@ -91,9 +81,9 @@ def engage_response():
                     "$first_name": "Bruce",
                     "$last_name": "Wayne",
                     "$name": "Bruce Wayne",
-                }
-            }
-        ]
+                },
+            },
+        ],
     }
 
 
@@ -106,7 +96,7 @@ def cohorts_response():
             "created": "2019-03-19 23:49:51",
             "project_id": 1,
             "id": 1000,
-            "name": "Cohort One"
+            "name": "Cohort One",
         },
         {
             "count": 25,
@@ -116,5 +106,5 @@ def cohorts_response():
             "project_id": 1,
             "id": 2000,
             "name": "Cohort Two",
-        }
+        },
     ]

@@ -1,10 +1,13 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 import base64
 import json
 import time
 from abc import ABC
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
-from typing import Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
@@ -14,8 +17,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -37,15 +39,15 @@ class MixpanelStream(HttpStream, ABC):
     reqs_per_hour_limit: int = 400  # 1 req in 9 secs
 
     def __init__(
-            self,
-            authenticator: HttpAuthenticator,
-            region: str = None,
-            start_date: Union[date, str] = None,
-            end_date: Union[date, str] = None,
-            date_window_size: int = 30,  # in days
-            attribution_window: int = 0,  # in days
-            select_properties_by_default: bool = True,
-            **kwargs,
+        self,
+        authenticator: HttpAuthenticator,
+        region: str = None,
+        start_date: Union[date, str] = None,
+        end_date: Union[date, str] = None,
+        date_window_size: int = 30,  # in days
+        attribution_window: int = 0,  # in days
+        select_properties_by_default: bool = True,
+        **kwargs,
     ):
         self.start_date = start_date
         self.end_date = end_date
@@ -61,7 +63,7 @@ class MixpanelStream(HttpStream, ABC):
         return None
 
     def request_headers(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
@@ -161,6 +163,7 @@ class Cohorts(MixpanelStream):
 
         return {self.cursor_field: max(state_cursor, record_cursor)}
 
+
 class FunnelsList(MixpanelStream):
     """List all funnels
     API Docs: https://developer.mixpanel.com/reference/funnels#funnels-list-saved
@@ -176,7 +179,7 @@ class FunnelsList(MixpanelStream):
 
 class DateSlicesMixin:
     def stream_slices(
-            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         date_slices: list = []
 
@@ -208,7 +211,7 @@ class DateSlicesMixin:
         return date_slices
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {
             "from_date": stream_slice["start_date"],
@@ -240,7 +243,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         return funnel_slices
 
     def stream_slices(
-            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Mapping[str, Any]]]]:
         """Return stream slices which is a combination of all funnel_ids and related date ranges, like:
         stream_slices = [
@@ -283,7 +286,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         return stream_slices
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         # NOTE: funnel_id type:
         #    - int in stream_slice
@@ -341,7 +344,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
             }
 
     def get_updated_state(
-            self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
     ) -> Mapping[str, Mapping[str, str]]:
         """Update existing stream state for particular funnel_id
         stream_state = {
@@ -438,15 +441,15 @@ class Engage(MixpanelStream):
         return "engage"
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         return {"include_all_users": True}
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size}
         if next_page_token:
@@ -520,8 +523,6 @@ class Engage(MixpanelStream):
             if not stream_state or item_cursor >= state_cursor:
                 yield item
 
-
-
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -564,11 +565,16 @@ class Engage(MixpanelStream):
     def usr_cursor_key(self):
         return "usr_cursor_key"
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None,
-                     stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        if (sync_mode == SyncMode.incremental):
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if sync_mode == SyncMode.incremental:
             cursor_name = cursor_field[-1]
-            if not stream_state == None:
+            if stream_state:
                 stream_state[self.usr_cursor_key()] = cursor_name
             else:
                 stream_state = {self.usr_cursor_key(): cursor_name}
@@ -587,16 +593,16 @@ class CohortMembers(Engage):
     """Return list of users grouped by cohort"""
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         # example: {"filter_by_cohort": {"id": 1343181}}
         return {"filter_by_cohort": stream_slice}
 
     def stream_slices(
-            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_slices = []
         # full refresh is needed because even though some cohorts might already have been read
