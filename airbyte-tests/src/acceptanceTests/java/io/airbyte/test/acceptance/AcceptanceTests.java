@@ -1153,12 +1153,16 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(-3)
+  @Order(22)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
-  @EnabledIfEnvironmentVariable(named = "NEW_SCHEDULER",
-                                matches = "true")
   public void testActionsWhenTemporalIsInTerminalState() throws Exception {
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (!featureFlags.usesNewScheduler()) {
+      LOGGER.info("Skipping test since not using new temporal scheduler");
+      return;
+    }
+
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
     final WorkflowClient workflowCLient = WorkflowClient.newInstance(temporalService);
 
