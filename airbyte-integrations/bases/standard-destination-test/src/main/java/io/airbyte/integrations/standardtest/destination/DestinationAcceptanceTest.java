@@ -1028,6 +1028,18 @@ public abstract class DestinationAcceptanceTest {
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
+  protected StandardCheckConnectionOutput.Status runCheckWithCatchedException(final JsonNode config) {
+    try {
+      final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
+          workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+              .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+      return standardCheckConnectionOutput.getStatus();
+    } catch (final Exception e) {
+      LOGGER.error("Failed to check connection:" + e.getMessage());
+    }
+    return Status.FAILED;
+  }
+
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
         workerConfigs, new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));

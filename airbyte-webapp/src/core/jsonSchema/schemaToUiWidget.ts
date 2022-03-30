@@ -1,6 +1,6 @@
 import { FormBlock } from "core/form/types";
 import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
-import { isDefined } from "../../utils/common";
+import { isDefined } from "utils/common";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -51,9 +51,8 @@ export const jsonSchemaToUiWidget = (
     );
 
     return {
+      ...pickDefaultFields(jsonSchema),
       _type: "formCondition",
-      title: jsonSchema.title,
-      description: jsonSchema.description,
       path: path || key,
       fieldKey: key,
       conditions,
