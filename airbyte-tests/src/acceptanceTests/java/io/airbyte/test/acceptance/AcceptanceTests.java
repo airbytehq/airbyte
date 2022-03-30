@@ -81,6 +81,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
@@ -1173,14 +1174,10 @@ public class AcceptanceTests {
         .primaryKey(List.of(List.of(COLUMN_NAME))));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-
-    LOGGER.info("Waiting for connection to be available in Temporal...");
-
-    LOGGER.info("Run manual sync...");
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for job to run...");
-    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+    
+    // check if temporal workflow is reachable
+    final ConnectionManagerWorkflow connectionManagerWorkflow = workflowCLient.newWorkflowStub(ConnectionManagerWorkflow.class, "connection_manager_" + connectionId);
+    connectionManagerWorkflow.getState();
 
     // Terminate workflow
     LOGGER.info("Terminating temporal workflow...");
