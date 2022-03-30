@@ -69,6 +69,12 @@
         "title": "Request parameters",
         "description": "Request parameters",
         "order": 7
+      },
+      "stream_to_cursor_field": {
+        "type": "object",
+        "title": "Stream to cursor field",
+        "description": "Mapping from stream name to cursor field",
+        "order": 7
       }
     }
   }

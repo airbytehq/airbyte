@@ -35,7 +35,8 @@ class SourceStripeAlex(AbstractSource):
             "account_id": config["account_id"],
             "start_date": start_date,
             "headers": self._get_headers(config),
-            "request_parameters": config["request_parameters"]
+            "request_parameters": config["request_parameters"],
+            "stream_to_cursor_field": config["stream_to_cursor_field"]
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
 

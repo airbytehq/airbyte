@@ -28,6 +28,7 @@ class StripeStream(HttpStream, ABC):
         self.start_date = kwargs["start_date"]
         self._headers = kwargs["headers"]
         self._request_parameters = kwargs["request_parameters"]
+        self._stream_to_cursor_field = kwargs["stream_to_cursor_field"]
 
     def url_base(self) -> str:
         return self._url_base
@@ -70,15 +71,18 @@ class IncrementalStripeAlexStream(StripeStream, ABC):
     def __init__(self, lookback_window_days: int = 0, **kwargs):
         super().__init__(**kwargs)
         self.lookback_window_days = lookback_window_days
+        self.logger.info("======")
+        self.logger.info(kwargs["stream_to_cursor_field"])
+        self.logger.info("======")
+        self._cursor_field = kwargs["stream_to_cursor_field"][self.name]
 
     @property
-    @abstractmethod
     def cursor_field(self) -> str:
         """
         Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
-        pass
+        return self._cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -195,7 +199,8 @@ class StripeSubStream(StripeStream, ABC):
                 "account_id": self.account_id,
                 "start_date": self.start_date,
                 "headers": self._headers,
-                "request_parameters": self._request_parameters
+                "request_parameters": self._request_parameters,
+                "stream_to_cursor_field": self._stream_to_cursor_field
             }
         )
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -227,8 +232,6 @@ class Invoices(IncrementalStripeAlexStream):
     """
     API docs: https://stripe.com/docs/api/invoices/list
     """
-
-    cursor_field = "created"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -264,7 +267,6 @@ class InvoiceItems(IncrementalStripeAlexStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    cursor_field = "date"
     name = "invoice_items"
 
     def path(self, **kwargs):
