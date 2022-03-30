@@ -88,15 +88,15 @@ const RemainingCredits: React.FC = () => {
   });
 
   useEffect(() => {
-    // Whenever the `lastCreditPurchaseIncrementTimestamp` changes, while we're still waiting
+    // Whenever the `cloudWorkspace` changes and now has a recent credit increment, while we're still waiting
     // for new credits to come in (i.e. the retryIntervalId is still set), we know that we now
     // handled the actual credit purchase and can clean the interval and loading state.
-    if (retryIntervalId.current) {
+    if (retryIntervalId.current && hasRecentCreditIncrease(cloudWorkspace)) {
       clearInterval(retryIntervalId.current);
       retryIntervalId.current = undefined;
       setIsWaitingForCredits(false);
     }
-  }, [cloudWorkspace.lastCreditPurchaseIncrementTimestamp]);
+  }, [cloudWorkspace]);
 
   const startStripeCheckout = async () => {
     // Use the current URL as a success URL but attach the STRIPE_SUCCESS_QUERY to it
