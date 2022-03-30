@@ -74,6 +74,8 @@ class SourceService extends AirbyteRequestService {
   }
 
   public async discoverSchema(sourceId: string): Promise<Schema> {
+    // needs proper type and refactor of CommonRequestError
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await this.fetch<any>(`${this.url}/discover_schema`, {
       sourceId,
     });

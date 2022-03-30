@@ -133,5 +133,6 @@ export interface Scheduler {
 }
 
 export interface Schema extends SourceDiscoverSchemaRead {
+  // TODO: probably this could be removed. Legacy proper that was used in rest-hooks
   id: string;
 }

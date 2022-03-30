@@ -130,9 +130,12 @@ export const useUpdateWorkspace = () => {
   const service = useWorkspaceApiService();
   const queryClient = useQueryClient();
 
-  return useMutation((workspace: any) => service.update(workspace), {
-    onSuccess: (data) => {
-      queryClient.setQueryData(workspaceKeys.detail(data.workspaceId), data);
-    },
-  });
+  return useMutation(
+    (workspace: Record<string, unknown>) => service.update(workspace),
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(workspaceKeys.detail(data.workspaceId), data);
+      },
+    }
+  );
 };

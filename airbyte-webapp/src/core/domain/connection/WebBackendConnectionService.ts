@@ -26,6 +26,8 @@ class WebBackendConnectionService extends AirbyteRequestService {
   }
 
   public async update(payload: Record<string, unknown>): Promise<Connection> {
+    // needs proper type and refactor of CommonRequestError
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await this.fetch<any>(`${this.url}/update`, payload);
 
     if (result.status === "failure") {
@@ -36,6 +38,8 @@ class WebBackendConnectionService extends AirbyteRequestService {
   }
 
   public async create(payload: Record<string, unknown>): Promise<Connection> {
+    // needs proper type and refactor of CommonRequestError
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await this.fetch<any>(`${this.url}/create`, payload);
 
     if (result.status === "failure") {
