@@ -15,7 +15,6 @@ public class V0_35_62_001__AddJobIndices extends BaseJavaMigration {
   public void migrate(final Context context) throws Exception {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
 
-
     try (final DSLContext ctx = DSL.using(context.getConnection())) {
       ctx.createIndexIfNotExists("jobs_config_type_idx").on("jobs", "config_type").execute();
       ctx.createIndexIfNotExists("jobs_scope_idx").on("jobs", "scope").execute();
