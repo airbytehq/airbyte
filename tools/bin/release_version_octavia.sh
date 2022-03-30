@@ -29,9 +29,8 @@ PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 # requires no git diffs to run
 # commits the bumped versions code to your branch
 pip install bumpversion
-bumpversion "$PART_TO_BUMP" octavia-cli/install.sh
-bumpversion "$PART_TO_BUMP" octavia-cli/README.md
-bumpversion "$PART_TO_BUMP" octavia-cli/Dockerfile
+# use the main .bumpversion.cfg  but only modify 
+bumpversion --no-configured-files "$PART_TO_BUMP" octavia-cli/install.sh octavia-cli/README.md  octavia-cli/Dockerfile
 
 NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
 GIT_REVISION=$(git rev-parse HEAD)
