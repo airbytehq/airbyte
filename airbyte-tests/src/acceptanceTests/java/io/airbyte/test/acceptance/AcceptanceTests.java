@@ -1156,6 +1156,8 @@ public class AcceptanceTests {
   @Order(-3)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
+  @EnabledIfEnvironmentVariable(named = "NEW_SCHEDULER",
+                                matches = "true")
   public void testActionsWhenTemporalIsInTerminalState() throws Exception {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
     final WorkflowClient workflowCLient = WorkflowClient.newInstance(temporalService);
@@ -1176,8 +1178,6 @@ public class AcceptanceTests {
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     waitForConnectionState(apiClient, connectionId);
-
-    Thread.sleep(5000);
 
     // check if temporal workflow is reachable
     final ConnectionManagerWorkflow connectionManagerWorkflow =
