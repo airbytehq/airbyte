@@ -14,15 +14,19 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class StripeStream(HttpStream, ABC):
-    url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
 
-    def __init__(self, start_date: int, account_id: str, headers: Mapping[str, str], request_parameters: Mapping[str, Any], **kwargs):
+    def __init__(self, url_base: str, start_date: int, account_id: str, headers: Mapping[str, str], request_parameters: Mapping[str, Any],
+                 **kwargs):
         super().__init__(**kwargs)
+        self.url_base = url_base
         self.account_id = account_id
         self.start_date = start_date
         self._headers = headers
         self._request_parameters = request_parameters
+
+    def url_base(self) -> str:
+        return self._url_base
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -212,7 +216,7 @@ class Invoices(IncrementalStripeAlexStream):
     cursor_field = "created"
 
     def path(self, **kwargs):
-        return "invoices"
+        return "v1/invoices"
 
 
 class InvoiceLineItems(StripeSubStream):
@@ -228,7 +232,7 @@ class InvoiceLineItems(StripeSubStream):
     add_parent_id = True
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"invoices/{stream_slice[self.parent_id]}/lines"
+        return f"v1/invoices/{stream_slice[self.parent_id]}/lines"
 
 
 class InvoiceItems(IncrementalStripeAlexStream):
@@ -240,4 +244,4 @@ class InvoiceItems(IncrementalStripeAlexStream):
     name = "invoice_items"
 
     def path(self, **kwargs):
-        return "invoiceitems"
+        return "v1/invoiceitems"
