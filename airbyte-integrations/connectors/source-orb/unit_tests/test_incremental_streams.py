@@ -172,7 +172,7 @@ def test_credits_ledger_entries_request_params(mocker, current_stream_state, cur
 
 @responses.activate
 def test_credits_ledger_entries_no_matching_events(mocker):
-    stream = CreditsLedgerEntries(event_properties_keys=["ping"])
+    stream = CreditsLedgerEntries(string_event_properties_keys=["ping"])
     ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, {"event_id": "bar-event-id", "entry_type": "decrement"}]
     mock_response = {
         "data": [
@@ -199,17 +199,23 @@ def test_credits_ledger_entries_no_matching_events(mocker):
 
 
 @pytest.mark.parametrize(
-    ("event_properties", "selected_property_keys", "resulting_properties"),
+    ("event_properties", "selected_string_property_keys", "selected_numeric_property_keys", "resulting_properties"),
     [
-        ({}, ["event-property-foo"], {}),
-        ({"ping": "pong"}, ["ping"], {"ping": "pong"}),
-        ({"ping": "pong", "unnamed_property": "foo"}, ["ping"], {"ping": "pong"}),
-        ({"unnamed_property": "foo"}, ["ping"], {}),
+        ({}, ["event-property-foo"], [], {}),
+        ({"ping": "pong"}, ["ping"], [], {"ping": "pong"}),
+        ({"ping": "pong", "unnamed_property": "foo"}, ["ping"], [], {"ping": "pong"}),
+        ({"unnamed_property": "foo"}, ["ping"], [], {}),
+        ({"numeric_property": 1}, ["ping"], ["numeric_property"], {"numeric_property": 1}),
+        ({"ping": "pong", "numeric_property": 1}, ["ping"], ["numeric_property"], {"ping": "pong", "numeric_property": 1}),
     ],
 )
 @responses.activate
-def test_credits_ledger_entries_enriches_selected_property_keys(mocker, event_properties, selected_property_keys, resulting_properties):
-    stream = CreditsLedgerEntries(event_properties_keys=selected_property_keys)
+def test_credits_ledger_entries_enriches_selected_property_keys(
+    mocker, event_properties, selected_string_property_keys, selected_numeric_property_keys, resulting_properties
+):
+    stream = CreditsLedgerEntries(
+        string_event_properties_keys=selected_string_property_keys, numeric_event_properties_keys=selected_numeric_property_keys
+    )
     original_entry_1 = {"entry_type": "increment"}
     ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, original_entry_1]
     mock_response = {

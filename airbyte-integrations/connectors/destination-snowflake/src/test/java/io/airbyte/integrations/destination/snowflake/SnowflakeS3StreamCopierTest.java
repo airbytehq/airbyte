@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,12 +41,12 @@ class SnowflakeS3StreamCopierTest {
   private SnowflakeS3StreamCopier copier;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws Exception {
     s3Client = mock(AmazonS3Client.class, RETURNS_DEEP_STUBS);
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);
 
-    copier = new SnowflakeS3StreamCopier(
+    copier = (SnowflakeS3StreamCopier) new SnowflakeS3StreamCopierFactory().create(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
         "fake-staging-folder",
         "fake-schema",
@@ -63,7 +65,6 @@ class SnowflakeS3StreamCopierTest {
                 null)),
         new ExtendedNameTransformer(),
         sqlOperations,
-        UPLOAD_TIME,
         new ConfiguredAirbyteStream()
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
@@ -79,8 +80,12 @@ class SnowflakeS3StreamCopierTest {
     }
 
     copier.copyStagingFileToTemporaryTable();
-    List<List<String>> partition = Lists.partition(new ArrayList<>(copier.getStagingWritersByFile().keySet()), 1000);
-    for (List<String> files : partition) {
+    Set<String> stagingFiles = copier.getStagingFiles();
+    // check the use of all files for staging
+    Assertions.assertTrue(stagingFiles.size() > 1);
+
+    final List<List<String>> partition = Lists.partition(new ArrayList<>(stagingFiles), 1000);
+    for (final List<String> files : partition) {
       verify(db).execute(String.format(
           "COPY INTO fake-schema.%s FROM '%s' "
               + "CREDENTIALS=(aws_key_id='fake-access-key-id' aws_secret_key='fake-secret-access-key') "

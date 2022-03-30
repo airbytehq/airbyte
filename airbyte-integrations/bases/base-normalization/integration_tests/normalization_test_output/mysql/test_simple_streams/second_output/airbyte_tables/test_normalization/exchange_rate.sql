@@ -43,23 +43,23 @@ select
     cast(id as 
     signed
 ) as id,
-    cast(currency as char) as currency,
+    cast(currency as char(1024)) as currency,
         case when `date` = '' then NULL
         else cast(`date` as date)
         end as `date`
         ,
-    cast(nullif(timestamp_col, '') as char) as timestamp_col,
+    cast(nullif(timestamp_col, '') as char(1024)) as timestamp_col,
     cast(`HKD@spéçiäl & characters` as 
     float
 ) as `HKD@spéçiäl & characters`,
-    cast(hkd_special___characters as char) as hkd_special___characters,
+    cast(hkd_special___characters as char(1024)) as hkd_special___characters,
     cast(nzd as 
     float
 ) as nzd,
     cast(usd as 
     float
 ) as usd,
-    cast(`column__'with"_quotes` as char) as `column__'with"_quotes`,
+    cast(`column__'with"_quotes` as char(1024)) as `column__'with"_quotes`,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     

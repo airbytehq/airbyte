@@ -23,6 +23,10 @@ export const buildPathInitialState = (
           resultObject.const = formItem.const;
         }
 
+        if (isDefined(formItem.default)) {
+          resultObject.default = formItem.default;
+        }
+
         widgetStateBuilder[formItem.path] = resultObject;
         return widgetStateBuilder;
       }

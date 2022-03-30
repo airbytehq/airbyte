@@ -33,7 +33,7 @@ This Source is capable of syncing the following core Streams:
 * [Orders Risks](https://shopify.dev/api/admin/rest/reference/orders/order-risk)
 * [Products](https://help.shopify.com/en/api/reference/products)
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
-* [Tender Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/tendertransaction))
+* [Balance Transactions](https://shopify.dev/api/admin-rest/2021-07/resources/transactions)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
 * [Locations](https://shopify.dev/api/admin-rest/2021-10/resources/location)
@@ -54,30 +54,22 @@ If child streams are synced alone from the parent stream - the full sync will ta
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| Integration Type | Airbyte Type |
+| :--- | :--- |
+| `string` | `string` |
+| `number` | `number` |
+| `array` | `array` |
+| `object` | `object` |
+| `boolean` | `boolean` |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Namespaces | No |  |
+| Feature | Supported?\(Yes/No\) |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
+| Namespaces | No |
 
-### Performance considerations
-
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
-
-```text
-"Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
-```
-
-This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. With given error message the sync operation is still goes on, but will require more time to finish.
 
 ## Getting started
 
@@ -98,11 +90,59 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 2. Proceed the authentication using your credentials for your Shopify account.
 
 
+### Output Streams Schemas
+
+This Source is capable of syncing the following core Streams:
+
+* [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2022-01/resources/abandoned-checkouts#top)
+* [Collects](https://shopify.dev/api/admin-rest/2022-01/resources/collect#top)
+* [Custom Collections](https://shopify.dev/api/admin-rest/2022-01/resources/customcollection#top)
+* [Customers](https://shopify.dev/api/admin-rest/2022-01/resources/customer#top)
+* [Draft Orders](https://shopify.dev/api/admin-rest/2022-01/resources/draftorder#top)
+* [Discount Codes](https://shopify.dev/api/admin-rest/2022-01/resources/discountcode#top)
+* [Metafields](https://shopify.dev/api/admin-rest/2022-01/resources/metafield#top)
+* [Orders](https://shopify.dev/api/admin-rest/2022-01/resources/order#top)
+* [Orders Refunds](https://shopify.dev/api/admin-rest/2022-01/resources/refund#top)
+* [Orders Risks](https://shopify.dev/api/admin-rest/2022-01/resources/order-risk#top)
+* [Products](https://shopify.dev/api/admin-rest/2022-01/resources/product#top)
+* [Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/transaction#top)
+* [Tender Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/tendertransaction)
+* [Pages](https://shopify.dev/api/admin-rest/2022-01/resources/page#top)
+* [Price Rules](https://shopify.dev/api/admin-rest/2022-01/resources/pricerule#top)
+* [Locations](https://shopify.dev/api/admin-rest/2022-01/resources/location)
+* [InventoryItems](https://shopify.dev/api/admin-rest/2022-01/resources/inventoryItem)
+* [InventoryLevels](https://shopify.dev/api/admin-rest/2021-01/resources/inventorylevel)
+* [Fulfillment Orders](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillmentorder)
+* [Fulfillments](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillment)
+* [Shop](https://shopify.dev/api/admin-rest/2022-01/resources/shop)
+
+#### Notes:
+
+For better experience with `Incremental Refresh` the following is recommended:
+
+* `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
+* `Discount Codes` should be synced along with `Price Rules` stream.
+
+If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
+
+### Performance considerations
+
+Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
+
+```text
+"Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
+```
+
+This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. With given error message the sync operation is still goes on, but will require more time to finish.
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.33 | 2022-02-17 | [10419](https://github.com/airbytehq/airbyte/pull/10419) | Fixed wrong field type for tax_exemptions |
+| 0.1.36 | 2022-03-22 | [9850](https://github.com/airbytehq/airbyte/pull/9850) | Added `BalanceTransactions` stream |
+| 0.1.35 | 2022-03-07 | [10915](https://github.com/airbytehq/airbyte/pull/10915) | Fix a bug which caused `full-refresh` syncs of child REST entities configured for `incremental` |
+| 0.1.34 | 2022-03-02 | [10794](https://github.com/airbytehq/airbyte/pull/10794) | Minor specification re-order, fixed links in documentation |
+| 0.1.33 | 2022-02-17 | [10419](https://github.com/airbytehq/airbyte/pull/10419) | Fixed wrong field type for tax_exemptions for `Abandoned_checkouts` stream |
 | 0.1.32 | 2022-02-18 | [10449](https://github.com/airbytehq/airbyte/pull/10449) | Added `tender_transactions` stream |
 | 0.1.31 | 2022-02-08 | [10175](https://github.com/airbytehq/airbyte/pull/10175) | Fixed compatibility issues for legacy user config |
 | 0.1.30 | 2022-01-24 | [9648](https://github.com/airbytehq/airbyte/pull/9648) | Added permission validation before sync |

@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test credentials contain S3 credentials - this
- * automatically causes COPY to be selected.
+ * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
+ * credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
 public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -141,8 +141,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
             baseConfig.get("port").asText(),
             baseConfig.get("database").asText()),
         "com.amazon.redshift.jdbc.Driver", null,
-        RedshiftInsertDestination.SSL_JDBC_PARAMETERS
-    );
+        RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
   }
 
   @Override

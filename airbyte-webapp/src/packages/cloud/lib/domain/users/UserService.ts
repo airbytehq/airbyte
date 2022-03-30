@@ -34,6 +34,8 @@ class UserService extends AirbyteRequestService {
     authProvider: string;
     email: string;
     name: string;
+    companyName: string;
+    news: boolean;
     invitedWorkspaceId?: string;
     status?: "invited";
   }): Promise<User> {

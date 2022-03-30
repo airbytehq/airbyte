@@ -13,6 +13,7 @@ from chargebee.model import Model
 from chargebee.models import Addon as AddonModel
 from chargebee.models import AttachedItem as AttachedItemModel
 from chargebee.models import Coupon as CouponModel
+from chargebee.models import CreditNote as CreditNoteModel
 from chargebee.models import Customer as CustomerModel
 from chargebee.models import Event as EventModel
 from chargebee.models import Invoice as InvoiceModel
@@ -318,4 +319,19 @@ class Coupon(IncrementalChargebeeStream):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["sort_by[asc]"] = "created_at"
+        return params
+
+
+class CreditNote(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/credit_notes?prod_cat_ver=2#list_credit_notes
+    """
+
+    cursor_field = "updated_at"
+
+    api = CreditNoteModel
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["sort_by[asc]"] = "date"
         return params

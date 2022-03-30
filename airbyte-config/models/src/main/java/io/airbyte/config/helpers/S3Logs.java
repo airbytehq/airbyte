@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -172,7 +173,7 @@ public class S3Logs implements CloudLogs {
     final var data = s3Client.getObjectAsBytes(getObjReq).asByteArray();
     final var is = new ByteArrayInputStream(data);
     final var currentFileLines = new ArrayList<String>();
-    try (final var reader = new BufferedReader(new InputStreamReader(is))) {
+    try (final var reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
       String temp;
       while ((temp = reader.readLine()) != null) {
         currentFileLines.add(temp);

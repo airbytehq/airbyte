@@ -5,14 +5,9 @@ import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 import { WarningMessage } from "../WarningMessage";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
-import {
-  ControlLabels,
-  defaultDataItemSort,
-  DropDown,
-  DropDownRow,
-  ImageBlock,
-} from "components";
+import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
 
 import { FormBaseItem } from "core/form/types";
 import {
@@ -32,6 +27,8 @@ import {
   Icon as SingleValueIcon,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { naturalComparator } from "utils/objects";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -86,6 +83,16 @@ const SingleValueContent = styled(components.SingleValue)`
 
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
 
+/**
+ * Can be used to overwrite the alphabetical order of connectors in the select.
+ * A higher positive number will put the given connector to the top of the list
+ * a low negative number to the end of it.
+ */
+const ORDER_OVERWRITE: Record<string, number> = {
+  // Push Google Sheets connector to top
+  "71607ba1-c0ac-4799-8049-7f4b90dd50f7": 1,
+};
+
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   children,
   ...props
@@ -94,7 +101,11 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
     <components.MenuList {...props}>{children}</components.MenuList>
     <BottomElement>
       <Block
-        onClick={props.selectProps.selectProps.onOpenRequestConnectorModal}
+        onClick={() =>
+          props.selectProps.selectProps.onOpenRequestConnectorModal(
+            props.selectProps.inputValue
+          )
+        }
       >
         <FormattedMessage id="connector.requestConnectorBlock" />
       </Block>
@@ -152,14 +163,12 @@ const ConnectorServiceTypeControl: React.FC<{
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
   documentationUrl?: string;
-  allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
-  onOpenRequestConnectorModal: () => void;
+  onOpenRequestConnectorModal: (initialName: string) => void;
 }> = ({
   property,
   formType,
   isEditMode,
-  allowChangeConnector,
   onChangeServiceType,
   availableServices,
   documentationUrl,
@@ -167,6 +176,7 @@ const ConnectorServiceTypeControl: React.FC<{
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
+  const analytics = useAnalyticsService();
 
   // TODO Begin hack
   // During the Cloud private beta, we let users pick any connector in our catalog.
@@ -176,12 +186,16 @@ const ConnectorServiceTypeControl: React.FC<{
   // This way, they will not be available for usage in new connections, but they will be available for users
   // already leveraging them.
   // TODO End hack
+  const workspace = useCurrentWorkspace();
   const disallowedOauthConnectors =
     // I would prefer to use windowConfigProvider.cloud but that function is async
     window.CLOUD === "true"
       ? [
           "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
           "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
+          ...(workspace.workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace for review
+            ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
+            : []),
         ]
       : [];
   const sortedDropDownData = useMemo(
@@ -196,7 +210,14 @@ const ConnectorServiceTypeControl: React.FC<{
           img: <ImageBlock img={item.icon} />,
           releaseStage: item.releaseStage,
         }))
-        .sort(defaultDataItemSort),
+        .sort((a, b) => {
+          const priorityA = ORDER_OVERWRITE[a.value] ?? 0;
+          const priorityB = ORDER_OVERWRITE[b.value] ?? 0;
+          // If they have different priority use the higher priority first, otherwise use the label
+          return priorityA !== priorityB
+            ? priorityB - priorityA
+            : naturalComparator(a.label, b.label);
+        }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices]
   );
@@ -218,6 +239,14 @@ const ConnectorServiceTypeControl: React.FC<{
     [setValue, onChangeServiceType]
   );
 
+  const onMenuOpen = () => {
+    const eventName =
+      formType === "source"
+        ? "Airbyte.UI.NewSource.SelectionOpened"
+        : "Airbyte.UI.NewDestination.SelectionOpened";
+    analytics.track(eventName, {});
+  };
+
   return (
     <>
       <ControlLabels
@@ -234,13 +263,14 @@ const ConnectorServiceTypeControl: React.FC<{
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
-          isDisabled={isEditMode && !allowChangeConnector}
+          isDisabled={isEditMode}
           isSearchable
           placeholder={formatMessage({
             id: "form.selectConnector",
           })}
           options={sortedDropDownData}
           onChange={handleSelect}
+          onMenuOpen={onMenuOpen}
         />
       </ControlLabels>
       {selectedService && documentationUrl && (

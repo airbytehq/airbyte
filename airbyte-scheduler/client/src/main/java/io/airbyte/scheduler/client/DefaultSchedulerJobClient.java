@@ -23,10 +23,14 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSchedulerJobClient.class);
 
+  private final boolean connectorSpecificResourceDefaultsEnabled;
   private final JobPersistence jobPersistence;
   private final JobCreator jobCreator;
 
-  public DefaultSchedulerJobClient(final JobPersistence jobPersistence, final JobCreator jobCreator) {
+  public DefaultSchedulerJobClient(final boolean connectorSpecificResourceDefaultsEnabled,
+                                   final JobPersistence jobPersistence,
+                                   final JobCreator jobCreator) {
+    this.connectorSpecificResourceDefaultsEnabled = connectorSpecificResourceDefaultsEnabled;
     this.jobPersistence = jobPersistence;
     this.jobCreator = jobCreator;
   }
@@ -38,9 +42,19 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
                                       final String sourceDockerImage,
                                       final String destinationDockerImage,
                                       final List<StandardSyncOperation> standardSyncOperations,
-                                      @Nullable final ActorDefinitionResourceRequirements sourceResourceRequirements,
-                                      @Nullable final ActorDefinitionResourceRequirements destinationResourceRequirements)
+                                      @Nullable final ActorDefinitionResourceRequirements ignorableSourceResourceRequirements,
+                                      @Nullable final ActorDefinitionResourceRequirements ignorableDestinationResourceRequirements)
       throws IOException {
+
+    ActorDefinitionResourceRequirements sourceResourceRequirements = ignorableSourceResourceRequirements;
+    ActorDefinitionResourceRequirements destinationResourceRequirements = ignorableDestinationResourceRequirements;
+
+    // for OSS users, make it possible to ignore default actor-level resource requirements
+    if (!connectorSpecificResourceDefaultsEnabled) {
+      sourceResourceRequirements = null;
+      destinationResourceRequirements = null;
+    }
+
     final Optional<Long> jobIdOptional = jobCreator.createSyncJob(
         source,
         destination,

@@ -6,7 +6,7 @@ from abc import ABC
 from datetime import datetime
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qsl, urlparse
+from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -92,6 +92,10 @@ class IntercomStream(HttpStream, ABC):
 class IncrementalIntercomStream(IntercomStream, ABC):
     cursor_field = "updated_at"
 
+    def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
+        super().__init__(authenticator, start_date, **kwargs)
+        self.has_old_records = False
+
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
         """
         Endpoint does not provide query filtering params, but they provide us
@@ -101,6 +105,8 @@ class IncrementalIntercomStream(IntercomStream, ABC):
 
         if not stream_state or record[self.cursor_field] > stream_state.get(self.cursor_field):
             yield record
+        else:
+            self.has_old_records = True
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         record = super().parse_response(response, stream_state, **kwargs)
@@ -282,8 +288,15 @@ class Conversations(IncrementalIntercomStream):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token, **kwargs)
-        params.update({"order": "asc", "sort": self.cursor_field})
+        params.update({"order": "desc", "sort": self.cursor_field})
         return params
+
+    # We're sorting by desc. Once we hit the first page with an out-of-date result we can stop.
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.has_old_records:
+            return None
+
+        return super().next_page_token(response)
 
     def path(self, **kwargs) -> str:
         return "conversations"
@@ -300,6 +313,13 @@ class ConversationParts(ChildStreamMixin, IncrementalIntercomStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/conversations/{stream_slice['id']}"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        records = super().parse_response(response, stream_state, **kwargs)
+        conversation_id = response.json().get("id")
+        for conversation_part in records:
+            conversation_part.setdefault("conversation_id", conversation_id)
+            yield conversation_part
 
 
 class Segments(IncrementalIntercomStream):
@@ -413,7 +433,7 @@ class SourceIntercom(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         authenticator = VersionApiAuthenticator(token=config["access_token"])
         try:
-            url = f"{IntercomStream.url_base}/tags"
+            url = urljoin(IntercomStream.url_base, "/tags")
             auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
             session = requests.get(url, headers=auth_headers)
             session.raise_for_status()

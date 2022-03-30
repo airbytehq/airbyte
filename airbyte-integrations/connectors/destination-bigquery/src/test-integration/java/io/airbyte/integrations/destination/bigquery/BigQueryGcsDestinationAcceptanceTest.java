@@ -23,7 +23,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String fullConfigFromSecretFileAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigFromSecretFileAsString = Files.readString(CREDENTIALS_PATH);
 
     final JsonNode fullConfigFromSecretFileJson = Jsons.deserialize(fullConfigFromSecretFileAsString);
     final JsonNode bigqueryConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);

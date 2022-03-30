@@ -31,7 +31,7 @@ const BarChart: React.FC<BarChartProps> = ({
 
   return (
     <ResponsiveContainer>
-      <BasicBarChart data={data} margin={{ right: 12 }}>
+      <BasicBarChart data={data} margin={{ right: 12, top: 25 }}>
         <CartesianGrid vertical={false} stroke={chartLinesColor} />
         <XAxis
           label={
@@ -60,10 +60,11 @@ const BarChart: React.FC<BarChartProps> = ({
         >
           <Label
             value={yLabel}
-            angle={-90}
             fontSize={11}
             fill={chartTicksColor}
             fontWeight={600}
+            position="top"
+            offset={10}
           />
         </YAxis>
         {legendLabels.map((barName, key) => (

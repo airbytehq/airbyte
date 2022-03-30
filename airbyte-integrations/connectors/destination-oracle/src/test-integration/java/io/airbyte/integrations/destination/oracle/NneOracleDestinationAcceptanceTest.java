@@ -42,16 +42,15 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
 
     final String network_service_banner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.query(network_service_banner).toList();
+    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).toList();
 
     assertThat(collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),
         equals("Oracle Advanced Security: " + algorithm + " encryption"));
   }
 
   private Map<String, String> getAdditionalProperties(final String algorithm) {
-    return ImmutableMap.
-        of("oracle.net.encryption_client", "REQUIRED",
-            "oracle.net.encryption_types_client", String.format("( %s )", algorithm));
+    return ImmutableMap.of("oracle.net.encryption_client", "REQUIRED",
+        "oracle.net.encryption_types_client", String.format("( %s )", algorithm));
   }
 
   @Test
@@ -75,7 +74,7 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
         getAdditionalProperties(algorithm));
 
     final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).collect(Collectors.toList());
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }

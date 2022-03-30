@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.oracle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -99,12 +103,8 @@ public class OracleDestinationTest {
     final Map<String, Object> encryptionNode = ImmutableMap.of(
         OracleDestination.ENCRYPTION_METHOD_KEY, "invalid_encryption_method");
     final JsonNode inputConfig = createConfig(ImmutableMap.of(OracleDestination.ENCRYPTION_KEY, encryptionNode));
-    assertThrows(RuntimeException.class, () ->
-        destination.getDefaultConnectionProperties(inputConfig)
-    );
-    assertThrows(RuntimeException.class, () ->
-        destination.obtainConnectionProtocol(inputConfig)
-    );
+    assertThrows(RuntimeException.class, () -> destination.getDefaultConnectionProperties(inputConfig));
+    assertThrows(RuntimeException.class, () -> destination.obtainConnectionProtocol(inputConfig));
   }
 
 }

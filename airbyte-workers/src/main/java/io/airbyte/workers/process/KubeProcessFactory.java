@@ -6,6 +6,7 @@ package io.airbyte.workers.process;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
@@ -102,6 +103,7 @@ public class KubeProcessFactory implements ProcessFactory {
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> customLabels,
+                        final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
@@ -141,7 +143,7 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getJobSocatImage(),
           workerConfigs.getJobBusyboxImage(),
           workerConfigs.getJobCurlImage(),
-          workerConfigs.getEnvMap(),
+          MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap()),
           internalToExternalPorts,
           args);
     } catch (final Exception e) {

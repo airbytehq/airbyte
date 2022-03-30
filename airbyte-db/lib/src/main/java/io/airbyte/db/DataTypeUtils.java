@@ -22,10 +22,18 @@ public class DataTypeUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(DataTypeUtils.class);
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-  public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset
 
   public static final String DATE_FORMAT_WITH_MILLISECONDS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-  public static final DateFormat DATE_FORMAT_WITH_MILLISECONDS = new SimpleDateFormat(DATE_FORMAT_WITH_MILLISECONDS_PATTERN);
+
+  // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static final.
+  public static DateFormat getDateFormat() {
+    return new SimpleDateFormat(DATE_FORMAT_PATTERN); // Quoted "Z" to indicate UTC, no timezone offset;
+  }
+
+  // wrap SimpleDateFormat in a function because SimpleDateFormat is not threadsafe as a static final.
+  public static DateFormat getDateFormatMillisPattern() {
+    return new SimpleDateFormat(DATE_FORMAT_WITH_MILLISECONDS_PATTERN);
+  }
 
   public static <T> T returnNullIfInvalid(final DataTypeSupplier<T> valueProducer) {
     return returnNullIfInvalid(valueProducer, ignored -> true);
@@ -44,15 +52,15 @@ public class DataTypeUtils {
     }
   }
 
-  public static String toISO8601StringWithMicroseconds(Instant instant) {
+  public static String toISO8601StringWithMicroseconds(final Instant instant) {
 
-    String dateWithMilliseconds = DATE_FORMAT_WITH_MILLISECONDS.format(Date.from(instant));
+    final String dateWithMilliseconds = getDateFormatMillisPattern().format(Date.from(instant));
     return dateWithMilliseconds.substring(0, 23) + calculateMicrosecondsString(instant.getNano()) + dateWithMilliseconds.substring(23);
   }
 
-  private static String calculateMicrosecondsString(int nano) {
-    var microSeconds = (nano / 1000) % 1000;
-    String result;
+  private static String calculateMicrosecondsString(final int nano) {
+    final var microSeconds = (nano / 1000) % 1000;
+    final String result;
     if (microSeconds < 10) {
       result = "00" + microSeconds;
     } else if (microSeconds < 100) {
@@ -64,15 +72,15 @@ public class DataTypeUtils {
   }
 
   public static String toISO8601StringWithMilliseconds(final long epochMillis) {
-    return DATE_FORMAT_WITH_MILLISECONDS.format(Date.from(Instant.ofEpochMilli(epochMillis)));
+    return getDateFormatMillisPattern().format(Date.from(Instant.ofEpochMilli(epochMillis)));
   }
 
   public static String toISO8601String(final long epochMillis) {
-    return DATE_FORMAT.format(Date.from(Instant.ofEpochMilli(epochMillis)));
+    return getDateFormat().format(Date.from(Instant.ofEpochMilli(epochMillis)));
   }
 
   public static String toISO8601String(final java.util.Date date) {
-    return DATE_FORMAT.format(date);
+    return getDateFormat().format(date);
   }
 
   public static String toISOTimeString(final LocalDateTime dateTime) {
@@ -88,7 +96,7 @@ public class DataTypeUtils {
   }
 
   public static String toISO8601String(final Duration duration) {
-    return DATE_FORMAT.format(Date.from(Instant.ofEpochSecond(Math.abs(duration.getSeconds()), Math.abs(duration.getNano()))));
+    return getDateFormat().format(Date.from(Instant.ofEpochSecond(Math.abs(duration.getSeconds()), Math.abs(duration.getNano()))));
   }
 
 }

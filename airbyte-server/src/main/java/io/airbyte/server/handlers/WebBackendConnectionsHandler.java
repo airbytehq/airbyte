@@ -30,6 +30,7 @@ import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WebBackendConnectionCreate;
@@ -44,8 +45,8 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +71,7 @@ public class WebBackendConnectionsHandler {
   private final SchedulerHandler schedulerHandler;
   private final OperationsHandler operationsHandler;
   private final FeatureFlags featureFlags;
-  private final TemporalWorkerRunFactory temporalWorkerRunFactory;
+  private final EventRunner eventRunner;
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -181,8 +182,9 @@ public class WebBackendConnectionsHandler {
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
 
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      final SourceIdRequestBody sourceId = new SourceIdRequestBody().sourceId(connection.getSourceId());
-      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(sourceId);
+      final SourceDiscoverSchemaRequestBody discoverSchemaReadReq =
+          new SourceDiscoverSchemaRequestBody().sourceId(connection.getSourceId()).disableCache(true);
+      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
 
       final AirbyteCatalog original = connection.getSyncCatalog();
       final AirbyteCatalog discovered = discoverSchema.getCatalog();
@@ -247,6 +249,7 @@ public class WebBackendConnectionsHandler {
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
+
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
     return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
@@ -274,10 +277,10 @@ public class WebBackendConnectionsHandler {
       if (needReset) {
 
         // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        temporalWorkerRunFactory.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
+        eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
 
         // todo (cgardens) - temporalWorkerRunFactory CANNOT be here.
-        temporalWorkerRunFactory.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+        eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
         connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
     }
@@ -373,6 +376,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
     connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
     connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
+    connectionUpdate.name(webBackendConnectionUpdate.getName());
     connectionUpdate.operationIds(operationIds);
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());

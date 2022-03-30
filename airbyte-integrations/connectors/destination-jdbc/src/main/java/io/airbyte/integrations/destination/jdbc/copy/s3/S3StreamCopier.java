@@ -223,6 +223,11 @@ public abstract class S3StreamCopier implements StreamCopier {
     return stagingWritersByFile;
   }
 
+  @VisibleForTesting
+  public Set<String> getStagingFiles() {
+    return stagingFileNames;
+  }
+
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
                                               String s3FileLocation,
                                               String schema,

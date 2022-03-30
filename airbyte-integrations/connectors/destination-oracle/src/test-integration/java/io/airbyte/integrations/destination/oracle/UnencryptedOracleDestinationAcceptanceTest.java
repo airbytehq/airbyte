@@ -111,8 +111,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
       throws SQLException {
     final List<org.jooq.Record> result = getDatabase(config)
         .query(ctx -> ctx.fetch(
-                String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                    OracleDestination.COLUMN_NAME_EMITTED_AT))
+            String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                OracleDestination.COLUMN_NAME_EMITTED_AT))
             .stream()
             .collect(Collectors.toList()));
     return result
@@ -175,7 +175,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
     final String network_service_banner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).collect(Collectors.toList());
 
     assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
         .contains("Oracle Advanced Security: encryption"));
