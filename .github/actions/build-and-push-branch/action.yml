@@ -48,9 +48,7 @@ runs:
 
     - name: Push Docker Images
       run: |
-        # push the minimum set of images required for Cloud
-        docker push airbyte/worker:${{ inputs.branch_version_tag }}
-        docker push airbyte/webapp:${{ inputs.branch_version_tag }}
-        docker push airbyte/metrics-reporter:${{ inputs.branch_version_tag }}
-        docker push airbyte/scheduler:${{ inputs.branch_version_tag }}
+        GIT_REVISION=$(git rev-parse HEAD)
+        [ [ -z "$GIT_REVISION" ] ] && echo "Couldn't get the git revision..." && exit 1
+        VERSION=${{ inputs.branch_version_tag }} GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose-cloud.build.yaml push
       shell: bash
