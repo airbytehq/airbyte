@@ -1,8 +1,9 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { ConnectionConfiguration } from "../connection";
-import { Scheduler, Source } from "./types";
+import { Scheduler, Schema, Source } from "./types";
 import Status from "core/statuses";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { CommonRequestError } from "core/request/CommonRequestError";
 
 class SourceService extends AirbyteRequestService {
   get url(): string {
@@ -65,11 +66,33 @@ class SourceService extends AirbyteRequestService {
     name: string;
     connectionConfiguration: ConnectionConfiguration;
   }): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/create`, body);
+    return this.fetch<Source>(`${this.url}/update`, body);
   }
 
   public delete(sourceId: string): Promise<Source> {
     return this.fetch<Source>(`${this.url}/delete`, { sourceId });
+  }
+
+  public async discoverSchema(sourceId: string): Promise<Schema> {
+    const result = await this.fetch<any>(`${this.url}/discover_schema`, {
+      sourceId,
+    });
+
+    if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
+      // @ts-ignore address this case
+      const e = new CommonRequestError(result);
+      // Generate error with failed status and received logs
+      e._status = 400;
+      // @ts-ignore address this case
+      e.response = result.jobInfo;
+      throw e;
+    }
+
+    return {
+      catalog: result.catalog,
+      jobInfo: result.jobInfo,
+      id: sourceId,
+    };
   }
 }
 

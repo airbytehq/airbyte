@@ -4,6 +4,8 @@ import {
   useQuery,
   useQueryClient,
 } from "react-query";
+import { useCallback, useEffect, useState } from "react";
+
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Source } from "core/domain/connector";
@@ -14,6 +16,8 @@ import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewa
 import { useInitService } from "services/useInitService";
 import { SourceService } from "core/domain/connector/SourceService";
 import { isDefined } from "utils/common";
+import { SyncSchema } from "core/domain/catalog";
+import { JobInfo } from "core/domain/job";
 
 export const sourcesKeys = {
   all: ["sources"] as const,
@@ -193,10 +197,51 @@ const useUpdateSource = () => {
   );
 };
 
+const useDiscoverSchema = (
+  sourceId?: string
+): {
+  isLoading: boolean;
+  schema: SyncSchema;
+  schemaErrorStatus: { status: number; response: JobInfo } | null;
+  onDiscoverSchema: () => Promise<void>;
+} => {
+  const service = useSourceService();
+  const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
+  const [isLoading, setIsLoading] = useState(false);
+  const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
+    status: number;
+    response: JobInfo;
+  } | null>(null);
+
+  const onDiscoverSchema = useCallback(async () => {
+    setIsLoading(true);
+    setSchemaErrorStatus(null);
+    try {
+      const data = await service.discoverSchema(sourceId || "");
+      setSchema(data.catalog);
+    } catch (e) {
+      setSchemaErrorStatus(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [sourceId]);
+
+  useEffect(() => {
+    (async () => {
+      if (sourceId) {
+        await onDiscoverSchema();
+      }
+    })();
+  }, [onDiscoverSchema, sourceId]);
+
+  return { schemaErrorStatus, isLoading, schema, onDiscoverSchema };
+};
+
 export {
   useSourceList,
   useGetSource,
   useCreateSource,
   useDeleteSource,
   useUpdateSource,
+  useDiscoverSchema,
 };

@@ -14,12 +14,12 @@ import {
   useCreateConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
-import { useDiscoverSchema } from "hooks/services/useSchemaHook";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { Destination, Source } from "core/domain/connector";
 import { Connection } from "core/domain/connection";
+import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 
 const SkipButton = styled.div`
   margin-top: 6px;

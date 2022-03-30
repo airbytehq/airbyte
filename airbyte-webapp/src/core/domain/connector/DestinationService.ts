@@ -66,7 +66,7 @@ class DestinationService extends AirbyteRequestService {
     name: string;
     connectionConfiguration: ConnectionConfiguration;
   }): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/create`, body);
+    return this.fetch<Destination>(`${this.url}/update`, body);
   }
 
   public delete(destinationId: string): Promise<Destination> {
