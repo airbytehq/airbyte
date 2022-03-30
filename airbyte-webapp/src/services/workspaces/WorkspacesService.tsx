@@ -5,7 +5,6 @@ import {
   useQuery,
   useQueryClient,
 } from "react-query";
-import { useResetter } from "rest-hooks";
 
 import useRouter from "hooks/useRouter";
 import { Workspace, WorkspaceService } from "core/domain/workspace";
@@ -35,7 +34,6 @@ const useSelectWorkspace = (): ((
   workspace?: string | null | Workspace
 ) => void) => {
   const queryClient = useQueryClient();
-  const resetCache = useResetter();
   const { push } = useRouter();
 
   return useCallback(
@@ -46,9 +44,8 @@ const useSelectWorkspace = (): ((
         push(`/${RoutePaths.Workspaces}/${workspace}`);
       }
       await queryClient.resetQueries();
-      resetCache();
     },
-    [push, queryClient, resetCache]
+    [push, queryClient]
   );
 };
 
