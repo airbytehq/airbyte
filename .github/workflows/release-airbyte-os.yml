@@ -143,7 +143,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.SLASH_COMMAND_PAT }}
-          branch: bump-version-octavia
+          branch: bump-version
           branch-suffix: random
           delete-branch: true
           title: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
