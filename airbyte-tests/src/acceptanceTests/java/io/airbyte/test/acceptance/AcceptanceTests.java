@@ -1177,6 +1177,8 @@ public class AcceptanceTests {
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     waitForConnectionState(apiClient, connectionId);
 
+    Thread.sleep(5000);
+
     // check if temporal workflow is reachable
     final ConnectionManagerWorkflow connectionManagerWorkflow =
         workflowCLient.newWorkflowStub(ConnectionManagerWorkflow.class, "connection_manager_" + connectionId);
