@@ -4,7 +4,7 @@ set -e
 
 . tools/lib/lib.sh
 
-if [[ -z "${DOCKER_PASSWORD}" ]]; then
+if test -z "${DOCKER_PASSWORD}"; then
   echo 'DOCKER_PASSWORD for airbytebot not set.';
   exit 1;
 fi
