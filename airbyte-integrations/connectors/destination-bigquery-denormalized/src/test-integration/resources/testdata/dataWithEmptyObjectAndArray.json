@@ -1,0 +1,20 @@
+{
+  "name": "Andrii",
+  "permission-list": [
+    {
+      "domain": "abs",
+      "items": {},
+      "grants": [
+        "admin"
+      ]
+    },
+    {
+      "domain": "tools",
+      "grants": [],
+      "items": {
+        "object": {},
+        "array": []
+      }
+    }
+  ]
+}
