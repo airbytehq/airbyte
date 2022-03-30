@@ -1,16 +1,27 @@
-import { useFetcher, useResource } from "rest-hooks";
-import { useQueryClient } from "react-query";
-
-import SourceResource from "core/resources/Source";
-import { Connection } from "core/domain/connection";
-import { ConnectionConfiguration } from "core/domain/connection";
-
-import useRouter from "hooks/useRouter";
+import {
+  QueryObserverSuccessResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "react-query";
+import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Source } from "core/domain/connector";
-import { RoutePaths } from "pages/routePaths";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
+import { useConfig } from "config";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
+import { SourceService } from "core/domain/connector/SourceService";
+import { isDefined } from "utils/common";
+
+export const sourcesKeys = {
+  all: ["sources"] as const,
+  lists: () => [...sourcesKeys.all, "list"] as const,
+  list: (filters: string) => [...sourcesKeys.lists(), { filters }] as const,
+  detail: (sourceId: string) =>
+    [...sourcesKeys.all, "details", sourceId] as const,
+};
 
 type ValuesProps = {
   name: string;
@@ -21,146 +32,171 @@ type ValuesProps = {
 
 type ConnectorProps = { name: string; sourceDefinitionId: string };
 
-type SourceService = {
-  createSource: (createSourcePayload: {
-    values: ValuesProps;
-    sourceConnector?: ConnectorProps;
-  }) => Promise<Source>;
-  updateSource: (updateSourcePayload: {
-    values: ValuesProps;
-    sourceId: string;
-  }) => Promise<Source>;
-  deleteSource: (deleteSourcePayload: {
-    source: Source;
-    connectionsWithSource: Connection[];
-  }) => Promise<void>;
+function useSourceService(): SourceService {
+  const config = useConfig();
+  const middlewares = useDefaultRequestMiddlewares();
+
+  return useInitService(
+    () => new SourceService(config.apiUrl, middlewares),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [config]
+  );
+}
+
+type SourceList = { sources: Source[] };
+
+const useSourceList = (): SourceList => {
+  const workspace = useCurrentWorkspace();
+  const service = useSourceService();
+
+  return (useQuery(sourcesKeys.lists(), () =>
+    service.list(workspace.workspaceId)
+  ) as QueryObserverSuccessResult<SourceList>).data;
 };
 
-const useSource = (): SourceService => {
-  const { push } = useRouter();
+const useGetSource = <T extends string | undefined | null>(
+  sourceId: T
+): T extends string ? Source : Source | undefined => {
+  const service = useSourceService();
+
+  return (useQuery(
+    sourcesKeys.detail(sourceId ?? ""),
+    () => service.get(sourceId ?? ""),
+    {
+      enabled: isDefined(sourceId),
+    }
+  ) as QueryObserverSuccessResult<Source>).data;
+};
+
+const useCreateSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
   const workspace = useCurrentWorkspace();
-  const createSourcesImplementation = useFetcher(SourceResource.createShape());
+
   const analyticsService = useAnalyticsService();
 
-  const updatesource = useFetcher(SourceResource.partialUpdateShape());
+  return useMutation(
+    async (createSourcePayload: {
+      values: ValuesProps;
+      sourceConnector?: ConnectorProps;
+    }) => {
+      const { values, sourceConnector } = createSourcePayload;
+      analyticsService.track("New Source - Action", {
+        action: "Test a connector",
+        connector_source: sourceConnector?.name,
+        connector_source_id: sourceConnector?.sourceDefinitionId,
+      });
 
-  const sourceDelete = useFetcher(SourceResource.deleteShape());
-
-  const queryClient = useQueryClient();
-
-  const createSource: SourceService["createSource"] = async ({
-    values,
-    sourceConnector,
-  }) => {
-    analyticsService.track("New Source - Action", {
-      action: "Test a connector",
-      connector_source: sourceConnector?.name,
-      connector_source_id: sourceConnector?.sourceDefinitionId,
-    });
-
-    try {
-      // analyticsService.track("New Source - Action", {
-      //   action: "Test a connector",
-      //   connector_source: sourceConnector?.name,
-      //   connector_source_definition_id: sourceConnector?.sourceDefinitionId,
-      // });
-
-      // Try to crete source
-      const result = await createSourcesImplementation(
-        {},
-        {
+      try {
+        // Try to crete source
+        const result = await service.create({
           name: values.name,
           sourceDefinitionId: sourceConnector?.sourceDefinitionId,
           workspaceId: workspace.workspaceId,
           connectionConfiguration: values.connectionConfiguration,
-        },
-        [
-          [
-            SourceResource.listShape(),
-            { workspaceId: workspace.workspaceId },
-            (newsourceId: string, sourceIds: { sources: string[] }) => ({
-              sources: [...(sourceIds?.sources || []), newsourceId],
-            }),
-          ],
-        ]
-      );
-      analyticsService.track("New Source - Action", {
-        action: "Tested connector - success",
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId,
-      });
+        });
 
-      return result;
-    } catch (e) {
-      analyticsService.track("New Source - Action", {
-        action: "Tested connector - failure",
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId,
-      });
-      throw e;
-    }
-  };
+        analyticsService.track("New Source - Action", {
+          action: "Tested connector - success",
+          connector_source: sourceConnector?.name,
+          connector_source_id: sourceConnector?.sourceDefinitionId,
+        });
 
-  const updateSource: SourceService["updateSource"] = async ({
-    values,
-    sourceId,
-  }) =>
-    await updatesource(
-      {
-        sourceId: sourceId,
-      },
-      {
-        name: values.name,
-        sourceId,
-        connectionConfiguration: values.connectionConfiguration,
+        return result;
+      } catch (e) {
+        analyticsService.track("New Source - Action", {
+          action: "Tested connector - failure",
+          connector_source: sourceConnector?.name,
+          connector_source_id: sourceConnector?.sourceDefinitionId,
+        });
+        throw e;
       }
-    );
-
-  const deleteSource: SourceService["deleteSource"] = async ({
-    source,
-    connectionsWithSource,
-  }) => {
-    await sourceDelete({
-      sourceId: source.sourceId,
-    });
-
-    analyticsService.track("Source - Action", {
-      action: "Delete source",
-      connector_source: source.sourceName,
-      connector_source_id: source.sourceDefinitionId,
-    });
-
-    // To delete connections with current source from local store
-    const connectionIds = connectionsWithSource.map(
-      (item) => item.connectionId
-    );
-
-    queryClient.setQueryData(
-      connectionsKeys.lists(),
-      (ls: ListConnection | undefined) => ({
-        connections:
-          ls?.connections.filter((c) =>
-            connectionIds.includes(c.connectionId)
-          ) ?? [],
-      })
-    );
-
-    push(RoutePaths.Source);
-  };
-
-  return {
-    createSource,
-    updateSource,
-    deleteSource,
-  };
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(
+          sourcesKeys.lists(),
+          (lst: SourceList | undefined) => ({
+            sources: [data, ...(lst?.sources ?? [])],
+          })
+        );
+      },
+    }
+  );
 };
 
-const useSourceList = (): { sources: Source[] } => {
-  const workspace = useCurrentWorkspace();
-  return useResource(SourceResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+const useDeleteSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
+
+  return useMutation(
+    (payload: { source: Source; connectionsWithSource: Connection[] }) =>
+      service.delete(payload.source.sourceId),
+    {
+      onSuccess: (_data, ctx) => {
+        analyticsService.track("Source - Action", {
+          action: "Delete source",
+          connector_source: ctx.source.sourceName,
+          connector_source_id: ctx.source.sourceDefinitionId,
+        });
+
+        queryClient.removeQueries(sourcesKeys.detail(ctx.source.sourceId));
+        queryClient.setQueryData(
+          sourcesKeys.lists(),
+          (lst: SourceList | undefined) =>
+            ({
+              sources:
+                lst?.sources.filter(
+                  (conn) => conn.sourceId !== ctx.source.sourceId
+                ) ?? [],
+            } as SourceList)
+        );
+
+        // To delete connections with current source from local store
+        const connectionIds = ctx.connectionsWithSource.map(
+          (item) => item.connectionId
+        );
+
+        queryClient.setQueryData(
+          connectionsKeys.lists(),
+          (ls: ListConnection | undefined) => ({
+            connections:
+              ls?.connections.filter((c) =>
+                connectionIds.includes(c.connectionId)
+              ) ?? [],
+          })
+        );
+      },
+    }
+  );
 };
 
-export { useSourceList };
-export default useSource;
+const useUpdateSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (updateSourcePayload: { values: ValuesProps; sourceId: string }) => {
+      return service.update({
+        name: updateSourcePayload.values.name,
+        sourceId: updateSourcePayload.sourceId,
+        connectionConfiguration:
+          updateSourcePayload.values.connectionConfiguration,
+      });
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(sourcesKeys.detail(data.sourceId), data);
+      },
+    }
+  );
+};
+
+export {
+  useSourceList,
+  useGetSource,
+  useCreateSource,
+  useDeleteSource,
+  useUpdateSource,
+};

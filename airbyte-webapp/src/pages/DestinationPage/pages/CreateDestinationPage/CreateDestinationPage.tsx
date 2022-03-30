@@ -4,18 +4,18 @@ import { FormattedMessage } from "react-intl";
 import PageTitle from "components/PageTitle";
 import DestinationForm from "./components/DestinationForm";
 import useRouter from "hooks/useRouter";
-import useDestination from "hooks/services/useDestinationHook";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useCreateDestination } from "hooks/services/useDestinationHook";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 
   const { destinationDefinitions } = useDestinationDefinitionList();
-  const { createDestination } = useDestination();
+  const { mutateAsync: createDestination } = useCreateDestination();
 
   const onSubmitDestinationForm = async (values: {
     name: string;

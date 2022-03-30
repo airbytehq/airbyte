@@ -4,8 +4,9 @@ import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
 import HeadTitle from "components/HeadTitle";
-import useSource, { useSourceList } from "hooks/services/useSourceHook";
-import useDestination, {
+import { useCreateSource, useSourceList } from "hooks/services/useSourceHook";
+import {
+  useCreateDestination,
   useDestinationList,
 } from "hooks/services/useDestinationHook";
 import {
@@ -76,8 +77,8 @@ const OnboardingPage: React.FC = () => {
 
   const { mutateAsync: syncConnection } = useSyncConnection();
 
-  const { createSource } = useSource();
-  const { createDestination } = useDestination();
+  const { mutateAsync: createSource } = useCreateSource();
+  const { mutateAsync: createDestination } = useCreateDestination();
   const { finishOnboarding } = useWorkspace();
 
   const [successRequest, setSuccessRequest] = useState(false);

@@ -1,49 +1,42 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
 import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import Breadcrumbs from "components/Breadcrumbs";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
-import DestinationResource from "core/resources/Destination";
 import {
   ItemTabs,
   StepsTypes,
   TableItemTitle,
 } from "components/ConnectorBlocks";
 import DestinationSettings from "./components/DestinationSettings";
-import SourceResource from "core/resources/Source";
 import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import {
   DropDownRow,
-  MainPageWithScroll,
-  LoadingPage,
   ImageBlock,
+  LoadingPage,
+  MainPageWithScroll,
   PageTitle,
 } from "components";
 import { RoutePaths } from "pages/routePaths";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useSourceList } from "hooks/services/useSourceHook";
+import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
 
 const DestinationItemPage: React.FC = () => {
   const { params, push } = useRouter<unknown, { id: string }>();
-  const workspace = useCurrentWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
 
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { sources } = useSourceList();
 
   const { sourceDefinitions } = useSourceDefinitionList();
 
-  const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: params.id,
-  });
+  const destination = useGetDestination(params.id);
 
   const destinationDefinition = useDestinationDefinition(
     destination.destinationDefinitionId

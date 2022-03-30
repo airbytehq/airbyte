@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 
 import useRouter from "hooks/useRouter";
-import useDestination from "hooks/services/useDestinationHook";
 
 // TODO: create separate component for source and destinations forms
 import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useCreateDestination } from "hooks/services/useDestinationHook";
 
 type IProps = {
   afterSubmit: () => void;
@@ -17,7 +17,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
   const [successRequest, setSuccessRequest] = useState(false);
 
   const { destinationDefinitions } = useDestinationDefinitionList();
-  const { createDestination } = useDestination();
+  const { mutateAsync: createDestination } = useCreateDestination();
 
   const onSubmitDestinationForm = async (values: {
     name: string;

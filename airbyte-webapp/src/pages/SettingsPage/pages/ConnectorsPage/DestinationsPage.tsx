@@ -1,26 +1,20 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { useResource } from "rest-hooks";
 import { useAsyncFn } from "react-use";
-
-import { DestinationResource } from "core/resources/Destination";
 import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { DestinationDefinition } from "core/domain/connector";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
 } from "services/connector/DestinationDefinitionService";
+import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 
 const DestinationsPage: React.FC = () => {
-  const workspace = useCurrentWorkspace();
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const formatMessage = useIntl().formatMessage;
   const { destinationDefinitions } = useDestinationDefinitionList();
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { destinations } = useDestinationList();
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 

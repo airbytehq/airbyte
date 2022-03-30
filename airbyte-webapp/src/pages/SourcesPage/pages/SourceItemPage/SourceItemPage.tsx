@@ -1,6 +1,5 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
 import { DropDownRow, ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
@@ -16,34 +15,26 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
-import SourceResource from "core/resources/Source";
-
-import DestinationResource from "core/resources/Destination";
 import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { RoutePaths } from "../../../routePaths";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useGetSource } from "hooks/services/useSourceHook";
+import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
-  const workspace = useCurrentWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
 
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { destinations } = useDestinationList();
 
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const source = useResource(SourceResource.detailShape(), {
-    sourceId: query.id,
-  });
-
+  const source = useGetSource(query.id);
   const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
   const { connections } = useConnectionList();

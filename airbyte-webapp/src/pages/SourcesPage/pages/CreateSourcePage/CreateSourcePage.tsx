@@ -4,18 +4,18 @@ import { FormattedMessage } from "react-intl";
 import PageTitle from "components/PageTitle";
 import SourceForm from "./components/SourceForm";
 import useRouter from "hooks/useRouter";
-import useSource from "hooks/services/useSourceHook";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useCreateSource } from "hooks/services/useSourceHook";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 
   const { sourceDefinitions } = useSourceDefinitionList();
-  const { createSource } = useSource();
+  const { mutateAsync: createSource } = useCreateSource();
 
   const onSubmitSourceStep = async (values: {
     name: string;

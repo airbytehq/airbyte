@@ -1,6 +1,6 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { ConnectionConfiguration } from "../connection";
-import { Scheduler } from "./types";
+import { Scheduler, Source } from "./types";
 import Status from "core/statuses";
 import { LogsRequestError } from "core/request/LogsRequestError";
 
@@ -37,6 +37,39 @@ class SourceService extends AirbyteRequestService {
     }
 
     return result;
+  }
+
+  public get(sourceId: string): Promise<Source> {
+    return this.fetch<Source>(`${this.url}/get`, {
+      sourceId,
+    });
+  }
+
+  public list(workspaceId: string): Promise<{ sources: Source[] }> {
+    return this.fetch(`${this.url}/list`, {
+      workspaceId,
+    });
+  }
+
+  public create(body: {
+    name: string;
+    sourceDefinitionId?: string;
+    workspaceId: string;
+    connectionConfiguration: ConnectionConfiguration;
+  }): Promise<Source> {
+    return this.fetch<Source>(`${this.url}/create`, body);
+  }
+
+  public update(body: {
+    sourceId: string;
+    name: string;
+    connectionConfiguration: ConnectionConfiguration;
+  }): Promise<Source> {
+    return this.fetch<Source>(`${this.url}/create`, body);
+  }
+
+  public delete(sourceId: string): Promise<Source> {
+    return this.fetch<Source>(`${this.url}/delete`, { sourceId });
   }
 }
 

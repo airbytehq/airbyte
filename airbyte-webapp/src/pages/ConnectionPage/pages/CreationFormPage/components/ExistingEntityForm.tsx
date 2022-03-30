@@ -1,18 +1,16 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useResource } from "rest-hooks";
 import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import ContentCard from "components/ContentCard";
 import { Button, ControlLabels, DropDown } from "components";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import SourceResource from "core/resources/Source";
-import DestinationResource from "core/resources/Destination";
 import ImageBlock from "components/ImageBlock";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceList } from "../../../../../hooks/services/useSourceHook";
+import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
 
 type IProps = {
   type: "source" | "destination";
@@ -42,15 +40,10 @@ const existingEntityValidationSchema = yup.object().shape({
 
 const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const formatMessage = useIntl().formatMessage;
-  const workspace = useCurrentWorkspace();
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { destinations } = useDestinationList();
 
   const { destinationDefinitions } = useDestinationDefinitionList();
 

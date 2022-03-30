@@ -3,12 +3,15 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
-import useDestination from "hooks/services/useDestinationHook";
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { Connector, Destination } from "core/domain/connector";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import {
+  useDeleteDestination,
+  useUpdateDestination,
+} from "hooks/services/useDestinationHook";
 
 const Content = styled.div`
   max-width: 813px;
@@ -32,7 +35,8 @@ const DestinationsSettings: React.FC<IProps> = ({
     currentDestination.destinationDefinitionId
   );
 
-  const { updateDestination, deleteDestination } = useDestination();
+  const { mutateAsync: updateDestination } = useUpdateDestination();
+  const { mutateAsync: deleteDestination } = useDeleteDestination();
 
   const onSubmitForm = async (values: {
     name: string;
