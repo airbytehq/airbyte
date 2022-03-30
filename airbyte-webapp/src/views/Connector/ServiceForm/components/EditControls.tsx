@@ -6,23 +6,11 @@ import { Button } from "components";
 import { useServiceForm } from "../serviceFormContext";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import TestingConnectionError from "./TestingConnectionError";
-
-type IProps = {
-  isSubmitting: boolean;
-  isValid: boolean;
-  dirty: boolean;
-  resetForm: () => void;
-  onRetest?: () => void;
-  formType: "source" | "destination";
-  successMessage?: React.ReactNode;
-  errorMessage?: React.ReactNode;
-};
+import { TestingConnectionError } from "./TestingConnectionError";
 
 const Controls = styled.div`
   margin-top: 34px;
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: center;
 `;
@@ -31,8 +19,22 @@ const ButtonContainer = styled.span`
   margin-left: 10px;
 `;
 
+type IProps = {
+  formType: "source" | "destination";
+  isSubmitting: boolean;
+  isValid: boolean;
+  dirty: boolean;
+  resetForm: () => void;
+  onRetest?: () => void;
+  onCancelTesting?: () => void;
+  isTestConnectionInProgress?: boolean;
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+};
+
 const EditControls: React.FC<IProps> = ({
   isSubmitting,
+  isTestConnectionInProgress,
   isValid,
   dirty,
   resetForm,
@@ -40,12 +42,19 @@ const EditControls: React.FC<IProps> = ({
   onRetest,
   successMessage,
   errorMessage,
+  onCancelTesting,
 }) => {
   const { unfinishedFlows } = useServiceForm();
 
   if (isSubmitting) {
-    return <TestingConnectionSpinner />;
+    return (
+      <TestingConnectionSpinner
+        isCancellable={isTestConnectionInProgress}
+        onCancelTesting={onCancelTesting}
+      />
+    );
   }
+
   const showStatusMessage = () => {
     if (errorMessage) {
       return <TestingConnectionError errorMessage={errorMessage} />;

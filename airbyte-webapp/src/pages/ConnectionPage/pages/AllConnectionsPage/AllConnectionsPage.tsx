@@ -9,6 +9,7 @@ import useRouter from "hooks/useRouter";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import useWorkspace from "hooks/services/useWorkspace";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { RoutePaths } from "../../../routePaths";
 
 const AllConnectionsPage: React.FC = () => {
@@ -18,6 +19,8 @@ const AllConnectionsPage: React.FC = () => {
   const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: workspace.workspaceId,
   });
+  const { hasFeature } = useFeatureService();
+  const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
 
   const onClick = () => push(`${RoutePaths.ConnectionNew}`);
 
@@ -28,7 +31,7 @@ const AllConnectionsPage: React.FC = () => {
         <PageTitle
           title={<FormattedMessage id="sidebar.connections" />}
           endComponent={
-            <Button onClick={onClick}>
+            <Button onClick={onClick} disabled={!allowCreateConnection}>
               <FormattedMessage id="connection.newConnection" />
             </Button>
           }
