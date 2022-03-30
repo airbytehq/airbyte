@@ -1,0 +1,48 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.8.9, pytest-6.1.2, py-1.11.0, pluggy-0.13.1 -- /Users/alex/code/airbyte/airbyte-integrations/connectors/source-stripe-alex/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/alex/code/airbyte, configfile: pytest.ini
+plugins: sugar-0.9.4, mock-3.6.1, timeout-1.4.2
+[1mcollecting ... [0mcollected 11 items / 4 skipped / 7 selected
+
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_config_match_spec[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_match_expected[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_docker_env[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_oneof_usage[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_required[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_optional[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_has_secret[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_secret_never_in_the_output[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_defined_refs_exist_in_json_spec_file[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestSpec::test_oauth_flow_parameters[inputs0] [32mPASSED[0m
+../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestConnection::test_check[inputs0] [31mFAILED[0m
+{"type": "LOG", "log": {"level": "INFO", "message": "/Users/alex/code/airbyte/airbyte-integrations/connectors/source-stripe-alex - SAT run - 4a122ff1be976032af8d32a32a47b5b0afbaa5fc - FAILED"}}
+
+
+=================================== FAILURES ===================================
+[31m[1m______________________ TestConnection.test_check[inputs0] ______________________[0m
+
+self = <source_acceptance_test.tests.test_core.TestConnection object at 0x1070cd790>
+connector_config = SecretDict(******)
+inputs = ConnectionTestConfig(config_path='secrets/config.json', status=<Status.Succeed: 'succeed'>, timeout_seconds=None)
+docker_runner = <source_acceptance_test.utils.connector_runner.ConnectorRunner object at 0x107168580>
+
+    [94mdef[39;49;00m [92mtest_check[39;49;00m([96mself[39;49;00m, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
+        [94mif[39;49;00m inputs.status == ConnectionTestConfig.Status.Succeed:
+            output = docker_runner.call_check(config=connector_config)
+            con_messages = filter_output(output, Type.CONNECTION_STATUS)
+    
+            [94massert[39;49;00m [96mlen[39;49;00m(con_messages) == [94m1[39;49;00m, [33m"[39;49;00m[33mConnection status message should be emitted exactly once[39;49;00m[33m"[39;49;00m
+>           [94massert[39;49;00m con_messages[[94m0[39;49;00m].connectionStatus.status == Status.SUCCEEDED
+[1m[31mE           AssertionError: assert equals failed[0m
+[1m[31mE             [m[1;31m<Status.FAILED: 'FAILED'>[m   [1;32m<Status.SUCCEEDED: 'SUCCEE[m [0m
+[1m[31mE             [m                            [1;32mDED'>[m[0m
+
+[1m[31m../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py[0m:150: AssertionError
+=========================== short test summary info ============================
+SKIPPED [1] ../../bases/source-acceptance-test/source_acceptance_test/plugin.py:56: Skipping TestDiscovery.test_discover because not found in the config
+SKIPPED [1] ../../bases/source-acceptance-test/source_acceptance_test/plugin.py:56: Skipping TestBasicRead.test_read because not found in the config
+SKIPPED [1] ../../bases/source-acceptance-test/source_acceptance_test/plugin.py:56: Skipping TestFullRefresh.test_sequential_reads because not found in the config
+SKIPPED [1] ../../bases/source-acceptance-test/source_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
+FAILED ../../bases/source-acceptance-test/source_acceptance_test/tests/test_core.py::TestConnection::test_check[inputs0]
+[31m=================== [31m[1m1 failed[0m, [32m10 passed[0m, [33m4 skipped[0m[31m in 7.51s[0m[31m ====================[0m

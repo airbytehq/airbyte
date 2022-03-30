@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_stripe_alex.source import StripeAlexStream
+from source_stripe_alex.stream import StripeAlexStream
 
 
 @pytest.fixture

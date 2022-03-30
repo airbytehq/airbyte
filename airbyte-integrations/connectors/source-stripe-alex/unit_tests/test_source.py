@@ -4,7 +4,7 @@
 
 from unittest.mock import MagicMock
 
-from source_stripe_alex.source import SourceStripeAlex
+from source_stripe_alex.streams import SourceStripeAlex
 
 
 def test_check_connection(mocker):

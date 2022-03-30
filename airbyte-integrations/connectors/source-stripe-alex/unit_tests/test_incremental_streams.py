@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_stripe_alex.source import IncrementalStripeAlexStream
+from source_stripe_alex.streams import IncrementalStripeAlexStream
 
 
 @fixture

@@ -1,22 +1,30 @@
-from abc import ABC
-import requests
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 
+from abc import ABC
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+
+import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.core import Stream
+
 
 # Basic full refresh stream
 class StripeAlexStream(HttpStream, ABC):
-
-    def __init__(self, *,
-                 path: str,
-                 url_base: str,
-                 primary_key: str,
-                 retry_factor: float,
-                 max_retries: int,
-                 headers: Mapping[str, str],
-                 response_key: str,
-                 request_parameters: Mapping[str, Any]):
+    def __init__(
+        self,
+        *,
+        path: str,
+        url_base: str,
+        primary_key: str,
+        retry_factor: float,
+        max_retries: int,
+        headers: Mapping[str, str],
+        response_key: str,
+        request_parameters: Mapping[str, Any],
+        start_date: int,
+        cursor_field: str,
+    ):
         super().__init__()
         self._path = path
         self._primary_key = primary_key
@@ -26,6 +34,9 @@ class StripeAlexStream(HttpStream, ABC):
         self._headers = headers
         self._response_key = response_key
         self._request_parameters = request_parameters
+        self._start_date = start_date
+        self._cursor_field = cursor_field
+        self._cursor_value = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -59,6 +70,13 @@ class StripeAlexStream(HttpStream, ABC):
     ) -> str:
         return self._path
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
+
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return self._primary_key
@@ -83,7 +101,15 @@ class StripeAlexStream(HttpStream, ABC):
     def set_max_retries(self, value):
         self._max_retries = value
 
+    @property
+    def cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+        return self._cursor_field
+
 
 class Invoices(StripeAlexStream):
     def __init__(self, **kwargs):
-        super().__init__(path="v1/invoices",**kwargs)
+        super().__init__(path="v1/invoices", **kwargs)
