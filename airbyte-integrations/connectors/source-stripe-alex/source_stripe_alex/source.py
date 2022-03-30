@@ -27,7 +27,7 @@ There are additional required TODOs in the files within the integration_tests fo
 # Source
 class SourceStripeAlex(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        headers = {k: v.format(**config) for k,v in config["headers"].items()}
+        headers = self._get_headers(config)
         res = self._call_api(config["url_base"], config["check_endpoint"], headers, logger)
         connected = res.ok
         return connected, None
@@ -38,8 +38,16 @@ class SourceStripeAlex(AbstractSource):
         primary_key = config["primary_key"]
         retry_factor = config["retry_factor"]
         max_retries = config["max_retries"]
-        return [Invoices(url_base=url_base, primary_key=primary_key, retry_factor=retry_factor, max_retries=max_retries)]
+        headers= self._get_headers(config)
+        return [Invoices(url_base=url_base,
+                         primary_key=primary_key,
+                         retry_factor=retry_factor,
+                         max_retries=max_retries,
+                         headers=headers)]
 
-    def _call_api(self, base_url, endpoint, headers, logger):
-        url = f"https://{base_url}/{endpoint}"
+    def _get_headers(self, config):
+        return {k: v.format(**config) for k,v in config["headers"].items()}
+
+    def _call_api(self, url_base, endpoint, headers, logger):
+        url = f"https://{url_base}/{endpoint}"
         return requests.get(url, headers=headers)

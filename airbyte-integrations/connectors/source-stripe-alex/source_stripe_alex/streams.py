@@ -8,24 +8,34 @@ from airbyte_cdk.sources.streams.core import Stream
 # Basic full refresh stream
 class StripeAlexStream(HttpStream, ABC):
 
-    def __init__(self, *, url_base: str, primary_key: str, retry_factor: float, max_retries: int):
+    def __init__(self, *, path: str, url_base: str, primary_key: str, retry_factor: float, max_retries: int, headers: Mapping[str, str]):
         super().__init__()
+        self._path = path
         self._primary_key = primary_key
-        self._url_base = url_base
+        self.url_base = url_base
         self._retry_factor = retry_factor
         self._max_retries = max_retries
+        self._headers = headers
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return self._headers
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {}
+        # Stripe default pagination is 10, max is 100
+        params = {"limit": 100}
+        # Handle pagination by inserting the next page's token in the request parameters
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
-        yield {}
+        response_json = response.json()
+        yield from response_json.get("data", [])  # Stripe puts records in a container array "data"
 
     def url_base(self) -> str:
         return self._url_base
@@ -37,7 +47,7 @@ class StripeAlexStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        return ''
+        return self._path
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -66,4 +76,4 @@ class StripeAlexStream(HttpStream, ABC):
 
 class Invoices(StripeAlexStream):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(path="v1/invoices",**kwargs)
