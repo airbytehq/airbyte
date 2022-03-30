@@ -23,9 +23,8 @@ docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
 source ./tools/bin/bump_version.sh
 
-# TESTING: DISABLE BUILD AND PUBLISH FOR ITERATIONS ON CI
-# echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
-# VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
-# SUB_BUILD=PLATFORM ./gradlew publish
-# VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
-# echo "Completed building and publishing PLATFORM..."
+echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
+VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
+SUB_BUILD=PLATFORM ./gradlew publish
+VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
+echo "Completed building and publishing PLATFORM..."
