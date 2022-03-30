@@ -19,6 +19,7 @@ import {
 import useLoadingState from "hooks/useLoadingState";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 type IProps = {
   connection: Connection;
@@ -55,6 +56,8 @@ const SyncButton = styled(LoadingButton)`
 const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
+  const { hasFeature } = useFeatureService();
+  const allowSync = hasFeature(FeatureItem.AllowSync);
 
   const sourceDefinition = useSourceDefinition(
     connection?.source.sourceDefinitionId
@@ -82,6 +85,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
         frequencyText={frequencyText}
         sourceDefinition={sourceDefinition}
         destinationDefinition={destinationDefinition}
+        allowSync={allowSync}
       />
       <StyledContentCard
         title={
@@ -92,6 +96,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
                 <FormattedMessage id={"connection.resetData"} />
               </Button>
               <SyncButton
+                disabled={!allowSync}
                 isLoading={isLoading}
                 wasActive={showFeedback}
                 onClick={() => startAction({ action: onSync })}

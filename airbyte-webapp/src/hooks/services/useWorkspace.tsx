@@ -1,20 +1,34 @@
-import { useFetcher } from "rest-hooks";
-
-import NotificationsResource, {
-  Notifications,
-} from "core/resources/Notifications";
+import { useMutation } from "react-query";
 
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import {
+  useCurrentWorkspace,
+  useUpdateWorkspace,
+} from "services/workspaces/WorkspacesService";
 import { Destination, Source } from "core/domain/connector";
 import { Workspace } from "core/domain/workspace/Workspace";
-import { useUpdateWorkspace } from "services/workspaces/WorkspacesService";
+import { NotificationStatus } from "core/domain/notification/types";
+import { useConfig } from "config";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
+import { NotificationService } from "core/domain/notification/NotificationService";
 
 export type WebhookPayload = {
   webhook: string;
   sendOnSuccess: boolean;
   sendOnFailure: boolean;
 };
+
+function useGetNotificationService(): NotificationService {
+  const { apiUrl } = useConfig();
+
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+
+  return useInitService(
+    () => new NotificationService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
+}
 
 const useWorkspace = (): {
   updatePreferences: (data: {
@@ -24,7 +38,7 @@ const useWorkspace = (): {
     securityUpdates: boolean;
   }) => Promise<Workspace>;
   updateWebhook: (data: WebhookPayload) => Promise<Workspace>;
-  testWebhook: (data: WebhookPayload) => Promise<Notifications>;
+  testWebhook: (data: WebhookPayload) => Promise<NotificationStatus>;
   setInitialSetupConfig: (data: {
     email: string;
     anonymousDataCollection: boolean;
@@ -42,8 +56,8 @@ const useWorkspace = (): {
     destination: Destination;
   }) => Promise<void>;
 } => {
+  const notificationService = useGetNotificationService();
   const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
-  const tryWebhookUrl = useFetcher(NotificationsResource.tryShape());
   const workspace = useCurrentWorkspace();
 
   const analyticsService = useAnalyticsService();
@@ -120,19 +134,6 @@ const useWorkspace = (): {
       ...data,
     });
 
-  const testWebhook = async (data: WebhookPayload) =>
-    await tryWebhookUrl(
-      {
-        notificationType: "slack",
-        sendOnSuccess: data.sendOnSuccess,
-        sendOnFailure: data.sendOnFailure,
-        slackConfiguration: {
-          webhook: data.webhook,
-        },
-      },
-      {}
-    );
-
   const updateWebhook = async (data: WebhookPayload) =>
     await updateWorkspace({
       workspaceId: workspace.workspaceId,
@@ -153,12 +154,23 @@ const useWorkspace = (): {
       ],
     });
 
+  const tryWebhookUrl = useMutation((data: WebhookPayload) =>
+    notificationService.try({
+      notificationType: "slack",
+      sendOnSuccess: data.sendOnSuccess,
+      sendOnFailure: data.sendOnFailure,
+      slackConfiguration: {
+        webhook: data.webhook,
+      },
+    })
+  );
+
   return {
     finishOnboarding,
     setInitialSetupConfig,
     updatePreferences,
     updateWebhook,
-    testWebhook,
+    testWebhook: tryWebhookUrl.mutateAsync,
     sendFeedback,
   };
 };

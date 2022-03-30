@@ -1,11 +1,9 @@
-import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 import { useQueryClient } from "react-query";
 
 import DestinationResource from "core/resources/Destination";
 import { Connection } from "core/domain/connection";
 import useRouter from "../useRouter";
-import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Destination } from "core/domain/connector";
@@ -21,14 +19,7 @@ type ValuesProps = {
 
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
-type DestinationService = {
-  checkDestinationConnection: ({
-    destinationId,
-    values,
-  }: {
-    destinationId: string;
-    values?: ValuesProps;
-  }) => Promise<Scheduler>;
+type DestinationServiceApi = {
   updateDestination: ({
     values,
     destinationId,
@@ -52,16 +43,12 @@ type DestinationService = {
   }) => Promise<void>;
 };
 
-const useDestination = (): DestinationService => {
+const useDestination = (): DestinationServiceApi => {
   const { push } = useRouter();
   const workspace = useCurrentWorkspace();
   const analyticsService = useAnalyticsService();
   const createDestinationsImplementation = useFetcher(
     DestinationResource.createShape()
-  );
-
-  const destinationCheckConnectionShape = useFetcher(
-    SchedulerResource.destinationCheckConnectionShape()
   );
 
   const updatedestination = useFetcher(
@@ -72,26 +59,11 @@ const useDestination = (): DestinationService => {
 
   const queryClient = useQueryClient();
 
-  const createDestination = async ({
+  const createDestination: DestinationServiceApi["createDestination"] = async ({
     values,
     destinationConnector,
-  }: {
-    values: ValuesProps;
-    destinationConnector?: ConnectorProps;
   }) => {
-    analyticsService.track("New Destination - Action", {
-      action: "Test a connector",
-      connector_destination: destinationConnector?.name,
-      connector_destination_definition_id:
-        destinationConnector?.destinationDefinitionId,
-    });
-
     try {
-      await destinationCheckConnectionShape({
-        destinationDefinitionId: destinationConnector?.destinationDefinitionId,
-        connectionConfiguration: values.connectionConfiguration,
-      });
-
       // Try to crete destination
       const result = await createDestinationsImplementation(
         {},
@@ -138,20 +110,11 @@ const useDestination = (): DestinationService => {
     }
   };
 
-  const updateDestination = async ({
+  const updateDestination: DestinationServiceApi["updateDestination"] = async ({
     values,
     destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => {
-    await destinationCheckConnectionShape({
-      connectionConfiguration: values.connectionConfiguration,
-      name: values.name,
-      destinationId,
-    });
-
-    return await updatedestination(
+  }) =>
+    await updatedestination(
       {
         destinationId,
       },
@@ -161,36 +124,10 @@ const useDestination = (): DestinationService => {
         connectionConfiguration: values.connectionConfiguration,
       }
     );
-  };
 
-  const checkDestinationConnection = useCallback(
-    async ({
-      destinationId,
-      values,
-    }: {
-      destinationId: string;
-      values?: ValuesProps;
-    }) => {
-      if (values) {
-        return await destinationCheckConnectionShape({
-          connectionConfiguration: values.connectionConfiguration,
-          name: values.name,
-          destinationId: destinationId,
-        });
-      }
-      return await destinationCheckConnectionShape({
-        destinationId: destinationId,
-      });
-    },
-    [destinationCheckConnectionShape]
-  );
-
-  const deleteDestination = async ({
+  const deleteDestination: DestinationServiceApi["deleteDestination"] = async ({
     destination,
     connectionsWithDestination,
-  }: {
-    destination: Destination;
-    connectionsWithDestination: Connection[];
   }) => {
     await destinationDelete({
       destinationId: destination.destinationId,
@@ -218,7 +155,6 @@ const useDestination = (): DestinationService => {
     createDestination,
     updateDestination,
     deleteDestination,
-    checkDestinationConnection,
   };
 };
 
