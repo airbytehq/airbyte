@@ -4,16 +4,6 @@ set -e
 
 . tools/lib/lib.sh
 
-if [[ -z "${CLOUDREPO_USER}" ]]; then
-  echo 'CLOUDREPO_USER env var not set. Please retrieve the user email from the CloudRepo lastpass secret and run export CLOUDREPO_USER=<user_from_secret>.';
-  exit 1;
-fi
-
-if [[ -z "${CLOUDREPO_PASSWORD}" ]]; then
-  echo 'CLOUDREPO_PASSWORD env var not set. Please retrieve the user email from the CloudRepo lastpass secret and run export CLOUDREPO_PASSWORD=<password_from_secret>.';
-  exit 1;
-fi
-
 if [[ -z "${DOCKER_PASSWORD}" ]]; then
   echo 'DOCKER_PASSWORD for airbytebot not set.';
   exit 1;
