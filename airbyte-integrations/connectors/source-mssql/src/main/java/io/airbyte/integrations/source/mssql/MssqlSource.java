@@ -53,6 +53,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
   private static final String HIERARCHYID = "hierarchyid";
@@ -188,11 +189,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       jdbcUrl.append(String.join(";", additionalParameters));
     }
 
-    return Jsons.jsonNode(ImmutableMap.builder()
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", mssqlConfig.get("username").asText())
         .put("password", mssqlConfig.get("password").asText())
-        .put("jdbc_url", jdbcUrl.toString())
-        .build());
+        .put("jdbc_url", jdbcUrl.toString());
+
+    if (mssqlConfig.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put("connection_properties", mssqlConfig.get(JDBC_URL_PARAMS_KEY));
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
   }
 
   @Override
