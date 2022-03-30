@@ -16,10 +16,8 @@ HERE = Path(os.getcwd())
 RE_MYPY_LINE = re.compile(r"^(.+):(\d+):(\d+):")
 RE_MYPY_LINE_WO_COORDINATES = re.compile(r"^(.+): error: (.+)")
 
-FORMAT_TIP = (
-    "Please go to the repo root and run the command: './gradlew --no-daemon "
-    ":airbyte-integrations:connectors:<connector_name>:airbytePythonFormat'"
-)
+FORMAT_TIP = "Please go to the repo root and run the command: './gradlew --no-daemon " \
+             ":airbyte-integrations:connectors:<connector_name>:airbytePythonFormat'"
 
 
 class IssueSeverity(Enum):
@@ -65,18 +63,15 @@ def generate_mypy_rules() -> Mapping[str, Rule]:
         )
     except NameError:
         return []
-    return {
-        f"[{err.code}]": Rule(
-            rule_type=Rule.Type.code_smell,
-            key=err.code,
-            name=err.code.replace("-", " ").capitalize() + " (mypy)",
-            description=err.description,
-            tool_name="mypy",
-            severity=IssueSeverity.minor,
-            template="python:CommentRegularExpression",
-        )
-        for err in list(mypy_error_codes.values()) + [addl_code]
-    }
+    return {f"[{err.code}]": Rule(
+        rule_type=Rule.Type.code_smell,
+        key=err.code,
+        name=err.code.replace("-", " ").capitalize() + " (mypy)",
+        description=err.description,
+        tool_name="mypy",
+        severity=IssueSeverity.minor,
+        template="python:CommentRegularExpression"
+    ) for err in list(mypy_error_codes.values()) + [addl_code]}
 
 
 class LogParser(SonarQubeApi):
@@ -88,7 +83,7 @@ class LogParser(SonarQubeApi):
         description=FORMAT_TIP,
         tool_name="black",
         severity=IssueSeverity.minor,
-        template="python:CommentRegularExpression",
+        template="python:CommentRegularExpression"
     )
 
     _isort_rule = Rule(
@@ -98,7 +93,7 @@ class LogParser(SonarQubeApi):
         description=FORMAT_TIP,
         tool_name="isort",
         severity=IssueSeverity.minor,
-        template="python:CommentRegularExpression",
+        template="python:CommentRegularExpression"
     )
 
     @dataclass
@@ -120,7 +115,7 @@ class LogParser(SonarQubeApi):
                 "primaryLocation": {
                     "message": self.description,
                     "filePath": self.checked_path,
-                },
+                }
             }
             if self.line_number is not None:
                 data["primaryLocation"]["textRange"] = {
@@ -135,7 +130,7 @@ class LogParser(SonarQubeApi):
         def checked_path(self):
             if self.path.startswith(str(HERE) + "/"):
                 # remove a parent part of path
-                return self.path[len(str(HERE) + "/") :].strip()
+                return self.path[len(str(HERE) + "/"):].strip()
             return self.path.strip()
 
     def __init__(self, output_file: str, host: str, token: str):
@@ -179,7 +174,7 @@ class LogParser(SonarQubeApi):
                     "name": rule.name,
                     "severity": rule.severity.value,
                     "type": rule.rule_type.value,
-                    "template_key": rule.template,
+                    "template_key": rule.template
                 }
                 self._post("rules/create", body)
                 self.logger.info(f"the rule {sq_key} was created")
@@ -207,7 +202,9 @@ class LogParser(SonarQubeApi):
                 },
                 ...
         ]}"""
-        return {"issues": [issue.to_json() for issue in issues]}
+        return {
+            "issues": [issue.to_json() for issue in issues]
+        }
 
     @prepare_file
     def from_mypy(self, file: TextIO) -> List[Issue]:
@@ -229,13 +226,11 @@ class LogParser(SonarQubeApi):
                 m = RE_MYPY_LINE_WO_COORDINATES.match(line.strip())
                 if not m:
                     continue
-                items.append(
-                    self.Issue(
-                        path=m.group(1).strip(),
-                        description=m.group(2).strip(),
-                        rule=self._mypy_rules["[unknown]"],
-                    )
-                )
+                items.append(self.Issue(
+                    path=m.group(1).strip(),
+                    description=m.group(2).strip(),
+                    rule=self._mypy_rules["[unknown]"],
+                ))
                 self.logger.info(f"detected an error without coordinates: {line}")
 
         items.append(self.__parse_mypy_issue(buff))
@@ -243,7 +238,7 @@ class LogParser(SonarQubeApi):
 
     @classmethod
     def __parse_mypy_issue(cls, lines: List[str]) -> Optional[Issue]:
-        """ "
+        """"
         An example of log response:
             source_airtable/helpers.py:8:1: error: Library stubs not installed for
             "requests" (or incompatible with Python 3.7)  [import]
@@ -283,21 +278,18 @@ class LogParser(SonarQubeApi):
     @staticmethod
     def __parse_diff(lines: List[str]) -> Mapping[str, int]:
         """Converts diff lines to mapping:
-        {file1: <updated_code_part1>, file2: <updated_code_part2>}
+           {file1: <updated_code_part1>, file2: <updated_code_part2>}
         """
         patch = PatchSet(lines, metadata_only=True)
         return {updated_file.path: len(updated_file) for updated_file in patch}
 
     @prepare_file
     def from_black(self, file: TextIO) -> List[Issue]:
-        return [
-            self.Issue(
-                path=path,
-                description=f"{count} code part(s) should be updated.",
-                rule=self._black_rule,
-            )
-            for path, count in self.__parse_diff(file.readlines()).items()
-        ]
+        return [self.Issue(
+            path=path,
+            description=f"{count} code part(s) should be updated.",
+            rule=self._black_rule,
+        ) for path, count in self.__parse_diff(file.readlines()).items()]
 
     @prepare_file
     def from_isort(self, file: TextIO) -> List[Issue]:
@@ -307,16 +299,13 @@ class LogParser(SonarQubeApi):
             # path in isort diff file has the following format
             # <absolute path>:before|after
             if path.endswith(":before"):
-                path = path[: -len(":before")]
+                path = path[:-len(":before")]
             elif path.endswith(":after"):
-                path = path[: -len(":after")]
+                path = path[:-len(":after")]
             changes[path] += count
 
-        return [
-            self.Issue(
-                path=path,
-                description=f"{count} code part(s) should be updated.",
-                rule=self._isort_rule,
-            )
-            for path, count in changes.items()
-        ]
+        return [self.Issue(
+            path=path,
+            description=f"{count} code part(s) should be updated.",
+            rule=self._isort_rule,
+        ) for path, count in changes.items()]

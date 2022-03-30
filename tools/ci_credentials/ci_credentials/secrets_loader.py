@@ -78,10 +78,10 @@ class SecretsLoader:
                 if not secret_value:
                     self.logger.warning(f"{log_name} has empty value")
                     continue
-                secret_value = base64.b64decode(secret_value.encode()).decode("utf-8")
+                secret_value = base64.b64decode(secret_value.encode()).decode('utf-8')
                 try:
                     # minimize and validate its JSON value
-                    secret_value = json.dumps(json.loads(secret_value), separators=(",", ":"))
+                    secret_value = json.dumps(json.loads(secret_value), separators=(',', ':'))
                 except JSONDecodeError as err:
                     self.logger.error(f"{log_name} has non-JSON value!!! Error: {err}")
                     continue
@@ -94,13 +94,13 @@ class SecretsLoader:
     @staticmethod
     def generate_secret_name(connector_name: str, filename: str) -> str:
         """
-        Generates an unique GSM secret name.
-        Format of secret name: SECRET_<CAPITAL_CONNECTOR_NAME>_<OPTIONAL_UNIQUE_FILENAME_PART>__CREDS
-        Examples:
-            1. connector_name: source-linnworks, filename: dsdssds_a-b---_---_config.json
-               => SECRET_SOURCE-LINNWORKS_DSDSSDS_A-B__CREDS
-            2. connector_name: source-s3, filename: config.json
-               => SECRET_SOURCE-LINNWORKS__CREDS
+           Generates an unique GSM secret name.
+           Format of secret name: SECRET_<CAPITAL_CONNECTOR_NAME>_<OPTIONAL_UNIQUE_FILENAME_PART>__CREDS
+           Examples:
+               1. connector_name: source-linnworks, filename: dsdssds_a-b---_---_config.json
+                  => SECRET_SOURCE-LINNWORKS_DSDSSDS_A-B__CREDS
+               2. connector_name: source-s3, filename: config.json
+                  => SECRET_SOURCE-LINNWORKS__CREDS
         """
         name_parts = ["secret", connector_name]
         filename_wo_ext = filename.replace(".json", "")
@@ -111,7 +111,7 @@ class SecretsLoader:
 
     def create_secret(self, connector_name: str, filename: str, secret_value: str) -> bool:
         """
-        Creates a new GSM secret with auto-generated name.
+           Creates a new GSM secret with auto-generated name.
         """
         secret_name = self.generate_secret_name(connector_name, filename)
         self.logger.info(f"Generated the new secret name '{secret_name}' for {connector_name}({filename})")
@@ -133,8 +133,10 @@ class SecretsLoader:
         # try to create a new version
         secret_name = data["name"]
         self.logger.info(f"the GSM secret {secret_name} was created")
-        secret_url = f"https://secretmanager.googleapis.com/v1/{secret_name}:addVersion"
-        body = {"payload": {"data": base64.b64encode(secret_value.encode()).decode("utf-8")}}
+        secret_url = f'https://secretmanager.googleapis.com/v1/{secret_name}:addVersion'
+        body = {
+            "payload": {"data": base64.b64encode(secret_value.encode()).decode("utf-8")}
+        }
         self.api.post(secret_url, json=body)
         return True
 

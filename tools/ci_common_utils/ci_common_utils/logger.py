@@ -7,12 +7,13 @@ from typing import Callable
 
 
 class MyFormatter(logging.Formatter):
-    """Custom formatter for logging"""
-
+    """Custom formatter for logging
+    """
     converter = dt.datetime.fromtimestamp
 
     def formatTime(self, record, datefmt=None):
-        """! @brief redefinition of format of log"""
+        """! @brief redefinition of format of log
+        """
         ct = self.converter(record.created)
         if datefmt:
             s = ct.strftime(datefmt)
@@ -24,12 +25,14 @@ class MyFormatter(logging.Formatter):
 
 class Logger:
     """Simple logger with a pretty log header
-    the method error returns the value 1
-    the method critical terminates a script work
+       the method error returns the value 1
+       the method critical terminates a script work
     """
 
     def __init__(self):
-        formatter = MyFormatter(fmt="[%(asctime)s] - %(levelname)-6s - %(message)s", datefmt="%d/%m/%Y %H:%M:%S.%f")
+        formatter = MyFormatter(
+            fmt='[%(asctime)s] - %(levelname)-6s - %(message)s',
+            datefmt='%d/%m/%Y %H:%M:%S.%f')
 
         logger_name = __name__
         stack_items = inspect.stack()
@@ -75,7 +78,4 @@ class Logger:
     def __getattr__(self, function_name: str):
         if not hasattr(self._logger, function_name):
             return super().__getattr__(function_name)
-        return self.__prepare_log_line(
-            function_name,
-            getattr(self._logger, function_name),
-        )
+        return self.__prepare_log_line(function_name, getattr(self._logger, function_name), )

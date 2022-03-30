@@ -3,6 +3,7 @@ import pathlib
 import os
 
 
+
 LONG_STRING = """aaaaaaaaaaaaaaaaaaaaaaaaaawwwwwwwwwwwwwwwwwwwwwwwww mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm mmmmmmmmmmmmmm      wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"""
 
 
@@ -11,4 +12,4 @@ def fake_func() -> str:
 
 
 def fake_func(i):
-    return i * 10
+   return i * 10

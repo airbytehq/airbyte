@@ -15,7 +15,6 @@ class GoogleApi:
     """
     Simple Google API client
     """
-
     logger: ClassVar[Logger] = Logger()
 
     config: Mapping[str, Any]
@@ -25,7 +24,11 @@ class GoogleApi:
     def get(self, url: str, params: Mapping = None) -> Mapping[str, Any]:
         """Sends a GET request"""
         token = self.get_access_token()
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json", "X-Goog-User-Project": self.project_id}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "X-Goog-User-Project": self.project_id
+        }
         # Making a get request
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
@@ -35,7 +38,10 @@ class GoogleApi:
         """Sends a POST request"""
         token = self.get_access_token()
 
-        headers = {"Authorization": f"Bearer {token}", "X-Goog-User-Project": self.project_id}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "X-Goog-User-Project": self.project_id
+        }
         # Making a get request
         response = requests.post(url, headers=headers, json=json, params=params)
         try:
@@ -75,11 +81,8 @@ class GoogleApi:
 
     def __get_access_token(self) -> str:
         jwt = self.__generate_jwt()
-        resp = requests.post(
-            self.token_uri,
-            data={
-                "assertion": jwt,
-                "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-            },
-        )
+        resp = requests.post(self.token_uri, data={
+            "assertion": jwt,
+            "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+        })
         return resp.json()["access_token"]

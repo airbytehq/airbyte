@@ -38,7 +38,9 @@ def get_env_variable(var_name, default=None):
         if default is not None:
             return default
         else:
-            error_msg = "The environment variable {} was missing, abort...".format(var_name)
+            error_msg = "The environment variable {} was missing, abort...".format(
+                var_name
+            )
             raise EnvironmentError(error_msg)
 
 
@@ -104,6 +106,8 @@ try:
     import superset_config_docker
     from superset_config_docker import *  # noqa
 
-    logger.info(f"Loaded your Docker configuration at " f"[{superset_config_docker.__file__}]")
+    logger.info(
+        f"Loaded your Docker configuration at " f"[{superset_config_docker.__file__}]"
+    )
 except ImportError:
     logger.info("Using default Docker config...")

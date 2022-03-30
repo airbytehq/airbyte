@@ -30,7 +30,6 @@ import datetime
 from datetime import date
 from datetime import timedelta
 
-
 def read(config, catalog):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
@@ -53,7 +52,7 @@ def read(config, catalog):
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
-    response = _call_api(ticker=config["stock_ticker"], token=config["api_key"])
+    response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
         log("Failure occurred when calling Polygon.io API")
@@ -63,11 +62,7 @@ def read(config, catalog):
         # We want to output them one by one as AirbyteMessages
         results = response.json()["results"]
         for result in results:
-            data = {
-                "date": date.fromtimestamp(result["t"] / 1000).isoformat(),
-                "stock_ticker": config["stock_ticker"],
-                "price": result["c"],
-            }
+            data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
@@ -114,15 +109,23 @@ def log(message):
 
 def discover():
     catalog = {
-        "streams": [
-            {
-                "name": "stock_prices",
-                "supported_sync_modes": ["full_refresh"],
-                "json_schema": {
-                    "properties": {"date": {"type": "string"}, "price": {"type": "number"}, "stock_ticker": {"type": "string"}}
-                },
+        "streams": [{
+            "name": "stock_prices",
+            "supported_sync_modes": ["full_refresh"],
+            "json_schema": {
+                "properties": {
+                    "date": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "number"
+                    },
+                    "stock_ticker": {
+                        "type": "string"
+                    }
+                }
             }
-        ]
+        }]
     }
     airbyte_message = {"type": "CATALOG", "catalog": catalog}
     print(json.dumps(airbyte_message))
@@ -170,7 +173,9 @@ def run(args):
     read_parser.add_argument("--state", type=str, required=False, help="path to the json-encoded state file")
     required_read_parser = read_parser.add_argument_group("required named arguments")
     required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
-    required_read_parser.add_argument("--catalog", type=str, required=True, help="path to the catalog used to determine which data to read")
+    required_read_parser.add_argument(
+        "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
+    )
 
     parsed_args = main_parser.parse_args(args)
     command = parsed_args.command

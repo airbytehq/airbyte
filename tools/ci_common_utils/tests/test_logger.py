@@ -5,9 +5,11 @@ import pytest
 
 from ci_common_utils import Logger
 
-LOG_RE = re.compile(r"^\[(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{6})\] -" r"\s+(\w+)\s+- \[.*tests/test_logger.py:(\d+)\] # (.+)")
+LOG_RE = re.compile(
+    r'^\[(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{6})\] -'
+    r'\s+(\w+)\s+- \[.*tests/test_logger.py:(\d+)\] # (.+)')
 LOGGER = Logger()
-TEST_MESSAGE = "sbhY=)9'v-}LT=)jjF66(XrZh=]>7Xp\"?/zCz,=eu8K47u8"
+TEST_MESSAGE = 'sbhY=)9\'v-}LT=)jjF66(XrZh=]>7Xp"?/zCz,=eu8K47u8'
 
 
 def check_output(msg: str, expected_line_number: int, expected_log_level: str):
@@ -18,16 +20,18 @@ def check_output(msg: str, expected_line_number: int, expected_log_level: str):
     assert int(line_number) == expected_line_number
     assert expected_log_level == log_level
     assert expected_log_level == log_level
-    dt = datetime.strptime(date_time, "%d/%m/%Y %H:%M:%S.%f")
+    dt = datetime.strptime(date_time, '%d/%m/%Y %H:%M:%S.%f')
     now = datetime.now()
     delta = timedelta(seconds=1)
     assert now - delta < dt < now
 
 
-@pytest.mark.parametrize(
-    "log_func,expected_log_level,expected_code",
-    ((LOGGER.debug, "DEBUG", 0), (LOGGER.warning, "WARNING", 0), (LOGGER.info, "INFO", 0), (LOGGER.error, "ERROR", 1)),
-)
+@pytest.mark.parametrize('log_func,expected_log_level,expected_code', (
+        (LOGGER.debug, 'DEBUG', 0),
+        (LOGGER.warning, 'WARNING', 0),
+        (LOGGER.info, 'INFO', 0),
+        (LOGGER.error, 'ERROR', 1)
+))
 def test_log_message(capfd, log_func, expected_log_level, expected_code):
     assert log_func(TEST_MESSAGE) == expected_code
     _, err = capfd.readouterr()
@@ -38,4 +42,4 @@ def test_critical_message(capfd):
     with pytest.raises(SystemExit) as (err):
         LOGGER.critical(TEST_MESSAGE)
     _, err = capfd.readouterr()
-    check_output(err, 43, "CRITICAL")
+    check_output(err, 43, 'CRITICAL')

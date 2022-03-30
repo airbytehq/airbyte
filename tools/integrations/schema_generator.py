@@ -36,7 +36,6 @@ class NoRequiredObj(Object):
     This class has Object behaviour, but it does not generate "required[]" fields
     every time it parses object. So we dont add unnecessary extra field.
     """
-
     def to_schema(self):
         schema = super(Object, self).to_schema()
         schema["type"] = "object"
