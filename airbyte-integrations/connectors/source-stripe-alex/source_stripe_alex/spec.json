@@ -10,7 +10,8 @@
       "start_date",
       "url_base",
       "check_endpoint",
-      "headers"
+      "headers",
+      "request_parameters"
     ],
     "additionalProperties": false,
     "properties": {
@@ -62,6 +63,12 @@
         "title": "Headers",
         "description": "Headers to pass",
         "order": 6
+      },
+      "request_parameters": {
+        "type": "object",
+        "title": "Request parameters",
+        "description": "Request parameters",
+        "order": 7
       }
     }
   }

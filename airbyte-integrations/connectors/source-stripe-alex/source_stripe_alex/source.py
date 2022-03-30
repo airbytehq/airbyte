@@ -28,8 +28,13 @@ class SourceStripeAlex(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["client_secret"])
         start_date = pendulum.parse(config["start_date"]).int_timestamp
-        args = {"authenticator": authenticator, "account_id": config["account_id"], "start_date": start_date,
-                "headers": config["headers"]}
+        args = {
+            "authenticator": authenticator,
+            "account_id": config["account_id"],
+            "start_date": start_date,
+            "headers": config["headers"],
+            "request_parameters": config["request_parameters"]
+        }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
             InvoiceItems(**incremental_args),

@@ -17,11 +17,12 @@ class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
 
-    def __init__(self, start_date: int, account_id: str, headers: Mapping[str, str], **kwargs):
+    def __init__(self, start_date: int, account_id: str, headers: Mapping[str, str], request_parameters: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id
         self.start_date = start_date
         self._headers = headers
+        self._request_parameters = request_parameters
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -37,8 +38,8 @@ class StripeStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
 
         # Stripe default pagination is 10, max is 100
-        # params = self._request_parameters
-        params = {"limit": 100}
+        params = self._request_parameters
+        # params = {"limit": 100}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
