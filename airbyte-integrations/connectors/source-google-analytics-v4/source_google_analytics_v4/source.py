@@ -236,7 +236,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             return [None]
 
         date_slices = []
-        slice_start_date, slice_end_date = start_date, None
+        slice_start_date = start_date
         while slice_start_date <= end_date:
             slice_end_date = slice_start_date.add(days=self.window_in_days)
             # limit the slice range with end_date
