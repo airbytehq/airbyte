@@ -23,7 +23,9 @@ class ConnectionService extends AirbyteRequestService {
     return rs;
   }
 
-  public async delete(connectionId: string): Promise<Connection> {
+  public async delete(connectionId: string): Promise<void> {
+    // needs proper type and refactor of CommonRequestError
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await this.fetch<any>(`${this.url}/delete`, {
       connectionId,
     });
