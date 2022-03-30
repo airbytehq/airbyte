@@ -54,10 +54,6 @@ def timeit(func):
     return wrapper
 
 
-def to_camel(string: str) -> str:
-    return "".join(word.capitalize() for word in string.split("_"))
-
-
 def test_stream_factory(request_sniffer, config):
     factory = ZohoStreamFactory(config)
     streams = timeit(factory.produce)()
@@ -74,11 +70,11 @@ def test_stream_factory(request_sniffer, config):
         "Invoices",
         "Leads",
         "Notes",
-        "PriceBooks",
+        "Price_Books",
         "Products",
-        "PurchaseOrders",
+        "Purchase_Orders",
         "Quotes",
-        "SalesOrders",
+        "Sales_Orders",
         "Solutions",
         "Tasks",
         "Vendors",
@@ -91,7 +87,7 @@ def test_stream_factory(request_sniffer, config):
         assert stream.url_base
         assert stream.path()
         assert stream.get_json_schema()
-        stream_names.add(stream.json_schema["description"])
+        stream_names.add(stream.module.api_name)
     assert expected_stream_names.issubset(stream_names)
 
     expected_stream_names, unexpected_stream_names = set(), set()
@@ -102,7 +98,6 @@ def test_stream_factory(request_sniffer, config):
             module = url.split("modules/")[-1]
             if module == url:
                 continue
-        module = to_camel(module)
         expected_stream_names.add(module)
         if status != 200:
             unexpected_stream_names.add(module)

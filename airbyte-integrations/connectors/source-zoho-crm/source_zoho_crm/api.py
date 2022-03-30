@@ -5,6 +5,7 @@
 import logging
 from types import MappingProxyType
 from typing import Any, List, Mapping, MutableMapping, Tuple
+from urllib.parse import urlsplit, urlunsplit
 
 import requests
 
@@ -61,27 +62,27 @@ class ZohoAPI:
 
     @property
     def api_url(self) -> str:
-        schema, domain = self._DC_REGION_TO_API_URL[self.config["dc_region"].upper()].split("://")
+        schema, domain, *_ = urlsplit(self._DC_REGION_TO_API_URL[self.config["dc_region"].upper()])
         prefix = self._API_ENV_TO_URL_PREFIX[self.config["environment"].lower()]
         if prefix:
             domain = f"{prefix}.{domain}"
-        return f"{schema}://{domain}"
+        return urlunsplit((schema, domain, *_))
 
     def _json_from_path(self, path: str, key: str, params: MutableMapping[str, str] = None) -> List[MutableMapping[Any, Any]]:
         response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header(), params=params or {})
         if not response.status_code == 200:
-            logger.warning(f"{key.capitalize()} meta data inaccessible: HTTP status {response.status_code}")
+            logger.warning(f"{key.capitalize()} Metadata inaccessible: {response.content} [HTTP status {response.status_code}]")
             return []
         return response.json()[key]
 
     def module_settings(self, module_name: str) -> List[MutableMapping[Any, Any]]:
-        return self._json_from_path(f"/crm/v2/settings/modules/{module_name}", "modules")
+        return self._json_from_path(f"/crm/v2/settings/modules/{module_name}", key="modules")
 
     def modules_settings(self) -> List[MutableMapping[Any, Any]]:
-        return self._json_from_path("/crm/v2/settings/modules", "modules")
+        return self._json_from_path("/crm/v2/settings/modules", key="modules")
 
     def fields_settings(self, module_name: str) -> List[MutableMapping[Any, Any]]:
-        return self._json_from_path("/crm/v2/settings/fields", "fields", params={"module": module_name})
+        return self._json_from_path("/crm/v2/settings/fields", key="fields", params={"module": module_name})
 
     def check_connection(self) -> Tuple[bool, Any]:
         path = "/crm/v2/settings/modules"

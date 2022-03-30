@@ -203,7 +203,7 @@ class FieldMeta(FromDictMixin):
     def schema(self) -> FieldType:
         if self.json_type in ZohoJsonType.all():
             return getattr(self, f"_{self.json_type}_field")()
-        raise UnknownDataTypeException(f"{self.json_type}:{self.data_type}")
+        raise UnknownDataTypeException(f"JSON type: {self.json_type}, data type:{self.data_type}")
 
 
 @dataclasses.dataclass

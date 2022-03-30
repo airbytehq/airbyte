@@ -18,8 +18,8 @@ from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 
 
 class ZohoCrmStream(HttpStream, ABC):
-    json_schema: Dict[Any, Any] = {}
-    _path: str = ""
+    primary_key: str = "id"
+    module: ModuleMeta = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.status_code != 200:
@@ -32,19 +32,24 @@ class ZohoCrmStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        if next_page_token:
-            return {**next_page_token}
-        return {}
+        return next_page_token or {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()["data"] if response.status_code == 200 else []
         yield from data
 
     def path(self, *args, **kwargs) -> str:
-        return self._path
+        return f"/crm/v2/{self.module.api_name}"
 
-    def get_json_schema(self) -> Dict[Any, Any]:
-        return self.json_schema
+    def get_json_schema(self) -> Optional[Dict[Any, Any]]:
+        try:
+            return asdict(self.module.schema)
+        except IncompleteMetaDataException:
+            self.logger.warning(f"Could not retrieve fields Metadata for module {self.module.api_name}, skipping")
+            return None
+        except UnknownDataTypeException as exc:
+            self.logger.warning(f"Unknown data type in module {self.module.api_name}, skipping. Details: {exc}")
+            return None
 
 
 class IncrementalZohoCrmStream(ZohoCrmStream):
@@ -126,18 +131,12 @@ class ZohoStreamFactory:
             for batch in chunk(max_concurrent_request, modules):
                 executor.map(lambda module: populate_module(module), batch)
 
+        bases = (IncrementalZohoCrmStream,)
         for module in modules:
-            try:
-                schema = asdict(module.schema)
-            except (IncompleteMetaDataException, UnknownDataTypeException):
-                continue
-
-            stream_params = {
-                "url_base": f"{self.api.api_url}",
-                "_path": f"/crm/v2/{module.api_name}",
-                "json_schema": schema,
-                "primary_key": "id",
-            }
-            incremental_stream = type(f"Incremental{module.api_name}ZohoCRMStream", (IncrementalZohoCrmStream,), stream_params)
-            streams.append(incremental_stream(self.api.authenticator, config=self._config))
+            stream_cls_attrs = {"url_base": self.api.api_url, "module": module}
+            stream_cls_name = f"Incremental{module.api_name}ZohoCRMStream"
+            incremental_stream_cls = type(stream_cls_name, bases, stream_cls_attrs)
+            stream = incremental_stream_cls(self.api.authenticator, config=self._config)
+            if stream.get_json_schema():
+                streams.append(stream)
         return streams

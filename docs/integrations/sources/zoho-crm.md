@@ -18,9 +18,12 @@ This Source is capable of syncing:
 
 The discovering of Zoho CRM module schema is made dynamically based on Metadata API and should generally take no longer than 10 to 30 seconds.
 
-### Note:
+### Notes:
 
 Some of Zoho CRM Modules may not be available for sync due to limitations of Zoho CRM Edition or permissions scope. For details refer to the [Scopes](https://www.zoho.com/crm/developer/docs/api/v2/scopes.html) section in the Zoho CRM documentation.
+
+Connector streams and schemas are built dynamically on top of Metadata that is available at the same REST API - please see [Modules API](https://www.zoho.com/crm/developer/docs/api/v2/modules-api.html), [Modules Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/module-meta.html), [Fields Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/field-meta.html).
+Therefore, the list of available streams is equivalent to the list of Moules as long as Module Metadata is available for each of them (it describes a set of fields a module consists of) and Fields Metadata is available for each of the fields (it describes each and every field, so we know how to transform it into Airbyte data type). 
 
 ### Data type mapping
 
@@ -54,13 +57,13 @@ Any other data type not listed in the table above will be treated as `string`.
 
 ### Features
 
-| Feature                                   | Supported? \(Yes/No\) | Notes |
-|:------------------------------------------|:----------------------|:------|
-| Full Refresh Overwrite Sync               | Yes                   |       |
-| Full Refresh Append Sync                  | Yes                   |       |
-| Incremental - Append Sync                 | Yes                   |       |
-| Incremental - Append + Deduplication Sync | Yes                   |       |
-| Namespaces                                | No                    |       |
+| Feature                                   | Supported? \(Yes/No\) |
+|:------------------------------------------|:----------------------|
+| Full Refresh Overwrite Sync               | Yes                   |
+| Full Refresh Append Sync                  | Yes                   |
+| Incremental - Append Sync                 | Yes                   |
+| Incremental - Append + Deduplication Sync | Yes                   |
+| Namespaces                                | No                    |
 
 ## List of Supported Environments for Zoho CRM
 
@@ -126,3 +129,9 @@ To set up a connection with a Zoho CRM source, you will need to choose start syn
 
 For generating the refresh token, please refer to [this page](https://www.zoho.com/crm/developer/docs/api/v2/access-refresh.html).
 Please, be aware that you are limited in time due to the grant token lifetime.
+
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject         |
+|:--------|:-----------|:---------------------------------------------------------|:----------------|
+| 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |
