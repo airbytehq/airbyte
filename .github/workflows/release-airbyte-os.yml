@@ -120,6 +120,76 @@ jobs:
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
 
+  # We are releasing octavia from a separate job because:
+  # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
+  # - Plaform build requires Python 3.7, Octavia Build requires 3.8
+  releaseOctavia:
+    runs-on: ubuntu-latest
+    environment: more-secrets
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "17"
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "16.13.0"
+
+      # octavia-cli build requires Python 3.8.
+      # We use 3.8 in this project because 3.7 is not supported on Apple M1.
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Save Old Version
+        id: old_version
+        run: |
+          echo ::set-output name=OLD_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
+      - name: Release Octavia
+        id: release_octavia
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
+        run: |
+          ./tools/bin/release_version_octavia.sh
+      - name: Release Octavia
+        id: release_octavia
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          ./tools/bin/release_version_octavia.sh
+      - name: Save New Version
+        id: new_version
+        run: |
+          echo ::set-output name=NEW_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
+      - name: Get PR Body
+        id: pr_body
+        env:
+          PREV_VERSION: ${{ steps.old_version.outputs.OLD_VERSION }}
+        run: |
+          chmod +x tools/bin/pr_body.sh
+          body=$(./tools/bin/pr_body.sh)
+          body="${body//$'\n'/'%0A'}"
+          echo ::set-output name=PR_BODY::$body
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.SLASH_COMMAND_PAT }}
+          branch: bump-version-octavia
+          branch-suffix: random
+          delete-branch: true
+          title: Bump Octavia version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
+          body: ${{ steps.pr_body.outputs.PR_BODY }}
+          commit-message: Bump Octavia version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
+      - name: PR Details
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-release-airbyte-runner:
     name: "Release Airbyte: Stop EC2 Runner"
