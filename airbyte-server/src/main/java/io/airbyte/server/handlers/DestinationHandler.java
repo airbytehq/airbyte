@@ -24,7 +24,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessorFactory;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -80,11 +79,10 @@ public class DestinationHandler {
         integrationSchemaValidation,
         connectionsHandler,
         UUID::randomUUID,
-        JsonSecretsProcessorFactory.builder()
+        JsonSecretsProcessor.builder()
             .maskSecrets(true)
             .copySecrets(true)
-            .build()
-            .createJsonSecretsProcessor(),
+            .build(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 

@@ -167,11 +167,10 @@ public class JsonSecretsProcessorTest {
 
   @BeforeEach
   public void setup() {
-    processor = JsonSecretsProcessorFactory.builder()
+    processor = JsonSecretsProcessor.builder()
         .copySecrets(true)
         .maskSecrets(true)
-        .build()
-        .createJsonSecretsProcessor();
+        .build();
   }
 
   @Test
@@ -441,11 +440,10 @@ public class JsonSecretsProcessorTest {
 
     @BeforeEach
     public void setup() {
-      processor = JsonSecretsProcessorFactory.builder()
+      processor = JsonSecretsProcessor.builder()
           .copySecrets(false)
           .maskSecrets(false)
-          .build()
-          .createJsonSecretsProcessor();
+          .build();
     }
 
     @Test

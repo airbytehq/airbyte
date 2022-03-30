@@ -1432,7 +1432,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                       sourceDefinitionId.toString(),
                       StandardSourceDefinition.class);
                   final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
-                  final JsonNode sanitizedConfig = jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+                  final JsonNode sanitizedConfig =
+                      jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
                   return sanitizedConfig;
                 } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
                   throw new RuntimeException(e);
@@ -1451,7 +1452,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                   destinationDefinition.toString(),
                   StandardDestinationDefinition.class);
               final JsonNode connectionSpec = standardDestinationDefinition.getSpec().getConnectionSpecification();
-              final JsonNode sanitizedConfig = jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
+              final JsonNode sanitizedConfig =
+                  jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
               return sanitizedConfig;
             } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
               throw new RuntimeException(e);
