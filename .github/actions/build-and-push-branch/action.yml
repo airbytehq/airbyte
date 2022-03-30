@@ -3,13 +3,22 @@ description: "Build jars and docker images tagged for a particular branch. Prima
 inputs:
   branch_version_tag:
     description: 'Used to tag jars and docker images with a branch-specific version (should use the form "dev-<commit_hash>" to pass AirbyteVersion validation)'
-    required: true
+    required: false
   dockerhub_token:
     description: "Used to log in to dockerhub for pushing images"
     required: true
 runs:
   using: "composite"
   steps:
+    - name: "Parse Input"
+      id: parse-input
+      shell: bash
+      run: |-
+        # if the *branch_version_tag* input param is not specified, then generate it as 'dev-<commit_hash>`
+        #
+        [[ "${{ inputs.branch_version_tag }}" != '' ] ] && echo "::set-output name=branch_version_tag::${{ inputs.branch_version_tag }}" \
+          || { short_hash=$(git rev-parse --short HEAD); echo "::set-output name=branch_version_tag::dev-$short_hash"; }
+
     - uses: actions/setup-java@v1
       with:
         java-version: "17"
@@ -33,11 +42,11 @@ runs:
       shell: bash
 
     - name: Build
-      run: VERSION=${{ inputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew build --scan
+      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew build --scan
       shell: bash
 
     - name: Publish to Maven Local
-      run: VERSION=${{ inputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew publishToMavenLocal
+      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew publishToMavenLocal
       shell: bash
 
     - name: Login to Docker (on Master)
@@ -50,5 +59,5 @@ runs:
       run: |
         GIT_REVISION=$(git rev-parse HEAD)
         [ [ -z "$GIT_REVISION" ] ] && echo "Couldn't get the git revision..." && exit 1
-        VERSION=${{ inputs.branch_version_tag }} GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose-cloud.build.yaml push
+        VERSION=${{ steps.parse-input.outputs.branch_version_tag }} GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose-cloud.build.yaml push
       shell: bash
