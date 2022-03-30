@@ -8,7 +8,8 @@ on:
 env:
   GH_PROJECT_TOKEN: ${{ secrets.PARKER_PAT_FOR_PLATFORM_PROJECT_AUTOMATION }}
   ORG: airbytehq
-  PROJECT_ID: 6 # https://github.com/orgs/airbytehq/projects/6/views/8
+  CLOUD_PROJECT_ID: 6 # https://github.com/orgs/airbytehq/projects/6/views/8
+  OSS_PROJECT_ID: 11 # https://github.com/orgs/airbytehq/projects/11
   FIELD_STATUS: Status
   STATUS_TODO: Todo
   FIELD_DATE_ADDED: Date Added
@@ -21,14 +22,44 @@ jobs:
       - name: Set current date env var
         id: set_date
         run: echo ::set-output name=CURRENT_DATE::$(date +'%Y-%m-%dT%H:%M:%S%z')
-      
-      - name: Add issue to project if labelled with area/platform
+
+      - name: Add issue to the cloud project if labelled with area/platform and not area/platform-oss
         uses: leonsteinhaeuser/project-beta-automations@v1.1.0
-        if: contains(github.event.issue.labels.*.name, 'area/platform')
+        if: contains(github.event.issue.labels.*.name, 'area/platform') && !contains(github.event.issue.labels.*.name, 'area/platform-oss')
         with:
           gh_token: ${{ env.GH_PROJECT_TOKEN }}
           organization: ${{ env.ORG }}
-          project_id: ${{ env.PROJECT_ID }}
+          project_id: ${{ env.CLOUD_PROJECT_ID }}
+          resource_node_id: ${{ github.event.issue.node_id }}
+          operation_mode: custom_field
+          custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ env.FIELD_DATE_ADDED }}\",\"type\": \"date\",\"value\": \"${{ steps.set_date.outputs.CURRENT_DATE }}\"}]'
+      - name: Add issue to the cloud oss if labelled with area/platform and not area/platform-cloud
+        uses: leonsteinhaeuser/project-beta-automations@v1.1.0
+        if: contains(github.event.issue.labels.*.name, 'area/platform') && !contains(github.event.issue.labels.*.name, 'area/platform-cloud')
+        with:
+          gh_token: ${{ env.GH_PROJECT_TOKEN }}
+          organization: ${{ env.ORG }}
+          project_id: ${{ env.OSS_PROJECT_ID }}
+          resource_node_id: ${{ github.event.issue.node_id }}
+          operation_mode: custom_field
+          custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ env.FIELD_DATE_ADDED }}\",\"type\": \"date\",\"value\": \"${{ steps.set_date.outputs.CURRENT_DATE }}\"}]'
+      - name: Add issue to project if labelled with area/platform-cloud
+        uses: leonsteinhaeuser/project-beta-automations@v1.1.0
+        if: contains(github.event.issue.labels.*.name, 'area/platform-cloud')
+        with:
+          gh_token: ${{ env.GH_PROJECT_TOKEN }}
+          organization: ${{ env.ORG }}
+          project_id: ${{ env.CLOUD_PROJECT_ID }}
+          resource_node_id: ${{ github.event.issue.node_id }}
+          operation_mode: custom_field
+          custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ env.FIELD_DATE_ADDED }}\",\"type\": \"date\",\"value\": \"${{ steps.set_date.outputs.CURRENT_DATE }}\"}]'
+      - name: Add issue to project if labelled with area/platform-oss
+        uses: leonsteinhaeuser/project-beta-automations@v1.1.0
+        if: contains(github.event.issue.labels.*.name, 'area/platform-oss')
+        with:
+          gh_token: ${{ env.GH_PROJECT_TOKEN }}
+          organization: ${{ env.ORG }}
+          project_id: ${{ env.OSS_PROJECT_ID }}
           resource_node_id: ${{ github.event.issue.node_id }}
           operation_mode: custom_field
           custom_field_values: '[{\"name\": \"Status\",\"type\": \"single_select\",\"value\": \"${{ env.STATUS_TODO }}\"},{\"name\": \"${{ env.FIELD_DATE_ADDED }}\",\"type\": \"date\",\"value\": \"${{ steps.set_date.outputs.CURRENT_DATE }}\"}]'
