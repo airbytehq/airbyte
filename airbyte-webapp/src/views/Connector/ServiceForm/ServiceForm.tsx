@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
@@ -25,6 +31,7 @@ import {
   ConnectorDefinitionSpecification,
 } from "core/domain/connector";
 import { isDefined } from "utils/common";
+import { ConnectionConfiguration } from "../../../core/domain/connection";
 
 export type ServiceFormProps = {
   formType: "source" | "destination";
@@ -54,17 +61,20 @@ const FormikPatch: React.FC = () => {
  * @param schema
  * @constructor
  */
-const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
-  schema,
-}) => {
+const PatchInitialValuesWithWidgetConfig: React.FC<{
+  schema: JSONSchema7;
+}> = ({ schema }) => {
   const { widgetsInfo } = useServiceForm();
-  const { values, setValues } = useFormikContext();
+  const { values, setFieldValue } = useFormikContext<ServiceFormValues>();
+
+  const valueRef = useRef<ConnectionConfiguration>();
+  valueRef.current = values.connectionConfiguration;
 
   useEffect(() => {
     // set all const fields to form field values, so we could send form
     const constPatchedValues = Object.entries(widgetsInfo)
       .filter(([_, v]) => isDefined(v.const))
-      .reduce((acc, [k, v]) => setIn(acc, k, v.const), values);
+      .reduce((acc, [k, v]) => setIn(acc, k, v.const), valueRef.current);
 
     // set default fields as current values, so values could be populated correctly
     // fix for https://github.com/airbytehq/airbyte/issues/6791
@@ -75,7 +85,7 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{ schema: JSONSchema7 }> = ({
       )
       .reduce((acc, [k, v]) => setIn(acc, k, v.default), constPatchedValues);
 
-    setValues(defaultPatchedValues);
+    setFieldValue("connectionConfiguration", defaultPatchedValues);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema]);
@@ -92,12 +102,11 @@ const SetDefaultName: React.FC = () => {
   const { selectedService } = useServiceForm();
 
   useEffect(() => {
-    // Formik has an issue, that prevents us from setting a field value directly in code here
-    // It won't change the value at all, unless we push it one execution slot further with setTimeout
-    setTimeout(() => {
-      setFieldValue("name", selectedService?.name ?? "");
-    });
-  }, [selectedService, setFieldValue]);
+    if (selectedService) {
+      setFieldValue("name", selectedService.name);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedService]);
 
   return null;
 };

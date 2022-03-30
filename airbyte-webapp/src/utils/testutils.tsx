@@ -7,7 +7,7 @@ import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
 import { FeatureService } from "hooks/services/Feature";
-import { ConfigServiceProvider, defaultConfig } from "config";
+import { configContext, defaultConfig } from "config";
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test
@@ -26,11 +26,11 @@ export function render(
   function Wrapper({ children }: WrapperProps) {
     return (
       <TestWrapper>
-        <ConfigServiceProvider defaultConfig={defaultConfig}>
+        <configContext.Provider value={{ config: defaultConfig }}>
           <FeatureService>
             <MemoryRouter>{children}</MemoryRouter>
           </FeatureService>
-        </ConfigServiceProvider>
+        </configContext.Provider>
       </TestWrapper>
     );
   }

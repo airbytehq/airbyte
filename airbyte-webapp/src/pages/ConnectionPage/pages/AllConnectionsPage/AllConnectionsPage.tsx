@@ -5,12 +5,12 @@ import { useResource } from "rest-hooks";
 import { Button, MainPageWithScroll, PageTitle, LoadingPage } from "components";
 import ConnectionResource from "core/resources/Connection";
 import ConnectionsTable from "./components/ConnectionsTable";
-import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import useWorkspace from "hooks/services/useWorkspace";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { RoutePaths } from "../../../routePaths";
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();

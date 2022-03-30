@@ -31,7 +31,6 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
-| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 | Namespaces | No |
 
@@ -41,11 +40,17 @@ The connector is restricted by normal Intercom [requests limitation](https://dev
 
 The Intercom connector should not run into Intercom API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## Getting started
+## Getting Started (Airbyte Cloud)
 
-### Requirements
+### Setup guide
 
-* Intercom Access Token
+How to configure the connector in the Airbyte UI:
+
+1. Click Authenticate your account to sign in with Intercom and authorize your account.
+2. Fill in the `start date` field.
+3. You should be ready to sync data.
+
+## Getting started (Airbyte OSS) 
 
 ### Setup guide
 

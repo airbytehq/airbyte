@@ -1,6 +1,8 @@
 name: Airbyte CI
 
 on:
+  #ability to start task manually in Web UI
+  workflow_dispatch:
   schedule:
     - cron: "0 */1 * * *"
   push:
@@ -60,6 +62,25 @@ jobs:
             frontend:
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+
+
 
   # Uncomment to debug.
   #  changes-output:
@@ -123,6 +144,12 @@ jobs:
         run: |
           SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
 
+      - name: Build Platform Docker Images
+        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
+
+      - name: Run integration tests
+        run: ./tools/bin/integration_tests_octavia.sh
+
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
         uses: rtCamp/action-slack-notify@master
@@ -147,11 +174,12 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
-    needs: changes
+    needs:
+      - changes
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
-      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true'
-      || (always() && github.ref == 'refs/heads/master')
+      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -166,7 +194,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
 
   build-connectors-base:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -202,7 +230,8 @@ jobs:
         run: |
           mkdir -p ~/.gradle/
           cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+          org.gradle.jvmargs=-Xmx8g -Xss4m \
+            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
@@ -249,6 +278,7 @@ jobs:
     needs:
       - start-connectors-base-build-runner # required to get output from the start-runner job
       - build-connectors-base # required to wait when the main job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
@@ -261,10 +291,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@base64v1.0.5
         with:
           mode: stop
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
 
@@ -272,7 +302,9 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-frontend-runner:
     name: "Frontend: Start EC2 Runner"
-    needs: changes
+    needs:
+      - changes
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
       needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
@@ -291,7 +323,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
   frontend-build:
     name: "Frontend: Build"
     needs: start-frontend-runner
@@ -381,6 +413,7 @@ jobs:
       - start-frontend-runner # required to get output from the start-runner job
       - frontend-test # required to wait when the e2e-test job is done
       - frontend-build # required to wait when then build job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
@@ -393,10 +426,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@base64v1.0.5
         with:
           mode: stop
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-frontend-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-frontend-runner.outputs.ec2-instance-id }}
 
@@ -406,7 +439,9 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-build-runner:
     name: "Platform: Start Build EC2 Runner"
-    needs: changes
+    needs:
+      - changes
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
@@ -423,7 +458,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
   platform-build:
     name: "Platform: Build"
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
@@ -452,7 +487,8 @@ jobs:
         run: |
           mkdir -p ~/.gradle/
           cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+          org.gradle.jvmargs=-Xmx8g -Xss4m \
+            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
             --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
@@ -522,6 +558,7 @@ jobs:
     needs:
       - start-platform-build-runner # required to get output from the start-runner job
       - platform-build # required to wait when the main job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
@@ -534,10 +571,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@base64v1.0.5
         with:
           mode: stop
-          github-token: ${{ secrets.AIRBYTEIO_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
@@ -545,7 +582,9 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-platform-new-scheduler-acceptance-runner:
     name: "Platform: Start Docker w/ Scheduler v2 Test Runner"
-    needs: changes
+    needs:
+      - changes
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
@@ -560,9 +599,9 @@ jobs:
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
   platform-new-scheduler-acceptance:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-platform-new-scheduler-acceptance-runner # required to start the main job when the runner is ready
@@ -646,6 +685,7 @@ jobs:
     needs:
       - start-platform-new-scheduler-acceptance-runner # required to get output from the start-runner job
       - platform-new-scheduler-acceptance # required to wait when the main job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
@@ -658,11 +698,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@base64v1.0.5
         with:
           mode: stop
-          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
           label: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           ec2-instance-id: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.ec2-instance-id }}
 
   ## Kube Acceptance Tests
@@ -670,7 +710,9 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-kube-acceptance-test-runner:
     name: "Platform: Start Kube Acceptance Test EC2 Runner"
-    needs: changes
+    needs:
+      - changes
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
@@ -689,7 +731,7 @@ jobs:
           ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
   kube-acceptance-test:
     name: "Platform: Acceptance Tests (Kube)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -812,6 +854,7 @@ jobs:
     needs:
       - start-kube-acceptance-test-runner # required to get output from the start-runner job
       - kube-acceptance-test # required to wait when the main job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
@@ -824,10 +867,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@base64v1.0.5
         with:
           mode: stop
-          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
 
@@ -836,7 +879,9 @@ jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-kube-acceptance-test-runner-v2:
     name: "Platform: Start Scheduler V2 Kube Acceptance Test Runner"
-    needs: changes
+    needs:
+      - changes
+      - find_valid_pat
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
     timeout-minutes: 10
@@ -855,7 +900,7 @@ jobs:
           ec2-image-id: ami-0c1a9bc22624339d8
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
   kube-acceptance-test-v2:
     name: "Platform: Acceptance Tests (Kube v2)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -945,6 +990,7 @@ jobs:
     needs:
       - start-kube-acceptance-test-runner-v2 # required to get output from the start-runner job
       - kube-acceptance-test-v2 # required to wait when the main job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
@@ -957,9 +1003,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@v15.0.4
+        uses: supertopher/ec2-github-runner@base64v1.0.5
         with:
           mode: stop
-          github-token: ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.ec2-instance-id }}
