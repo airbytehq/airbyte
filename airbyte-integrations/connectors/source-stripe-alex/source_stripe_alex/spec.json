@@ -70,6 +70,16 @@
         "tyoe": "integer",
         "title": "Max retries",
         "description": "Maximum amount of retries for backoff policy"
+      },
+      "response_key": {
+        "type": "string",
+        "title": "Resposne key",
+        "description": "Key to data to retrieve from response"
+      },
+      "request_parameters": {
+        "type": "object",
+        "title": "Request params",
+        "description": "Parameters"
       }
     }
   }

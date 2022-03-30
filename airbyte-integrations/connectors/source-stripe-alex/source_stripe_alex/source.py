@@ -39,11 +39,16 @@ class SourceStripeAlex(AbstractSource):
         retry_factor = config["retry_factor"]
         max_retries = config["max_retries"]
         headers= self._get_headers(config)
+        response_key = config["response_key"]
+        request_parameters=config["request_parameters"]
         return [Invoices(url_base=url_base,
                          primary_key=primary_key,
                          retry_factor=retry_factor,
                          max_retries=max_retries,
-                         headers=headers)]
+                         headers=headers,
+                         response_key=response_key,
+                         request_parameters=request_parameters
+                         )]
 
     def _get_headers(self, config):
         return {k: v.format(**config) for k,v in config["headers"].items()}

@@ -8,7 +8,15 @@ from airbyte_cdk.sources.streams.core import Stream
 # Basic full refresh stream
 class StripeAlexStream(HttpStream, ABC):
 
-    def __init__(self, *, path: str, url_base: str, primary_key: str, retry_factor: float, max_retries: int, headers: Mapping[str, str]):
+    def __init__(self, *,
+                 path: str,
+                 url_base: str,
+                 primary_key: str,
+                 retry_factor: float,
+                 max_retries: int,
+                 headers: Mapping[str, str],
+                 response_key: str,
+                 request_parameters: Mapping[str, Any]):
         super().__init__()
         self._path = path
         self._primary_key = primary_key
@@ -16,6 +24,8 @@ class StripeAlexStream(HttpStream, ABC):
         self._retry_factor = retry_factor
         self._max_retries = max_retries
         self._headers = headers
+        self._response_key = response_key
+        self._request_parameters = request_parameters
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -26,8 +36,8 @@ class StripeAlexStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        # Stripe default pagination is 10, max is 100
-        params = {"limit": 100}
+        params = self._request_parameters
+        # FIXME would be great to extract this too!
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
             params.update(next_page_token)
@@ -35,7 +45,7 @@ class StripeAlexStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        yield from response_json.get("data", [])  # Stripe puts records in a container array "data"
+        yield from response_json.get(self._response_key, [])  # Stripe puts records in a container array "data"
 
     def url_base(self) -> str:
         return self._url_base
