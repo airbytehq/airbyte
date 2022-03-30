@@ -1157,11 +1157,7 @@ public class AcceptanceTests {
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testActionsWhenTemporalIsInTerminalState() throws Exception {
-    String temporalHost = "localhost:7233";
-    if (!USE_EXTERNAL_DEPLOYMENT) {
-      temporalHost = "airbyte-temporal:7233";
-    }
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
     final WorkflowClient workflowCLient = WorkflowClient.newInstance(temporalService);
 
     final String connectionName = "test-connection";
