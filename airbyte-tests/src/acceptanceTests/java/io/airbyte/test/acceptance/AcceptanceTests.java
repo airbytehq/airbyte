@@ -1153,11 +1153,15 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(22)
+  @Order(-3)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testActionsWhenTemporalIsInTerminalState() throws Exception {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
+    String temporalHost = "localhost:7233";
+    if (!USE_EXTERNAL_DEPLOYMENT) {
+      temporalHost = "airbyte-temporal:7233";
+    }
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
     final WorkflowClient workflowCLient = WorkflowClient.newInstance(temporalService);
 
     final String connectionName = "test-connection";
@@ -1172,8 +1176,11 @@ public class AcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
+
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    waitForConnectionState(apiClient, connectionId);
+
     // check if temporal workflow is reachable
     final ConnectionManagerWorkflow connectionManagerWorkflow =
         workflowCLient.newWorkflowStub(ConnectionManagerWorkflow.class, "connection_manager_" + connectionId);
