@@ -81,16 +81,6 @@ jobs:
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
           ./tools/bin/release_version.sh
-      # octavia build requires Python 3.8
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
-      - name: Release Octavia
-        id: release_octavia
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          ./tools/bin/release_version_octavia.sh
       - name: Save New Version
         id: new_version
         run: |
@@ -153,12 +143,6 @@ jobs:
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
-        run: |
-          ./tools/bin/release_version_octavia.sh
-      - name: Release Octavia
-        id: release_octavia
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           ./tools/bin/release_version_octavia.sh
       - name: Save New Version
