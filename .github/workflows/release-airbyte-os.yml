@@ -95,7 +95,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "16.13.0"
-
       # octavia-cli build requires Python 3.8.
       # We use 3.8 in this project because 3.7 is not supported on Apple M1.
       - uses: actions/setup-python@v2
@@ -109,6 +108,9 @@ jobs:
         run: ./tools/bin/release_version_octavia.sh
 
   createPullRequest:
+    needs:
+      - releaseAirbyte
+      - releaseOctavia
     runs-on: ubuntu-latest
     environment: more-secrets
     steps:
