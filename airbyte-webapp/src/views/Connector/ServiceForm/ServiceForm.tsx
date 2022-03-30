@@ -235,7 +235,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           isEditMode={props.isEditMode}
           isLoadingSchema={props.isLoading}
         >
-          <SetDefaultName />
+          {!props.isEditMode && <SetDefaultName />}
           <FormikPatch />
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} />
           <FormRoot
