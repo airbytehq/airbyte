@@ -1,4 +1,3 @@
-{"type": "RECORD", "record": {"stream": "stream_with_nested_objects", "emitted_at": 1602637589000, "data": { "nested_object": { "nested_field" : "one"}}}}
 {"type": "RECORD", "record": {"stream": "streamWithCamelCase", "emitted_at": 1602637589000, "data": { "data" : "one" }}}
 {"type": "RECORD", "record": {"stream": "stream_with_underscores", "emitted_at": 1602637589100, "data": { "data" : "one" }}}
 {"type": "RECORD", "record": {"stream": "stream_with_edge_case_field_names", "emitted_at": 1602637589200, "data": { "fieldWithCamelCase" : "one" }}}
@@ -20,13 +19,13 @@
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-01 01:01:01"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-1-1 01:01:01"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-01 01:01:01.22654"}}}
-{"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2018-05-08T02:07:23.888888Z"}}}
+{"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-05-08T02:07:23.88888Z"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-02T01:01:01+01:00"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-03T01:01:01.544+01:00"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-05T01:01:01Z"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-06T01:01:01-01:00"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-08T01:01:01+0000"}}}
 {"type": "RECORD", "record": {"stream": "stream_with_dates", "emitted_at": 1602637589000, "data": { "datetime" : "2021-01-01T01:01:01+01"}}}
-{"type": "RECORD", "record": {"stream": "stream_with_nested_dates", "emitted_at": 1602637589000, "data": { "nested_object": { "datetime_nested" : "2021-01-01T01:01:01+01"}, "datetime_nested": "2021-01-01 01:01:01"}}}
-{"type": "RECORD", "record": {"stream": "stream_with_same_names_different_datatype", "emitted_at": 1602637589000, "data": { "object": { "created_at" : "2021-01-01T01:01:01+01"}, "created_at": 123}}}
+{"type": "RECORD", "record": {"stream": "stream_with_nested_dates", "emitted_at": 1602637589000, "data": { "nested_object": { "field" : 123}, "datetime_nested": "2021-01-01 01:01:01"}}}
+{"type": "RECORD", "record": {"stream": "stream_with_same_names_different_datatype", "emitted_at": 1602637589000, "data": { "object": { "created_at" : "2021-01-01T01:01:01+01"}, "created_at": "2021-01-01"}}}
 {"type": "STATE", "state": { "data": {"start_date": "2020-09-02"}}}

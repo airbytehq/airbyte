@@ -21,6 +21,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
@@ -171,16 +172,20 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
     var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
         Spliterator.ORDERED), false).toList();
-    data.removeAll();
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
     fields.forEach(field -> {
-      var key = field.getKey();
-      if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-        switch (dateTimeFieldNames.get(key)) {
-          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToRedshiftFormat(field.getValue().asText()));
-          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+      for (String path : dateTimeFieldNames.keySet()) {
+        var key = field.getKey();
+        if (isKeyInPath(path, key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
+          switch (dateTimeFieldNames.get(path)) {
+            case DATE_TIME -> data.put(key.toLowerCase(),
+                DateTimeUtils.convertToRedshiftFormat(field.getValue().asText()));
+            case DATE -> data.put(key.toLowerCase(),
+                DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+          }
         }
-      } else {
-        data.set(key.toLowerCase(), field.getValue());
       }
     });
   }

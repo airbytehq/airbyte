@@ -35,10 +35,13 @@ import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -307,19 +310,24 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
     var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
         Spliterator.ORDERED), false).toList();
-    data.removeAll();
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
     fields.forEach(field -> {
-      var key = field.getKey();
-      if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-        switch (dateTimeFieldNames.get(key)) {
-          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(field.getValue().asText()));
-          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+      for (String path : dateTimeFieldNames.keySet()) {
+        var key = field.getKey();
+        if (isKeyInPath(path, key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
+          switch (dateTimeFieldNames.get(path)) {
+            case DATE_TIME -> {
+              var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(field.getValue().asText())).divide(new BigDecimal(1000000)));
+              data.put(key.toLowerCase(), !result.contains(".") ? result + ".0" : result);
+            }
+            case DATE -> data.put(key.toLowerCase(),
+                DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+          }
         }
-      } else {
-        data.set(key.toLowerCase(), field.getValue());
       }
     });
-
   }
 
   @Override

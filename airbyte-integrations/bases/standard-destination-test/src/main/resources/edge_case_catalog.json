@@ -176,9 +176,8 @@
           "nested_object": {
             "type": "object",
             "properties": {
-              "datetime_nested": {
-                "type": "string",
-                "format": "date-time"
+              "field": {
+                "type": "integer"
               }
             }
           },
@@ -203,7 +202,8 @@
             }
           },
           "created_at": {
-            "type": "integer"
+            "type": "string",
+            "format": "date"
           }
         }
       }

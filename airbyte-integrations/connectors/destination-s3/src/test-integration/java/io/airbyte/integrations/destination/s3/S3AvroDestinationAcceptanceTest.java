@@ -22,13 +22,11 @@ import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.StreamSupport;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
@@ -89,10 +87,38 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
 
   @Override
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
-        Spliterator.ORDERED), false).toList();
-    data.removeAll();
-    fields.forEach(field -> convertField(field, field.getValue(), dateTimeFieldNames, data));
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (!data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
+        pathFields.remove(0); // first element always empty string
+        // if pathFields.size() == 1 -> /field else /field/nestedField..
+        var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
+            : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> {
+            if (pathFields.size() == 1)
+              data.put(pathFields.get(0).toLowerCase(),
+                  (DateTimeUtils.getEpochMicros(data.get(pathFields.get(0)).asText()) / 1000)
+                      * 1000);
+            else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(
+                  pathFields.get(pathFields.size() - 1),
+                  (DateTimeUtils.getEpochMicros(data.at(path).asText()) / 1000) * 1000);
+            }
+          }
+          case DATE -> {
+            if (pathFields.size() == 1)
+              data.put(pathFields.get(0).toLowerCase(),
+                  DateTimeUtils.getEpochDay(data.get(pathFields.get(0)).asText()));
+            else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(
+                  pathFields.get(pathFields.size() - 1),
+                  DateTimeUtils.getEpochDay((data.at(path).asText())));
+            }
+          }
+        }
+      }
+    }
   }
 
   @Override
@@ -118,26 +144,4 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
       }
     }
   }
-
-  private void convertField(Entry<String, JsonNode> field, JsonNode fieldValue, Map<String, String> dateTimeFieldNames, ObjectNode data) {
-    if (fieldValue.isContainerNode()) {
-      var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(fieldValue.fields(),
-          Spliterator.ORDERED), false).toList();
-      fields.forEach(f -> convertField(f, f.getValue(), dateTimeFieldNames, data));
-    }
-    var key = field.getKey();
-    if (fieldValue.isContainerNode()) {
-      var dataCopy = data.deepCopy();
-      data.removeAll();
-      data.set(key, dataCopy);
-    } else if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-      switch (dateTimeFieldNames.get(key)) {
-        case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(field.getValue().asText()));
-        case DATE -> data.put(key.toLowerCase(), DateTimeUtils.getEpochDay(field.getValue().asText()));
-      }
-    } else {
-      data.set(key.toLowerCase(), field.getValue());
-    }
-  }
-
 }

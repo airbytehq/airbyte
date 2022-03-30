@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -224,16 +225,20 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
     var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
         Spliterator.ORDERED), false).toList();
-    data.removeAll();
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
     fields.forEach(field -> {
-      var key = field.getKey();
-      if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-        switch (dateTimeFieldNames.get(key)) {
-          case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToSnowflakeFormat(field.getValue().asText()));
-          case DATE -> data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormatWithZeroTime(field.getValue().asText()));
+      for (String path : dateTimeFieldNames.keySet()) {
+        var key = field.getKey();
+        if (isKeyInPath(path, key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
+          switch (dateTimeFieldNames.get(path)) {
+            case DATE_TIME -> data.put(key.toLowerCase(),
+                DateTimeUtils.convertToSnowflakeFormat(field.getValue().asText()));
+            case DATE -> data.put(key.toLowerCase(),
+                DateTimeUtils.convertToDateFormatWithZeroTime(field.getValue().asText()));
+          }
         }
-      } else {
-        data.set(key.toLowerCase(), field.getValue());
       }
     });
   }

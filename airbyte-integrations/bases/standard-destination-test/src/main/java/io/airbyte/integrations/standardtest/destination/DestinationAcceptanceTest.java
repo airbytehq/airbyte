@@ -80,6 +80,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -1434,25 +1435,25 @@ public abstract class DestinationAcceptanceTest implements DateTimeConverter {
     final Map<String, String> fieldFormats = new HashMap<>();
 
     streams.stream().map(AirbyteStream::getJsonSchema).forEach(streamSchema -> {
-      findDateTimeFields(streamSchema, fieldFormats);
+      findDateTimeFields(streamSchema, fieldFormats, StringUtils.EMPTY);
     });
 
     return fieldFormats;
   }
 
-  private static void findDateTimeFields(JsonNode streamSchema, Map<String, String> fieldFormats) {
+  private static void findDateTimeFields(JsonNode streamSchema, Map<String, String> fieldFormats, String parent) {
     final JsonNode fieldDefinitions = streamSchema.get("properties");
     final Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
     while (iterator.hasNext()) {
       Map.Entry<String, JsonNode> entry = iterator.next();
       if (entry.getValue().has("type") && entry.getValue().get("type").asText().equals("object")
           && entry.getValue().has("properties")) {
-        findDateTimeFields(entry.getValue(), fieldFormats);
+        findDateTimeFields(entry.getValue(), fieldFormats, parent + "/" + entry.getKey());
       }
       if (entry.getValue().has("format")) {
         String format = entry.getValue().get("format").asText();
         if (format.equalsIgnoreCase("date") || format.equalsIgnoreCase("date-time")) {
-          fieldFormats.put(entry.getKey(), format);
+          fieldFormats.put(parent + "/" + entry.getKey(), format);
         }
       }
     }

@@ -17,15 +17,12 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assertions;
 
 public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDenormalizedDestinationAcceptanceTest {
 
@@ -73,41 +70,40 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
 
   @Override
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
-        Spliterator.ORDERED), false).toList();
-    data.removeAll();
-    fields.forEach(field -> convertField(field, field.getValue(), dateTimeFieldNames, data));
-  }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (!data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
+        pathFields.remove(0); // first element always empty string
+        // if pathFields.size() == 1 -> /field else /field/nestedField..
+        var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
+            : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> {
+            if (pathFields.size() == 1) {
+              var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(data.at(path).asText())/1000).divide(new BigDecimal(1000)));
+              result = !result.contains(".") ? result + ".0" : result;
+              data.put(pathFields.get(0).toLowerCase(), result);
 
-  private void convertField(Entry<String, JsonNode> field, JsonNode fieldValue, Map<String, String> dateTimeFieldNames, ObjectNode messageData) {
-    if (fieldValue.isContainerNode()) {
-      var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(fieldValue.fields(),
-          Spliterator.ORDERED), false).toList();
-      fields.forEach(f -> convertField(f, f.getValue(), dateTimeFieldNames, messageData));
-    }
-    var key = field.getKey();
-    if (fieldValue.isContainerNode()) {
-      var dataCopy = messageData.deepCopy();
-      messageData.removeAll();
-      messageData.set(key, dataCopy);
-    } else if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(fieldValue.asText())) {
-      switch (dateTimeFieldNames.get(key)) {
-        case DATE_TIME -> messageData.put(key.toLowerCase(), DateTimeUtils.getEpochMicros(fieldValue.asText()) / 1000000);
-        case DATE -> messageData.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(fieldValue.asText()));
+            }
+            else {
+              var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(data.at(path).asText())/1000).divide(new BigDecimal(1000)));
+              result = !result.contains(".") ? result + ".0" : result;
+              ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1).toLowerCase(),
+                  result);
+            }
+          }
+          case DATE -> {
+            if (pathFields.size() == 1)
+              data.put(pathFields.get(0).toLowerCase(),
+                  DateTimeUtils.convertToDateFormat(data.get(pathFields.get(0)).asText()));
+            else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(
+                  pathFields.get(pathFields.size() - 1).toLowerCase(),
+                  DateTimeUtils.convertToDateFormat((data.at(path).asText())));
+            }
+          }
+        }
       }
-    } else {
-      messageData.set(key.toLowerCase(), field.getValue());
-    }
-  }
-
-  @Override
-  protected void assertSameValue(String key,
-                                 JsonNode expectedValue,
-                                 JsonNode actualValue) {
-    if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
-      Assertions.assertEquals(expectedValue.asLong(), actualValue.asLong());
-    } else {
-      super.assertSameValue(key, expectedValue, actualValue);
     }
   }
 
@@ -122,7 +118,7 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
             message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
               var data = message.getRecord().getData().get(fieldName).get(f);
               ((ObjectNode) message.getRecord().getData()).put(fieldName,
-                  String.format("[FieldValue{attribute=PRIMITIVE, value=%s}]", data.isNumber() ? data.asText() + ".0" : data.asText()));
+                  String.format("[FieldValue{attribute=PRIMITIVE, value=%s}]", data.asText()));
             });
           }
         }

@@ -32,8 +32,11 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -169,10 +172,38 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
-        Spliterator.ORDERED), false).toList();
-    data.removeAll();
-    fields.forEach(field -> convertField(field, field.getValue(), dateTimeFieldNames, data));
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (!data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
+        pathFields.remove(0); // first element always empty string
+        // if pathFields.size() == 1 -> /field else /field/nestedField..
+        var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
+            : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> {
+            if (pathFields.size() == 1) {
+              data.put(pathFields.get(0).toLowerCase(), DateTimeUtils.convertToDatabricksFormat(data.get(pathFields.get(0)).asText()));
+            }
+            else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1).toLowerCase(),
+                  DateTimeUtils.convertToDatabricksFormat(data.at(path).asText()));
+            }
+          }
+          case DATE -> {
+            if (pathFields.size() == 1)
+              data.put(pathFields.get(0).toLowerCase(),
+                  String.format("{\"member0\":%s,\"member1\":null}",
+                      DateTimeUtils.convertToDateFormat(data.get(pathFields.get(0)).asText())));
+            else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(
+                  pathFields.get(pathFields.size() - 1).toLowerCase(),
+                  String.format("{\"member0\":%s,\"member1\":null}",
+                      DateTimeUtils.convertToDateFormat(data.at(path).asText())));
+            }
+          }
+        }
+      }
+    }
   }
 
   @Override
@@ -198,34 +229,12 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
             message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
               var data = message.getRecord().getData().get(fieldName).get(f);
               var wrappedData = String.format("{\"%s\":%s,\"_airbyte_additional_properties\":null}", f,
-                  dateTimeFieldNames.containsKey(f) || !data.isTextual() ? data.asText() : StringUtils.wrap(data.asText(), "\""));
+                  data.asText());
               ((ObjectNode) message.getRecord().getData()).put(fieldName, wrappedData);
             });
           }
         }
       }
-    }
-  }
-
-  private void convertField(Entry<String, JsonNode> field, JsonNode fieldValue, Map<String, String> dateTimeFieldNames, ObjectNode data) {
-    if (fieldValue.isContainerNode()) {
-      var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(fieldValue.fields(),
-          Spliterator.ORDERED), false).toList();
-      fields.forEach(f -> convertField(f, f.getValue(), dateTimeFieldNames, data));
-    }
-    var key = field.getKey();
-    if (fieldValue.isContainerNode()) {
-      var dataCopy = data.deepCopy();
-      data.removeAll();
-      data.set(key, dataCopy);
-    } else if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(fieldValue.asText())) {
-      switch (dateTimeFieldNames.get(key)) {
-        case DATE_TIME -> data.put(key.toLowerCase(), DateTimeUtils.convertToDatabricksFormat(fieldValue.asText()));
-        case DATE -> data.put(key.toLowerCase(), String.format("***\"member0\":%s,\"member1\":null***",
-            DateTimeUtils.convertToDateFormat(field.getValue().asText())));
-      }
-    } else {
-      data.set(key.toLowerCase(), field.getValue());
     }
   }
 

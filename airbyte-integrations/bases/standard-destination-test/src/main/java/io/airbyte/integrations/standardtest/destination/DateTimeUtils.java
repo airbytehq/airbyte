@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -33,7 +34,7 @@ public class DateTimeUtils {
   private static final DateTimeFormatter FORMATTER =
       DateTimeFormatter.ofPattern(
           "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
-              "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
+              "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][SS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
 
   /**
    * Parse the Json date-time logical type to long value of epoch microseconds. Only for test
@@ -43,7 +44,7 @@ public class DateTimeUtils {
    */
   @VisibleForTesting
   public static Long getEpochMicros(String jsonDateTime) {
-    return convertDateTime(jsonDateTime, instant -> instant.toEpochMilli() * 1000);
+    return convertDateTime(jsonDateTime, instant -> ChronoUnit.MICROS.between(Instant.EPOCH, instant));
   }
 
   /**
@@ -253,7 +254,11 @@ public class DateTimeUtils {
    */
   @VisibleForTesting
   private static String toMSSQLDateFormat(Instant instant) {
-    return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneOffset.UTC).format(instant);
+    if (instant.get(ChronoField.MILLI_OF_SECOND) == 0) {
+      return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S").withZone(ZoneOffset.UTC).format(instant);
+    } else {
+      return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").withZone(ZoneOffset.UTC).format(instant);
+    }
   }
 
   /**

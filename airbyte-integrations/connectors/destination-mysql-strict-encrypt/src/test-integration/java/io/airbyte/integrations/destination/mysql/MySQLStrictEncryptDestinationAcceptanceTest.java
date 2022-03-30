@@ -28,6 +28,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
@@ -253,13 +254,18 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
     var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
         Spliterator.ORDERED), false).toList();
-    data.removeAll();
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
     fields.forEach(field -> {
-      var key = field.getKey();
-      if (DATE.equals(dateTimeFieldNames.get(key)) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-        data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(field.getValue().asText()));
-      } else {
-        data.set(key.toLowerCase(), field.getValue());
+      for (String path : dateTimeFieldNames.keySet()) {
+        var key = field.getKey();
+        if (isKeyInPath(path, key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
+          if (DATE.equals(dateTimeFieldNames.get(path))) {
+            data.put(key.toLowerCase(),
+                DateTimeUtils.convertToDateFormat(field.getValue().asText()));
+          }
+        }
       }
     });
   }

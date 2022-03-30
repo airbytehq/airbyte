@@ -47,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -340,31 +341,36 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  public void convertDateTime(ObjectNode data, Map<String, String> datesField) {
-    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
-        Spliterator.ORDERED), false).toList();
-    data.removeAll();
-    fields.forEach(field -> convertField(field, field.getValue(), datesField, data));
-  }
-
-  private void convertField(Entry<String, JsonNode> field, JsonNode fieldValue, Map<String, String> dateTimeFieldNames, ObjectNode messageData) {
-    if (fieldValue.isContainerNode()) {
-      var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(fieldValue.fields(),
-          Spliterator.ORDERED), false).toList();
-      fields.forEach(f -> convertField(f, f.getValue(), dateTimeFieldNames, messageData));
-    }
-    var key = field.getKey();
-    if (fieldValue.isContainerNode()) {
-      var dataCopy = messageData.deepCopy();
-      messageData.removeAll();
-      messageData.set(key, dataCopy);
-    } else if (dateTimeFieldNames.containsKey(key) && DateTimeUtils.isDateTimeValue(fieldValue.asText())) {
-      switch (dateTimeFieldNames.get(key)) {
-        case DATE_TIME -> messageData.put(key.toLowerCase(), DateTimeUtils.convertToBigqueryDenormalizedFormat(fieldValue.asText()));
-        case DATE -> messageData.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(fieldValue.asText()));
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (!data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
+        pathFields.remove(0); // first element always empty string
+        // if pathFields.size() == 1 -> /field else /field/nestedField..
+        var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
+            : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> {
+            if (pathFields.size() == 1)
+              data.put(pathFields.get(0).toLowerCase(),
+                  DateTimeUtils.convertToBigqueryDenormalizedFormat((data.get(pathFields.get(0)).asText())));
+            else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1),
+                  DateTimeUtils.convertToBigqueryDenormalizedFormat(data.at(path).asText()));
+            }
+          }
+          case DATE -> {
+            if (pathFields.size() == 1)
+              data.put(pathFields.get(0).toLowerCase(),
+                  DateTimeUtils.convertToDateFormat(data.get(pathFields.get(0)).asText()));
+            else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(
+                  pathFields.get(pathFields.size() - 1),
+                  DateTimeUtils.convertToDateFormat((data.at(path).asText())));
+            }
+          }
+        }
       }
-    } else {
-      messageData.set(key.toLowerCase(), field.getValue());
     }
   }
 
