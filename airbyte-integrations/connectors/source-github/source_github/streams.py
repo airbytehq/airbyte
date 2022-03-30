@@ -206,12 +206,12 @@ class SemiIncrementalGithubStream(GithubStream):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
         """
-        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
-        current_repository = latest_record["repository"]
-
-        if current_stream_state.get(current_repository, {}).get(self.cursor_field):
-            state_value = max(latest_cursor_value, current_stream_state[current_repository][self.cursor_field])
-        current_stream_state[current_repository] = {self.cursor_field: state_value}
+        repository = latest_record["repository"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {})[self.cursor_field] = updated_state
         return current_stream_state
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
