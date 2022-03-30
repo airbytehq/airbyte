@@ -163,14 +163,12 @@ const ConnectorServiceTypeControl: React.FC<{
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
   documentationUrl?: string;
-  allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
   onOpenRequestConnectorModal: (initialName: string) => void;
 }> = ({
   property,
   formType,
   isEditMode,
-  allowChangeConnector,
   onChangeServiceType,
   availableServices,
   documentationUrl,
@@ -265,7 +263,7 @@ const ConnectorServiceTypeControl: React.FC<{
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
-          isDisabled={isEditMode && !allowChangeConnector}
+          isDisabled={isEditMode}
           isSearchable
           placeholder={formatMessage({
             id: "form.selectConnector",

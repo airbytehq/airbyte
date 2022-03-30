@@ -29,27 +29,10 @@ import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServ
 import {
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
+  Scheduler,
 } from "core/domain/connector";
 import { isDefined } from "utils/common";
 import { ConnectionConfiguration } from "../../../core/domain/connection";
-
-export type ServiceFormProps = {
-  formType: "source" | "destination";
-  availableServices: ConnectorDefinition[];
-  selectedConnector?: ConnectorDefinitionSpecification;
-  onServiceSelect?: (id: string) => void;
-  onSubmit: (values: ServiceFormValues) => void;
-  onRetest?: (values: ServiceFormValues) => void;
-  isLoading?: boolean;
-  isEditMode?: boolean;
-  allowChangeConnector?: boolean;
-  formValues?: Partial<ServiceFormValues>;
-  hasSuccess?: boolean;
-  additionBottomControls?: React.ReactNode;
-  fetchingConnectorError?: Error | null;
-  errorMessage?: React.ReactNode;
-  successMessage?: React.ReactNode;
-};
 
 const FormikPatch: React.FC = () => {
   usePatchFormik();
@@ -111,6 +94,25 @@ const SetDefaultName: React.FC = () => {
   return null;
 };
 
+export type ServiceFormProps = {
+  formType: "source" | "destination";
+  availableServices: ConnectorDefinition[];
+  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
+  onServiceSelect?: (id: string) => void;
+  onSubmit: (values: ServiceFormValues) => void;
+  isLoading?: boolean;
+  isEditMode?: boolean;
+  formValues?: Partial<ServiceFormValues>;
+  hasSuccess?: boolean;
+  fetchingConnectorError?: Error | null;
+  errorMessage?: React.ReactNode;
+  successMessage?: React.ReactNode;
+
+  isTestConnectionInProgress?: boolean;
+  onStopTesting?: () => void;
+  testConnector?: (v?: ServiceFormValues) => Promise<Scheduler>;
+};
+
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
   const [initialRequestName, setInitialRequestName] = useState<string>();
@@ -119,18 +121,24 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     formValues,
     onSubmit,
     isLoading,
-    selectedConnector,
-    onRetest,
+    isTestConnectionInProgress,
+    onStopTesting,
+    testConnector,
+    selectedConnectorDefinitionSpecification,
   } = props;
 
-  const specifications = useBuildInitialSchema(selectedConnector);
+  const specifications = useBuildInitialSchema(
+    selectedConnectorDefinitionSpecification
+  );
 
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: "object",
       properties: {
         serviceType: { type: "string" },
-        ...(selectedConnector ? { name: { type: "string" } } : {}),
+        ...(selectedConnectorDefinitionSpecification
+          ? { name: { type: "string" } }
+          : {}),
         ...Object.fromEntries(
           Object.entries({
             connectionConfiguration: isLoading ? null : specifications,
@@ -139,7 +147,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       },
       required: ["name", "serviceType"],
     }),
-    [isLoading, selectedConnector, specifications]
+    [isLoading, selectedConnectorDefinitionSpecification, specifications]
   );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
@@ -156,10 +164,11 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           <ConnectorServiceTypeControl
             property={property}
             formType={formType}
-            documentationUrl={selectedConnector?.documentationUrl}
+            documentationUrl={
+              selectedConnectorDefinitionSpecification?.documentationUrl
+            }
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
-            allowChangeConnector={props.allowChangeConnector}
             isEditMode={props.isEditMode}
             onOpenRequestConnectorModal={(name) => {
               setInitialRequestName(name);
@@ -171,10 +180,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     }),
     [
       formType,
-      selectedConnector?.documentationUrl,
+      selectedConnectorDefinitionSpecification?.documentationUrl,
       props.onServiceSelect,
       props.availableServices,
-      props.allowChangeConnector,
       props.isEditMode,
       toggleOpenRequestModal,
     ]
@@ -202,21 +210,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const onFormSubmit = useCallback(
     async (values) => {
       const valuesToSend = getValues(values);
+
       return onSubmit(valuesToSend);
     },
     [getValues, onSubmit]
-  );
-
-  const onRetestForm = useCallback(
-    async (values) => {
-      if (!onRetest) {
-        return null;
-      }
-      const valuesToSend = getValues(values);
-
-      return onRetest(valuesToSend);
-    },
-    [onRetest, getValues]
   );
 
   return (
@@ -227,28 +224,30 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}
     >
-      {({ values, setSubmitting }) => (
+      {() => (
         <ServiceFormContextProvider
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
           setUiWidgetsInfo={setUiWidgetsInfo}
           formType={formType}
-          selectedConnector={selectedConnector}
+          selectedConnector={selectedConnectorDefinitionSpecification}
           availableServices={props.availableServices}
           isEditMode={props.isEditMode}
           isLoadingSchema={props.isLoading}
-          serviceType={values.serviceType}
         >
           <SetDefaultName />
           <FormikPatch />
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} />
           <FormRoot
             {...props}
-            onRetest={async () => {
-              setSubmitting(true);
-              await onRetestForm(values);
-              setSubmitting(false);
-            }}
+            errorMessage={props.errorMessage}
+            isTestConnectionInProgress={isTestConnectionInProgress}
+            onStopTestingConnector={
+              onStopTesting ? () => onStopTesting() : undefined
+            }
+            onRetest={
+              testConnector ? async () => await testConnector() : undefined
+            }
             formFields={formFields}
           />
           {isOpenRequestModal && (
@@ -263,4 +262,5 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     </Formik>
   );
 };
-export default ServiceForm;
+
+export { ServiceForm };
