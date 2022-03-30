@@ -394,7 +394,10 @@ class Runs(ParentStreamMixin, CachingSubStream):
         start_date = normalize_date_string(stream_state.get(self._state_key(stream_slice), {}).get(self.cursor_field) or self._start_date)
 
         max_state = start_date
-        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+
+        # Process runs in reversed order so we can update the state accurately.
+        records = reversed(list(super().read_records(sync_mode, cursor_field, stream_slice, stream_state)))
+        for record in records:
             # Runs can be queued but not started yet. For now, we ignore runs that haven't started.
             run_start_time = normalize_date_string(record.get(self.cursor_field) or self._start_date)
             if run_start_time > start_date:
