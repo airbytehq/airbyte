@@ -154,8 +154,8 @@ jobs:
         env:
           PREV_VERSION: ${{ steps.old_version.outputs.OLD_VERSION }}
         run: |
-          chmod +x tools/bin/pr_body.sh
-          body=$(./tools/bin/pr_body.sh)
+          chmod +x tools/bin/pr_body_octavia.sh
+          body=$(./tools/bin/pr_body_octavia.sh)
           body="${body//$'\n'/'%0A'}"
           echo ::set-output name=PR_BODY::$body
       - name: Create Pull Request
