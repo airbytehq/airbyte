@@ -13,8 +13,7 @@ docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
 ./tools/bin/bump_version.sh
 
-# TESTING: DISABLE BUILD AND PUBLISH FOR ITERATIONS ON CI
-# echo "Building and publishing OCTAVIA version $NEW_VERSION for git revision $GIT_REVISION..."
-# VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build
-# ./octavia-cli/publish.sh ${NEW_VERSION} ${GIT_REVISION}
-# echo "Completed building and publishing OCTAVIA..."
+echo "Building and publishing OCTAVIA version $NEW_VERSION for git revision $GIT_REVISION..."
+VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build
+./octavia-cli/publish.sh ${NEW_VERSION} ${GIT_REVISION}
+echo "Completed building and publishing OCTAVIA..."
