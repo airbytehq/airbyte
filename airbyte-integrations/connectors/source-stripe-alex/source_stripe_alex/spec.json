@@ -14,7 +14,8 @@
       "headers",
       "request_parameters",
       "stream_to_cursor_field",
-      "stream_to_path"
+      "stream_to_path",
+      "response_parser"
     ],
     "properties": {
       "account_id": {
@@ -83,6 +84,12 @@
         "title": "Stream to path",
         "description": "Mapping from stream name to path",
         "order": 8
+      },
+      "response_parser": {
+        "type": "object",
+        "title": "Response parser configuration",
+        "description": "Config describing response parser",
+        "order": 9
       }
     }
   }

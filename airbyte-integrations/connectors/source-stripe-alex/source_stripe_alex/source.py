@@ -4,7 +4,9 @@
 
 
 import copy
-from typing import Any, List, Mapping, Tuple
+from abc import abstractmethod
+from typing import Any, Iterable, Mapping
+from typing import List, Tuple
 
 import pendulum
 import requests
@@ -17,6 +19,22 @@ from source_stripe_alex.streams import (
     InvoiceLineItems,
     Invoices,
 )
+
+
+class ResponseParser:
+    @abstractmethod
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        pass
+
+
+class JsonArrayGetter:
+    def __init__(self, **kwargs):
+        self._field_to_get = kwargs["field_to_get"]
+
+    @abstractmethod
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        yield from response_json.get(self._field_to_get, [])
 
 
 class SourceStripeAlex(AbstractSource):
@@ -38,14 +56,36 @@ class SourceStripeAlex(AbstractSource):
             "request_parameters": config["request_parameters"],
             "stream_to_cursor_field": config["stream_to_cursor_field"],
             "stream_to_path": config["stream_to_path"],
+            "response_parser": self._get_response_parser(config)
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
 
+        invoices_args = {
+            **copy.deepcopy(incremental_args),
+            **{"name": "invoices"}
+        }
+        invoice_items_args = {
+            **copy.deepcopy(incremental_args),
+            **{"name": "invoice_items"}
+        }
+        invoice_line_items_args = {
+            **copy.deepcopy(args),
+            **{"name": "invoice_line_items"}
+        }
+
         return [
-            InvoiceItems(**copy.deepcopy(incremental_args)),
-            InvoiceLineItems(**copy.deepcopy(args)),
-            Invoices(**copy.deepcopy(incremental_args))
+            InvoiceItems(**invoice_items_args),
+            InvoiceLineItems(**invoice_line_items_args),
+            Invoices(**invoices_args)
         ]
+
+    def _get_response_parser(self, config):
+        response_parser_config = config["response_parser"]
+        parser_type = response_parser_config["type"]
+        if parser_type == "JsonArrayGetter":
+            return JsonArrayGetter(**response_parser_config["config"])
+        else:
+            raise Exception(f"unexpected response parser type: {parser_type}")
 
     def _get_headers(self, config):
         return {k: v.format(**config) for k, v in config["headers"].items()}

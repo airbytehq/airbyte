@@ -30,9 +30,26 @@ class StripeStream(HttpStream, ABC):
         self._request_parameters = kwargs["request_parameters"]
         self._stream_to_cursor_field = kwargs["stream_to_cursor_field"]
         self._stream_to_path = kwargs["stream_to_path"]
+        self._response_parser = kwargs["response_parser"]
+        self._name = kwargs["name"]
 
-    def path(self, **kwargs):
-        return self._stream_to_path[self.name]
+    def path(
+            self,
+            *,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        """
+        Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
+        """
+        self.logger.info(f"PATH for {self._name}")
+        self.logger.info(f"s2p: {self._stream_to_path}")
+        _path = self._stream_to_path[self._name]
+        self.logger.info(f"unformatted path for {self._name}: {_path}")
+        _formatted = _path.format(stream_slice=stream_slice)
+        self.logger.info(f"formatted path for {self._name}: {_formatted}")
+        return _path
 
     def url_base(self) -> str:
         return self._url_base
@@ -41,7 +58,9 @@ class StripeStream(HttpStream, ABC):
         decoded_response = response.json()
         if bool(decoded_response.get("has_more", "False")) and decoded_response.get("data", []):
             last_object_id = decoded_response["data"][-1]["id"]
-            return {"starting_after": last_object_id}
+            ## FIXME implement
+            # return {"starting_after": last_object_id}
+        return None
 
     def request_params(
             self,
@@ -62,8 +81,7 @@ class StripeStream(HttpStream, ABC):
         return self._headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        yield from response_json.get("data", [])  # Stripe puts records in a container array "data"
+        return self._response_parser.parse_response(response, **kwargs)
 
 
 class IncrementalStripeAlexStream(StripeStream, ABC):
@@ -203,7 +221,9 @@ class StripeSubStream(StripeStream, ABC):
                 "headers": self._headers,
                 "request_parameters": self._request_parameters,
                 "stream_to_cursor_field": self._stream_to_cursor_field,
-                "stream_to_path": self._stream_to_path
+                "stream_to_path": self._stream_to_path,
+                "response_parser": self._response_parser,
+                "name": self.parent_name
             }
         )
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -248,6 +268,7 @@ class InvoiceLineItems(StripeSubStream):
     name = "invoice_line_items"
 
     parent = Invoices
+    parent_name = "invoices"
     parent_id: str = "invoice_id"
     sub_items_attr = "lines"
     add_parent_id = True
