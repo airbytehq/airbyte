@@ -15,5 +15,3 @@ echo
 echo "Changelog:"
 echo
 PAGER=cat git log v${PREV_VERSION}..${GIT_REVISION} --oneline --decorate=no -- octavia-cli
-
-
