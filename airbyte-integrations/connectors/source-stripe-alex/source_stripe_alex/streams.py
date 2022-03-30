@@ -6,24 +6,25 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
 # Basic full refresh stream
 class StripeAlexStream(HttpStream, ABC):
     def __init__(
-        self,
-        *,
-        path: str,
-        url_base: str,
-        primary_key: str,
-        retry_factor: float,
-        max_retries: int,
-        headers: Mapping[str, str],
-        response_key: str,
-        request_parameters: Mapping[str, Any],
-        start_date: int,
-        cursor_field: str,
+            self,
+            *,
+            path: str,
+            url_base: str,
+            primary_key: str,
+            retry_factor: float,
+            max_retries: int,
+            headers: Mapping[str, str],
+            response_key: str,
+            request_parameters: Mapping[str, Any],
+            start_date: int,
+            cursor_field: str,
     ):
         super().__init__()
         self._path = path
@@ -37,6 +38,9 @@ class StripeAlexStream(HttpStream, ABC):
         self._start_date = start_date
         self._cursor_field = cursor_field
         self._cursor_value = None
+        self._parent = self
+        self._filter = None
+        self._add_parent_id = False
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -45,7 +49,7 @@ class StripeAlexStream(HttpStream, ABC):
         return self._headers
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = self._request_parameters
         # FIXME would be great to extract this too!
@@ -62,11 +66,11 @@ class StripeAlexStream(HttpStream, ABC):
         return self._url_base
 
     def path(
-        self,
-        *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            *,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return self._path
 
@@ -76,6 +80,25 @@ class StripeAlexStream(HttpStream, ABC):
         and returning an updated state object.
         """
         return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
+
+    def _read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+
+        ##TODO: This isn't passing the right parameters anymore...
+        parent_stream = super()
+
+        for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
+            # self.logger.error("=======HERE")
+            # self.logger.error(record)
+            # raise Exception(record)
+            items_obj = record.get("lines", {})
+            if not items_obj:
+                continue
+
+            items = items_obj.get("data", [])
+
+            # TODO handle pagination
+            for item in items:
+                yield item
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -99,6 +122,14 @@ class StripeAlexStream(HttpStream, ABC):
 
     @max_retries.setter
     def set_max_retries(self, value):
+        self._max_retries = value
+
+    @property
+    def parent(self) -> Union[int, None]:
+        return self._parent
+
+    @parent.setter
+    def set_parent(self, value):
         self._max_retries = value
 
     @property
