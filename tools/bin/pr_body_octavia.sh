@@ -7,7 +7,7 @@ set -e
 GIT_REVISION=$(git rev-parse HEAD)
 [[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
 
-echo "*IMPORTANT, only merge if:**"
+echo "**IMPORTANT, only merge if:**"
 echo "  - octavia-cli build is passing"
 echo "  - The corresponding Bump Airbyte PR was merged"
 
