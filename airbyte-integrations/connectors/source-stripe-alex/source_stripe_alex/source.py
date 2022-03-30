@@ -3,6 +3,7 @@
 #
 
 
+import copy
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -29,17 +30,19 @@ class SourceStripeAlex(AbstractSource):
         authenticator = TokenAuthenticator(config["client_secret"])
         start_date = pendulum.parse(config["start_date"]).int_timestamp
         args = {
+            "url_base": config["url_base"],
             "authenticator": authenticator,
             "account_id": config["account_id"],
             "start_date": start_date,
-            "headers": config["headers"],
+            "headers": self._get_headers(config),
             "request_parameters": config["request_parameters"]
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
+
         return [
-            InvoiceItems(**incremental_args),
-            InvoiceLineItems(**args),
-            Invoices(**incremental_args)
+            InvoiceItems(**copy.deepcopy(incremental_args)),
+            InvoiceLineItems(**copy.deepcopy(args)),
+            Invoices(**copy.deepcopy(incremental_args))
         ]
 
     def _get_headers(self, config):

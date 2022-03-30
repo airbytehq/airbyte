@@ -16,14 +16,18 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class StripeStream(HttpStream, ABC):
     primary_key = "id"
 
-    def __init__(self, url_base: str, start_date: int, account_id: str, headers: Mapping[str, str], request_parameters: Mapping[str, Any],
+    def __init__(self,  # *, url_base: str, start_date: int, account_id: str, headers: Mapping[str, str],
+                 # request_parameters: Mapping[str, Any],
                  **kwargs):
-        super().__init__(**kwargs)
-        self.url_base = url_base
-        self.account_id = account_id
-        self.start_date = start_date
-        self._headers = headers
-        self._request_parameters = request_parameters
+        super().__init__()
+        self.logger.info("......")
+        self.logger.info(kwargs)
+        self.logger.info("......")
+        self.url_base = kwargs["url_base"]
+        self.account_id = kwargs["account_id"]
+        self.start_date = kwargs["start_date"]
+        self._headers = kwargs["headers"]
+        self._request_parameters = kwargs["request_parameters"]
 
     def url_base(self) -> str:
         return self._url_base
@@ -149,6 +153,9 @@ class StripeSubStream(StripeStream, ABC):
     filter: Optional[Mapping[str, Any]] = None
     add_parent_id: bool = False
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     @property
     @abstractmethod
     def parent(self) -> StripeStream:
@@ -181,8 +188,16 @@ class StripeSubStream(StripeStream, ABC):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-
-        parent_stream = self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        self.logger.info(f"kwargs: {kwargs}")
+        parent_stream = self.parent(
+            **{
+                "url_base": self.url_base,
+                "account_id": self.account_id,
+                "start_date": self.start_date,
+                "headers": self._headers,
+                "request_parameters": self._request_parameters
+            }
+        )
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
 
             items_obj = record.get(self.sub_items_attr, {})
@@ -215,6 +230,9 @@ class Invoices(IncrementalStripeAlexStream):
 
     cursor_field = "created"
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def path(self, **kwargs):
         return "v1/invoices"
 
@@ -231,6 +249,9 @@ class InvoiceLineItems(StripeSubStream):
     sub_items_attr = "lines"
     add_parent_id = True
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"v1/invoices/{stream_slice[self.parent_id]}/lines"
 
@@ -239,6 +260,9 @@ class InvoiceItems(IncrementalStripeAlexStream):
     """
     API docs: https://stripe.com/docs/api/invoiceitems/list
     """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     cursor_field = "date"
     name = "invoice_items"
