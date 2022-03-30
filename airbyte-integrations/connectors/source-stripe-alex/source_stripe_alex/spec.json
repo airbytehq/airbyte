@@ -4,7 +4,14 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Stripe Source Spec",
     "type": "object",
-    "required": ["client_secret", "account_id", "start_date"],
+    "required": [
+      "client_secret",
+      "account_id",
+      "start_date",
+      "url_base",
+      "check_endpoint",
+      "headers"
+    ],
     "additionalProperties": false,
     "properties": {
       "account_id": {
@@ -25,7 +32,9 @@
         "title": "Start Date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
-        "examples": ["2017-01-25T00:00:00Z"],
+        "examples": [
+          "2017-01-25T00:00:00Z"
+        ],
         "order": 2
       },
       "lookback_window_days": {
@@ -35,6 +44,24 @@
         "minimum": 0,
         "description": "When set, the connector will always reload data from the past N days, where N is the value set here. This is useful if your data is updated after creation. More info <a href=\"https://docs.airbyte.com/integrations/sources/stripe#requirements\">here</a>",
         "order": 3
+      },
+      "url_base": {
+        "type": "string",
+        "title": "URL Base",
+        "description": "URL base",
+        "order": 4
+      },
+      "check_endpoint": {
+        "type": "string",
+        "title": "Check endpoint",
+        "description": "Endpoint to hit when checking connection",
+        "order": 5
+      },
+      "headers": {
+        "type": "object",
+        "title": "Headers",
+        "description": "Headers to pass",
+        "order": 6
       }
     }
   }
