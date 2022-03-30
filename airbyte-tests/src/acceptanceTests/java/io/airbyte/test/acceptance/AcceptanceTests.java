@@ -1176,7 +1176,8 @@ public class AcceptanceTests {
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     
     // check if temporal workflow is reachable
-    final ConnectionManagerWorkflow connectionManagerWorkflow = workflowCLient.newWorkflowStub(ConnectionManagerWorkflow.class, "connection_manager_" + connectionId);
+    final ConnectionManagerWorkflow connectionManagerWorkflow =
+        workflowCLient.newWorkflowStub(ConnectionManagerWorkflow.class, "connection_manager_" + connectionId);
     connectionManagerWorkflow.getState();
 
     // Terminate workflow
