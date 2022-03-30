@@ -5,6 +5,7 @@
 import logging
 from typing import Any, List, Mapping, Tuple, Type
 
+import pendulum
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -39,30 +40,13 @@ class SourceFacebookMarketing(AbstractSource):
         :param _logger:  logger object
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        config = ConnectorConfig.parse_obj(config)
+        if pendulum.instance(config.end_date) < pendulum.instance(config.start_date):
+            raise ValueError("end_date must be equal or after start_date.")
+        api = API(account_id=config.account_id, access_token=config.access_token)
+        logger.info(f"Select account {api.account}")
 
-        ok = False
-        error_msg = None
-
-        try:
-            config = ConnectorConfig(**config)
-            api = API(config)
-            account_ids = {str(account["account_id"]) for account in api.accounts}
-
-            if config.account_selection_strategy_is_subset:
-                config_account_ids = set(config.accounts.ids)
-                if not config_account_ids.issubset(account_ids):
-                    raise Exception(f"Account Ids: {config_account_ids.difference(account_ids)} not found on this user.")
-            elif config.account_selection_strategy_is_all:
-                if not account_ids:
-                    raise Exception("You don't have accounts assigned to this user.")
-            else:
-                raise Exception("Incorrect account selection strategy.")
-
-            ok = True
-        except Exception as exc:
-            error_msg = repr(exc)
-
-        return ok, error_msg
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
         """Discovery method, returns available streams
@@ -70,8 +54,8 @@ class SourceFacebookMarketing(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return: list of the stream instances
         """
-        config: ConnectorConfig = ConnectorConfig(**config)
-        api = API(config)
+        config: ConnectorConfig = ConnectorConfig.parse_obj(config)
+        api = API(account_id=config.account_id, access_token=config.access_token)
 
         insights_args = dict(
             api=api,

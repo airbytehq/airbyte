@@ -6,7 +6,6 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
-from typing import List, Set, Type
 
 import backoff
 import pendulum
@@ -16,9 +15,13 @@ from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.common import ConnectorConfig, FacebookAPIException, retry_pattern
+from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
+
+
+class FacebookAPIException(Exception):
+    """General class for all API errors"""
 
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
@@ -156,37 +159,26 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, config: ConnectorConfig):
-
-        self.__config = config
-
+    def __init__(self, account_id: str, access_token: str):
+        self._account_id = account_id
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
-        self.api = MyFacebookAdsApi.init(access_token=self.__config.access_token, crash_log=False)
+        self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
-    def accounts(self) -> List[Type[AdAccount]]:
-        """Find current accounts"""
-        return self._find_accounts()
+    def account(self) -> AdAccount:
+        """Find current account"""
+        return self._find_account(self._account_id)
 
-    def _find_accounts(self) -> List[Type[AdAccount]]:
-        """Actual implementation of find accounts"""
+    @staticmethod
+    def _find_account(account_id: str) -> AdAccount:
+        """Actual implementation of find account"""
         try:
-            accounts_found = list(fb_user.User(fbid="me").get_ad_accounts())
-            if self.__config.account_selection_strategy_is_subset:
-                account_ids = self.__config.accounts.ids
-                accounts_found = list(filter(lambda x: not account_ids or x["account_id"] in account_ids, accounts_found))
-
-                accounts_missing = self._accounts_missing_from_config(accounts_found)
-                if accounts_missing:
-                    raise FacebookAPIException(f"Couldn't find account(s) with id {accounts_missing}")
-
-            return accounts_found
+            accounts = fb_user.User(fbid="me").get_ad_accounts()
+            for account in accounts:
+                if account["account_id"] == account_id:
+                    return account
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
-    def _accounts_missing_from_config(self, accounts: List[Type[AdAccount]]) -> Set[str]:
-        """Returns a list of account ids missing from config accounts"""
-        config_account_ids = set(self.__config.accounts.ids)
-        account_ids = set(map(lambda x: x.get("account_id"), accounts))
-        return config_account_ids.difference(account_ids)
+        raise FacebookAPIException("Couldn't find account with id {}".format(account_id))
