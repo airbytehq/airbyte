@@ -9,7 +9,7 @@ if test -z "${DOCKER_PASSWORD}"; then
   exit 1;
 fi
 
-docker login -u airbytebot -p "${DOCKER_PASSWORD}"
+docker login --username airbytebot --password "${DOCKER_PASSWORD}"
 
 source ./tools/bin/bump_version.sh
 
