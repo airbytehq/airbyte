@@ -1,4 +1,4 @@
-name: "Build and Push Branch"
+name: "Build OSS Branch and Push Minimum Required OSS Images"
 description: "Build jars and docker images tagged for a particular branch. Primarily used for running OSS branch code in Cloud."
 inputs:
   branch_version_tag:
