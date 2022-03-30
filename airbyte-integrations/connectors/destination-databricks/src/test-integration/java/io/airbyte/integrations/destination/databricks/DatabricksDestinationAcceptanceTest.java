@@ -32,7 +32,6 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,11 +39,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
@@ -183,8 +178,7 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
           case DATE_TIME -> {
             if (pathFields.size() == 1) {
               data.put(pathFields.get(0).toLowerCase(), DateTimeUtils.convertToDatabricksFormat(data.get(pathFields.get(0)).asText()));
-            }
-            else {
+            } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1).toLowerCase(),
                   DateTimeUtils.convertToDatabricksFormat(data.at(path).asText()));
             }

@@ -21,7 +21,6 @@ import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
@@ -223,8 +222,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
 
   @Override
   protected void assertSameValue(String key,
-      JsonNode expectedValue,
-      JsonNode actualValue) {
+                                 JsonNode expectedValue,
+                                 JsonNode actualValue) {
     if (DateTimeUtils.isDateTimeValue(expectedValue.asText()) && DateTimeUtils.isDateTimeValue(actualValue.asText())) {
       /*
        * Omitted millis for assertion because MSSQL datetime values are rounded to increments of .000,

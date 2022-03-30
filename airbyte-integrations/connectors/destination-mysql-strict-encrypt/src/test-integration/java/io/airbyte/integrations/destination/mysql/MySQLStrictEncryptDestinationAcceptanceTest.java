@@ -28,7 +28,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;

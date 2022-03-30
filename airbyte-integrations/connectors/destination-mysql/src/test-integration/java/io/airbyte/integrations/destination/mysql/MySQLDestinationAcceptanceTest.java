@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.mysql;
 
 import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
-import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,7 +28,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;

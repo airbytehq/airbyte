@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.mssql;
 
 import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
 import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
-import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.MILLISECONDS_PATTERN;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,7 +22,6 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -227,8 +225,8 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected void assertSameValue(String key,
-      JsonNode expectedValue,
-      JsonNode actualValue) {
+                                 JsonNode expectedValue,
+                                 JsonNode actualValue) {
     if (DateTimeUtils.isDateTimeValue(expectedValue.asText()) && DateTimeUtils.isDateTimeValue(actualValue.asText())) {
       /*
        * Omitted millis for assertion because MSSQL datetime values are rounded to increments of .000,

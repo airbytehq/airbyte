@@ -80,13 +80,12 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
         switch (dateTimeFieldNames.get(path)) {
           case DATE_TIME -> {
             if (pathFields.size() == 1) {
-              var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(data.at(path).asText())/1000).divide(new BigDecimal(1000)));
+              var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(data.at(path).asText()) / 1000).divide(new BigDecimal(1000)));
               result = !result.contains(".") ? result + ".0" : result;
               data.put(pathFields.get(0).toLowerCase(), result);
 
-            }
-            else {
-              var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(data.at(path).asText())/1000).divide(new BigDecimal(1000)));
+            } else {
+              var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(data.at(path).asText()) / 1000).divide(new BigDecimal(1000)));
               result = !result.contains(".") ? result + ".0" : result;
               ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1).toLowerCase(),
                   result);
