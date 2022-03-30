@@ -29,6 +29,10 @@ class StripeStream(HttpStream, ABC):
         self._headers = kwargs["headers"]
         self._request_parameters = kwargs["request_parameters"]
         self._stream_to_cursor_field = kwargs["stream_to_cursor_field"]
+        self._stream_to_path = kwargs["stream_to_path"]
+
+    def path(self, **kwargs):
+        return self._stream_to_path[self.name]
 
     def url_base(self) -> str:
         return self._url_base
@@ -46,9 +50,7 @@ class StripeStream(HttpStream, ABC):
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
-        # Stripe default pagination is 10, max is 100
         params = self._request_parameters
-        # params = {"limit": 100}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
@@ -200,7 +202,8 @@ class StripeSubStream(StripeStream, ABC):
                 "start_date": self.start_date,
                 "headers": self._headers,
                 "request_parameters": self._request_parameters,
-                "stream_to_cursor_field": self._stream_to_cursor_field
+                "stream_to_cursor_field": self._stream_to_cursor_field,
+                "stream_to_path": self._stream_to_path
             }
         )
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -236,9 +239,6 @@ class Invoices(IncrementalStripeAlexStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def path(self, **kwargs):
-        return "v1/invoices"
-
 
 class InvoiceLineItems(StripeSubStream):
     """
@@ -255,9 +255,6 @@ class InvoiceLineItems(StripeSubStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"v1/invoices/{stream_slice[self.parent_id]}/lines"
-
 
 class InvoiceItems(IncrementalStripeAlexStream):
     """
@@ -268,6 +265,3 @@ class InvoiceItems(IncrementalStripeAlexStream):
         super().__init__(**kwargs)
 
     name = "invoice_items"
-
-    def path(self, **kwargs):
-        return "v1/invoiceitems"

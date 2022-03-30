@@ -12,7 +12,9 @@
       "url_base",
       "check_endpoint",
       "headers",
-      "request_parameters"
+      "request_parameters",
+      "stream_to_cursor_field",
+      "stream_to_path"
     ],
     "properties": {
       "account_id": {
@@ -75,6 +77,12 @@
         "title": "Stream to cursor field",
         "description": "Mapping from stream name to cursor field",
         "order": 7
+      },
+      "stream_to_path": {
+        "type": "object",
+        "title": "Stream to path",
+        "description": "Mapping from stream name to path",
+        "order": 8
       }
     }
   }
