@@ -183,7 +183,7 @@ class CashBalancesEod(CashBalancesStream, IncrementalKyribaStream):
         yesterday = date.today() - timedelta(days=1)
         while start_date <= yesterday:
             end_date = start_date + timedelta(days=days_inc)
-            end_date = end_date if end_date < date.today() else date.today()
+            end_date = end_date if end_date <= yesterday else yesterday
             date_params = {
                 "startDate": start_date.isoformat(),
                 "endDate": end_date.isoformat(),
