@@ -85,7 +85,7 @@ public class TemporalClient {
 
   public TemporalResponse<ConnectorSpecification> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
-
+    client.newUntypedWorkflowStub("").terminate("");
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)

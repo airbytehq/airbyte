@@ -213,7 +213,19 @@ services:
       - VAULT_TOKEN=${VAULT_TOKEN}
     cap_add:
       - IPC_LOCK
-    command: vault server -dev -config=/vault/config/vault.json
+    command: vault server -config=/vault/config/vault.json
+  vault-init:
+    image: jaceys/vault-init:v0.2.0
+    logging: *default-logging
+    container_name: airbyte-vault-init
+    restart: unless-stopped
+    command: start
+    depends_on:
+      - vault
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8400
+      - ENCRYPTION_LOCAL_SECRET_KEY=FjaUCqqTIorGTe1Z86rs2YfkRgQ6iIgo
+      - STORAGE_POSTGRES_CONNECTION_URL=postgres://docker:docker@postgres:5432/airbyte?sslmode=disable
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
