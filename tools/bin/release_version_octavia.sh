@@ -11,22 +11,17 @@ fi
 
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
-PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
-
-[[ -z "$PART_TO_BUMP" ]] && echo "Usage ./tools/bin/release_version.sh (major|minor|patch)" && exit 1
 
 # uses .bumpversion.cfg to find files to bump
 # requires no git diffs to run
 # commits the bumped versions code to your branch
 pip install bumpversion
-# use the main .bumpversion.cfg but only modify octavia files
-NEW_VERSION=$(bumpversion --list --no-configured-files "$PART_TO_BUMP" octavia-cli/install.sh octavia-cli/README.md octavia-cli/Dockerfile | grep new_version | sed -r s,"^.*=",,)
-GIT_REVISION=$(git rev-parse HEAD)
-[[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
-echo "Bumped version from ${PREV_VERSION} to ${NEW_VERSION}"
+bumpversion "$PART_TO_BUMP"
 
-echo "Building and publishing OCTAVIA version $NEW_VERSION for git revision $GIT_REVISION..."
-VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build
-./octavia-cli/publish.sh ${NEW_VERSION} ${GIT_REVISION}
-echo "Completed building and publishing OCTAVIA..."
-echo ::set-output name=NEW_VERSION::${NEW_VERSION}
+./tools/bin/bump_version.sh
+
+# TESTING: DISABLE BUILD AND PUBLISH FOR ITERATIONS ON CI
+# echo "Building and publishing OCTAVIA version $NEW_VERSION for git revision $GIT_REVISION..."
+# VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build
+# ./octavia-cli/publish.sh ${NEW_VERSION} ${GIT_REVISION}
+# echo "Completed building and publishing OCTAVIA..."

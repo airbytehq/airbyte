@@ -63,15 +63,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "16.13.0"
-
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
           python-version: "3.7"
-      - name: Save Old Version
-        id: old_version
-        run: |
-          echo ::set-output name=OLD_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
       - name: Release Airbyte
         id: release_airbyte
         env:
@@ -81,34 +76,6 @@ jobs:
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
           ./tools/bin/release_version.sh
-      - name: Save New Version
-        id: new_version
-        run: |
-          echo ::set-output name=NEW_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
-      - name: Get PR Body
-        id: pr_body
-        env:
-          PREV_VERSION: ${{ steps.old_version.outputs.OLD_VERSION }}
-        run: |
-          chmod +x tools/bin/pr_body.sh
-          body=$(./tools/bin/pr_body.sh)
-          body="${body//$'\n'/'%0A'}"
-          echo ::set-output name=PR_BODY::$body
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.SLASH_COMMAND_PAT }}
-          branch: bump-version
-          branch-suffix: random
-          delete-branch: true
-          title: Bump Airbyte version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
-          body: ${{ steps.pr_body.outputs.PR_BODY }}
-          commit-message: Bump Airbyte version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
-      - name: PR Details
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
 
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
@@ -134,23 +101,39 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: "3.8"
-      - name: Save Old Version
-        id: old_version
-        run: |
-          echo ::set-output name=OLD_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
       - name: Release Octavia
         id: release_octavia
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/release_version_octavia.sh
+
+  createPullRequest:
+    runs-on: ubuntu-latest
+    environment: more-secrets
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      # necessary to install pip
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      - name: Bump version
+        id: bump_version
+        env:
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
+        run: ./tools/bin/bump_version.sh
       - name: Get PR Body
         id: pr_body
         env:
-          PREV_VERSION: ${{ steps.old_version.outputs.OLD_VERSION }}
+          PREV_VERSION: ${{ steps.bump_version.outputs.PREV_VERSION }}
+          NEW_VERSION: ${{ steps.bump_version.outputs.NEW_VERSION }}
+          GIT_REVISION: ${{ steps.bump_version.outputs.GIT_REVISION }}
         run: |
-          chmod +x tools/bin/pr_body_octavia.sh
-          body=$(./tools/bin/pr_body_octavia.sh)
+          chmod +x tools/bin/pr_body.sh
+          body=$(./tools/bin/pr_body.sh)
           body="${body//$'\n'/'%0A'}"
           echo ::set-output name=PR_BODY::$body
       - name: Create Pull Request
@@ -161,9 +144,9 @@ jobs:
           branch: bump-version-octavia
           branch-suffix: random
           delete-branch: true
-          title: Bump Octavia version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.release_octavia.outputs.NEW_VERSION }}
+          title: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
           body: ${{ steps.pr_body.outputs.PR_BODY }}
-          commit-message: Bump Octavia version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.release_octavia.outputs.NEW_VERSION }}
+          commit-message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
       - name: PR Details
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
