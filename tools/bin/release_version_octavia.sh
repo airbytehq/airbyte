@@ -4,12 +4,12 @@ set -e
 
 . tools/lib/lib.sh
 
-# if [[ -z "${DOCKER_PASSWORD}" ]]; then
-#   echo 'DOCKER_PASSWORD for airbytebot not set.';
-#   exit 1;
-# fi
+if [[ -z "${DOCKER_PASSWORD}" ]]; then
+  echo 'DOCKER_PASSWORD for airbytebot not set.';
+  exit 1;
+fi
 
-#docker login -u airbytebot -p "${DOCKER_PASSWORD}"
+docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
 source ./tools/bin/bump_version.sh
 
