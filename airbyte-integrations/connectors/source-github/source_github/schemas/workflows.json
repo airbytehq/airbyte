@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "id": {
       "type": "integer"
