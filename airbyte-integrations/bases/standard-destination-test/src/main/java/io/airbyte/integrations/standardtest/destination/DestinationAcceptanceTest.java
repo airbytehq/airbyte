@@ -98,6 +98,10 @@ public abstract class DestinationAcceptanceTest {
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
+  protected static final String AIRBYTE_DATE_FORMAT = "yyyy-MM-dd";
+  protected static final String AIRBYTE_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+  protected static final String AIRBYTE_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationAcceptanceTest.class);
 
   private TestDestinationEnv testEnv;
@@ -1135,6 +1139,17 @@ public abstract class DestinationAcceptanceTest {
     assertSameData(expectedProcessed, actualProcessed);
   }
 
+  private boolean areBothEmpty(final JsonNode expectedData, final JsonNode actualData) {
+    if (expectedData.size() == 0 && actualData.size() == 0) {
+      return true;
+    } else if (expectedData.size() <= 1 && actualData.size() <= 1) {
+      boolean isExpectedEmpty = (expectedData.size() == 0 || expectedData.iterator().next().asText().isEmpty());
+      return isExpectedEmpty && (actualData.size() == 0 || actualData.iterator().next().asText().isEmpty());
+    } else {
+      return false;
+    }
+  }
+
   private void assertSameData(final List<JsonNode> expected, final List<JsonNode> actual) {
     LOGGER.info("Expected data {}", expected);
     LOGGER.info("Actual data   {}", actual);
@@ -1147,22 +1162,26 @@ public abstract class DestinationAcceptanceTest {
       final Iterator<Entry<String, JsonNode>> expectedDataIterator = expectedData.fields();
       LOGGER.info("Expected row {}", expectedData);
       LOGGER.info("Actual row   {}", actualData);
-      assertEquals(expectedData.size(), actualData.size(), "Unequal row size");
-      while (expectedDataIterator.hasNext()) {
-        final Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
-        final JsonNode expectedValue = expectedEntry.getValue();
-        JsonNode actualValue = null;
-        String key = expectedEntry.getKey();
-        for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
-          actualValue = actualData.get(tmpKey);
-          if (actualValue != null) {
-            key = tmpKey;
-            break;
+      if (areBothEmpty(expectedData, actualData)) {
+        LOGGER.info("Both rows are empty.");
+      } else {
+        assertEquals(expectedData.size(), actualData.size(), "Unequal row size");
+        while (expectedDataIterator.hasNext()) {
+          final Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
+          final JsonNode expectedValue = expectedEntry.getValue();
+          JsonNode actualValue = null;
+          String key = expectedEntry.getKey();
+          for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
+            actualValue = actualData.get(tmpKey);
+            if (actualValue != null) {
+              key = tmpKey;
+              break;
+            }
           }
+          LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
+          assertTrue(actualData.has(key));
+          assertSameValue(expectedValue, actualValue);
         }
-        LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
-        assertTrue(actualData.has(key));
-        assertSameValue(expectedValue, actualValue);
       }
     }
   }
@@ -1171,58 +1190,109 @@ public abstract class DestinationAcceptanceTest {
   protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     LOGGER.info("assertSameValue : {} vs {}", expectedValue, actualValue);
 
+    assertTrue(compareJsonNodes(expectedValue, actualValue), "Expected value " + expectedValue + " vs Actual value " + actualValue);
+  }
+
+  protected boolean compareJsonNodes(final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue == null || actualValue == null)
-      assertEquals(expectedValue, actualValue);
+      return expectedValue == null && actualValue == null;
     else if (expectedValue.isNumber() || expectedValue.isDouble() || expectedValue.isFloat())
-      compareNumericValues(expectedValue.asText(), actualValue.asText());
+      return compareNumericValues(expectedValue.asText(), actualValue.asText());
     else if (expectedValue.isBoolean())
-      compareBooleanValues(expectedValue.asText(), actualValue.asText());
+      return compareBooleanValues(expectedValue.asText(), actualValue.asText());
     else if (isDateTimeWithTzValue(expectedValue.asText()))
-      compareDateTimeWithTzValues(expectedValue.asText(), actualValue.asText());
+      return compareDateTimeWithTzValues(expectedValue.asText(), actualValue.asText());
+    else if (isDateTimeValue(expectedValue.asText()))
+      return compareDateTimeValues(expectedValue.asText(), actualValue.asText());
+    else if (isDateValue(expectedValue.asText()))
+      return compareDateValues(expectedValue.asText(), actualValue.asText());
+    else if (expectedValue.isArray() && actualValue.isArray())
+      return compareArrays(expectedValue, actualValue);
     else
-      assertEquals(expectedValue, actualValue);
+      return compareString(expectedValue, actualValue);
   }
 
-  protected void compareBooleanValues(final String firstNumericValue, final String secondNumericValue) {
-    LOGGER.info("compareBooleanValues : {} vs {}", firstNumericValue, secondNumericValue);
-    assertEquals(Boolean.valueOf(firstNumericValue), Boolean.valueOf(secondNumericValue));
+  protected boolean compareString(final JsonNode expectedValue, final JsonNode actualValue) {
+    return expectedValue.asText().equals(actualValue.asText());
   }
 
-  protected void compareNumericValues(final String firstNumericValue, final String secondNumericValue) {
-    LOGGER.info("compareNumericValues : {} vs {}", firstNumericValue, secondNumericValue);
+  private List<JsonNode> getArrayList(final JsonNode jsonArray) {
+    List<JsonNode> result = new ArrayList<>();
+    jsonArray.elements().forEachRemaining(result::add);
+    return result;
+  }
 
+  protected boolean compareArrays(final JsonNode expectedArray, final JsonNode actualArray) {
+    var expectedList = getArrayList(expectedArray);
+    var actualList = getArrayList(actualArray);
+
+    if (expectedList.size() != actualList.size()) {
+      return false;
+    }
+    else {
+      boolean result = false;
+      for (JsonNode expectedNode : expectedList) {
+        for (JsonNode actualNode : actualList) {
+          result = compareJsonNodes(expectedNode, actualNode) || result;
+        }
+      }
+      return result;
+    }
+  }
+
+  protected boolean compareBooleanValues(final String firstNumericValue, final String secondNumericValue) {
+    return Boolean.valueOf(firstNumericValue) == Boolean.valueOf(secondNumericValue);
+  }
+
+  protected boolean compareNumericValues(final String firstNumericValue, final String secondNumericValue) {
     double firstValue = Double.parseDouble(firstNumericValue);
     double secondValue = Double.parseDouble(secondNumericValue);
 
-    assertEquals(firstValue, secondValue);
+    return firstValue == secondValue;
   }
 
   protected DateTimeFormatter getAirbyteDateTimeWithTzFormatter() {
-    return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
-  }
-
-  protected DateTimeFormatter getDestinationDateTimeWithTzFormatter() {
-    return getAirbyteDateTimeWithTzFormatter();
+    return DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_WITH_TZ_FORMAT);
   }
 
   protected boolean isDateTimeWithTzValue(final String value) {
     return value.matches(".+[+-]\\d{2}:\\d{2}");
   }
 
-  protected void compareDateTimeWithTzValues(final String airbyteMessageValue, final String destinationValue) {
+  protected ZonedDateTime parseDestinationDateWithTz(final String destinationValue) {
+    return ZonedDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_WITH_TZ_FORMAT)).withZoneSameInstant(ZoneOffset.UTC);
+  }
+
+  protected boolean compareDateTimeWithTzValues(final String airbyteMessageValue, final String destinationValue) {
     try {
       ZonedDateTime airbyteDate = ZonedDateTime.parse(airbyteMessageValue, getAirbyteDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
-      ZonedDateTime destinationDate = ZonedDateTime.parse(destinationValue, getDestinationDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
-      assertEquals(airbyteDate, destinationDate);
+      ZonedDateTime destinationDate = parseDestinationDateWithTz(destinationValue);
+      return airbyteDate.equals(destinationDate);
     } catch (DateTimeParseException e) {
       LOGGER.warn("Fail to convert values to ZonedDateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
           airbyteMessageValue, destinationValue, e);
-      compareTextValues(airbyteMessageValue, destinationValue);
+      return compareTextValues(airbyteMessageValue, destinationValue);
     }
   }
 
-  protected void compareTextValues(final String firstValue, final String secondValue) {
-    assertEquals(firstValue, secondValue);
+  protected boolean isDateTimeValue(final String value) {
+    return value.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
+  }
+
+  protected boolean compareDateTimeValues(final String airbyteMessageValue, final String destinationValue) {
+    return compareTextValues(airbyteMessageValue, destinationValue);
+  }
+
+  protected boolean isDateValue(final String value) {
+    return value.matches("\\d{4}-\\d{2}-\\d{2}");
+  }
+
+  protected boolean compareDateValues(final String airbyteMessageValue, final String destinationValue) {
+    return compareTextValues(airbyteMessageValue, destinationValue);
+  }
+
+  protected boolean compareTextValues(final String firstValue, final String secondValue) {
+    return firstValue.equals(secondValue);
   }
 
   protected List<AirbyteRecordMessage> retrieveNormalizedRecords(final AirbyteCatalog catalog, final String defaultSchema) throws Exception {
@@ -1232,9 +1302,8 @@ public abstract class DestinationAcceptanceTest {
       final String streamName = stream.getName();
 
       final List<AirbyteRecordMessage> msgList = retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
-          .stream()
-          .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
-          .collect(Collectors.toList());
+              .stream()
+              .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data)).toList();
       actualMessages.addAll(msgList);
     }
     return actualMessages;
