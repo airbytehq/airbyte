@@ -9,8 +9,7 @@ import { equal } from "utils/objects";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
 import { Transformation } from "core/domain/connection/operation";
-import { useGetService } from "core/servicesProvider";
-import { OperationService } from "core/domain/connection";
+import { useOperationService } from "services/useInitService";
 
 const Content = styled.div`
   display: flex;
@@ -82,7 +81,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
   onDone,
 }) => {
   const formatMessage = useIntl().formatMessage;
-  const operationService = useGetService<OperationService>("OperationService");
+  const operationService = useOperationService();
 
   const formik = useFormik({
     initialValues: transformation,

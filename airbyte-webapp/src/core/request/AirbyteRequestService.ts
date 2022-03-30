@@ -6,7 +6,7 @@ import { RequestMiddleware } from "./RequestMiddleware";
 
 abstract class AirbyteRequestService {
   constructor(
-    protected rootUrl: string,
+    protected rootUrl: string | (() => string),
     private middlewares: RequestMiddleware[] = []
   ) {}
 
@@ -16,7 +16,9 @@ abstract class AirbyteRequestService {
     body?: unknown,
     options?: Partial<RequestInit>
   ): Promise<T> {
-    const path = `${this.rootUrl}${url}`;
+    const rootUrl =
+      typeof this.rootUrl === "function" ? this.rootUrl() : this.rootUrl;
+    const path = `${rootUrl}${url}`;
 
     const requestOptions: RequestInit = merge(
       {

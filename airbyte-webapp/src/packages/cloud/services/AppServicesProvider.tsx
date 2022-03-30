@@ -1,19 +1,14 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 
 import { useAuth } from "packages/firebaseReact";
 
-import {
-  ServicesProvider,
-  useGetService,
-  useInjectServices,
-} from "core/servicesProvider";
-import { ApiServices } from "core/ApiServices";
+import { ServicesProvider, useInjectServices } from "core/servicesProvider";
 import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { useConfig } from "./config";
 import { UserService } from "packages/cloud/lib/domain/users";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { LoadingPage } from "components";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
 /**
  * This Provider is main services entrypoint
@@ -32,37 +27,33 @@ const AppServicesProvider: React.FC = ({ children }) => {
 
 const ServiceOverrides: React.FC = React.memo(({ children }) => {
   const auth = useAuth();
-
-  const middlewares: RequestMiddleware[] = useMemo(
-    () => [
-      RequestAuthMiddleware({
-        getValue() {
-          return auth.currentUser?.getIdToken() ?? "";
-        },
-      }),
-    ],
-    [auth]
-  );
-
   const { cloudApiUrl } = useConfig();
 
-  const inject = useMemo(
-    () => ({
+  const user = useRef(auth.currentUser);
+  user.current = auth.currentUser;
+
+  const inject = useMemo(() => {
+    const middlewares = [
+      RequestAuthMiddleware({
+        getValue() {
+          return user.current?.getIdToken() ?? "";
+        },
+      }),
+    ];
+
+    const ctx = {
       UserService: new UserService(cloudApiUrl, middlewares),
       DefaultRequestMiddlewares: middlewares,
-    }),
-    [cloudApiUrl, middlewares]
-  );
+    };
+
+    return ctx;
+  }, [cloudApiUrl]);
 
   useInjectServices(inject);
 
-  const registeredMiddlewares = useGetService("DefaultRequestMiddlewares");
+  const registeredMiddlewares = useDefaultRequestMiddlewares();
 
-  return (
-    <ApiServices>
-      {registeredMiddlewares ? <>{children}</> : <LoadingPage />}
-    </ApiServices>
-  );
+  return <>{registeredMiddlewares ? <>{children}</> : <LoadingPage />}</>;
 });
 
 export { AppServicesProvider };

@@ -12,10 +12,9 @@ import { useConfig } from "config";
 import { useCurrentWorkspace } from "./useWorkspace";
 import { SourceAuthService } from "core/domain/connector/SourceAuthService";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
-import { useGetService } from "core/servicesProvider";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import useRouter from "../useRouter";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
 let windowObjectReference: Window | null = null; // global variable
 
@@ -53,9 +52,7 @@ export function useConnectorAuth(): {
 } {
   const { workspaceId } = useCurrentWorkspace();
   const { apiUrl, oauthRedirectUrl } = useConfig();
-  const middlewares = useGetService<RequestMiddleware[]>(
-    "DefaultRequestMiddlewares"
-  );
+  const middlewares = useDefaultRequestMiddlewares();
 
   // TODO: move to separate initFacade and use refs instead
   const sourceAuthService = useMemo(

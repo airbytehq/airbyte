@@ -45,20 +45,6 @@ export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({
   );
 };
 
-export type ServiceInject = [string, Service];
-
-const WithServiceInner: React.FC<{
-  serviceInject: ServiceInject[];
-}> = ({ children, serviceInject }) => {
-  useInjectServices(serviceInject);
-
-  return <>{children}</>;
-};
-
-export const WithService: React.FC<{
-  serviceInject: ServiceInject[];
-}> = React.memo(WithServiceInner);
-
 export function useInjectServices(serviceInject: ServiceContainer): void {
   const { register, unregister } = useServicesProvider();
 

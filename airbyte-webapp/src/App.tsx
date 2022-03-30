@@ -14,7 +14,6 @@ import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { FeatureService } from "hooks/services/Feature";
 import { ServicesProvider } from "core/servicesProvider";
-import { ApiServices } from "core/ApiServices";
 import {
   Config,
   ConfigServiceProvider,
@@ -55,9 +54,7 @@ const Services: React.FC = ({ children }) => (
     <ApiErrorBoundary>
       <WorkspaceServiceProvider>
         <FeatureService>
-          <NotificationService>
-            <ApiServices>{children}</ApiServices>
-          </NotificationService>
+          <NotificationService>{children}</NotificationService>
         </FeatureService>
       </WorkspaceServiceProvider>
     </ApiErrorBoundary>

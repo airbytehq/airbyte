@@ -7,10 +7,9 @@ import { useConfig } from "config";
 
 import { Button, ContentCard, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
-import { DeploymentService } from "core/domain/deployment/DeploymentService";
 import ImportConfigurationModal from "./components/ImportConfigurationModal";
 import LogsContent from "./components/LogsContent";
-import { useServicesProvider } from "core/servicesProvider";
+import { useDeploymentService } from "../../../../services/useInitService";
 
 const Content = styled.div`
   max-width: 813px;
@@ -46,47 +45,37 @@ const Warning = styled.div`
 
 const ConfigurationsPage: React.FC = () => {
   const config = useConfig();
-  const { getService } = useServicesProvider();
+  const deploymentService = useDeploymentService();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const [{ loading }, onImport] = useAsyncFn(
-    async (fileBlob: Blob) => {
-      try {
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(fileBlob);
+  const [{ loading }, onImport] = useAsyncFn(async (fileBlob: Blob) => {
+    try {
+      const reader = new FileReader();
+      reader.readAsArrayBuffer(fileBlob);
 
-        return new Promise((resolve, reject) => {
-          reader.onloadend = async (e) => {
-            const file = e?.target?.result;
-            if (!file) {
-              throw new Error("No file");
-            }
-            try {
-              const deploymentService = getService<DeploymentService>(
-                "DeploymentService"
-              );
-              await deploymentService.importDeployment(file);
+      return new Promise((resolve, reject) => {
+        reader.onloadend = async (e) => {
+          const file = e?.target?.result;
+          if (!file) {
+            throw new Error("No file");
+          }
+          try {
+            await deploymentService.importDeployment(file);
 
-              window.location.reload();
-              resolve(true);
-            } catch (e) {
-              reject(e);
-            }
-          };
-        });
-      } catch (e) {
-        setError(e);
-      }
-    },
-    [getService]
-  );
+            window.location.reload();
+            resolve(true);
+          } catch (e) {
+            reject(e);
+          }
+        };
+      });
+    } catch (e) {
+      setError(e);
+    }
+  }, []);
 
   const [{ loading: loadingExport }, onExport] = useAsyncFn(async () => {
-    const deploymentService = getService<DeploymentService>(
-      "DeploymentService"
-    );
-
     const file = await deploymentService.exportDeployment();
     window.location.assign(file);
   }, []);

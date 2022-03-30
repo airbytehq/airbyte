@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
-import { HealthService } from "core/health/HealthService";
 import { useConfig } from "config";
-import { useGetService } from "core/servicesProvider";
+import { useHealthService } from "../../../services/useInitService";
 
 const HEALTH_NOTIFICATION_ID = "health.error";
 const HEALTHCHECK_MAX_COUNT = 3;
@@ -13,7 +12,7 @@ function useApiHealthPoll(): void {
   const [count, setCount] = useState(0);
   const { formatMessage } = useIntl();
   const { healthCheckInterval } = useConfig();
-  const healthService = useGetService<HealthService>("HealthService");
+  const healthService = useHealthService();
   const {
     registerNotification,
     unregisterNotificationById,
