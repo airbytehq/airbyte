@@ -4,37 +4,29 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Stripe Source Spec",
     "type": "object",
-    "required": ["url_base","api_key", "account_id", "start_date"],
+    "required": ["client_secret", "account_id", "start_date"],
     "additionalProperties": false,
     "properties": {
-      "url_base": {
-        "type": "string",
-        "title": "URL base",
-        "description": "Base URL of the endpoint to hit",
-        "order": 0
-      },
       "account_id": {
         "type": "string",
         "title": "Account ID",
         "description": "Your Stripe account ID (starts with 'acct_', find yours <a href=\"https://dashboard.stripe.com/settings/account\">here</a>).",
-        "order": 1
+        "order": 0
       },
-      "api_key": {
+      "client_secret": {
         "type": "string",
         "title": "Secret Key",
         "description": "Stripe API key (usually starts with 'sk_live_'; find yours <a href=\"https://dashboard.stripe.com/apikeys\">here</a>).",
         "airbyte_secret": true,
-        "order": 2
+        "order": 1
       },
       "start_date": {
         "type": "string",
         "title": "Start Date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
-        "examples": [
-          "2017-01-25T00:00:00Z"
-        ],
-        "order": 3
+        "examples": ["2017-01-25T00:00:00Z"],
+        "order": 2
       },
       "lookback_window_days": {
         "type": "integer",
@@ -42,51 +34,7 @@
         "default": 0,
         "minimum": 0,
         "description": "When set, the connector will always reload data from the past N days, where N is the value set here. This is useful if your data is updated after creation. More info <a href=\"https://docs.airbyte.com/integrations/sources/stripe#requirements\">here</a>",
-        "order": 4
-      },
-      "check_endpoint": {
-        "type": "string",
-        "title": "Check endpoint",
-        "description": "Endpoint to hit when checking connection",
-        "order": 5
-      },
-      "headers": {
-        "type": "object",
-        "title": "Headers",
-        "description": "Headers to pass",
-        "order": 6
-      },
-      "primary_key": {
-        "type": "string",
-        "title": "Primary key",
-        "description": "Primary key FOR ALL streams. FIXME",
-        "order": 7
-      },
-      "retry_factor": {
-        "type": "integer",
-        "title": "Retry factor",
-        "description": "Factor for exponential backoff policy",
-        "order": 8
-      },
-      "max_retries": {
-        "type": "integer",
-        "title": "Max retries",
-        "description": "Maximum amount of retries for backoff policy"
-      },
-      "response_key": {
-        "type": "string",
-        "title": "Resposne key",
-        "description": "Key to data to retrieve from response"
-      },
-      "request_parameters": {
-        "type": "object",
-        "title": "Request params",
-        "description": "Parameters"
-      },
-      "cursor_field": {
-        "type": "string",
-        "title": "Cursor field",
-        "description": "Cursor field for ALL streams"
+        "order": 3
       }
     }
   }

@@ -18,7 +18,7 @@
           ]
         ]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "cursor_field": [
         "date"
@@ -58,7 +58,7 @@
           ]
         ]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "cursor_field": [
         "created"
