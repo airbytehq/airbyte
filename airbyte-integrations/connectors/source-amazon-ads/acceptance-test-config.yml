@@ -18,7 +18,6 @@ tests:
         [
           "sponsored_product_negative_keywords",
           "sponsored_product_targetings",
-          "sponsored_product_ads",
         ]
       expect_records:
         path: "integration_tests/expected_products_stream.txt"
