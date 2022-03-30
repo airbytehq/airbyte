@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_stripe_alex.streams import Invoices
 
 logging.basicConfig(level=logging.DEBUG)
@@ -46,7 +47,6 @@ class SourceStripeAlex(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        print(f"config: {config}")
         url_base = config["url_base"]
         primary_key = config["primary_key"]
         retry_factor = config["retry_factor"]
@@ -67,6 +67,7 @@ class SourceStripeAlex(AbstractSource):
                 request_parameters=request_parameters,
                 start_date=start_date,
                 cursor_field=cursor_field,
+                authenticator=NoAuth()
             )
         ]
 

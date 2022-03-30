@@ -6,8 +6,8 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 
 # Basic full refresh stream
@@ -25,8 +25,10 @@ class StripeAlexStream(HttpStream, ABC):
             request_parameters: Mapping[str, Any],
             start_date: int,
             cursor_field: str,
+            authenticator: HttpAuthenticator,
+            **kwargs
     ):
-        super().__init__()
+        super(StripeAlexStream, self).__init__(authenticator, **kwargs)
         self._path = path
         self._primary_key = primary_key
         self.url_base = url_base
@@ -74,32 +76,6 @@ class StripeAlexStream(HttpStream, ABC):
     ) -> str:
         return self._path
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
-
-    def _read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-
-        ##TODO: This isn't passing the right parameters anymore...
-        parent_stream = super()
-
-        for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
-            # self.logger.error("=======HERE")
-            # self.logger.error(record)
-            # raise Exception(record)
-            items_obj = record.get("lines", {})
-            if not items_obj:
-                continue
-
-            items = items_obj.get("data", [])
-
-            # TODO handle pagination
-            for item in items:
-                yield item
-
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return self._primary_key
@@ -114,7 +90,7 @@ class StripeAlexStream(HttpStream, ABC):
 
     @retry_factor.setter
     def set_retry_factor(self, value):
-        self.retry_factor = value
+        self._retry_factor = value
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -130,7 +106,7 @@ class StripeAlexStream(HttpStream, ABC):
 
     @parent.setter
     def set_parent(self, value):
-        self._max_retries = value
+        self._parent = value
 
     @property
     def cursor_field(self) -> str:
