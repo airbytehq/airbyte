@@ -16,20 +16,28 @@ RE_RULE_NAME = re.compile(r"(.+):[A-Za-z]+(\d+)")
 REPORT_METRICS = (
     "alert_status",
     # "quality_gate_details",
-    "bugs", "new_bugs",
-    "reliability_rating", "new_reliability_rating",
-    "vulnerabilities", "new_vulnerabilities",
-    "security_rating", "new_security_rating",
+    "bugs",
+    "new_bugs",
+    "reliability_rating",
+    "new_reliability_rating",
+    "vulnerabilities",
+    "new_vulnerabilities",
+    "security_rating",
+    "new_security_rating",
     # "security_hotspots", "new_security_hotspots",
     # "security_hotspots_reviewed", "new_security_hotspots_reviewed",
     # "security_review_rating", "new_security_review_rating",
-    "code_smells", "new_code_smells",
+    "code_smells",
+    "new_code_smells",
     # "sqale_rating", "new_maintainability_rating",
     # "sqale_index", "new_technical_debt",
-    "coverage", "new_coverage",
-    "lines_to_cover", "new_lines_to_cover",
+    "coverage",
+    "new_coverage",
+    "lines_to_cover",
+    "new_lines_to_cover",
     "tests",
-    "duplicated_lines_density", "new_duplicated_lines_density",
+    "duplicated_lines_density",
+    "new_duplicated_lines_density",
     "duplicated_blocks",
     "ncloc",
     # "ncloc_language_distribution",
@@ -48,6 +56,7 @@ RATINGS = {
 
 class SonarQubeApi:
     """https://sonarcloud.io/web_api"""
+
     logger = Logger()
 
     def __init__(self, host: str, token: str, pr_name: str):
@@ -56,7 +65,7 @@ class SonarQubeApi:
         self._token = token
 
         # split the latest name part
-        self._pr_id = (pr_name or '').split("/")[-1]
+        self._pr_id = (pr_name or "").split("/")[-1]
         if not self._pr_id.isdigit():
             self.logger.critical(f"PR id should be integer. Current value: {pr_name}")
 
@@ -71,7 +80,7 @@ class SonarQubeApi:
 
     @property
     def __auth(self):
-        return HTTPBasicAuth(self._token, '')
+        return HTTPBasicAuth(self._token, "")
 
     def __parse_response(self, url: str, response: requests.Response) -> Mapping[str, Any]:
         if response.status_code == 204:
@@ -128,7 +137,7 @@ class SonarQubeApi:
         return exists_projects[0]
 
     def prepare_project_settings(self, project_name: str) -> Mapping[str, str]:
-        title = re.sub('[:_-]', ' ', project_name).replace("connectors_", "").title()
+        title = re.sub("[:_-]", " ", project_name).replace("connectors_", "").title()
         if self._pr_id:
             title += f"(#{self._pr_id})"
 
@@ -160,9 +169,7 @@ class SonarQubeApi:
         if exists_project is None:
             self.logger.info(f"not found the project '{project_name}'")
             return True
-        body = {
-            "project": project_name
-        }
+        body = {"project": project_name}
         self._post("projects/delete", body)
         self.logger.info(f"The project '{project_name}' was removed")
         return True
@@ -218,10 +225,7 @@ class SonarQubeApi:
                     # to public SQ docs
                     link = f"https://rules.sonarsource.com/{m.group(1)}/RSPEC-{m.group(2)}"
             if link:
-                public_name = md_file.new_inline_link(
-                    link=link,
-                    text=public_name
-                )
+                public_name = md_file.new_inline_link(link=link, text=public_name)
 
             rules[rule_key] = (public_name, description)
 
@@ -238,15 +242,14 @@ class SonarQubeApi:
                 value = measure.get("value")
             measures[metric] = value
         # group overall and latest values
-        measures = {metric: (value, measures.get(f"new_{metric}")) for metric, value in measures.items() if
-                    not metric.startswith("new_")}
+        measures = {metric: (value, measures.get(f"new_{metric}")) for metric, value in measures.items() if not metric.startswith("new_")}
         metrics = {}
         for metric in data["metrics"]:
             # if metric["key"] not in measures:
             #     continue
             metrics[metric["key"]] = (metric["name"], metric["type"])
 
-        md_file.new_line('#### Measures')
+        md_file.new_line("#### Measures")
 
         values = []
         for metric, (overall_value, latest_value) in measures.items():
@@ -281,13 +284,11 @@ class SonarQubeApi:
         while len(values) % 3:
             values.append(("", ""))
         table_items = ["Name", "Value"] * 3 + list(itertools.chain.from_iterable(values))
-        md_file.new_table(columns=6, rows=int(len(values) / 3 + 1), text=table_items, text_align='left')
+        md_file.new_table(columns=6, rows=int(len(values) / 3 + 1), text=table_items, text_align="left")
         md_file.new_line()
         if issues:
-            md_file.new_line('#### Detected Issues')
-            table_items = [
-                "Rule", "File", "Description", "Message"
-            ]
+            md_file.new_line("#### Detected Issues")
+            table_items = ["Rule", "File", "Description", "Message"]
             for issue in issues:
                 rule_name, description = rules[issue["rule"]]
                 path = issue["component"].split(":")[-1].split("/")
@@ -306,14 +307,14 @@ class SonarQubeApi:
                     issue["message"],
                 ]
 
-            md_file.new_table(columns=4, rows=len(issues) + 1, text=table_items, text_align='left')
+            md_file.new_table(columns=4, rows=len(issues) + 1, text=table_items, text_align="left")
         coverage_files = [(k, v) for k, v in self.load_coverage_component(project_name).items()]
         if total_coverage is not None:
-            md_file.new_line(f'#### Coverage ({total_coverage}%)')
+            md_file.new_line(f"#### Coverage ({total_coverage}%)")
             while len(coverage_files) % 2:
                 coverage_files.append(("", ""))
             table_items = ["File", "Coverage"] * 2 + list(itertools.chain.from_iterable(coverage_files))
-            md_file.new_table(columns=4, rows=int(len(coverage_files) / 2 + 1), text=table_items, text_align='left')
+            md_file.new_table(columns=4, rows=int(len(coverage_files) / 2 + 1), text=table_items, text_align="left")
         md_file.new_line("")
         md_file.new_line("</p>")
         md_file.new_line("</details>")

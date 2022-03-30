@@ -30,22 +30,24 @@ from slack_sdk.errors import SlackApiError
 
 
 def get_status_page(connector) -> str:
-    response = requests.get(f'https://dnsgjos7lj2fu.cloudfront.net/tests/summary/{connector}/index.html')
+    response = requests.get(f"https://dnsgjos7lj2fu.cloudfront.net/tests/summary/{connector}/index.html")
     if response.status_code == 200:
         return response.text
 
 
 def parse(page) -> list:
     history = []
-    for row in re.findall(r'<tr>(.*?)</tr>', page):
-        cols = re.findall(r'<td>(.*?)</td>', row)
+    for row in re.findall(r"<tr>(.*?)</tr>", page):
+        cols = re.findall(r"<td>(.*?)</td>", row)
         if not cols or len(cols) != 3:
             continue
-        history.append({
-            'date': cols[0],
-            'status': re.findall(r' (\S+)</span>', cols[1])[0],
-            'link': re.findall(r'href="(.*?)"', cols[2])[0],
-        })
+        history.append(
+            {
+                "date": cols[0],
+                "status": re.findall(r" (\S+)</span>", cols[1])[0],
+                "link": re.findall(r'href="(.*?)"', cols[2])[0],
+            }
+        )
     return history
 
 
@@ -55,32 +57,32 @@ def check_connector(connector):
     # check if connector is tested
     if not status_page:
         NO_TESTS.append(connector)
-        print('F', end='', flush=True)
+        print("F", end="", flush=True)
         return
 
-    print('.', end='', flush=True)
+    print(".", end="", flush=True)
 
-    if connector.startswith('source'):
+    if connector.startswith("source"):
         TESTED_SOURCE.append(connector)
-    elif connector.startswith('destination'):
+    elif connector.startswith("destination"):
         TESTED_DESTINATION.append(connector)
 
     # order: recent values goes first
     history = parse(status_page)
     # order: recent values goes last
-    short_status = ''.join(['✅' if build['status'] == 'success' else '❌' for build in history[::-1]])  # ex: ❌✅✅❌✅✅❌❌
+    short_status = "".join(["✅" if build["status"] == "success" else "❌" for build in history[::-1]])  # ex: ❌✅✅❌✅✅❌❌
 
     # check latest build status
     last_build = history[0]
-    if last_build['status'] == 'success':
-        if connector.startswith('source'):
+    if last_build["status"] == "success":
+        if connector.startswith("source"):
             SUCCESS_SOURCE.append(connector)
-        elif connector.startswith('destination'):
+        elif connector.startswith("destination"):
             SUCCESS_DESTINATION.append(connector)
     else:
-        failed_today = [connector, short_status, last_build['link']]
+        failed_today = [connector, short_status, last_build["link"]]
 
-        if len(history) > 1 and history[1]['status'] != 'success':
+        if len(history) > 1 and history[1]["status"] != "success":
             FAILED_2_LAST.append(failed_today)
             return
 
@@ -91,15 +93,15 @@ def failed_report(failed_report) -> str:
     max_name_len = max([len(connector[0]) for connector in failed_report])
     max_status_len = max(len(connector[1]) for connector in failed_report)
     for connector in failed_report:
-        connector[0] = connector[0].ljust(max_name_len, ' ')
-        connector[1] = connector[1].rjust(max_status_len, ' ')
-    return '\n'.join([' '.join(connector) for connector in failed_report])
+        connector[0] = connector[0].ljust(max_name_len, " ")
+        connector[1] = connector[1].rjust(max_status_len, " ")
+    return "\n".join([" ".join(connector) for connector in failed_report])
 
 
 def create_report(connectors) -> str:
 
-    sources_len = len([name for name in connectors if name.startswith('source')])
-    destinations_len = len([name for name in connectors if name.startswith('destination')])
+    sources_len = len([name for name in connectors if name.startswith("source")])
+    destinations_len = len([name for name in connectors if name.startswith("destination")])
 
     report = f"""
 CONNECTORS:   total: {len(connectors)}
@@ -108,15 +110,13 @@ Destinations: total: {destinations_len} / tested: {len(TESTED_DESTINATION)} / su
 
 """
     if FAILED_LAST:
-        report += f"FAILED LAST BUILD ONLY - {len(FAILED_LAST)} connectors:\n" + \
-                  failed_report(FAILED_LAST) + '\n\n'
+        report += f"FAILED LAST BUILD ONLY - {len(FAILED_LAST)} connectors:\n" + failed_report(FAILED_LAST) + "\n\n"
 
     if FAILED_2_LAST:
-        report += f"FAILED TWO LAST BUILDS - {len(FAILED_2_LAST)} connectors:\n" + \
-                  failed_report(FAILED_2_LAST) + '\n\n'
+        report += f"FAILED TWO LAST BUILDS - {len(FAILED_2_LAST)} connectors:\n" + failed_report(FAILED_2_LAST) + "\n\n"
 
     if NO_TESTS:
-        report += f"NO TESTS - {len(NO_TESTS)} connectors:\n" + '\n'.join(NO_TESTS) + '\n'
+        report += f"NO TESTS - {len(NO_TESTS)} connectors:\n" + "\n".join(NO_TESTS) + "\n"
 
     return report
 
@@ -124,20 +124,22 @@ Destinations: total: {destinations_len} / tested: {len(TESTED_DESTINATION)} / su
 def send_report(report):
     webhook = WebhookClient(os.environ["SLACK_BUILD_REPORT"])
     try:
+
         def chunk_messages(report):
             """split report into messages with no more than 4000 chars each (slack limitation)"""
-            msg = ''
+            msg = ""
             for line in report.splitlines():
-                msg += line + '\n'
+                msg += line + "\n"
                 if len(msg) > 3500:
                     yield msg
-                    msg = ''
+                    msg = ""
             yield msg
+
         for msg in chunk_messages(report):
             webhook.send(text=f"```{msg}```")
-        print(f'Report has been sent')
+        print(f"Report has been sent")
     except SlackApiError as e:
-        print(f'Unable to send report')
+        print(f"Unable to send report")
         assert e.response["error"]
 
 
@@ -161,4 +163,4 @@ if __name__ == "__main__":
     report = create_report(connectors)
     print(report)
     send_report(report)
-    print('Finish')
+    print("Finish")

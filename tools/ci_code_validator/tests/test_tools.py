@@ -44,38 +44,22 @@ def prepare_toml_file(toml_config_file):
 @pytest.mark.parametrize(
     "cmd,package_dir,expected_file",
     [
+        ("mypy {package_dir} --config-file={toml_config_file}", SMELL_PACKAGE_DIR, SIMPLE_FILES / "mypy_smell_package_report.json"),
+        ("mypy {package_dir} --config-file={toml_config_file}", PACKAGE_DIR, WITHOUT_ISSUE_REPORT),
         (
-                "mypy {package_dir} --config-file={toml_config_file}",
-                SMELL_PACKAGE_DIR,
-                SIMPLE_FILES / "mypy_smell_package_report.json"
+            "black --config {toml_config_file} --diff {package_dir}",
+            SMELL_PACKAGE_DIR,
+            HERE / "simple_files/black_smell_package_report.json",
         ),
+        ("black --config {toml_config_file} --diff {package_dir}", PACKAGE_DIR, WITHOUT_ISSUE_REPORT),
+        (ISORT_CMD, SMELL_PACKAGE_DIR, HERE / "simple_files/isort_smell_package_report.json"),
         (
-                "mypy {package_dir} --config-file={toml_config_file}",
-                PACKAGE_DIR,
-                WITHOUT_ISSUE_REPORT
-        ),
-        (
-                "black --config {toml_config_file} --diff {package_dir}",
-                SMELL_PACKAGE_DIR,
-                HERE / "simple_files/black_smell_package_report.json"
-        ),
-        (
-                "black --config {toml_config_file} --diff {package_dir}",
-                PACKAGE_DIR,
-                WITHOUT_ISSUE_REPORT
-        ),
-        (
-                ISORT_CMD,
-                SMELL_PACKAGE_DIR,
-                HERE / "simple_files/isort_smell_package_report.json"
-        ),
-        (
-                ISORT_CMD,
-                PACKAGE_DIR,
-                WITHOUT_ISSUE_REPORT,
+            ISORT_CMD,
+            PACKAGE_DIR,
+            WITHOUT_ISSUE_REPORT,
         ),
     ],
-    ids=["mypy_failed", "mypy_pass", "black_failed", "black_pass", "isort_failed", "isort_pass"]
+    ids=["mypy_failed", "mypy_pass", "black_failed", "black_pass", "isort_failed", "isort_pass"],
 )
 def test_tool(tmp_path, toml_config_file, cmd, package_dir, expected_file):
     cmd = cmd.format(package_dir=package_dir, toml_config_file=toml_config_file)
@@ -87,7 +71,7 @@ def test_tool(tmp_path, toml_config_file, cmd, package_dir, expected_file):
     assert file_log.is_file() is True
     issues_file = tmp_path / "issues.json"
     with requests_mock.Mocker() as m:
-        m.get('/api/authentication/validate', json={"valid": True})
+        m.get("/api/authentication/validate", json={"valid": True})
         m.get("/api/rules/search", json={"rules": []})
         m.post("/api/rules/create", json={})
         parser = LogParser(issues_file, host="http://fake.com/", token="fake_token")
@@ -99,4 +83,4 @@ def test_tool(tmp_path, toml_config_file, cmd, package_dir, expected_file):
             issue["primaryLocation"]["filePath"] = "/".join(issue["primaryLocation"]["filePath"].split("/")[-2:])
 
         expected_data = json.loads(Path(expected_file).read_text())
-        assert json.dumps(data, sort_keys=True, separators=(',', ': ')) == json.dumps(expected_data, sort_keys=True, separators=(',', ': '))
+        assert json.dumps(data, sort_keys=True, separators=(",", ": ")) == json.dumps(expected_data, sort_keys=True, separators=(",", ": "))

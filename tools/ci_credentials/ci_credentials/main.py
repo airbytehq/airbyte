@@ -13,6 +13,7 @@ ENV_GCP_GSM_CREDENTIALS = "GCP_GSM_CREDENTIALS"
 
 # credentials of GSM and GitHub secrets should be shared via shell environment
 
+
 def main() -> int:
     if len(sys.argv) != 2:
         return logger.error("uses one script argument only: <unique connector name>")
@@ -39,5 +40,5 @@ def main() -> int:
     return loader.write_to_storage(loader.read_from_gsm())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

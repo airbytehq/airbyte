@@ -27,14 +27,12 @@ def temp_folder():
 @pytest.mark.parametrize(
     "connector_name,filename,expected_name",
     (
-            ("source-default", "config.json", "SECRET_SOURCE-DEFAULT__CREDS"),
-            ("source-custom-filename-1", "config_custom.json", "SECRET_SOURCE-CUSTOM-FILENAME-1_CUSTOM__CREDS"),
-            ("source-custom-filename-2", "auth.json", "SECRET_SOURCE-CUSTOM-FILENAME-2_AUTH__CREDS"),
-            ("source-custom-filename-3", "config_auth-test---___---config.json",
-             "SECRET_SOURCE-CUSTOM-FILENAME-3_AUTH-TEST__CREDS"),
-            ("source-custom-filename-4", "_____config_test---config.json",
-             "SECRET_SOURCE-CUSTOM-FILENAME-4_TEST__CREDS"),
-    )
+        ("source-default", "config.json", "SECRET_SOURCE-DEFAULT__CREDS"),
+        ("source-custom-filename-1", "config_custom.json", "SECRET_SOURCE-CUSTOM-FILENAME-1_CUSTOM__CREDS"),
+        ("source-custom-filename-2", "auth.json", "SECRET_SOURCE-CUSTOM-FILENAME-2_AUTH__CREDS"),
+        ("source-custom-filename-3", "config_auth-test---___---config.json", "SECRET_SOURCE-CUSTOM-FILENAME-3_AUTH-TEST__CREDS"),
+        ("source-custom-filename-4", "_____config_test---config.json", "SECRET_SOURCE-CUSTOM-FILENAME-4_TEST__CREDS"),
+    ),
 )
 def test_secret_name_generation(connector_name, filename, expected_name):
     assert SecretsLoader.generate_secret_name(connector_name, filename) == expected_name
@@ -79,45 +77,58 @@ def test_main(capfd, monkeypatch):
 @pytest.mark.parametrize(
     "connector_name,gsm_secrets,expected_secrets",
     (
-            (
-                    "source-gsm-only",
-                    {
-                        "config": {"test_key": "test_value"},
-                        "config_oauth": {"test_key_1": "test_key_2"},
-                    },
-                    [
-                        ("config.json", {"test_key": "test_value"}),
-                        ("config_oauth.json", {"test_key_1": "test_key_2"}),
-                    ]
-            ),
+        (
+            "source-gsm-only",
+            {
+                "config": {"test_key": "test_value"},
+                "config_oauth": {"test_key_1": "test_key_2"},
+            },
+            [
+                ("config.json", {"test_key": "test_value"}),
+                ("config_oauth.json", {"test_key_1": "test_key_2"}),
+            ],
+        ),
     ),
-    ids=["gsm_only", ]
-
+    ids=[
+        "gsm_only",
+    ],
 )
-@patch('ci_common_utils.GoogleApi.get_access_token', lambda *args: ("fake_token", None))
-@patch('ci_common_utils.GoogleApi.project_id', "fake_id")
+@patch("ci_common_utils.GoogleApi.get_access_token", lambda *args: ("fake_token", None))
+@patch("ci_common_utils.GoogleApi.project_id", "fake_id")
 def test_read(connector_name, gsm_secrets, expected_secrets):
     matcher_gsm_list = re.compile("https://secretmanager.googleapis.com/v1/projects/.+/secrets")
-    secrets_list = {"secrets": [{
-        "name": f"projects/<fake_id>/secrets/SECRET_{connector_name.upper()}_{i}_CREDS",
-        "labels": {
-            "filename": k,
-            "connector": connector_name,
-        }
-    } for i, k in enumerate(gsm_secrets)]}
+    secrets_list = {
+        "secrets": [
+            {
+                "name": f"projects/<fake_id>/secrets/SECRET_{connector_name.upper()}_{i}_CREDS",
+                "labels": {
+                    "filename": k,
+                    "connector": connector_name,
+                },
+            }
+            for i, k in enumerate(gsm_secrets)
+        ]
+    }
 
     matcher_versions = re.compile("https://secretmanager.googleapis.com/v1/.+/versions")
-    versions_response_list = [{"json": {
-        "versions": [{
-            "name": f"projects/<fake_id>/secrets/SECRET_{connector_name.upper()}_{i}_CREDS/versions/1",
-            "state": "ENABLED",
-        }]
-    }} for i in range(len(gsm_secrets))]
+    versions_response_list = [
+        {
+            "json": {
+                "versions": [
+                    {
+                        "name": f"projects/<fake_id>/secrets/SECRET_{connector_name.upper()}_{i}_CREDS/versions/1",
+                        "state": "ENABLED",
+                    }
+                ]
+            }
+        }
+        for i in range(len(gsm_secrets))
+    ]
 
     matcher_secret = re.compile("https://secretmanager.googleapis.com/v1/.+/1:access")
-    secrets_response_list = [{
-        "json": {"payload": {"data": base64.b64encode(json.dumps(v).encode()).decode("utf-8")}}
-    } for v in gsm_secrets.values()]
+    secrets_response_list = [
+        {"json": {"payload": {"data": base64.b64encode(json.dumps(v).encode()).decode("utf-8")}}} for v in gsm_secrets.values()
+    ]
 
     matcher_version = re.compile("https://secretmanager.googleapis.com/v1/.+:addVersion")
     loader = SecretsLoader(connector_name=connector_name, gsm_credentials={})
@@ -138,16 +149,23 @@ def test_read(connector_name, gsm_secrets, expected_secrets):
 @pytest.mark.parametrize(
     "connector_name,secrets,expected_files",
     (
-            ("source-test", {"test.json": "test_value"},
-             ["airbyte-integrations/connectors/source-test/secrets/test.json"]),
-
-            ("source-test2", {"test.json": "test_value", "auth.json": "test_auth"},
-             ["airbyte-integrations/connectors/source-test2/secrets/test.json",
-              "airbyte-integrations/connectors/source-test2/secrets/auth.json"]),
-
-            ("base-normalization", {"test.json": "test_value", "auth.json": "test_auth"},
-             ["airbyte-integrations/bases/base-normalization/secrets/test.json",
-              "airbyte-integrations/bases/base-normalization/secrets/auth.json"]),
+        ("source-test", {"test.json": "test_value"}, ["airbyte-integrations/connectors/source-test/secrets/test.json"]),
+        (
+            "source-test2",
+            {"test.json": "test_value", "auth.json": "test_auth"},
+            [
+                "airbyte-integrations/connectors/source-test2/secrets/test.json",
+                "airbyte-integrations/connectors/source-test2/secrets/auth.json",
+            ],
+        ),
+        (
+            "base-normalization",
+            {"test.json": "test_value", "auth.json": "test_auth"},
+            [
+                "airbyte-integrations/bases/base-normalization/secrets/test.json",
+                "airbyte-integrations/bases/base-normalization/secrets/auth.json",
+            ],
+        ),
     ),
     ids=["single", "multi", "base-normalization"],
 )
