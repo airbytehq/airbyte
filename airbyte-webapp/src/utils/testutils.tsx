@@ -7,7 +7,7 @@ import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
 import { FeatureService } from "hooks/services/Feature";
-import { ConfigServiceProvider, defaultConfig } from "config";
+import { configContext, defaultConfig } from "config";
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test
@@ -25,17 +25,23 @@ export function render(
 ): RenderResult {
   function Wrapper({ children }: WrapperProps) {
     return (
-      <ThemeProvider theme={{}}>
-        <IntlProvider locale="en" messages={en}>
-          <ConfigServiceProvider defaultConfig={defaultConfig}>
-            <FeatureService>
-              <MemoryRouter>{children}</MemoryRouter>
-            </FeatureService>
-          </ConfigServiceProvider>
-        </IntlProvider>
-      </ThemeProvider>
+      <TestWrapper>
+        <configContext.Provider value={{ config: defaultConfig }}>
+          <FeatureService>
+            <MemoryRouter>{children}</MemoryRouter>
+          </FeatureService>
+        </configContext.Provider>
+      </TestWrapper>
     );
   }
 
   return rtlRender(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
 }
+
+export const TestWrapper: React.FC = ({ children }) => (
+  <ThemeProvider theme={{}}>
+    <IntlProvider locale="en" messages={en}>
+      {children}
+    </IntlProvider>
+  </ThemeProvider>
+);

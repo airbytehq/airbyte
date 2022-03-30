@@ -6,11 +6,11 @@ import { LoadingPage } from "components";
 import { Config, ValueProvider } from "./types";
 import { applyProviders } from "./configProviders";
 
-type ConfigContext<T extends Config = Config> = {
+export type ConfigContext<T extends Config = Config> = {
   config: T;
 };
 
-const configContext = React.createContext<ConfigContext | null>(null);
+export const configContext = React.createContext<ConfigContext | null>(null);
 
 export function useConfig<T extends Config>(): T {
   const configService = useContext(configContext);

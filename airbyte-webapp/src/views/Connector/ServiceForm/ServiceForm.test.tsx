@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { getByTestId, screen, waitFor } from "@testing-library/react";
 import selectEvent from "react-select-event";
 
-import ServiceForm from "views/Connector/ServiceForm";
+import { ServiceForm } from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
 import { ServiceFormValues } from "./types";
 import { AirbyteJSONSchema } from "core/jsonSchema";
@@ -108,7 +108,7 @@ jest.mock("hooks/services/useWorkspace", () => ({
   }),
 }));
 
-describe.skip("Service Form", () => {
+describe("Service Form", () => {
   describe("should display json schema specs", () => {
     let container: HTMLElement;
     beforeEach(() => {
@@ -117,7 +117,7 @@ describe.skip("Service Form", () => {
         <ServiceForm
           formType="source"
           onSubmit={handleSubmit}
-          selectedConnector={{
+          selectedConnectorDefinitionSpecification={{
             connectionSpecification: schema,
             sourceDefinitionId: "1",
             documentationUrl: "",
@@ -222,7 +222,7 @@ describe.skip("Service Form", () => {
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
-          selectedConnector={{
+          selectedConnectorDefinitionSpecification={{
             connectionSpecification: schema,
             sourceDefinitionId: "test-service-type",
             documentationUrl: "",
