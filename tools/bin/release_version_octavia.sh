@@ -16,5 +16,8 @@ GIT_REVISION=$(git rev-parse HEAD)
 
 [[ -z "$GIT_REVISION" ]] && echo "Couldn't get the git revision..." && exit 1
 
+rm -rf .venv # Removing the virtualenv that might already exists from a previous build. 
+echo "Building and publishing OCTAVIA version $NEW_VERSION for git revision $GIT_REVISION..."
 VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build
 ./octavia-cli/publish.sh ${NEW_VERSION} ${GIT_REVISION}
+echo "Completed building and publishing OCTAVIA..."
