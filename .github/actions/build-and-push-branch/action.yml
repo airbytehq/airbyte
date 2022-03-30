@@ -2,7 +2,7 @@ name: "Build and Push Branch"
 description: "Build jars and docker images tagged for a particular branch. Primarily used for running OSS branch code in Cloud."
 inputs:
   branch_version_tag:
-    description: 'Used to tag jars and docker images with a branch-specific version (should use the form "oss-branch-<commit_hash>" to pass AirbyteVersion validation)'
+    description: 'Used to tag jars and docker images with a branch-specific version (should use the form "dev-<commit_hash>" to pass AirbyteVersion validation)'
     required: true
   dockerhub_token:
     description: "Used to log in to dockerhub for pushing images"

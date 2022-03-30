@@ -12,8 +12,7 @@ import java.util.Objects;
  */
 public class AirbyteVersion {
 
-  public static final String DEV_VERSION = "dev";
-  public static final String OSS_BRANCH_VERSION_PREFIX = "oss-branch";
+  public static final String DEV_VERSION_PREFIX = "dev";
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
 
   private final String version;
@@ -134,7 +133,7 @@ public class AirbyteVersion {
   }
 
   public boolean isDev() {
-    return version.equals(DEV_VERSION) || version.contains(OSS_BRANCH_VERSION_PREFIX);
+    return version.startsWith(DEV_VERSION_PREFIX);
   }
 
   /**
