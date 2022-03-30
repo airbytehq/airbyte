@@ -21,7 +21,7 @@ fi
 
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
-./tools/bin/bump_version.sh
+source ./tools/bin/bump_version.sh
 
 # TESTING: DISABLE BUILD AND PUBLISH FOR ITERATIONS ON CI
 # echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
