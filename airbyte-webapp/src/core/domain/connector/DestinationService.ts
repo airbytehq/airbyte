@@ -1,22 +1,23 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { ConnectionConfiguration } from "../connection";
-import { Scheduler } from "./types";
+
 import Status from "core/statuses";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { Scheduler } from "./types";
+import { ConnectionConfiguration } from "core/domain/connection";
 
-class SourceService extends AirbyteRequestService {
+class DestinationService extends AirbyteRequestService {
   get url(): string {
-    return "sources";
+    return "destinations";
   }
 
   public async check_connection(
     params: {
-      sourceId?: string;
+      destinationId?: string;
       connectionConfiguration?: ConnectionConfiguration;
     },
     requestParams?: RequestInit
   ): Promise<Scheduler> {
-    const url = !params.sourceId
+    const url = !params.destinationId
       ? `scheduler/${this.url}/check_connection`
       : params.connectionConfiguration
       ? `${this.url}/check_connection_for_update`
@@ -26,7 +27,7 @@ class SourceService extends AirbyteRequestService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await this.fetch<any>(url, params, requestParams);
 
-    // If check connection for source has status 'failed'
+    // If check connection for destination has status 'failed'
     if (result.status === Status.FAILED) {
       const jobInfo = {
         ...result.jobInfo,
@@ -40,4 +41,4 @@ class SourceService extends AirbyteRequestService {
   }
 }
 
-export { SourceService };
+export { DestinationService };
