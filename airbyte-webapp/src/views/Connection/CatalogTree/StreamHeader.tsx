@@ -71,6 +71,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     cursorField,
     destinationSyncMode,
   } = stream.config;
+
+  const { defaultCursorField } = stream.stream;
   const syncSchema = useMemo(
     () => ({
       syncMode,
@@ -126,9 +128,11 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
           <PathPopout
             pathType={cursorType}
             paths={paths}
-            path={cursorField}
+            path={
+              cursorType === "sourceDefined" ? defaultCursorField : cursorField
+            }
             placeholder={
-              <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />
+              <FormattedMessage id="connectionForm.cursor.searchPlaceholder" />
             }
             onPathChange={onCursorChange}
           />

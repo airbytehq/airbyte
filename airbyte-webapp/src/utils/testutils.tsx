@@ -25,17 +25,23 @@ export function render(
 ): RenderResult {
   function Wrapper({ children }: WrapperProps) {
     return (
-      <ThemeProvider theme={{}}>
-        <IntlProvider locale="en" messages={en}>
-          <configContext.Provider value={{ config: defaultConfig }}>
-            <FeatureService>
-              <MemoryRouter>{children}</MemoryRouter>
-            </FeatureService>
-          </configContext.Provider>
-        </IntlProvider>
-      </ThemeProvider>
+      <TestWrapper>
+        <configContext.Provider value={{ config: defaultConfig }}>
+          <FeatureService>
+            <MemoryRouter>{children}</MemoryRouter>
+          </FeatureService>
+        </configContext.Provider>
+      </TestWrapper>
     );
   }
 
   return rtlRender(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
 }
+
+export const TestWrapper: React.FC = ({ children }) => (
+  <ThemeProvider theme={{}}>
+    <IntlProvider locale="en" messages={en}>
+      {children}
+    </IntlProvider>
+  </ThemeProvider>
+);
