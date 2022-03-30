@@ -1176,6 +1176,12 @@ public class AcceptanceTests {
 
     LOGGER.info("Waiting for connection to be available in Temporal...");
 
+    LOGGER.info("Run manual sync...");
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    LOGGER.info("Waiting for job to run...");
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+
     // Terminate workflow
     LOGGER.info("Terminating temporal workflow...");
     workflowCLient.newUntypedWorkflowStub("connection_manager_" + connectionId).terminate("");
