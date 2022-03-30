@@ -16,7 +16,7 @@ runs:
       run: |-
         # if the *branch_version_tag* input param is not specified, then generate it as 'dev-<commit_hash>`
         #
-        [[ "${{ inputs.branch_version_tag }}" != '' ] ] && echo "::set-output name=branch_version_tag::${{ inputs.branch_version_tag }}" \
+        [[ "${{ inputs.branch_version_tag }}" != '' ]] && echo "::set-output name=branch_version_tag::${{ inputs.branch_version_tag }}" \
           || { short_hash=$(git rev-parse --short HEAD); echo "::set-output name=branch_version_tag::dev-$short_hash"; }
 
     - uses: actions/setup-java@v1
