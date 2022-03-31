@@ -797,9 +797,9 @@ class SourceMixpanel(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        auth = TokenAuthenticatorBase64(token=config["api_secret"])
-        funnels = FunnelsList(authenticator=auth, **config)
         try:
+            auth = TokenAuthenticatorBase64(token=config["api_secret"])
+            funnels = FunnelsList(authenticator=auth, **config)
             response = requests.request(
                 "GET",
                 url=funnels.url_base + funnels.path(),
@@ -819,6 +819,7 @@ class SourceMixpanel(AbstractSource):
             return False, e
 
         return True, None
+
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
