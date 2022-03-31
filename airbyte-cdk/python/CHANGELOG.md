@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.1.50
+Improve logging for Error handling during send process.
 ## 0.1.49
 Add support for streams with explicit state attribute.
 
