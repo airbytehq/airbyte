@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "responses~=0.19.0"]
 
 
 setup(
