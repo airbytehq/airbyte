@@ -55,3 +55,4 @@ def wrong_config_fixture():
 @fixture(name="auth")
 def authenticator_fixture(apikey_config):
     return MailChimpAuthenticator().get_auth(apikey_config)
+
