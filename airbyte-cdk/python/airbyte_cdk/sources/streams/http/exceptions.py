@@ -9,7 +9,13 @@ import requests
 
 
 class BaseBackoffException(requests.exceptions.HTTPError):
-    pass
+    def __init__(self, request: requests.PreparedRequest, response: requests.Response):
+        self.request = request
+        self.response = response
+        message = (
+            f"\nRequest URL: {self.request.url}" f"\nResponse Code: {self.response.status_code}" f"\nResponse Text: {self.response.text}"
+        )
+        super().__init__(message)
 
 
 class RequestBodyException(Exception):
