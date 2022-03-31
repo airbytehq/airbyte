@@ -16,6 +16,7 @@ import { useConfig } from "packages/cloud/services/config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { QueryObserverSuccessResult } from "react-query/types/core/types";
+import { useCallback } from "react";
 
 export const workspaceKeys = {
   all: ["cloud_workspaces"] as const,
@@ -145,6 +146,17 @@ export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   return (useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
     service.get(workspaceId)
   ) as QueryObserverSuccessResult<CloudWorkspace>).data;
+}
+
+export function useInvalidateCloudWorkspace(
+  workspaceId: string
+): () => Promise<void> {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    () => queryClient.invalidateQueries([workspaceKeys.detail(workspaceId)]),
+    [queryClient, workspaceId]
+  );
 }
 
 export function useGetUsage(
