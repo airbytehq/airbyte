@@ -967,3 +967,33 @@ class ProjectCards(GithubStream):
         record["project_id"] = stream_slice["project_id"]
         record["column_id"] = stream_slice["column_id"]
         return record
+
+
+class Workflows(GithubStream):
+    """
+    Get all workflows of a GitHub repository
+    API documentation: https://docs.github.com/en/rest/reference/actions#workflows
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/workflows"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        response = response.json().get("workflows")
+        for record in response:
+            yield record
+
+
+class WorkflowRuns(GithubStream):
+    """
+    Get all workflows of a GitHub repository
+    API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        response = response.json().get("workflow_runs")
+        for record in response:
+            yield record
