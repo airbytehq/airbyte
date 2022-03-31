@@ -9,6 +9,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { SourceDefinition } from "core/domain/connector";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
 type IProps = {
   onSubmit: (values: {
@@ -73,10 +74,7 @@ const SourceForm: React.FC<IProps> = ({
     });
   };
 
-  const onSubmitForm = async (values: {
-    name: string;
-    serviceType: string;
-  }) => {
+  const onSubmitForm = async (values: ServiceFormValues) => {
     await onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
@@ -91,7 +89,7 @@ const SourceForm: React.FC<IProps> = ({
       onSubmit={onSubmitForm}
       formType="source"
       availableServices={sourceDefinitions}
-      selectedConnector={sourceDefinitionSpecification}
+      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       hasSuccess={hasSuccess}
       fetchingConnectorError={sourceDefinitionError}
       errorMessage={errorMessage}
@@ -101,7 +99,6 @@ const SourceForm: React.FC<IProps> = ({
           ? { serviceType: sourceDefinitionId, name: "" }
           : undefined
       }
-      allowChangeConnector
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />
