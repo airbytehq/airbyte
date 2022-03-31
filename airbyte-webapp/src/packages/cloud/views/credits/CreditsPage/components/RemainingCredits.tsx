@@ -63,10 +63,7 @@ const RemainingCredits: React.FC = () => {
   const invalidateWorkspace = useInvalidateCloudWorkspace(
     currentWorkspace.workspaceId
   );
-  const { isLoading, mutate: createCheckout } = useStripeCheckout((session) => {
-    // Forward to stripe as soon as we created a checkout session successfully
-    window.location.assign(session.stripeUrl);
-  });
+  const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
 
   useEffectOnce(() => {
@@ -102,11 +99,13 @@ const RemainingCredits: React.FC = () => {
     // Use the current URL as a success URL but attach the STRIPE_SUCCESS_QUERY to it
     const successUrl = new URL(window.location.href);
     successUrl.searchParams.set(STRIPE_SUCCESS_QUERY, "true");
-    createCheckout({
+    const { stripeUrl } = await createCheckout({
       workspaceId: currentWorkspace.workspaceId,
       successUrl: successUrl.href,
       cancelUrl: window.location.href,
     });
+    // Forward to stripe as soon as we created a checkout session successfully
+    window.location.assign(stripeUrl);
   };
 
   return (

@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import {
   StripeCheckoutSessionCreate,
-  StripeCheckoutSessionRead,
   StripeService,
 } from "packages/cloud/lib/domain/stripe";
 
@@ -19,13 +18,9 @@ export function useStripeService(): StripeService {
   ]);
 }
 
-export function useStripeCheckout(
-  onSuccess: (session: StripeCheckoutSessionRead) => void
-) {
+export function useStripeCheckout() {
   const service = useStripeService();
-  return useMutation(
-    (params: StripeCheckoutSessionCreate) =>
-      service.createCheckoutSession(params),
-    { onSuccess }
+  return useMutation((params: StripeCheckoutSessionCreate) =>
+    service.createCheckoutSession(params)
   );
 }
