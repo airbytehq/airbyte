@@ -7,8 +7,6 @@ package io.airbyte.integrations.source.bigquery;
 import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_CREDS;
 import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_DATASET_ID;
 import static io.airbyte.integrations.source.bigquery.BigQuerySource.CONFIG_PROJECT_ID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Dataset;
@@ -16,21 +14,14 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.bigquery.BigQueryDatabase;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 abstract class AbstractBigQuerySourceTest {
 
@@ -69,7 +60,7 @@ abstract class AbstractBigQuerySourceTest {
     dataset = database.getBigQuery().create(datasetInfo);
 
     createTable(datasetId);
-   }
+  }
 
   @AfterEach
   void tearDown() {
@@ -77,6 +68,7 @@ abstract class AbstractBigQuerySourceTest {
   }
 
   protected abstract void createTable(String datasetId) throws SQLException;
+
   protected abstract ConfiguredAirbyteCatalog getConfiguredCatalog();
 
 }

@@ -318,13 +318,13 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .build());
 
     addDataTypeTestData(
-            TestDataHolder.builder()
-                    .sourceType("interval")
-                    .airbyteType(JsonSchemaType.STRING)
-                    .createTablePatternSql(CREATE_SQL_PATTERN)
-                    .addInsertValues("MAKE_INTERVAL(2021, 10, 10, 10, 10, 10)", "null")
-                    .addExpectedValues("2021-10 10 10:10:10", null)
-                    .build());
+        TestDataHolder.builder()
+            .sourceType("interval")
+            .airbyteType(JsonSchemaType.STRING)
+            .createTablePatternSql(CREATE_SQL_PATTERN)
+            .addInsertValues("MAKE_INTERVAL(2021, 10, 10, 10, 10, 10)", "null")
+            .addExpectedValues("2021-10 10 10:10:10", null)
+            .build());
   }
 
   @Override
