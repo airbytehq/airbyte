@@ -17,7 +17,7 @@ import { useInitService } from "services/useInitService";
 import { DestinationService } from "core/domain/connector/DestinationService";
 
 export const destinationsKeys = {
-  all: ["destination"] as const,
+  all: ["destinations"] as const,
   lists: () => [...destinationsKeys.all, "list"] as const,
   list: (filters: string) =>
     [...destinationsKeys.lists(), { filters }] as const,
@@ -82,41 +82,36 @@ const useCreateDestination = () => {
       destinationConnector?: ConnectorProps;
     }) => {
       const { values, destinationConnector } = createDestinationPayload;
-      try {
-        const result = await service.create({
-          name: values.name,
-          destinationDefinitionId:
-            destinationConnector?.destinationDefinitionId,
-          workspaceId: workspace.workspaceId,
-          connectionConfiguration: values.connectionConfiguration,
-        });
 
-        analyticsService.track("New Destination - Action", {
-          action: "Tested connector - success",
-          connector_destination: destinationConnector?.name,
-          connector_destination_definition_id:
-            destinationConnector?.destinationDefinitionId,
-        });
-
-        return result;
-      } catch (e) {
-        analyticsService.track("New Destination - Action", {
-          action: "Tested connector - failure",
-          connector_destination: destinationConnector?.name,
-          connector_destination_definition_id:
-            destinationConnector?.destinationDefinitionId,
-        });
-        throw e;
-      }
+      return service.create({
+        name: values.name,
+        destinationDefinitionId: destinationConnector?.destinationDefinitionId,
+        workspaceId: workspace.workspaceId,
+        connectionConfiguration: values.connectionConfiguration,
+      });
     },
     {
-      onSuccess: (data) => {
+      onSuccess: (data, ctx) => {
+        analyticsService.track("New Destination - Action", {
+          action: "Tested connector - success",
+          connector_destination: ctx.destinationConnector?.name,
+          connector_destination_definition_id:
+            ctx.destinationConnector?.destinationDefinitionId,
+        });
         queryClient.setQueryData(
           destinationsKeys.lists(),
           (lst: DestinationList | undefined) => ({
             destinations: [data, ...(lst?.destinations ?? [])],
           })
         );
+      },
+      onError: (_, ctx) => {
+        analyticsService.track("New Destination - Action", {
+          action: "Tested connector - failure",
+          connector_destination: ctx.destinationConnector?.name,
+          connector_destination_definition_id:
+            ctx.destinationConnector?.destinationDefinitionId,
+        });
       },
     }
   );
