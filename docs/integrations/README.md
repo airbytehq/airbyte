@@ -1,22 +1,18 @@
 # Connector Catalog
 
-{% hint style="info" %}
-Some connectors on the following list are not yet available on Airbyte Cloud.
-{% endhint %}
-
 ## Connector Release Stages
 
-Airbyte uses a grading system for connectors to help you understand what to expect from a connector:
+Airbyte uses a grading system for connectors to help users understand what to expect from a connector. There are three grades, explained below:
 
-**Generally Available**: A generally available connector has been deemed ready for use in a production environment and is officially supported by Airbyte. Its documentation is considered sufficient to support widespread adoption.
+**Generally Available**: This connector has been proven to be robust via usage by a large number of users and extensive testing. Generally available connectors are ready for production use.
 
-**Beta**: A beta connector is considered stable and reliable with no backwards incompatible changes but has not been validated by a broader group of users. We expect to find and fix a few issues and bugs in the release before it’s ready for GA.
+**Beta**: A beta connector is considered to be stable and reliable but has not been validated by a larger group of users and therefor users should be cautious using these connectors in production. Any issues with beta connectors will be prioritized and worked on when the connector is ready for the next release stage.
 
-**Alpha**: An alpha connector signifies a connector under development and helps Airbyte gather early feedback and issues reported by early adopters. We strongly discourage using alpha releases for production use cases and do not offer Cloud Support SLAs around these products, features, or connectors.
+**Alpha**: This connector is either not sufficiently tested, has extremely limited functionality \(e.g: created as an example connector\), or for any other reason may not be very mature. We strongly discourage using alpha connectors for production use cases as we do not offer Cloud Support SLAs and issues will looked into when the connector is to be priortized for the next release stage.
 
-For more information about the grading system, see [Product Release Stages](https://docs.airbyte.com/project-overview/product-release-stages)
+**Note:** Some connectors on this list are currently not available on the Airbyte Cloud platform.
 
-## Sources
+### Sources
 
 | Connector | Stage |
 | :--- | :--- |
@@ -49,7 +45,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Drupal](sources/drupal.md) | Alpha |
 | [End-to-End Testing](sources/e2e-test.md) | Alpha |
 | [Exchange Rates API](sources/exchangeratesapi.md) | Alpha |
-| [Facebook Marketing](sources/facebook-marketing.md) | Generally Available |
+| [Facebook Marketing](sources/facebook-marketing.md) | Beta |
 | [Facebook Pages](sources/facebook-pages.md) | Alpha |
 | [Files](sources/file.md) | Alpha |
 | [Flexport](sources/flexport.md) | Alpha |
@@ -61,12 +57,12 @@ For more information about the grading system, see [Product Release Stages](http
 | [Google Analytics v4](sources/google-analytics-v4.md) | Beta |
 | [Google Directory](sources/google-directory.md) | Alpha |
 | [Google Search Console](sources/google-search-console.md) | Alpha |
-| [Google Sheets](sources/google-sheets.md) | Generally Available |
+| [Google Sheets](sources/google-sheets.md) | Beta |
 | [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md) | Alpha |
 | [Greenhouse](sources/greenhouse.md) | Alpha |
 | [Harness](sources/harness.md) | Alpha |
 | [HubSpot](sources/hubspot.md) | Beta |
-| [Instagram](sources/instagram.md) | Beta |
+| [Instagram](sources/instagram.md) | Alpha |
 | [Intercom](sources/intercom.md) | Beta |
 | [Iterable](sources/iterable.md) | Alpha |
 | [Jenkins](sources/jenkins.md) | Alpha |
@@ -119,7 +115,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Redshift](sources/redshift.md) | Alpha |
 | [Retently](sources/retently.md) | Alpha |
 | [S3](sources/s3.md) | Beta |
-| [Salesforce](sources/salesforce.md) | Generally Available |
+| [Salesforce](sources/salesforce.md) | Certified |
 | [Salesloft](./sources/salesloft.md)| Alpha |
 | [SAP Business One](sources/sap-business-one.md) | Alpha |
 | [SearchMetrics](./sources/search-metrics.md)| Alpha |
@@ -155,7 +151,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Zoom](sources/zoom.md) | Alpha |
 | [Zuora](sources/zuora.md) | Alpha |
 
-## Destinations
+### Destinations
 
 | Connector | Stage |
 | :--- | :--- |
