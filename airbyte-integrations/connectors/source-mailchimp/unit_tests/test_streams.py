@@ -3,12 +3,14 @@ from unittest.mock import MagicMock
 
 import json
 import pytest
+import responses
 from source_mailchimp.streams import (
     Lists,
     Campaigns,
+    EmailActivity
 )
 
-from utils import read_full_refresh
+from utils import read_full_refresh, read_incremental
 
 
 @pytest.mark.parametrize(
@@ -99,3 +101,27 @@ def test_get_updated_state(auth):
     assert new_stream_state == {"date_created": "2022-01-01"}
 
 
+@responses.activate
+def test_stream_teams_read(auth):
+    args = {"authenticator": auth}
+    stream = EmailActivity(**args)
+    stream_url = stream.url_base + "reports/123/email-activity"
+    campaigns_stream_url = stream.url_base + "campaigns"
+    responses.add("GET", campaigns_stream_url, json={"campaigns": [{"id": 123}]})
+
+    response = {
+        "emails": [
+            {
+                "campaign_id": 123,
+                "activity": [
+                    {"action": "q", "timestamp": "2021-08-24T14:15:22Z"}
+                ]
+            }
+        ]
+    }
+    responses.add("GET", stream_url, json=response)
+    records = read_incremental(stream, {})
+
+    assert records
+    assert records == [{"campaign_id": 123, "action": "q", "timestamp": "2021-08-24T14:15:22Z"}]
+    assert len(responses.calls) == 2
