@@ -28,8 +28,8 @@ import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
-import { RoutePaths } from "pages/routes";
-import { JobInfo } from "../../core/domain/job/Job";
+import { JobInfo } from "core/domain/job";
+import { RoutePaths } from "../routePaths";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -104,12 +104,6 @@ const OnboardingPage: React.FC = () => {
     afterUpdateStep
   );
 
-  const getSourceDefinitionById = (id: string) =>
-    sourceDefinitions.find((item) => item.sourceDefinitionId === id);
-
-  const getDestinationDefinitionById = (id: string) =>
-    destinationDefinitions.find((item) => item.destinationDefinitionId === id);
-
   const handleFinishOnboarding = () => {
     finishOnboarding();
     push(RoutePaths.Connections);
@@ -122,6 +116,9 @@ const OnboardingPage: React.FC = () => {
       return <WelcomeStep onSubmit={onStart} userName="" />;
     }
     if (currentStep === StepType.CREATE_SOURCE) {
+      const getSourceDefinitionById = (id: string) =>
+        sourceDefinitions.find((item) => item.sourceDefinitionId === id);
+
       const onSubmitSourceStep = async (values: {
         name: string;
         serviceType: string;
@@ -154,6 +151,11 @@ const OnboardingPage: React.FC = () => {
       );
     }
     if (currentStep === StepType.CREATE_DESTINATION) {
+      const getDestinationDefinitionById = (id: string) =>
+        destinationDefinitions.find(
+          (item) => item.destinationDefinitionId === id
+        );
+
       const onSubmitDestinationStep = async (values: {
         name: string;
         serviceType: string;

@@ -206,12 +206,12 @@ class SemiIncrementalGithubStream(GithubStream):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
         """
-        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
-        current_repository = latest_record["repository"]
-
-        if current_stream_state.get(current_repository, {}).get(self.cursor_field):
-            state_value = max(latest_cursor_value, current_stream_state[current_repository][self.cursor_field])
-        current_stream_state[current_repository] = {self.cursor_field: state_value}
+        repository = latest_record["repository"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {})[self.cursor_field] = updated_state
         return current_stream_state
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -967,3 +967,33 @@ class ProjectCards(GithubStream):
         record["project_id"] = stream_slice["project_id"]
         record["column_id"] = stream_slice["column_id"]
         return record
+
+
+class Workflows(GithubStream):
+    """
+    Get all workflows of a GitHub repository
+    API documentation: https://docs.github.com/en/rest/reference/actions#workflows
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/workflows"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        response = response.json().get("workflows")
+        for record in response:
+            yield record
+
+
+class WorkflowRuns(GithubStream):
+    """
+    Get all workflows of a GitHub repository
+    API documentation: https://docs.github.com/en/rest/reference/actions#list-workflow-runs-for-a-repository
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        response = response.json().get("workflow_runs")
+        for record in response:
+            yield record

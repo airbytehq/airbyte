@@ -47,10 +47,6 @@ const NotificationPage: React.FC = () => {
     successMessage,
   } = useAsyncWithTimeout(async (data: WebhookPayload) => updateWebhook(data));
 
-  const onTestWebhook = async (data: WebhookPayload) => {
-    await testWebhook(data);
-  };
-
   const firstNotification = workspace.notifications?.[0];
 
   const initialValues = useMemo(
@@ -74,7 +70,7 @@ const NotificationPage: React.FC = () => {
           <WebHookForm
             webhook={initialValues}
             onSubmit={onSubmitWebhook}
-            onTest={onTestWebhook}
+            onTest={testWebhook}
             errorMessage={errorMessage}
             successMessage={successMessage}
           />

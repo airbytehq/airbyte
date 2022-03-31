@@ -6,6 +6,8 @@
   "refresh_token": "as2Ggas23gsa236gasgaskjfhas7i8ygf78as7osa7gy87asg8as7tg6as",
   "client_secret": "1234",
   "client_id": "123",
+  "tenant_id": "common",
+  "redirect_uri": "",
   "reports_start_date": "2018-11-13",
   "hourly_reports": true,
   "daily_reports": false,

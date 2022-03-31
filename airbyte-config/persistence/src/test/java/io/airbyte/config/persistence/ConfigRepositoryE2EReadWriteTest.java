@@ -5,6 +5,7 @@
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -59,7 +59,6 @@ public class ConfigRepositoryE2EReadWriteTest {
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
   private JsonSecretsProcessor jsonSecretsProcessor;
-  private FeatureFlags featureFlags;
 
   @BeforeAll
   public static void dbSetup() {
@@ -71,11 +70,10 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException {
+  void setup() throws IOException, JsonValidationException, SQLException {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    featureFlags = mock(FeatureFlags.class);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     configRepository = spy(new ConfigRepository(configPersistence, database));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
@@ -102,12 +100,15 @@ public class ConfigRepositoryE2EReadWriteTest {
     for (final StandardSync sync : MockData.standardSyncs()) {
       configRepository.writeStandardSync(sync);
     }
+
     for (final SourceOAuthParameter oAuthParameter : MockData.sourceOauthParameters()) {
       configRepository.writeSourceOAuthParam(oAuthParameter);
     }
     for (final DestinationOAuthParameter oAuthParameter : MockData.destinationOauthParameters()) {
       configRepository.writeDestinationOAuthParam(oAuthParameter);
     }
+
+    database.transaction(ctx -> ctx.truncate(ACTOR_DEFINITION_WORKSPACE_GRANT).execute());
   }
 
   @AfterAll
@@ -298,6 +299,39 @@ public class ConfigRepositoryE2EReadWriteTest {
     assertThat(actualGrantableDefinitions).hasSameElementsAs(List.of(
         Map.entry(grantableDefinition1, true),
         Map.entry(grantableDefinition2, false)));
+  }
+
+  @Test
+  public void testWorkspaceCanUseDefinition() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final UUID otherWorkspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    final UUID publicDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
+    final UUID grantableDefinition1Id = MockData.grantableSourceDefinition1().getSourceDefinitionId();
+    final UUID grantableDefinition2Id = MockData.grantableSourceDefinition2().getSourceDefinitionId();
+    final UUID customDefinitionId = MockData.customSourceDefinition().getSourceDefinitionId();
+
+    // Can use public definitions
+    assertTrue(configRepository.workspaceCanUseDefinition(publicDefinitionId, workspaceId));
+
+    // Can use granted definitions
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition1Id, workspaceId);
+    assertTrue(configRepository.workspaceCanUseDefinition(grantableDefinition1Id, workspaceId));
+    configRepository.writeActorDefinitionWorkspaceGrant(customDefinitionId, workspaceId);
+    assertTrue(configRepository.workspaceCanUseDefinition(customDefinitionId, workspaceId));
+
+    // Cannot use private definitions without grant
+    assertFalse(configRepository.workspaceCanUseDefinition(grantableDefinition2Id, workspaceId));
+
+    // Cannot use other workspace's grants
+    configRepository.writeActorDefinitionWorkspaceGrant(grantableDefinition2Id, otherWorkspaceId);
+    assertFalse(configRepository.workspaceCanUseDefinition(grantableDefinition2Id, workspaceId));
+
+    // Passing invalid IDs returns false
+    assertFalse(configRepository.workspaceCanUseDefinition(new UUID(0L, 0L), workspaceId));
+
+    // workspaceCanUseCustomDefinition can only be true for custom definitions
+    assertTrue(configRepository.workspaceCanUseCustomDefinition(customDefinitionId, workspaceId));
+    assertFalse(configRepository.workspaceCanUseCustomDefinition(grantableDefinition1Id, workspaceId));
   }
 
   @Test
