@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useMemo } from "react";
+import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
 import { useResetter } from "rest-hooks";
 import { User as FbUser } from "firebase/auth";
+import { useEffectOnce } from "react-use";
 
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
@@ -122,47 +123,62 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   const auth = useAuth();
   const userService = useGetUserService();
   const analytics = useAnalyticsService();
-  const authService = useMemo(() => new GoogleAuthService(() => auth), [auth]);
+  const authServiceRef = useRef(new GoogleAuthService(() => auth));
 
-  useEffect(() => {
+  const authService = authServiceRef.current;
+
+  const onAfterAuth = useCallback(
+    async (currentUser: FbUser) => {
+      let user: User | undefined;
+
+      try {
+        user = await userService.getByAuthId(
+          currentUser.uid,
+          AuthProviders.GoogleIdentityPlatform
+        );
+      } catch (err) {
+        if (currentUser.email) {
+          const encodedData = TempSignUpValuesProvider.get(currentUser);
+          user = await userService.create({
+            authProvider: AuthProviders.GoogleIdentityPlatform,
+            authUserId: currentUser.uid,
+            email: currentUser.email,
+            name: encodedData.name,
+            companyName: encodedData.companyName,
+            news: encodedData.news,
+          });
+          analytics.track("Airbyte.UI.User.Created", {
+            user_id: user.userId,
+            name: user.name,
+            email: user.email,
+            ...getUtmFromStorage(),
+          });
+        }
+      }
+
+      if (user) {
+        loggedIn({ user, emailVerified: currentUser.emailVerified });
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [userService]
+  );
+
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  useEffectOnce(() => {
     return auth.onAuthStateChanged(async (currentUser) => {
-      if (state.currentUser === null && currentUser) {
-        let user: User | undefined;
-
-        try {
-          user = await userService.getByAuthId(
-            currentUser.uid,
-            AuthProviders.GoogleIdentityPlatform
-          );
-        } catch (err) {
-          if (currentUser.email) {
-            const encodedData = TempSignUpValuesProvider.get(currentUser);
-            user = await userService.create({
-              authProvider: AuthProviders.GoogleIdentityPlatform,
-              authUserId: currentUser.uid,
-              email: currentUser.email,
-              name: encodedData.name,
-              companyName: encodedData.companyName,
-              news: encodedData.news,
-            });
-            analytics.track("Airbyte.UI.User.Created", {
-              user_id: user.userId,
-              name: user.name,
-              email: user.email,
-              ...getUtmFromStorage(),
-            });
-          }
+      // We want to run this effect only once on initial page opening
+      if (!stateRef.current.inited) {
+        if (stateRef.current.currentUser === null && currentUser) {
+          await onAfterAuth(currentUser);
+        } else {
+          authInited();
         }
-
-        if (user) {
-          loggedIn({ user, emailVerified: currentUser.emailVerified });
-        }
-      } else {
-        authInited();
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentUser, loggedIn, authInited]);
+  });
 
   const queryClient = useQueryClient();
   const reset = useResetter();
@@ -174,6 +190,10 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       emailVerified: state.emailVerified,
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
+
+        if (auth.currentUser) {
+          await onAfterAuth(auth.currentUser);
+        }
       },
       async logout(): Promise<void> {
         await authService.signOut();
@@ -226,11 +246,15 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         });
 
         await authService.sendEmailVerifiedLink();
+
+        if (auth.currentUser) {
+          await onAfterAuth(auth.currentUser);
+        }
       },
       user: state.currentUser,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state, queryClient, userService]
+    [state, userService]
   );
 
   return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
