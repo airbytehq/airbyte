@@ -31,6 +31,7 @@
                 "supported_sync_modes": ["full_refresh"]
             },
             "sync_mode": "full_refresh",
+            "source_defined_primary_key": [["uuid"], ["code"]],
             "destination_sync_mode": "overwrite"
         },
         {
@@ -44,6 +45,7 @@
                 "default_cursor_field": ["updateDateTime"]
             },
             "sync_mode": "incremental",
+            "source_defined_primary_key": [["uuid"]],
             "destination_sync_mode": "append"
         },
         {
@@ -70,6 +72,7 @@
                 "default_cursor_field": ["balanceDate"]
             },
             "sync_mode": "incremental",
+            "source_defined_primary_key": [["uuid"]],
             "destination_sync_mode": "append"
         }
     ]

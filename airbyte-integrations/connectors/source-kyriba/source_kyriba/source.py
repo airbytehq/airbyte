@@ -178,8 +178,8 @@ class CashBalancesEod(CashBalancesStream, IncrementalKyribaStream):
         account_uuids = self.get_account_uuids()
         # we can query a max of 31 days at a time
         days_inc = 31
-        start_str = stream_state.get(self.cursor_field) + timedelta(days=1) or self.start_date
-        start_date = date.fromisoformat(start_str)
+        last_date_str = stream_state.get(self.cursor_field)
+        start_date =  date.fromisoformat(last_date_str) + timedelta(days=1) if last_date_str else date.fromisoformat(self.start_date)
         yesterday = date.today() - timedelta(days=1)
         while start_date <= yesterday:
             end_date = start_date + timedelta(days=days_inc)
@@ -237,8 +237,10 @@ class BankBalancesStream(AccountSubStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # the updatedDateTime is unnecessarily nested under date
         # Airbyte cannot accomodate nested cursors, so this needs to be fixed
-        results = response.json()
-        return [self.unnest("bankBalance", results)]
+        result = response.json()
+        uuid = result["account"]["uuid"] + ":" + result["bankBalance"]["balanceDate"]
+        result["uuid"] = uuid
+        return [self.unnest("bankBalance", result)]
 
 
 class BankBalancesEod(BankBalancesStream, IncrementalKyribaStream):
@@ -258,8 +260,8 @@ class BankBalancesEod(BankBalancesStream, IncrementalKyribaStream):
         slices = []
         account_uuids = self.get_account_uuids()
         # bank balances require the date to be specified
-        bal_date_str = stream_state.get(self.cursor_field) + timedelta(days=1) or self.start_date
-        bal_date = date.fromisoformat(bal_date_str)
+        last_date_str = stream_state.get(self.cursor_field)
+        bal_date = date.fromisoformat(last_date_str) + timedelta(days=1) if last_date_str else date.fromisoformat(self.start_date)
         yesterday = date.today() - timedelta(days=1)
         while bal_date <= yesterday:
             slices.extend([{**u, self.cursor_field: bal_date.isoformat()} for u in account_uuids])
