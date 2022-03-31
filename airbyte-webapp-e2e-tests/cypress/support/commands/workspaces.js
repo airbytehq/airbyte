@@ -3,7 +3,7 @@ Cypress.Commands.add("initialSetupCompleted", (completed = true) => {
   // the setup/preference page for any workspace if this method got called.
   cy.intercept("POST", "/api/v1/workspaces/get", (req) => {
     req.continue(res => {
-      res.body.workspaces = res.body.initialSetupComplete = true;
+      res.body.workspaces = res.body.initialSetupComplete = completed;
       res.send(res.body);
     });
   });
