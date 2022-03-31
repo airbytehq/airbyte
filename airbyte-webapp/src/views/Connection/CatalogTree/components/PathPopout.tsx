@@ -43,6 +43,15 @@ type PathProps = {
 
 export const PathPopout: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
+    if (props.path) {
+      const text = props.path
+        ? props.isMulti
+          ? props.path.map(pathDisplayName).join(", ")
+          : pathDisplayName(props.path)
+        : "";
+
+      return <>{text}</>;
+    }
     return <>{"<sourceDefined>"}</>;
   }
 

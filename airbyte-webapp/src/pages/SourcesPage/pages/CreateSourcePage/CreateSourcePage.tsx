@@ -11,15 +11,10 @@ import { FormPageContent } from "components/ConnectorBlocks";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
 import useWorkspace from "hooks/services/useWorkspace";
-import { JobInfo } from "core/domain/job/Job";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    status: number;
-    response: JobInfo;
-  } | null>(null);
 
   const { workspace } = useWorkspace();
 
@@ -39,17 +34,12 @@ const CreateSourcePage: React.FC = () => {
     const connector = sourceDefinitions.find(
       (item) => item.sourceDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(null);
-    try {
-      const result = await createSource({ values, sourceConnector: connector });
-      setSuccessRequest(true);
-      setTimeout(() => {
-        setSuccessRequest(false);
-        push(`../${result.sourceId}`);
-      }, 2000);
-    } catch (e) {
-      setErrorStatusRequest(e);
-    }
+    const result = await createSource({ values, sourceConnector: connector });
+    setSuccessRequest(true);
+    setTimeout(() => {
+      setSuccessRequest(false);
+      push(`../${result.sourceId}`);
+    }, 2000);
   };
 
   return (
@@ -61,11 +51,9 @@ const CreateSourcePage: React.FC = () => {
       />
       <FormPageContent>
         <SourceForm
-          afterSelectConnector={() => setErrorStatusRequest(null)}
           onSubmit={onSubmitSourceStep}
           sourceDefinitions={sourceDefinitions}
           hasSuccess={successRequest}
-          error={errorStatusRequest}
         />
       </FormPageContent>
     </>

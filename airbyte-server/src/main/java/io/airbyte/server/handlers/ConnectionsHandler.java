@@ -244,7 +244,7 @@ public class ConnectionsHandler {
         continue;
       }
 
-      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);
@@ -257,7 +257,7 @@ public class ConnectionsHandler {
       if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
         continue;
       }
-      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);
@@ -273,7 +273,7 @@ public class ConnectionsHandler {
     final List<ConnectionRead> reads = Lists.newArrayList();
     for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
       if (standardSync.getStatus() != StandardSync.Status.DEPRECATED) {
-        final ConnectionRead connectionRead = buildConnectionRead(standardSync.getConnectionId());
+        final ConnectionRead connectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
         if (matchSearch(connectionSearch, connectionRead)) {
           reads.add(connectionRead);
         }

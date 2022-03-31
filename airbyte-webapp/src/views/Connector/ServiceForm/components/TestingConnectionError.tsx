@@ -15,7 +15,6 @@ const Error = styled(StatusIcon)`
 
 const ErrorBlock = styled.div`
   display: flex;
-  justify-content: right;
   align-items: center;
   font-weight: 600;
   font-size: 12px;
@@ -29,19 +28,33 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-// TODO: merge with FetchingConnectorError
+const ErrorSection: React.FC<{
+  errorTitle: React.ReactNode;
+  errorMessage: React.ReactNode;
+}> = ({ errorMessage, errorTitle }) => (
+  <ErrorBlock>
+    <Error />
+    <div>
+      {errorTitle}
+      <ErrorText>{errorMessage}</ErrorText>
+    </div>
+  </ErrorBlock>
+);
+
 const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({
   errorMessage,
-}) => {
-  return (
-    <ErrorBlock>
-      <Error />
-      <div>
-        <FormattedMessage id="form.failedTests" />
-        <ErrorText>{errorMessage}</ErrorText>
-      </div>
-    </ErrorBlock>
-  );
-};
+}) => (
+  <ErrorSection
+    errorTitle={<FormattedMessage id="form.failedTests" />}
+    errorMessage={errorMessage}
+  />
+);
 
-export default TestingConnectionError;
+const FetchingConnectorError: React.FC = () => (
+  <ErrorSection
+    errorTitle={<FormattedMessage id="form.failedFetchingConnector" />}
+    errorMessage={<FormattedMessage id="form.tryAgain" />}
+  />
+);
+
+export { TestingConnectionError, FetchingConnectorError };

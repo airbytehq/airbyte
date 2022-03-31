@@ -37,6 +37,7 @@ type IProps = {
   frequencyText?: string;
   destinationDefinition?: DestinationDefinition;
   sourceDefinition?: SourceDefinition;
+  allowSync?: boolean;
 };
 
 const StatusMainInfo: React.FC<IProps> = ({
@@ -44,6 +45,7 @@ const StatusMainInfo: React.FC<IProps> = ({
   frequencyText,
   destinationDefinition,
   sourceDefinition,
+  allowSync,
 }) => {
   const actionsDisabled = connection.status === ConnectionStatus.DEPRECATED;
 
