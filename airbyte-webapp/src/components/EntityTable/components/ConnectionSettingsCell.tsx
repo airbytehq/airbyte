@@ -3,10 +3,10 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
 
-import { RoutePaths } from "pages/routes";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Link } from "components";
 import { ConnectionSettingsRoutes } from "pages/ConnectionPage/pages/ConnectionItemPage/ConnectionSettingsRoutes";
+import { RoutePaths } from "../../../pages/routePaths";
 
 type IProps = {
   id: string;

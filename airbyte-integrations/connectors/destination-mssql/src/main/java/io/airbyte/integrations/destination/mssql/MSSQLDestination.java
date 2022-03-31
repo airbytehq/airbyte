@@ -24,6 +24,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
   public static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
@@ -72,6 +73,10 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         .put("username", config.get("username").asText())
         .put("password", config.get("password").asText())
         .put("schema", schema);
+
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put("connection_properties", config.get(JDBC_URL_PARAMS_KEY));
+    }
 
     return Jsons.jsonNode(configBuilder.build());
   }

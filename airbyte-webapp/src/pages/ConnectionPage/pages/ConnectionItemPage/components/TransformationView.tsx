@@ -21,9 +21,9 @@ import {
 } from "core/domain/connection";
 import useConnection from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
 import { ContentCard, H4 } from "components";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 
 type TransformationViewProps = {
   connection: Connection;
@@ -107,7 +107,7 @@ const NormalizationCard: React.FC<{
 const TransformationView: React.FC<TransformationViewProps> = ({
   connection,
 }) => {
-  const definition = useDestinationDefinitionSpecificationLoadAsync(
+  const definition = useGetDestinationDefinitionSpecification(
     connection.destination.destinationDefinitionId
   );
   const { updateConnection } = useConnection();

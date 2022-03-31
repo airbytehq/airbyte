@@ -3,7 +3,6 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import { Button, MainPageWithScroll } from "components";
-import { RoutePaths } from "pages/routes";
 import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import SourcesTable from "./components/SourcesTable";
@@ -11,6 +10,7 @@ import SourceResource from "core/resources/Source";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import useWorkspace from "hooks/services/useWorkspace";
+import { RoutePaths } from "../../../routePaths";
 
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();

@@ -38,7 +38,7 @@ class GcsAvroWriterTest {
         Timestamp.from(Instant.ofEpochMilli(1234)),
         null);
 
-    assertEquals("fake-bucketPath/fake_namespace/fake_stream/1970_01_01_1234_0.avro", writer.getOutputPath());
+    assertEquals("fake-bucketPath/fake-namespace/fake-stream/1970_01_01_1234_0.avro", writer.getOutputPath());
   }
 
 }
