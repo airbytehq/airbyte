@@ -16,16 +16,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe_alex.streams import (
     InvoiceLineItems,
-    IncrementalStripeAlexStream
+    meta_incremental
 )
-
-
-def meta_incremental(name):
-    class cls(IncrementalStripeAlexStream):
-        pass
-
-    cls.__name__ = name
-    return cls
 
 
 class ResponseParser:

@@ -43,12 +43,8 @@ class StripeStream(HttpStream, ABC):
         """
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
-        self.logger.info(f"PATH for {self._name}")
-        self.logger.info(f"s2p: {self._stream_to_path}")
         _path = self._stream_to_path[self._name]
-        self.logger.info(f"unformatted path for {self._name}: {_path}")
         _formatted = _path.format(stream_slice=stream_slice)
-        self.logger.info(f"formatted path for {self._name}: {_formatted}")
         return _path
 
     def url_base(self) -> str:
@@ -56,11 +52,13 @@ class StripeStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
-        if bool(decoded_response.get("has_more", "False")) and decoded_response.get("data", []):
+        if bool(decoded_response.get("has_more", "False")) and self._response_parser.parse_response(decoded_response):
             last_object_id = decoded_response["data"][-1]["id"]
             ## FIXME implement
             # return {"starting_after": last_object_id}
-        return None
+            return None
+        else:
+            return None
 
     def request_params(
             self,
@@ -68,7 +66,6 @@ class StripeStream(HttpStream, ABC):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         params = self._request_parameters
 
         # Handle pagination by inserting the next page's token in the request parameters
@@ -91,9 +88,6 @@ class IncrementalStripeAlexStream(StripeStream, ABC):
     def __init__(self, lookback_window_days: int = 0, **kwargs):
         super().__init__(**kwargs)
         self.lookback_window_days = lookback_window_days
-        self.logger.info("======")
-        self.logger.info(kwargs["stream_to_cursor_field"])
-        self.logger.info("======")
         self._cursor_field = kwargs["stream_to_cursor_field"][self.name]
 
     @property
@@ -212,7 +206,6 @@ class StripeSubStream(StripeStream, ABC):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        self.logger.info(f"kwargs: {kwargs}")
         parent_stream = self.parent(
             **{
                 "url_base": self.url_base,
@@ -251,13 +244,12 @@ class StripeSubStream(StripeStream, ABC):
                 yield item
 
 
-class Invoices(IncrementalStripeAlexStream):
-    """
-    API docs: https://stripe.com/docs/api/invoices/list
-    """
+def meta_incremental(name):
+    class cls(IncrementalStripeAlexStream):
+        pass
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    cls.__name__ = name
+    return cls
 
 
 class InvoiceLineItems(StripeSubStream):
@@ -267,7 +259,7 @@ class InvoiceLineItems(StripeSubStream):
 
     name = "invoice_line_items"
 
-    parent = Invoices
+    parent = meta_incremental("Invoices")
     parent_name = "invoices"
     parent_id: str = "invoice_id"
     sub_items_attr = "lines"
@@ -275,14 +267,3 @@ class InvoiceLineItems(StripeSubStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-
-class InvoiceItems(IncrementalStripeAlexStream):
-    """
-    API docs: https://stripe.com/docs/api/invoiceitems/list
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    name = "invoice_items"
