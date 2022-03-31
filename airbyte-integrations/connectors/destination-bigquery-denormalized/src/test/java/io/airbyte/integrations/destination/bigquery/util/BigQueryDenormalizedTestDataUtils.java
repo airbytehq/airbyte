@@ -30,22 +30,6 @@ public class BigQueryDenormalizedTestDataUtils {
     return getTestDataFromResourceJson("schemaWithInvalidArrayType.json");
   }
 
-  public static JsonNode getData() {
-    return getTestDataFromResourceJson("data.json");
-  }
-
-  public static JsonNode getDataWithFormats() {
-    return getTestDataFromResourceJson("dataWithFormats.json");
-  }
-
-  public static JsonNode getDataWithJSONDateTimeFormats() {
-    return getTestDataFromResourceJson("dataWithJSONDateTimeFormats.json");
-  }
-
-  public static JsonNode getDataWithJSONWithReference() {
-    return getTestDataFromResourceJson("dataWithJSONWithReference.json");
-  }
-
   public static JsonNode getSchemaWithReferenceDefinition() {
     return getTestDataFromResourceJson("schemaWithReferenceDefinition.json");
   }
@@ -54,13 +38,28 @@ public class BigQueryDenormalizedTestDataUtils {
     return getTestDataFromResourceJson("schemaWithNestedDatetimeInsideNullObject.json");
   }
 
-  public static JsonNode getDataWithEmptyObjectAndArray() {
-    return getTestDataFromResourceJson("dataWithEmptyObjectAndArray.json");
+  public static JsonNode getExpectedSchema() {
+    return getTestDataFromResourceJson("expectedSchema.json");
   }
 
-  public static JsonNode getDataWithNestedDatetimeInsideNullObject() {
-    return getTestDataFromResourceJson("dataWithNestedDatetimeInsideNullObject.json");
+  public static JsonNode getExpectedSchemaWithFormats() {
+    return getTestDataFromResourceJson("expectedSchemaWithFormats.json");
+  }
 
+  public static JsonNode getExpectedSchemaWithDateTime() {
+    return getTestDataFromResourceJson("expectedSchemaWithDateTime.json");
+  }
+
+  public static JsonNode getExpectedSchemaWithInvalidArrayType() {
+    return getTestDataFromResourceJson("expectedSchemaWithInvalidArrayType.json");
+  }
+
+  public static JsonNode getExpectedSchemaWithReferenceDefinition() {
+    return getTestDataFromResourceJson("expectedSchemaWithReferenceDefinition.json");
+  }
+
+  public static JsonNode getExpectedSchemaWithNestedDatetimeInsideNullObject() {
+    return getTestDataFromResourceJson("expectedSchemaWithNestedDatetimeInsideNullObject.json");
   }
 
   private static JsonNode getTestDataFromResourceJson(final String fileName) {
