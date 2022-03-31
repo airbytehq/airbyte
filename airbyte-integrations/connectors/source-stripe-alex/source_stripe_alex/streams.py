@@ -33,6 +33,7 @@ class StripeStream(HttpStream, ABC):
         self._name = kwargs["name"]
         self._paginator = kwargs["paginator"]
         self._primary_key = kwargs["primary_key"]
+        self._incremental_headers = kwargs["incremental_headers"]
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -109,8 +110,8 @@ class IncrementalStripeAlexStream(StripeStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
 
         start_timestamp = self.get_start_timestamp(stream_state)
-        if start_timestamp:
-            params["created[gte]"] = start_timestamp
+        params.update(self._incremental_headers)
+        params = {k: v.format(start_timestamp=start_timestamp) for k, v in params.items()}
         return params
 
     def get_start_timestamp(self, stream_state) -> int:
@@ -218,7 +219,8 @@ class StripeSubStream(StripeStream, ABC):
                 "response_parser": self._response_parser,
                 "name": self.parent_name,
                 "paginator": self._paginator,
-                "primary_key": self._primary_key
+                "primary_key": self._primary_key,
+                "incremental_headers": self._incremental_headers
             }
         )
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):

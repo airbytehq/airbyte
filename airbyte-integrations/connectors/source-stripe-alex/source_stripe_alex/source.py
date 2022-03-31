@@ -65,7 +65,8 @@ class PaginatorCursorInHeaderLastObject(Paginator):
         data = [o for o in self._response_parser.parse_response(response)]
         if bool(decoded_response.get(self._has_more_flag, "False")) and data:
             last_object = AttrDict(**data[-1])
-            return {k: v.format(last_object=last_object) for k, v in self._extra_header.items()}
+            return None
+            # return {k: v.format(last_object=last_object) for k, v in self._extra_header.items()}
         else:
             return None
 
@@ -94,9 +95,13 @@ class SourceStripeAlex(AbstractSource):
             "stream_to_path": config["stream_to_path"],
             "response_parser": response_parser,
             "paginator": self._get_paginator(**paginator_config),
-            "primary_key": config["primary_key"]
+            "primary_key": config["primary_key"],
+            "incremental_headers": config.get("incremental_headers")  # this needs to be in args because read_records calls parent stream...
         }
-        incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
+        incremental_args = {
+            **args,
+            "lookback_window_days": config.get("lookback_window_days"),
+        }
 
         invoices_args = {
             **copy.deepcopy(incremental_args),

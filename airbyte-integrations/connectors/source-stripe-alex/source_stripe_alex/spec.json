@@ -103,6 +103,12 @@
         "title": "Primary key",
         "description": "Primary key for ALL streams",
         "order": 11
+      },
+      "incremental_headers": {
+        "type": "object",
+        "title": "Incremental headers",
+        "description": "Additional headers for incremental streams",
+        "order": 12
       }
     }
   }
