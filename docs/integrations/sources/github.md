@@ -111,6 +111,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.26  | 2022-03-31 | [11623](https://github.com/airbytehq/airbyte/pull/11623) | Re-implement incremental for `reviews` stream using parent `updated_at` field                              |
 | 0.2.25  | 2022-03-31 | [11567](https://github.com/airbytehq/airbyte/pull/11567) | Improve code for better error handling                                                                     |
 | 0.2.24  | 2022-03-30 | [9251](https://github.com/airbytehq/airbyte/pull/9251) | Add Streams Workflow and WorkflowRuns                                                                        |
 | 0.2.23  | 2022-03-17 | [11212](https://github.com/airbytehq/airbyte/pull/11212) | Improve documentation and spec for Beta                                                                    |
