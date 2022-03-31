@@ -97,6 +97,12 @@
         "title": "Paginator configuration",
         "description": "Config describing paginator",
         "order": 10
+      },
+      "primary_key": {
+        "type": "string",
+        "title": "Primary key",
+        "description": "Primary key for ALL streams",
+        "order": 11
       }
     }
   }

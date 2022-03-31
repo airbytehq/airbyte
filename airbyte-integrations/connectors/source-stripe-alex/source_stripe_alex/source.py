@@ -93,7 +93,8 @@ class SourceStripeAlex(AbstractSource):
             "stream_to_cursor_field": config["stream_to_cursor_field"],
             "stream_to_path": config["stream_to_path"],
             "response_parser": response_parser,
-            "paginator": self._get_paginator(**paginator_config)
+            "paginator": self._get_paginator(**paginator_config),
+            "primary_key": config["primary_key"]
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
 

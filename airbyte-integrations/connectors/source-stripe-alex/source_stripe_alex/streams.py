@@ -5,7 +5,7 @@
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union, List
 
 import pendulum
 import requests
@@ -14,7 +14,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class StripeStream(HttpStream, ABC):
-    primary_key = "id"
 
     def __init__(self,  # *, url_base: str, start_date: int, account_id: str, headers: Mapping[str, str],
                  # request_parameters: Mapping[str, Any],
@@ -33,6 +32,12 @@ class StripeStream(HttpStream, ABC):
         self._response_parser = kwargs["response_parser"]
         self._name = kwargs["name"]
         self._paginator = kwargs["paginator"]
+        self._primary_key = kwargs["primary_key"]
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        """Build complex PK based on slices and breakdowns"""
+        return self._primary_key
 
     def path(
             self,
@@ -212,7 +217,8 @@ class StripeSubStream(StripeStream, ABC):
                 "stream_to_path": self._stream_to_path,
                 "response_parser": self._response_parser,
                 "name": self.parent_name,
-                "paginator": self._paginator
+                "paginator": self._paginator,
+                "primary_key": self._primary_key
             }
         )
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
