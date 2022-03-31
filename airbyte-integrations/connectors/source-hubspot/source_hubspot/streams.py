@@ -1319,35 +1319,35 @@ class Contacts(CRMSearchStream):
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsMeetings(CRMSearchStream):
     entity = "meetings"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
