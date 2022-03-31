@@ -1,19 +1,75 @@
 # Facebook Marketing
 
-## Features
+This page guides you through the process of setting up the Facebook Marketing source connector.
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | except AdCreatives and AdAccount |
+## Prerequisites
 
-##### Incremental Deletes Sync
+* A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
+* (For Open Source) A [Facebook App](https://developers.facebook.com/apps/) with the Marketing API enabled
 
-The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. While a user could archive or delete an ad campaign, there is still a record of that campaign having existed in the Facebook Marketing API. If configured by the user, the Facebook connector replicates records for campaigns or ads even if they were archived or deleted from the Facebook platform.
+## Set up Facebook Marketing as a source in Airbyte 
 
-## Supported Tables
+### For Airbyte Cloud
 
-This Source is capable of syncing the following tables and their data:
+To set up Facebook Marketing as a source in Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click + **new source**.
+3. On the Set up the source page, enter the name for the Salesforce connector and select **Facebook Marketing** from the Source type dropdown.
+4. Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
+5. For **Start Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. For **End Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+7. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762). 
+8. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
+    <br> **_What does this mean?_** The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
+9.  (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
+10. (Optional) In the Custom Insights** **section, click **Add**. 
+    To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. 
+
+    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. 
+
+    To configure Custom Insights:
+
+    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name 
+    2. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
+    3. For **End Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+    4. For **Breakdowns**, enter a list of the breakdowns you want to configure.
+    5. For **Start Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+    6. For **Time Increment**, enter the number of days over which you want to aggregate statistics. 
+
+            For example, if you set this value to 7, Airbyte will report statistics as 7-day aggregates starting from the Start Date. Suppose the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only).  
+    7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
+    8. Click **Done**.
+11. Click **Set up source**.
+
+### For Airbyte Open Source
+
+To set up Facebook Marketing as a source in Airbyte Open Source:
+
+1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and [create an app](https://developers.facebook.com/docs/development/create-an-app/) with the app type Business. 
+2. From your App’s dashboard, [setup the Marketing API](https://developers.facebook.com/docs/marketing-apis/get-started).
+3. Generate a Marketing API access token: From your App’s Dashboard, click **Marketing API** --> **Tools**. Select all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click **Get token**. Copy the generated token for later use.
+4. Request a rate increase limit: Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier (the default tier for new apps), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
+
+    * Ads Management Standard Access
+    * ads_read
+    * Ads_management
+
+    See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) to request Advanced Access to the relevant permissions.
+5. Navigate to the Airbyte Open Source Dashboard. Add the access token when prompted to do so and follow the same instructions as for [setting up the Facebook Connector on Airbyte Cloud]&lt;link to previous section>.
+
+## Supported sync modes
+
+The Facebook Marketing source connector supports the following sync modes:
+
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
+* [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) (except for the AdCreatives and AdAccount tables)
+
+## Supported tables
+
+You can replicate the following tables using the Facebook Marketing connector:
 
 * [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
 * [AdAccount](https://developers.facebook.com/docs/marketing-api/reference/ad-account)
@@ -28,75 +84,21 @@ This Source is capable of syncing the following tables and their data:
 You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
 * Country
-* DMA \(Designated Market Area\)
+* DMA (Designated Market Area)
 * Gender & Age
 * Platform & Device
 * Region
 
 For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 
-## Getting Started \(Airbyte Cloud\)
-
-1. Click `Authenticate your Facebook Marketing account`.
-2. Enter your Account ID. Learn how to find it are [here](https://www.facebook.com/business/help/1492627900875762).
-3. Enter a start date and your Insights settings.
-4. You're done.
-
-## Getting Started \(Airbyte Open-Source\)
-
-#### Requirements
-
-* A Facebook Ad Account ID
-* A Facebook App which has the Marketing API enabled
-* A Facebook Marketing API Access Token
-* Request a rate limit increase from Facebook
-
-Follow the [Facebook documentation for obtaining your Ad Account ID](https://www.facebook.com/business/help/1492627900875762) and keep that on hand. We'll need this ID to configure Facebook as a source in Airbyte.
-
-#### If you don't have a Facebook App
-
-Visit the [Facebook Developers App hub](https://developers.facebook.com/apps/) and create an App and choose "Manage Business Integrations" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Enable the Marketing API for your app" section.
-
-From the App's Dashboard screen (seen in the screenshot below) enable the Marketing API for your app if it is not already setup.
-
-![](../../.gitbook/assets/facebook_marketing_api.png)
-
-#### API Access Token
-
-In the App Dashboard screen, click Marketing API --&gt; Tools on the left sidebar. Then highlight all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click "Get token". A long string of characters should appear in front of you; **this is the access token.** Copy this string for use in the Airbyte UI later.
-
-![](../../.gitbook/assets/facebook_access_token.png)
-
-### Request rate limit increase
-
-Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier (the default tier for new apps), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
-
-* Ads Management Standard Access
-* ads\_read
-* ads\_management
-
-See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) for information about how to request Advanced Access to the relevant permissions.
-
-With the Ad Account ID and API access token, you should be ready to start pulling data from the Facebook Marketing API. Head to the Airbyte UI to setup your source connector!
-
-## Rate Limiting & Performance Considerations (Airbyte Open Source)
-
-Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
-
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) for more information on requesting a quota upgrade.
-
-## Custom Insights
-
-In order to retrieve specific fields from Facebook Ads Insights combined with other breakdowns, there is a mechanism to allow you to choose which fields and breakdowns to sync. It is highly recommended to follow the [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns), as there are limitations related to breakdowns. Some fields can not be requested and many others just work combined with specific fields, for example, the breakdown **app_id** is only supported with the **total_postbacks** field. By now, the only check done when setting up a source is to check if the fields, breakdowns and action breakdowns are within the ones provided by Facebook. This is, if you enter a good input, it's gonna be validated, but after, if the calls to Facebook API with those pareameters fails you will receive an error from the API. As a summary, custom insights allows to replicate only some fields, resulting in sync speed increase.
-
-#### Data type mapping
+## Data type mapping
 
 | Integration Type | Airbyte Type |
-| :--- | :--- |
-| `string` | `string` |
-| `number` | `number` |
-| `array` | `array` |
-| `object` | `object` |
+|:---:|:---:|
+| string | string |
+| number | number |
+| array | array |
+| object | object |
 
 ## Changelog
 
