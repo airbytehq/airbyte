@@ -1,0 +1,34 @@
+{
+  "type": [
+    "object"
+  ],
+  "properties": {
+    "name": {
+      "type": [
+        "string"
+      ]
+    },
+    "permission-list": {
+      "type": [
+        "array"
+      ],
+      "items": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "domain": {
+            "type": [
+              "string"
+            ]
+          },
+          "grants": {
+            "type": [
+              "array"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
