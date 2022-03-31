@@ -505,11 +505,10 @@ public class KubePodProcess extends Process implements KubePod {
 
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
 
-    // We want to create a watch before the init container runs. Then we can guarantee that we're
-    // checking
-    // for updates across the full lifecycle of the main container. This is safe only because we are
-    // blocking
-    // the init pod until we copy files onto it. See the ExitCodeWatcher comments for more info.
+    // We want to create a watch before the init container runs. Then we can guarantee
+    // that we're checking for updates across the full lifecycle of the main container.
+    // This is safe only because we are blocking the init pod until we copy files onto it.
+    // See the ExitCodeWatcher comments for more info.
     exitCodeFuture = new CompletableFuture<>();
     podWatch = fabricClient.resource(podDefinition).watch(new ExitCodeWatcher(
         exitCodeFuture::complete,
