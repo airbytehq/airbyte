@@ -38,7 +38,7 @@ class KyribaClient:
     @backoff.on_exception(
         backoff.expo,
         requests.exceptions.RequestException,
-        max_tries=5
+        max_tries=10
     )
     def login(self) -> TokenAuthenticator:
         data = {"grant_type": "client_credentials"}
