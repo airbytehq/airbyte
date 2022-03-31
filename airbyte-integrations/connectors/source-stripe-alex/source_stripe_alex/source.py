@@ -5,7 +5,7 @@
 
 import copy
 from abc import abstractmethod
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Optional
 from typing import List, Tuple
 
 import pendulum
@@ -26,7 +26,7 @@ class ResponseParser:
         pass
 
 
-class JsonArrayGetter:
+class JsonArrayGetter(ResponseParser):
     def __init__(self, **kwargs):
         self._field_to_get = kwargs["field_to_get"]
 
@@ -34,6 +34,40 @@ class JsonArrayGetter:
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         yield from response_json.get(self._field_to_get, [])
+
+
+class Paginator:
+    @abstractmethod
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pass
+
+
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
+class PaginatorCursorInHeaderLastObject(Paginator):
+    """
+    This is probably 2 classes:
+    1. track last object id
+    2. update the header
+    """
+
+    def __init__(self, response_parser, has_more_flag, extra_header):
+        self._response_parser = response_parser
+        self._has_more_flag = has_more_flag
+        self._extra_header = extra_header
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        decoded_response = response.json()
+        data = [o for o in self._response_parser.parse_response(response)]
+        if bool(decoded_response.get(self._has_more_flag, "False")) and data:
+            last_object = AttrDict(**data[-1])
+            return {k: v.format(last_object=last_object) for k, v in self._extra_header.items()}
+        else:
+            return None
 
 
 class SourceStripeAlex(AbstractSource):
@@ -46,6 +80,9 @@ class SourceStripeAlex(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["client_secret"])
         start_date = pendulum.parse(config["start_date"]).int_timestamp
+        response_parser = self._get_response_parser(config)
+        paginator_config = copy.deepcopy(config)
+        paginator_config.update(**{"response_parser": response_parser})
         args = {
             "url_base": config["url_base"],
             "authenticator": authenticator,
@@ -55,7 +92,8 @@ class SourceStripeAlex(AbstractSource):
             "request_parameters": config["request_parameters"],
             "stream_to_cursor_field": config["stream_to_cursor_field"],
             "stream_to_path": config["stream_to_path"],
-            "response_parser": self._get_response_parser(config)
+            "response_parser": response_parser,
+            "paginator": self._get_paginator(**paginator_config)
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
 
@@ -85,6 +123,16 @@ class SourceStripeAlex(AbstractSource):
             return JsonArrayGetter(**response_parser_config["config"])
         else:
             raise Exception(f"unexpected response parser type: {parser_type}")
+
+    def _get_paginator(self, **config):
+        paginator_config = config["paginator"]
+        paginator_type = paginator_config["type"]
+        if paginator_type == "PaginatorCursorInHeaderLastObject":
+            return PaginatorCursorInHeaderLastObject(config["response_parser"],
+                                                     paginator_config["config"]["has_more_flag"],
+                                                     paginator_config["config"]["extra_header"])
+        else:
+            raise Exception(f"unexpected paginator type: {paginator_type}")
 
     def _get_headers(self, config):
         return {k: v.format(**config) for k, v in config["headers"].items()}

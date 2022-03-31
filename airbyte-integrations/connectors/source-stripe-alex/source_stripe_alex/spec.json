@@ -15,7 +15,8 @@
       "request_parameters",
       "stream_to_cursor_field",
       "stream_to_path",
-      "response_parser"
+      "response_parser",
+      "paginator"
     ],
     "properties": {
       "account_id": {
@@ -90,6 +91,12 @@
         "title": "Response parser configuration",
         "description": "Config describing response parser",
         "order": 9
+      },
+      "paginator": {
+        "type": "object",
+        "title": "Paginator configuration",
+        "description": "Config describing paginator",
+        "order": 10
       }
     }
   }

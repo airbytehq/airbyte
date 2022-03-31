@@ -32,6 +32,7 @@ class StripeStream(HttpStream, ABC):
         self._stream_to_path = kwargs["stream_to_path"]
         self._response_parser = kwargs["response_parser"]
         self._name = kwargs["name"]
+        self._paginator = kwargs["paginator"]
 
     def path(
             self,
@@ -51,14 +52,7 @@ class StripeStream(HttpStream, ABC):
         return self._url_base
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()
-        if bool(decoded_response.get("has_more", "False")) and self._response_parser.parse_response(decoded_response):
-            last_object_id = decoded_response["data"][-1]["id"]
-            ## FIXME implement
-            # return {"starting_after": last_object_id}
-            return None
-        else:
-            return None
+        return self._paginator.next_page_token(response)
 
     def request_params(
             self,
@@ -200,6 +194,7 @@ class StripeSubStream(StripeStream, ABC):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
 
         # add 'starting_after' param
+        # This belongs to the paginator!
         if not params.get("starting_after") and stream_slice and stream_slice.get("starting_after"):
             params["starting_after"] = stream_slice["starting_after"]
 
@@ -216,10 +211,12 @@ class StripeSubStream(StripeStream, ABC):
                 "stream_to_cursor_field": self._stream_to_cursor_field,
                 "stream_to_path": self._stream_to_path,
                 "response_parser": self._response_parser,
-                "name": self.parent_name
+                "name": self.parent_name,
+                "paginator": self._paginator
             }
         )
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
+            # A lot of this belongs to the response_parser
 
             items_obj = record.get(self.sub_items_attr, {})
             if not items_obj:
@@ -232,6 +229,7 @@ class StripeSubStream(StripeStream, ABC):
                 items = [i for i in items if i.get(self.filter["attr"]) == self.filter["value"]]
 
             # get next pages
+            # this belongs to the paginator
             items_next_pages = []
             if items_obj.get("has_more") and items:
                 stream_slice = {self.parent_id: record["id"], "starting_after": items[-1]["id"]}
