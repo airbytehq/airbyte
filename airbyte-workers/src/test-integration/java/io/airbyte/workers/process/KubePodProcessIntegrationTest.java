@@ -114,7 +114,7 @@ public class KubePodProcessIntegrationTest {
    */
   @Test
   public void testConcurrentRunning() throws Exception {
-    final var totalJobs = 10;
+    final var totalJobs = 5;
 
     final var pool = Executors.newFixedThreadPool(totalJobs);
 
