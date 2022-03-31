@@ -358,8 +358,7 @@ public class AcceptanceTests {
     assertEquals(name, createdDestination.getName());
     assertEquals(destinationDefId, createdDestination.getDestinationDefinitionId());
     assertEquals(workspaceId, createdDestination.getWorkspaceId());
-    assertEquals(getDestinationDbConfigWithHiddenPassword(),
-        createdDestination.getConnectionConfiguration());
+    assertEquals(getDestinationDbConfigWithHiddenPassword(), createdDestination.getConnectionConfiguration());
   }
 
   @Test
@@ -407,8 +406,7 @@ public class AcceptanceTests {
   public void testSourceCheckConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
-    final CheckConnectionRead checkConnectionRead =
-        apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
+    final CheckConnectionRead checkConnectionRead = apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
 
     assertEquals(
         CheckConnectionRead.StatusEnum.SUCCEEDED,
@@ -466,8 +464,7 @@ public class AcceptanceTests {
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId,
-        List.of(operationId), catalog, schedule);
+    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, List.of(operationId), catalog, schedule);
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
@@ -490,8 +487,7 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog,
-            null).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     assertSourceAndDestinationDbInSync(false);
@@ -521,13 +517,11 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog,
-            null).getConnectionId();
+        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of PENDING
-    final JobRead jobRead = waitWhileJobHasStatus(apiClient.getJobsApi(),
-        connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    final JobRead jobRead = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
     assertEquals(JobStatus.RUNNING, jobRead.getStatus());
 
     final var resp = apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()));
