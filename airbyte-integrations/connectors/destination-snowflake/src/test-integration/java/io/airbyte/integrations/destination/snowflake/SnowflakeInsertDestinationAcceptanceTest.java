@@ -14,6 +14,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
@@ -65,7 +67,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode invalidConfig = Jsons.clone(config);
-    ((ObjectNode) invalidConfig).put("password", "wrong password");
+    ((ObjectNode) invalidConfig.get("credentials")).put("password", "wrong password");
     return invalidConfig;
   }
 
@@ -167,6 +169,17 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     database.execute(createSchemaQuery);
     database.close();
+  }
+
+  @Test
+  public void testBackwardCompatibilityAfterAddingOauth() {
+    final JsonNode deprecatedStyleConfig = Jsons.clone(config);
+    final JsonNode password = deprecatedStyleConfig.get("credentials").get("password");
+
+    ((ObjectNode) deprecatedStyleConfig).remove("credentials");
+    ((ObjectNode) deprecatedStyleConfig).set("password", password);
+
+    assertEquals(Status.SUCCEEDED, runCheckWithCatchedException(deprecatedStyleConfig));
   }
 
   /**

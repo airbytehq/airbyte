@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.47
+Added local test success message containing git hash: [#11497](https://github.com/airbytehq/airbyte/pull/11497)
+
 ## 0.1.46
 Fix `test_oneof_usage` test: [#9861](https://github.com/airbytehq/airbyte/pull/9861)
 

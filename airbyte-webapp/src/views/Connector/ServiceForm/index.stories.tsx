@@ -1,7 +1,9 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 
-import ServiceForm from "./ServiceForm";
+import { ServiceForm } from "./ServiceForm";
 import { ContentCard } from "components";
+import { ConnectorSpecification } from "core/domain/connector";
+import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 
 const TempConnector = {
   name: "Service",
@@ -30,15 +32,21 @@ export default {
 const Template: ComponentStory<typeof ServiceForm> = (args) => {
   // Hack to allow devs to not specify sourceDefinitionId
   if (
-    args.selectedConnector &&
-    !(args.selectedConnector as any).sourceDefinitionId
+    args.selectedConnectorDefinitionSpecification &&
+    !ConnectorSpecification.id(args.selectedConnectorDefinitionSpecification)
   ) {
-    (args.selectedConnector as any).sourceDefinitionId =
-      TempConnector.sourceDefinitionId;
+    if (
+      isSourceDefinitionSpecification(
+        args.selectedConnectorDefinitionSpecification
+      )
+    ) {
+      args.selectedConnectorDefinitionSpecification.sourceDefinitionId =
+        TempConnector.sourceDefinitionId;
+    }
   }
 
-  if (args.selectedConnector?.documentationUrl) {
-    args.selectedConnector.documentationUrl = "";
+  if (args.selectedConnectorDefinitionSpecification?.documentationUrl) {
+    args.selectedConnectorDefinitionSpecification.documentationUrl = "";
   }
 
   return (
@@ -50,7 +58,7 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
 
 export const Common = Template.bind({});
 Common.args = {
-  selectedConnector: {
+  selectedConnectorDefinitionSpecification: {
     ...TempConnector,
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -128,7 +136,7 @@ Common.args = {
 
 export const Oneof = Template.bind({});
 Oneof.args = {
-  selectedConnector: {
+  selectedConnectorDefinitionSpecification: {
     ...TempConnector,
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",

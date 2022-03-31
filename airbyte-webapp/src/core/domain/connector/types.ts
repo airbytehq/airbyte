@@ -3,6 +3,7 @@ import {
   ConnectionSpecification,
 } from "core/domain/connection";
 import { DestinationSyncMode } from "core/domain/catalog";
+import { JobInfo } from "../job";
 
 export enum ReleaseStage {
   "ALPHA" = "alpha",
@@ -118,4 +119,12 @@ export interface Destination {
   workspaceId: string;
   destinationDefinitionId: string;
   connectionConfiguration: ConnectionConfiguration;
+}
+
+export type ConnectorT = Destination | Source;
+
+export interface Scheduler {
+  status: string;
+  message: string;
+  jobInfo?: JobInfo;
 }
