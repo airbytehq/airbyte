@@ -20,36 +20,28 @@ import {
   ConnectionFormValues,
   SUPPORTED_MODES,
 } from "views/Connection/ConnectionForm/formConfig";
+import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
+
 import { StreamHeader } from "./StreamHeader";
-import { FieldHeader } from "./FieldHeader";
-import { FieldRow } from "./FieldRow";
 
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { StreamFieldTable } from "./StreamFieldTable";
+import { flatten, getPathType } from "./utils";
 
-const flatten = (
-  fArr: SyncSchemaField[],
-  arr: SyncSchemaField[] = []
-): SyncSchemaField[] =>
-  fArr.reduce<SyncSchemaField[]>((acc, f) => {
-    acc.push(f);
-
-    if (f.fields?.length) {
-      return flatten(f.fields, acc);
-    }
-    return acc;
-  }, arr);
-
-const Section = styled.div<{ error?: boolean }>`
+const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
   border: 1px solid
     ${(props) => (props.error ? props.theme.dangerColor : "none")};
-`;
+  background: ${({ theme, isSelected }) =>
+    isSelected ? "rgba(97, 94, 255, 0.1);" : theme.greyColor0};
 
-const RowsContainer = styled.div<{ depth?: number }>`
-  background: ${({ theme }) => theme.whiteColor5};
-  border-radius: 4px;
-  margin: 0
-    ${({ depth = 0 }) => `${depth * 38}px ${depth * 5}px ${depth * 38}px`};
+  &:first-child {
+    border-radius: 8px 8px 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 0 8px 8px;
+  }
 `;
 
 type TreeViewRowProps = {
@@ -76,7 +68,8 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 }) => {
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
-  const streamId = stream.name;
+
+  const [isSelected] = useBulkEditSelect(streamNode.id);
 
   const updateStreamWithConfig = useCallback(
     (config: Partial<AirbyteStreamConfiguration>) =>
@@ -149,12 +142,15 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   });
 
   const fields = useMemo(() => {
-    const traversedFields = traverseSchemaToField(stream.jsonSchema, streamId);
+    const traversedFields = traverseSchemaToField(
+      stream.jsonSchema,
+      stream.name
+    );
 
     return traversedFields.sort(
       naturalComparatorBy((field) => field.cleanedName)
     );
-  }, [stream.jsonSchema, streamId]);
+  }, [stream.jsonSchema, stream.name]);
 
   const flattenedFields = useMemo(() => flatten(fields), [fields]);
 
@@ -167,17 +163,8 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const hasChildren = fields && fields.length > 0;
 
-  const isCursor = (field: SyncSchemaField): boolean =>
-    equal(config.cursorField, field.path);
-
-  const isPrimaryKey = (field: SyncSchemaField): boolean => {
-    const existIndex = config.primaryKey.findIndex((p) => equal(p, field.path));
-
-    return existIndex !== -1;
-  };
-
   return (
-    <Section error={hasError}>
+    <Section error={hasError} isSelected={isSelected}>
       <TreeRowWrapper>
         <StreamHeader
           stream={streamNode}
@@ -188,52 +175,23 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           onSelectSyncMode={onSelectSyncMode}
           isRowExpanded={isRowExpanded}
           primitiveFields={primitiveFields}
-          pkType={
-            pkRequired ? (shouldDefinePk ? "required" : "sourceDefined") : null
-          }
+          pkType={getPathType(pkRequired, shouldDefinePk)}
           onPrimaryKeyChange={onPkUpdate}
-          cursorType={
-            cursorRequired
-              ? shouldDefineCursor
-                ? "required"
-                : "sourceDefined"
-              : null
-          }
+          cursorType={getPathType(cursorRequired, shouldDefineCursor)}
           onCursorChange={onCursorSelect}
           hasFields={hasChildren}
           onExpand={onExpand}
         />
       </TreeRowWrapper>
       {isRowExpanded && hasChildren && (
-        <>
-          <TreeRowWrapper noBorder>
-            <FieldHeader depth={1} />
-          </TreeRowWrapper>
-          <RowsContainer depth={1}>
-            {flattenedFields.map((field) => (
-              <TreeRowWrapper depth={1} key={field.key}>
-                <FieldRow
-                  depth={1}
-                  path={field.path}
-                  name={field.path.join(".")}
-                  type={field.type}
-                  destinationName={field.cleanedName}
-                  isCursor={isCursor(field)}
-                  isPrimaryKey={isPrimaryKey(field)}
-                  isPrimaryKeyEnabled={
-                    shouldDefinePk && SyncSchemaFieldObject.isPrimitive(field)
-                  }
-                  isCursorEnabled={
-                    shouldDefineCursor &&
-                    SyncSchemaFieldObject.isPrimitive(field)
-                  }
-                  onPrimaryKeyChange={onPkSelect}
-                  onCursorChange={onCursorSelect}
-                />
-              </TreeRowWrapper>
-            ))}
-          </RowsContainer>
-        </>
+        <StreamFieldTable
+          config={config}
+          syncSchemaFields={flattenedFields}
+          onCursorSelect={onCursorSelect}
+          onPkSelect={onPkSelect}
+          shouldDefinePk={shouldDefinePk}
+          shouldDefineCursor={shouldDefineCursor}
+        />
       )}
     </Section>
   );

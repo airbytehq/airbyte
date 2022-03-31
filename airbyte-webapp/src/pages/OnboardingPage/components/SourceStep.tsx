@@ -2,19 +2,14 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { JobInfo } from "core/resources/Scheduler";
-
-import ContentCard from "components/ContentCard";
-import ServiceForm from "views/Connector/ServiceForm";
-import { JobsLogItem } from "components/JobItem";
-
-import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
-
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
 import { SourceDefinition } from "core/domain/connector";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 
 type IProps = {
   onSubmit: (values: {
@@ -26,7 +21,6 @@ type IProps = {
   availableServices: SourceDefinition[];
   hasSuccess?: boolean;
   error?: null | { message?: string; status?: number };
-  jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
 };
 
@@ -35,16 +29,17 @@ const SourceStep: React.FC<IProps> = ({
   availableServices,
   hasSuccess,
   error,
-  jobInfo,
   afterSelectConnector,
 }) => {
-  const [sourceDefinitionId, setSourceDefinitionId] = useState("");
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
+    null
+  );
   const analyticsService = useAnalyticsService();
 
   const {
-    sourceDefinitionSpecification,
+    data: sourceDefinitionSpecification,
     isLoading,
-  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onServiceSelect = (sourceId: string) => {
     const sourceDefinition = availableServices.find(
@@ -79,7 +74,7 @@ const SourceStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createFirstSource"
             values={{
-              name: (...name: React.ReactNode[]) => (
+              name: (name: React.ReactNode) => (
                 <HighlightedText>{name}</HighlightedText>
               ),
             }}
@@ -88,20 +83,18 @@ const SourceStep: React.FC<IProps> = ({
       >
         <FormattedMessage id="onboarding.createFirstSource.text" />
       </TitlesBlock>
-      <ContentCard full>
-        <ServiceForm
-          allowChangeConnector
-          onServiceSelect={onServiceSelect}
-          onSubmit={onSubmitForm}
-          formType="source"
-          availableServices={availableServices}
-          hasSuccess={hasSuccess}
-          errorMessage={errorMessage}
-          selectedConnector={sourceDefinitionSpecification}
-          isLoading={isLoading}
-        />
-        <JobsLogItem jobInfo={jobInfo} />
-      </ContentCard>
+      <ConnectorCard
+        full
+        jobInfo={LogsRequestError.extractJobInfo(error)}
+        onServiceSelect={onServiceSelect}
+        onSubmit={onSubmitForm}
+        formType="source"
+        availableServices={availableServices}
+        hasSuccess={hasSuccess}
+        errorMessage={errorMessage}
+        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+        isLoading={isLoading}
+      />
     </>
   );
 };

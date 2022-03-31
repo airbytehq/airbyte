@@ -1,0 +1,8 @@
+{
+  "credentials": {
+    "auth_type": "oauth2.0",
+    "app_id": "1",
+    "secret": "2",
+    "access_token": "<broken_token>"
+  }
+}

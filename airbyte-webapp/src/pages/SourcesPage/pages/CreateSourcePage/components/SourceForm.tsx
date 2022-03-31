@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import ContentCard from "components/ContentCard";
-import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
-import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
-import { JobInfo } from "core/resources/Scheduler";
-import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { SourceDefinition } from "core/domain/connector";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
 type IProps = {
   onSubmit: (values: {
@@ -23,7 +22,17 @@ type IProps = {
   sourceDefinitions: SourceDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-  jobInfo?: JobInfo;
+};
+
+const hasSourceDefinitionId = (
+  state: unknown
+): state is { sourceDefinitionId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId ===
+      "string"
+  );
 };
 
 const SourceForm: React.FC<IProps> = ({
@@ -31,21 +40,22 @@ const SourceForm: React.FC<IProps> = ({
   sourceDefinitions,
   error,
   hasSuccess,
-  jobInfo,
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
   const analyticsService = useAnalyticsService();
 
-  const [sourceDefinitionId, setSourceDefinitionId] = useState(
-    location.state?.sourceDefinitionId || ""
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
+    hasSourceDefinitionId(location.state)
+      ? location.state.sourceDefinitionId
+      : null
   );
 
   const {
-    sourceDefinitionSpecification,
-    sourceDefinitionError,
+    data: sourceDefinitionSpecification,
+    error: sourceDefinitionError,
     isLoading,
-  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
@@ -64,10 +74,7 @@ const SourceForm: React.FC<IProps> = ({
     });
   };
 
-  const onSubmitForm = async (values: {
-    name: string;
-    serviceType: string;
-  }) => {
+  const onSubmitForm = async (values: ServiceFormValues) => {
     await onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
@@ -77,28 +84,24 @@ const SourceForm: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <>
-      <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
-        <ServiceForm
-          onServiceSelect={onDropDownSelect}
-          onSubmit={onSubmitForm}
-          formType="source"
-          availableServices={sourceDefinitions}
-          selectedConnector={sourceDefinitionSpecification}
-          hasSuccess={hasSuccess}
-          fetchingConnectorError={sourceDefinitionError}
-          errorMessage={errorMessage}
-          isLoading={isLoading}
-          formValues={
-            sourceDefinitionId
-              ? { serviceType: sourceDefinitionId, name: "" }
-              : undefined
-          }
-          allowChangeConnector
-        />
-        <JobsLogItem jobInfo={jobInfo} />
-      </ContentCard>
-    </>
+    <ConnectorCard
+      onServiceSelect={onDropDownSelect}
+      onSubmit={onSubmitForm}
+      formType="source"
+      availableServices={sourceDefinitions}
+      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      hasSuccess={hasSuccess}
+      fetchingConnectorError={sourceDefinitionError}
+      errorMessage={errorMessage}
+      isLoading={isLoading}
+      formValues={
+        sourceDefinitionId
+          ? { serviceType: sourceDefinitionId, name: "" }
+          : undefined
+      }
+      title={<FormattedMessage id="onboarding.sourceSetUp" />}
+      jobInfo={LogsRequestError.extractJobInfo(error)}
+    />
   );
 };
 

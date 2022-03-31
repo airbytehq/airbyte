@@ -4,6 +4,10 @@
 
 Airbyte allows scaling sync workloads horizontally using Kubernetes. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
+## Quickstart
+
+If you don't want to configure your own K8s cluster and Airbyte instance, you can use the free, open-source project [Plural](https://www.plural.sh/) to bring up a K8s cluster and Airbyte for you. Use [this guide](on-plural.md) to get started.
+
 ## Getting Started
 
 ### Cluster Setup
@@ -36,13 +40,13 @@ Configure `kubectl` to connect to your cluster by using `kubectl use-context my-
     `gcloud container clusters get-credentials CLUSTER_NAME --zone ZONE_NAME --project PROJECT_NAME`.
 
   * Use `kubectl config get-contexts` to show the contexts available.
-  * Run `kubectl use-context <gke context>` to access the cluster from `kubectl`.
+  * Run `kubectl config use-context <gke context>` to access the cluster from `kubectl`.
 * For EKS
   * [Configure your AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
   * Install [eksctl](https://eksctl.io/introduction/)
   * Run `eksctl utils write-kubeconfig --cluster=<CLUSTER NAME>` to make the context available to `kubectl`
   * Use `kubectl config get-contexts` to show the contexts available.
-  * Run `kubectl use-context <eks context>` to access the cluster with `kubectl`.
+  * Run `kubectl config use-context <eks context>` to access the cluster with `kubectl`.
 
 ### Configure Logs
 
@@ -114,6 +118,10 @@ data:
 
 ```text
 GCS_LOG_BUCKET=<your_GCS_bucket_to_write_logs_in>
+```
+
+4\) Modify the `.secrets` file in the `kube/overlays/stable` directory
+```text
 # The path the GCS creds are written to. Unless you know what you are doing, use the below default value.
 GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-log-creds/gcp.json
 ```

@@ -7,7 +7,6 @@ import useRouter from "hooks/useRouter";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useDestination from "hooks/services/useDestinationHook";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
 import useWorkspace from "hooks/services/useWorkspace";
@@ -16,10 +15,6 @@ const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    status: number;
-    response: JobInfo;
-  } | null>(null);
 
   const { destinationDefinitions } = useResource(
     DestinationDefinitionResource.listShape(),
@@ -37,20 +32,15 @@ const CreateDestinationPage: React.FC = () => {
     const connector = destinationDefinitions.find(
       (item) => item.destinationDefinitionId === values.serviceType
     );
-    setErrorStatusRequest(null);
-    try {
-      const result = await createDestination({
-        values,
-        destinationConnector: connector,
-      });
-      setSuccessRequest(true);
-      setTimeout(() => {
-        setSuccessRequest(false);
-        push(`../${result.destinationId}`);
-      }, 2000);
-    } catch (e) {
-      setErrorStatusRequest(e);
-    }
+    const result = await createDestination({
+      values,
+      destinationConnector: connector,
+    });
+    setSuccessRequest(true);
+    setTimeout(() => {
+      setSuccessRequest(false);
+      push(`../${result.destinationId}`);
+    }, 2000);
   };
 
   return (
@@ -62,12 +52,9 @@ const CreateDestinationPage: React.FC = () => {
       />
       <FormPageContent>
         <DestinationForm
-          afterSelectConnector={() => setErrorStatusRequest(null)}
           onSubmit={onSubmitDestinationForm}
           destinationDefinitions={destinationDefinitions}
           hasSuccess={successRequest}
-          error={errorStatusRequest}
-          jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>
     </>

@@ -58,7 +58,10 @@ def test_incremental_sync(config):
     for record in records:
         if record and record.type == Type.STATE:
             print(record)
-            current_state = record.state.data["ad_group_ad_report"]["segments.date"]
+            temp_state = record.state.data["ad_group_ad_report"]
+            current_state = (
+                temp_state[config["customer_id"]]["segments.date"] if temp_state.get(config["customer_id"]) else temp_state["segments.date"]
+            )
         if record and record.type == Type.RECORD:
             assert record.record.data["segments.date"] >= current_state
 
@@ -71,7 +74,7 @@ def test_incremental_sync(config):
 
     for record in records:
         if record and record.type == Type.STATE:
-            current_state = record.state.data["ad_group_ad_report"]["segments.date"]
+            current_state = record.state.data["ad_group_ad_report"][config["customer_id"]]["segments.date"]
         if record and record.type == Type.RECORD:
             assert record.record.data["segments.date"] >= current_state
 
@@ -80,7 +83,6 @@ def test_incremental_sync(config):
     records = google_ads_client.read(
         AirbyteLogger(), config, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {"segments.date": state}}
     )
-    current_state = pendulum.parse(state).subtract(days=14).to_date_string()
 
     no_records = True
     for record in records:

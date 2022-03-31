@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
+import { useEffectOnce } from "react-use";
 
 import { useConfig } from "config";
 
@@ -23,25 +24,9 @@ import {
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useLocation } from "react-use";
 import { Workspace } from "core/domain/workspace/Workspace";
-
-export enum RoutePaths {
-  AuthFlow = "/auth_flow",
-  Root = "/",
-
-  Preferences = "preferences",
-  Onboarding = "onboarding",
-  Connections = "connections",
-  Destination = "destination",
-  Source = "source",
-  Settings = "settings",
-
-  Connection = "connection",
-  ConnectionNew = "new-connection",
-  SourceNew = "new-source",
-  DestinationNew = "new-destination",
-}
+import { storeUtmFromQuery } from "utils/utmStorage";
+import { RoutePaths } from "./routePaths";
 
 function useDemo() {
   const { formatMessage } = useIntl();
@@ -117,14 +102,18 @@ const PreferencesRoutes = () => (
   </Routes>
 );
 
-export const AutoSelectFirstWorkspace: React.FC = () => {
+export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({
+  includePath,
+}) => {
   const location = useLocation();
   const workspaces = useListWorkspaces();
   const currentWorkspace = workspaces[0];
 
   return (
     <Navigate
-      to={`/${currentWorkspace.workspaceId}${location.pathname}`}
+      to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${
+        includePath ? location.pathname : ""
+      }`}
       replace={true}
     />
   );
@@ -148,11 +137,21 @@ const RoutingWithWorkspace: React.FC = () => {
 };
 
 export const Routing: React.FC = () => {
+  const { search } = useLocation();
+
+  useEffectOnce(() => {
+    storeUtmFromQuery(search);
+  });
+
   // TODO: Remove this after it is verified there are no problems with current routing
   const OldRoutes = useMemo(
     () =>
       Object.values(RoutePaths).map((r) => (
-        <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace />} />
+        <Route
+          path={`${r}/*`}
+          key={r}
+          element={<AutoSelectFirstWorkspace includePath />}
+        />
       )),
     []
   );
@@ -160,7 +159,11 @@ export const Routing: React.FC = () => {
     <Routes>
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
-      <Route path="/:workspaceId/*" element={<RoutingWithWorkspace />} />
+      <Route
+        path={`${RoutePaths.Workspaces}/:workspaceId/*`}
+        element={<RoutingWithWorkspace />}
+      />
+      <Route path="*" element={<AutoSelectFirstWorkspace />} />
     </Routes>
   );
 };

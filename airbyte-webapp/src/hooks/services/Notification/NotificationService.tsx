@@ -30,6 +30,7 @@ function NotificationService({ children }: { children: React.ReactNode }) {
       deleteNotificationById,
       clearAll,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

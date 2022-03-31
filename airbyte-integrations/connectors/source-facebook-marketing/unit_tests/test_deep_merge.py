@@ -4,7 +4,7 @@
 
 from copy import deepcopy
 
-from source_facebook_marketing.common import deep_merge
+from source_facebook_marketing.streams.common import deep_merge
 
 
 def test_return_new_object():

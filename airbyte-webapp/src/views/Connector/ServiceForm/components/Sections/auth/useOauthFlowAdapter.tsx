@@ -11,6 +11,7 @@ import {
   serverProvidedOauthPaths,
 } from "../../../utils";
 import { ServiceFormValues } from "../../../types";
+import { useServiceForm } from "../../../serviceFormContext";
 
 function useFormikOauthAdapter(
   connector: ConnectorDefinitionSpecification
@@ -25,6 +26,8 @@ function useFormikOauthAdapter(
     errors,
     setFieldTouched,
   } = useFormikContext<ServiceFormValues>();
+
+  const { getValues } = useServiceForm();
 
   const onDone = (completeOauthResponse: Record<string, unknown>) => {
     let newValues: ServiceFormValues;
@@ -75,10 +78,12 @@ function useFormikOauthAdapter(
         }
       }
 
+      const preparedValues = getValues(values);
+
       const oauthInputParams = Object.entries(oauthInputProperties).reduce(
         (acc, property) => {
           acc[property[0]] = get(
-            values,
+            preparedValues,
             makeConnectionConfigurationPath(
               property[1].path_in_connector_config
             )

@@ -9,7 +9,7 @@ The troubleshooting section is aimed at collecting common issues users have to p
 * [On Running a Sync](running-sync.md)
 * [On Upgrading](on-upgrading.md)
 
-If you don't see your issue listed in those sections, you can send a message in our \#issues Slack channel. Using the template bellow will allow us to address your issue quickly and will give us full understanding of your situation.
+If you don't see your issue listed in those sections, you can send a message in our \#troubleshooting Slack channel. Using the template bellow will allow us to address your issue quickly and will give us full understanding of your situation.
 
 ## Slack Issue Template
 

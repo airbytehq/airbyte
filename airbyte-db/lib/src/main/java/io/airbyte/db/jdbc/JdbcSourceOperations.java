@@ -12,7 +12,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.SourceOperations;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,7 +27,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSourceOperations.class);
 
-  private JDBCType safeGetJdbcType(final int columnTypeInt) {
+  protected JDBCType safeGetJdbcType(final int columnTypeInt) {
     try {
       return JDBCType.valueOf(columnTypeInt);
     } catch (final Exception e) {
@@ -55,6 +55,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+      case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
     }
   }
@@ -101,23 +102,24 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaPrimitive getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(JDBCType jdbcType) {
     return switch (jdbcType) {
-      case BIT, BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
-      case TINYINT, SMALLINT -> JsonSchemaPrimitive.NUMBER;
-      case INTEGER -> JsonSchemaPrimitive.NUMBER;
-      case BIGINT -> JsonSchemaPrimitive.NUMBER;
-      case FLOAT, DOUBLE -> JsonSchemaPrimitive.NUMBER;
-      case REAL -> JsonSchemaPrimitive.NUMBER;
-      case NUMERIC, DECIMAL -> JsonSchemaPrimitive.NUMBER;
-      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaPrimitive.STRING;
-      case DATE -> JsonSchemaPrimitive.STRING;
-      case TIME -> JsonSchemaPrimitive.STRING;
-      case TIMESTAMP -> JsonSchemaPrimitive.STRING;
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING_BINARY;
+      case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
+      case TINYINT, SMALLINT -> JsonSchemaType.NUMBER;
+      case INTEGER -> JsonSchemaType.NUMBER;
+      case BIGINT -> JsonSchemaType.NUMBER;
+      case FLOAT, DOUBLE -> JsonSchemaType.NUMBER;
+      case REAL -> JsonSchemaType.NUMBER;
+      case NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
+      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaType.STRING;
+      case DATE -> JsonSchemaType.STRING;
+      case TIME -> JsonSchemaType.STRING;
+      case TIMESTAMP -> JsonSchemaType.STRING;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case ARRAY -> JsonSchemaType.ARRAY;
       // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
       // types to String
-      default -> JsonSchemaPrimitive.STRING;
+      default -> JsonSchemaType.STRING;
     };
   }
 

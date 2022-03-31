@@ -14,7 +14,6 @@ import ConnectionResource, {
   ScheduleProperties,
 } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
-import { RoutePaths } from "pages/routes";
 import useWorkspace from "./useWorkspace";
 import { Operation } from "core/domain/connection/operation";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
@@ -24,6 +23,7 @@ import { RequestMiddleware } from "core/request/RequestMiddleware";
 
 import { equal } from "utils/objects";
 import { Destination, Source, SourceDefinition } from "core/domain/connector";
+import { RoutePaths } from "../../pages/routePaths";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -70,6 +70,7 @@ function useConnectionService(): ConnectionService {
     "DefaultRequestMiddlewares"
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => new ConnectionService(config.apiUrl, middlewares), [
     config,
   ]);
@@ -246,6 +247,10 @@ const useConnection = (): {
   );
 
   const syncConnection = async (connection: Connection) => {
+    const frequency = FrequencyConfig.find((item) =>
+      equal(item.config, connection.schedule)
+    );
+
     analyticsService.track("Source - Action", {
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,
@@ -253,7 +258,7 @@ const useConnection = (): {
       connector_destination: connection.destination?.name,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: connection.schedule,
+      frequency: frequency?.text,
     });
     await syncConnectionResource({
       connectionId: connection.connectionId,

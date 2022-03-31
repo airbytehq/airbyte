@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -77,7 +78,7 @@ public class MigrationDevHelper {
     final File file = new File(Path.of(filePath).toUri());
     FileUtils.forceMkdirParent(file);
 
-    try (final PrintWriter writer = new PrintWriter(file)) {
+    try (final PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
       writer.println(newMigration);
     } catch (final FileNotFoundException e) {
       throw new IOException(e);
@@ -93,7 +94,7 @@ public class MigrationDevHelper {
   }
 
   public static void dumpSchema(final String schema, final String schemaDumpFile, final boolean printSchema) throws IOException {
-    try (final PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()))) {
+    try (final PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()), StandardCharsets.UTF_8)) {
       writer.println(schema);
       if (printSchema) {
         System.out.println("\n==== Schema ====\n" + schema);
@@ -138,7 +139,7 @@ public class MigrationDevHelper {
 
   @VisibleForTesting
   static AirbyteVersion getCurrentAirbyteVersion() {
-    try (final BufferedReader reader = new BufferedReader(new FileReader("../../.env"))) {
+    try (final BufferedReader reader = new BufferedReader(new FileReader("../../.env", StandardCharsets.UTF_8))) {
       String line;
       while ((line = reader.readLine()) != null) {
         if (line.startsWith("VERSION")) {

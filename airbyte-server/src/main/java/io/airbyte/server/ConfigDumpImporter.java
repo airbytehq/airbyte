@@ -12,9 +12,7 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.UploadRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.Archives;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.AirbyteConfig;
@@ -28,7 +26,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
@@ -69,20 +67,23 @@ public class ConfigDumpImporter {
   private static final Path TMP_AIRBYTE_STAGED_RESOURCES = Path.of("/tmp/airbyte_staged_resources");
 
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final WorkspaceHelper workspaceHelper;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
   private final boolean importDefinitions;
 
   public ConfigDumpImporter(final ConfigRepository configRepository,
+                            final SecretsRepositoryWriter secretsRepositoryWriter,
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
                             final boolean importDefinitions) {
-    this(configRepository, jobPersistence, workspaceHelper, new JsonSchemaValidator(), importDefinitions);
+    this(configRepository, secretsRepositoryWriter, jobPersistence, workspaceHelper, new JsonSchemaValidator(), importDefinitions);
   }
 
   @VisibleForTesting
   public ConfigDumpImporter(final ConfigRepository configRepository,
+                            final SecretsRepositoryWriter secretsRepositoryWriter,
                             final JobPersistence jobPersistence,
                             final WorkspaceHelper workspaceHelper,
                             final JsonSchemaValidator jsonSchemaValidator,
@@ -90,6 +91,7 @@ public class ConfigDumpImporter {
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.workspaceHelper = workspaceHelper;
     this.importDefinitions = importDefinitions;
   }
@@ -129,12 +131,9 @@ public class ConfigDumpImporter {
         throw e;
       }
 
-      // 3. Import Postgres content
-      importDatabaseFromArchive(sourceRoot, targetVersion);
-
       // 4. Import Configs and update connector definitions
       importConfigsFromArchive(sourceRoot, false);
-      configRepository.loadData(seedPersistence);
+      configRepository.loadDataNoSecrets(seedPersistence);
 
       // 5. Set DB version
       LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
@@ -188,7 +187,7 @@ public class ConfigDumpImporter {
       final ConfigSchema configSchema = configSchemaOptional.get();
       data.put(configSchema, readConfigsFromArchive(sourceRoot, configSchema));
     }
-    configRepository.replaceAllConfigs(data, dryRun);
+    secretsRepositoryWriter.replaceAllConfigs(data, dryRun);
   }
 
   private <T> Stream<T> readConfigsFromArchive(final Path storageRoot, final ConfigSchema schemaType)
@@ -226,28 +225,6 @@ public class ConfigDumpImporter {
         .resolve(String.format("%s.yaml", schemaType.name()));
   }
 
-  // Postgres Portion
-  public void importDatabaseFromArchive(final Path storageRoot, final AirbyteVersion airbyteVersion) throws IOException {
-    try {
-      final Map<JobsDatabaseSchema, Stream<JsonNode>> data = new HashMap<>();
-      for (final JobsDatabaseSchema tableType : JobsDatabaseSchema.values()) {
-        final Path tablePath = buildTablePath(storageRoot, tableType.name());
-        Stream<JsonNode> tableStream = readTableFromArchive(tableType, tablePath);
-
-        if (tableType == JobsDatabaseSchema.AIRBYTE_METADATA) {
-          tableStream = replaceDeploymentMetadata(jobPersistence, tableStream);
-        }
-
-        data.put(tableType, tableStream);
-      }
-      jobPersistence.importDatabase(airbyteVersion.serialize(), data);
-      LOGGER.info("Successful upgrade of airbyte postgres database from archive");
-    } catch (final Exception e) {
-      LOGGER.warn("Postgres database version upgrade failed, reverting to state previous to migration.");
-      throw e;
-    }
-  }
-
   /**
    * The deployment concept is specific to the environment that Airbyte is running in (not the data
    * being imported). Thus, if there is a deployment in the imported data, we filter it out. In
@@ -276,32 +253,6 @@ public class ConfigDumpImporter {
       stream = Streams.concat(stream, Stream.of(deploymentRecord));
     }
     return stream;
-  }
-
-  protected static Path buildTablePath(final Path storageRoot, final String tableName) {
-    return storageRoot
-        .resolve(DB_FOLDER_NAME)
-        .resolve(String.format("%s.yaml", tableName.toUpperCase()));
-  }
-
-  private Stream<JsonNode> readTableFromArchive(final JobsDatabaseSchema tableSchema,
-                                                final Path tablePath)
-      throws FileNotFoundException {
-    final JsonNode schema = tableSchema.getTableDefinition();
-    if (schema != null) {
-      return MoreStreams.toStream(Yamls.deserialize(IOs.readFile(tablePath)).elements())
-          .peek(r -> {
-            try {
-              jsonSchemaValidator.ensure(schema, r);
-            } catch (final JsonValidationException e) {
-              throw new IllegalArgumentException(
-                  "Archived Data Schema does not match current Airbyte Data Schemas", e);
-            }
-          });
-    } else {
-      throw new FileNotFoundException(String
-          .format("Airbyte Database table %s was not found in the archive", tableSchema.name()));
-    }
   }
 
   private void checkDBVersion(final AirbyteVersion airbyteVersion) throws IOException {
@@ -413,7 +364,10 @@ public class ConfigDumpImporter {
                 if (sourceDefinition == null) {
                   return;
                 }
-                configRepository.writeSourceConnection(sourceConnection, sourceDefinition.getSpec());
+                if (sourceDefinition.getTombstone() != null && sourceDefinition.getTombstone()) {
+                  return;
+                }
+                secretsRepositoryWriter.writeSourceConnection(sourceConnection, sourceDefinition.getSpec());
               } catch (final ConfigNotFoundException e) {
                 return;
               }
@@ -441,7 +395,10 @@ public class ConfigDumpImporter {
                 if (destinationDefinition == null) {
                   return;
                 }
-                configRepository.writeDestinationConnection(destinationConnection, destinationDefinition.getSpec());
+                if (destinationDefinition.getTombstone() != null && destinationDefinition.getTombstone()) {
+                  return;
+                }
+                secretsRepositoryWriter.writeDestinationConnection(destinationConnection, destinationDefinition.getSpec());
               } catch (final ConfigNotFoundException e) {
                 return;
               }
@@ -517,7 +474,7 @@ public class ConfigDumpImporter {
     importIntoWorkspace(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
         configs.map(c -> (StandardSourceDefinition) c),
-        configRepository::listStandardSourceDefinitions,
+        () -> configRepository.listStandardSourceDefinitions(false),
         (config) -> true,
         (config, id) -> {
           if (id.equals(config.getSourceDefinitionId())) {
@@ -540,7 +497,7 @@ public class ConfigDumpImporter {
     importIntoWorkspace(
         ConfigSchema.STANDARD_DESTINATION_DEFINITION,
         configs.map(c -> (StandardDestinationDefinition) c),
-        configRepository::listStandardDestinationDefinitions,
+        () -> configRepository.listStandardDestinationDefinitions(false),
         (config) -> true,
         (config, id) -> {
           if (id.equals(config.getDestinationDefinitionId())) {

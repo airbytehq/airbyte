@@ -2,7 +2,6 @@ import React, { useCallback } from "react";
 import { useResource } from "rest-hooks";
 
 import { ConnectionTable } from "components/EntityTable";
-import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import { Connection } from "core/resources/Connection";
 import useSyncActions from "components/EntityTable/hooks";
@@ -11,6 +10,7 @@ import { ITableDataItem } from "components/EntityTable/types";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useWorkspace from "hooks/services/useWorkspace";
+import { RoutePaths } from "../../../../routePaths";
 
 type IProps = {
   connections: Connection[];

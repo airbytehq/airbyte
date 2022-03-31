@@ -42,7 +42,7 @@ export function getEntityTableData<
     const entityDefinitionId = entityItem[`${type}DefinitionId` as keyof SoD];
 
     const definition = definitions.find(
-      // @ts-ignore
+      // @ts-expect-error ignored during react-scripts update
       (def) => def[definitionId] === entityDefinitionId
     );
 

@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -46,13 +48,17 @@ public class KubePortManagerSingleton {
 
   /**
    * Sets up the port range; make sure init(ports) is called once prior to repeatedly using
-   * getInstance().
+   * getInstance(). Init won't fail (it will perform a no-op) if re-initializd with the same set of
+   * ports.
    */
   public static synchronized void init(final Set<Integer> ports) {
-    if (instance != null) {
-      throw new RuntimeException("Cannot initialize twice!");
+    if (instance == null) {
+      instance = new KubePortManagerSingleton(ports);
+    } else if (Sets.intersection(instance.getAllPorts(), ports).size() != ports.size()) {
+      LOGGER.info("Skipping initializing KubePortManagerSingleton since ports specified are the same.");
+    } else {
+      throw new RuntimeException("Cannot initialize twice with different ports!");
     }
-    instance = new KubePortManagerSingleton(ports);
   }
 
   public Integer take() throws InterruptedException {
@@ -63,6 +69,10 @@ public class KubePortManagerSingleton {
     if (!workerPorts.contains(port)) {
       workerPorts.add(port);
     }
+  }
+
+  protected Set<Integer> getAllPorts() {
+    return new HashSet<>(workerPorts);
   }
 
   public int getNumAvailablePorts() {

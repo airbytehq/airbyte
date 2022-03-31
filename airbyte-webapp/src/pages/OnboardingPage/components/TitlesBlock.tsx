@@ -5,6 +5,7 @@ import styled from "styled-components";
 type TitlesBlockProps = {
   title: React.ReactNode;
   children?: React.ReactNode;
+  testId?: string;
 };
 
 const TitlesContent = styled.div`
@@ -21,10 +22,14 @@ const Text = styled.div`
   text-align: center;
 `;
 
-const TitlesBlock: React.FC<TitlesBlockProps> = ({ title, children }) => {
+const TitlesBlock: React.FC<TitlesBlockProps> = ({
+  title,
+  children,
+  testId,
+}) => {
   return (
     <TitlesContent>
-      <H1 center bold>
+      <H1 center bold data-testid={testId}>
         {title}
       </H1>
       <Text>{children}</Text>

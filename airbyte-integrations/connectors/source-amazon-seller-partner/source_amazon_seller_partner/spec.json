@@ -28,6 +28,13 @@
         ],
         "type": "string"
       },
+      "max_wait_seconds": {
+        "title": "Max wait time for reports (in seconds)",
+        "description": "Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
+        "examples": ["500", "1980"],
+        "type": "integer",
+        "default": 500
+      },
       "refresh_token": {
         "title": "Refresh Token",
         "description": "The Refresh Token obtained via OAuth flow authorization.",

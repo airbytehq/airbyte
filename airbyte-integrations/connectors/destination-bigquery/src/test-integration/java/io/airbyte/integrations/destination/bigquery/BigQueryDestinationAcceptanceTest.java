@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -25,14 +27,18 @@ import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -42,20 +48,21 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final NamingConventionTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationAcceptanceTest.class);
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
-  private static final String CONFIG_DATASET_ID = "dataset_id";
-  private static final String CONFIG_PROJECT_ID = "project_id";
-  private static final String CONFIG_DATASET_LOCATION = "dataset_location";
-  private static final String CONFIG_CREDS = "credentials_json";
+  protected static final String CONFIG_DATASET_ID = "dataset_id";
+  protected static final String CONFIG_PROJECT_ID = "project_id";
+  protected static final String CONFIG_DATASET_LOCATION = "dataset_location";
+  protected static final String CONFIG_CREDS = "credentials_json";
 
-  private BigQuery bigquery;
-  private Dataset dataset;
-  private boolean tornDown;
-  private JsonNode config;
-  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
+  protected BigQuery bigquery;
+  protected Dataset dataset;
+  protected boolean tornDown;
+  protected JsonNode config;
+  protected final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -68,7 +75,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
+  protected JsonNode getFailCheckConfig() {
     ((ObjectNode) config).put(CONFIG_PROJECT_ID, "fake");
     return config;
   }
@@ -86,6 +93,30 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   @Override
   protected boolean implementsNamespaces() {
     return true;
+  }
+
+  @Override
+  protected boolean supportNamespaceTest() {
+    return true;
+  }
+
+  @Override
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.of(NAME_TRANSFORMER);
+  }
+
+  @Override
+  protected void assertNamespaceNormalization(final String testCaseId,
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
+    final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
+    if (testCaseId.equals("S3A-1")) {
+      // bigquery allows namespace starting with a number, and prepending underscore
+      // will hide the dataset, so we don't do it as we do for other destinations
+      assertEquals("99namespace", actualNormalizedNamespace, message);
+    } else {
+      assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace, message);
+    }
   }
 
   @Override
@@ -170,7 +201,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
@@ -184,8 +215,12 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
+    setupBigQuery(credentialsJson);
+  }
+
+  protected void setupBigQuery(final JsonNode credentialsJson) throws IOException {
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes()));
+        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
 
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
@@ -213,7 +248,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     tearDownBigQuery();
   }
 
-  private void tearDownBigQuery() {
+  protected void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 

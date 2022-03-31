@@ -19,4 +19,9 @@ public class ToysDatabaseMigrator extends FlywayDatabaseMigrator {
     super(database, DB_IDENTIFIER, migrationRunner, MIGRATION_FILE_LOCATION);
   }
 
+  @Override
+  protected String getDisclaimer() {
+    return "";
+  }
+
 }

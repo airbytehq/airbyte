@@ -64,6 +64,15 @@ class AirbyteDockerPlugin implements Plugin<Project> {
     static def getBaseTaggedImages(File dockerfile) {
         def result = [] as Set<String>
 
+        // Look for "FROM foo AS bar" directives, and add them to the map with .put("bar", "foo")
+        Map<String, String> imageAliases = [:]
+        dockerfile.eachLine { line ->
+            def parts = line.split()
+            if (parts.length >= 4 && parts[0].equals("FROM") && parts[parts.length - 2].equals("AS")) {
+                imageAliases.put(parts[parts.length - 1], parts[1])
+            }
+        }
+
         dockerfile.eachLine { line ->
             if (line.startsWith("FROM ")) {
                 def image = line.split()[1]
@@ -72,7 +81,11 @@ class AirbyteDockerPlugin implements Plugin<Project> {
             } else if (line.startsWith("COPY --from=")) {
                 def image = line.substring("COPY --from=".length()).split()[0]
                 assert !image.isEmpty()
-                result.add(image)
+                if (imageAliases[image] != null) {
+                    result.add(imageAliases[image])
+                } else {
+                    result.add(image)
+                }
             }
         }
 
@@ -93,7 +106,20 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         def stdout = new ByteArrayOutputStream()
 
         project.exec {
-            commandLine "docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.ID}}", taggedImage
+            commandLine "docker", "images", "--no-trunc", "-f", "dangling=false", "--format", "{{.ID}}", resolveEnvironmentVariables(project, taggedImage)
+            standardOutput = stdout;
+        }
+
+        return "$stdout".toString().trim()
+    }
+
+    // Some image tags rely on environment variables (e.g. "FROM openjdk:${JDK_VERSION}-slim").
+    // dump those into a "sh -c 'echo ...'" command to resolve them (e.g. "openjdk:17-slim")
+    static String resolveEnvironmentVariables(Project project, String str) {
+        def stdout = new ByteArrayOutputStream()
+
+        project.exec {
+            commandLine "sh", "-c", "echo " + str
             standardOutput = stdout;
         }
 
@@ -112,7 +138,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
             def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any { baseImage ->
                 logger.debug "checking base image " + baseImage
-                def storedBase = (String) project.rootProject.imageToHash.get(baseImage)
+                def storedBase = (String) project.rootProject.imageToHash.get(resolveEnvironmentVariables(project, baseImage))
                 def currentBase = getImageHash(project, baseImage)
 
                 logger.debug "storedBase " + storedBase

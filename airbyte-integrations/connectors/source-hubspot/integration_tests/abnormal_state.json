@@ -1,8 +1,53 @@
 {
+  "companies": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "contact_lists": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "contacts": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "deals": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
   "email_events": {
-    "timestamp": "2121-03-19T17:00:45.743000+00:00"
+    "created": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_calls": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_emails": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_meetings": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_notes": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements_tasks": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "feedback_submissions": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "engagements": {
+    "lastUpdated": 7945393076412
+  },
+  "line_items": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "products": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "quotes": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
   },
   "subscription_changes": {
-    "timestamp": "2121-03-19T16:58:54.301000+00:00"
+    "timestamp": "2221-10-12T13:37:56.412000+00:00"
+  },
+  "tickets": {
+    "updatedAt": "2221-10-12T13:37:56.412000+00:00"
   }
 }

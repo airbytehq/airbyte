@@ -1,26 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import { ContentCard } from "components";
-import { JobsLogItem } from "components/JobItem";
 import DeleteBlock from "components/DeleteBlock";
-
-import ServiceForm from "views/Connector/ServiceForm";
-import useDestination, {
-  useDestinationDefinitionSpecificationLoadAsync,
-} from "hooks/services/useDestinationHook";
+import useDestination from "hooks/services/useDestinationHook";
 import { Connection } from "core/resources/Connection";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-
-import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { Destination } from "core/domain/connector";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { Connector, Destination } from "core/domain/connector";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 
 const Content = styled.div`
-  width: 100%;
   max-width: 813px;
   margin: 19px auto;
 `;
@@ -34,13 +26,7 @@ const DestinationsSettings: React.FC<IProps> = ({
   currentDestination,
   connectionsWithDestination,
 }) => {
-  const [saved, setSaved] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    statusMessage: string | React.ReactNode;
-    response: JobInfo;
-  } | null>(null);
-
-  const destinationSpecification = useDestinationDefinitionSpecificationLoadAsync(
+  const destinationSpecification = useGetDestinationDefinitionSpecification(
     currentDestination.destinationDefinitionId
   );
 
@@ -51,79 +37,40 @@ const DestinationsSettings: React.FC<IProps> = ({
     }
   );
 
-  const {
-    updateDestination,
-    deleteDestination,
-    checkDestinationConnection,
-  } = useDestination();
+  const { updateDestination, deleteDestination } = useDestination();
 
   const onSubmitForm = async (values: {
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    setErrorStatusRequest(null);
-    try {
-      await updateDestination({
-        values,
-        destinationId: currentDestination.destinationId,
-      });
-
-      setSaved(true);
-    } catch (e) {
-      const errorStatusMessage = createFormErrorMessage(e);
-
-      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
-    }
-  };
-
-  const onRetest = async (values: {
-    name: string;
-    serviceType: string;
-    connectionConfiguration?: ConnectionConfiguration;
-  }) => {
-    setErrorStatusRequest(null);
-    try {
-      await checkDestinationConnection({
-        values,
-        destinationId: currentDestination.destinationId,
-      });
-      setSaved(true);
-    } catch (e) {
-      const errorStatusMessage = createFormErrorMessage(e);
-
-      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
-    }
-  };
-
-  const onDelete = async () => {
-    await deleteDestination({
-      connectionsWithDestination,
-      destination: currentDestination,
+    await updateDestination({
+      values,
+      destinationId: currentDestination.destinationId,
     });
   };
 
+  const onDelete = () =>
+    deleteDestination({
+      connectionsWithDestination,
+      destination: currentDestination,
+    });
+
   return (
     <Content>
-      <ContentCard
+      <ConnectorCard
+        isEditMode
+        onSubmit={onSubmitForm}
+        formType="destination"
+        availableServices={[destinationDefinition]}
+        formValues={{
+          ...currentDestination,
+          serviceType: Connector.id(destinationDefinition),
+        }}
+        connector={currentDestination}
+        selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}
-      >
-        <ServiceForm
-          onRetest={onRetest}
-          isEditMode
-          onSubmit={onSubmitForm}
-          formType="destination"
-          availableServices={[destinationDefinition]}
-          formValues={{
-            ...currentDestination,
-            serviceType: currentDestination.destinationDefinitionId,
-          }}
-          selectedConnector={destinationSpecification}
-          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          errorMessage={errorStatusRequest?.statusMessage}
-        />
-        <JobsLogItem jobInfo={errorStatusRequest?.response} />
-      </ContentCard>
+      />
       <DeleteBlock type="destination" onDelete={onDelete} />
     </Content>
   );

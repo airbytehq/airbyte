@@ -4,15 +4,19 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
+import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -28,8 +32,6 @@ import org.slf4j.LoggerFactory;
 public class CopyConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumerFactory.class);
-
-  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256 MiB
 
   public static <T> AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                                   final JdbcDatabase database,
@@ -52,11 +54,13 @@ public class CopyConsumerFactory {
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(pairToIgnoredRecordCount),
-        recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
+        new InMemoryRecordBufferingStrategy(
+            recordWriterFunction(pairToCopier, sqlOperations, pairToIgnoredRecordCount),
+            removeStagingFilePrinter(pairToCopier),
+            DEFAULT_MAX_BATCH_SIZE_BYTES),
         onCloseFunction(pairToCopier, database, sqlOperations, pairToIgnoredRecordCount),
         catalog,
-        sqlOperations::isValidData,
-        MAX_BATCH_SIZE_BYTES);
+        sqlOperations::isValidData);
   }
 
   private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(final ExtendedNameTransformer namingResolver,
@@ -83,9 +87,9 @@ public class CopyConsumerFactory {
     return pairToIgnoredRecordCount::clear;
   }
 
-  private static RecordWriter recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
-                                                   final SqlOperations sqlOperations,
-                                                   final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
+                                                                         final SqlOperations sqlOperations,
+                                                                         final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
     return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
       final var fileName = pairToCopier.get(pair).prepareStagingFile();
       for (final AirbyteRecordMessage recordMessage : records) {
@@ -98,6 +102,16 @@ public class CopyConsumerFactory {
           pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
         }
       }
+    };
+  }
+
+  private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
+    return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
+      final String currentFileName = pairToCopier.get(pair).getCurrentFile();
+      if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
+        pairToCopier.get(pair).closeNonCurrentStagingFileWriters();
+      }
+      return currentFileName;
     };
   }
 
@@ -148,6 +162,7 @@ public class CopyConsumerFactory {
       for (final var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
       }
+      db.close();
     }
     if (firstException != null) {
       throw firstException;

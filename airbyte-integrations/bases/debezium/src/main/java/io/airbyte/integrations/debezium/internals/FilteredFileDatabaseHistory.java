@@ -102,6 +102,10 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   public void stop() {
     fileDatabaseHistory.stop();
     // this is just for tests
+    resetDbName();
+  }
+
+  public static void resetDbName() {
     databaseName = null;
   }
 

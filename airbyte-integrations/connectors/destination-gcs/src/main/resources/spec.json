@@ -21,11 +21,11 @@
       "gcs_bucket_name": {
         "title": "GCS Bucket Name",
         "type": "string",
-        "description": "The name of the GCS bucket.",
+        "description": "You can find the bucket name in the  App Engine Admin console Application Settings page, under the label  Google Cloud Storage Bucket.",
         "examples": ["airbyte_sync"]
       },
       "gcs_bucket_path": {
-        "description": "Directory under the GCS bucket where data will be written.",
+        "description": "GCS Bucket Path string Subdirectory under the above bucket to sync the data into.",
         "type": "string",
         "examples": ["data_sync/test"]
       },
@@ -33,7 +33,7 @@
         "title": "GCS Bucket Region",
         "type": "string",
         "default": "",
-        "description": "The region of the GCS bucket.",
+        "description": "Select a Region of the GCS Bucket.",
         "enum": [
           "",
           "-- North America --",
@@ -85,7 +85,7 @@
         "type": "object",
         "oneOf": [
           {
-            "title": "HMAC key",
+            "title": "HMAC Key",
             "required": [
               "credential_type",
               "hmac_key_access_id",
@@ -135,7 +135,7 @@
                 "type": "object",
                 "oneOf": [
                   {
-                    "title": "no compression",
+                    "title": "No Compression",
                     "required": ["codec"],
                     "properties": {
                       "codec": {
@@ -185,7 +185,7 @@
                         "default": "xz"
                       },
                       "compression_level": {
-                        "title": "Compression level",
+                        "title": "Compression Level",
                         "description": "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\">here</a> for details.",
                         "type": "integer",
                         "default": 6,
@@ -204,7 +204,7 @@
                         "default": "zstandard"
                       },
                       "compression_level": {
-                        "title": "Compression level",
+                        "title": "Compression Level",
                         "description": "Negative levels are 'fast' modes akin to lz4 or snappy, levels above 9 are generally for archival purposes, and levels above 18 use a lot of memory.",
                         "type": "integer",
                         "default": 3,
@@ -212,7 +212,7 @@
                         "maximum": 22
                       },
                       "include_checksum": {
-                        "title": "Include checksum",
+                        "title": "Include Checksum",
                         "description": "If true, include a checksum with each data block.",
                         "type": "boolean",
                         "default": false

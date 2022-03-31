@@ -47,7 +47,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
 
   public static MySqlCdcTargetPosition targetPosition(final JdbcDatabase database) {
     try {
-      final List<MySqlCdcTargetPosition> masterStatus = database.resultSetQuery(
+      final List<MySqlCdcTargetPosition> masterStatus = database.unsafeResultSetQuery(
           connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
           resultSet -> {
             final String file = resultSet.getString("File");

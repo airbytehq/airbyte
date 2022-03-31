@@ -75,10 +75,11 @@ Some Square API endpoints has different page size limitation
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.3 | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
-| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.1 | 2021-07-09 | [4645](https://github.com/airbytehq/airbyte/pull/4645) | Update \_send\_request method due to Airbyte CDK changes |
-| 0.1.0 | 2021-06-30 | [4439](https://github.com/airbytehq/airbyte/pull/4439) | Initial release supporting the Square API |
+| Version | Date       | Pull Request | Subject                                                  |
+|:--------|:-----------| :--- |:---------------------------------------------------------|
+| 0.1.4   | 2021-12-02 | [6842](https://github.com/airbytehq/airbyte/pull/6842) | Added oauth support                                      |
+| 0.1.3   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies                          |
+| 0.1.1   | 2021-07-09 | [4645](https://github.com/airbytehq/airbyte/pull/4645) | Update \_send\_request method due to Airbyte CDK changes |
+| 0.1.0   | 2021-06-30 | [4439](https://github.com/airbytehq/airbyte/pull/4439) | Initial release supporting the Square API                |
 

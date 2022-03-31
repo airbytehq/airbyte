@@ -7,12 +7,14 @@ import PlayButton from "./components/PlayButton";
 type VideoItemProps = {
   small?: boolean;
   videoId?: string;
+  link?: string;
   img?: string;
   description?: React.ReactNode;
 };
 
 const Content = styled.div<{ small?: boolean }>`
   width: ${({ small }) => (small ? 158 : 317)}px;
+  text-decoration: none;
 `;
 
 const VideoBlock = styled.div<{ small?: boolean }>`
@@ -81,21 +83,22 @@ const VideoItem: React.FC<VideoItemProps> = ({
   small,
   videoId,
   img,
+  link,
 }) => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const onOpenVideo = () => videoId && setIsVideoOpen(true);
+  const isLink = !!link && !videoId;
+
+  const contentProps = isLink ? { href: link, target: "_blanc" } : {};
 
   return (
-    <Content small={small}>
+    <Content small={small} as={isLink ? "a" : "div"} {...contentProps}>
       <VideoBlock small={small}>
-        <VideoFrame
-          small={small}
-          img={img}
-          onClick={() => setIsVideoOpen(true)}
-        >
-          <PlayButton small={small} onClick={() => setIsVideoOpen(true)} />
+        <VideoFrame small={small} img={img} onClick={onOpenVideo}>
+          <PlayButton small={small} onClick={onOpenVideo} isLink={isLink} />
         </VideoFrame>
       </VideoBlock>
-      <Description small={small} onClick={() => setIsVideoOpen(true)}>
+      <Description small={small} onClick={onOpenVideo}>
         {description}
       </Description>
       {isVideoOpen ? (

@@ -128,10 +128,22 @@ Incremental sync supports only if you add `ga:date` dimension to your custom rep
 
 The Google Analytics connector should not run into Google Analytics API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## Sampling in reports 
+
+Google Analytics API may, under certain circumstances, limit the returned data based on sampling. This is done to reduce the amount of data that is returned as described in https://developers.google.com/analytics/devguides/reporting/core/v4/basics#sampling
+The window_in_day parameter is used to specify the number of days to look back and can be used to avoid sampling.
+When sampling occurs, a warning is logged to the sync log.
+
+## IsDataGolden
+
+Google Analytics API may return provisional or incomplete data. When this occurs, the returned data will set the fleg isDataGolden to false, and the connector will log a warning to the sync log.
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.16 | 2022-01-26 | [9480](https://github.com/airbytehq/airbyte/pull/9480) | Reintroduce `window_in_days` and log warning when sampling occurs |
+| 0.1.15 | 2021-12-28 | [9165](https://github.com/airbytehq/airbyte/pull/9165) | Update titles and descriptions |
 | 0.1.14 | 2021-12-09 | [8656](https://github.com/airbytehq/airbyte/pull/8656) | Fix date-format in schemas |
 | 0.1.13 | 2021-12-09 | [8676](https://github.com/airbytehq/airbyte/pull/8676) | Fix `window_in_days` validation issue |
 | 0.1.12 | 2021-12-03 | [8175](https://github.com/airbytehq/airbyte/pull/8175) | Fix validation of unknown metric(s) or dimension(s) error |

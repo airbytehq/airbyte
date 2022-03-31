@@ -12,6 +12,7 @@ import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
@@ -59,7 +60,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   @Override
   public boolean isValidData(final JsonNode data) {
     final String stringData = Jsons.serialize(data);
-    final int dataSize = stringData.getBytes().length;
+    final int dataSize = stringData.getBytes(StandardCharsets.UTF_8).length;
     return dataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 

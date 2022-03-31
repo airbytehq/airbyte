@@ -4,7 +4,7 @@ import { getService } from "core/servicesProvider";
 
 import BaseResource from "./BaseResource";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
-import { DestinationDefinition } from "../domain/connector";
+import { DestinationDefinition } from "core/domain/connector";
 
 export default class DestinationDefinitionResource
   extends BaseResource

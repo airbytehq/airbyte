@@ -82,7 +82,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     JdbcDatabase database = getDatabase(getConfig());
-    return database.query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+    return database.unsafeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
         .collect(Collectors.toList());
   }
@@ -110,7 +110,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    DockerImageName mcsImage = DockerImageName.parse("mariadb/columnstore").asCompatibleSubstituteFor("mariadb");
+    DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer(mcsImage);
     db.start();
 

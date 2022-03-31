@@ -8,7 +8,7 @@ import {
   SourcesPage as SettingsSourcesPage,
 } from "pages/SettingsPage/pages/ConnectorsPage";
 import SettingsPage from "pages/SettingsPage";
-import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
+// import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
 import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
@@ -49,6 +49,7 @@ export const CloudSettingsPage: React.FC = () => {
               path: CloudSettingsRoutes.Workspace,
               name: <FormattedMessage id="settings.generalSettings" />,
               component: WorkspaceSettingsView,
+              id: "workspaceSettings.generalSettings",
             },
             {
               path: CloudSettingsRoutes.Source,
@@ -62,15 +63,16 @@ export const CloudSettingsPage: React.FC = () => {
               // indicatorCount: countNewDestinationVersion,
               component: SettingsDestinationPage,
             },
-            {
-              path: CloudSettingsRoutes.Configuration,
-              name: <FormattedMessage id="admin.configuration" />,
-              component: ConfigurationsPage,
-            },
+            // {
+            //   path: CloudSettingsRoutes.Configuration,
+            //   name: <FormattedMessage id="admin.configuration" />,
+            //   component: ConfigurationsPage,
+            // },
             {
               path: CloudSettingsRoutes.AccessManagement,
               name: <FormattedMessage id="settings.accessManagementSettings" />,
               component: UsersSettingsView,
+              id: "workspaceSettings.accessManagementSettings",
             },
             {
               path: CloudSettingsRoutes.Notifications,

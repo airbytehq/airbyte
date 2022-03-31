@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { getByTestId, screen, waitFor } from "@testing-library/react";
 import selectEvent from "react-select-event";
 
-import ServiceForm from "views/Connector/ServiceForm";
+import { ServiceForm } from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
 import { ServiceFormValues } from "./types";
 import { AirbyteJSONSchema } from "core/jsonSchema";
@@ -16,6 +16,8 @@ jest.mock(
       return <>{children}</>;
     }
 );
+
+jest.setTimeout(10000);
 
 const schema: AirbyteJSONSchema = {
   type: "object",
@@ -96,6 +98,16 @@ const schema: AirbyteJSONSchema = {
   },
 };
 
+jest.mock("hooks/services/Analytics");
+
+jest.mock("hooks/services/useWorkspace", () => ({
+  useCurrentWorkspace: () => ({
+    workspace: {
+      workspaceId: "workspaceId",
+    },
+  }),
+}));
+
 describe("Service Form", () => {
   describe("should display json schema specs", () => {
     let container: HTMLElement;
@@ -105,7 +117,7 @@ describe("Service Form", () => {
         <ServiceForm
           formType="source"
           onSubmit={handleSubmit}
-          selectedConnector={{
+          selectedConnectorDefinitionSpecification={{
             connectionSpecification: schema,
             sourceDefinitionId: "1",
             documentationUrl: "",
@@ -210,7 +222,7 @@ describe("Service Form", () => {
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
-          selectedConnector={{
+          selectedConnectorDefinitionSpecification={{
             connectionSpecification: schema,
             sourceDefinitionId: "test-service-type",
             documentationUrl: "",
@@ -302,6 +314,7 @@ describe("Service Form", () => {
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
 
+      // @ts-expect-error typed unknown, okay in test file
       expect(result.connectionConfiguration.emails).toEqual([
         "test1@test.com",
         "test2@test.com",
@@ -321,6 +334,7 @@ describe("Service Form", () => {
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
 
+      // @ts-expect-error typed unknown, okay in test file
       expect(result.connectionConfiguration.workTime).toEqual(["day", "night"]);
     });
 
@@ -350,10 +364,6 @@ describe("Service Form", () => {
     });
 
     test("should fill right values oneOf field", async () => {
-      const credentials = screen.getByTestId(
-        "connectionConfiguration.credentials"
-      );
-
       const selectContainer = getByTestId(
         container,
         "connectionConfiguration.credentials"
@@ -417,6 +427,7 @@ describe("Service Form", () => {
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
 
+      // @ts-expect-error typed unknown, okay in test file
       expect(result.connectionConfiguration.priceList).toEqual([
         { name: "test-1", price: 1 },
         { name: "test-2", price: 2 },

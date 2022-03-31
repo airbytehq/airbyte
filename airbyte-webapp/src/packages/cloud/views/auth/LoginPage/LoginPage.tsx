@@ -39,15 +39,18 @@ const LoginPage: React.FC = () => {
         }}
         validationSchema={LoginPageValidationSchema}
         onSubmit={async (values, { setFieldError }) => {
-          return login(values)
-            .then((_) => replace(location.state?.from ?? "/"))
-            .catch((err) => {
-              if (err instanceof FieldError) {
-                setFieldError(err.field, err.message);
-              } else {
-                setFieldError("password", err.message);
-              }
-            });
+          return (
+            login(values)
+              // @ts-expect-error state is now unkown, needs proper typing
+              .then((_) => replace(location.state?.from ?? "/"))
+              .catch((err) => {
+                if (err instanceof FieldError) {
+                  setFieldError(err.field, err.message);
+                } else {
+                  setFieldError("password", err.message);
+                }
+              })
+          );
         }}
         validateOnBlur
         validateOnChange={false}
@@ -96,7 +99,11 @@ const LoginPage: React.FC = () => {
             </FieldItem>
             <BottomBlock>
               <>
-                <Link to={CloudRoutes.ResetPassword} $light>
+                <Link
+                  to={CloudRoutes.ResetPassword}
+                  $light
+                  data-testid="reset-password-link"
+                >
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
                 <LoadingButton type="submit" isLoading={isSubmitting}>

@@ -8,32 +8,21 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
-
-  private final static Logger LOGGER = LoggerFactory.getLogger(AirbyteIntegrationLauncher.class);
 
   private final String jobId;
   private final int attempt;
   private final String imageName;
   private final ProcessFactory processFactory;
   private final ResourceRequirements resourceRequirement;
-
-  public AirbyteIntegrationLauncher(final String jobId,
-                                    final int attempt,
-                                    final String imageName,
-                                    final ProcessFactory processFactory) {
-    this(String.valueOf(jobId), attempt, imageName, processFactory, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
-  }
 
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
@@ -59,6 +48,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB),
+        getWorkerMetadata(),
+        Collections.emptyMap(),
         "spec");
   }
 
@@ -74,6 +65,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
+        getWorkerMetadata(),
+        Collections.emptyMap(),
         "check",
         "--config", configFilename);
   }
@@ -90,6 +83,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
+        getWorkerMetadata(),
+        Collections.emptyMap(),
         "discover",
         "--config", configFilename);
   }
@@ -130,7 +125,9 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
-        arguments);
+        getWorkerMetadata(),
+        Collections.emptyMap(),
+        arguments.toArray(new String[arguments.size()]));
   }
 
   @Override
@@ -154,9 +151,18 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         null,
         resourceRequirement,
         Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
+        getWorkerMetadata(),
+        Collections.emptyMap(),
         "write",
         "--config", configFilename,
         "--catalog", catalogFilename);
+  }
+
+  private Map<String, String> getWorkerMetadata() {
+    return Map.of(
+        WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
+        WorkerEnvConstants.WORKER_JOB_ID, jobId,
+        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt));
   }
 
 }

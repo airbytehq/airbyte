@@ -6,8 +6,25 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
-## [11-12-2021 - 0.32.1](https://github.com/airbytehq/airbyte/releases/tag/v0.32.0-alpha)
+## [20-12-2021 - 0.32.5](https://github.com/airbytehq/airbyte/releases/tag/v0.32.5-alpha)
+* Add an endpoint that specify that the feedback have been given after the first sync.
+
+## [18-12-2021 - 0.32.4](https://github.com/airbytehq/airbyte/releases/tag/v0.32.4-alpha)
 * No major changes to Airbyte Core.
+
+## [18-12-2021 - 0.32.3](https://github.com/airbytehq/airbyte/releases/tag/v0.32.3-alpha)
+* No major changes to Airbyte Core.
+
+## [18-12-2021 - 0.32.2](https://github.com/airbytehq/airbyte/releases/tag/v0.32.2-alpha)
+* Improve error handling when additional sources/destinations cannot be read.
+* Implement connector config dependency for OAuth consent URL.
+* Treat oauthFlowInitParameters just as hidden instead of getting rid of them.
+* Stop using gentle close with heartbeat.
+
+## [17-12-2021 - 0.32.1](https://github.com/airbytehq/airbyte/releases/tag/v0.32.1-alpha)
+* Add to the new connection flow form with an existing source and destination dropdown.
+* Implement protocol change for OAuth outputs.
+* Enhance API for use by cloud to provide per-connector billing info.
 
 ## [11-12-2021 - 0.32.0](https://github.com/airbytehq/airbyte/releases/tag/v0.32.0-alpha)
 * This is a **MAJOR** version update. You need to [update to this version](../../operator-guides/upgrading-airbyte.md#mandatory-intermediate-upgrade) before updating to any version newer than `0.32.0`

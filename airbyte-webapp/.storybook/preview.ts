@@ -1,9 +1,9 @@
 import { addDecorator } from "@storybook/react";
-import { withThemesProvider } from "storybook-addon-styled-component-theme";
 
-import WithProviders from "./withProvider";
-import { theme } from "../src/theme";
+import { withProviders } from "./withProvider";
+import { MockDecorator } from "./restHooksDecorator";
 
-addDecorator(withThemesProvider([theme], WithProviders));
+addDecorator(withProviders);
+addDecorator(MockDecorator);
 
 export const parameters = {};

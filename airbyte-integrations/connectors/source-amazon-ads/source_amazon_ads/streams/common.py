@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic import BaseModel, ValidationError
 from source_amazon_ads.constants import URL_MAPPING
 from source_amazon_ads.schemas import CatalogModel
@@ -86,7 +87,9 @@ class BasicAmazonAdsStream(Stream, ABC):
         """
 
     def get_json_schema(self):
-        return self.model.schema()
+        schema = self.model.schema()
+        expand_refs(schema)
+        return schema
 
 
 # Basic full refresh stream

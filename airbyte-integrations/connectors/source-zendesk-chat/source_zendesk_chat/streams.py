@@ -16,6 +16,7 @@ class Stream(HttpStream, ABC):
     url_base = "https://www.zopim.com/api/v2/"
     primary_key = "id"
 
+    primary_key = None
     data_field = None
 
     limit = 100
@@ -237,7 +238,7 @@ class Bans(IdIncrementalStream):
 
     def get_stream_data(self, response_data) -> List[dict]:
         bans = response_data["ip_address"] + response_data["visitor"]
-        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]))
+        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.min)
         return bans
 
 

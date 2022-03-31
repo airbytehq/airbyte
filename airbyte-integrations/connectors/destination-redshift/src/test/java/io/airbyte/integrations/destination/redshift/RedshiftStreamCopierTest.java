@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -70,15 +71,17 @@ class RedshiftStreamCopierTest {
         "fake-schema",
         s3Client,
         db,
-        new S3DestinationConfig(
-            "fake-endpoint",
-            "fake-bucket",
-            "fake-bucketPath",
-            "fake-region",
-            "fake-access-key-id",
-            "fake-secret-access-key",
-            PART_SIZE,
-            null),
+        new S3CopyConfig(
+            true,
+            new S3DestinationConfig(
+                "fake-endpoint",
+                "fake-bucket",
+                "fake-bucketPath",
+                "fake-region",
+                "fake-access-key-id",
+                "fake-secret-access-key",
+                PART_SIZE,
+                null)),
         new ExtendedNameTransformer(),
         sqlOperations,
         UPLOAD_TIME,

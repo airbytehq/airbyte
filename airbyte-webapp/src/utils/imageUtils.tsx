@@ -3,12 +3,9 @@ import styled from "styled-components";
 
 import { DefaultLogoCatalog } from "components";
 
-const IconContainer = styled.div`
+const IconContainer = styled.img`
   height: 100%;
-  & > svg {
-    height: 100%;
-    width: 100%;
-  }
+  width: 100%;
 `;
 
 const IconDefaultContainer = styled.div`
@@ -24,5 +21,10 @@ export const getIcon = (icon?: string): React.ReactNode => {
     );
   }
 
-  return <IconContainer dangerouslySetInnerHTML={{ __html: icon }} />;
+  return (
+    <IconContainer
+      alt=""
+      src={`data:image/svg+xml;utf8,${encodeURIComponent(icon)}`}
+    />
+  );
 };

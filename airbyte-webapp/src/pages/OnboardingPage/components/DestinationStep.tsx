@@ -1,19 +1,15 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import ContentCard from "components/ContentCard";
-import ServiceForm from "views/Connector/ServiceForm";
-import { JobsLogItem } from "components/JobItem";
-
-import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { DestinationDefinition } from "core/domain/connector";
 
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { DestinationDefinition } from "core/domain/connector";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 
 type IProps = {
   availableServices: DestinationDefinition[];
@@ -25,7 +21,6 @@ type IProps = {
   }) => void;
   hasSuccess?: boolean;
   error?: null | { message?: string; status?: number };
-  jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
 };
 
@@ -34,14 +29,15 @@ const DestinationStep: React.FC<IProps> = ({
   availableServices,
   hasSuccess,
   error,
-  jobInfo,
   afterSelectConnector,
 }) => {
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState("");
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState<
+    string | null
+  >(null);
   const {
-    destinationDefinitionSpecification,
+    data: destinationDefinitionSpecification,
     isLoading,
-  } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
+  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
   const analyticsService = useAnalyticsService();
 
@@ -73,7 +69,7 @@ const DestinationStep: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : "";
+  const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
     <>
@@ -82,7 +78,7 @@ const DestinationStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createFirstDestination"
             values={{
-              name: (...name: React.ReactNode[]) => (
+              name: (name: React.ReactNode[]) => (
                 <HighlightedText>{name}</HighlightedText>
               ),
             }}
@@ -91,20 +87,19 @@ const DestinationStep: React.FC<IProps> = ({
       >
         <FormattedMessage id="onboarding.createFirstDestination.text" />
       </TitlesBlock>
-      <ContentCard full>
-        <ServiceForm
-          formType="destination"
-          allowChangeConnector
-          onServiceSelect={onDropDownSelect}
-          onSubmit={onSubmitForm}
-          hasSuccess={hasSuccess}
-          availableServices={availableServices}
-          errorMessage={errorMessage}
-          selectedConnector={destinationDefinitionSpecification}
-          isLoading={isLoading}
-        />
-        <JobsLogItem jobInfo={jobInfo} />
-      </ContentCard>
+      <ConnectorCard
+        full
+        formType="destination"
+        onServiceSelect={onDropDownSelect}
+        onSubmit={onSubmitForm}
+        hasSuccess={hasSuccess}
+        availableServices={availableServices}
+        errorMessage={errorMessage}
+        selectedConnectorDefinitionSpecification={
+          destinationDefinitionSpecification
+        }
+        isLoading={isLoading}
+      />
     </>
   );
 };

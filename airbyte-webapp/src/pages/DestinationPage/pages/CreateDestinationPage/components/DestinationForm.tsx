@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import ContentCard from "components/ContentCard";
-import ServiceForm from "views/Connector/ServiceForm";
 import useRouter from "hooks/useRouter";
-import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
-import { JobInfo } from "core/resources/Scheduler";
-import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { DestinationDefinition } from "core/domain/connector";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 
 type IProps = {
   onSubmit: (values: {
@@ -22,8 +20,18 @@ type IProps = {
   destinationDefinitions: DestinationDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-  jobInfo?: JobInfo;
   afterSelectConnector?: () => void;
+};
+
+const hasDestinationDefinitionId = (
+  state: unknown
+): state is { destinationDefinitionId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { destinationDefinitionId?: string })
+      .destinationDefinitionId === "string"
+  );
 };
 
 const DestinationForm: React.FC<IProps> = ({
@@ -31,20 +39,21 @@ const DestinationForm: React.FC<IProps> = ({
   destinationDefinitions,
   error,
   hasSuccess,
-  jobInfo,
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
   const analyticsService = useAnalyticsService();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
-    location.state?.destinationDefinitionId || ""
+    hasDestinationDefinitionId(location.state)
+      ? location.state.destinationDefinitionId
+      : null
   );
   const {
-    destinationDefinitionSpecification,
+    data: destinationDefinitionSpecification,
     isLoading,
-    sourceDefinitionError,
-  } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
+    error: destinationDefinitionError,
+  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
@@ -77,30 +86,26 @@ const DestinationForm: React.FC<IProps> = ({
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <>
-      <ContentCard
-        title={<FormattedMessage id="onboarding.destinationSetUp" />}
-      >
-        <ServiceForm
-          onServiceSelect={onDropDownSelect}
-          fetchingConnectorError={sourceDefinitionError}
-          onSubmit={onSubmitForm}
-          formType="destination"
-          availableServices={destinationDefinitions}
-          selectedConnector={destinationDefinitionSpecification}
-          hasSuccess={hasSuccess}
-          errorMessage={errorMessage}
-          isLoading={isLoading}
-          formValues={
-            destinationDefinitionId
-              ? { serviceType: destinationDefinitionId }
-              : undefined
-          }
-          allowChangeConnector
-        />
-        <JobsLogItem jobInfo={jobInfo} />
-      </ContentCard>
-    </>
+    <ConnectorCard
+      onServiceSelect={onDropDownSelect}
+      fetchingConnectorError={destinationDefinitionError}
+      onSubmit={onSubmitForm}
+      formType="destination"
+      availableServices={destinationDefinitions}
+      selectedConnectorDefinitionSpecification={
+        destinationDefinitionSpecification
+      }
+      hasSuccess={hasSuccess}
+      errorMessage={errorMessage}
+      isLoading={isLoading}
+      formValues={
+        destinationDefinitionId
+          ? { serviceType: destinationDefinitionId }
+          : undefined
+      }
+      title={<FormattedMessage id="onboarding.destinationSetUp" />}
+      jobInfo={LogsRequestError.extractJobInfo(error)}
+    />
   );
 };
 

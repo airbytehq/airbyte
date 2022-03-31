@@ -12,20 +12,23 @@
     "additionalProperties": true,
     "properties": {
       "username": {
-        "description": "Username to use to access the database.",
+        "description": "The username which is used to access the database.",
+        "title": "Username",
         "type": "string"
       },
       "password": {
-        "description": "Password associated with the username.",
+        "description": "The password associated with this username.",
+        "title": "Password",
         "type": "string",
         "airbyte_secret": true
       },
       "jdbc_url": {
         "description": "JDBC formatted url. See the standard <a href=\"https://docs.oracle.com/cd/E17952_01/connector-j-8.0-en/connector-j-reference-jdbc-url-format.html\">here</a>.",
+        "title": "JDBC URL",
         "type": "string"
       },
       "schema": {
-        "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
+        "description": "If you leave the schema unspecified, JDBC defaults to a schema named \"public\".",
         "type": "string",
         "examples": ["public"],
         "default": "public",

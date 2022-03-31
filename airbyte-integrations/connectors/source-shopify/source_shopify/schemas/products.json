@@ -264,6 +264,9 @@
     },
     "id": {
       "type": ["null", "integer"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

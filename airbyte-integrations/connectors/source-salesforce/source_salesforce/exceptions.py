@@ -3,7 +3,13 @@
 #
 
 
-class TypeSalesforceException(Exception):
+class SalesforceException(Exception):
+    """
+    Default Salesforce exception.
+    """
+
+
+class TypeSalesforceException(SalesforceException):
     """
     We use this exception for unknown input data types for Salesforce.
     """

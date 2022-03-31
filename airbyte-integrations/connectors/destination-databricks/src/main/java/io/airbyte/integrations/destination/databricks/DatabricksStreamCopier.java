@@ -10,7 +10,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
@@ -24,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to {@link LegacyS3StreamCopier}. The difference is that this
+ * This implementation is similar to {@link StreamCopier}. The difference is that this
  * implementation creates Parquet staging files, instead of CSV ones.
  * <p>
  * </p>
@@ -190,6 +189,16 @@ public class DatabricksStreamCopier implements StreamCopier {
       LOGGER.info("[Stream {}] Deleting staging file: {}", streamName, parquetWriter.getOutputFilePath());
       s3Client.deleteObject(s3Config.getBucketName(), parquetWriter.getOutputFilePath());
     }
+  }
+
+  @Override
+  public void closeNonCurrentStagingFileWriters() throws Exception {
+    parquetWriter.close(false);
+  }
+
+  @Override
+  public String getCurrentFile() {
+    return "";
   }
 
   /**
