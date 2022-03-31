@@ -1,20 +1,13 @@
-import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
-import { useStatefulResource } from "@rest-hooks/legacy";
 
 import DestinationResource from "core/resources/Destination";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import { RoutePaths } from "pages/routes";
 import useRouter from "../useRouter";
-import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
-import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import {
-  Destination,
-  DestinationDefinitionSpecification,
-} from "core/domain/connector";
+import { Destination } from "core/domain/connector";
+import { RoutePaths } from "../../pages/routePaths";
 
 type ValuesProps = {
   name: string;
@@ -24,54 +17,7 @@ type ValuesProps = {
 
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
-export const useDestinationDefinitionSpecificationLoad = (
-  destinationDefinitionId: string | null
-): {
-  isLoading: boolean;
-  destinationDefinitionSpecification?: DestinationDefinitionSpecification;
-  sourceDefinitionError?: Error;
-} => {
-  const {
-    loading: isLoading,
-    error,
-    data: destinationDefinitionSpecification,
-  } = useStatefulResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    destinationDefinitionId
-      ? {
-          destinationDefinitionId,
-        }
-      : null
-  );
-
-  return {
-    destinationDefinitionSpecification,
-    sourceDefinitionError: error,
-    isLoading,
-  };
-};
-
-export const useDestinationDefinitionSpecificationLoadAsync = (
-  destinationDefinitionId: string
-): DestinationDefinitionSpecification => {
-  const definition = useResource(
-    DestinationDefinitionSpecificationResource.detailShape(),
-    {
-      destinationDefinitionId,
-    }
-  );
-
-  return definition;
-};
-
-type DestinationService = {
-  checkDestinationConnection: ({
-    destinationId,
-    values,
-  }: {
-    destinationId: string;
-    values?: ValuesProps;
-  }) => Promise<Scheduler>;
+type DestinationServiceApi = {
   updateDestination: ({
     values,
     destinationId,
@@ -86,13 +32,6 @@ type DestinationService = {
     values: ValuesProps;
     destinationConnector?: ConnectorProps;
   }) => Promise<Destination>;
-  recreateDestination: ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => Promise<Destination>;
   deleteDestination: ({
     destination,
     connectionsWithDestination,
@@ -102,7 +41,7 @@ type DestinationService = {
   }) => Promise<void>;
 };
 
-const useDestination = (): DestinationService => {
+const useDestination = (): DestinationServiceApi => {
   const { push } = useRouter();
   const { workspace } = useWorkspace();
   const analyticsService = useAnalyticsService();
@@ -110,15 +49,9 @@ const useDestination = (): DestinationService => {
     DestinationResource.createShape()
   );
 
-  const destinationCheckConnectionShape = useFetcher(
-    SchedulerResource.destinationCheckConnectionShape()
-  );
-
   const updatedestination = useFetcher(
     DestinationResource.partialUpdateShape()
   );
-
-  const recreatedestination = useFetcher(DestinationResource.recreateShape());
 
   const destinationDelete = useFetcher(DestinationResource.deleteShape());
 
@@ -126,26 +59,11 @@ const useDestination = (): DestinationService => {
     ConnectionResource.updateStoreAfterDeleteShape()
   );
 
-  const createDestination = async ({
+  const createDestination: DestinationServiceApi["createDestination"] = async ({
     values,
     destinationConnector,
-  }: {
-    values: ValuesProps;
-    destinationConnector?: ConnectorProps;
   }) => {
-    analyticsService.track("New Destination - Action", {
-      action: "Test a connector",
-      connector_destination: destinationConnector?.name,
-      connector_destination_definition_id:
-        destinationConnector?.destinationDefinitionId,
-    });
-
     try {
-      await destinationCheckConnectionShape({
-        destinationDefinitionId: destinationConnector?.destinationDefinitionId,
-        connectionConfiguration: values.connectionConfiguration,
-      });
-
       // Try to crete destination
       const result = await createDestinationsImplementation(
         {},
@@ -192,20 +110,11 @@ const useDestination = (): DestinationService => {
     }
   };
 
-  const updateDestination = async ({
+  const updateDestination: DestinationServiceApi["updateDestination"] = async ({
     values,
     destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => {
-    await destinationCheckConnectionShape({
-      connectionConfiguration: values.connectionConfiguration,
-      name: values.name,
-      destinationId,
-    });
-
-    return await updatedestination(
+  }) =>
+    await updatedestination(
       {
         destinationId,
       },
@@ -215,68 +124,10 @@ const useDestination = (): DestinationService => {
         connectionConfiguration: values.connectionConfiguration,
       }
     );
-  };
 
-  const recreateDestination = async ({
-    values,
-    destinationId,
-  }: {
-    values: ValuesProps;
-    destinationId: string;
-  }) => {
-    return await recreatedestination(
-      {
-        destinationId,
-      },
-      {
-        name: values.name,
-        destinationId,
-        connectionConfiguration: values.connectionConfiguration,
-        workspaceId: workspace.workspaceId,
-        destinationDefinitionId: values.serviceType,
-      },
-      // Method used only in onboarding.
-      // Replace all destination List to new item in UpdateParams (to change id)
-      [
-        [
-          DestinationResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (newdestinationId: string) => ({
-            destinations: [newdestinationId],
-          }),
-        ],
-      ]
-    );
-  };
-
-  const checkDestinationConnection = useCallback(
-    async ({
-      destinationId,
-      values,
-    }: {
-      destinationId: string;
-      values?: ValuesProps;
-    }) => {
-      if (values) {
-        return await destinationCheckConnectionShape({
-          connectionConfiguration: values.connectionConfiguration,
-          name: values.name,
-          destinationId: destinationId,
-        });
-      }
-      return await destinationCheckConnectionShape({
-        destinationId: destinationId,
-      });
-    },
-    [destinationCheckConnectionShape]
-  );
-
-  const deleteDestination = async ({
+  const deleteDestination: DestinationServiceApi["deleteDestination"] = async ({
     destination,
     connectionsWithDestination,
-  }: {
-    destination: Destination;
-    connectionsWithDestination: Connection[];
   }) => {
     await destinationDelete({
       destinationId: destination.destinationId,
@@ -293,9 +144,7 @@ const useDestination = (): DestinationService => {
   return {
     createDestination,
     updateDestination,
-    recreateDestination,
     deleteDestination,
-    checkDestinationConnection,
   };
 };
 

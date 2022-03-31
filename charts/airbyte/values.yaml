@@ -43,7 +43,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.35.58-alpha
+    tag: 0.35.63-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -209,7 +209,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.35.58-alpha
+    tag: 0.35.63-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -440,7 +440,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.35.58-alpha
+    tag: 0.35.63-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -581,7 +581,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.35.58-alpha
+    tag: 0.35.63-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -699,7 +699,7 @@ bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.35.58-alpha
+    tag: 0.35.63-alpha
   
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
@@ -912,10 +912,15 @@ logs:
 
   ## Google Cloud Storage (GCS) Log Location Configuration
   ## @param logs.gcs.bucket GCS bucket name
-  ## @param logs.gcs.credentials The path the GCS creds are written to
+  ## @param logs.gcs.credentials The path the GCS creds file is located
+  ## @param logs.gcs.credentialsJson Base64 encoded JSON credentials
   gcs:
     bucket: ""
+    # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
+    # deployments, then set credentials to the path of the mounted JSON file
     credentials: ""
+    # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
+    credentialsJson: ""
 
 ## @section Minio chart overwrites
 ## @param minio.accessKey.password Minio Access Key

@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.record_buffer;
 
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -54,7 +55,7 @@ public interface SerializableBuffer extends AutoCloseable {
   /**
    * @return the InputStream to read data back from this buffer once it is done adding messages to it.
    */
-  InputStream getInputStream();
+  InputStream getInputStream() throws FileNotFoundException;
 
   /*
    * Depending on the implementation of the storage, methods below defined reasonable thresholds

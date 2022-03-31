@@ -142,6 +142,9 @@ To use Azure Blob Storage, you will need to [create a storage account](https://d
 
 Navigate to the Airbyte UI to set up Snowflake as a destination. You'll need the following information to configure the Snowflake destination:
 
+#### There are 2 way ways of oauth supported: login\pass and oauth2.
+
+### Login and Password
 | Field | Description |
 |---|---|
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
@@ -152,6 +155,20 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You'll need the
 | Username | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
 | Password | The password associated with the username. |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
+
+
+### OAuth 2.0
+Field | Description |
+|---|---|
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
+| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles) | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE` |
+| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE` |
+| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
+| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.  |
+| Username | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
+| OAuth2 | The Login name and password to obtain auth token. |
+| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
+
 
 To use AWS S3 as the cloud storage, enter the information for the S3 bucket you created in Step 2:
 
@@ -199,7 +216,7 @@ Airbyte outputs each stream into its own table with the following columns in Sno
 
 The Snowflake destination supports the following sync modes:
 
-- [Full Refresh Sync](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -218,6 +235,7 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.4.24  | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added OAuth support |
 | 0.4.22  | 2022-03-18 | [\#10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |
 | 0.4.21  | 2022-03-18 | [\#11071](https://github.com/airbytehq/airbyte/pull/11071) | Switch to compressed on-disk buffering before staging to s3/internal stage |
 | 0.4.20  | 2022-03-14 | [\#10341](https://github.com/airbytehq/airbyte/pull/10341) | Add Azure blob staging support |
