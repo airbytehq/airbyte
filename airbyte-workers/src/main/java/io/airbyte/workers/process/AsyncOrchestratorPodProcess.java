@@ -114,7 +114,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     }
 
     // If the pod does exist, it may be in a terminal (error or completed) state.
-    final boolean isTerminal = KubePodProcess.isTerminal(pod);
+    final boolean isTerminal = KubePodResourceHelper.isTerminal(pod);
 
     if (isTerminal) {
       // In case the doc store was updated in between when we pulled it and when

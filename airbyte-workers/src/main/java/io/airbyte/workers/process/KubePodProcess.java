@@ -15,7 +15,6 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
-import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
@@ -501,19 +500,22 @@ public class KubePodProcess extends Process implements KubePod {
         .endSpec()
         .build();
 
-    exitCodeFuture = new CompletableFuture<>();
-
     LOGGER.info("Creating pod...");
     val start = System.currentTimeMillis();
 
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
 
-    // create the watch before the initialization runs
+    // We want to create a watch before the init container runs. Then we can guarantee that we're
+    // checking
+    // for updates across the full lifecycle of the main container. This is safe only because we are
+    // blocking
+    // the init pod until we copy files onto it. See the ExitCodeWatcher comments for more info.
+    exitCodeFuture = new CompletableFuture<>();
     podWatch = fabricClient.resource(podDefinition).watch(new ExitCodeWatcher(
         exitCodeFuture::complete,
         exception -> {
           LOGGER.info(prependPodInfo(
-              String.format("Unable to find pod to retrieve exit value. Defaulting to  value %s. This is expected if the job was cancelled.",
+              String.format("Exit code watcher failed to retrieve the exit code. Defaulting to %s. This is expected if the job was cancelled.",
                   KILLED_EXIT_CODE),
               namespace, podName));
 
@@ -535,7 +537,7 @@ public class KubePodProcess extends Process implements KubePod {
     // container got stuck somehow.
     fabricClient.resource(podDefinition).waitUntilCondition(p -> {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
-      return isReady || isTerminal(p);
+      return isReady || KubePodResourceHelper.isTerminal(p);
     }, 20, TimeUnit.MINUTES);
     DogStatsDMetricSingleton.recordTimeGlobal(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
 
@@ -689,26 +691,7 @@ public class KubePodProcess extends Process implements KubePod {
     KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);
     KubePortManagerSingleton.getInstance().offer(stderrLocalPort);
 
-    LOGGER.info(prependPodInfo("Closed all resources for pod",
-        podDefinition.getMetadata().getNamespace(),
-        podDefinition.getMetadata().getName()));
-  }
-
-  public static boolean isTerminal(final Pod pod) {
-    if (pod.getStatus() != null) {
-      // Check if "main" container has terminated, as that defines whether the parent process has
-      // terminated.
-      final List<ContainerStatus> mainContainerStatuses = pod.getStatus()
-          .getContainerStatuses()
-          .stream()
-          .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
-          .collect(Collectors.toList());
-
-      return mainContainerStatuses.size() == 1 && mainContainerStatuses.get(0).getState() != null
-          && mainContainerStatuses.get(0).getState().getTerminated() != null;
-    } else {
-      return false;
-    }
+    LOGGER.info(prependPodInfo("Closed all resources for pod", podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName()));
   }
 
   /**

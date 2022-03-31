@@ -12,6 +12,13 @@ import io.fabric8.kubernetes.client.WatcherException;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The exit code watcher uses the Kubernetes watch API, which provides a subscription to events for
+ * a pod. This subscription has better latency than polling at the expense of keeping a connection
+ * open with the Kubernetes API server. Since it offers all events, it helps us handle cases like
+ * where a pod is swept or deleted immediately after running on a Kubernetes cluster (we will still
+ * be able to retrieve the exit code).
+ */
 @Slf4j
 public class ExitCodeWatcher implements Watcher<Pod> {
 
@@ -33,7 +40,7 @@ public class ExitCodeWatcher implements Watcher<Pod> {
   @Override
   public void eventReceived(Action action, Pod resource) {
     try {
-      if (!exitCodeRetrieved && KubePodProcess.isTerminal(resource)) {
+      if (!exitCodeRetrieved && KubePodResourceHelper.isTerminal(resource)) {
         final ContainerStatus mainContainerStatus = resource.getStatus().getContainerStatuses()
             .stream()
             .filter(containerStatus -> containerStatus.getName().equals(KubePodProcess.MAIN_CONTAINER_NAME))
@@ -47,7 +54,7 @@ public class ExitCodeWatcher implements Watcher<Pod> {
         }
       }
     } catch (Exception e) {
-      String podName = null;
+      String podName = "<unknown_name>";
       if (resource.getMetadata() != null) {
         podName = resource.getMetadata().getName();
       }
