@@ -16,9 +16,9 @@ const FormContainer = styled(Form)`
 `;
 
 export const FormCard: React.FC<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   CollapsibleCardProps & {
     bottomSeparator?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     form: FormikConfig<any>;
     readOnly?: boolean;
   }
