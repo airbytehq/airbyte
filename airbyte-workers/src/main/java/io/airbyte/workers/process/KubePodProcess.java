@@ -514,8 +514,10 @@ public class KubePodProcess extends Process implements KubePod {
         exitCodeFuture::complete,
         exception -> {
           LOGGER.info(prependPodInfo(
-              String.format("Exit code watcher failed to retrieve the exit code. Defaulting to %s. This is expected if the job was cancelled.",
-                  KILLED_EXIT_CODE),
+              String.format(
+                  "Exit code watcher failed to retrieve the exit code. Defaulting to %s. This is expected if the job was cancelled. Error: %s",
+                  KILLED_EXIT_CODE,
+                  exception.getMessage()),
               namespace, podName));
 
           exitCodeFuture.complete(KILLED_EXIT_CODE);
