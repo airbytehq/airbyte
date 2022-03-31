@@ -15,8 +15,9 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe_alex.streams import (
-    InvoiceLineItems,
-    meta_incremental
+    meta_incremental,
+    meta_sub,
+    AttrDict
 )
 
 
@@ -39,12 +40,6 @@ class Paginator:
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
-
-
-class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
 
 class PaginatorCursorInHeaderLastObject(Paginator):
@@ -95,6 +90,7 @@ class SourceStripeAlex(AbstractSource):
             "response_parser": response_parser,
             "paginator": self._get_paginator(**paginator_config),
             "primary_key": config["primary_key"],
+            "stream_to_parent_config": config["stream_to_parent_config"],
             "incremental_headers": config.get("incremental_headers")  # this needs to be in args because read_records calls parent stream...
         }
         incremental_args = {
@@ -112,12 +108,12 @@ class SourceStripeAlex(AbstractSource):
         }
         invoice_line_items_args = {
             **copy.deepcopy(args),
-            **{"name": "invoice_line_items"}
+            **{"name": "invoice_line_items"},
         }
 
         return [
             meta_incremental("InvoiceItems")(**invoice_items_args),
-            InvoiceLineItems(**invoice_line_items_args),
+            meta_sub("InvoiceLineItems")(**invoice_line_items_args),
             meta_incremental("Invoices")(**invoices_args)
         ]
 

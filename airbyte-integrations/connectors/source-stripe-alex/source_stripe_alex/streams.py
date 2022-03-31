@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 import math
-from abc import ABC, abstractmethod
+from abc import ABC
 from itertools import chain
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union, List
 
@@ -18,9 +18,6 @@ class StripeStream(HttpStream, ABC):
                  # request_parameters: Mapping[str, Any],
                  **kwargs):
         super().__init__()
-        self.logger.info("......")
-        self.logger.info(kwargs)
-        self.logger.info("......")
         self.url_base = kwargs["url_base"]
         self.account_id = kwargs["account_id"]
         self.start_date = kwargs["start_date"]
@@ -33,6 +30,7 @@ class StripeStream(HttpStream, ABC):
         self._paginator = kwargs["paginator"]
         self._primary_key = kwargs["primary_key"]
         self._incremental_headers = kwargs["incremental_headers"]
+        self._stream_to_parent_config = kwargs["stream_to_parent_config"]
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -174,38 +172,36 @@ class StripeSubStream(StripeStream, ABC):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._parent_name = self._stream_to_parent_config[self._name]["parent_name"]
+        self._parent = meta_incremental(self.camel_to_snake(self._parent_name))
+        self._parent_id = self._stream_to_parent_config[self._name]["parent_id"]
+        self._sub_items_attr = self._stream_to_parent_config[self._name]["sub_items_attr"]
+        self._parent_id_getter = self._stream_to_parent_config[self._name]["parent_id_getter"]
+
+    def camel_to_snake(self, s: str) -> str:
+        return ''.join(w.title() for w in s.split('_'))
 
     @property
-    @abstractmethod
     def parent(self) -> StripeStream:
         """
         :return: parent stream which contains needed records in <sub_items_attr>
         """
+        return self._parent
 
     @property
-    @abstractmethod
     def parent_id(self) -> str:
         """
         :return: string with attribute name
         """
+        return self._parent_id
 
     @property
-    @abstractmethod
     def sub_items_attr(self) -> str:
         """
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
           If the stream has no primary keys, return None.
         """
-
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        params = super().request_params(stream_slice=stream_slice, **kwargs)
-
-        # add 'starting_after' param
-        # This belongs to the paginator!
-        if not params.get("starting_after") and stream_slice and stream_slice.get("starting_after"):
-            params["starting_after"] = stream_slice["starting_after"]
-
-        return params
+        return self._sub_items_attr
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         parent_stream = self.parent(
@@ -218,10 +214,11 @@ class StripeSubStream(StripeStream, ABC):
                 "stream_to_cursor_field": self._stream_to_cursor_field,
                 "stream_to_path": self._stream_to_path,
                 "response_parser": self._response_parser,
-                "name": self.parent_name,
+                "name": self._parent_name,
                 "paginator": self._paginator,
                 "primary_key": self._primary_key,
-                "incremental_headers": self._incremental_headers
+                "incremental_headers": self._incremental_headers,
+                "stream_to_parent_config": self._stream_to_parent_config
             }
         )
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -246,13 +243,15 @@ class StripeSubStream(StripeStream, ABC):
             items_next_pages = []
             next_page_header = self._paginator.next_page_token(items_obj)
             if next_page_header is not None:
-                stream_slice = {self.parent_id: record["id"], **next_page_header}
+                parent_id = self._parent_id_getter.format(record=AttrDict(**item))
+                stream_slice = {self.parent_id: parent_id, **next_page_header}
                 items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
 
             for item in chain(items, items_next_pages):
                 if self.add_parent_id:
+                    parent_id = self._parent_id_getter.format(record=AttrDict(**item))
                     # add reference to parent object when item doesn't have it already
-                    item[self.parent_id] = record["id"]
+                    item[self.parent_id] = parent_id
                 yield item
 
 
@@ -264,18 +263,31 @@ def meta_incremental(name):
     return cls
 
 
-class InvoiceLineItems(StripeSubStream):
-    """
-    API docs: https://stripe.com/docs/api/invoices/invoice_lines
-    """
+def meta_sub(name):
+    class cls(StripeSubStream):
+        pass
 
-    name = "invoice_line_items"
+    cls.__name__ = name
+    return cls
 
-    parent = meta_incremental("Invoices")
-    parent_name = "invoices"
-    parent_id: str = "invoice_id"
-    sub_items_attr = "lines"
-    add_parent_id = True
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+# class InvoiceLineItems(StripeSubStream):
+#    """
+#    API docs: https://stripe.com/docs/api/invoices/invoice_lines
+#    """
+
+# name = "invoice_line_items"
+
+# parent = meta_incremental("Invoices")
+# parent_name = "invoices"
+# parent_id: str = "invoice_id"
+# sub_items_attr = "lines"
+# add_parent_id = True
+
+#   def __init__(self, **kwargs):
+#       super().__init__(**kwargs)
