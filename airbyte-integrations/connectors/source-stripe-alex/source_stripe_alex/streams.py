@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
@@ -58,7 +57,8 @@ class StripeStream(HttpStream, ABC):
         return self._url_base
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return self._paginator.next_page_token(response)
+        decoded_response = response.json()
+        return self._paginator.next_page_token(decoded_response)
 
     def request_params(
             self,
@@ -78,7 +78,8 @@ class StripeStream(HttpStream, ABC):
         return self._headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return self._response_parser.parse_response(response, **kwargs)
+        decoded_response = response.json()
+        return self._response_parser.parse_response(decoded_response, **kwargs)
 
 
 class IncrementalStripeAlexStream(StripeStream, ABC):
@@ -230,17 +231,22 @@ class StripeSubStream(StripeStream, ABC):
             if not items_obj:
                 continue
 
-            items = items_obj.get("data", [])
+            items = self._response_parser.parse_response(items_obj)
 
             # non-generic filter, mainly for BankAccounts stream only
-            if self.filter:
-                items = [i for i in items if i.get(self.filter["attr"]) == self.filter["value"]]
+            # FIXME: Need to implement this
+            # if self.filter:
+            #    items = [i for i in items if i.get(self.filter["attr"]) == self.filter["value"]]
+
+            if not items:
+                return
 
             # get next pages
             # this belongs to the paginator
             items_next_pages = []
-            if items_obj.get("has_more") and items:
-                stream_slice = {self.parent_id: record["id"], "starting_after": items[-1]["id"]}
+            next_page_header = self._paginator.next_page_token(items_obj)
+            if next_page_header is not None:
+                stream_slice = {self.parent_id: record["id"], **next_page_header}
                 items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
 
             for item in chain(items, items_next_pages):

@@ -31,8 +31,7 @@ class JsonArrayGetter(ResponseParser):
         self._field_to_get = kwargs["field_to_get"]
 
     @abstractmethod
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
+    def parse_response(self, response_json, **kwargs) -> Iterable[Mapping]:
         yield from response_json.get(self._field_to_get, [])
 
 
@@ -60,12 +59,12 @@ class PaginatorCursorInHeaderLastObject(Paginator):
         self._has_more_flag = has_more_flag
         self._extra_header = extra_header
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()
-        data = [o for o in self._response_parser.parse_response(response)]
-        if bool(decoded_response.get(self._has_more_flag, "False")) and data:
+    def next_page_token(self, response_json) -> Optional[Mapping[str, Any]]:
+        data = [o for o in self._response_parser.parse_response(response_json)]
+        if bool(response_json.get(self._has_more_flag, "False")) and data:
             last_object = AttrDict(**data[-1])
             return None
+            # FIXME: disabled because this is painfully slow...
             # return {k: v.format(last_object=last_object) for k, v in self._extra_header.items()}
         else:
             return None
