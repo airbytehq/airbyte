@@ -693,10 +693,6 @@ public class KubePodProcess extends Process implements KubePod {
     LOGGER.info(prependPodInfo("Closed all resources for pod", podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName()));
   }
 
-  /**
-   * This method hits the Kube Api server to retrieve statuses. Most of the complexity here is
-   * minimising the api calls for performance.
-   */
   private int getReturnCode() {
     if (exitCodeFuture.isDone()) {
       try {
