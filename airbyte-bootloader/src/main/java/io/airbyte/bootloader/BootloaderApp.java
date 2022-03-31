@@ -86,9 +86,12 @@ public class BootloaderApp {
         final Database configDatabase =
             new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
                 .getAndInitialize();
-        final JsonSecretsProcessor jsonSecretsProcessor = new JsonSecretsProcessor();
+        final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+            .maskSecrets(!featureFlags.exposeSecretsInExport())
+            .copySecrets(true)
+            .build();
         final ConfigPersistence configPersistence =
-            DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor, featureFlags);
+            DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
         configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
         LOGGER.info("Loaded seed data..");
       } catch (final IOException e) {
@@ -115,8 +118,11 @@ public class BootloaderApp {
       runFlywayMigration(configs, configDatabase, jobDatabase);
       LOGGER.info("Ran Flyway migrations...");
 
-      final JsonSecretsProcessor jsonSecretsProcessor = new JsonSecretsProcessor();
-      final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor, featureFlags);
+      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+          .maskSecrets(!featureFlags.exposeSecretsInExport())
+          .copySecrets(false)
+          .build();
+      final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
       final ConfigRepository configRepository =
           new ConfigRepository(configPersistence, configDatabase);
 

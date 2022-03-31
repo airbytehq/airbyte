@@ -6,7 +6,6 @@ import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import ConnectionResource from "core/resources/Connection";
-import { RoutePaths } from "pages/routes";
 import Breadcrumbs from "components/Breadcrumbs";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
 import DestinationResource from "core/resources/Destination";
@@ -26,6 +25,7 @@ import SourceDefinitionResource from "core/resources/SourceDefinition";
 import HeadTitle from "components/HeadTitle";
 import useWorkspace from "hooks/services/useWorkspace";
 import { DropDownRow } from "components";
+import { RoutePaths } from "../../../routePaths";
 
 const DestinationItemPage: React.FC = () => {
   const { params, push } = useRouter<unknown, { id: string }>();
@@ -125,6 +125,7 @@ const DestinationItemPage: React.FC = () => {
               ? getIcon(destinationDefinition.icon)
               : null
           }
+          releaseStage={destinationDefinition.releaseStage}
         />
         {connectionsWithDestination.length ? (
           <DestinationConnectionTable

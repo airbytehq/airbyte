@@ -70,12 +70,10 @@ class S3CsvWriterTest {
   private static final int QUEUE_CAPACITY = 9;
 
   // The full path would be something like
-  // "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
-  // The namespace and stream have their hyphens replaced by underscores. Not super clear that that's
-  // actually required.
+  // "fake-bucketPath/fake-namespace/fake-stream/2021_12_09_1639077474000_e549e712-b89c-4272-9496-9690ba7f973e.csv"
   // 2021_12_09_1639077474000 is generated from the timestamp. It's followed by a random UUID, in case
   // we need to create multiple files.
-  private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake_namespace/fake_stream/2021_12_09_1639077474000_";
+  private static final String EXPECTED_OBJECT_BEGINNING = "fake-bucketPath/fake-namespace/fake-stream/2021_12_09_1639077474000_";
   private static final String EXPECTED_OBJECT_ENDING = ".csv";
 
   private AmazonS3 s3Client;
