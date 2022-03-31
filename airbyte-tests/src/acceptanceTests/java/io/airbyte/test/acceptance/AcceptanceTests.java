@@ -110,7 +110,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.assertj.core.api.Assertions;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -1154,18 +1153,7 @@ public class AcceptanceTests {
 
   @Test
   @Order(22)
-  @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "true")
-  public void testActionsWhenTemporalIsInTerminalState() throws Exception {
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    if (!featureFlags.usesNewScheduler()) {
-      LOGGER.info("Skipping test since not using new temporal scheduler");
-      return;
-    }
-
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
-    final WorkflowClient workflowCLient = WorkflowClient.newInstance(temporalService);
-
+  public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -1179,9 +1167,48 @@ public class AcceptanceTests {
         .destinationSyncMode(destinationSyncMode)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-    final UUID connectionId =
+    UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
-    waitForConnectionState(apiClient, connectionId);
+
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
+
+    // test normal deletion of connection
+    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    // remove connection to avoid exception during tear down
+    connectionIds.remove(connectionId);
+
+    LOGGER.info("Waiting for connection to be deleted...");
+    Thread.sleep(500);
+
+    ConnectionStatus connectionStatus =
+        apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
+    assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
+
+    // test deletion of connection when temporal workflow is in a bad state, only when using new
+    // scheduler
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      LOGGER.info("Testing connection deletion when temporal is in a terminal state");
+      connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+      terminateTemporalWorkflow(connectionId);
+
+      // we should still be able to delete the connection when the temporal workflow is in this state
+      apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+      LOGGER.info("Waiting for connection to be deleted...");
+      Thread.sleep(500);
+
+      connectionStatus = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
+      assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
+    }
+  }
+
+  private void terminateTemporalWorkflow(final UUID connectionId) {
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
+    final WorkflowClient workflowCLient = WorkflowClient.newInstance(temporalService);
 
     // check if temporal workflow is reachable
     final ConnectionManagerWorkflow connectionManagerWorkflow =
@@ -1192,14 +1219,7 @@ public class AcceptanceTests {
     LOGGER.info("Terminating temporal workflow...");
     workflowCLient.newUntypedWorkflowStub("connection_manager_" + connectionId).terminate("");
 
-    // expect an exception because the temporal workflow is not running
-    Assertions.assertThatExceptionOfType(ApiException.class)
-        .isThrownBy(() -> apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId)));
-
-    // we should still be able to delete the connection when the temporal workflow is in this state
-    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    // remove connection so we don't try to delete connection again during tear down
+    // remove connection to avoid exception during tear down
     connectionIds.remove(connectionId);
   }
 
