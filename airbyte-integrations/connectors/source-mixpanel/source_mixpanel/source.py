@@ -556,6 +556,12 @@ class CohortMembers(Engage):
 
         return stream_slices
 
+    def process_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        records = super().process_response(response, **kwargs)
+        for record in records:
+            record["cohort_id"] = stream_slice["id"]
+            yield record
+
 
 class Annotations(DateSlicesMixin, MixpanelStream):
     """List the annotations for a given date range.
