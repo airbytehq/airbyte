@@ -23,7 +23,7 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 8. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
     <br> **_What does this mean?_** The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
 9.  (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
-10. (Optional) In the Custom Insights** **section, click **Add**. 
+10. (Optional) In the Custom Insights section, click **Add**. 
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. 
 
     We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. 
