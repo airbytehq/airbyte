@@ -294,6 +294,7 @@ class HttpStream(Stream, ABC):
                 raise DefaultBackoffException(request=request, response=response)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
+            self.logger.error(f"Request raised an error with response: {response.text}")
             response.raise_for_status()
 
         return response
