@@ -36,6 +36,14 @@ docker build .
 Run one of the two scripts in the root of the connector:
 
 * `python -m pytest -p integration_tests.acceptance` - to run tests inside virtual environment
+  * On test completion, a log will be outputted to the terminal verifying:
+    * The connector the tests were ran for 
+    * The git hash of the code used 
+    * Whether the tests passed or failed 
+      
+    This is useful to provide in your PR as evidence of the acceptance tests passing locally.
+    
+    
 * `./acceptance-test-docker.sh` - to run tests from a docker container
 
 If the test fails you will see detail about the test and where to find its inputs and outputs to reproduce it. You can also debug failed tests by adding `—pdb —last-failed`:

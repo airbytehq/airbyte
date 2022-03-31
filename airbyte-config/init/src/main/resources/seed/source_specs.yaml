@@ -2380,7 +2380,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.23"
+- dockerImage: "airbyte/source-github:0.2.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2570,7 +2570,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.32"
+- dockerImage: "airbyte/source-google-ads:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -3065,7 +3065,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.9"
+- dockerImage: "airbyte/source-google-sheets:0.2.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
@@ -3074,14 +3074,21 @@
       type: "object"
       required:
       - "spreadsheet_id"
+      - "credentials"
       additionalProperties: true
       properties:
         spreadsheet_id:
           type: "string"
-          title: "Spreadsheet ID"
-          description: "The ID of the spreadsheet to be replicated."
+          title: "Spreadsheet Link"
+          description: "The link to your spreadsheet. See <a href='https://docs.airbyte.com/integrations/sources/google-sheets#sheetlink'>this\
+            \ guide</a> for more details."
+          examples:
+          - "https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit"
         credentials:
           type: "object"
+          title: "Authentication"
+          description: "Google API Credentials for connecting to Google Sheets and\
+            \ Google Drive APIs"
           oneOf:
           - title: "Authenticate via Google (OAuth)"
             type: "object"
@@ -3121,7 +3128,9 @@
               service_account_info:
                 type: "string"
                 title: "Service Account Information."
-                description: "The JSON key of the service account to use for authorization."
+                description: "The JSON key of the service account to use for authorization.\
+                  \ See <a href='https://github.com/airbytehq/airbyte/blob/master/docs/integrations/sources/google-sheets.md#setupguide'>Setup\
+                  \ Guide</a> for more details"
                 airbyte_secret: true
                 examples:
                 - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID,\
@@ -4596,7 +4605,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.17"
+- dockerImage: "airbyte/source-mssql:0.3.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:

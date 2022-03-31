@@ -28,8 +28,10 @@ tests:
         issue_events: ["airbytehq/integration-test", "created_at"]
         issue_milestones: ["airbytehq/integration-test", "updated_at"]
         issues: ["airbytehq/integration-test", "updated_at"]
-        project_cards: ["airbytehq/integration-test", "13167124", "17807006", "updated_at"]
-        project_columns: ["airbytehq/integration-test", "13167124", "updated_at"]
+        project_cards:
+          ["airbytehq/integration-test", "13167124", "17807006", "updated_at"]
+        project_columns:
+          ["airbytehq/integration-test", "13167124", "updated_at"]
         projects: ["airbytehq/integration-test", "updated_at"]
         pull_request_stats: ["airbytehq/integration-test", "updated_at"]
         pull_requests: ["airbytehq/integration-test", "updated_at"]

@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -81,7 +80,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
 
   private final ExceptionWrappingDatabase database;
   private final JsonSecretsProcessor jsonSecretsProcessor;
-  private final FeatureFlags featureFlags;
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
 
   /**
@@ -90,20 +88,16 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *
    * @param database - database where configs are stored
    * @param jsonSecretsProcessor - for filtering secrets in export
-   * @param featureFlags - feature flags that govern secret export behavior
    * @return database config persistence wrapped in validation decorators
    */
   public static ConfigPersistence createWithValidation(final Database database,
-                                                       final JsonSecretsProcessor jsonSecretsProcessor,
-                                                       final FeatureFlags featureFlags) {
-    return new ClassEnforcingConfigPersistence(
-        new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags)));
+                                                       final JsonSecretsProcessor jsonSecretsProcessor) {
+    return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
   }
 
-  public DatabaseConfigPersistence(final Database database, final JsonSecretsProcessor jsonSecretsProcessor, final FeatureFlags featureFlags) {
+  public DatabaseConfigPersistence(final Database database, final JsonSecretsProcessor jsonSecretsProcessor) {
     this.database = new ExceptionWrappingDatabase(database);
     this.jsonSecretsProcessor = jsonSecretsProcessor;
-    this.featureFlags = featureFlags;
   }
 
   @Override
@@ -1431,10 +1425,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           sourceConnectionWithMetadata
               .stream()
               .map(configWithMetadata -> {
-                if (featureFlags.exposeSecretsInExport()) {
-                  return Jsons.jsonNode(configWithMetadata.getConfig());
-                }
-
                 try {
                   final UUID sourceDefinitionId = configWithMetadata.getConfig().getSourceDefinitionId();
                   final StandardSourceDefinition standardSourceDefinition = getConfig(
@@ -1442,7 +1432,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                       sourceDefinitionId.toString(),
                       StandardSourceDefinition.class);
                   final JsonNode connectionSpecs = standardSourceDefinition.getSpec().getConnectionSpecification();
-                  final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
+                  final JsonNode sanitizedConfig =
+                      jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpecs);
                   return sanitizedConfig;
                 } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
                   throw new RuntimeException(e);
@@ -1454,10 +1445,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       final Stream<JsonNode> jsonNodeStream = destinationConnectionWithMetadata
           .stream()
           .map(configWithMetadata -> {
-            if (featureFlags.exposeSecretsInExport()) {
-              return Jsons.jsonNode(configWithMetadata.getConfig());
-            }
-
             try {
               final UUID destinationDefinition = configWithMetadata.getConfig().getDestinationDefinitionId();
               final StandardDestinationDefinition standardDestinationDefinition = getConfig(
@@ -1465,7 +1452,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                   destinationDefinition.toString(),
                   StandardDestinationDefinition.class);
               final JsonNode connectionSpec = standardDestinationDefinition.getSpec().getConnectionSpecification();
-              final JsonNode sanitizedConfig = jsonSecretsProcessor.maskSecrets(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
+              final JsonNode sanitizedConfig =
+                  jsonSecretsProcessor.prepareSecretsForOutput(Jsons.jsonNode(configWithMetadata.getConfig()), connectionSpec);
               return sanitizedConfig;
             } catch (final ConfigNotFoundException | JsonValidationException | IOException e) {
               throw new RuntimeException(e);

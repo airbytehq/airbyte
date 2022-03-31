@@ -14,6 +14,8 @@ import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -161,7 +163,15 @@ public class JsonSecretsProcessorTest {
           + "    }\n"
           + "  }");
 
-  JsonSecretsProcessor processor = new JsonSecretsProcessor();
+  private JsonSecretsProcessor processor;
+
+  @BeforeEach
+  public void setup() {
+    processor = JsonSecretsProcessor.builder()
+        .copySecrets(true)
+        .maskSecrets(true)
+        .build();
+  }
 
   @Test
   public void testCopySecrets() {
@@ -281,7 +291,7 @@ public class JsonSecretsProcessorTest {
         "client_id", "whatever",
         "format", parquetConfig));
 
-    final JsonNode actual = new JsonSecretsProcessor().copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
+    final JsonNode actual = processor.copySecrets(src, dst, ONE_OF_WITH_SAME_KEY_IN_SUB_SCHEMAS);
   }
 
   private static Stream<Arguments> scenarioProvider() {
@@ -320,7 +330,7 @@ public class JsonSecretsProcessorTest {
     final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
     final JsonNode expected = objectMapper.readTree(expectedIs);
 
-    final JsonNode actual = processor.maskSecrets(input, specs);
+    final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
 
     assertEquals(expected, actual);
   }
@@ -423,6 +433,90 @@ public class JsonSecretsProcessorTest {
         }
         """);
     assertEquals(expected, copied);
+  }
+
+  @Nested
+  class NoOpTest {
+
+    @BeforeEach
+    public void setup() {
+      processor = JsonSecretsProcessor.builder()
+          .copySecrets(false)
+          .maskSecrets(false)
+          .build();
+    }
+
+    @Test
+    public void testCopySecrets() {
+      final JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
+          .put("field1", "value1")
+          .put("field2", 2)
+          .put("additional_field", "dont_copy_me")
+          .put("secret1", "donttellanyone")
+          .put("secret2", "updateme")
+          .build());
+
+      final JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
+          .put("field1", "value1")
+          .put("field2", 2)
+          .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
+          .put("secret2", "newvalue")
+          .build());
+
+      final JsonNode actual = processor.copySecrets(src, dst, SCHEMA_ONE_LAYER);
+
+      final JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
+          .put("field1", "value1")
+          .put("field2", 2)
+          .put("additional_field", "dont_copy_me")
+          .put("secret1", "donttellanyone")
+          .put("secret2", "updateme")
+          .build());
+
+      assertEquals(expected, actual);
+    }
+
+    private static Stream<Arguments> scenarioProvider() {
+      return Stream.of(
+          Arguments.of("array", true),
+          Arguments.of("array", false),
+          Arguments.of("array_of_oneof", true),
+          Arguments.of("array_of_oneof", false),
+          Arguments.of("nested_object", true),
+          Arguments.of("nested_object", false),
+          Arguments.of("nested_oneof", true),
+          Arguments.of("nested_oneof", false),
+          Arguments.of("oneof", true),
+          Arguments.of("oneof", false),
+          Arguments.of("optional_password", true),
+          Arguments.of("optional_password", false),
+          Arguments.of("postgres_ssh_key", true),
+          Arguments.of("postgres_ssh_key", false),
+          Arguments.of("simple", true),
+          Arguments.of("simple", false));
+    }
+
+    @ParameterizedTest
+    @MethodSource("scenarioProvider")
+    void testSecretScenario(final String folder, final boolean partial) throws IOException {
+      final ObjectMapper objectMapper = new ObjectMapper();
+
+      final InputStream specIs = getClass().getClassLoader().getResourceAsStream(folder + "/spec.json");
+      final JsonNode specs = objectMapper.readTree(specIs);
+
+      final String inputFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+      final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
+      final JsonNode input = objectMapper.readTree(inputIs);
+
+      final String expectedFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+      final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
+      final JsonNode expected = objectMapper.readTree(expectedIs);
+
+      final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
+
+      assertEquals(expected, actual);
+    }
+
   }
 
 }
