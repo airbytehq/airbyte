@@ -87,7 +87,8 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const onSync = () => syncConnection(connection);
   const onReset = () => resetConnection(connection.connectionId);
 
-  const actionsDisabled = connection.status === ConnectionStatus.DEPRECATED;
+  const actionsDisabled =
+    !allowSync || connection.status === ConnectionStatus.DEPRECATED;
 
   return (
     <Content>
@@ -96,7 +97,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
         frequencyText={frequencyText}
         sourceDefinition={sourceDefinition}
         destinationDefinition={destinationDefinition}
-        allowSync={allowSync}
+        allowSync={!actionsDisabled}
       />
       <StyledContentCard
         title={
@@ -110,7 +111,6 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
                 <FormattedMessage id={"connection.resetData"} />
               </Button>
               <SyncButton
-                disabled={!allowSync}
                 isLoading={isLoading}
                 wasActive={showFeedback}
                 disabled={actionsDisabled}

@@ -3,13 +3,12 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ContentCard, ImageBlock } from "components";
-import { Header, Row, Cell } from "components/SimpleTableComponents";
+import { Cell, Header, Row } from "components/SimpleTableComponents";
 import EnabledControl from "./EnabledControl";
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
 import { Connection } from "core/resources/Connection";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
-import { ConnectionStatus } from "core/domain/connection";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -47,8 +46,6 @@ const StatusMainInfo: React.FC<IProps> = ({
   sourceDefinition,
   allowSync,
 }) => {
-  const actionsDisabled = connection.status === ConnectionStatus.DEPRECATED;
-
   return (
     <MainInfo>
       <Header>
@@ -77,7 +74,7 @@ const StatusMainInfo: React.FC<IProps> = ({
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>
           <EnabledControl
-            disabled={actionsDisabled}
+            disabled={allowSync}
             connection={connection}
             frequencyText={frequencyText}
           />
