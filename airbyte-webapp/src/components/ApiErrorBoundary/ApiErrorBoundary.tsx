@@ -3,8 +3,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { isVersionError } from "core/request/VersionError";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
-import { StartOverErrorView } from "../../views/common/StartOverErrorView";
-import { ResourceNotFoundErrorBoundary } from "../../views/common/ResorceNotFoundErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
 type BoundaryState = { errorId?: string; message?: string };
 
