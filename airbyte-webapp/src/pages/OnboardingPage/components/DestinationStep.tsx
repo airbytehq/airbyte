@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { LogsRequestError } from "core/request/LogsRequestError";
-
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/domain/connector";
@@ -71,7 +69,7 @@ const DestinationStep: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : "";
+  const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
     <>
@@ -91,15 +89,15 @@ const DestinationStep: React.FC<IProps> = ({
       </TitlesBlock>
       <ConnectorCard
         full
-        jobInfo={LogsRequestError.extractJobInfo(error)}
         formType="destination"
-        allowChangeConnector
         onServiceSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         hasSuccess={hasSuccess}
         availableServices={availableServices}
         errorMessage={errorMessage}
-        selectedConnector={destinationDefinitionSpecification}
+        selectedConnectorDefinitionSpecification={
+          destinationDefinitionSpecification
+        }
         isLoading={isLoading}
       />
     </>
