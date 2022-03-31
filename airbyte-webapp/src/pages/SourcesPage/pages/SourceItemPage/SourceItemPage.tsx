@@ -2,7 +2,6 @@ import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { RoutePaths } from "pages/routes";
 import { DropDownRow, ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
@@ -28,6 +27,7 @@ import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import useWorkspace from "hooks/services/useWorkspace";
+import { RoutePaths } from "../../../routePaths";
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();

@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import static org.apache.logging.log4j.util.Strings.isNotBlank;
+
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
@@ -14,11 +16,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,21 +46,20 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public String getBucketObjectName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
-  }
-
-  @Override
-  public String getBucketObjectPath(final String prefix, final String namespace, final String streamName, final DateTime writeDatetime) {
-    return nameTransformer.applyDefaultCase(String.format("%s/%s/%s/%02d/%02d/%02d/",
-        prefix,
-        getBucketObjectName(namespace, streamName),
-        writeDatetime.year().get(),
-        writeDatetime.monthOfYear().get(),
-        writeDatetime.dayOfMonth().get(),
-        writeDatetime.hourOfDay().get()));
+  public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
+    final String namespaceStr = nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
+    final String streamNameStr = nameTransformer.getIdentifier(streamName);
+    return nameTransformer.applyDefaultCase(
+        customPathFormat
+            .replaceAll(Pattern.quote("${NAMESPACE}"), namespaceStr)
+            .replaceAll(Pattern.quote("${STREAM_NAME}"), streamNameStr)
+            .replaceAll(Pattern.quote("${YEAR}"), String.format("%s", writeDatetime.year().get()))
+            .replaceAll(Pattern.quote("${MONTH}"), String.format("%02d", writeDatetime.monthOfYear().get()))
+            .replaceAll(Pattern.quote("${DAY}"), String.format("%02d", writeDatetime.dayOfMonth().get()))
+            .replaceAll(Pattern.quote("${HOUR}"), String.format("%02d", writeDatetime.hourOfDay().get()))
+            .replaceAll(Pattern.quote("${MINUTE}"), String.format("%02d", writeDatetime.minuteOfHour().get()))
+            .replaceAll(Pattern.quote("${SECOND}"), String.format("%02d", writeDatetime.secondOfMinute().get()))
+            .replaceAll("/+", "/"));
   }
 
   @Override
@@ -104,21 +106,21 @@ public class S3StorageOperations implements BlobStorageOperations {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
     final String objectKey = String.format("%s%s", objectPath, recordsData.getFilename());
-    final StreamTransferManager uploadManager = S3StreamTransferManagerHelper
+    final StreamTransferManager uploadManager = StreamTransferManagerHelper
         .getDefault(bucket, objectKey, s3Client, partSize)
         .checkIntegrity(true)
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
-    boolean hasFailed = false;
+    boolean succeeded = false;
     try (final MultiPartOutputStream outputStream = uploadManager.getMultiPartOutputStreams().get(0);
         final InputStream dataStream = recordsData.getInputStream()) {
       dataStream.transferTo(outputStream);
+      succeeded = true;
     } catch (final Exception e) {
       LOGGER.error("Failed to load data into storage {}", objectPath, e);
-      hasFailed = true;
       throw new RuntimeException(e);
     } finally {
-      if (hasFailed) {
+      if (!succeeded) {
         uploadManager.abort();
       } else {
         uploadManager.complete();
@@ -131,13 +133,8 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public void dropBucketObject(final String streamName) {
-    LOGGER.info("Dropping bucket object {}...", streamName);
-    final String bucket = s3Config.getBucketName();
-    if (s3Client.doesObjectExist(bucket, streamName)) {
-      s3Client.deleteObject(bucket, streamName);
-    }
-    LOGGER.info("Bucket object {} has been deleted...", streamName);
+  public void dropBucketObject(final String objectPath) {
+    cleanUpBucketObject(objectPath, List.of());
   }
 
   @Override

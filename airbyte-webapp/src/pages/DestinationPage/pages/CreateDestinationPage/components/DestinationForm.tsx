@@ -92,7 +92,9 @@ const DestinationForm: React.FC<IProps> = ({
       onSubmit={onSubmitForm}
       formType="destination"
       availableServices={destinationDefinitions}
-      selectedConnector={destinationDefinitionSpecification}
+      selectedConnectorDefinitionSpecification={
+        destinationDefinitionSpecification
+      }
       hasSuccess={hasSuccess}
       errorMessage={errorMessage}
       isLoading={isLoading}
@@ -101,7 +103,6 @@ const DestinationForm: React.FC<IProps> = ({
           ? { serviceType: destinationDefinitionId }
           : undefined
       }
-      allowChangeConnector
       title={<FormattedMessage id="onboarding.destinationSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />

@@ -19,7 +19,6 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -59,7 +58,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   @BeforeEach
   public void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -188,7 +187,6 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     doReturn(new StandardSourceDefinition()
         .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_SOURCE_DEFINITION), any(), any());
 
-    when(featureFlags.exposeSecretsInExport()).thenReturn(false);
     writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
     writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
     writeDestinationWithDestinationConnection(configPersistence, DESTINATION_S3);
@@ -196,7 +194,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
     result.values().forEach(stream -> {
       stream.collect(Collectors.toList());
     });
-    verify(jsonSecretsProcessor, times(3)).maskSecrets(any(), any());
+    verify(jsonSecretsProcessor, times(3)).prepareSecretsForOutput(any(), any());
   }
 
   @Test

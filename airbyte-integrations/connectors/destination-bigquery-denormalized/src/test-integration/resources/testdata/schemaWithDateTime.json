@@ -1,0 +1,26 @@
+{
+  "type": [
+    "object"
+  ],
+  "properties": {
+    "updated_at": {
+      "type": [
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "items": {
+      "type": [
+        "object"
+      ],
+      "properties": {
+        "nested_datetime": {
+          "type": [
+            "string"
+          ],
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
