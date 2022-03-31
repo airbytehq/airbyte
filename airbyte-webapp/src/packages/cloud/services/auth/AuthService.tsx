@@ -18,6 +18,7 @@ import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { getUtmFromStorage } from "utils/utmStorage";
+import { useInitService } from "services/useInitService";
 
 export type AuthUpdatePassword = (
   email: string,
@@ -123,9 +124,9 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   const auth = useAuth();
   const userService = useGetUserService();
   const analytics = useAnalyticsService();
-  const authServiceRef = useRef(new GoogleAuthService(() => auth));
-
-  const authService = authServiceRef.current;
+  const authService = useInitService(() => new GoogleAuthService(() => auth), [
+    auth,
+  ]);
 
   const onAfterAuth = useCallback(
     async (currentUser: FbUser) => {
