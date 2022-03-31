@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
 const StoreProvider: React.FC = ({ children }) => (
   <CacheProvider>
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
       {children}
     </QueryClientProvider>
   </CacheProvider>
