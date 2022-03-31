@@ -24,7 +24,7 @@ class KyribaClient:
     @backoff.on_exception(
         backoff.expo,
         requests.exceptions.RequestException,
-        max_tries=5
+        max_tries=10
     )
     def login(self) -> TokenAuthenticator:
         data = {"grant_type": "client_credentials"}
@@ -51,7 +51,7 @@ class KyribaStream(HttpStream):
         super().__init__(self.client.login())
 
     primary_key = "uuid"
-    max_retries = 5
+    max_retries = 10
 
     @property
     def url_base(self) -> str:
@@ -178,7 +178,7 @@ class CashBalancesEod(CashBalancesStream, IncrementalKyribaStream):
         account_uuids = self.get_account_uuids()
         # we can query a max of 31 days at a time
         days_inc = 31
-        start_str = stream_state.get(self.cursor_field) or self.start_date
+        start_str = stream_state.get(self.cursor_field) + timedelta(days=1) or self.start_date
         start_date = date.fromisoformat(start_str)
         yesterday = date.today() - timedelta(days=1)
         while start_date <= yesterday:
@@ -258,7 +258,7 @@ class BankBalancesEod(BankBalancesStream, IncrementalKyribaStream):
         slices = []
         account_uuids = self.get_account_uuids()
         # bank balances require the date to be specified
-        bal_date_str = stream_state.get(self.cursor_field) or self.start_date
+        bal_date_str = stream_state.get(self.cursor_field) + timedelta(days=1) or self.start_date
         bal_date = date.fromisoformat(bal_date_str)
         yesterday = date.today() - timedelta(days=1)
         while bal_date <= yesterday:
