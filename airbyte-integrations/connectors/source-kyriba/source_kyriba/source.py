@@ -143,24 +143,7 @@ class AccountSubStream(HttpSubStream):
         return [response.json()]
 
 
-class CashBalancesStream(AccountSubStream):
-    def normalize_balance(self, base: Mapping[str, Any], balance: Mapping[str, Any]) -> Mapping[str, Any]:
-        date_info = balance.pop("balanceDate")
-        uuid = base["account"]["uuid"] + ":" + date_info["date"]
-        return { **base,  **date_info, **balance, "uuid": uuid }
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        '''
-        cash balalances are returned as an array over a date range. We need to increment
-        based on the date range and Airbyte does not support incrementing based on nested
-        values, so we need to normalize the data in transit instead of relying on Airbyte's
-        normalization.
-        '''
-        resp = response.json()
-        cash_balances = resp.pop("cashBalance")
-        return [self.normalize_balance(resp, b) for b in cash_balances]
-
-class CashBalances(AccountSubStream, KyribaStream):
+class CashBalancesStream(AccountSubStream, KyribaStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
@@ -189,7 +172,7 @@ class CashBalances(AccountSubStream, KyribaStream):
         return {
             "endDate": stream_slice["endDate"],
             "startDate": stream_slice["startDate"],
-            "intraday": False,
+            "intraday": self.intraday,
             "actual": True,
             "estimatedForecasts": False,
             "confirmedForecasts": False,
@@ -197,76 +180,12 @@ class CashBalances(AccountSubStream, KyribaStream):
         }
 
 
-class CashBalancesEod(CashBalancesStream, IncrementalKyribaStream):
-    cursor_field = "date"
-
-    # Checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    @property
-    def state_checkpoint_interval(self) -> int:
-        return 100
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_cursor = latest_record.get(self.cursor_field) or ""
-        current_cursor = current_stream_state.get(self.cursor_field) or ""
-        return {self.cursor_field: max(current_cursor, latest_cursor)}
-
-    def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        slices = []
-        account_uuids = self.get_account_uuids()
-        # we can query a max of 31 days at a time
-        days_inc = 31
-        start_str = stream_state.get(self.cursor_field) or self.start_date
-        start_date = date.fromisoformat(start_str)
-        while start_date <= date.today():
-            end_date = start_date + timedelta(days=days_inc)
-            end_date = end_date if end_date <= date.today() else date.today()
-            date_params = {
-                "startDate": start_date.isoformat(),
-                "endDate": end_date.isoformat(),
-            }
-            slices.extend([{**u, **date_params} for u in account_uuids])
-            # ensure the next start date is never greater than today since we are getting EOD balances
-            start_date = end_date + timedelta(days=1)
-        return slices
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        account_uuid = stream_slice['account_uuid']
-        return f"cash-balances/accounts/{account_uuid}/balances"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "endDate": stream_slice["endDate"],
-            "startDate": stream_slice["startDate"],
-            "intraday": False,
-            "actual": True,
-            "estimatedForecasts": False,
-            "confirmedForecasts": False,
-            "dateType": "VALUE",
-        }
+class CashBalancesEod(CashBalancesStream):
+    intraday = False
 
 
-class CashBalancesIntraday(CashBalancesStream, KyribaStream):
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        return self.get_account_uuids()
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        account_uuid = stream_slice['account_uuid']
-        return f"cash-balances/accounts/{account_uuid}/balances"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "endDate": date.today().isoformat(),
-            "startDate": date.today().isoformat(),
-            "intraday": True,
-            "actual": True,
-            "estimatedForecasts": False,
-            "confirmedForecasts": False,
-            "dateType": "VALUE",
-        }
+class CashBalancesIntraday(CashBalancesStream):
+    intraday = True
 
 
 class BankBalancesStream(AccountSubStream):
@@ -414,6 +333,5 @@ class SourceKyriba(AbstractSource):
             CashBalancesIntraday(**kwargs),
             BankBalancesEod(**kwargs),
             BankBalancesIntraday(**kwargs),
-            CashBalances(**kwargs),
             BankBalances(**kwargs),
         ]
