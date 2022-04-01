@@ -10,7 +10,7 @@ jobs:
   launch_integration_tests:
     timeout-minutes: 30
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/specify-java-for-integration-tests'
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
