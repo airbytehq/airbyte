@@ -38,6 +38,7 @@ def test_get_server_prefix_ok(requests_mock, access_token, data_center):
 def test_get_server_prefix_exception(requests_mock, access_token, data_center):
     responses = [
         {"json": {}, "status_code": 200},
+        {"status_code": 403},
     ]
     requests_mock.register_uri("GET", "https://login.mailchimp.com/oauth2/metadata", responses)
     with pytest.raises(Exception):
