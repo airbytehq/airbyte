@@ -278,6 +278,30 @@ class BankBalancesStream(AccountSubStream):
         return [self.unnest("bankBalance", result)]
 
 
+class BankBalances(BankBalancesStream, IncrementalKyribaStream):
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        slices = []
+        account_uuids = self.get_account_uuids()
+        # bank balances require the date to be specified
+        bal_date = date.fromisoformat(self.start_date)
+        while bal_date <= date.today():
+            slices.extend([{**u, "date": bal_date.isoformat()} for u in account_uuids])
+            bal_date = bal_date + timedelta(days=1)
+        return slices
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        account_uuid = stream_slice['account_uuid']
+        return f"bank-balances/accounts/{account_uuid}/balances"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "date": stream_slice["date"],
+            "type": "END_OF_DAY",
+        }
+
+
 class BankBalancesEod(BankBalancesStream, IncrementalKyribaStream):
     cursor_field = "balanceDate"
 
@@ -390,4 +414,5 @@ class SourceKyriba(AbstractSource):
             BankBalancesEod(**kwargs),
             BankBalancesIntraday(**kwargs),
             CashBalances(**kwargs),
+            BankBalances(**kwargs),
         ]
