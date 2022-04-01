@@ -120,7 +120,7 @@ cmd_publish() {
   
   # Checking it the image was successfully registered on DockerHub
   TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
-  DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" ${URL})
+  DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" ${TAG_URL})
   if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
     echo "Tag ${image_version} was not registered on DockerHub for image ${image_name}" && exit 1
   fi
