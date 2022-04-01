@@ -5,7 +5,6 @@ Remove a false positive error logging during the send process.
 
 ## 0.1.52
 Fix BaseBackoffException constructor
->>>>>>> master
 
 ## 0.1.50
 Improve logging for Error handling during send process.
