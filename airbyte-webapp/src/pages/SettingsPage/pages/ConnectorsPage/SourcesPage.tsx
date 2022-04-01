@@ -1,14 +1,15 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { useFetcher } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
-import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { SourceDefinition } from "core/domain/connector";
+import {
+  useSourceDefinitionList,
+  useUpdateSourceDefinition,
+} from "services/connector/SourceDefinitionService";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
@@ -18,22 +19,17 @@ const SourcesPage: React.FC = () => {
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
-  const updateSourceDefinition = useFetcher(
-    SourceDefinitionResource.updateShape()
-  );
+  const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
 
   const { hasNewSourceVersion, updateAllSourceVersions } = useConnector();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
-        await updateSourceDefinition(
-          {},
-          {
-            sourceDefinitionId: id,
-            dockerImageTag: version,
-          }
-        );
+        await updateSourceDefinition({
+          sourceDefinitionId: id,
+          dockerImageTag: version,
+        });
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
         const messageId =
