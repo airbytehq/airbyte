@@ -3,6 +3,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { isVersionError } from "core/request/VersionError";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
 type BoundaryState = { errorId?: string; message?: string };
 
@@ -55,7 +57,9 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
     }
 
     return !this.state.errorId ? (
-      this.props.children
+      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+        {this.props.children}
+      </ResourceNotFoundErrorBoundary>
     ) : (
       <ErrorOccurredView message="Unknown error occurred" />
     );
