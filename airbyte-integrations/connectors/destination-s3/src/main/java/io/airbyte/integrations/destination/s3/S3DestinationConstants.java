@@ -12,7 +12,7 @@ public final class S3DestinationConstants {
   public static final S3NameTransformer NAME_TRANSFORMER = new S3NameTransformer();
   public static final String PART_SIZE_MB_ARG_NAME = "part_size_mb";
   public static final int DEFAULT_PART_SIZE_MB = 10;
-  public static final String DEFAULT_PATH_FORMAT = "${NAMESPACE}/${STREAM_NAME}/";
+  public static final String DEFAULT_PATH_FORMAT = "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_${PART_ID}";
 
   private S3DestinationConstants() {}
 

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class S3StorageOperations implements BlobStorageOperations {
   public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
     final String namespaceStr = nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
     final String streamNameStr = nameTransformer.getIdentifier(streamName);
-    return nameTransformer.applyDefaultCase(
+    final String objectPath = nameTransformer.applyDefaultCase(
         customPathFormat
             .replaceAll(Pattern.quote("${NAMESPACE}"), namespaceStr)
             .replaceAll(Pattern.quote("${STREAM_NAME}"), streamNameStr)
@@ -59,7 +60,30 @@ public class S3StorageOperations implements BlobStorageOperations {
             .replaceAll(Pattern.quote("${HOUR}"), String.format("%02d", writeDatetime.hourOfDay().get()))
             .replaceAll(Pattern.quote("${MINUTE}"), String.format("%02d", writeDatetime.minuteOfHour().get()))
             .replaceAll(Pattern.quote("${SECOND}"), String.format("%02d", writeDatetime.secondOfMinute().get()))
+            .replaceAll(Pattern.quote("${MILLISECOND}"), String.format("%02d", writeDatetime.millisOfSecond().get()))
+            .replaceAll(Pattern.quote("${EPOCH}"), String.format("%d", writeDatetime.getMillis()))
+            .replaceAll(Pattern.quote("${UUID}"), String.format("%s", UUID.randomUUID()))
             .replaceAll("/+", "/"));
+    if (customPathFormat.contains("${PART_ID}")) {
+      return objectPath.replaceAll(Pattern.quote("${PART_ID}"), String.format("%d", countObjectsInBucket(objectPath)));
+    } else {
+      return objectPath;
+    }
+  }
+
+  private int countObjectsInBucket(final String objectPath) {
+    int objectCount = 0;
+    final String bucket = s3Config.getBucketName();
+    ObjectListing objects = s3Client.listObjects(bucket, objectPath);
+    while (objects.getObjectSummaries().size() > 0) {
+      objectCount += objects.getObjectSummaries().size();
+      if (objects.isTruncated()) {
+        objects = s3Client.listNextBatchOfObjects(objects);
+      } else {
+        break;
+      }
+    }
+    return objectCount;
   }
 
   @Override

@@ -47,7 +47,7 @@ public class FileBuffer implements BufferStorage {
   @Override
   public OutputStream getOutputStream() throws IOException {
     if (outputStream == null || tempFile == null) {
-      tempFile = Files.createTempFile(UUID.randomUUID().toString(), fileExtension).toFile();
+      tempFile = Files.createTempFile("", fileExtension).toFile();
       outputStream = new BufferedOutputStream(new FileOutputStream(tempFile));
     }
     return outputStream;
