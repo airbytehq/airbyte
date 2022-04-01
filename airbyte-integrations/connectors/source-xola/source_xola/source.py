@@ -81,6 +81,7 @@ class XolaStream(HttpStream, ABC):
 class Orders(XolaStream):
     primary_key = "order_id"
     seller_id = None
+    state_checkpoint_interval = None
 
     def __init__(self, seller_id: str, x_api_key: str, **kwargs):
         super().__init__(x_api_key, **kwargs)
@@ -109,6 +110,16 @@ class Orders(XolaStream):
         params['seller'] = self.seller_id
         return params
 
+    @property
+    def cursor_field(self) -> str:
+        """
+        TODO
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
+        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+        :return str: The name of the cursor field.
+        """
+        return ["updatedAt"]
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
@@ -127,13 +138,14 @@ class Orders(XolaStream):
 
                 if "createdAt" in data.keys(): resp["createdAt"] = data["createdAt"]
                 if "customerName" in data.keys(): resp["customerName"] = data["customerName"]
-                if "customerEmail" in data.keys():resp["customerEmail"] = data["customerEmail"]
+                if "customerEmail" in data.keys(): resp["customerEmail"] = data["customerEmail"]
                 if "travelers" in data.keys(): resp["travelers"] = data["travelers"]
                 if "source" in data.keys(): resp["source"] = data["source"]
                 if "createdBy" in data.keys(): resp["createdBy"] = data["createdBy"]
                 if "quantity" in data.keys(): resp["quantity"] = data["quantity"]
                 if "event" in data.keys(): resp["event"] = data["event"]
                 if "amount" in data.keys(): resp["amount"] = data["amount"]
+                if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
                 modified_response.append(resp)
             except:
                 pass
