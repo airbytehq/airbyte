@@ -1,6 +1,5 @@
 import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
-import { useResetter } from "rest-hooks";
 import { User as FbUser } from "firebase/auth";
 import { useEffectOnce } from "react-use";
 
@@ -182,7 +181,6 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   });
 
   const queryClient = useQueryClient();
-  const reset = useResetter();
 
   const ctx: AuthContextApi = useMemo(
     () => ({
@@ -200,7 +198,6 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.signOut();
         loggedOut();
         await queryClient.invalidateQueries();
-        await reset();
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);

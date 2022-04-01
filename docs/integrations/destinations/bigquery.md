@@ -235,6 +235,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 0.2.13 | 2022-04-01 | [11636](https://github.com/airbytehq/airbyte/pull/11636) | Added new unit tests |
 | 0.2.12 | 2022-03-28 | [11454](https://github.com/airbytehq/airbyte/pull/11454) | Integration test enhancement for picking test-data and schemas |
 | 0.2.11 | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |
 | 0.2.10 | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM |
