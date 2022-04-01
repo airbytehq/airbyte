@@ -196,6 +196,7 @@ class CashBalances(AccountSubStream, KyribaStream):
             "dateType": "VALUE",
         }
 
+
 class CashBalancesEod(CashBalancesStream, IncrementalKyribaStream):
     cursor_field = "date"
 
@@ -278,7 +279,7 @@ class BankBalancesStream(AccountSubStream):
         return [self.unnest("bankBalance", result)]
 
 
-class BankBalances(BankBalancesStream, IncrementalKyribaStream):
+class BankBalances(AccountSubStream, KyribaStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
