@@ -13,7 +13,7 @@ import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import { LabeledInput } from "components/LabeledInput";
 import NotificationsForm from "pages/SettingsPage/pages/NotificationPage/components/NotificationsForm";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 
 import { FormValues } from "./typings";
@@ -37,7 +37,7 @@ const EmailSection: React.FC = () => {
 
   const emailService = useEmail();
 
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const {
     errorMessage,
     successMessage,

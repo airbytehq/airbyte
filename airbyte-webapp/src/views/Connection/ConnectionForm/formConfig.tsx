@@ -21,13 +21,13 @@ import {
 } from "core/domain/connection/operation";
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { Connection, ScheduleProperties } from "core/domain/connection";
 import {
   ConnectionNamespaceDefinition,
   ConnectionSchedule,
 } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 type FormikConnectionFormValues = {
@@ -55,8 +55,7 @@ const DEFAULT_SCHEDULE: ScheduleProperties = {
 };
 
 function useDefaultTransformation(): Transformation {
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   return {
     name: "My dbt transformations",
     workspaceId: workspace.workspaceId,
