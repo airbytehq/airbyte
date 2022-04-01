@@ -15,9 +15,10 @@ import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { DestinationService } from "core/domain/connector/DestinationService";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
 
 export const destinationsKeys = {
-  all: ["destinations"] as const,
+  all: [SCOPE_WORKSPACE, "destinations"] as const,
   lists: () => [...destinationsKeys.all, "list"] as const,
   list: (filters: string) =>
     [...destinationsKeys.lists(), { filters }] as const,

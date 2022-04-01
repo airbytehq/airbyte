@@ -18,9 +18,10 @@ import { SourceService } from "core/domain/connector/SourceService";
 import { isDefined } from "utils/common";
 import { SyncSchema } from "core/domain/catalog";
 import { JobInfo } from "core/domain/job";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
 
 export const sourcesKeys = {
-  all: ["sources"] as const,
+  all: [SCOPE_WORKSPACE, "sources"] as const,
   lists: () => [...sourcesKeys.all, "list"] as const,
   list: (filters: string) => [...sourcesKeys.lists(), { filters }] as const,
   detail: (sourceId: string) =>

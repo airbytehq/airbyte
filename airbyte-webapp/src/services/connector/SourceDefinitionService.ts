@@ -15,9 +15,10 @@ import {
 } from "core/domain/connector/SourceDefinitionService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
+import { SCOPE_WORKSPACE } from "../Scope";
 
 export const sourceDefinitionKeys = {
-  all: ["sourceDefinition"] as const,
+  all: [SCOPE_WORKSPACE, "sourceDefinition"] as const,
   lists: () => [...sourceDefinitionKeys.all, "list"] as const,
   detail: (id: string) => [...sourceDefinitionKeys.all, "details", id] as const,
 };

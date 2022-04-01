@@ -23,9 +23,10 @@ import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewa
 import { useInitService } from "services/useInitService";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useCurrentWorkspace } from "./useWorkspace";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
 
 export const connectionsKeys = {
-  all: ["connections"] as const,
+  all: [SCOPE_WORKSPACE, "connections"] as const,
   lists: () => [...connectionsKeys.all, "list"] as const,
   list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
   detail: (connectionId: string) =>

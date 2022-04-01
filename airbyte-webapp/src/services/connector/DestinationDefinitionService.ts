@@ -15,9 +15,10 @@ import {
 } from "core/domain/connector/DestinationDefinitionService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
+import { SCOPE_WORKSPACE } from "../Scope";
 
 export const destinationDefinitionKeys = {
-  all: ["destinationDefinition"] as const,
+  all: [SCOPE_WORKSPACE, "destinationDefinition"] as const,
   lists: () => [...destinationDefinitionKeys.all, "list"] as const,
   detail: (id: string) =>
     [...destinationDefinitionKeys.all, "details", id] as const,

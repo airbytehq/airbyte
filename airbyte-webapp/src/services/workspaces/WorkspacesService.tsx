@@ -12,9 +12,10 @@ import { RoutePaths } from "pages/routePaths";
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
 import { useInitService } from "../useInitService";
+import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
 
 export const workspaceKeys = {
-  all: ["workspaces"] as const,
+  all: [SCOPE_USER, "workspaces"] as const,
   lists: () => [...workspaceKeys.all, "list"] as const,
   list: (filters: string) => [...workspaceKeys.lists(), { filters }] as const,
   detail: (workspaceId: string) =>
@@ -43,7 +44,7 @@ const useSelectWorkspace = (): ((
       } else {
         push(`/${RoutePaths.Workspaces}/${workspace}`);
       }
-      await queryClient.resetQueries();
+      await queryClient.removeQueries(SCOPE_WORKSPACE);
     },
     [push, queryClient]
   );
@@ -51,11 +52,15 @@ const useSelectWorkspace = (): ((
 
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   const selectWorkspace = useSelectWorkspace();
+  const queryClient = useQueryClient();
 
   const ctx = useMemo<Context>(
     () => ({
       selectWorkspace,
-      exitWorkspace: () => selectWorkspace(""),
+      exitWorkspace: () => {
+        selectWorkspace("");
+        queryClient.removeQueries(SCOPE_WORKSPACE);
+      },
     }),
     [selectWorkspace]
   );
