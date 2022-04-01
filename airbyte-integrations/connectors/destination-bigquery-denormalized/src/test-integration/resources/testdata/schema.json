@@ -1,42 +1,25 @@
 {
-  "type": [
-    "object"
-  ],
+  "type": ["object"],
   "properties": {
     "accepts_marketing_updated_at": {
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
-      "type": [
-        "string"
-      ]
+      "type": ["string"]
     },
     "permission-list": {
-      "type": [
-        "array"
-      ],
+      "type": ["array"],
       "items": {
-        "type": [
-          "object"
-        ],
+        "type": ["object"],
         "properties": {
           "domain": {
-            "type": [
-              "string"
-            ]
+            "type": ["string"]
           },
           "grants": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
-              "type": [
-                "string"
-              ]
+              "type": ["string"]
             }
           }
         }
