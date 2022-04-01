@@ -41,7 +41,7 @@ Feel free to share your use cases with the community in [#octavia-cli](https://a
 
 ## Workflow
 
-### 1. Generate local YAML files for sources or destination
+### 1. Generate local YAML files for sources or destinations
 
 1. Retrieve the *definition id* of the connector you want to use using `octavia list command`.
 2. Generate YAML configuration running `octavia generate source <DEFINITION_ID> <SOURCE_NAME>` or `octavia generate destination <DEFINITION_ID> <DESTINATION_NAME>`.
@@ -90,7 +90,7 @@ We decided to package the CLI in a docker image with portability in mind.
 ### As a command available in your bash profile
 
 ```bash
-curl -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
+curl -s -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
 ```
 
 This script:
@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v ./my_octavia_project_directory:/home/octavia-project --network host --env-file ~/.octavia airbyte/octavia-cli:latest
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.35.63-alpha
 ```
 
 ### Using `docker-compose`
@@ -352,4 +352,4 @@ $ octavia apply
 
 | Version | Date       | Description      | PR                                                       |
 |---------|------------|------------------|----------------------------------------------------------|
-| 0.1.0   | 2022-04-07 | Alpha release    | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
+| 0.35.61 | 2022-04-07 | Alpha release    | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|

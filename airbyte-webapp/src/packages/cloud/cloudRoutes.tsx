@@ -31,11 +31,14 @@ import {
 } from "hooks/services/Analytics/useAnalyticsService";
 import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { DefaultView } from "./views/DefaultView";
 import { hasFromState } from "utils/stateUtils";
+import { RoutePaths } from "../../pages/routePaths";
+import { FeatureItem, useFeatureRegisterValues } from "hooks/services/Feature";
+import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
+import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 
 export const CloudRoutes = {
   Root: "/",
@@ -60,6 +63,7 @@ export const CloudRoutes = {
 
 const MainRoutes: React.FC = () => {
   const workspace = useCurrentWorkspace();
+  const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
 
   const analyticsContext = useMemo(
     () => ({
@@ -73,6 +77,21 @@ const MainRoutes: React.FC = () => {
   const mainNavigate = workspace.displaySetupWizard
     ? RoutePaths.Onboarding
     : RoutePaths.Connections;
+
+  const features = useMemo(
+    () =>
+      cloudWorkspace.creditStatus !==
+        CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD &&
+      cloudWorkspace.creditStatus !== CreditStatus.NEGATIVE_MAX_THRESHOLD
+        ? [
+            { id: FeatureItem.AllowCreateConnection },
+            { id: FeatureItem.AllowSync },
+          ]
+        : null,
+    [cloudWorkspace]
+  );
+
+  useFeatureRegisterValues(features);
 
   return (
     <Routes>

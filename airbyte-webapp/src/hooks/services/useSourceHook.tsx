@@ -1,16 +1,14 @@
-import { useCallback } from "react";
 import { useFetcher, useResource } from "rest-hooks";
 
 import SourceResource from "core/resources/Source";
-import { RoutePaths } from "pages/routes";
 import ConnectionResource, { Connection } from "core/resources/Connection";
-import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import useWorkspace from "./useWorkspace";
 
 import useRouter from "hooks/useRouter";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Source } from "core/domain/connector";
+import { RoutePaths } from "../../pages/routePaths";
 
 type ValuesProps = {
   name: string;
@@ -22,14 +20,6 @@ type ValuesProps = {
 type ConnectorProps = { name: string; sourceDefinitionId: string };
 
 type SourceService = {
-  recreateSource: (recreateSourcePayload: {
-    values: ValuesProps;
-    sourceId: string;
-  }) => Promise<Source>;
-  checkSourceConnection: (checkSourceConnectionPayload: {
-    sourceId: string;
-    values?: ValuesProps;
-  }) => Promise<Scheduler>;
   createSource: (createSourcePayload: {
     values: ValuesProps;
     sourceConnector?: ConnectorProps;
@@ -50,13 +40,7 @@ const useSource = (): SourceService => {
   const createSourcesImplementation = useFetcher(SourceResource.createShape());
   const analyticsService = useAnalyticsService();
 
-  const sourceCheckConnectionShape = useFetcher(
-    SchedulerResource.sourceCheckConnectionShape()
-  );
-
   const updatesource = useFetcher(SourceResource.partialUpdateShape());
-
-  const recreatesource = useFetcher(SourceResource.recreateShape());
 
   const sourceDelete = useFetcher(SourceResource.deleteShape());
 
@@ -75,10 +59,11 @@ const useSource = (): SourceService => {
     });
 
     try {
-      await sourceCheckConnectionShape({
-        sourceDefinitionId: sourceConnector?.sourceDefinitionId,
-        connectionConfiguration: values.connectionConfiguration,
-      });
+      // analyticsService.track("New Source - Action", {
+      //   action: "Test a connector",
+      //   connector_source: sourceConnector?.name,
+      //   connector_source_definition_id: sourceConnector?.sourceDefinitionId,
+      // });
 
       // Try to crete source
       const result = await createSourcesImplementation(
@@ -119,14 +104,8 @@ const useSource = (): SourceService => {
   const updateSource: SourceService["updateSource"] = async ({
     values,
     sourceId,
-  }) => {
-    await sourceCheckConnectionShape({
-      name: values.name,
-      sourceId,
-      connectionConfiguration: values.connectionConfiguration,
-    });
-
-    return await updatesource(
+  }) =>
+    await updatesource(
       {
         sourceId: sourceId,
       },
@@ -136,58 +115,6 @@ const useSource = (): SourceService => {
         connectionConfiguration: values.connectionConfiguration,
       }
     );
-  };
-
-  const checkSourceConnection = useCallback(
-    async ({
-      sourceId,
-      values,
-    }: {
-      sourceId: string;
-      values?: ValuesProps;
-    }) => {
-      if (values) {
-        return await sourceCheckConnectionShape({
-          connectionConfiguration: values.connectionConfiguration,
-          name: values.name,
-          sourceId: sourceId,
-        });
-      }
-      return await sourceCheckConnectionShape({
-        sourceId,
-      });
-    },
-    [sourceCheckConnectionShape]
-  );
-
-  const recreateSource: SourceService["recreateSource"] = async ({
-    values,
-    sourceId,
-  }) => {
-    return await recreatesource(
-      {
-        sourceId: sourceId,
-      },
-      {
-        name: values.name,
-        sourceId,
-        connectionConfiguration: values.connectionConfiguration,
-        workspaceId: workspace.workspaceId,
-        sourceDefinitionId: values.serviceType,
-      },
-      // Method used only in onboarding.
-      // Replace all source List to new item in UpdateParams (to change id)
-      [
-        [
-          SourceResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (newsourceId: string) => ({
-            sources: [newsourceId],
-          }),
-        ],
-      ]
-    );
-  };
 
   const deleteSource: SourceService["deleteSource"] = async ({
     source,
@@ -214,9 +141,7 @@ const useSource = (): SourceService => {
   return {
     createSource,
     updateSource,
-    recreateSource,
     deleteSource,
-    checkSourceConnection,
   };
 };
 
