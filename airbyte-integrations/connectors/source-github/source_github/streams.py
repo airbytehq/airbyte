@@ -661,7 +661,7 @@ class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
         parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_state)
         for parent_stream_slice in parent_stream_slices:
             yield {
-                "parent_updated_at": parent_stream_slice["parent"]["updated_at"],
+                "pull_request_updated_at": parent_stream_slice["parent"]["updated_at"],
                 "pull_request_number": parent_stream_slice["parent"]["number"],
                 "repository": parent_stream_slice["parent"]["repository"],
             }
@@ -709,7 +709,7 @@ class Reviews(PullRequestSubstream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
 
-    cursor_field = "parent_updated_at"
+    cursor_field = "pull_request_updated_at"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

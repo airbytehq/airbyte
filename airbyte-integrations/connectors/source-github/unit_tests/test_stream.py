@@ -699,12 +699,12 @@ def test_stream_reviews_incremental_read():
     records = read_incremental(stream, stream_state)
 
     assert records == [
-        {"body": "commit1", "id": 1000, "parent_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1001, "parent_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1002, "parent_updated_at": "2022-01-02T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit1", "id": 1000, "pull_request_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit1", "id": 1001, "pull_request_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit1", "id": 1002, "pull_request_updated_at": "2022-01-02T00:00:00Z", "repository": "organization/repository"},
     ]
 
-    assert stream_state == {"organization/repository": {"parent_updated_at": "2022-01-02T00:00:00Z"}}
+    assert stream_state == {"organization/repository": {"pull_request_updated_at": "2022-01-02T00:00:00Z"}}
 
     responses.add(
         "GET",
@@ -731,12 +731,12 @@ def test_stream_reviews_incremental_read():
     records = read_incremental(stream, stream_state)
 
     assert records == [
-        {"body": "commit1", "id": 1000, "parent_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit2", "id": 1001, "parent_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1003, "parent_updated_at": "2022-01-04T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit1", "id": 1000, "pull_request_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit2", "id": 1001, "pull_request_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit1", "id": 1003, "pull_request_updated_at": "2022-01-04T00:00:00Z", "repository": "organization/repository"},
     ]
 
-    assert stream_state == {"organization/repository": {"parent_updated_at": "2022-01-04T00:00:00Z"}}
+    assert stream_state == {"organization/repository": {"pull_request_updated_at": "2022-01-04T00:00:00Z"}}
 
     assert len(responses.calls) == 6
     assert urlbase(responses.calls[0].request.url) == url_pulls

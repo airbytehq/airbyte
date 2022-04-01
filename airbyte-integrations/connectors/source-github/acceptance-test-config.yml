@@ -37,7 +37,7 @@ tests:
         pull_requests: ["airbytehq/integration-test", "updated_at"]
         releases: ["airbytehq/integration-test", "created_at"]
         review_comments: ["airbytehq/integration-test", "updated_at"]
-        reviews: ["airbytehq/integration-test", "parent_updated_at"]
+        reviews: ["airbytehq/integration-test", "pull_request_updated_at"]
         stargazers: ["airbytehq/integration-test", "starred_at"]
   full_refresh:
     - config_path: "secrets/config.json"
