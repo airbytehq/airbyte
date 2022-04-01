@@ -1,13 +1,12 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from unittest.mock import MagicMock
 
 import pytest
 import responses
-from source_mailchimp.streams import (
-    Lists,
-    Campaigns,
-    EmailActivity
-)
-
+from source_mailchimp.streams import Campaigns, EmailActivity, Lists
 from utils import read_full_refresh, read_incremental
 
 
@@ -16,7 +15,7 @@ from utils import read_full_refresh, read_incremental
     [
         (Lists, "lists"),
         (Campaigns, "campaigns"),
-    ]
+    ],
 )
 def test_stream_read(requests_mock, auth, stream, endpoint):
     args = {"authenticator": auth}
@@ -24,11 +23,7 @@ def test_stream_read(requests_mock, auth, stream, endpoint):
     stream_responses = [
         {
             "json": {
-                stream.data_field: [
-                    {
-                        "id": "test_id"
-                    }
-                ],
+                stream.data_field: [{"id": "test_id"}],
             }
         }
     ]
@@ -56,14 +51,14 @@ def test_next_page_token(auth):
     "inputs, expected_params",
     [
         (
-                {"stream_slice": None, "stream_state": None, "next_page_token": None},
-                {"count": 100, "sort_dir": "ASC", "sort_field": "date_created"}
+            {"stream_slice": None, "stream_state": None, "next_page_token": None},
+            {"count": 100, "sort_dir": "ASC", "sort_field": "date_created"},
         ),
         (
-                {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 100}},
-                {"count": 100, "sort_dir": "ASC", "sort_field": "date_created", "offset": 100}
+            {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 100}},
+            {"count": 100, "sort_dir": "ASC", "sort_field": "date_created", "offset": 100},
         ),
-    ]
+    ],
 )
 def test_request_params(auth, inputs, expected_params):
     args = {"authenticator": auth}
@@ -77,7 +72,7 @@ def test_request_params(auth, inputs, expected_params):
         ({}, {"date_created": "2020-01-01"}, {"date_created": "2020-01-01"}),
         ({"date_created": "2020-01-01"}, {"date_created": "2021-01-01"}, {"date_created": "2021-01-01"}),
         ({"date_created": "2021-01-01"}, {"date_created": "2022-01-01"}, {"date_created": "2022-01-01"}),
-    ]
+    ],
 )
 def test_get_updated_state(auth, current_state_stream, latest_record, expected_state):
     args = {"authenticator": auth}
@@ -95,16 +90,7 @@ def test_stream_teams_read(auth):
     campaigns_stream_url = stream.url_base + "campaigns"
     responses.add("GET", campaigns_stream_url, json={"campaigns": [{"id": 123}]})
 
-    response = {
-        "emails": [
-            {
-                "campaign_id": 123,
-                "activity": [
-                    {"action": "q", "timestamp": "2021-08-24T14:15:22Z"}
-                ]
-            }
-        ]
-    }
+    response = {"emails": [{"campaign_id": 123, "activity": [{"action": "q", "timestamp": "2021-08-24T14:15:22Z"}]}]}
     responses.add("GET", stream_url, json=response)
     records = read_incremental(stream, {})
 

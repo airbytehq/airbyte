@@ -24,35 +24,25 @@ def access_token_fixture():
 @fixture(name="oauth_config")
 def oauth_config_fixture(access_token):
     return {
-      "credentials": {
-        "auth_type": "oauth2.0",
-        "client_id": "111111111",
-        "client_secret": "secret_1111111111",
-        "access_token": access_token
-      }
+        "credentials": {
+            "auth_type": "oauth2.0",
+            "client_id": "111111111",
+            "client_secret": "secret_1111111111",
+            "access_token": access_token,
+        }
     }
 
 
 @fixture(name="apikey_config")
 def apikey_config_fixture(data_center):
-    return {
-      "credentials": {
-        "auth_type": "apikey",
-        "apikey": f"some_api_key-{data_center}"
-      }
-    }
+    return {"credentials": {"auth_type": "apikey", "apikey": f"some_api_key-{data_center}"}}
 
 
 @fixture(name="wrong_config")
 def wrong_config_fixture():
-    return {
-      "credentials": {
-        "auth_type": "not auth_type"
-      }
-    }
+    return {"credentials": {"auth_type": "not auth_type"}}
 
 
 @fixture(name="auth")
 def authenticator_fixture(apikey_config):
     return MailChimpAuthenticator().get_auth(apikey_config)
-

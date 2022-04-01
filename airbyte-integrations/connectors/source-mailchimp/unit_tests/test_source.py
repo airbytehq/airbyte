@@ -4,7 +4,7 @@
 
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
-from source_mailchimp.source import SourceMailchimp, MailChimpAuthenticator
+from source_mailchimp.source import MailChimpAuthenticator, SourceMailchimp
 
 logger = AirbyteLogger()
 
