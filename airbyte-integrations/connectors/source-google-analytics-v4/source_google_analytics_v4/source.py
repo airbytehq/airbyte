@@ -416,10 +416,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
     cursor_field = "ga_date"
 
-    def __init__(self, config: MutableMapping):
-        super().__init__(config)
-        self._state = None
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
