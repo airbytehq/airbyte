@@ -338,28 +338,18 @@ def test_empty_stream_slice_if_abnormal_state_is_passed(test_config, mock_metric
 
 def test_empty_slice_produces_no_records(test_config, mock_metrics_dimensions_type_list_link):
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
-    old_state = copy.deepcopy(g.state)
-    records = g.read_records(sync_mode=SyncMode.incremental, stream_slice=None, stream_state={})
-    new_state = copy.deepcopy(g.state)
+    records = g.read_records(sync_mode=SyncMode.incremental, stream_slice=None, stream_state={g.cursor_field: g.start_date})
     assert next(iter(records), None) is None
-    assert old_state == new_state == {g.cursor_field: g.start_date}
 
 
-@patch("source_google_analytics_v4.source.HttpStream.read_records")
-def test_state_saved_after_each_record(read_records_mock, test_config):
+def test_state_saved_after_each_record(test_config, mock_metrics_dimensions_type_list_link):
     today_dt = pendulum.now().date()
-    yesterday = today_dt.subtract(days=1).strftime("%Y-%m-%d")
     before_yesterday = today_dt.subtract(days=2).strftime("%Y-%m-%d")
     today = today_dt.strftime("%Y-%m-%d")
     record = {"ga_date": today}
-    # these are returned by GoogleAnalyticsV4TypesList().read_records on Stream init
-    dimensions_ref, metrics_ref = {}, {}
-    read_records_mock.side_effect = [dimensions_ref, metrics_ref], [record]
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
-    assert g.state == {g.cursor_field: before_yesterday}
-    records = g.read_records(sync_mode=SyncMode.incremental, stream_slice={"startDate": yesterday, "endDate": today}, stream_state={})
-    assert next(iter(records), None) is record
-    assert g.state == {g.cursor_field: today}
+    state = {g.cursor_field: before_yesterday}
+    assert g.get_updated_state(state, record) == {g.cursor_field: today}
 
 
 def test_connection_fail_invalid_reports_json(test_config):

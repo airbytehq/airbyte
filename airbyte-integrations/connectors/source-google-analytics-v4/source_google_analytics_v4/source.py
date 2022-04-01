@@ -420,15 +420,8 @@ class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
         super().__init__(config)
         self._state = None
 
-    @property
-    def state(self) -> Mapping[str, Any]:
-        if self._state:
-            return self._state
-        return {self.cursor_field: self.start_date}
-
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-        self._state = value
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def read_records(
         self,
@@ -439,12 +432,7 @@ class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
     ) -> Iterable[Mapping[str, Any]]:
         if not stream_slice:
             return []
-        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            current_cursor_value = pendulum.parse(self.state[self.cursor_field]).date()
-            latest_cursor_value = pendulum.parse(record[self.cursor_field]).date()
-            new_cursor_value = max(latest_cursor_value, current_cursor_value)
-            self.state = {self.cursor_field: self.to_datetime_str(new_cursor_value)}
-            yield record
+        return super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
 class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
