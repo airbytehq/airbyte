@@ -119,6 +119,7 @@ METRICS_MAP = {
         "campaignId",
         "adGroupName",
         "adGroupId",
+        "adId",
         "impressions",
         "clicks",
         "cost",
@@ -156,6 +157,7 @@ METRICS_MAP = {
         "adGroupId",
         "keywordId",
         "keywordText",
+        "adId",
         "asin",
         "otherAsin",
         "sku",
@@ -179,6 +181,7 @@ METRICS_MAP = {
         "campaignId",
         "adGroupName",
         "adGroupId",
+        "adId",
         "asin",
         "otherAsin",
         "sku",
@@ -255,9 +258,17 @@ class SponsoredProductsReportStream(ReportStream):
         body = {
             "reportDate": report_date,
         }
+
+# adId is automatically added to the report by amazon and requesting adId causes an amazon error
         if RecordType.ASINS in record_type:
             body["campaignType"] = "sponsoredProducts"
+            metrics_list = copy(metrics_list)
+            metrics_list.remove("adId") 
             if profile.accountInfo.type == "vendor":
                 metrics_list = copy(metrics_list)
                 metrics_list.remove("sku")
+        elif RecordType.PRODUCTADS in record_type:
+            metrics_list = copy(metrics_list)
+            metrics_list.remove("adId")
+
         return {**body, "metrics": ",".join(metrics_list)}
