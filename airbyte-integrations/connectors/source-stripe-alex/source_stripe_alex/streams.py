@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import copy
 import math
 from abc import ABC
 from itertools import chain
@@ -172,11 +173,24 @@ class StripeSubStream(StripeStream, ABC):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._parent_name = self._stream_to_parent_config[self._name]["parent_name"]
-        self._parent = meta_incremental(self.camel_to_snake(self._parent_name))
-        self._parent_id = self._stream_to_parent_config[self._name]["parent_id"]
-        self._sub_items_attr = self._stream_to_parent_config[self._name]["sub_items_attr"]
-        self._parent_id_getter = self._stream_to_parent_config[self._name]["parent_id_getter"]
+        parent_config = self._stream_to_parent_config[self._name]
+
+        if self._name in self._stream_to_cursor_field:
+            self.logger.info("HASCURSORFIELD")
+            self._parent_class = IncrementalStripeAlexStream
+        else:
+            self.logger.info("NOCURSORFIELD")
+            self._parent_class = StripeStream
+
+        self._parent_name = parent_config["parent_name"]
+
+        parent_stream_config = copy.deepcopy(kwargs)
+        parent_stream_config["name"] = self._parent_name
+
+        self._parent = meta_class(**parent_stream_config)
+        self._parent_id = parent_config["parent_id"]
+        self._sub_items_attr = parent_config["sub_items_attr"]
+        self._parent_id_getter = parent_config["parent_id_getter"]
 
     def camel_to_snake(self, s: str) -> str:
         return ''.join(w.title() for w in s.split('_'))
@@ -255,20 +269,26 @@ class StripeSubStream(StripeStream, ABC):
                 yield item
 
 
-def meta_incremental(name):
-    class cls(IncrementalStripeAlexStream):
+def meta_class(**kwargs):
+    name = to_camel_case(kwargs["name"])
+
+    if kwargs["name"] in kwargs["stream_to_parent_config"]:
+        super_class = StripeSubStream
+    elif kwargs["name"] in kwargs["stream_to_cursor_field"]:
+        super_class = IncrementalStripeAlexStream
+    else:
+        super_class = StripeStream
+
+    class cls(super_class):
         pass
 
     cls.__name__ = name
     return cls
 
 
-def meta_sub(name):
-    class cls(StripeSubStream):
-        pass
-
-    cls.__name__ = name
-    return cls
+def to_camel_case(snake_str):
+    components = snake_str.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
 
 
 class AttrDict(dict):

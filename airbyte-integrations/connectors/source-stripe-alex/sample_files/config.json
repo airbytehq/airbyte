@@ -1,5 +1,50 @@
 {
-  "client_secret": "sk_test(live)_<secret>",
+  "primary_key": "id",
+  "client_secret": "<secret>",
   "account_id": "<account_id>",
-  "start_date": "2020-05-01T00:00:00Z"
+  "start_date": "2020-05-01T00:00:00Z",
+  "url_base": "https://api.stripe.com/",
+  "check_endpoint": "v1/accounts",
+  "headers": {
+    "Authorization": "Bearer {client_secret}"
+  },
+  "request_parameters": {
+    "limit": "100"
+  },
+  "paginator": {
+    "type": "PaginatorCursorInHeaderLastObject",
+    "config": {
+      "has_more_flag": "has_more",
+      "extra_header": {
+        "starting_after": "{last_object.id}"
+      }
+    }
+  },
+  "stream_to_cursor_field": {
+    "invoices": "created",
+    "invoice_items": "date"
+  },
+  "stream_to_path": {
+    "invoices": "v1/invoices",
+    "invoice_line_items": "v1/invoices/{stream_slice[self.parent_id]}/lines",
+    "invoice_items": "v1/invoiceitems"
+  },
+  "response_parser": {
+    "type": "JsonArrayGetter",
+    "config": {
+      "field_to_get": "data"
+    }
+  },
+  "incremental_headers": {
+    "created[gte]": "{start_timestamp}"
+  },
+  "stream_to_parent_config": {
+    "invoice_line_items": {
+      "parent_name": "invoices",
+      "parent_id": "invoice_id",
+      "parent_id_getter": "{record.id}",
+      "sub_items_attr": "lines",
+      "add_parent_id": true
+    }
+  }
 }

@@ -15,9 +15,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe_alex.streams import (
-    meta_incremental,
-    meta_sub,
-    AttrDict
+    AttrDict,
+    meta_class
 )
 
 
@@ -112,9 +111,9 @@ class SourceStripeAlex(AbstractSource):
         }
 
         return [
-            meta_incremental("InvoiceItems")(**invoice_items_args),
-            meta_sub("InvoiceLineItems")(**invoice_line_items_args),
-            meta_incremental("Invoices")(**invoices_args)
+            meta_class(**invoice_items_args)(**invoice_items_args),
+            meta_class(**invoice_line_items_args)(**invoice_line_items_args),
+            meta_class(**invoices_args)(**invoices_args)
         ]
 
     def _get_response_parser(self, config):
