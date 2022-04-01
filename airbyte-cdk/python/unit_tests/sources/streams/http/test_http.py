@@ -167,8 +167,10 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
     send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
 
-    with pytest.raises(UserDefinedBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429"):
+    with pytest.raises(UserDefinedBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429") as excinfo:
         list(stream.read_records(SyncMode.full_refresh))
+    assert isinstance(excinfo.value.request, requests.PreparedRequest)
+    assert isinstance(excinfo.value.response, requests.Response)
     if retries <= 0:
         assert send_mock.call_count == 1
     else:
