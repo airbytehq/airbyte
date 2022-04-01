@@ -311,4 +311,5 @@ class SourceKyriba(AbstractSource):
             BankBalancesEod(**kwargs),
             BankBalancesIntraday(**kwargs),
             CashBalances(**kwargs),
+            BankBalances(**kwargs),
         ]
