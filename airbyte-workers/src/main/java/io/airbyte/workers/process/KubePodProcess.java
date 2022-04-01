@@ -368,6 +368,7 @@ public class KubePodProcess extends Process {
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
         : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
+    final String managedNodeName = System.getenv().containsKey("WORKER_POD_NODE_SELECTORS") ? System.getenv("WORKER_POD_NODE_SELECTORS").split("=")[1] : "airbyte-worker";
     final Pod pod = new PodBuilder()
         .withApiVersion("v1")
         .withNewMetadata()
@@ -382,7 +383,7 @@ public class KubePodProcess extends Process {
         .withInitContainers(init)
         .withContainers(containers)
         .withVolumes(pipeVolume, configVolume, terminationVolume)
-        .addToNodeSelector("eks.amazonaws.com/nodegroup","managed-node")
+        .addToNodeSelector("eks.amazonaws.com/nodegroup", managedNodeName)
         .endSpec()
         .build();
 
