@@ -13,7 +13,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-class StripeStream(HttpStream, ABC):
+class GenericHttpStream(HttpStream, ABC):
 
     def __init__(self,  # *, url_base: str, start_date: int, account_id: str, headers: Mapping[str, str],
                  # request_parameters: Mapping[str, Any],
@@ -81,7 +81,7 @@ class StripeStream(HttpStream, ABC):
         return self._response_parser.parse_response(decoded_response, **kwargs)
 
 
-class IncrementalStripeAlexStream(StripeStream, ABC):
+class IncrementalGenericHttpAlexStream(GenericHttpStream, ABC):
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
 
@@ -126,7 +126,7 @@ class IncrementalStripeAlexStream(StripeStream, ABC):
         return start_point
 
 
-class StripeSubStream(StripeStream, ABC):
+class GenericHttpSubStream(GenericHttpStream, ABC):
     """
     Research shows that records related to SubStream can be extracted from Parent streams which already
     contain 1st page of needed items. Thus, it significantly decreases a number of requests needed to get
@@ -177,10 +177,10 @@ class StripeSubStream(StripeStream, ABC):
 
         if self._name in self._stream_to_cursor_field:
             self.logger.info("HASCURSORFIELD")
-            self._parent_class = IncrementalStripeAlexStream
+            self._parent_class = IncrementalGenericHttpAlexStream
         else:
             self.logger.info("NOCURSORFIELD")
-            self._parent_class = StripeStream
+            self._parent_class = GenericHttpStream
 
         self._parent_name = parent_config["parent_name"]
 
@@ -196,7 +196,7 @@ class StripeSubStream(StripeStream, ABC):
         return ''.join(w.title() for w in s.split('_'))
 
     @property
-    def parent(self) -> StripeStream:
+    def parent(self) -> GenericHttpStream:
         """
         :return: parent stream which contains needed records in <sub_items_attr>
         """
@@ -273,11 +273,11 @@ def meta_class(**kwargs):
     name = to_camel_case(kwargs["name"])
 
     if kwargs["name"] in kwargs["stream_to_parent_config"]:
-        super_class = StripeSubStream
+        super_class = GenericHttpSubStream
     elif kwargs["name"] in kwargs["stream_to_cursor_field"]:
-        super_class = IncrementalStripeAlexStream
+        super_class = IncrementalGenericHttpAlexStream
     else:
-        super_class = StripeStream
+        super_class = GenericHttpStream
 
     class cls(super_class):
         pass
