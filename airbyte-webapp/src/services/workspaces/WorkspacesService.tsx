@@ -52,14 +52,12 @@ const useSelectWorkspace = (): ((
 
 export const WorkspaceServiceProvider: React.FC = ({ children }) => {
   const selectWorkspace = useSelectWorkspace();
-  const queryClient = useQueryClient();
 
   const ctx = useMemo<Context>(
     () => ({
       selectWorkspace,
       exitWorkspace: () => {
         selectWorkspace("");
-        queryClient.removeQueries(SCOPE_WORKSPACE);
       },
     }),
     [selectWorkspace]
