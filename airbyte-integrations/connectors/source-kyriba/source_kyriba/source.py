@@ -146,7 +146,8 @@ class AccountSubStream(HttpSubStream):
 class CashBalancesStream(AccountSubStream):
     def normalize_balance(self, base: Mapping[str, Any], balance: Mapping[str, Any]) -> Mapping[str, Any]:
         date_info = balance.pop("balanceDate")
-        return { **base,  **date_info, **balance}
+        uuid = base["account"]["uuid"] + ":" + date_info["date"]
+        return { **base,  **date_info, **balance, "uuid": uuid }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         '''
@@ -159,6 +160,41 @@ class CashBalancesStream(AccountSubStream):
         cash_balances = resp.pop("cashBalance")
         return [self.normalize_balance(resp, b) for b in cash_balances]
 
+class CashBalances(AccountSubStream, KyribaStream):
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        slices = []
+        account_uuids = self.get_account_uuids()
+        # we can query a max of 31 days at a time
+        days_inc = 31
+        start_date = date.fromisoformat(self.start_date)
+        while start_date <= date.today():
+            end_date = start_date + timedelta(days=days_inc)
+            end_date = end_date if end_date <= date.today() else date.today()
+            date_params = {
+                "startDate": start_date.isoformat(),
+                "endDate": end_date.isoformat(),
+            }
+            slices.extend([{**u, **date_params} for u in account_uuids])
+            # ensure the next start date is never greater than today since we are getting EOD balances
+            start_date = end_date + timedelta(days=1)
+        return slices
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        account_uuid = stream_slice['account_uuid']
+        return f"cash-balances/accounts/{account_uuid}/balances"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "endDate": stream_slice["endDate"],
+            "startDate": stream_slice["startDate"],
+            "intraday": False,
+            "actual": True,
+            "estimatedForecasts": False,
+            "confirmedForecasts": False,
+            "dateType": "VALUE",
+        }
 
 class CashBalancesEod(CashBalancesStream, IncrementalKyribaStream):
     cursor_field = "date"
@@ -178,12 +214,11 @@ class CashBalancesEod(CashBalancesStream, IncrementalKyribaStream):
         account_uuids = self.get_account_uuids()
         # we can query a max of 31 days at a time
         days_inc = 31
-        last_date_str = stream_state.get(self.cursor_field)
-        start_date =  date.fromisoformat(last_date_str) + timedelta(days=1) if last_date_str else date.fromisoformat(self.start_date)
-        yesterday = date.today() - timedelta(days=1)
-        while start_date <= yesterday:
+        start_str = stream_state.get(self.cursor_field) or self.start_date
+        start_date = date.fromisoformat(start_str)
+        while start_date <= date.today():
             end_date = start_date + timedelta(days=days_inc)
-            end_date = end_date if end_date <= yesterday else yesterday
+            end_date = end_date if end_date <= date.today() else date.today()
             date_params = {
                 "startDate": start_date.isoformat(),
                 "endDate": end_date.isoformat(),
@@ -260,10 +295,9 @@ class BankBalancesEod(BankBalancesStream, IncrementalKyribaStream):
         slices = []
         account_uuids = self.get_account_uuids()
         # bank balances require the date to be specified
-        last_date_str = stream_state.get(self.cursor_field)
-        bal_date = date.fromisoformat(last_date_str) + timedelta(days=1) if last_date_str else date.fromisoformat(self.start_date)
-        yesterday = date.today() - timedelta(days=1)
-        while bal_date <= yesterday:
+        bal_date_str = stream_state.get(self.cursor_field) or self.start_date
+        bal_date = date.fromisoformat(bal_date_str)
+        while bal_date <= date.today():
             slices.extend([{**u, self.cursor_field: bal_date.isoformat()} for u in account_uuids])
             bal_date = bal_date + timedelta(days=1)
         return slices
@@ -355,4 +389,5 @@ class SourceKyriba(AbstractSource):
             CashBalancesIntraday(**kwargs),
             BankBalancesEod(**kwargs),
             BankBalancesIntraday(**kwargs),
+            CashBalances(**kwargs),
         ]
