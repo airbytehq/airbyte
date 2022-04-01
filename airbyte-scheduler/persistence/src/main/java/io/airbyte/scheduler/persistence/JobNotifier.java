@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.config.CustomerioNotificationConfiguration;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -129,7 +130,8 @@ public class JobNotifier {
             }
           } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION.equals(action)
               && notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
-            if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
+            if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                logUrl)) {
               LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
             }
           }
@@ -151,6 +153,58 @@ public class JobNotifier {
       notifyJob(reason, action, job, workspaceId, workspace, Collections.singletonList(emailNotification));
     } catch (final Exception e) {
       LOGGER.error("Unable to read configuration:", e);
+    }
+  }
+
+  // This method allows for the alert to be sent without the customerio configuration set in the
+  // database
+  // this is only needed because there is no UI element to allow for users to create that
+  // configuration.
+  // Once that exists, this can be removed and we should be using `notifyJobByEmail`.
+  // Github issue tracking this: todo add link
+  // The alert is sent to the email associated with the workspace.
+  public void autoDisableConnectionAlertWithoutCustomerioConfig(final String action, final Job job) {
+    try {
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+
+      final Notification customerioNotification = new Notification()
+          .withNotificationType(NotificationType.CUSTOMERIO)
+          .withCustomerioConfiguration(new CustomerioNotificationConfiguration());
+      final NotificationClient notificationClient = getNotificationClient(customerioNotification);
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+      final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+      final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
+      final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
+      final String logUrl = connectionPageUrl + connectionId;
+      final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
+      final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
+      final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
+      final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
+      final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
+      final String durationString = formatDurationPart(duration.toDaysPart(), "day")
+          + formatDurationPart(duration.toHoursPart(), "hour")
+          + formatDurationPart(duration.toMinutesPart(), "minute")
+          + formatDurationPart(duration.toSecondsPart(), "second");
+      final String jobDescription =
+          String.format("sync started on %s, running for%s.", formatter.format(jobStartedDate), durationString);
+
+      if (CONNECTION_DISABLED_NOTIFICATION.equals(action)) {
+        if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
+          LOGGER.warn("Failed to successfully notify auto-disable connection: {}", customerioNotification);
+        }
+      } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION.equals(action)) {
+        if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
+          LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", customerioNotification);
+        }
+      } else {
+        LOGGER.error(
+            "Incorrect action supplied, this method only supports Connection Disabled Notification and Connection Disabled Warning Notification.");
+      }
+    } catch (final Exception e) {
+      LOGGER.error("Unable to send auto disable alert:", e);
     }
   }
 
