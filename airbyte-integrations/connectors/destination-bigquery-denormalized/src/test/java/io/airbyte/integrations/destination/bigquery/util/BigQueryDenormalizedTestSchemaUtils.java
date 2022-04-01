@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class BigQueryDenormalizedTestDataUtils {
+public class BigQueryDenormalizedTestSchemaUtils {
 
-  private static final String JSON_FILES_BASE_LOCATION = "testdata/";
+  private static final String JSON_FILES_BASE_LOCATION = "schemas/";
 
   public static JsonNode getSchema() {
     return getTestDataFromResourceJson("schema.json");
@@ -65,7 +65,7 @@ public class BigQueryDenormalizedTestDataUtils {
   private static JsonNode getTestDataFromResourceJson(final String fileName) {
     final String fileContent;
     try {
-      fileContent = Files.readString(Path.of(BigQueryDenormalizedTestDataUtils.class.getClassLoader()
+      fileContent = Files.readString(Path.of(BigQueryDenormalizedTestSchemaUtils.class.getClassLoader()
           .getResource(JSON_FILES_BASE_LOCATION + fileName).getPath()));
     } catch (final IOException e) {
       throw new RuntimeException(e);
