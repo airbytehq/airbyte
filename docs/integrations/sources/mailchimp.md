@@ -27,7 +27,7 @@ Please [create a Github issue](https://github.com/airbytehq/airbyte/issues/new/c
 | :--- |:---------------------| :--- |
 | Full Refresh Sync | Yes                  |  |
 | Incremental Sync | Yes                  |  |
-| Replicate Incremental Deletes | Coming soon          |  |
+| Replicate Incremental Deletes | No                   |  |
 | SSL connection | Yes                  | Enabled by default |
 | Namespaces | No                   |  |
 
@@ -37,6 +37,16 @@ At the time of this writing, [Mailchimp does not impose rate limits](https://mai
 on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous 
 connections to its API. This means that Airbyte will not be able to run more than 10 concurrent syncs from Mailchimp 
 using API keys generated from the same account.
+
+### Primary keys
+
+There is `id` primary key for `Lists` and `Campaigns`. 
+`Email Activity` hasn't primary key due to Mailchimp doesn't give it. 
+
+### Incremental Deletes
+
+We don't support Incremental Deletes for `Campaigns`, `Lists`, and `Email Activity` streams. 
+Mailchimp doesn't give any information about deleted data in these streams.
 
 ## Getting started
 
