@@ -91,6 +91,12 @@ def test_stream_factory(request_sniffer, config):
     assert expected_stream_names.issubset(stream_names)
 
     expected_stream_names, unexpected_stream_names = set(), set()
+    # to build a schema for a stream, a sequence of requests is made:
+    # one `/settings/modules` which introduces a list of modules,
+    # one `/settings/modules/{module_name}` per module and
+    # one `/settings/fields?module={module_name}` per module.
+    # Any of former two can result in 204 and empty body what blocks us
+    # from generating stream schema and, therefore, a stream.
     for url, status in request_sniffer.items():
         assert status in (200, 204)
         module = url.split("?module=")[-1]
@@ -99,6 +105,6 @@ def test_stream_factory(request_sniffer, config):
             if module == url:
                 continue
         expected_stream_names.add(module)
-        if status != 200:
+        if status == 204:
             unexpected_stream_names.add(module)
     assert expected_stream_names - unexpected_stream_names == stream_names

@@ -7,6 +7,7 @@ import datetime
 import math
 from abc import ABC
 from dataclasses import asdict
+from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
@@ -16,13 +17,17 @@ from .api import ZohoAPI
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 
+# 204 and 304 status codes are valid successful responses,
+# but `.json()` will fail because the response body is empty
+EMPTY_BODY_STATUSES = (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED)
+
 
 class ZohoCrmStream(HttpStream, ABC):
     primary_key: str = "id"
     module: ModuleMeta = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if response.status_code != 200:
+        if response.status_code in EMPTY_BODY_STATUSES:
             return None
         pagination = response.json()["info"]
         if not pagination["more_records"]:
@@ -35,7 +40,7 @@ class ZohoCrmStream(HttpStream, ABC):
         return next_page_token or {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()["data"] if response.status_code == 200 else []
+        data = [] if response.status_code in EMPTY_BODY_STATUSES else response.json()["data"]
         yield from data
 
     def path(self, *args, **kwargs) -> str:
@@ -45,11 +50,17 @@ class ZohoCrmStream(HttpStream, ABC):
         try:
             return asdict(self.module.schema)
         except IncompleteMetaDataException:
+            # to build a schema for a stream, a sequence of requests is made:
+            # one `/settings/modules` which introduces a list of modules,
+            # one `/settings/modules/{module_name}` per module and
+            # one `/settings/fields?module={module_name}` per module.
+            # Any of former two can result in 204 and empty body what blocks us
+            # from generating stream schema and, therefore, a stream.
             self.logger.warning(f"Could not retrieve fields Metadata for module {self.module.api_name}, skipping")
             return None
         except UnknownDataTypeException as exc:
             self.logger.warning(f"Unknown data type in module {self.module.api_name}, skipping. Details: {exc}")
-            return None
+            raise
 
 
 class IncrementalZohoCrmStream(ZohoCrmStream):
@@ -63,9 +74,9 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        if self._state:
-            return self._state
-        return {self.cursor_field: self._start_datetime}
+        if not self._state:
+            self._state = {self.cursor_field: self._start_datetime}
+        return self._state
 
     @state.setter
     def state(self, value: Mapping[str, Any]):

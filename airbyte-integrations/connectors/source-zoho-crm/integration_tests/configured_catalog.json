@@ -42,7 +42,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
-        {
+    {
       "stream": {
         "name": "incremental_contacts_zoho_crm_stream",
         "json_schema": {},

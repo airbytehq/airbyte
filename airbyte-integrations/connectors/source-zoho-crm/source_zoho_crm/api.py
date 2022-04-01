@@ -70,7 +70,8 @@ class ZohoAPI:
 
     def _json_from_path(self, path: str, key: str, params: MutableMapping[str, str] = None) -> List[MutableMapping[Any, Any]]:
         response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header(), params=params or {})
-        if not response.status_code == 200:
+        if response.status_code == 204:
+            # Zoho CRM returns `No content` for Metadata of some modules
             logger.warning(f"{key.capitalize()} Metadata inaccessible: {response.content} [HTTP status {response.status_code}]")
             return []
         return response.json()[key]

@@ -66,6 +66,6 @@ def test_json_from_path_success(mocker, request_mocker, config):
 
 
 def test_json_from_path_fail(mocker, request_mocker, config):
-    mock_request(mocker, request_mocker(status=429, content=b"Too many requests"))
+    mock_request(mocker, request_mocker(status=204, content=b"No content"))
     api = ZohoAPI(config)
     assert api._json_from_path("/fields", "fields") == []
