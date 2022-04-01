@@ -740,6 +740,7 @@ def test_stream_reviews_incremental_read():
 
     assert len(responses.calls) == 6
     assert urlbase(responses.calls[0].request.url) == url_pulls
+    # make sure parent stream PullRequests used ascending sorting for both HTTP requests
     assert responses.calls[0].request.params["direction"] == "asc"
     assert urlbase(responses.calls[3].request.url) == url_pulls
     assert responses.calls[3].request.params["direction"] == "asc"
