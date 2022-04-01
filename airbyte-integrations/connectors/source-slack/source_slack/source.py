@@ -21,11 +21,6 @@ class SlackStream(HttpStream, ABC):
     url_base = "https://slack.com/api/"
     primary_key = "id"
     page_size = 100
-    channel_filter = []
-
-    def __init__(self, channel_filter: List[str] = [], **kwargs):
-        self.channel_filter = channel_filter
-        super().__init__(**kwargs)
 
     @property
     def max_retries(self) -> int:
@@ -82,8 +77,20 @@ class SlackStream(HttpStream, ABC):
         """The name of the field in the response which contains the data"""
 
 
-class Channels(SlackStream):
+class ChanneledStream(SlackStream, ABC):
+    """Slack stream with channel filter"""
+
+    def __init__(self, channel_filter: List[str] = [], **kwargs):
+        self.channel_filter = channel_filter
+        super().__init__(**kwargs)
+
+
+class Channels(ChanneledStream):
     data_field = "channels"
+
+    @property
+    def use_cache(self) -> bool:
+        return True
 
     def path(self, **kwargs) -> str:
         return "conversations.list"
@@ -101,10 +108,13 @@ class Channels(SlackStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[MutableMapping]:
         json_response = response.json()
-        yield from filter(lambda ch: not self.channel_filter or ch["name"] in self.channel_filter, json_response.get(self.data_field, []))
+        channels = json_response.get(self.data_field, [])
+        if self.channel_filter:
+            channels = [channel for channel in channels if channel["name"] in self.channel_filter]
+        yield from channels
 
 
-class ChannelMembers(SlackStream):
+class ChannelMembers(ChanneledStream):
     data_field = "members"
 
     def path(self, **kwargs) -> str:
@@ -148,7 +158,7 @@ def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -
         start_date = end_date
 
 
-class IncrementalMessageStream(SlackStream, ABC):
+class IncrementalMessageStream(ChanneledStream, ABC):
     data_field = "messages"
     cursor_field = "float_ts"
     primary_key = ["channel_id", "ts"]
@@ -327,8 +337,7 @@ class SourceSlack(AbstractSource):
         authenticator = self._get_authenticator(config)
         default_start_date = pendulum.parse(config["start_date"])
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
-
-        channel_filter = [s.strip() for s in config["channel_filter"].split(",") if s != ""]
+        channel_filter = config["channel_filter"]
 
         channels = Channels(authenticator=authenticator, channel_filter=channel_filter)
         streams = [
