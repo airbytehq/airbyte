@@ -117,6 +117,13 @@ cmd_publish() {
     docker push "$versioned_image"
     docker push "$latest_image"
   fi
+  
+  # Checking it the image was successfully registered on DockerHub
+  TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
+  DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" ${URL})
+  if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
+    echo "Tag ${image_version} was not registered on DockerHub for image ${image_name}" && exit 1
+  fi
 
   if [[ "true" == "${publish_spec_to_cache}" ]]; then
     echo "Publishing and writing to spec cache."
