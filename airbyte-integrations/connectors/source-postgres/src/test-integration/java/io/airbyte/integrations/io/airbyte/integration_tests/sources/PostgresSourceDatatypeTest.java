@@ -63,7 +63,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       ctx.execute("SET lc_monetary TO 'en_US.utf8';");
       // Set up a fixed timezone here so that timetz and timestamptz always have the same time zone
       // wherever the tests are running on.
-      ctx.execute("SET TIMEZONE TO 'America/Los_Angeles'");
+      ctx.execute("SET TIMEZONE TO 'America/Phoenix'");
       return null;
     });
 
