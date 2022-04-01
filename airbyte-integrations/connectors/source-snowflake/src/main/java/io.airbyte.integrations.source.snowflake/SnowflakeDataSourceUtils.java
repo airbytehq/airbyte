@@ -48,55 +48,22 @@ public class SnowflakeDataSourceUtils {
    */
   public static HikariDataSource createDataSource(final JsonNode config) {
     HikariConfig hikariConfig = new HikariConfig();
-    final StringBuilder jdbcUrl = new StringBuilder(
-        String.format("jdbc:snowflake://%s/?", config.get("host").asText()));
-    jdbcUrl.append(String.format(
-        "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
-        config.get("role").asText(),
-        config.get("warehouse").asText(),
-        config.get("database").asText(),
-        config.get("schema").asText(),
-        // Needed for JDK17 - see
-        // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
-        "JSON",
-        true));
-    if (config.has("jdbc_url_params")) {
-      jdbcUrl.append(config.get("jdbc_url_params").asText());
-    }
-    hikariConfig.setJdbcUrl(jdbcUrl.toString());
+    final String jdbcUrl = buildJDBCUrl(config);
+    hikariConfig.setJdbcUrl(jdbcUrl);
 
     if (config.has("credentials") && config.get("credentials").has("auth_type")
         && "OAuth".equals(config.get("credentials").get("auth_type").asText())) {
       LOGGER.info("Authorization mode is OAuth");
-      try {
-        var credentials = config.get("credentials");
-        Properties properties = new Properties();
-        properties.setProperty("client_id", credentials.get("client_id").asText());
-        properties.setProperty("client_secret", credentials.get("client_secret").asText());
-        properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
-        properties.setProperty("host", config.get("host").asText());
-        var accessToken = getAccessTokenUsingRefreshToken(
-            config.get("host").asText(), credentials.get("client_id").asText(),
-            credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
-        properties.put("authenticator", "oauth");
-        properties.put("token", accessToken);
-        properties.put("account", config.get("host").asText());
-        hikariConfig.setDataSourceProperties(properties);
-        // thread to keep the refresh token up to date
-        SnowflakeSource.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(getRefreshTokenTask(hikariConfig),
-            PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      hikariConfig.setDataSourceProperties(buildAuthProperties(config));
+      // thread to keep the refresh token up to date
+      SnowflakeSource.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(getRefreshTokenTask(hikariConfig),
+          PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
     } else if (config.has("credentials") && config.get("credentials").has("password")) {
       LOGGER.info("Authorization mode is 'Username and password'");
-      var credentials = config.get("credentials");
-      hikariConfig.setUsername(credentials.get("username").asText());
-      hikariConfig.setPassword(credentials.get("password").asText());
+      populateUsernamePasswordConfig(hikariConfig, config.get("credentials"));
     } else if (config.has("password") && config.has("username")) {
       LOGGER.info("Authorization mode is deprecated 'Username and password'. Please update your source configuration");
-      hikariConfig.setUsername(config.get("username").asText());
-      hikariConfig.setPassword(config.get("password").asText());
+      populateUsernamePasswordConfig(hikariConfig, config);
     }
 
     return new HikariDataSource(hikariConfig);
@@ -148,6 +115,29 @@ public class SnowflakeDataSourceUtils {
     }
   }
 
+  public static String buildJDBCUrl(JsonNode config) {
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
+        config.get("host").asText()));
+
+    // Add required properties
+    jdbcUrl.append(String.format(
+        "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
+        config.get("role").asText(),
+        config.get("warehouse").asText(),
+        config.get("database").asText(),
+        config.get("schema").asText(),
+        // Needed for JDK17 - see
+        // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
+        "JSON",
+        true));
+
+    // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
+    if (config.has("jdbc_url_params")) {
+      jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
+    }
+    return jdbcUrl.toString();
+  }
+
   private static Runnable getRefreshTokenTask(final HikariConfig hikariConfig) {
     return () -> {
       LOGGER.info("Refresh token process started");
@@ -163,6 +153,33 @@ public class SnowflakeDataSourceUtils {
         LOGGER.error("Failed to obtain a fresh accessToken:" + e);
       }
     };
+  }
+
+  public static Properties buildAuthProperties(JsonNode config) {
+    Properties properties = new Properties();
+    try {
+      var credentials = config.get("credentials");
+      properties.setProperty("client_id", credentials.get("client_id").asText());
+      properties.setProperty("client_secret", credentials.get("client_secret").asText());
+      properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
+      properties.setProperty("host", config.get("host").asText());
+      properties.put("authenticator", "oauth");
+      properties.put("account", config.get("host").asText());
+
+      String accessToken = getAccessTokenUsingRefreshToken(
+          config.get("host").asText(), credentials.get("client_id").asText(),
+          credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
+
+      properties.put("token", accessToken);
+    } catch (IOException e) {
+      LOGGER.error("Request access token was failed with error" + e.getMessage());
+    }
+    return properties;
+  }
+
+  private static void populateUsernamePasswordConfig(HikariConfig hikariConfig, JsonNode config) {
+    hikariConfig.setUsername(config.get("username").asText());
+    hikariConfig.setPassword(config.get("password").asText());
   }
 
 }

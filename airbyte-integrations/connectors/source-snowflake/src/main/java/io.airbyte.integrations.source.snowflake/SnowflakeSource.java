@@ -52,60 +52,18 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
-        config.get("host").asText()));
-
-    // Add required properties
-    jdbcUrl.append(String.format(
-        "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
-        config.get("role").asText(),
-        config.get("warehouse").asText(),
-        config.get("database").asText(),
-        config.get("schema").asText(),
-        // Needed for JDK17 - see
-        // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
-        "JSON",
-        true));
-
-    // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
-    if (config.has("jdbc_url_params")) {
-      jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
-    }
+    final String jdbcUrl = SnowflakeDataSourceUtils.buildJDBCUrl(config);
 
     if (config.has("credentials") && config.get("credentials").has("auth_type")
         && "OAuth".equals(config.get("credentials").get("auth_type").asText())) {
       // Use OAuth authorization method
-      final String accessToken;
-      var credentials = config.get("credentials");
-      try {
-        accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
-            config.get("host").asText(), credentials.get("client_id").asText(),
-            credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("connection_properties",
-              String.join(";", "authenticator=oauth", "token=" + accessToken))
-          .put("jdbc_url", jdbcUrl.toString());
-      return Jsons.jsonNode(configBuilder.build());
+      return buildOAuthConfig(config, jdbcUrl);
     } else if (config.has("credentials") && config.get("credentials").has("username")) {
       // Use Username and password authorization method
-      var credentials = config.get("credentials");
-      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", credentials.get("username").asText())
-          .put("password", credentials.get("password").asText())
-          .put("jdbc_url", jdbcUrl.toString());
-      LOGGER.info(jdbcUrl.toString());
-      return Jsons.jsonNode(configBuilder.build());
+      return buildUsernamePasswordConfig(config.get("credentials"), jdbcUrl);
     } else if (config.has("password") && config.has("username")) {
       // Use deprecated Username and password authorization method
-      final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", config.get("username").asText())
-          .put("password", config.get("password").asText())
-          .put("jdbc_url", jdbcUrl.toString());
-      LOGGER.info(jdbcUrl.toString());
-      return Jsons.jsonNode(configBuilder.build());
+      return buildUsernamePasswordConfig(config, jdbcUrl);
     } else {
       throw new RuntimeException("Invalid authorization credentials");
     }
@@ -115,6 +73,32 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "INFORMATION_SCHEMA");
+  }
+
+  private JsonNode buildOAuthConfig(JsonNode config, String jdbcUrl) {
+    final String accessToken;
+    var credentials = config.get("credentials");
+    try {
+      accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
+          config.get("host").asText(), credentials.get("client_id").asText(),
+          credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put("connection_properties",
+            String.join(";", "authenticator=oauth", "token=" + accessToken))
+        .put("jdbc_url", jdbcUrl);
+    return Jsons.jsonNode(configBuilder.build());
+  }
+
+  private JsonNode buildUsernamePasswordConfig(JsonNode config, String jdbcUrl) {
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put("username", config.get("username").asText())
+        .put("password", config.get("password").asText())
+        .put("jdbc_url", jdbcUrl);
+    LOGGER.info(jdbcUrl);
+    return Jsons.jsonNode(configBuilder.build());
   }
 
 }

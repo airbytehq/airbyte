@@ -64,15 +64,19 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Test
+  @Override
   public void testGetSourceConsentUrlEmptyOAuthSpec() {}
 
   @Test
+  @Override
   public void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
   @Test
+  @Override
   public void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
+  @Override
   public void testDeprecatedCompleteSourceOAuth() {}
 
 }
