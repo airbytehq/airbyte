@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.51
+## 0.1.52
 Fix BaseBackoffException constructor
 
 ## 0.1.50
