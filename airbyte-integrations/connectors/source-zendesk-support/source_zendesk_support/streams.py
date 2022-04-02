@@ -144,7 +144,6 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
     cursor_field = "updated_at"
 
     response_list_name: str = None
-    parent: "SourceZendeskSupportStream" = None
     future_requests: deque = None
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -440,7 +439,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskTicketExportStre
 
 
 class Users(SourceZendeskSupportStream):
-    """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
+    """Users stream: https://developer.zendesk.com/api-reference/ticketing/users/users/"""
 
 
 class Organizations(SourceZendeskSupportStream):
@@ -523,7 +522,6 @@ class Macros(SourceZendeskSupportStream):
 class TicketAudits(SourceZendeskSupportCursorPaginationStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
-    parent = Tickets
     # can request a maximum of 1,000 results
     page_size = 1000
     # ticket audits doesn't have the 'updated_by' field
