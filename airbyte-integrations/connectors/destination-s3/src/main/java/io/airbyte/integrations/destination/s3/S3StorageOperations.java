@@ -73,14 +73,7 @@ public class S3StorageOperations implements BlobStorageOperations {
 
   private String getPartId(final String objectPath) {
     final String bucket = s3Config.getBucketName();
-    final int lastIndex = objectPath.lastIndexOf("/");
-    final String bucketPath;
-    if (lastIndex > 0) {
-      bucketPath = objectPath.substring(0, lastIndex + 1);
-    } else {
-      bucketPath = objectPath;
-    }
-    final ObjectListing objects = s3Client.listObjects(bucket, bucketPath);
+    final ObjectListing objects = s3Client.listObjects(bucket, objectPath);
     if (objects.isTruncated()) {
       // bucket contains too many objects, use an uuid instead
       return UUID.randomUUID().toString();
