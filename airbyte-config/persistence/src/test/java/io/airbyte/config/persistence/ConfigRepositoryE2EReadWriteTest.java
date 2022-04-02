@@ -377,4 +377,15 @@ public class ConfigRepositoryE2EReadWriteTest {
     assertFalse(result.isPresent());
   }
 
+  @Test
+  public void testGetStandardSyncUsingOperation() throws IOException {
+    final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+
+    final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
+
+    assertThat(syncs).hasSameElementsAs(expectedSyncs);
+
+  }
+
 }

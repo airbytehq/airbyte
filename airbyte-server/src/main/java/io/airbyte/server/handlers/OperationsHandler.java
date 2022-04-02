@@ -173,9 +173,9 @@ public class OperationsHandler {
     for (final UUID operationId : deleteOperationIds) {
       operationIds.remove(operationId);
       boolean sharedOperation = false;
-      for (final StandardSync sync : allStandardSyncs) {
+      for (final StandardSync sync : configRepository.listStandardSyncsUsingOperation(operationId)) {
         // Check if other connections are using the same operation
-        if (sync.getConnectionId() != standardSync.getConnectionId() && sync.getOperationIds().contains(operationId)) {
+        if (sync.getConnectionId() != standardSync.getConnectionId()) {
           sharedOperation = true;
           break;
         }
