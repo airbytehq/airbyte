@@ -102,79 +102,7 @@ public class JsonPaths {
    * @param jsonPath - path to validate
    */
   public static void assertIsSingleReturnQuery(final String jsonPath) {
-    Preconditions.checkArgument(jsonPath.contains("*"), "Cannot accept paths with wildcards because they may return more than one item.");
-  }
-
-  /**
-   * Traverses into a json object and replaces all values that match the input path with the provided
-   * string. Throws if no existing fields match the path.
-   *
-   * @param json - json object
-   * @param jsonPath - path into the json object. must be in the format of JSONPath.
-   * @param replacement - a string value to replace the current value at the jsonPath
-   * @throws PathNotFoundException throws if the path is not present in the object
-   */
-  public static void replaceAtWithStringLoud(final JsonNode json, final String jsonPath, final String replacement) {
-    assertIsJsonPath(jsonPath);
-    JsonPath.parse(json).set(jsonPath, replacement).json();
-  }
-
-  /**
-   * Traverses into a json object and replaces all values that match the input path with the provided
-   * string . Does nothing if no existing fields match the path.
-   *
-   * @param json - json object
-   * @param jsonPath - path into the json object. must be in the format of JSONPath.
-   * @param replacement - a string value to replace the current value at the jsonPath
-   */
-  public static void replaceAtWithString(final JsonNode json, final String jsonPath, final String replacement) {
-    try {
-      replaceAtWithStringLoud(json, jsonPath, replacement);
-    } catch (final PathNotFoundException e) {
-      LOGGER.debug("Path not found", e);
-    }
-  }
-
-  /**
-   * Traverses into a json object and replaces all values that match the input path with the provided
-   * json object. Does nothing if no existing fields match the path.
-   *
-   * @param json - json object
-   * @param jsonPath - path into the json object. must be in the format of JSONPath.
-   * @param replacement - a json node to replace the current value at the jsonPath
-   */
-  public static void replaceAtJsonNode(final JsonNode json, final String jsonPath, final JsonNode replacement) {
-    assertIsJsonPath(jsonPath);
-    try {
-      JsonPath.parse(json).set(jsonPath, replacement).json();
-    } catch (final PathNotFoundException e) {
-      LOGGER.debug("Path not found", e);
-    }
-  }
-
-  /**
-   * Traverses into a json object and replaces all values that match the input path with the output of
-   * the provided function. Does nothing if no existing fields match the path.
-   *
-   * @param json - json object
-   * @param jsonPath - path into the json object. must be in the format of JSONPath.
-   * @param replacementFunction - a function that takes in a node that matches the path as well as the
-   *        path to the node itself. the return of this function will replace the current node.
-   */
-  public static void replaceAt(final JsonNode json, final String jsonPath, final BiFunction<JsonNode, String, JsonNode> replacementFunction) {
-    assertIsJsonPath(jsonPath);
-    try {
-      final List<String> foundPaths = getPaths(json, jsonPath);
-      for (final String foundPath : foundPaths) {
-        getSingleValue(json, foundPath).ifPresent(node -> {
-          final JsonNode replacement = replacementFunction.apply(node, foundPath);
-          replaceAtJsonNode(json, foundPath, replacement);
-        });
-
-      }
-    } catch (final PathNotFoundException e) {
-      LOGGER.debug("Path not found", e);
-    }
+    Preconditions.checkArgument(!jsonPath.contains("*"), "Cannot accept paths with wildcards because they may return more than one item.");
   }
 
   /**
@@ -246,6 +174,90 @@ public class JsonPaths {
 
     Preconditions.checkState(foundPaths.size() <= 1, String.format("Path returned more than one item. path: %s items: %s", jsonPath, foundPaths));
     return !foundPaths.isEmpty();
+  }
+
+  /**
+   * Traverses into a json object and replaces all values that match the input path with the provided
+   * string. Throws if no existing fields match the path.
+   *
+   * @param json - json object
+   * @param jsonPath - path into the json object. must be in the format of JSONPath.
+   * @param replacement - a string value to replace the current value at the jsonPath
+   * @throws PathNotFoundException throws if the path is not present in the object
+   */
+  public static JsonNode replaceAtStringLoud(final JsonNode json, final String jsonPath, final String replacement) {
+    return replaceAtJsonNodeLoud(json, jsonPath, Jsons.jsonNode(replacement));
+    // assertIsJsonPath(jsonPath);
+    // return JsonPath.parse(Jsons.clone(json)).set(jsonPath, replacement).json();
+  }
+
+  /**
+   * Traverses into a json object and replaces all values that match the input path with the provided
+   * string . Does nothing if no existing fields match the path.
+   *
+   * @param json - json object
+   * @param jsonPath - path into the json object. must be in the format of JSONPath.
+   * @param replacement - a string value to replace the current value at the jsonPath
+   */
+  public static JsonNode replaceAtString(final JsonNode json, final String jsonPath, final String replacement) {
+    return replaceAtJsonNode(json, jsonPath, Jsons.jsonNode(replacement));
+  }
+
+  /**
+   * Traverses into a json object and replaces all values that match the input path with the provided
+   * json object. Does nothing if no existing fields match the path.
+   *
+   * @param json - json object
+   * @param jsonPath - path into the json object. must be in the format of JSONPath.
+   * @param replacement - a json node to replace the current value at the jsonPath
+   */
+  public static JsonNode replaceAtJsonNodeLoud(final JsonNode json, final String jsonPath, final JsonNode replacement) {
+    assertIsJsonPath(jsonPath);
+    return JsonPath.parse(Jsons.clone(json)).set(jsonPath, replacement).json();
+  }
+
+  /**
+   * Traverses into a json object and replaces all values that match the input path with the provided
+   * json object. Does nothing if no existing fields match the path.
+   *
+   * @param json - json object
+   * @param jsonPath - path into the json object. must be in the format of JSONPath.
+   * @param replacement - a json node to replace the current value at the jsonPath
+   */
+  public static JsonNode replaceAtJsonNode(final JsonNode json, final String jsonPath, final JsonNode replacement) {
+    try {
+      return replaceAtJsonNodeLoud(json, jsonPath, replacement);
+    } catch (final PathNotFoundException e) {
+      LOGGER.debug("Path not found", e);
+      return Jsons.clone(json); // defensive copy in failure case.
+    }
+  }
+
+  /**
+   * Traverses into a json object and replaces all values that match the input path with the output of
+   * the provided function. Does nothing if no existing fields match the path.
+   *
+   * @param json - json object
+   * @param jsonPath - path into the json object. must be in the format of JSONPath.
+   * @param replacementFunction - a function that takes in a node that matches the path as well as the
+   *        path to the node itself. the return of this function will replace the current node.
+   */
+  public static JsonNode replaceAt(final JsonNode json, final String jsonPath, final BiFunction<JsonNode, String, JsonNode> replacementFunction) {
+    JsonNode clone = Jsons.clone(json);
+    assertIsJsonPath(jsonPath);
+    try {
+      final List<String> foundPaths = getPaths(clone, jsonPath);
+      for (final String foundPath : foundPaths) {
+        final Optional<JsonNode> singleValue = getSingleValue(clone, foundPath);
+        if (singleValue.isPresent()) {
+          final JsonNode replacement = replacementFunction.apply(singleValue.get(), foundPath);
+          clone = replaceAtJsonNode(clone, foundPath, replacement);
+        }
+      }
+    } catch (final PathNotFoundException e) {
+      LOGGER.debug("Path not found", e);
+    }
+    return clone;
   }
 
   /**
