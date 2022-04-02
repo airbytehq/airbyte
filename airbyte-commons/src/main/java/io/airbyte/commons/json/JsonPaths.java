@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// todo (cgardens) - needs a test.
 /**
  * JSONPath is specification for querying JSON objects. More information about the specification can
  * be found here: https://goessner.net/articles/JsonPath/. For those familiar with jq, JSONPath will
@@ -41,8 +40,8 @@ import org.slf4j.LoggerFactory;
  * "alpha": [1, 2, 3] }, this JSONPath "$.alpha[*]", would return: [1, 2, 3], but this one
  * "$.alpha[0]" would return: [1]. The Java interface we place over this query system defaults to
  * returning a list for query results. In addition, we provide helper functions that will just
- * return a single value (see: {@link JsonPaths#getSingleValue(JsonNode, String)}. These should only
- * be used if it is not possible for a query to return more than one value.
+ * return a single value (see: {@link JsonPaths#getSingleValue(JsonNode, String)}). These should
+ * only be used if it is not possible for a query to return more than one value.
  */
 public class JsonPaths {
 
@@ -187,8 +186,6 @@ public class JsonPaths {
    */
   public static JsonNode replaceAtStringLoud(final JsonNode json, final String jsonPath, final String replacement) {
     return replaceAtJsonNodeLoud(json, jsonPath, Jsons.jsonNode(replacement));
-    // assertIsJsonPath(jsonPath);
-    // return JsonPath.parse(Jsons.clone(json)).set(jsonPath, replacement).json();
   }
 
   /**
