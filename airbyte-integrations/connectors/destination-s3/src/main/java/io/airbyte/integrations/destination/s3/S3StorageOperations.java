@@ -65,25 +65,28 @@ public class S3StorageOperations implements BlobStorageOperations {
             .replaceAll(Pattern.quote("${UUID}"), String.format("%s", UUID.randomUUID()))
             .replaceAll("/+", "/"));
     if (customPathFormat.contains("${PART_ID}")) {
-      return objectPath.replaceAll(Pattern.quote("${PART_ID}"), String.format("%d", countObjectsInBucket(objectPath)));
+      return objectPath.replaceAll(Pattern.quote("${PART_ID}"), String.format("%s", getPartId(objectPath)));
     } else {
       return objectPath;
     }
   }
 
-  private int countObjectsInBucket(final String objectPath) {
-    int objectCount = 0;
+  private String getPartId(final String objectPath) {
     final String bucket = s3Config.getBucketName();
-    ObjectListing objects = s3Client.listObjects(bucket, objectPath);
-    while (objects.getObjectSummaries().size() > 0) {
-      objectCount += objects.getObjectSummaries().size();
-      if (objects.isTruncated()) {
-        objects = s3Client.listNextBatchOfObjects(objects);
-      } else {
-        break;
-      }
+    final int lastIndex = objectPath.lastIndexOf("/");
+    final String bucketPath;
+    if (lastIndex > 0) {
+      bucketPath = objectPath.substring(0, lastIndex + 1);
+    } else {
+      bucketPath = objectPath;
     }
-    return objectCount;
+    final ObjectListing objects = s3Client.listObjects(bucket, bucketPath);
+    if (objects.isTruncated()) {
+      // bucket contains too many objects, use an uuid instead
+      return UUID.randomUUID().toString();
+    } else {
+      return Integer.toString(objects.getObjectSummaries().size());
+    }
   }
 
   @Override
