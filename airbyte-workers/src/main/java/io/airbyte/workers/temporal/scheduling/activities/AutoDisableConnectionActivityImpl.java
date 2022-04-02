@@ -66,7 +66,6 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
             }
           } else if (jobStatus == JobStatus.SUCCEEDED) {
             notifyWarningIfNecessary(lastJob, numFailures);
-            System.out.println("tcho1");
             return new AutoDisableConnectionOutput(false);
           }
         }
@@ -75,7 +74,6 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         // jobs), do not auto-disable
         if (numFailures == 0 || numFailures == configs.getMaxFailedJobsInARowBeforeConnectionDisable() / 2) {
           notifyWarningIfNecessary(lastJob, numFailures);
-          System.out.println("tcho2");
           return new AutoDisableConnectionOutput(false);
         }
 
@@ -111,9 +109,6 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
   }
 
   private void notifyWarningIfNecessary(final Job lastJob, final int numFailures) {
-    System.out.println(numFailures);
-    System.out.println(configs.getMaxFailedJobsInARowBeforeConnectionDisable());
-    System.out.println(configs.getMaxFailedJobsInARowBeforeConnectionDisable() / 2);
     if (numFailures == configs.getMaxFailedJobsInARowBeforeConnectionDisable() / 2) {
       jobNotifier.autoDisableConnectionAlertWithoutCustomerioConfig(CONNECTION_DISABLED_WARNING_NOTIFICATION, lastJob);
     }
