@@ -388,4 +388,23 @@ public class ConfigRepositoryE2EReadWriteTest {
 
   }
 
+  @Test
+  public void testDeleteStandardSync()
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID deletedOperationId = MockData.standardSyncOperations().get(0).getOperationId();
+    final List<StandardSync> syncs = MockData.standardSyncs();
+    configRepository.deleteStandardSyncOperation(deletedOperationId);
+
+    for (final StandardSync sync : syncs) {
+      final StandardSync retrievedSync = configRepository.getStandardSync(sync.getConnectionId());
+      for (final UUID operationId : sync.getOperationIds()) {
+        if (operationId.equals(deletedOperationId)) {
+          assertThat(retrievedSync.getOperationIds()).doesNotContain(deletedOperationId);
+        } else {
+          assertThat(retrievedSync.getOperationIds()).contains(operationId);
+        }
+      }
+    }
+  }
+
 }

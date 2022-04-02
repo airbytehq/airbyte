@@ -189,15 +189,9 @@ public class OperationsHandler {
   }
 
   public void deleteOperation(final OperationIdRequestBody operationIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws IOException {
     final UUID operationId = operationIdRequestBody.getOperationId();
-    // Remove operation from all connections using it
-    for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
-      if (standardSync.getOperationIds().removeAll(List.of(operationId))) {
-        configRepository.writeStandardSync(standardSync);
-      }
-    }
-    removeOperation(operationId);
+    configRepository.deleteStandardSyncOperation(operationId);
   }
 
   private void removeOperation(final UUID operationId) throws JsonValidationException, ConfigNotFoundException, IOException {

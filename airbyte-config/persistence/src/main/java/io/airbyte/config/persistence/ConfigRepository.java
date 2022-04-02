@@ -670,6 +670,17 @@ public class ConfigRepository {
     });
   }
 
+  public void deleteStandardSyncOperation(final UUID standardSyncOperationId) throws IOException {
+    database.transaction(ctx -> {
+      ctx.deleteFrom(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.OPERATION_ID.eq(standardSyncOperationId)).execute();
+      ctx.update(OPERATION)
+          .set(OPERATION.TOMBSTONE, true)
+          .where(OPERATION.ID.eq(standardSyncOperationId)).execute();
+      return null;
+    });
+  }
+
   public SourceOAuthParameter getSourceOAuthParams(final UUID SourceOAuthParameterId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return persistence.getConfig(ConfigSchema.SOURCE_OAUTH_PARAM, SourceOAuthParameterId.toString(), SourceOAuthParameter.class);
