@@ -64,6 +64,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -111,6 +112,7 @@ class WebBackendConnectionsHandlerTest {
     final SourceHandler sourceHandler = mock(SourceHandler.class);
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
+    final ConfigRepository configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
     featureFlags = mock(FeatureFlags.class);
     eventRunner = mock(EventRunner.class);
@@ -122,7 +124,8 @@ class WebBackendConnectionsHandlerTest {
         schedulerHandler,
         operationsHandler,
         featureFlags,
-        eventRunner);
+        eventRunner,
+        configRepository);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
