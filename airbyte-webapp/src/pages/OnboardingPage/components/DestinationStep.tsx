@@ -3,34 +3,22 @@ import { FormattedMessage } from "react-intl";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition } from "core/domain/connector";
 
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useCreateDestination } from "hooks/services/useDestinationHook";
+import { JobInfo } from "core/domain/job";
 
-type IProps = {
-  availableServices: DestinationDefinition[];
-  onSubmit: (values: {
-    name: string;
-    serviceType: string;
-    destinationDefinitionId?: string;
-    connectionConfiguration?: ConnectionConfiguration;
-  }) => void;
-  hasSuccess?: boolean;
-  error?: null | { message?: string; status?: number };
-  afterSelectConnector?: () => void;
+type Props = {
+  onNextStep: () => void;
+  onSuccess: () => void;
 };
 
-const DestinationStep: React.FC<IProps> = ({
-  onSubmit,
-  availableServices,
-  hasSuccess,
-  error,
-  afterSelectConnector,
-}) => {
+const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   const [destinationDefinitionId, setDestinationDefinitionId] = useState<
     string | null
   >(null);
@@ -38,12 +26,51 @@ const DestinationStep: React.FC<IProps> = ({
     data: destinationDefinitionSpecification,
     isLoading,
   } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
+  const { destinationDefinitions } = useDestinationDefinitionList();
+  const [successRequest, setSuccessRequest] = useState(false);
+  const [error, setError] = useState<{
+    status: number;
+    response: JobInfo;
+    message: string;
+  } | null>(null);
 
+  const { mutateAsync: createDestination } = useCreateDestination();
   const analyticsService = useAnalyticsService();
 
-  const onDropDownSelect = (destinationDefinition: string) => {
-    const destinationConnector = availableServices.find(
-      (s) => s.destinationDefinitionId === destinationDefinition
+  const getDestinationDefinitionById = (id: string) =>
+    destinationDefinitions.find((item) => item.destinationDefinitionId === id);
+
+  const onSubmitDestinationStep = async (values: {
+    name: string;
+    serviceType: string;
+    destinationDefinitionId?: string;
+    connectionConfiguration?: ConnectionConfiguration;
+  }) => {
+    setError(null);
+    const destinationConnector = getDestinationDefinitionById(
+      values.serviceType
+    );
+
+    try {
+      await createDestination({
+        values,
+        destinationConnector,
+      });
+
+      setSuccessRequest(true);
+      onSuccess();
+      setTimeout(() => {
+        setSuccessRequest(false);
+        onNextStep();
+      }, 2000);
+    } catch (e) {
+      setError(e);
+    }
+  };
+
+  const onDropDownSelect = (destinationDefinitionId: string) => {
+    const destinationConnector = getDestinationDefinitionById(
+      destinationDefinitionId
     );
     analyticsService.track("New Destination - Action", {
       action: "Select a connector",
@@ -52,17 +79,14 @@ const DestinationStep: React.FC<IProps> = ({
         destinationConnector?.destinationDefinitionId,
     });
 
-    if (afterSelectConnector) {
-      afterSelectConnector();
-    }
-
-    setDestinationDefinitionId(destinationDefinition);
+    setError(null);
+    setDestinationDefinitionId(destinationDefinitionId);
   };
   const onSubmitForm = async (values: {
     name: string;
     serviceType: string;
   }) => {
-    await onSubmit({
+    await onSubmitDestinationStep({
       ...values,
       destinationDefinitionId:
         destinationDefinitionSpecification?.destinationDefinitionId,
@@ -92,8 +116,8 @@ const DestinationStep: React.FC<IProps> = ({
         formType="destination"
         onServiceSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
-        hasSuccess={hasSuccess}
-        availableServices={availableServices}
+        hasSuccess={successRequest}
+        availableServices={destinationDefinitions}
         errorMessage={errorMessage}
         selectedConnectorDefinitionSpecification={
           destinationDefinitionSpecification

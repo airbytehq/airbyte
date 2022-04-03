@@ -13,12 +13,11 @@ import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import Status from "core/statuses";
 import useWorkspace from "hooks/services/useWorkspace";
-import { useGetConnection } from "hooks/services/useConnectionHook";
-
-type FinalStepProps = {
-  connectionId: string;
-  onSync: () => void;
-};
+import {
+  useConnectionList,
+  useGetConnection,
+  useSyncConnection,
+} from "hooks/services/useConnectionHook";
 
 const Title = styled(H1)`
   margin: 21px 0;
@@ -35,7 +34,7 @@ const Videos = styled.div`
   padding: 0 27px;
 `;
 
-const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
+const FinalStep: React.FC = () => {
   const config = useConfig();
   const { sendFeedback } = useWorkspace();
   const {
@@ -45,7 +44,9 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
     useCaseLinks,
     skipCase,
   } = useOnboardingService();
-  const connection = useGetConnection(connectionId, {
+  const { mutateAsync: syncConnection } = useSyncConnection();
+  const { connections } = useConnectionList();
+  const connection = useGetConnection(connections[0].connectionId, {
     refetchInterval: 2500,
   });
   const [isOpen, setIsOpen] = useState(false);
@@ -73,6 +74,8 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
     passFeedback();
     setIsOpen(false);
   };
+
+  const onSync = () => syncConnection(connections[0]);
 
   return (
     <>
