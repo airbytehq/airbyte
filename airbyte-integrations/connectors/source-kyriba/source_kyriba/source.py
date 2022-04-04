@@ -48,7 +48,7 @@ class KyribaStream(HttpStream):
         self.gateway_url = gateway_url
         self.version = version
         self.start_date = start_date or date.isoformat(date.today())
-        self.end_date = date.fromisoformat(end_date)
+        self.end_date = date.fromisoformat(end_date) if end_date else None
         self.client = client
         super().__init__(self.client.login())
 
