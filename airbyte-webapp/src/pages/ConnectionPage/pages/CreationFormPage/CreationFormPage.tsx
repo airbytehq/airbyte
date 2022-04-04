@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
 import useRouter from "hooks/useRouter";
 import MainPageWithScroll from "components/MainPageWithScroll";
@@ -15,11 +14,6 @@ import CreateConnectionContent from "components/CreateConnectionContent";
 import ExistingEntityForm from "./components/ExistingEntityForm";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
-
-import SourceResource from "core/resources/Source";
-import DestinationResource from "core/resources/Destination";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import {
   Destination,
   DestinationDefinition,
@@ -27,6 +21,10 @@ import {
   SourceDefinition,
 } from "core/domain/connector";
 import { Connection } from "core/domain/connection";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useGetSource } from "hooks/services/useSourceHook";
+import { useGetDestination } from "hooks/services/useDestinationHook";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -66,39 +64,17 @@ function usePreloadData(): {
 } {
   const { location } = useRouter();
 
-  const source = useResource(
-    SourceResource.detailShape(),
-    hasSourceId(location.state)
-      ? {
-          sourceId: location.state.sourceId,
-        }
-      : null
+  const source = useGetSource(
+    hasSourceId(location.state) ? location.state.sourceId : null
   );
 
-  const sourceDefinition = useResource(
-    SourceDefinitionResource.detailShape(),
-    source
-      ? {
-          sourceDefinitionId: source.sourceDefinitionId,
-        }
-      : null
-  );
+  const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
-  const destination = useResource(
-    DestinationResource.detailShape(),
-    hasDestinationId(location.state)
-      ? {
-          destinationId: location.state.destinationId,
-        }
-      : null
+  const destination = useGetDestination(
+    hasDestinationId(location.state) ? location.state.destinationId : null
   );
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    destination
-      ? {
-          destinationDefinitionId: destination.destinationDefinitionId,
-        }
-      : null
+  const destinationDefinition = useDestinationDefinition(
+    destination?.destinationDefinitionId
   );
 
   return { source, sourceDefinition, destination, destinationDefinition };

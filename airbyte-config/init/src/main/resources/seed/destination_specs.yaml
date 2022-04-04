@@ -188,7 +188,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.0.1"
+- dockerImage: "airbyte/destination-bigquery:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -398,7 +398,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.11"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -3469,7 +3469,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.2.12"
+- dockerImage: "airbyte/destination-s3:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3510,7 +3510,7 @@
             \ bucket directory"
           type: "string"
           examples:
-          - "${NAMESPACE}/${STREAM_NAME}/"
+          - "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
           order: 3
         s3_bucket_region:
           title: "S3 Bucket Region"

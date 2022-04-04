@@ -8,7 +8,7 @@ import DeleteModal from "./components/DeleteModal";
 
 type IProps = {
   type: "source" | "destination" | "connection";
-  onDelete: () => Promise<void>;
+  onDelete: () => Promise<unknown>;
 };
 
 const DeleteBlockComponent = styled(ContentCard)`
