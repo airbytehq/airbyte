@@ -73,10 +73,10 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("s3_bucket_path") == null) {
-      return null;
+    if (config.has("s3_bucket_path")) {
+      return config.get("s3_bucket_path").asText();
     }
-    return config.get("s3_bucket_path").asText();
+    return null;
   }
 
   @Override

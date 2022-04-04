@@ -16,10 +16,12 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -28,6 +30,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +58,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected JsonNode configJson;
   protected GcsDestinationConfig config;
   protected AmazonS3 s3Client;
+  protected NamingConventionTransformer nameTransformer;
+  protected S3StorageOperations s3StorageOperations;
 
   protected GcsDestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
@@ -74,6 +80,14 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
+  protected String getDefaultSchema(final JsonNode config) {
+    if (config.has("gcs_bucket_path")) {
+      return config.get("gcs_bucket_path").asText();
+    }
+    return null;
+  }
+
+  @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode baseJson = getBaseConfigJson();
     final JsonNode failCheckJson = Jsons.clone(baseJson);
@@ -87,8 +101,13 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
   protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
-    final String outputPrefix = S3OutputPathHelper
-        .getOutputPrefix(config.getBucketPath(), namespace, streamName);
+    final String namespaceStr = nameTransformer.getNamespace(namespace);
+    final String streamNameStr = nameTransformer.getIdentifier(streamName);
+    final String outputPrefix = s3StorageOperations.getBucketObjectPath(
+        namespaceStr,
+        streamNameStr,
+        DateTime.now(DateTimeZone.UTC),
+        S3DestinationConstants.DEFAULT_PATH_FORMAT);
     final List<S3ObjectSummary> objectSummaries = s3Client
         .listObjects(config.getBucketName(), outputPrefix)
         .getObjectSummaries()
@@ -126,6 +145,8 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
     this.s3Client = config.getS3Client();
+    this.nameTransformer = new S3NameTransformer();
+    this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, config);
   }
 
   /**

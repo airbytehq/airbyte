@@ -14,7 +14,6 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.S3ConsumerFactory;
 import io.airbyte.integrations.destination.s3.S3Destination;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.SerializedBufferFactory;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -72,7 +71,7 @@ public class GcsDestination extends BaseConnector implements Destination {
     final GcsDestinationConfig gcsConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
     return new S3ConsumerFactory().create(
         outputRecordCollector,
-        new S3StorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig),
+        new GcsStorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig),
         nameTransformer,
         SerializedBufferFactory.getCreateFunction(config, FileBuffer::new),
         gcsConfig,

@@ -36,8 +36,8 @@ public class S3StorageOperations implements BlobStorageOperations {
   private static final int UPLOAD_RETRY_LIMIT = 3;
 
   private final NamingConventionTransformer nameTransformer;
-  private final S3DestinationConfig s3Config;
-  private AmazonS3 s3Client;
+  protected final S3DestinationConfig s3Config;
+  protected AmazonS3 s3Client;
 
   public S3StorageOperations(final NamingConventionTransformer nameTransformer, final AmazonS3 s3Client, final S3DestinationConfig s3Config) {
     this.nameTransformer = nameTransformer;
