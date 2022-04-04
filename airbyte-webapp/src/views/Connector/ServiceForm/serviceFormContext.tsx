@@ -49,13 +49,11 @@ const ServiceFormContextProvider: React.FC<{
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  serviceType?: string;
   availableServices: ConnectorDefinition[];
   getValues: (values: ServiceFormValues) => ServiceFormValues;
   selectedConnector?: ConnectorDefinitionSpecification;
 }> = ({
   availableServices,
-  serviceType,
   children,
   widgetsInfo,
   setUiWidgetsInfo,
@@ -68,6 +66,7 @@ const ServiceFormContextProvider: React.FC<{
   const { values } = useFormikContext<ServiceFormValues>();
   const { hasFeature } = useFeatureService();
 
+  const serviceType = values.serviceType;
   const selectedService = useMemo(
     () => availableServices.find((s) => Connector.id(s) === serviceType),
     [availableServices, serviceType]
