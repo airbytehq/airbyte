@@ -63,6 +63,7 @@
     * [CockroachDB](integrations/sources/cockroachdb.md)
     * [Confluence](integrations/sources/confluence.md)
     * [Customer.io (Sponsored by Faros AI)](integrations/sources/customer-io.md)
+    * [DCL Logistics](integrations/sources/dcl-logistics.md)
     * [Delighted](integrations/sources/delighted.md)
     * [Db2](integrations/sources/db2.md)
     * [Dixa](integrations/sources/dixa.md)

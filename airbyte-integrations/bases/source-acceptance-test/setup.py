@@ -17,7 +17,7 @@ MAIN_REQUIREMENTS = [
     "pytest-sugar~=0.9",
     "pytest-timeout~=1.4",
     "pprintpp~=0.4",
-    "dpath~=2.0.1",
+    "dpath==2.0.1",
     "jsonschema~=3.2.0",
     "jsonref==0.2",
 ]
