@@ -52,7 +52,7 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void startTracked() throws Exception {
-    final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    final AmazonS3 s3Client = gcsDestinationConfig.getS3Client();
 
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
@@ -95,13 +95,13 @@ public class GcsConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void close(final boolean hasFailed) throws Exception {
     LOGGER.debug("Closing consumer with writers = {}", streamNameAndNamespaceToWriters);
-    List<Exception> exceptionsThrown = new ArrayList<>();
-    for (var entry : streamNameAndNamespaceToWriters.entrySet()) {
+    final List<Exception> exceptionsThrown = new ArrayList<>();
+    for (final var entry : streamNameAndNamespaceToWriters.entrySet()) {
       final DestinationFileWriter handler = entry.getValue();
       LOGGER.debug("Closing writer {}", entry.getKey());
       try {
         handler.close(hasFailed);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing writer {}", entry.getKey(), e);
       }

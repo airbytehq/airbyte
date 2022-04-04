@@ -125,7 +125,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     this.config = GcsDestinationConfig.getGcsDestinationConfig(configJson);
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
-    this.s3Client = GcsS3Helper.getGcsS3Client(config);
+    this.s3Client = config.getS3Client();
   }
 
   /**

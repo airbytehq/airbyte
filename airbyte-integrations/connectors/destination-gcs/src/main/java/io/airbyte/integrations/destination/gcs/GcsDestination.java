@@ -45,7 +45,7 @@ public class GcsDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
       final GcsDestinationConfig destinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
-      final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(destinationConfig);
+      final AmazonS3 s3Client = destinationConfig.getS3Client();
 
       // Test single upload (for small files) permissions
       S3Destination.testSingleUpload(s3Client, destinationConfig.getBucketName());
