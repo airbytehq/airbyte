@@ -100,8 +100,9 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
         streamNameStr,
         DateTime.now(DateTimeZone.UTC),
         S3DestinationConstants.DEFAULT_PATH_FORMAT);
+    final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
     final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), outputPrefix)
+        .listObjects(config.getBucketName(), parentFolder)
         .getObjectSummaries()
         .stream()
         .filter(o -> o.getKey().contains(streamNameStr + "/"))
