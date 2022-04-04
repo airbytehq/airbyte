@@ -207,7 +207,7 @@ public class DatabricksStreamCopier implements StreamCopier {
    */
   static S3DestinationConfig getStagingS3DestinationConfig(final S3DestinationConfig config, final String stagingFolder) {
     return S3DestinationConfig.create(config)
-        .withBucketRegion(String.join("/", config.getBucketPath(), stagingFolder))
+        .withBucketPath(String.join("/", config.getBucketPath(), stagingFolder))
         .withFormatConfig(new S3ParquetFormatConfig(MAPPER.createObjectNode()))
         .get();
   }
