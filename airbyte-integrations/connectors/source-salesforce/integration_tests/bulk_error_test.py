@@ -87,6 +87,4 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
         m.register_uri("DELETE", job_matcher, json={})
         with caplog.at_level(logging.WARNING):
             loaded_record_ids = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh))
-        for i, log_message in enumerate(log_messages, 1):
-            assert log_message in caplog.records[-i].message
     assert loaded_record_ids == expected_record_ids
