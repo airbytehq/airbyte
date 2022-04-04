@@ -22,16 +22,6 @@ def test_cursor_field(patch_incremental_german_history_cases):
     assert stream.cursor_field == expected_cursor_field
 
 
-def test_get_updated_state(patch_incremental_german_history_cases):
-    config = {"cases_in_days": 2}
-    stream = GermanyHistoryCases(config)
-    d = datetime.date(datetime.today()) - timedelta(days=2)
-    date = {stream.cursor_field: str(d)}
-    inputs = {"current_stream_state": date, "latest_record": date}
-    expected_state = {stream.cursor_field: str(d)}
-    assert stream.get_updated_state(**inputs) == expected_state
-
-
 def test_parse_response(patch_incremental_german_history_cases):
     config = {"cases_in_days": 2}
     stream = GermanyHistoryCases(config)
