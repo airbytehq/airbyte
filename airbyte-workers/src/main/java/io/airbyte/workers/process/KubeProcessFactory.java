@@ -110,7 +110,7 @@ public class KubeProcessFactory implements ProcessFactory {
     try {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = createPodName(imageName, jobId, attempt);
-      LOGGER.info("Attempting to start pod = {}", podName);
+      LOGGER.info("Attempting to start pod = {} for {}", podName, imageName);
 
       final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
@@ -124,7 +124,6 @@ public class KubeProcessFactory implements ProcessFactory {
           isOrchestrator,
           processRunnerHost,
           fabricClient,
-          workerConfigs.getWorkerStatusCheckInterval(),
           podName,
           namespace,
           imageName,
