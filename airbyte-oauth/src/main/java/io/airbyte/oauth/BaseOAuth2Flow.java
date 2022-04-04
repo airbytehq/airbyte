@@ -59,15 +59,6 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
       this.contentType = contentType;
       this.converter = converter;
     }
-
-    public String getContentType() {
-      return contentType;
-    }
-
-    public Function<Map<String, String>, String> getConverter() {
-      return converter;
-    }
-
   }
 
   protected final HttpClient httpClient;
