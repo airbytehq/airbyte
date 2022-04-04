@@ -19,7 +19,7 @@ import {
   OperatorType,
   Transformation,
 } from "core/domain/connection";
-import useConnection from "hooks/services/useConnectionHook";
+import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { ContentCard, H4 } from "components";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
@@ -110,7 +110,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({
   const definition = useGetDestinationDefinitionSpecification(
     connection.destination.destinationDefinitionId
   );
-  const { updateConnection } = useConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
   const { hasFeature } = useFeatureService();
 

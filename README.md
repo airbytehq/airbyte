@@ -61,6 +61,7 @@ See our [Contributing guide](docs/contributing-to-airbyte/) on how to get starte
 For general help using Airbyte, please refer to the official Airbyte documentation. For additional help, you can use one of these channels to ask a question:
 
 * [Slack](https://slack.airbyte.io) \(For live discussion with the Community and Airbyte team\)
+* [Forum](https://discuss.airbyte.io/) \(For deeper converstaions about features, connectors, or problems\)
 * [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
 * [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
 * [Weekly office hours](https://airbyte.io/weekly-office-hours/) \(Live informal 30-minute video call sessions with the Airbyte team\)

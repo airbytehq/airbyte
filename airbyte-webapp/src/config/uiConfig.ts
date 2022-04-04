@@ -19,6 +19,7 @@ const uiConfig = {
   syncModeLink:
     "https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history",
   demoLink: "https://demo.airbyte.io",
+  contactSales: "https://airbyte.com/talk-to-sales",
   webpageLink: "https://airbyte.com",
 } as const;
 

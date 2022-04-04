@@ -16,11 +16,14 @@ import {
   Label,
 } from "components";
 
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
-import { Connection, ScheduleProperties } from "core/resources/Connection";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import {
+  Connection,
+  ConnectionNamespaceDefinition,
+  ScheduleProperties,
+} from "core/domain/connection";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import CreateControls from "./components/CreateControls";
 import SchemaField from "./components/SyncCatalogField";
@@ -135,8 +138,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     isEditMode
   );
 
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues) => {
       const formValues: ConnectionFormValues = (connectionValidationSchema.cast(

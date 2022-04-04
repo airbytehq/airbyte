@@ -111,7 +111,10 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
-| 0.2.24  | 2022-03-30 | [9251](https://github.com/airbytehq/airbyte/pull/9251) | Add Streams Workflow and WorkflowRuns                                                                 |
+| 0.2.27  | 2022-04-02 | [11678](https://github.com/airbytehq/airbyte/pull/11678) | Fix "PAT Credentials" in spec                                                                              |
+| 0.2.26  | 2022-03-31 | [11623](https://github.com/airbytehq/airbyte/pull/11623) | Re-factored incremental sync for `Reviews` stream                                                          |
+| 0.2.25  | 2022-03-31 | [11567](https://github.com/airbytehq/airbyte/pull/11567) | Improve code for better error handling                                                                     |
+| 0.2.24  | 2022-03-30 | [9251](https://github.com/airbytehq/airbyte/pull/9251) | Add Streams Workflow and WorkflowRuns                                                                        |
 | 0.2.23  | 2022-03-17 | [11212](https://github.com/airbytehq/airbyte/pull/11212) | Improve documentation and spec for Beta                                                                    |
 | 0.2.22  | 2022-03-10 | [10878](https://github.com/airbytehq/airbyte/pull/10878) | Fix error handling for unavailable streams with 404 status code                                            |
 | 0.2.21  | 2022-03-04 | [10749](https://github.com/airbytehq/airbyte/pull/10749) | Add new stream `ProjectCards`                                                                              |
