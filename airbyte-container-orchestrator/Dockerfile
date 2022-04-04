@@ -34,9 +34,6 @@ ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-${VERSION}/bin/${APPLICATION}"
 WORKDIR /app
 
 # Move orchestrator app
-ADD bin/${APPLICATION}-0.35.65-alpha.tar /app
-
-# wait for upstream dependencies to become available before starting server
 ADD bin/${APPLICATION}-${VERSION}.tar /app
 
 # wait for upstream dependencies to become available before starting server
