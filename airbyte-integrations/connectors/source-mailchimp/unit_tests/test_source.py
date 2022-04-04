@@ -3,6 +3,8 @@
 #
 
 import pytest
+
+import requests
 from airbyte_cdk.logger import AirbyteLogger
 from source_mailchimp.source import MailChimpAuthenticator, SourceMailchimp
 
@@ -20,7 +22,8 @@ def test_check_connection_ok(requests_mock, config, data_center):
     assert not error_msg
 
 
-def test_check_connection_error(config):
+def test_check_connection_error(requests_mock, config, data_center):
+    requests_mock.register_uri("GET", f"https://{data_center}.api.mailchimp.com/3.0/ping", body=requests.ConnectionError())
     ok, error_msg = SourceMailchimp().check_connection(logger, config=config)
 
     assert not ok
