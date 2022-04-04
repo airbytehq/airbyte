@@ -185,7 +185,7 @@ jobs:
           SLACK_FOOTER: ""
       - name: Check if connector in definitions yaml
         run: |
-          connector="${${{ github.event.inputs.connector }}/connectors/airbyte}"
+          connector="airbyte/${{ env.IMAGE_NAME }}"
           definitionpath=./airbyte-config/init/src/main/resources/seed/
           sourcecheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"source_definitions.yaml)
           destcheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"destination_definitions.yaml)
@@ -194,13 +194,13 @@ jobs:
           fi
       - name: Bump version in definitions yaml
         run: |
-          connector="${${{ github.event.inputs.connector }}/connectors/airbyte}"
+          connector="airbyte/${{ env.IMAGE_NAME }}"
           definitionpath=./airbyte-config/init/src/main/resources/seed/
           sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
           destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
           if [ -z "$sourcename" ]
-          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"env.IMAGE_VERSION\"" -i "$definitionpath"destination_definitions.yaml
-          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"env.IMAGE_VERSION\"" -i "$definitionpath"source_definitions.yaml
+          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"destination_definitions.yaml
+          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
           fi
       - name: Run gradle process changes
         run: |
