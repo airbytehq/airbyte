@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -50,15 +49,15 @@ public class SerializedBufferFactory {
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     switch (formatConfig.getFormat()) {
       case AVRO -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".avro");
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(AvroSerializedBuffer.DEFAULT_SUFFIX);
         return AvroSerializedBuffer.createFunction((S3AvroFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case CSV -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".csv.gz");
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(CsvSerializedBuffer.CSV_GZ_SUFFIX);
         return CsvSerializedBuffer.createFunction((S3CsvFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case JSONL -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".jsonl.gz");
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(JsonLSerializedBuffer.JSONL_GZ_SUFFIX);
         return JsonLSerializedBuffer.createFunction((S3JsonlFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case PARQUET -> {
