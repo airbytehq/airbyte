@@ -30,7 +30,6 @@ public class AwsDatalakeDestinationConfig {
 
   private final String awsAccountId;
   private final String region;
-  private final String authMode;
   private final String accessKeyId;
   private final String secretAccessKey;
   private final String bucketName;
@@ -39,7 +38,6 @@ public class AwsDatalakeDestinationConfig {
 
   public AwsDatalakeDestinationConfig(String awsAccountId,
                                       String region,
-                                      String authMode,
                                       String accessKeyId,
                                       String secretAccessKey,
                                       String bucketName,
@@ -47,22 +45,24 @@ public class AwsDatalakeDestinationConfig {
                                       String databaseName) {
     this.awsAccountId = awsAccountId;
     this.region = region;
-    this.authMode = authMode;
     this.accessKeyId = accessKeyId;
     this.secretAccessKey = secretAccessKey;
     this.bucketName = bucketName;
     this.prefix = prefix;
     this.databaseName = databaseName;
+
   }
 
   public static AwsDatalakeDestinationConfig getAwsDatalakeDestinationConfig(JsonNode config) {
-    var optAuthMode = config.get("auth_mode");
+    
+    final String aws_access_key_id = config.path("credentials").get("aws_access_key_id").asText();
+    final String aws_secret_access_key = config.path("credentials").get("aws_secret_access_key").asText(); 
+
     return new AwsDatalakeDestinationConfig(
         config.get("aws_account_id").asText(), 
         config.get("region").asText(),
-        optAuthMode == null ? "" : optAuthMode.asText(), 
-        config.get("aws_access_key_id").asText(),
-        config.get("aws_secret_access_key").asText(), 
+        aws_access_key_id,
+        aws_secret_access_key, 
         config.get("bucket_name").asText(), 
         config.get("bucket_prefix").asText(),
         config.get("lakeformation_database_name").asText()
@@ -75,10 +75,6 @@ public class AwsDatalakeDestinationConfig {
 
   public String getRegion() {
     return region;
-  }
-
-  public String getAuthMode() {
-    return authMode;
   }
 
   public String getAccessKeyId() {

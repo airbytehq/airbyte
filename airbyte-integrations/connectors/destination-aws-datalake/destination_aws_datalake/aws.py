@@ -1,19 +1,12 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-import enum
-
 import boto3
 from airbyte_cdk.destinations import Destination
 from botocore.exceptions import ClientError
 from retrying import retry
 
-from .config_reader import ConnectorConfig
-
-
-class AuthMode(enum.Enum):
-    IAM_ROLE = "ROLE"
-    IAM_USER = "USER"
+from .config_reader import AuthMode, ConnectorConfig
 
 
 class AwsHandler:
@@ -32,13 +25,13 @@ class AwsHandler:
 
     @retry(stop_max_attempt_number=10, wait_random_min=1000, wait_random_max=2000)
     def create_session(self):
-        if self._connector_config.auth_mode == AuthMode.IAM_USER.value:
+        if self._connector_config.credentials_type == AuthMode.IAM_USER.value:
             self._session = boto3.Session(
                 aws_access_key_id=self._connector_config.aws_access_key,
                 aws_secret_access_key=self._connector_config.aws_secret_key,
                 region_name=self._connector_config.region,
             )
-        elif self._connector_config.auth_mode == AuthMode.IAM_ROLE.value:
+        elif self._connector_config.credentials_type == AuthMode.IAM_ROLE.value:
             client = boto3.client("sts")
             role = client.assume_role(
                 RoleArn=self._connector_config.role_arn,
@@ -51,6 +44,8 @@ class AwsHandler:
                 aws_session_token=creds.get("SessionToken"),
                 region_name=self._connector_config.region,
             )
+        else:
+            raise Exception("Session wasn't created")
 
     @property
     def session(self) -> boto3.Session:
@@ -58,6 +53,7 @@ class AwsHandler:
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def head_bucket(self):
+        print(self._bucket_name)
         self.s3_client.head_bucket(Bucket=self._bucket_name)
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)

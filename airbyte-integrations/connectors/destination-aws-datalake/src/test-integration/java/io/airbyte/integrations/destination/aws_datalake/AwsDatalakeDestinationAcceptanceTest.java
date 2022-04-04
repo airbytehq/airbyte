@@ -86,16 +86,22 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
+    JsonNode credentials = Jsons.jsonNode(ImmutableMap.builder()
+        .put("credentials_title", "IAM User")
+        .put("aws_access_key_id", "wrong-access-key")
+        .put("aws_secret_access_key", "wrong-secret")
+        .build());
+
+    JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
         .put("aws_account_id", "112233")
-        .put("auth_mode", "USER")
         .put("region", "us-east-1")
-        .put("aws_access_key_id", "key-id-format")
-        .put("aws_secret_access_key", "secret-key")
         .put("bucket_name", "test-bucket")
         .put("bucket_prefix", "test")
         .put("lakeformation_database_name", "lf_db")
+        .put("credentials", credentials)
         .build());
+
+    return config;
   }
 
   @Override

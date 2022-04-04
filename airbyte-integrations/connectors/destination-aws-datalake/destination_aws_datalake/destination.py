@@ -89,7 +89,7 @@ class DestinationAwsDatalake(Destination):
             aws_handler = AwsHandler(connector_config, self)
         except (ClientError, AttributeError) as e:
             logger.error(f"""Could not create session on {connector_config.aws_account_id} Exception: {repr(e)}""")
-            message = f"""Could not authenticate using {connector_config.auth_mode} on Account {connector_config.aws_account_id} Exception: {repr(e)}"""
+            message = f"""Could not authenticate using {connector_config.credentials_type} on Account {connector_config.aws_account_id} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
         try:
