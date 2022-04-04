@@ -211,7 +211,7 @@ jobs:
           git config user.email "<>"
       - name: commit
         run: |
-          git add -A
+          git add -u
           git commit -m "auto-bump connector version"
           git push origin ${{ github.ref }}
       - name: Add Version Bump Success Comment
