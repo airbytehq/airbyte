@@ -20,7 +20,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "OAuth",
-                "enum": ["OAuth"],
                 "default": "OAuth",
                 "order": 0
               },
@@ -60,19 +59,25 @@
             "required": ["username", "password"],
             "order": 1,
             "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "username/password",
+                "default": "username/password",
+                "order": 0
+              },
               "username": {
                 "description": "The username you created to allow Airbyte to access the database.",
                 "examples": ["AIRBYTE_USER"],
                 "type": "string",
                 "title": "Username",
-                "order": 0
+                "order": 1
               },
               "password": {
                 "description": "The password associated with the username.",
                 "type": "string",
                 "airbyte_secret": true,
                 "title": "Password",
-                "order": 1
+                "order": 2
               }
             }
           }

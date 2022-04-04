@@ -30,6 +30,10 @@ import org.slf4j.LoggerFactory;
 
 public class SnowflakeDataSourceUtils {
 
+  public static final String OAUTH_METHOD = "OAuth";
+  public static final String USERNAME_PASSWORD_METHOD = "username/password";
+  public static final String UNRECOGNIZED = "Unrecognized";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDataSourceUtils.class);
   private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
   private static final String REFRESH_TOKEN_URL = "https://%s/oauth/token-request";
@@ -51,17 +55,26 @@ public class SnowflakeDataSourceUtils {
     final String jdbcUrl = buildJDBCUrl(config);
     hikariConfig.setJdbcUrl(jdbcUrl);
 
-    if (config.has("credentials") && config.get("credentials").has("auth_type")
-        && "OAuth".equals(config.get("credentials").get("auth_type").asText())) {
-      LOGGER.info("Authorization mode is OAuth");
-      hikariConfig.setDataSourceProperties(buildAuthProperties(config));
-      // thread to keep the refresh token up to date
-      SnowflakeSource.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(getRefreshTokenTask(hikariConfig),
-          PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
-    } else if (config.has("credentials") && config.get("credentials").has("password")) {
-      LOGGER.info("Authorization mode is 'Username and password'");
-      populateUsernamePasswordConfig(hikariConfig, config.get("credentials"));
-    } else if (config.has("password") && config.has("username")) {
+    if (config.has("credentials")) {
+      JsonNode credentials = config.get("credentials");
+      final String authType = credentials.has("auth_type") ?
+          credentials.get("auth_type").asText() : UNRECOGNIZED;
+      switch (authType) {
+        case OAUTH_METHOD -> {
+          LOGGER.info("Authorization mode is OAuth");
+          hikariConfig.setDataSourceProperties(buildAuthProperties(config));
+          // thread to keep the refresh token up to date
+          SnowflakeSource.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(
+              getRefreshTokenTask(hikariConfig),
+              PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
+        }
+        case USERNAME_PASSWORD_METHOD -> {
+          LOGGER.info("Authorization mode is 'Username and password'");
+          populateUsernamePasswordConfig(hikariConfig, config.get("credentials"));
+        }
+        default -> throw new IllegalArgumentException("Unrecognized auth type: " + authType);
+      }
+    } else {
       LOGGER.info("Authorization mode is deprecated 'Username and password'. Please update your source configuration");
       populateUsernamePasswordConfig(hikariConfig, config);
     }

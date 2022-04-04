@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.source.snowflake;
 
+import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.OAUTH_METHOD;
+import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.UNRECOGNIZED;
+import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.USERNAME_PASSWORD_METHOD;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -19,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,18 +59,18 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final String jdbcUrl = SnowflakeDataSourceUtils.buildJDBCUrl(config);
 
-    if (config.has("credentials") && config.get("credentials").has("auth_type")
-        && "OAuth".equals(config.get("credentials").get("auth_type").asText())) {
-      // Use OAuth authorization method
-      return buildOAuthConfig(config, jdbcUrl);
-    } else if (config.has("credentials") && config.get("credentials").has("username")) {
-      // Use Username and password authorization method
-      return buildUsernamePasswordConfig(config.get("credentials"), jdbcUrl);
-    } else if (config.has("password") && config.has("username")) {
-      // Use deprecated Username and password authorization method
-      return buildUsernamePasswordConfig(config, jdbcUrl);
+    if (config.has("credentials")) {
+      JsonNode credentials = config.get("credentials");
+      final String authType =
+          credentials.has("auth_type") ? credentials.get("auth_type").asText() : UNRECOGNIZED;
+      return switch (authType) {
+        case OAUTH_METHOD -> buildOAuthConfig(config, jdbcUrl);
+        case USERNAME_PASSWORD_METHOD -> buildUsernamePasswordConfig(config.get("credentials"),
+            jdbcUrl);
+        default -> throw new IllegalArgumentException("Unrecognized auth type: " + authType);
+      };
     } else {
-      throw new RuntimeException("Invalid authorization credentials");
+      return buildUsernamePasswordConfig(config, jdbcUrl);
     }
   }
 
