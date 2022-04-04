@@ -70,10 +70,10 @@ public class GcsDestination extends BaseConnector implements Destination {
                                             final ConfiguredAirbyteCatalog configuredCatalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final GcsDestinationConfig gcsConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
-    final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsConfig);
     return new S3ConsumerFactory().create(
         outputRecordCollector,
-        new S3StorageOperations(nameTransformer, s3Client, gcsConfig),
+        new S3StorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig),
+        nameTransformer,
         SerializedBufferFactory.getCreateFunction(config, FileBuffer::new),
         config,
         configuredCatalog);

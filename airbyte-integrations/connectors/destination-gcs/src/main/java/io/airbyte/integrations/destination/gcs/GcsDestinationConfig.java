@@ -4,30 +4,32 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfigs;
+import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfigs;
 
-public class GcsDestinationConfig {
+public class GcsDestinationConfig extends S3DestinationConfig {
 
-  private final String bucketName;
-  private final String bucketPath;
-  private final String bucketRegion;
+  private static final String GCS_ENDPOINT = "https://storage.googleapis.com";
+
   private final GcsCredentialConfig credentialConfig;
-  private final S3FormatConfig formatConfig;
 
   public GcsDestinationConfig(final String bucketName,
                               final String bucketPath,
                               final String bucketRegion,
                               final GcsCredentialConfig credentialConfig,
                               final S3FormatConfig formatConfig) {
-    this.bucketName = bucketName;
-    this.bucketPath = bucketPath;
-    this.bucketRegion = bucketRegion;
+    super("", bucketName, bucketPath, bucketRegion, null, null, formatConfig);
     this.credentialConfig = credentialConfig;
-    this.formatConfig = formatConfig;
   }
 
   public static GcsDestinationConfig getGcsDestinationConfig(final JsonNode config) {
@@ -39,24 +41,25 @@ public class GcsDestinationConfig {
         S3FormatConfigs.getS3FormatConfig(config));
   }
 
-  public String getBucketName() {
-    return bucketName;
-  }
+  @Override
+  protected AmazonS3 createS3Client() {
+    switch (credentialConfig.getCredentialType()) {
+      case HMAC_KEY -> {
+        final GcsHmacKeyCredentialConfig hmacKeyCredential = (GcsHmacKeyCredentialConfig) credentialConfig;
+        final BasicAWSCredentials awsCreds = new BasicAWSCredentials(hmacKeyCredential.getHmacKeyAccessId(), hmacKeyCredential.getHmacKeySecret());
 
-  public String getBucketPath() {
-    return bucketPath;
-  }
-
-  public String getBucketRegion() {
-    return bucketRegion;
+        return AmazonS3ClientBuilder.standard()
+            .withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, getBucketRegion()))
+            .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+            .build();
+      }
+      default -> throw new IllegalArgumentException("Unsupported credential type: " + credentialConfig.getCredentialType().name());
+    }
   }
 
   public GcsCredentialConfig getCredentialConfig() {
     return credentialConfig;
-  }
-
-  public S3FormatConfig getFormatConfig() {
-    return formatConfig;
   }
 
 }
