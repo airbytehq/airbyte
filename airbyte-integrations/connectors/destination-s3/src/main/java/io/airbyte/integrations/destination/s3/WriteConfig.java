@@ -16,16 +16,19 @@ public class WriteConfig {
   private final String namespace;
   private final String streamName;
   private final String outputBucketPath;
+  private final String fullOutputPath;
   private final DestinationSyncMode syncMode;
   private final List<String> storedFiles;
 
   public WriteConfig(final String namespace,
                      final String streamName,
                      final String outputBucketPath,
+                     final String fullOutputPath,
                      final DestinationSyncMode syncMode) {
     this.namespace = namespace;
     this.streamName = streamName;
     this.outputBucketPath = outputBucketPath;
+    this.fullOutputPath = fullOutputPath;
     this.syncMode = syncMode;
     this.storedFiles = new ArrayList<>();
   }
@@ -40,6 +43,10 @@ public class WriteConfig {
 
   public String getOutputBucketPath() {
     return outputBucketPath;
+  }
+
+  public String getFullOutputPath() {
+    return fullOutputPath;
   }
 
   public DestinationSyncMode getSyncMode() {
@@ -64,6 +71,7 @@ public class WriteConfig {
         "streamName=" + streamName +
         ", namespace=" + namespace +
         ", outputBucketPath=" + outputBucketPath +
+        ", fullOutputPath=" + fullOutputPath +
         ", syncMode=" + syncMode +
         '}';
   }

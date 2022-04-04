@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import useConnection from "hooks/services/useConnectionHook";
+import { useDeleteConnection } from "hooks/services/useConnectionHook";
 import DeleteBlock from "components/DeleteBlock";
 
 type IProps = {
@@ -15,9 +15,9 @@ const Content = styled.div`
 `;
 
 const SettingsView: React.FC<IProps> = ({ connectionId }) => {
-  const { deleteConnection } = useConnection();
+  const { mutateAsync: deleteConnection } = useDeleteConnection();
 
-  const onDelete = () => deleteConnection({ connectionId });
+  const onDelete = () => deleteConnection(connectionId);
 
   return (
     <Content>

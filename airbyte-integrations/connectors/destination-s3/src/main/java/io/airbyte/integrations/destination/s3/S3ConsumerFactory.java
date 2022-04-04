@@ -80,14 +80,14 @@ public class S3ConsumerFactory {
       final AirbyteStream abStream = stream.getStream();
       final String namespace = abStream.getNamespace();
       final String streamName = abStream.getName();
-      final String bucketPath = config.get(BUCKET_PATH_FIELD).asText();
+      final String outputBucketPath = config.get(BUCKET_PATH_FIELD).asText();
       final String customOutputFormat = String.join("/",
-          bucketPath,
+          outputBucketPath,
           config.has(PATH_FORMAT_FIELD) && !config.get(PATH_FORMAT_FIELD).asText().isBlank() ? config.get(PATH_FORMAT_FIELD).asText()
               : S3DestinationConstants.DEFAULT_PATH_FORMAT);
-      final String outputBucketPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
+      final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
-      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, outputBucketPath, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, outputBucketPath, fullOutputPath, syncMode);
       LOGGER.info("Write config: {}", writeConfig);
       return writeConfig;
     };
@@ -139,7 +139,7 @@ public class S3ConsumerFactory {
             writer,
             writeConfig.getNamespace(),
             writeConfig.getStreamName(),
-            writeConfig.getOutputBucketPath()));
+            writeConfig.getFullOutputPath()));
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and upload buffer to storage:", e);
         throw new RuntimeException("Failed to upload buffer to storage", e);
@@ -153,7 +153,7 @@ public class S3ConsumerFactory {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {
-          storageOperations.cleanUpBucketObject(writeConfig.getOutputBucketPath(), writeConfig.getStoredFiles());
+          storageOperations.cleanUpBucketObject(writeConfig.getFullOutputPath(), writeConfig.getStoredFiles());
           writeConfig.clearStoredFiles();
         }
         LOGGER.info("Cleaning up destination completed.");
