@@ -92,10 +92,10 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
             }
           }
           case DATE -> {
-            if (pathFields.size() == 1)
+            if (pathFields.size() == 1) {
               data.put(pathFields.get(0).toLowerCase(),
                   DateTimeUtils.convertToDateFormat(data.get(pathFields.get(0)).asText()));
-            else {
+            } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(
                   pathFields.get(pathFields.size() - 1).toLowerCase(),
                   DateTimeUtils.convertToDateFormat((data.at(path).asText())));

@@ -348,19 +348,20 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
             : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
         switch (dateTimeFieldNames.get(path)) {
           case DATE_TIME -> {
-            if (pathFields.size() == 1)
+            if (pathFields.size() == 1) {
               data.put(pathFields.get(0).toLowerCase(),
-                  DateTimeUtils.convertToBigqueryDenormalizedFormat((data.get(pathFields.get(0)).asText())));
-            else {
+                  DateTimeUtils.convertToBigqueryDenormalizedFormat(
+                      (data.get(pathFields.get(0)).asText())));
+            } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1),
                   DateTimeUtils.convertToBigqueryDenormalizedFormat(data.at(path).asText()));
             }
           }
           case DATE -> {
-            if (pathFields.size() == 1)
+            if (pathFields.size() == 1) {
               data.put(pathFields.get(0).toLowerCase(),
                   DateTimeUtils.convertToDateFormat(data.get(pathFields.get(0)).asText()));
-            else {
+            } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(
                   pathFields.get(pathFields.size() - 1),
                   DateTimeUtils.convertToDateFormat((data.at(path).asText())));

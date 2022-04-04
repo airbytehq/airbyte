@@ -96,21 +96,21 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
             : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
         switch (dateTimeFieldNames.get(path)) {
           case DATE_TIME -> {
-            if (pathFields.size() == 1)
+            if (pathFields.size() == 1) {
               data.put(pathFields.get(0).toLowerCase(),
                   (DateTimeUtils.getEpochMicros(data.get(pathFields.get(0)).asText()) / 1000)
                       * 1000);
-            else {
+            } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(
                   pathFields.get(pathFields.size() - 1),
                   (DateTimeUtils.getEpochMicros(data.at(path).asText()) / 1000) * 1000);
             }
           }
           case DATE -> {
-            if (pathFields.size() == 1)
+            if (pathFields.size() == 1) {
               data.put(pathFields.get(0).toLowerCase(),
                   DateTimeUtils.getEpochDay(data.get(pathFields.get(0)).asText()));
-            else {
+            } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(
                   pathFields.get(pathFields.size() - 1),
                   DateTimeUtils.getEpochDay((data.at(path).asText())));

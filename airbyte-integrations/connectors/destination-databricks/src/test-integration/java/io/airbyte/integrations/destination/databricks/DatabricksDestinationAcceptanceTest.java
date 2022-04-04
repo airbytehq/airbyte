@@ -184,11 +184,11 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
             }
           }
           case DATE -> {
-            if (pathFields.size() == 1)
+            if (pathFields.size() == 1) {
               data.put(pathFields.get(0).toLowerCase(),
                   String.format("{\"member0\":%s,\"member1\":null}",
                       DateTimeUtils.convertToDateFormat(data.get(pathFields.get(0)).asText())));
-            else {
+            } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(
                   pathFields.get(pathFields.size() - 1).toLowerCase(),
                   String.format("{\"member0\":%s,\"member1\":null}",
