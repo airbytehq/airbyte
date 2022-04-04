@@ -6,12 +6,15 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static java.util.Objects.isNull;
 
+import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
@@ -27,7 +30,6 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
-import io.airbyte.integrations.destination.gcs.GcsDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -37,8 +39,10 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +50,13 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
-
+  private static final List<String> REQUIRED_PERMISSIONS = List.of(
+      "storage.multipartUploads.abort",
+      "storage.multipartUploads.create",
+      "storage.objects.create",
+      "storage.objects.delete",
+      "storage.objects.get",
+      "storage.objects.list");
   private final BigQuerySQLNameTransformer namingResolver;
 
   public BigQueryDestination() {
@@ -67,11 +77,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .setUseLegacySql(false)
           .build();
 
-      // GCS upload time re-uses destination-GCS for check and other uploading (CSV format writer)
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        final GcsDestination gcsDestination = new GcsDestination();
-        final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
-        final AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(gcsJsonNodeConfig);
+        // TODO: use GcsDestination::check instead of writing our own custom logic to check perms
+        // this is not currently possible because using the Storage class to check perms requires
+        // a service account key, and the GCS destination does not accept a Service Account Key,
+        // only an HMAC key
+        final AirbyteConnectionStatus airbyteConnectionStatus = checkStorageIamPermissions(config);
         if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
           return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
         }
@@ -89,6 +100,45 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
+  public AirbyteConnectionStatus checkStorageIamPermissions(JsonNode config) {
+    final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+    final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
+
+    try {
+      ServiceAccountCredentials credentials = getServiceAccountCredentials(config);
+
+      Storage storage = StorageOptions.newBuilder()
+          .setProjectId(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText())
+          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .build().getService();
+      List<Boolean> permissionsCheckStatusList = storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS);
+
+      List<String> missingPermissions = StreamUtils
+          .zipWithIndex(permissionsCheckStatusList.stream())
+          .filter(i -> !i.getValue())
+          .map(i -> REQUIRED_PERMISSIONS.get(Math.toIntExact(i.getIndex())))
+          .collect(Collectors.toList());
+
+      if (!missingPermissions.isEmpty()) {
+        LOGGER.error("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
+
+        return new AirbyteConnectionStatus()
+            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+            .withMessage("Could not connect to the Gcs bucket with the provided configuration. "
+                + "Missing permissions: " + missingPermissions);
+      }
+      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+
+    } catch (final Exception e) {
+      LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
+
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
+              .getMessage());
+    }
+  }
+
   protected BigQuerySQLNameTransformer getNamingResolver() {
     return namingResolver;
   }
@@ -102,11 +152,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       if (BigQueryUtils.isUsingJsonCredentials(config)) {
         // handle the credentials json being passed as a json object or a json object already serialized as
         // a string.
-        final String credentialsString =
-            config.get(BigQueryConsts.CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-                : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-        credentials = ServiceAccountCredentials
-            .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+        credentials = getServiceAccountCredentials(config);
       }
       return bigQueryBuilder
           .setProjectId(projectId)
@@ -116,6 +162,16 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private ServiceAccountCredentials getServiceAccountCredentials(JsonNode config) throws IOException {
+    ServiceAccountCredentials credentials;
+    final String credentialsString =
+        config.get(BigQueryConsts.CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
+            : config.get(BigQueryConsts.CONFIG_CREDS).asText();
+    credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+    return credentials;
   }
 
   /**

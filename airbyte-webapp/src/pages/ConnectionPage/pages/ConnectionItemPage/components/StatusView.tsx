@@ -3,20 +3,23 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { useResource } from "rest-hooks";
 
 import { useListJobs } from "services/job/JobService";
 
 import { Button, ContentCard, LoadingButton } from "components";
 import StatusMainInfo from "./StatusMainInfo";
-import { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import JobsList from "./JobsList";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
-import useConnection from "hooks/services/useConnectionHook";
+import {
+  useResetConnection,
+  useSyncConnection,
+} from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 type IProps = {
   connection: Connection;
@@ -53,24 +56,15 @@ const SyncButton = styled(LoadingButton)`
 const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
+  const { hasFeature } = useFeatureService();
+  const allowSync = hasFeature(FeatureItem.AllowSync);
 
-  const sourceDefinition = useResource(
-    SourceDefinitionResource.detailShape(),
-    connection.source
-      ? {
-          sourceDefinitionId: connection.source.sourceDefinitionId,
-        }
-      : null
+  const sourceDefinition = useSourceDefinition(
+    connection?.source.sourceDefinitionId
   );
 
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    connection.destination
-      ? {
-          destinationDefinitionId:
-            connection.destination.destinationDefinitionId,
-        }
-      : null
+  const destinationDefinition = useDestinationDefinition(
+    connection.destination.destinationDefinitionId
   );
 
   const jobs = useListJobs({
@@ -78,7 +72,8 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
     configTypes: ["sync", "reset_connection"],
   });
 
-  const { resetConnection, syncConnection } = useConnection();
+  const { mutateAsync: resetConnection } = useResetConnection();
+  const { mutateAsync: syncConnection } = useSyncConnection();
 
   const onSync = () => syncConnection(connection);
   const onReset = () => resetConnection(connection.connectionId);
@@ -90,6 +85,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
         frequencyText={frequencyText}
         sourceDefinition={sourceDefinition}
         destinationDefinition={destinationDefinition}
+        allowSync={allowSync}
       />
       <StyledContentCard
         title={
@@ -100,6 +96,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
                 <FormattedMessage id={"connection.resetData"} />
               </Button>
               <SyncButton
+                disabled={!allowSync}
                 isLoading={isLoading}
                 wasActive={showFeedback}
                 onClick={() => startAction({ action: onSync })}

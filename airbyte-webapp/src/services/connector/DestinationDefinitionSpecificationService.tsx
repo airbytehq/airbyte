@@ -10,9 +10,10 @@ import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewa
 import { useInitService } from "services/useInitService";
 import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
 import { isDefined } from "utils/common";
+import { SCOPE_WORKSPACE } from "../Scope";
 
 export const destinationDefinitionSpecificationKeys = {
-  all: ["destinationDefinitionSpecification"] as const,
+  all: [SCOPE_WORKSPACE, "destinationDefinitionSpecification"] as const,
   detail: (id: string | number) =>
     [...destinationDefinitionSpecificationKeys.all, "details", id] as const,
 };

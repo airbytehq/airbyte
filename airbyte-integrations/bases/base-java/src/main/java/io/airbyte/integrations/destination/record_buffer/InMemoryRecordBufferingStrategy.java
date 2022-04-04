@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,8 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   public void flushAll() throws Exception {
     AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
       for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
-        LOGGER.info("Flushing {}: {} records", entry.getKey().getName(), entry.getValue().size());
+        LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
+            FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
         recordWriter.accept(entry.getKey(), entry.getValue());
         if (checkAndRemoveRecordWriter != null) {
           fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
