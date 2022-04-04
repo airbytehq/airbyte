@@ -97,7 +97,6 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
         self.config = config
-        self.start_date = None
         self._cursor_value = None
 
     @property
