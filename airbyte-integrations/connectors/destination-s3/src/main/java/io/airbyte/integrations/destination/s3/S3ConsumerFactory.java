@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
@@ -39,16 +38,14 @@ public class S3ConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3ConsumerFactory.class);
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
-  private static final String PATH_FORMAT_FIELD = "s3_path_format";
-  private static final String BUCKET_PATH_FIELD = "s3_bucket_path";
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BlobStorageOperations storageOperations,
                                        final NamingConventionTransformer namingResolver,
                                        final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
-                                       final JsonNode config,
+                                       final S3DestinationConfig s3Config,
                                        final ConfiguredAirbyteCatalog catalog) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, namingResolver, config, catalog);
+    final List<WriteConfig> writeConfigs = createWriteConfigs(storageOperations, namingResolver, s3Config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(storageOperations, writeConfigs),
@@ -63,7 +60,7 @@ public class S3ConsumerFactory {
 
   private static List<WriteConfig> createWriteConfigs(final BlobStorageOperations storageOperations,
                                                       final NamingConventionTransformer namingResolver,
-                                                      final JsonNode config,
+                                                      final S3DestinationConfig config,
                                                       final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams()
         .stream()
@@ -74,20 +71,17 @@ public class S3ConsumerFactory {
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
                                                                               final BlobStorageOperations storageOperations,
                                                                               final NamingConventionTransformer namingResolver,
-                                                                              final JsonNode config) {
+                                                                              final S3DestinationConfig s3Config) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
       final String namespace = abStream.getNamespace();
       final String streamName = abStream.getName();
-      final String outputBucketPath = config.get(BUCKET_PATH_FIELD).asText();
-      final String customOutputFormat = String.join("/",
-          outputBucketPath,
-          config.has(PATH_FORMAT_FIELD) && !config.get(PATH_FORMAT_FIELD).asText().isBlank() ? config.get(PATH_FORMAT_FIELD).asText()
-              : S3DestinationConstants.DEFAULT_PATH_FORMAT);
+      final String bucketPath = s3Config.getBucketPath();
+      final String customOutputFormat = String.join("/", bucketPath, s3Config.getPathFormat());
       final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
-      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, outputBucketPath, fullOutputPath, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, bucketPath, fullOutputPath, syncMode);
       LOGGER.info("Write config: {}", writeConfig);
       return writeConfig;
     };

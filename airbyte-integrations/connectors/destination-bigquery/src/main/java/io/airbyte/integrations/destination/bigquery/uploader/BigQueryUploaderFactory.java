@@ -22,7 +22,6 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.avro.GcsAvroWriter;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -120,7 +119,7 @@ public class BigQueryUploaderFactory {
       throws IOException {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
-    final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    final AmazonS3 s3Client = gcsDestinationConfig.getS3Client();
     return new GcsAvroWriter(
         gcsDestinationConfig,
         s3Client,
