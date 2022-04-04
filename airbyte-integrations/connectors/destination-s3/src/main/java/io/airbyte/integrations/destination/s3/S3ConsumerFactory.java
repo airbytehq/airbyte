@@ -100,13 +100,13 @@ public class S3ConsumerFactory {
         if (writeConfig.getSyncMode().equals(DestinationSyncMode.OVERWRITE)) {
           final String namespace = writeConfig.getNamespace();
           final String stream = writeConfig.getStreamName();
-          final String bucketPath = writeConfig.getOutputBucketPath();
-          LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {}", namespace, stream, bucketPath);
+          final String outputBucketPath = writeConfig.getOutputBucketPath();
+          LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {}", namespace, stream, outputBucketPath);
           AirbyteSentry.executeWithTracing("PrepareStreamStorage",
-              () -> storageOperations.dropBucketObject(bucketPath),
-              Map.of("namespace", Objects.requireNonNullElse(namespace, "null"), "stream", stream, "storage", bucketPath));
+              () -> storageOperations.dropBucketObject(outputBucketPath),
+              Map.of("namespace", Objects.requireNonNullElse(namespace, "null"), "stream", stream, "storage", outputBucketPath));
           LOGGER.info("Clearing storage area in destination completed for namespace {} stream {} bucketObject {}", namespace, stream,
-              bucketPath);
+              outputBucketPath);
         }
       }
       LOGGER.info("Preparing storage area in destination completed.");

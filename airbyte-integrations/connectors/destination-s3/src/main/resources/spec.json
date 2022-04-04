@@ -41,7 +41,7 @@
         "description": "Format string on how data will be organized inside the S3 bucket directory",
         "type": "string",
         "examples": [
-          "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_${PART_ID}"
+          "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
         ],
         "order": 3
       },
