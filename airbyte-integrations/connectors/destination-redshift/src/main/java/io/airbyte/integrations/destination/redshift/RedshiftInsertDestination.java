@@ -9,15 +9,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import java.util.Map;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RedshiftInsertDestination extends AbstractJdbcDestination  {
 
@@ -62,7 +57,6 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination  {
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
     final String schema = Optional.ofNullable(redshiftConfig.get(SCHEMA)).map(JsonNode::asText).orElse("public");
-
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(USERNAME, redshiftConfig.get(USERNAME).asText())
         .put(PASSWORD, redshiftConfig.get(PASSWORD).asText())
