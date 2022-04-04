@@ -95,6 +95,16 @@ class TestSpec(BaseTest):
                 [all(["const" in var["properties"][prop] for var in variants]) for prop in common_props]
             ), f"Any of {common_props} properties in {'.'.join(variant_path)} has no const keyword. {docs_msg}"
 
+            for variant in variants:
+                for common_prop in common_props:
+                    prop_obj = variant['properties'][common_prop]
+                    if prop_obj.get("type") == "string" and {"const", "enum", "default"} & prop_obj.keys():
+                        const = prop_obj["const"]
+                        default = prop_obj["default"]
+                        enum = prop_obj["enum"]
+                        assert const == default, f"{const} != {default}"
+                        assert const in enum
+
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
 
