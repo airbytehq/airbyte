@@ -59,6 +59,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
       this.contentType = contentType;
       this.converter = converter;
     }
+
   }
 
   protected final HttpClient httpClient;

@@ -57,8 +57,7 @@ public class SnowflakeDataSourceUtils {
 
     if (config.has("credentials")) {
       JsonNode credentials = config.get("credentials");
-      final String authType = credentials.has("auth_type") ?
-          credentials.get("auth_type").asText() : UNRECOGNIZED;
+      final String authType = credentials.has("auth_type") ? credentials.get("auth_type").asText() : UNRECOGNIZED;
       switch (authType) {
         case OAUTH_METHOD -> {
           LOGGER.info("Authorization mode is OAuth");
