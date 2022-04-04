@@ -23,10 +23,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
@@ -169,24 +167,20 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
 
   @Override
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
-        Spliterator.ORDERED), false).toList();
     if (dateTimeFieldNames.keySet().isEmpty()) {
       return;
     }
-    fields.forEach(field -> {
-      for (String path : dateTimeFieldNames.keySet()) {
-        var key = field.getKey();
-        if (isKeyInPath(path, key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-          switch (dateTimeFieldNames.get(path)) {
-            case DATE_TIME -> data.put(key.toLowerCase(),
-                DateTimeUtils.convertToRedshiftFormat(field.getValue().asText()));
-            case DATE -> data.put(key.toLowerCase(),
-                DateTimeUtils.convertToDateFormat(field.getValue().asText()));
-          }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToRedshiftFormat(data.at(path).asText()));
+          case DATE -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToDateFormat(data.at(path).asText()));
         }
       }
-    });
+    }
   }
 
 }

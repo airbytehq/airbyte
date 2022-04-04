@@ -200,19 +200,17 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     if (dateTimeFieldNames.keySet().isEmpty()) {
       return;
     }
-    fields.forEach(field -> {
-      for (String path : dateTimeFieldNames.keySet()) {
-        var key = field.getKey();
-        if (isKeyInPath(path, key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-          switch (dateTimeFieldNames.get(path)) {
-            case DATE_TIME -> data.put(key.toLowerCase(),
-                DateTimeUtils.convertToMSSQLFormat(field.getValue().asText()));
-            case DATE -> data.put(key.toLowerCase(),
-                DateTimeUtils.convertToDateFormat(field.getValue().asText()));
-          }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToMSSQLFormat(data.at(path).asText()));
+          case DATE -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToDateFormat(data.at(path).asText()));
         }
       }
-    });
+    }
   }
 
   @Override

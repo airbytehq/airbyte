@@ -7,8 +7,6 @@ package io.airbyte.integrations.standardtest.destination;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -66,14 +64,11 @@ public interface DateTimeConverter {
 
   /**
    *
-   * @param path path to field e.g /field1/field2
-   * @param key e.g field key
-   * @return true if the path consists of only one @key
+   * @param path path to field e.g /field1/nested_field
+   * @return true if the path consists of only one field (e.g /someField)
    */
-  default boolean isKeyInPath(String path, String key) {
-    var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
-    pathFields.remove(0); // first element always empty string
-    return pathFields.size() == 1 && pathFields.contains(key);
+  default boolean isOneLevelPath(String path) {
+    return path.lastIndexOf("/") == 0;
   }
 
 }

@@ -24,11 +24,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -173,22 +171,17 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
-        Spliterator.ORDERED), false).toList();
     if (dateTimeFieldNames.keySet().isEmpty()) {
       return;
     }
-    fields.forEach(field -> {
-      for (String path : dateTimeFieldNames.keySet()) {
-        var key = field.getKey();
-        if (isKeyInPath(path, key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-          if (DATE.equals(dateTimeFieldNames.get(path))) {
-            data.put(key.toLowerCase(),
-                DateTimeUtils.convertToDateFormat(field.getValue().asText()));
-          }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        if (DATE.equals(dateTimeFieldNames.get(path))) {
+          data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(data.at(path).asText()));
         }
       }
-    });
+    }
   }
 
   protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {

@@ -41,11 +41,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -222,24 +220,20 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   @Override
   public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    var fields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
-        Spliterator.ORDERED), false).toList();
     if (dateTimeFieldNames.keySet().isEmpty()) {
       return;
     }
-    fields.forEach(field -> {
-      for (String path : dateTimeFieldNames.keySet()) {
-        var key = field.getKey();
-        if (isKeyInPath(path, key) && DateTimeUtils.isDateTimeValue(field.getValue().asText())) {
-          switch (dateTimeFieldNames.get(path)) {
-            case DATE_TIME -> data.put(key.toLowerCase(),
-                DateTimeUtils.convertToSnowflakeFormat(field.getValue().asText()));
-            case DATE -> data.put(key.toLowerCase(),
-                DateTimeUtils.convertToDateFormatWithZeroTime(field.getValue().asText()));
-          }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToSnowflakeFormat(data.at(path).asText()));
+          case DATE -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToDateFormatWithZeroTime(data.at(path).asText()));
         }
       }
-    });
+    }
   }
 
   protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
