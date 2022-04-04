@@ -21,7 +21,6 @@ import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
-import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -145,7 +144,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
     this.s3Client = config.getS3Client();
-    this.nameTransformer = new S3NameTransformer();
+    this.nameTransformer = new GcsNameTransformer();
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, config);
   }
 
