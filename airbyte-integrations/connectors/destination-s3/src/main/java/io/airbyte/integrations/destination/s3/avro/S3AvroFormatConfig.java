@@ -19,7 +19,8 @@ public class S3AvroFormatConfig implements S3FormatConfig {
 
   public S3AvroFormatConfig(final JsonNode formatConfig) {
     this.codecFactory = parseCodecConfig(formatConfig.get("compression_codec"));
-    this.partSize = formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
+    this.partSize = formatConfig.get(PART_SIZE_MB_ARG_NAME) != null
+        ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
         : S3DestinationConstants.DEFAULT_PART_SIZE_MB;
   }
 
