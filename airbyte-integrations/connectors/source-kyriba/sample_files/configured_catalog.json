@@ -2,17 +2,6 @@
     "streams": [
         {
             "stream": {
-                "name": "bank_balances",
-                "json_schema": {
-                    "$shcema": "http://json-schema.org/draft-04/schema"
-                },
-                "supported_sync_modes": ["full_refresh"]
-            },
-            "sync_mode": "full_refresh",
-            "destination_sync_mode": "overwrite"
-        },
-        {
-            "stream": {
                 "name": "bank_balances_intraday",
                 "json_schema": {
                     "$schema": "http://json-schema.org/draft-04/schema"
