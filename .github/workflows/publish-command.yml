@@ -199,9 +199,21 @@ jobs:
           sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
           destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
           if [ -z "$sourcename" ]
-          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"$version\"" -i "$definitionpath"destination_definitions.yaml
-          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"$version\"" -i "$definitionpath"source_definitions.yaml
+          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"env.IMAGE_VERSION\"" -i "$definitionpath"destination_definitions.yaml
+          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"env.IMAGE_VERSION\"" -i "$definitionpath"source_definitions.yaml
           fi
+      - name: Run gradle process changes
+        run: |
+          ./gradlew :airbyte-config:init:processResources
+      - name: setup git config
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+      - name: commit
+        run: |
+          git add -A
+          git commit -m "auto-bump connector version"
+          git push origin ${{ github.ref }}
       - name: Add Version Bump Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
