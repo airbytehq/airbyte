@@ -55,7 +55,7 @@ public class AvroSerializedBufferTest {
   public void testSnappyAvroWriter() throws Exception {
     final S3AvroFormatConfig config = new S3AvroFormatConfig(Jsons.jsonNode(Map.of("compression_codec", Map.of(
         "codec", "snappy"))));
-    runTest(new InMemoryBuffer(AVRO_FILE_EXTENSION), 970L, 980L, config, getExpectedString());
+    runTest(new InMemoryBuffer(AVRO_FILE_EXTENSION), 965L, 980L, config, getExpectedString());
   }
 
   @Test
