@@ -486,9 +486,8 @@ public class KubePodProcess extends Process implements KubePod {
         .endMetadata()
         .withNewSpec();
 
-    if (isOrchestrator) {
-      podBuilder = podBuilder.withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true);
-    }
+    podBuilder = podBuilder.withServiceAccount(isOrchestrator ? "airbyte-admin" : "airbyte")
+        .withAutomountServiceAccountToken(true);
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
