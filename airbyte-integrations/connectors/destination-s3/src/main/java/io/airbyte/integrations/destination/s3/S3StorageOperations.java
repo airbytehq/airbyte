@@ -17,7 +17,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +49,7 @@ public class S3StorageOperations implements BlobStorageOperations {
   public String getBucketObjectPath(final String namespace, final String streamName, final DateTime writeDatetime, final String customPathFormat) {
     final String namespaceStr = nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
     final String streamNameStr = nameTransformer.getIdentifier(streamName);
-    final String objectPath = nameTransformer.applyDefaultCase(
+    return nameTransformer.applyDefaultCase(
         customPathFormat
             .replaceAll(Pattern.quote("${NAMESPACE}"), namespaceStr)
             .replaceAll(Pattern.quote("${STREAM_NAME}"), streamNameStr)
@@ -64,22 +63,6 @@ public class S3StorageOperations implements BlobStorageOperations {
             .replaceAll(Pattern.quote("${EPOCH}"), String.format("%d", writeDatetime.getMillis()))
             .replaceAll(Pattern.quote("${UUID}"), String.format("%s", UUID.randomUUID()))
             .replaceAll("/+", "/"));
-    if (customPathFormat.contains("${PART_ID}")) {
-      return objectPath.replaceAll(Pattern.quote("${PART_ID}"), String.format("%s", getPartId(objectPath)));
-    } else {
-      return objectPath;
-    }
-  }
-
-  private String getPartId(final String objectPath) {
-    final String bucket = s3Config.getBucketName();
-    final ObjectListing objects = s3Client.listObjects(bucket, objectPath);
-    if (objects.isTruncated()) {
-      // bucket contains too many objects, use an uuid instead
-      return UUID.randomUUID().toString();
-    } else {
-      return Integer.toString(objects.getObjectSummaries().size());
-    }
   }
 
   @Override
@@ -122,12 +105,12 @@ public class S3StorageOperations implements BlobStorageOperations {
     return recordsData.getFilename();
   }
 
-  private void loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
+  private void loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String objectKey = String.format("%s%s", objectPath, recordsData.getFilename());
+    final String objectKeyWithPartId = String.format("%s%s", objectPath, getPartId(objectPath));
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
-        .getDefault(bucket, objectKey, s3Client, partSize)
+        .getDefault(bucket, objectKeyWithPartId, s3Client, partSize)
         .checkIntegrity(true)
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
@@ -146,9 +129,20 @@ public class S3StorageOperations implements BlobStorageOperations {
         uploadManager.complete();
       }
     }
-    if (!s3Client.doesObjectExist(bucket, objectKey)) {
-      LOGGER.error("Failed to upload data into storage, object {} not found", objectKey);
+    if (!s3Client.doesObjectExist(bucket, objectKeyWithPartId)) {
+      LOGGER.error("Failed to upload data into storage, object {} not found", objectKeyWithPartId);
       throw new RuntimeException("Upload failed");
+    }
+  }
+
+  private String getPartId(final String objectPath) {
+    final String bucket = s3Config.getBucketName();
+    final ObjectListing objects = s3Client.listObjects(bucket, objectPath);
+    if (objects.isTruncated()) {
+      // bucket contains too many objects, use an uuid instead
+      return UUID.randomUUID().toString();
+    } else {
+      return Integer.toString(objects.getObjectSummaries().size());
     }
   }
 

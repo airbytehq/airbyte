@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,7 @@ public class FileBuffer implements BufferStorage {
   @Override
   public OutputStream getOutputStream() throws IOException {
     if (outputStream == null || tempFile == null) {
-      tempFile = Files.createTempFile("", fileExtension).toFile();
+      tempFile = Files.createTempFile(UUID.randomUUID().toString(), fileExtension).toFile();
       outputStream = new BufferedOutputStream(new FileOutputStream(tempFile));
     }
     return outputStream;
