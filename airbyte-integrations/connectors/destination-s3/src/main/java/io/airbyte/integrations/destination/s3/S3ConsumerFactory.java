@@ -79,9 +79,9 @@ public class S3ConsumerFactory {
       final String streamName = abStream.getName();
       final String bucketPath = s3Config.getBucketPath();
       final String customOutputFormat = String.join("/", bucketPath, s3Config.getPathFormat());
-      final String outputBucketPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
+      final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
-      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, outputBucketPath, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, bucketPath, fullOutputPath, syncMode);
       LOGGER.info("Write config: {}", writeConfig);
       return writeConfig;
     };
@@ -133,7 +133,7 @@ public class S3ConsumerFactory {
             writer,
             writeConfig.getNamespace(),
             writeConfig.getStreamName(),
-            writeConfig.getOutputBucketPath()));
+            writeConfig.getFullOutputPath()));
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and upload buffer to storage:", e);
         throw new RuntimeException("Failed to upload buffer to storage", e);
@@ -147,7 +147,7 @@ public class S3ConsumerFactory {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {
-          storageOperations.cleanUpBucketObject(writeConfig.getOutputBucketPath(), writeConfig.getStoredFiles());
+          storageOperations.cleanUpBucketObject(writeConfig.getFullOutputPath(), writeConfig.getStoredFiles());
           writeConfig.clearStoredFiles();
         }
         LOGGER.info("Cleaning up destination completed.");

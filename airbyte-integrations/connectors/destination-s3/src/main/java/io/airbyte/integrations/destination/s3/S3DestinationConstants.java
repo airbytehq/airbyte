@@ -15,7 +15,7 @@ public final class S3DestinationConstants {
   // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
-  public static final String DEFAULT_PATH_FORMAT = "${NAMESPACE}/${STREAM_NAME}/";
+  public static final String DEFAULT_PATH_FORMAT = "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_";
 
   private S3DestinationConstants() {}
 
