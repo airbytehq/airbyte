@@ -216,11 +216,11 @@ public class S3DestinationConfig {
   public static class Builder {
 
     private String endpoint = "";
-    private String bucketPath = "";
     private String pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT;
     private int partSize = S3DestinationConstants.DEFAULT_PART_SIZE_MB;
 
     private String bucketName;
+    private String bucketPath;
     private String bucketRegion;
     private S3CredentialConfig credentialConfig;
     private S3FormatConfig formatConfig;
