@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.gcs.writer.GcsWriterFactory;
 import io.airbyte.integrations.destination.gcs.writer.ProductionWriterFactory;
 import io.airbyte.integrations.destination.s3.S3Destination;
+import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -43,13 +44,26 @@ public class GcsDestination extends BaseConnector implements Destination {
       // Test multipart upload with stream transfer manager
       S3Destination.testMultipartUpload(s3Client, destinationConfig.getBucketName());
 
+      if (destinationConfig.getBucketName().contains("_") &&
+              destinationConfig.getFormatConfig().getFormat() == S3Format.PARQUET) {
+        // java.net.URI cannot process the name of the bucket that contains the "_" character.
+        // We use Class java.net.URI only to process the PARQUET format, so I added this check.
+        // https://stackoverflow.com/questions/60239105/why-is-the-hostname-declared-invalid-when-creating-a-uri
+        String message = String.format("for PARQUET format processing, the bucket name cannot contain the \"_\" symbol. " +
+                "please change the name of the bucket - %s, or use a different format.", destinationConfig.getBucketName());
+        LOGGER.error(message);
+        return new AirbyteConnectionStatus()
+                .withStatus(Status.FAILED)
+                .withMessage(message);
+      }
+
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
       LOGGER.error("Please make sure you account has all of these roles: " + EXPECTED_ROLES);
 
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withStatus(Status.FAILED)
           .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
               .getMessage());
     }

@@ -64,7 +64,8 @@ public class GcsParquetWriter extends BaseGcsWriter implements DestinationFileWr
 
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     final Configuration hadoopConfig = getHadoopConfig(config);
-    this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
+    final HadoopOutputFile hadoopOutputFile = HadoopOutputFile.fromPath(path, hadoopConfig);
+    this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(hadoopOutputFile)
         .withSchema(schema)
         .withCompressionCodec(formatConfig.getCompressionCodec())
         .withRowGroupSize(formatConfig.getBlockSize())
