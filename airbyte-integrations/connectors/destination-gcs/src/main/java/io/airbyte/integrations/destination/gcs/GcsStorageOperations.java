@@ -25,8 +25,9 @@ public class GcsStorageOperations extends S3StorageOperations {
   }
 
   /**
-   * This method is overriden because GCS doesn't accept request to delete multiple objects. So the
-   * AmazonS3#deleteObject method is used, instead of the AmazonS3#deleteObjects.
+   * This method is overridden because GCS doesn't accept request to delete multiple objects. The
+   * only difference is that the AmazonS3#deleteObjects method is replaced with
+   * AmazonS3#deleteObject.
    */
   @Override
   public void cleanUpBucketObject(final String objectPath, final List<String> stagedFiles) {
