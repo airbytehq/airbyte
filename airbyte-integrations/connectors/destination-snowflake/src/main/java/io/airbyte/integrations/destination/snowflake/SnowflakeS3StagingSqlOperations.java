@@ -13,7 +13,6 @@ import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
-import io.airbyte.integrations.destination.s3.credential.S3CredentialConfig;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.util.List;
 import java.util.Map;

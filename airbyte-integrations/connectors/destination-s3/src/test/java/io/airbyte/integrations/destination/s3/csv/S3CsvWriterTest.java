@@ -54,9 +54,9 @@ class S3CsvWriterTest {
 
   private static final int PART_SIZE = 7;
   public static final S3DestinationConfig CONFIG = S3DestinationConfig.create(
-          "fake-bucket",
-          "fake-bucketPath",
-          "fake-region")
+      "fake-bucket",
+      "fake-bucketPath",
+      "fake-region")
       .withEndpoint("fake-endpoint")
       .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
       .withPartSize(PART_SIZE)
@@ -247,9 +247,9 @@ class S3CsvWriterTest {
   @Test
   public void writesContentsCorrectly_when_stagingDatabaseConfig() throws IOException {
     final S3DestinationConfig s3Config = S3DestinationConfig.create(
-            "fake-bucket",
-            "fake-bucketPath",
-            "fake-region")
+        "fake-bucket",
+        "fake-bucketPath",
+        "fake-region")
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
         .withPartSize(PART_SIZE)

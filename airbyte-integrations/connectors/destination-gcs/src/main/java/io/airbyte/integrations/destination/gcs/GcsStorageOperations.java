@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.gcs;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -21,8 +25,8 @@ public class GcsStorageOperations extends S3StorageOperations {
   }
 
   /**
-   * This method is overriden because GCS doesn't accept request to delete multiple objects.
-   * So the AmazonS3#deleteObject method is used, instead of the AmazonS3#deleteObjects.
+   * This method is overriden because GCS doesn't accept request to delete multiple objects. So the
+   * AmazonS3#deleteObject method is used, instead of the AmazonS3#deleteObjects.
    */
   @Override
   public void cleanUpBucketObject(final String objectPath, final List<String> stagedFiles) {

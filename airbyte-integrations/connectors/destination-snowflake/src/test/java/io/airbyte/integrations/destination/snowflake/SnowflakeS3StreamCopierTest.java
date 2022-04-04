@@ -47,9 +47,9 @@ class SnowflakeS3StreamCopierTest {
     sqlOperations = mock(SqlOperations.class);
 
     final S3DestinationConfig s3Config = S3DestinationConfig.create(
-            "fake-bucket",
-            "fake-bucketPath",
-            "fake-region")
+        "fake-bucket",
+        "fake-bucketPath",
+        "fake-region")
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
         .withPartSize(PART_SIZE)
