@@ -99,7 +99,8 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
         namespaceStr,
         streamNameStr,
         DateTime.now(DateTimeZone.UTC),
-        S3DestinationConstants.DEFAULT_PATH_FORMAT);
+        config.getPathFormat());
+    // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
     final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
     final List<S3ObjectSummary> objectSummaries = s3Client
         .listObjects(config.getBucketName(), parentFolder)

@@ -106,12 +106,14 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
         namespaceStr,
         streamNameStr,
         DateTime.now(DateTimeZone.UTC),
-        S3DestinationConstants.DEFAULT_PATH_FORMAT);
+        config.getPathFormat());
+    // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
+    final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
     final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), outputPrefix)
+        .listObjects(config.getBucketName(), parentFolder)
         .getObjectSummaries()
         .stream()
-        .filter(o -> o.getKey().contains(S3DestinationConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+        .filter(o -> o.getKey().contains(streamNameStr + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(
