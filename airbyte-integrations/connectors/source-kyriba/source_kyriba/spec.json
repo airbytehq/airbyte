@@ -33,9 +33,17 @@
       },
       "start_date": {
         "type": "string",
-        "description": "The date/datetime an incremental sync should start from. Depending on the record type this will either be a date, or a datetime.",
+        "description": "The date the sync should start from.",
         "title": "Start Date",
-        "examples": ["2021-01-10", "2021-01-01T05:06:34"]
+        "examples": ["2021-01-10"],
+        "pattern": "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$"
+      },
+      "end_date": {
+        "type": "string",
+        "description": "The date the sync should end.",
+        "title": "End Date",
+        "examples": ["2022-03-01"],
+        "pattern": "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$"
       }
     }
   }

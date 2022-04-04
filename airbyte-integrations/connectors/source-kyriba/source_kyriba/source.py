@@ -43,10 +43,12 @@ class KyribaStream(HttpStream):
             client: KyribaClient,
             version: str = 1,
             start_date: str = None,
+            end_date: str = None,
     ):
         self.gateway_url = gateway_url
         self.version = version
-        self.start_date = start_date
+        self.start_date = start_date or date.isoformat(date.today())
+        self.end_date = date.fromisoformat(end_date)
         self.client = client
         super().__init__(self.client.login())
 
@@ -150,12 +152,13 @@ class CashBalancesStream(AccountSubStream, KyribaStream):
         # we can query a max of 31 days at a time
         days_inc = 31
         start_date = date.fromisoformat(self.start_date)
-        while start_date <= date.today():
-            end_date = start_date + timedelta(days=days_inc)
-            end_date = end_date if end_date <= date.today() else date.today()
+        end_date = self.end_date or date.today()
+        while start_date <= end_date:
+            seg_end_date = start_date + timedelta(days=days_inc)
+            seg_end_date = seg_end_date if seg_end_date <= end_date else end_date
             date_params = {
                 "startDate": start_date.isoformat(),
-                "endDate": end_date.isoformat(),
+                "endDate": seg_end_date.isoformat(),
             }
             slices.extend([{**u, **date_params} for u in account_uuids])
             # ensure the next start date is never greater than today since we are getting EOD balances
@@ -194,7 +197,8 @@ class BankBalancesStream(AccountSubStream, KyribaStream):
         account_uuids = self.get_account_uuids()
         # bank balances require the date to be specified
         bal_date = date.fromisoformat(self.start_date)
-        while bal_date <= date.today():
+        end_date = self.end_date or date.today()
+        while bal_date <= end_date:
             slices.extend([{**u, "date": bal_date.isoformat()} for u in account_uuids])
             bal_date = bal_date + timedelta(days=1)
         return slices
@@ -226,15 +230,14 @@ class CashFlows(IncrementalKyribaStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         # cash flow date range has to be less than a year
-        year_ago = (date.today() - timedelta(days=365))
         start = date.fromisoformat(self.start_date)
+        end_date = self.end_date or date.today()
         slices = []
-        while start < year_ago:
-            end = start + timedelta(days=365)
+        while start <= end_date:
+            max_end = start + timedelta(days=365)
+            end = max_end if max_end < end_date else end_date
             slices.append({"startDate": start.isoformat(), "endDate": end.isoformat()})
             start = end + timedelta(days=1)
-        # endDate will default to the current date
-        slices.append({"startDate": start.isoformat()})
         return slices
 
     def request_params(self, stream_slice: Optional[Mapping[str, Any]], **kwargs) -> MutableMapping[str, Any]:
@@ -269,6 +272,7 @@ class SourceKyriba(AbstractSource):
             "version": config.get("version"),
             "client": client,
             "start_date": config.get("start_date"),
+            "end_date": config.get("end_date"),
         }
         return [
             Accounts(**kwargs),
