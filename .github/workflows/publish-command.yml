@@ -205,11 +205,7 @@ jobs:
       - name: Run gradle process changes
         run: |
           ./gradlew :airbyte-config:init:processResources
-      - name: setup git config
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
-      - name: commit
+      - name: git commit and push
         run: |
           git add -u
           git commit -m "auto-bump connector version"
