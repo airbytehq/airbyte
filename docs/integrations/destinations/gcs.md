@@ -40,7 +40,7 @@ The full path of the output data is:
 For example:
 
 ```text
-testing_bucket/data_output_path/public/users/2021_01_01_1609541171643_0.csv
+testing_bucket/data_output_path/public/users/2021_01_01_1609541171643_0.csv.gz
 ↑              ↑                ↑      ↑     ↑          ↑             ↑ ↑
 |              |                |      |     |          |             | format extension
 |              |                |      |     |          |             partition id
@@ -56,7 +56,7 @@ Please note that the stream name may contain a prefix, if it is configured on th
 
 The rationales behind this naming pattern are: 1. Each stream has its own directory. 2. The data output files can be sorted by upload time. 3. The upload time composes of a date part and millis part so that it is both readable and unique.
 
-Currently, each data sync will only create one file per stream. In the future, the output file can be partitioned by size. Each partition is identifiable by the partition ID, which is always 0 for now.
+A data sync may create multiple files as the output files can be partitioned by size (targeting a size of 200MB compressed or lower) .
 
 ## Output Schema
 
@@ -135,6 +135,8 @@ With root level normalization, the output CSV is:
 | :--- | :--- | :--- | :--- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | 123 | `{ "first": "John", "last": "Doe" }` |
 
+Output CSV files will always be compressed using GZIP compression.
+
 ### JSON Lines \(JSONL\)
 
 [Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a structure as follows:
@@ -174,6 +176,8 @@ They will be like this in the output file:
 { "_airbyte_ab_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_emitted_at": "1622135805000", "_airbyte_data": { "user_id": 123, "name": { "first": "John", "last": "Doe" } } }
 { "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
+
+Output CSV files will always be compressed using GZIP compression.
 
 ### Parquet
 
@@ -229,6 +233,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0  | 2022-04-04 | [\#11686](https://github.com/airbytehq/airbyte/pull/11686) | Use serialized buffering strategy to reduce memory consumption; compress CSV and JSONL formats. |
 | 0.1.22 | 2022-02-12 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add JVM flag to exist on OOME. |
 | 0.1.21 | 2022-02-12 | [\#10299](https://github.com/airbytehq/airbyte/pull/10299) | Fix connection check to require only the necessary permissions. |
 | 0.1.20 | 2022-01-11 | [\#9367](https://github.com/airbytehq/airbyte/pull/9367) | Avro & Parquet: support array field with unknown item type; default any improperly typed field to string. |

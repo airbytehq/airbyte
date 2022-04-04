@@ -1,25 +1,43 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { Feature, FeatureItem, FeatureServiceApi } from "./types";
 import { useConfig } from "config";
+import { useDeepCompareEffect } from "react-use";
 
 const featureServiceContext = React.createContext<FeatureServiceApi | null>(
   null
 );
 
-export function FeatureService({
-  children,
-}: {
-  children: React.ReactNode;
-  features?: Feature[];
-}) {
-  const { features } = useConfig();
+export function FeatureService({ children }: { children: React.ReactNode }) {
+  const [additionFeatures, setAdditionFeatures] = useState<Feature[]>([]);
+  const { features: instanceWideFeatures } = useConfig();
+
+  const featureMethods = useMemo(() => {
+    return {
+      registerFeature: (newFeatures: Feature[]): void =>
+        setAdditionFeatures((oldFeatures) => [...oldFeatures, ...newFeatures]),
+      unregisterFeature: (unregisteredFeatures: FeatureItem[]): void => {
+        setAdditionFeatures((oldFeatures) =>
+          oldFeatures.filter(
+            (feature) => !unregisteredFeatures.includes(feature.id)
+          )
+        );
+      },
+    };
+  }, []);
+
+  const features = useMemo(
+    () => [...instanceWideFeatures, ...additionFeatures],
+    [instanceWideFeatures, additionFeatures]
+  );
+
   const featureService = useMemo(
     () => ({
       features,
       hasFeature: (featureId: FeatureItem): boolean =>
         !!features.find((feature) => feature.id === featureId),
+      ...featureMethods,
     }),
-    [features]
+    [features, featureMethods]
   );
 
   return (
@@ -43,4 +61,20 @@ export const WithFeature: React.FC<{ featureId: FeatureItem }> = ({
 }) => {
   const { hasFeature } = useFeatureService();
   return hasFeature(featureId) ? <>{children}</> : null;
+};
+
+export const useFeatureRegisterValues = (props?: Feature[] | null): void => {
+  const { registerFeature, unregisterFeature } = useFeatureService();
+
+  useDeepCompareEffect(() => {
+    if (props) {
+      registerFeature(props);
+
+      return () =>
+        unregisterFeature(props.map((feature: Feature) => feature.id));
+    }
+
+    return;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props]);
 };

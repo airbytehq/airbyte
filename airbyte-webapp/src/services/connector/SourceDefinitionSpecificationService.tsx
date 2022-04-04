@@ -10,9 +10,10 @@ import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewa
 import { useInitService } from "services/useInitService";
 import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { isDefined } from "utils/common";
+import { SCOPE_WORKSPACE } from "../Scope";
 
 export const sourceDefinitionSpecificationKeys = {
-  all: ["sourceDefinitionSpecification"] as const,
+  all: [SCOPE_WORKSPACE, "sourceDefinitionSpecification"] as const,
   detail: (id: string | number) =>
     [...sourceDefinitionSpecificationKeys.all, "details", id] as const,
 };

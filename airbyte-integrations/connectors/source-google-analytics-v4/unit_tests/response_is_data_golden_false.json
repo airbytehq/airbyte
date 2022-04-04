@@ -2,7 +2,7 @@
   "reports": [
     {
       "columnHeader": {
-        "dimensions": ["ga: date"],
+        "dimensions": ["ga:date"],
         "metricHeader": {
           "metricHeaderEntries": [
             {
