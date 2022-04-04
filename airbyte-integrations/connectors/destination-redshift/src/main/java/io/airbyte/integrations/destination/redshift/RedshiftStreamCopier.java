@@ -159,8 +159,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
         schemaName,
         tmpTableName,
         getFullS3Path(s3Config.getBucketName(), manifestPath),
-        s3Config.getAccessKeyId(),
-        s3Config.getSecretAccessKey(),
+        s3Config.getS3CredentialConfig(),
+        s3Config.getPartSize(),
         s3Config.getBucketRegion());
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));

@@ -17,6 +17,10 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfigs;
 
+/**
+ * Currently we always reuse the S3 client for GCS. So the GCS config extends from the S3 config.
+ * This may change in the future.
+ */
 public class GcsDestinationConfig extends S3DestinationConfig {
 
   private static final String GCS_ENDPOINT = "https://storage.googleapis.com";
@@ -28,7 +32,15 @@ public class GcsDestinationConfig extends S3DestinationConfig {
                               final String bucketRegion,
                               final GcsCredentialConfig credentialConfig,
                               final S3FormatConfig formatConfig) {
-    super("", bucketName, bucketPath, bucketRegion, null, null, formatConfig);
+    super(GCS_ENDPOINT,
+        bucketName,
+        bucketPath,
+        bucketRegion,
+        credentialConfig.getS3CredentialConfig().orElseThrow(),
+        S3DestinationConfig.DEFAULT_PART_SIZE_MB,
+        formatConfig,
+        null);
+
     this.credentialConfig = credentialConfig;
   }
 
@@ -58,7 +70,7 @@ public class GcsDestinationConfig extends S3DestinationConfig {
     }
   }
 
-  public GcsCredentialConfig getCredentialConfig() {
+  public GcsCredentialConfig getGcsCredentialConfig() {
     return credentialConfig;
   }
 
