@@ -2,10 +2,7 @@
   "type": "object",
   "required": [
     "account",
-    "balanceDate",
-    "amount",
-    "currencyCode",
-    "uuid"
+    "bankBalance"
   ],
   "properties": {
     "account": {
@@ -34,29 +31,30 @@
       },
       "title": "BK-BankAccountModel"
     },
-    "amount": {
-      "type": "number",
-      "format": "double",
-      "example": 1.123,
-      "description": "End of day balance value."
-    },
-    "balanceDate": {
-      "type": "string",
-      "format": "date",
-      "example": "2019-11-11",
-      "description": "Date of the end of day balance."
-    },
-    "currencyCode": {
-      "type": "string",
-      "example": "EUR",
-      "description": "Account currency code.",
-      "minLength": 1,
-      "maxLength": 3
-    },
-    "uuid": {
-      "type": "string",
-      "example": "03213c7f-8038-48c7-9650-d2dd030c875d:2020-01-01",
-      "description": "Unique identifier of the balance made up of the Accoutn UUID and the balance date"
+    "bankBalance": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "format": "double",
+          "example": 1.123,
+          "description": "End of day balance value."
+        },
+        "balanceDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2019-11-11",
+          "description": "Date of the end of day balance."
+        },
+        "currencyCode": {
+          "type": "string",
+          "example": "EUR",
+          "description": "Account currency code.",
+          "minLength": 1,
+          "maxLength": 3
+        }
+      },
+      "title": "BK-BalanceModel"
     }
   },
   "title": "BK-BankStatementBalanceModel",

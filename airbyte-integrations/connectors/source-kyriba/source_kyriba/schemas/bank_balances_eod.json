@@ -2,10 +2,7 @@
   "type": "object",
   "required": [
     "account",
-    "balanceDate",
-    "amount",
-    "currencyCode",
-    "uuid"
+    "bankBalance"
   ],
   "properties": {
     "account": {
