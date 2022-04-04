@@ -121,9 +121,7 @@ cmd_publish() {
   # Checking if the image was successfully registered on DockerHub
   # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
   sleep 5
-  #TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
-  # SETTING A 404 URL JUST TO TRY
-  TAG_URL="https://hub.docker.com/v2/repositories/airbyte/source-bing-ads/tags/0.1.4"
+  TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
   DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" ${TAG_URL})
   if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
     echo "Tag ${image_version} was not registered on DockerHub for image ${image_name}, please try to bump the version again." && exit 1
