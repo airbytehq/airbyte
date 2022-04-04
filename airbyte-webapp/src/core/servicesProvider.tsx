@@ -38,10 +38,6 @@ export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({
     [registeredServices]
   );
 
-  useEffect(() => {
-    services = registeredServices;
-  }, [registeredServices]);
-
   return (
     <ServicesProviderContext.Provider value={ctxValue}>
       {children}
@@ -98,13 +94,6 @@ export function useGetService<T>(serviceToken: string): T {
     registeredServices,
     serviceToken,
   ]);
-}
-
-// This is workaround for rest-hooks
-let services: ServiceContainer = {};
-
-export function getService<T extends Service>(serviceId: string): T {
-  return services[serviceId];
 }
 
 //

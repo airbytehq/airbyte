@@ -14,7 +14,6 @@ public class BigQueryDenormalizedTestDataUtils {
 
   private static final String JSON_FILES_BASE_LOCATION = "testdata/";
 
-
   public static JsonNode getSchema() {
     return getTestDataFromResourceJson("schema.json");
   }
@@ -23,11 +22,11 @@ public class BigQueryDenormalizedTestDataUtils {
     return getTestDataFromResourceJson("schemaWithFormats.json");
   }
 
-  public static JsonNode getSchemaWithDateTime()  {
+  public static JsonNode getSchemaWithDateTime() {
     return getTestDataFromResourceJson("schemaWithDateTime.json");
   }
 
-  public static JsonNode getSchemaWithInvalidArrayType()  {
+  public static JsonNode getSchemaWithInvalidArrayType() {
     return getTestDataFromResourceJson("schemaWithInvalidArrayType.json");
   }
 

@@ -1,12 +1,15 @@
-import { useFetcher } from "rest-hooks";
 import { useMemo } from "react";
 import { useMutation } from "react-query";
 
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { Connector, Scheduler } from "core/domain/connector";
-import { useSourceDefinitionList } from "./useSourceDefinition";
-import { useDestinationDefinitionList } from "./useDestinationDefinition";
+import {
+  useSourceDefinitionList,
+  useUpdateSourceDefinition,
+} from "services/connector/SourceDefinitionService";
+import {
+  useDestinationDefinitionList,
+  useUpdateDestinationDefinition,
+} from "services/connector/DestinationDefinitionService";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
@@ -20,20 +23,18 @@ type ConnectorService = {
   hasNewDestinationVersion: boolean;
   countNewSourceVersion: number;
   countNewDestinationVersion: number;
-  updateAllSourceVersions: () => void;
-  updateAllDestinationVersions: () => void;
+  updateAllSourceVersions: () => unknown;
+  updateAllDestinationVersions: () => unknown;
 };
 
 const useConnector = (): ConnectorService => {
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const updateSourceDefinition = useFetcher(
-    SourceDefinitionResource.updateShape()
-  );
-  const updateDestinationDefinition = useFetcher(
-    DestinationDefinitionResource.updateShape()
-  );
+  const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
+  const {
+    mutateAsync: updateDestinationDefinition,
+  } = useUpdateDestinationDefinition();
 
   const newSourceDefinitions = useMemo(
     () => sourceDefinitions.filter(Connector.hasNewerVersion),
@@ -48,13 +49,10 @@ const useConnector = (): ConnectorService => {
   const updateAllSourceVersions = async () => {
     await Promise.all(
       newSourceDefinitions?.map((item) =>
-        updateSourceDefinition(
-          {},
-          {
-            sourceDefinitionId: item.sourceDefinitionId,
-            dockerImageTag: item.latestDockerImageTag,
-          }
-        )
+        updateSourceDefinition({
+          sourceDefinitionId: item.sourceDefinitionId,
+          dockerImageTag: item.latestDockerImageTag,
+        })
       )
     );
   };
@@ -62,13 +60,10 @@ const useConnector = (): ConnectorService => {
   const updateAllDestinationVersions = async () => {
     await Promise.all(
       newDestinationDefinitions?.map((item) =>
-        updateDestinationDefinition(
-          {},
-          {
-            destinationDefinitionId: item.destinationDefinitionId,
-            dockerImageTag: item.latestDockerImageTag,
-          }
-        )
+        updateDestinationDefinition({
+          destinationDefinitionId: item.destinationDefinitionId,
+          dockerImageTag: item.latestDockerImageTag,
+        })
       )
     );
   };
