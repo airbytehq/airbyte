@@ -75,7 +75,7 @@ public class GcsDestination extends BaseConnector implements Destination {
         new S3StorageOperations(nameTransformer, gcsConfig.getS3Client(), gcsConfig),
         nameTransformer,
         SerializedBufferFactory.getCreateFunction(config, FileBuffer::new),
-        config,
+        gcsConfig,
         configuredCatalog);
   }
 

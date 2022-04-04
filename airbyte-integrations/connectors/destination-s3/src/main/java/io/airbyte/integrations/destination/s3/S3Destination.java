@@ -167,7 +167,7 @@ public class S3Destination extends BaseConnector implements Destination {
         new S3StorageOperations(nameTransformer, s3Config.getS3Client(), s3Config),
         nameTransformer,
         SerializedBufferFactory.getCreateFunction(config, FileBuffer::new),
-        config,
+        s3Config,
         catalog);
   }
 

@@ -27,15 +27,11 @@ public class S3DestinationConfig {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3DestinationConfig.class);
 
-  // The smallest part size is 5MB. An S3 upload can be maximally formed of 10,000 parts. This gives
-  // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
-  // WARNING: Too large a part size can cause potential OOM errors.
-  public static final int DEFAULT_PART_SIZE_MB = 10;
-
   private final String endpoint;
   private final String bucketName;
   private final String bucketPath;
   private final String bucketRegion;
+  private final String pathFormat;
   private final S3CredentialConfig credentialConfig;
   private final Integer partSize;
   private final S3FormatConfig formatConfig;
@@ -47,6 +43,7 @@ public class S3DestinationConfig {
                              final String bucketName,
                              final String bucketPath,
                              final String bucketRegion,
+                             final String pathFormat,
                              final S3CredentialConfig credentialConfig,
                              final Integer partSize,
                              final S3FormatConfig formatConfig,
@@ -55,6 +52,7 @@ public class S3DestinationConfig {
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
+    this.pathFormat = pathFormat;
     this.credentialConfig = credentialConfig;
     this.formatConfig = formatConfig;
     this.partSize = partSize;
@@ -81,6 +79,10 @@ public class S3DestinationConfig {
 
     if (config.has("s3_bucket_path")) {
       builder = builder.withBucketPath(config.get("s3_bucket_path").asText());
+    }
+
+    if (config.has("s3_path_format")) {
+      builder = builder.withPathFormat(config.get("s3_path_format").asText());
     }
 
     if (config.has("s3_endpoint")) {
@@ -118,6 +120,10 @@ public class S3DestinationConfig {
 
   public String getBucketPath() {
     return bucketPath;
+  }
+
+  public String getPathFormat() {
+    return pathFormat;
   }
 
   public String getBucketRegion() {
@@ -211,7 +217,8 @@ public class S3DestinationConfig {
 
     private String endpoint = "";
     private String bucketPath = "";
-    private int partSize = DEFAULT_PART_SIZE_MB;
+    private String pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT;
+    private int partSize = S3DestinationConstants.DEFAULT_PART_SIZE_MB;
 
     private String bucketName;
     private String bucketRegion;
@@ -237,6 +244,11 @@ public class S3DestinationConfig {
 
     public Builder withBucketRegion(final String bucketRegion) {
       this.bucketRegion = bucketRegion;
+      return this;
+    }
+
+    public Builder withPathFormat(final String pathFormat) {
+      this.pathFormat = pathFormat;
       return this;
     }
 
@@ -276,6 +288,7 @@ public class S3DestinationConfig {
           bucketName,
           bucketPath,
           bucketRegion,
+          pathFormat,
           credentialConfig,
           partSize,
           formatConfig,
