@@ -19,6 +19,11 @@ public class GcsHmacKeyCredentialConfig implements GcsCredentialConfig {
     this.hmacKeySecret = credentialConfig.get("hmac_key_secret").asText();
   }
 
+  public GcsHmacKeyCredentialConfig(final String hmacKeyAccessId, final String hmacKeySecret) {
+    this.hmacKeyAccessId = hmacKeyAccessId;
+    this.hmacKeySecret = hmacKeySecret;
+  }
+
   public String getHmacKeyAccessId() {
     return hmacKeyAccessId;
   }
