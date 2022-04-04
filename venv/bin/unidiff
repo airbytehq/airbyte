@@ -1,0 +1,75 @@
+#!/actions-runner/_work/airbyte/airbyte/venv/bin/python3
+
+from __future__ import print_function, unicode_literals
+
+import argparse
+import codecs
+import sys
+
+from unidiff import DEFAULT_ENCODING, PatchSet
+
+
+PY2 = sys.version_info[0] == 2
+DESCRIPTION = """Unified diff metadata.
+
+Examples:
+    $ git diff | unidiff
+    $ hg diff | unidiff --show-diff
+    $ unidiff -f patch.diff
+
+"""
+
+def get_parser():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=DESCRIPTION)
+    parser.add_argument('--show-diff', action="store_true", default=False,
+                        dest='show_diff', help='output diff to stdout')
+    parser.add_argument('-f', '--file', dest='diff_file',
+                        type=argparse.FileType('r'),
+                        help='if not specified, read diff data from stdin')
+    return parser
+
+
+if __name__ == '__main__':
+    parser = get_parser()
+    args = parser.parse_args()
+
+    encoding = DEFAULT_ENCODING
+    if args.diff_file:
+        diff_file = args.diff_file
+    else:
+        encoding = sys.stdin.encoding or encoding
+        diff_file = sys.stdin
+
+    if PY2:
+        diff_file = codecs.getreader(encoding)(diff_file)
+
+    patch = PatchSet(diff_file, metadata_only=(not args.show_diff))
+
+    if args.show_diff:
+        print(patch)
+        print()
+
+    print('Summary')
+    print('-------')
+    additions = 0
+    deletions = 0
+    renamed_files = 0
+    for f in patch:
+        if f.is_binary_file:
+            print('%s:' % f.path, '(binary file)')
+        else:
+            additions += f.added
+            deletions += f.removed
+            print('%s:' % f.path, '+%d additions,' % f.added,
+                  '-%d deletions' % f.removed)
+        renamed_files = renamed_files + 1 if f.is_rename else renamed_files
+
+    print()
+    print('%d modified file(s), %d added file(s), %d removed file(s)' % (
+        len(patch.modified_files), len(patch.added_files),
+        len(patch.removed_files)))
+    if renamed_files:
+        print('%d file(s) renamed' % renamed_files)
+    print('Total: %d addition(s), %d deletion(s)' % (additions, deletions))
