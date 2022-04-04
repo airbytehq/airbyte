@@ -8,17 +8,18 @@ repos:
       - id: licenseheaders
         args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
   - repo: https://github.com/ambv/black
-    rev: 21.11b1
+    rev: 22.1.0
     hooks:
       - id: black
-        args: ["--line-length=140"]
+        args: ["--config", "pyproject.toml"]
   - repo: https://github.com/timothycrosley/isort
     rev: 5.10.1
     hooks:
       - id: isort
         args:
           [
-            "--settings-path=tools/python/.isort.cfg",
+            "--settings-file",
+            "pyproject.toml",
             "--dont-follow-links",
             "--jobs=-1",
           ]
@@ -40,14 +41,14 @@ repos:
     rev: v0.0.1a2.post1
     hooks:
       - id: pyproject-flake8
-        args: ["--config=tools/python/.flake8"]
+        args: ["--config", "pyproject.toml"]
         additional_dependencies: ["mccabe"]
         alias: flake8
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.910-1
+    rev: v0.930
     hooks:
       - id: mypy
-        args: ["--config-file=tools/python/.mypy.ini"]
+        args: ["--config-file", "pyproject.toml"]
         exclude: |
           (?x)^.*(
               octavia-cli/unit_tests/|

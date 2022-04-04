@@ -11,6 +11,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import java.util.Map;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,10 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination  {
   private static final String SCHEMA = "schema";
   private static final String JDBC_URL = "jdbc_url";
 
+  public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "ssl", "true",
+      "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
+
   public RedshiftInsertDestination(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
     super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
   }
@@ -40,21 +45,19 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination  {
     return getJdbcDatabase(config);
   }
 
-  private static void addSsl(final List<String> additionalProperties) {
-    additionalProperties.add("ssl=true");
-    additionalProperties.add("sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return SSL_JDBC_PARAMETERS;
   }
 
   public static JdbcDatabase getJdbcDatabase(final JsonNode config) {
-    final List<String> additionalProperties = new ArrayList<>();
     final var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
-    addSsl(additionalProperties);
     return Databases.createJdbcDatabase(
         jdbcConfig.get(USERNAME).asText(),
         jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
         jdbcConfig.get(JDBC_URL).asText(),
         RedshiftInsertDestination.DRIVER_CLASS,
-        String.join(";", additionalProperties));
+        SSL_JDBC_PARAMETERS);
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {

@@ -16,6 +16,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
+    id 'com.github.spotbugs' version '5.0.5'
 }
 
 repositories {
@@ -131,11 +132,15 @@ check.dependsOn 'spotlessApply'
 def Task getDockerBuildTask(String artifactName, String projectDir) {
     return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
         def buildTag = System.getenv('VERSION') ?: 'dev'
-        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
-        def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
-        def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
         def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
-        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+
+        def arch = System.getProperty("os.arch").toLowerCase()
+        def isArm64 = arch == "aarch64" || arch == "arm64"
+
+        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
+        def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
+        def postgresImage = System.getenv('POSTGRES_IMAGE') ?: isArm64 ? 'arm64v8/postgres:13-alpine' : 'amd64/postgres:13-alpine'
+        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
         inputDir = file("$projectDir/build/docker")
         platform = buildPlatform
@@ -150,9 +155,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir) {
 allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
 
-    task copyDocker(type: Copy) {
-        delete "build/docker"
-
+    task copyDocker(type: Sync) {
         from "${project.projectDir}/Dockerfile"
         into "build/docker/"
     }
@@ -179,6 +182,7 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+    apply plugin: 'com.github.spotbugs'
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -249,6 +253,11 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
+    spotbugs {
+        reportLevel = 'high'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+    }
+
     dependencies {
         if (project.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
@@ -305,6 +314,8 @@ subprojects {
         testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
 
+        // adds owasp plugin
+        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     }
 
     tasks.withType(Tar) {

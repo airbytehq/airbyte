@@ -7,6 +7,7 @@ package io.airbyte.integrations.standardtest.source;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestPlan;
@@ -29,8 +30,8 @@ public class TestRunner {
 
     launcher.execute(plan, listener);
 
-    listener.getSummary().printFailuresTo(new PrintWriter(System.out));
-    listener.getSummary().printTo(new PrintWriter(System.out));
+    listener.getSummary().printFailuresTo(new PrintWriter(System.out, false, StandardCharsets.UTF_8));
+    listener.getSummary().printTo(new PrintWriter(System.out, false, StandardCharsets.UTF_8));
 
     if (listener.getSummary().getTestsFailedCount() > 0) {
       System.out.println(

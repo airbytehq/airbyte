@@ -6,6 +6,7 @@ package io.airbyte.workers.process;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerException;
@@ -102,13 +103,14 @@ public class KubeProcessFactory implements ProcessFactory {
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> customLabels,
+                        final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = createPodName(imageName, jobId, attempt);
-      LOGGER.info("Attempting to start pod = {}", podName);
+      LOGGER.info("Attempting to start pod = {} for {}", podName, imageName);
 
       final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
@@ -122,7 +124,6 @@ public class KubeProcessFactory implements ProcessFactory {
           isOrchestrator,
           processRunnerHost,
           fabricClient,
-          workerConfigs.getWorkerStatusCheckInterval(),
           podName,
           namespace,
           imageName,
@@ -141,7 +142,7 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getJobSocatImage(),
           workerConfigs.getJobBusyboxImage(),
           workerConfigs.getJobCurlImage(),
-          workerConfigs.getEnvMap(),
+          MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap()),
           internalToExternalPorts,
           args);
     } catch (final Exception e) {

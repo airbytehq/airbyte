@@ -72,7 +72,7 @@ jobs:
         sonar-token: ${{ secrets.SONAR_TOKEN }}
         sonar-gcp-access-key: ${{ secrets.GCP_SONAR_SA_KEY }}
         pull-request-id: "${{ github.repository }}/${{ github.event.pull_request.number }}"
-        remove-sonar-project: ${{  github.event.action == 'closed' }}
+        remove-sonar-project: true
 
 
 

@@ -15,7 +15,7 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.KubePodInfo;
-import io.airbyte.workers.process.KubePodProcess;
+import io.airbyte.workers.process.KubePodResourceHelper;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -77,7 +77,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   }
 
   @Override
-  public OUTPUT run(INPUT input, Path jobRoot) throws WorkerException {
+  public OUTPUT run(final INPUT input, final Path jobRoot) throws WorkerException {
     final AtomicBoolean isCanceled = new AtomicBoolean(false);
     final AtomicReference<Runnable> cancellationCallback = new AtomicReference<>(null);
     return TemporalUtils.withBackgroundHeartbeat(cancellationCallback, () -> {
@@ -139,7 +139,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                 resourceRequirements,
                 fileMap,
                 portMap);
-          } catch (KubernetesClientException e) {
+          } catch (final KubernetesClientException e) {
             throw new WorkerException(
                 "Failed to create pod " + podName + ", pre-existing pod exists which didn't advance out of the NOT_STARTED state.");
           }
@@ -159,12 +159,12 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         final var output = process.getOutput();
 
         return output.map(s -> Jsons.deserialize(s, outputClass)).orElse(null);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         if (cancelled.get()) {
           try {
             log.info("Destroying process due to cancellation.");
             process.destroy();
-          } catch (Exception e2) {
+          } catch (final Exception e2) {
             log.error("Failed to destroy process on cancellation.", e2);
           }
           throw new WorkerException("Launcher " + application + " was cancelled.", e);
@@ -219,7 +219,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         .list()
         .getItems()
         .stream()
-        .filter(kubePod -> !KubePodProcess.isTerminal(kubePod))
+        .filter(kubePod -> !KubePodResourceHelper.isTerminal(kubePod))
         .collect(Collectors.toList());
   }
 

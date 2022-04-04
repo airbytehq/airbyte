@@ -16,7 +16,7 @@ from source_s3.utils import run_in_external_process
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
 
-MAX_CHUNK_SIZE = 50.0 * 1024 ** 2  # in bytes
+MAX_CHUNK_SIZE = 50.0 * 1024**2  # in bytes
 TMP_FOLDER = tempfile.mkdtemp()
 
 

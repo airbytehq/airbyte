@@ -44,7 +44,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
         <FormattedMessage
           id="onboarding.welcomeUser.text"
           values={{
-            b: (...b: React.ReactNode[]) => (
+            b: (b: React.ReactNode) => (
               <>
                 <b>{b}</b>
                 <br />

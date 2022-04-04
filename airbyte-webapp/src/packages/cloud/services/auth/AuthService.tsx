@@ -1,6 +1,7 @@
-import React, { useContext, useEffect, useMemo } from "react";
+import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
-import { useResetter } from "rest-hooks";
+import { User as FbUser } from "firebase/auth";
+import { useEffectOnce } from "react-use";
 
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
@@ -14,6 +15,9 @@ import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { getUtmFromStorage } from "utils/utmStorage";
+import { useInitService } from "services/useInitService";
 
 export type AuthUpdatePassword = (
   email: string,
@@ -35,7 +39,10 @@ export type AuthLogin = (values: {
 export type AuthSignUp = (form: {
   email: string;
   password: string;
-}) => Promise<User | null>;
+  companyName: string;
+  name: string;
+  news: boolean;
+}) => Promise<void>;
 
 export type AuthChangeEmail = (
   email: string,
@@ -64,6 +71,46 @@ type AuthContextApi = {
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
+const getTempSignUpStorageKey = (currentUser: FbUser): string =>
+  `${currentUser.uid}/temp-signup-data`;
+
+const TempSignUpValuesProvider = {
+  get: (
+    currentUser: FbUser
+  ): {
+    companyName: string;
+    name: string;
+    news: boolean;
+  } => {
+    try {
+      const key = getTempSignUpStorageKey(currentUser);
+
+      const storedValue = localStorage.getItem(key);
+
+      if (storedValue) {
+        return JSON.parse(storedValue);
+      }
+    } catch (err) {
+      // passthrough and return default values
+    }
+
+    return {
+      companyName: "",
+      name: currentUser.email ?? "",
+      news: false,
+    };
+  },
+  save: (
+    currentUser: FbUser,
+    v: { companyName: string; name: string; news: boolean }
+  ) => {
+    localStorage.setItem(
+      getTempSignUpStorageKey(currentUser),
+      JSON.stringify(v)
+    );
+  },
+};
+
 export const AuthenticationProvider: React.FC = ({ children }) => {
   const [
     state,
@@ -75,41 +122,65 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   );
   const auth = useAuth();
   const userService = useGetUserService();
-  const authService = useMemo(() => new GoogleAuthService(() => auth), [auth]);
+  const analytics = useAnalyticsService();
+  const authService = useInitService(() => new GoogleAuthService(() => auth), [
+    auth,
+  ]);
 
-  useEffect(() => {
+  const onAfterAuth = useCallback(
+    async (currentUser: FbUser) => {
+      let user: User | undefined;
+
+      try {
+        user = await userService.getByAuthId(
+          currentUser.uid,
+          AuthProviders.GoogleIdentityPlatform
+        );
+      } catch (err) {
+        if (currentUser.email) {
+          const encodedData = TempSignUpValuesProvider.get(currentUser);
+          user = await userService.create({
+            authProvider: AuthProviders.GoogleIdentityPlatform,
+            authUserId: currentUser.uid,
+            email: currentUser.email,
+            name: encodedData.name,
+            companyName: encodedData.companyName,
+            news: encodedData.news,
+          });
+          analytics.track("Airbyte.UI.User.Created", {
+            user_id: user.userId,
+            name: user.name,
+            email: user.email,
+            ...getUtmFromStorage(),
+          });
+        }
+      }
+
+      if (user) {
+        loggedIn({ user, emailVerified: currentUser.emailVerified });
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [userService]
+  );
+
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  useEffectOnce(() => {
     return auth.onAuthStateChanged(async (currentUser) => {
-      if (state.currentUser === null && currentUser) {
-        let user: User | undefined;
-
-        try {
-          user = await userService.getByAuthId(
-            currentUser.uid,
-            AuthProviders.GoogleIdentityPlatform
-          );
-        } catch (err) {
-          if (currentUser.email) {
-            user = await userService.create({
-              authProvider: AuthProviders.GoogleIdentityPlatform,
-              authUserId: currentUser.uid,
-              email: currentUser.email,
-              name: currentUser.email,
-            });
-          }
+      // We want to run this effect only once on initial page opening
+      if (!stateRef.current.inited) {
+        if (stateRef.current.currentUser === null && currentUser) {
+          await onAfterAuth(currentUser);
+        } else {
+          authInited();
         }
-
-        if (user) {
-          loggedIn({ user, emailVerified: currentUser.emailVerified });
-        }
-      } else {
-        authInited();
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentUser, loggedIn, authInited]);
+  });
 
   const queryClient = useQueryClient();
-  const reset = useResetter();
 
   const ctx: AuthContextApi = useMemo(
     () => ({
@@ -118,12 +189,15 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       emailVerified: state.emailVerified,
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
+
+        if (auth.currentUser) {
+          await onAfterAuth(auth.currentUser);
+        }
       },
       async logout(): Promise<void> {
         await authService.signOut();
         loggedOut();
         await queryClient.invalidateQueries();
-        await reset();
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);
@@ -158,22 +232,27 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       async signUp(form: {
         email: string;
         password: string;
-      }): Promise<User | null> {
-        await authService.signUp(form.email, form.password);
-        // const user = await userService.create({
-        //   authProvider: AuthProviders.GoogleIdentityPlatform,
-        //   authUserId: fbUser.user!.uid,
-        //   email: form.email,
-        //   name: form.email,
-        // });
+        companyName: string;
+        name: string;
+        news: boolean;
+      }): Promise<void> {
+        const creds = await authService.signUp(form.email, form.password);
+        TempSignUpValuesProvider.save(creds.user, {
+          companyName: form.companyName,
+          name: form.name,
+          news: form.news,
+        });
 
         await authService.sendEmailVerifiedLink();
-        return null;
+
+        if (auth.currentUser) {
+          await onAfterAuth(auth.currentUser);
+        }
       },
       user: state.currentUser,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state, queryClient, userService]
+    [state, userService]
   );
 
   return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;

@@ -1,4 +1,5 @@
 {
+  "projectId": "916nvw",
   "baseUrl": "http://localhost:3000",
   "testFiles": [
     "base.spec.js",

@@ -8,7 +8,6 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -179,6 +178,11 @@ public interface Configs {
   String getTemporalHost();
 
   /**
+   * Define the number of retention days for the temporal history
+   */
+  int getTemporalRetentionInDays();
+
+  /**
    * Define the url where the Airbyte Server is hosted at. Airbyte services use this information.
    * Manipulates the `INTERNAL_API_HOST` variable.
    */
@@ -205,6 +209,13 @@ public interface Configs {
    * Define the number of days a sync job will execute for before timing out.
    */
   int getSyncJobMaxTimeoutDays();
+
+  /**
+   * Defines whether job creation uses connector-specific resource requirements when spawning jobs.
+   * Works on both Docker and Kubernetes. Defaults to false for ease of use in OSS trials of Airbyte
+   * but recommended for production deployments.
+   */
+  boolean connectorSpecificResourceDefaultsEnabled();
 
   /**
    * Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending
@@ -236,6 +247,18 @@ public interface Configs {
    * an empty map.
    */
   Map<String, String> getJobDefaultEnvMap();
+
+  /**
+   * Defines the number of consecutive job failures required before a connection is auto-disabled if
+   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   */
+  int getMaxFailedJobsInARowBeforeConnectionDisable();
+
+  /**
+   * Defines the required number of days with only failed jobs before a connection is auto-disabled if
+   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   */
+  int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
 
   // Jobs - Kube only
   /**
@@ -318,41 +341,6 @@ public interface Configs {
    */
   String getJobKubeNamespace();
 
-  /**
-   * Define the interval for checking for a Kubernetes pod status for a worker of an unspecified type.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getDefaultWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "get spec" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getSpecWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "check connection" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getCheckWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "discover" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getDiscoverWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "replication" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getReplicationWorkerStatusCheckInterval();
-
   // Logging/Monitoring/Tracking
   /**
    * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are
@@ -400,6 +388,32 @@ public interface Configs {
    * are involved here. Please see {@link MaxWorkersConfig} for more info.
    */
   MaxWorkersConfig getMaxWorkers();
+
+  /**
+   * Define if the worker should run get spec workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunGetSpecWorkflows();
+
+  /**
+   * Define if the worker should run check connection workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunCheckConnectionWorkflows();
+
+  /**
+   * Define if the worker should run discover workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunDiscoverWorkflows();
+
+  /**
+   * Define if the worker should run sync workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunSyncWorkflows();
+
+  /**
+   * Define if the worker should run connection manager workflows. Defaults to true. Internal-use
+   * only.
+   */
+  boolean shouldRunConnectionManagerWorkflows();
 
   // Worker - Kube only
   /**

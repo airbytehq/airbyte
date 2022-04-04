@@ -35,7 +35,7 @@ definitions:
       connectionStatus:
         "$ref": "#/definitions/AirbyteConnectionStatus"
       catalog:
-        description: "catalog message: the calalog"
+        description: "catalog message: the catalog"
         "$ref": "#/definitions/AirbyteCatalog"
       record:
         description: "record message: the record"

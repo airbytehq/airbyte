@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class AirbyteVersion {
 
-  private static final String DEV_VERSION = "dev";
+  public static final String DEV_VERSION = "dev";
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
 
   private final String version;
@@ -112,6 +112,24 @@ public class AirbyteVersion {
       return minorDiff;
     }
     return compareVersion(patch, another.patch);
+  }
+
+  /**
+   * Compares two Airbyte Version to check if only the patch version was updated.
+   */
+  public boolean checkOnlyPatchVersionIsUpdatedComparedTo(final AirbyteVersion another) {
+    if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) {
+      return false;
+    }
+    final int majorDiff = compareVersion(major, another.major);
+    if (majorDiff > 0) {
+      return false;
+    }
+    final int minorDiff = compareVersion(minor, another.minor);
+    if (minorDiff > 0) {
+      return false;
+    }
+    return compareVersion(patch, another.patch) > 0;
   }
 
   public boolean isDev() {

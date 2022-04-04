@@ -9,14 +9,14 @@ export type IProps = {
   data?: IDataItem;
 } & SingleValueProps<OptionTypeBase>;
 
-const ItemView = styled.div`
+export const ItemView = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: left;
   align-items: center;
 `;
 
-const Icon = styled.div`
+export const Icon = styled.div`
   margin-right: 6px;
   display: inline-block;
 `;

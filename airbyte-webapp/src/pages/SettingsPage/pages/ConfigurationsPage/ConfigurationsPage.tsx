@@ -105,7 +105,7 @@ const ConfigurationsPage: React.FC = () => {
             <FormattedMessage
               id="admin.exportConfigurationText"
               values={{
-                lnk: (...lnk: React.ReactNode[]) => (
+                lnk: (lnk: React.ReactNode) => (
                   <DocLink
                     target="_blank"
                     href={config.ui.configurationArchiveLink}
@@ -129,7 +129,7 @@ const ConfigurationsPage: React.FC = () => {
             <FormattedMessage
               id="admin.importConfigurationText"
               values={{
-                b: (...b: React.ReactNode[]) => <Warning>{b}</Warning>,
+                warn: (warn: React.ReactNode) => <Warning>{warn}</Warning>,
               }}
             />
           </Text>

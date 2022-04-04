@@ -2,148 +2,131 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import json
-from unittest.mock import MagicMock, Mock
+import calendar
+from datetime import datetime
+from urllib.parse import parse_qsl, urlparse
 
-import pytest
+import pendulum
+import pytz
 import requests
-import requests_mock
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-from requests.exceptions import HTTPError
-from source_zendesk_support import SourceZendeskSupport
-from source_zendesk_support.streams import Tags, TicketComments
-
-CONFIG_FILE = "secrets/config.json"
-
-
-@pytest.fixture(scope="module")
-def prepare_stream_args():
-    """Generates streams settings from a file"""
-    with open(CONFIG_FILE, "r") as f:
-        return SourceZendeskSupport.convert_config2stream_args(json.loads(f.read()))
-
-
-@pytest.fixture(scope="module")
-def config():
-    """Generates fake config"""
-    return {
-        "subdomain": "fake_domain",
-        "start_date": "2020-01-01T00:00:00Z",
-        "auth_method": {"auth_method": "api_token", "email": "email@email.com", "api_token": "fake_api_token"},
-    }
-
-
-@pytest.mark.parametrize(
-    "header_name,header_value,expected",
-    [
-        # Retry-After > 0
-        ("Retry-After", "123", 123),
-        # Retry-After < 0
-        ("Retry-After", "-123", None),
-        # X-Rate-Limit > 0
-        ("X-Rate-Limit", "100", 1.2),
-        # X-Rate-Limit header < 0
-        ("X-Rate-Limit", "-100", None),
-        # Random header
-        ("Fake-Header", "-100", None),
-    ],
+from source_zendesk_support.source import BasicApiTokenAuthenticator
+from source_zendesk_support.streams import (
+    DATETIME_FORMAT,
+    END_OF_STREAM_KEY,
+    BaseSourceZendeskSupportStream,
+    TicketComments,
+    SourceZendeskTicketExportStream,
 )
-def test_backoff_cases(prepare_stream_args, header_name, header_value, expected):
-    """Zendesk sends the header different value for backoff logic"""
 
-    stream = Tags(**prepare_stream_args)
-    with requests_mock.Mocker() as m:
-        url = stream.url_base + stream.path()
+# config
+STREAM_ARGS = {
+    "subdomain": "test",
+    "start_date": "2022-01-27T00:00:00Z",
+    "authenticator": BasicApiTokenAuthenticator("test@airbyte.io", "api_token"),
+}
 
-        m.get(url, headers={header_name: header_value}, status_code=429)
-        result = stream.backoff_time(requests.get(url))
-        if expected:
-            assert (result - expected) < 0.005
-        else:
-            assert result is None
-
-
-@pytest.mark.parametrize(
-    "status_code,expected_comment_count,expected_exception",
-    [
-        # success
-        (200, 1, None),
-        # not found ticket
-        (404, 0, None),
-        # some another code error.
-        (403, 0, HTTPError),
+DATETIME_STR = "2021-07-22T06:55:55Z"
+DATETIME_FROM_STR = datetime.strptime(DATETIME_STR, DATETIME_FORMAT)
+STREAM_URL = "https://subdomain.zendesk.com/api/v2/stream.json?&start_time=1647532987&page=1"
+STREAM_RESPONSE: dict = {
+    "ticket_events": [
+        {
+            "child_events": [
+                {
+                    "id": 99999,
+                    "via": {},
+                    "via_reference_id": None,
+                    "type": "Comment",
+                    "author_id": 10,
+                    "body": "test_comment",
+                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br></div>',
+                    "plain_body": "test_comment",
+                    "public": True,
+                    "attachments": [],
+                    "audit_id": 123456,
+                    "created_at": "2022-03-17T16:03:07Z",
+                    "event_type": "Comment",
+                }
+            ],
+            "id": 999999,
+            "ticket_id": 3,
+            "timestamp": 1647532987,
+            "created_at": "2022-03-17T16:03:07Z",
+            "updater_id": 9999999,
+            "via": "Web form",
+            "system": {},
+            "metadata": {},
+            "event_type": "Audit",
+        }
     ],
-)
-def test_comments_not_found_ticket(prepare_stream_args, status_code, expected_comment_count, expected_exception):
-    """Checks the case when some ticket is removed while sync of comments"""
-    fake_id = 12345
-    stream = TicketComments(**prepare_stream_args)
-    with requests_mock.Mocker() as comment_mock:
-        path = f"tickets/{fake_id}/comments.json"
-        stream.path = Mock(return_value=path)
-        url = stream.url_base + path
-        comment_mock.get(
-            url,
-            status_code=status_code,
-            json={
-                "comments": [
-                    {
-                        "id": fake_id,
-                        TicketComments.cursor_field: "2121-07-22T06:55:55Z",
-                    }
-                ]
-            },
-        )
-        comments = stream.read_records(
-            sync_mode=None,
-            stream_slice={
-                "id": fake_id,
-            },
-        )
-        if expected_exception:
-            with pytest.raises(expected_exception):
-                next(comments)
-        else:
-            assert len(list(comments)) == expected_comment_count
+    "next_page": "https://subdomain.zendesk.com/api/v2/stream.json?&start_time=1122334455&page=2",
+    "count": 215,
+    "end_of_stream": False,
+    "end_time": 1647532987,
+}
+TEST_STREAM = TicketComments(**STREAM_ARGS)
 
 
-@pytest.mark.parametrize(
-    "input_data,expected_data",
-    [
-        (
-            {"id": 123, "custom_fields": [{"id": 3213212, "value": ["fake_3000", "fake_5555"]}]},
-            {"id": 123, "custom_fields": [{"id": 3213212, "value": "['fake_3000', 'fake_5555']"}]},
-        ),
-        (
-            {"id": 234, "custom_fields": [{"id": 2345234, "value": "fake_123"}]},
-            {"id": 234, "custom_fields": [{"id": 2345234, "value": "fake_123"}]},
-        ),
-        (
-            {"id": 345, "custom_fields": [{"id": 5432123, "value": 55432.321}]},
-            {"id": 345, "custom_fields": [{"id": 5432123, "value": "55432.321"}]},
-        ),
-    ],
-)
-def test_transform_for_tickets_stream(config, input_data, expected_data):
-    """Checks Transform in case when records come with invalid fields data types"""
-    test_catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="tickets", json_schema={}),
-                sync_mode=SyncMode.full_refresh,
-                destination_sync_mode=DestinationSyncMode.overwrite,
-            )
-        ]
-    )
+def test_str2datetime():
+    expected = datetime.strptime(DATETIME_STR, DATETIME_FORMAT)
+    output = BaseSourceZendeskSupportStream.str2datetime(DATETIME_STR)
+    assert output == expected
 
-    with requests_mock.Mocker() as ticket_mock:
-        ticket_mock.get(
-            f"https://{config['subdomain']}.zendesk.com/api/v2/incremental/tickets.json",
-            status_code=200,
-            json={"tickets": [input_data], "end_time": "2021-07-22T06:55:55Z", "end_of_stream": True},
-        )
 
-        source = SourceZendeskSupport()
-        records = source.read(MagicMock(), config, test_catalog, None)
-        for record in records:
-            assert record.record.data == expected_data
+def test_datetime2str():
+    expected = datetime.strftime(DATETIME_FROM_STR.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
+    output = BaseSourceZendeskSupportStream.datetime2str(DATETIME_FROM_STR)
+    assert output == expected
+
+
+def test_str2unixtime():
+    expected = calendar.timegm(DATETIME_FROM_STR.utctimetuple())
+    output = BaseSourceZendeskSupportStream.str2unixtime(DATETIME_STR)
+    assert output == expected
+    
+def test_check_start_time_param():
+    expected = 1626936955
+    start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
+    output = SourceZendeskTicketExportStream.check_start_time_param(start_time)
+    assert output == expected
+
+
+def test_parse_next_page_number(requests_mock):
+    expected = dict(parse_qsl(urlparse(STREAM_RESPONSE.get("next_page")).query)).get("page")
+    requests_mock.get(STREAM_URL, json=STREAM_RESPONSE)
+    test_response = requests.get(STREAM_URL)
+    output = BaseSourceZendeskSupportStream._parse_next_page_number(test_response)
+    assert output == expected
+
+
+def test_next_page_token(requests_mock):
+    # mocking the logic of next_page_token
+    if STREAM_RESPONSE.get(END_OF_STREAM_KEY) is False:
+        expected = {"created_at": 1122334455}
+    else:
+        expected = None
+    requests_mock.get(STREAM_URL, json=STREAM_RESPONSE)
+    test_response = requests.get(STREAM_URL)
+    output = TEST_STREAM.next_page_token(test_response)
+    assert expected == output
+
+
+def test_request_params(requests_mock):
+    expected = {"start_time": calendar.timegm(pendulum.parse(STREAM_ARGS.get("start_date")).utctimetuple()), "include": "comment_events"}
+    stream_state = None
+    requests_mock.get(STREAM_URL, json=STREAM_RESPONSE)
+    test_response = requests.get(STREAM_URL)
+    next_page_token = TEST_STREAM.next_page_token(test_response)
+    output = TEST_STREAM.request_params(stream_state, next_page_token)
+    assert expected == output
+
+
+def test_parse_response(requests_mock):
+    requests_mock.get(STREAM_URL, json=STREAM_RESPONSE)
+    test_response = requests.get(STREAM_URL)
+    output = TEST_STREAM.parse_response(test_response)
+    # get the first parsed element from generator
+    parsed_output = list(output)[0]
+    # check, if we have all transformations correctly
+    for entity in TicketComments.list_entities_from_event:
+        assert True if entity in parsed_output else False

@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useFetcher } from "rest-hooks";
 
 import { Button } from "components";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useRouter from "hooks/useRouter";
-import { RoutePaths } from "pages/routes";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 import CreateConnectorModal from "./CreateConnectorModal";
-import useWorkspace from "hooks/services/useWorkspace";
+import { RoutePaths } from "pages/routePaths";
+import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
 type IProps = {
   type: string;
@@ -24,7 +22,6 @@ type ICreateProps = {
 
 const CreateConnector: React.FC<IProps> = ({ type }) => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const onChangeModalState = () => {
@@ -34,28 +31,16 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
   const formatMessage = useIntl().formatMessage;
 
-  const createSourceDefinition = useFetcher(
-    SourceDefinitionResource.createShape()
-  );
+  const { mutateAsync: createSourceDefinition } = useCreateSourceDefinition();
+
+  const {
+    mutateAsync: createDestinationDefinition,
+  } = useCreateDestinationDefinition();
 
   const onSubmitSource = async (sourceDefinition: ICreateProps) => {
     setErrorMessage("");
     try {
-      const result = await createSourceDefinition({}, sourceDefinition, [
-        [
-          SourceDefinitionResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (
-            newSourceDefinitionId: string,
-            sourceDefinitionIds: { sourceDefinitions: string[] }
-          ) => ({
-            sourceDefinitions: [
-              ...sourceDefinitionIds.sourceDefinitions,
-              newSourceDefinitionId,
-            ],
-          }),
-        ],
-      ]);
+      const result = await createSourceDefinition(sourceDefinition);
 
       push(
         {
@@ -68,31 +53,10 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     }
   };
 
-  const createDestinationDefinition = useFetcher(
-    DestinationDefinitionResource.createShape()
-  );
   const onSubmitDestination = async (destinationDefinition: ICreateProps) => {
     setErrorMessage("");
     try {
-      const result = await createDestinationDefinition(
-        {},
-        destinationDefinition,
-        [
-          [
-            DestinationDefinitionResource.listShape(),
-            { workspaceId: workspace.workspaceId },
-            (
-              newDestinationDefinitionId: string,
-              destinationDefinitionIds: { destinationDefinitions: string[] }
-            ) => ({
-              destinationDefinitions: [
-                ...destinationDefinitionIds.destinationDefinitions,
-                newDestinationDefinitionId,
-              ],
-            }),
-          ],
-        ]
-      );
+      const result = await createDestinationDefinition(destinationDefinition);
 
       push(
         {
