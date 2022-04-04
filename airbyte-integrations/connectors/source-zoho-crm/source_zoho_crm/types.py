@@ -8,8 +8,6 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, Iterable, List, MutableMapping, Optional, Union
 
-import six
-
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 
 
@@ -31,7 +29,7 @@ class ZohoBaseType(Enum):
     def __eq__(self, other: object) -> bool:
         if type(other) is type(self):
             return super().__eq__(other)
-        if type(other) in six.string_types:
+        if type(other) == str:
             return self.value == other
         raise NotImplementedError(f"Type Mismatch: Enum and {type(other).__name__}")
 

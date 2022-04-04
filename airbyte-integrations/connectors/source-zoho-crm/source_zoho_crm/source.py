@@ -11,6 +11,9 @@ from .api import ZohoAPI
 from .streams import ZohoStreamFactory
 
 if TYPE_CHECKING:
+    # This is a workaround to avoid circular import in the future.
+    # TYPE_CHECKING is False at runtime, but True when system performs type checking
+    # See details here https://docs.python.org/3/library/typing.html#typing.TYPE_CHECKING
     from airbyte_cdk.sources.streams import Stream
 
 

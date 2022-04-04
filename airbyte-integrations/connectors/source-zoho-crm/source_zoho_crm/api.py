@@ -45,9 +45,8 @@ class ZohoAPI:
     @property
     def authenticator(self) -> ZohoOauth2Authenticator:
         if not self._authenticator:
-            credentials = self.config["credentials"]
             authenticator = ZohoOauth2Authenticator(
-                f"{self._access_url}/oauth/v2/token", credentials["client_id"], credentials["client_secret"], credentials["refresh_token"]
+                f"{self._access_url}/oauth/v2/token", self.config["client_id"], self.config["client_secret"], self.config["refresh_token"]
             )
             self._authenticator = authenticator
         return self._authenticator

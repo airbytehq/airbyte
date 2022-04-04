@@ -5,39 +5,27 @@
     "title": "Zoho Crm Configuration",
     "type": "object",
     "required": [
-      "credentials", "environment", "dc_region", "edition"
+      "client_id", "client_secret", "refresh_token", "environment", "dc_region", "edition"
     ],
     "additionalProperties": false,
     "properties": {
-      "credentials": {
-        "type": "object",
-        "title": "Authenticate via Zoho CRM (OAuth)",
-        "additionalProperties": false,
-        "required": [
-          "client_id",
-          "client_secret",
-          "refresh_token"
-        ],
-        "properties": {
-          "client_id": {
-            "type": "string",
-            "title": "Client ID",
-            "description": "OAuth2.0 Client ID",
-            "airbyte_secret": true
-          },
-          "client_secret": {
-            "type": "string",
-            "title": "Client Secret",
-            "description": "OAuth2.0 Client Secret",
-            "airbyte_secret": true
-          },
-          "refresh_token": {
-            "type": "string",
-            "title": "Refresh Token",
-            "description": "OAuth2.0 Refresh Token",
-            "airbyte_secret": true
-          }
-        }
+      "client_id": {
+        "type": "string",
+        "title": "Client ID",
+        "description": "OAuth2.0 Client ID",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "type": "string",
+        "title": "Client Secret",
+        "description": "OAuth2.0 Client Secret",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "title": "Refresh Token",
+        "description": "OAuth2.0 Refresh Token",
+        "airbyte_secret": true
       },
       "dc_region": {
         "title": "Data Center Location",

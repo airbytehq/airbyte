@@ -11,7 +11,9 @@ from source_zoho_crm.api import ZohoAPI
 @pytest.fixture
 def config():
     return {
-        "credentials": {"client_id": "client_id", "client_secret": "client_secret", "refresh_token": "refresh_token"},
+        "client_id": "client_id",
+        "client_secret": "client_secret",
+        "refresh_token": "refresh_token",
         "dc_region": "US",
         "environment": "Developer",
         "edition": "Free",

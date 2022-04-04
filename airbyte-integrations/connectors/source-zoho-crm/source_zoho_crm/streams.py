@@ -56,7 +56,9 @@ class ZohoCrmStream(HttpStream, ABC):
             # one `/settings/fields?module={module_name}` per module.
             # Any of former two can result in 204 and empty body what blocks us
             # from generating stream schema and, therefore, a stream.
-            self.logger.warning(f"Could not retrieve fields Metadata for module {self.module.api_name}, skipping")
+            self.logger.warning(
+                f"Could not retrieve fields Metadata for module {self.module.api_name}. " f"This stream will not be available for syncs."
+            )
             return None
         except UnknownDataTypeException as exc:
             self.logger.warning(f"Unknown data type in module {self.module.api_name}, skipping. Details: {exc}")
