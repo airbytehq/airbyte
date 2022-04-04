@@ -257,12 +257,12 @@ class BulkSalesforceStream(SalesforceStream):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
         return res
 
+    def convert_response_to_csv(self, response: requests.Response):
+        decoded_content = self.filter_null_bytes(response.content.decode("utf-8"))
+        yield from csv.DictReader(io.StringIO(decoded_content, newline=""), dialect="unix")
+
     def download_data(self, url: str) -> Iterable[Tuple[int, Mapping[str, Any]]]:
-        job_data = self._send_http_request("GET", f"{url}/results")
-        decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
-        fp = io.StringIO(decoded_content, newline="")
-        csv_data = csv.DictReader(fp, dialect="unix")
-        for n, row in enumerate(csv_data, 1):
+        for n, row in enumerate(self.convert_response_to_csv(self._send_http_request("GET", f"{url}/results")), 1):
             yield n, row
 
     def abort_job(self, url: str):
