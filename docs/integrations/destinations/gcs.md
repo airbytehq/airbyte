@@ -233,7 +233,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.0 (unpublished)  | 2022-04-04 | [\#11686](https://github.com/airbytehq/airbyte/pull/11686) | Use serialized buffering strategy to reduce memory consumption; compress CSV and JSONL formats. |
+| 0.2.0  | 2022-04-04 | [\#11686](https://github.com/airbytehq/airbyte/pull/11686) | Use serialized buffering strategy to reduce memory consumption; compress CSV and JSONL formats. |
 | 0.1.22 | 2022-02-12 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add JVM flag to exist on OOME. |
 | 0.1.21 | 2022-02-12 | [\#10299](https://github.com/airbytehq/airbyte/pull/10299) | Fix connection check to require only the necessary permissions. |
 | 0.1.20 | 2022-01-11 | [\#9367](https://github.com/airbytehq/airbyte/pull/9367) | Avro & Parquet: support array field with unknown item type; default any improperly typed field to string. |
