@@ -6,7 +6,24 @@ description: >-
 
 # BigQuery
 
-## Features
+## Overview
+
+The Airbyte BigQuery destination allows you to sync data to BigQuery.
+
+### Sync overview
+
+#### Output schema
+
+Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
+
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
+
+The output tables from the BigQuery destination are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
+This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a WHERE clause). Filters on the partitioning column will be used to prune the partitions and reduce the query cost. (The parameter "Require partition filter" is not enabled by Airbyte, but you may toggle this by updating the produced tables if you wish so)
+
+#### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
@@ -21,31 +38,16 @@ There are two flavors of connectors for this destination:
 1. Bigquery: This is producing the standard Airbyte outputs using a `_airbyte_raw_*` tables storing the JSON blob data first. Afterward, these are transformed and normalized into separate tables, potentially "exploding" nested streams into their own tables if [basic normalization](../../understanding-airbyte/basic-normalization.md) is configured.
 2. `Bigquery (Denormalized)`: Instead of splitting the final data into multiple tables, this destination leverages BigQuery capabilities with [Structured and Repeated fields](https://cloud.google.com/bigquery/docs/nested-repeated) to produce a single "big" table per stream. This does not write the `_airbyte_raw_*` tables in the destination and normalization from this connector is not supported at this time.
 
-## Troubleshooting
-
-Check out common troubleshooting issues for the BigQuery destination connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/destination-bigquery).
-
-## Output Schema for BigQuery
-
-Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
-
-* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
-* `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
-
-The output tables from the BigQuery destination are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
-This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a WHERE clause). Filters on the partitioning column will be used to prune the partitions and reduce the query cost. (The parameter "Require partition filter" is not enabled by Airbyte, but you may toggle this by updating the produced tables if you wish so)
-
 ## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
 
 #### Requirements
 
 To use the BigQuery destination, you'll need:
 
-* A Google Cloud Project with BigQuery enabled
-* A BigQuery Dataset into which Airbyte can sync your data
-* A Google Cloud Service Account with the "BigQuery User" and "BigQuery Data Editor" roles in your GCP project
-* A Service Account Key to authenticate into your Service Account
+* [A Google Cloud Project with BigQuery enabled](https://docs.airbyte.com/integrations/destinations/bigquery#google-cloud-project)
+* [A BigQuery Dataset into which Airbyte can sync your data](https://docs.airbyte.com/integrations/destinations/bigquery#bigquery-dataset-for-airbyte-syncs)
+* [A Google Cloud Service Account with the "BigQuery User" and "BigQuery Data Editor" roles in your GCP project](https://docs.airbyte.com/integrations/destinations/bigquery#service-account)
+* [A Service Account Key to authenticate into your Service Account](https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key)
 
 For GCS Staging upload mode:
 
@@ -72,7 +74,57 @@ Note that queries written in BigQuery can only reference Datasets in the same ph
 
 #### Service account
 
-In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User" and "BigQuery Data Editor" roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions.
+In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User"(roles/bigquery.user) and "BigQuery Data Editor"(roles/bigquery.dataEditor) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control). 
+We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions. "BigQuery User"(roles/bigquery.user) role permissions: 
+``` 
+bigquery.bireservations.get
+bigquery.capacityCommitments.get
+bigquery.capacityCommitments.list
+bigquery.config.get
+bigquery.datasets.create
+bigquery.datasets.get
+bigquery.datasets.getIamPolicy
+bigquery.jobs.create
+bigquery.jobs.list
+bigquery.models.list
+bigquery.readsessions.*
+bigquery.reservationAssignments.list
+bigquery.reservationAssignments.search
+bigquery.reservations.get
+bigquery.reservations.list
+bigquery.routines.list
+bigquery.savedqueries.get
+bigquery.savedqueries.list
+bigquery.tables.list
+bigquery.transfers.get
+resourcemanager.projects.get
+resourcemanager.projects.list
+```
+
+"BigQuery Data Editor"(roles/bigquery.dataEditor) role permissions:
+```
+bigquery.config.get
+bigquery.datasets.create
+bigquery.datasets.get
+bigquery.datasets.getIamPolicy
+bigquery.datasets.updateTag
+bigquery.models.*
+bigquery.routines.*
+bigquery.tables.create
+bigquery.tables.createSnapshot
+bigquery.tables.delete
+bigquery.tables.export
+bigquery.tables.get
+bigquery.tables.getData
+bigquery.tables.getIamPolicy
+bigquery.tables.list
+bigquery.tables.restoreSnapshot
+bigquery.tables.update
+bigquery.tables.updateData
+bigquery.tables.updateTag
+resourcemanager.projects.get
+resourcemanager.projects.list
+```
 
 The easiest way to create a Service Account is to follow GCP's guide for [Creating a Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts). Once you've created the Service Account, make sure to keep its ID handy as you will need to reference it when granting roles. Service Account IDs typically take the form `<account-name>@<project-name>.iam.gserviceaccount.com`
 
@@ -100,7 +152,25 @@ Additional options can also be customized:
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
-## Uploading Options
+## Notes about BigQuery Naming Conventions
+
+From [BigQuery Datasets Naming](https://cloud.google.com/bigquery/docs/datasets#dataset-naming):
+
+When you create a dataset in BigQuery, the dataset name must be unique for each project. The dataset name can contain the following:
+
+* Up to 1,024 characters.
+* Letters \(uppercase or lowercase\), numbers, and underscores.
+
+  Note: In the Cloud Console, datasets that begin with an underscore are hidden from the navigation pane. You can query tables and views in these datasets even though these datasets aren't visible.
+
+* Dataset names are case-sensitive: mydataset and MyDataset can coexist in the same project.
+* Dataset names cannot contain spaces or special characters such as -, &, @, or %.
+
+Therefore, Airbyte BigQuery destination will convert any invalid characters into `_` characters when writing data.
+
+Since datasets that begin with `_` will be hidden from the BigQuery Explorer panel. To avoid creating such datasets, the destination will prepend the namespace with `n` if the converted namespace
+
+## Loading Method
 
 There are 2 available options to upload data to BigQuery `Standard` and `GCS Staging`.
 
@@ -131,28 +201,17 @@ This is the recommended configuration for uploading data to BigQuery. It works b
 ### `Standard` uploads
 This uploads data directly from your source to BigQuery. While this is faster to setup initially, **we strongly recommend that you do not use this option for anything other than a quick demo**. It is more than 10x slower than the GCS uploading option and will fail for many datasets. Please be aware you may see some failures for big datasets and slow sources, e.g. if reading from source takes more than 10-12 hours. This is caused by the Google BigQuery SDK client limitations. For more details please check [https://github.com/airbytehq/airbyte/issues/3549](https://github.com/airbytehq/airbyte/issues/3549)
 
-## Naming Conventions
-
-From [BigQuery Datasets Naming](https://cloud.google.com/bigquery/docs/datasets#dataset-naming):
-
-When you create a dataset in BigQuery, the dataset name must be unique for each project. The dataset name can contain the following:
-
-* Up to 1,024 characters.
-* Letters \(uppercase or lowercase\), numbers, and underscores.
-
-  Note: In the Cloud Console, datasets that begin with an underscore are hidden from the navigation pane. You can query tables and views in these datasets even though these datasets aren't visible.
-
-* Dataset names are case-sensitive: mydataset and MyDataset can coexist in the same project.
-* Dataset names cannot contain spaces or special characters such as -, &, @, or %.
-
-Therefore, Airbyte BigQuery destination will convert any invalid characters into '\_' characters when writing data.
-
 ## CHANGELOG
 
 ### bigquery
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 1.0.2 | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec |
+| 1.0.1 | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350) | Improve check performance |
+| 1.0.0 | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238) | Updated spec and documentation |
+| 0.6.12 | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |
+| 0.6.11 | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM |
 | 0.6.8 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
 | 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |
@@ -177,6 +236,11 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 0.2.14 | 2022-04-02 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec |
+| 0.2.13 | 2022-04-01 | [11636](https://github.com/airbytehq/airbyte/pull/11636) | Added new unit tests |
+| 0.2.12 | 2022-03-28 | [11454](https://github.com/airbytehq/airbyte/pull/11454) | Integration test enhancement for picking test-data and schemas |
+| 0.2.11 | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |
+| 0.2.10 | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM |
 | 0.2.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.2.7   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer. |
 | 0.2.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |

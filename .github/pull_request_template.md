@@ -38,7 +38,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 
 - [ ] Create a non-forked branch based on this PR and test the below items on it
 - [ ] Build is successful
-- [ ] Credentials added to Github CI. [Instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci).
+- [ ] If new credentials are required for use in CI, add them to GSM. [Instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci).
 - [ ] [`/test connector=connectors/<name>` command](https://docs.airbyte.io/connector-development#updating-an-existing-connector) is passing
 - [ ] New Connector version released on Dockerhub by running the `/publish` command described [here](https://docs.airbyte.io/connector-development#updating-an-existing-connector)
 - [ ] After the connector is published, connector added to connector index as described [here](https://docs.airbyte.io/connector-development#publishing-a-connector)
@@ -66,7 +66,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 
 - [ ] Create a non-forked branch based on this PR and test the below items on it
 - [ ] Build is successful
-- [ ] Credentials added to Github CI. [Instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci).
+- [ ] If new credentials are required for use in CI, add them to GSM. [Instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci).
 - [ ] [`/test connector=connectors/<name>` command](https://docs.airbyte.io/connector-development#updating-an-existing-connector) is passing
 - [ ] New Connector version released on Dockerhub by running the `/publish` command described [here](https://docs.airbyte.io/connector-development#updating-an-existing-connector)
 - [ ] After the new connector version is published, connector version bumped in the seed directory as described [here](https://docs.airbyte.io/connector-development#publishing-a-connector)

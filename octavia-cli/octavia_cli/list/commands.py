@@ -15,7 +15,7 @@ def _list(ctx: click.Context):  # pragma: no cover
     pass
 
 
-@click.group("connectors", help="Latest information on supported sources and destinations connectors.")
+@click.group("connectors", help="List sources and destinations connectors available on your Airbyte instance.")
 @click.pass_context
 def connectors(ctx: click.Context):  # pragma: no cover
     pass
@@ -27,7 +27,7 @@ def workspace(ctx: click.Context):  # pragma: no cover
     pass
 
 
-@connectors.command(name="sources", help="Latest information on supported sources.")
+@connectors.command(name="sources", help="List all the source connectors currently available on your Airbyte instance.")
 @click.pass_context
 def sources_connectors(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
@@ -35,7 +35,7 @@ def sources_connectors(ctx: click.Context):
     click.echo(definitions)
 
 
-@connectors.command(name="destination", help="Latest information on supported destinations.")
+@connectors.command(name="destinations", help="List all the destination connectors currently available on your Airbyte instance")
 @click.pass_context
 def destinations_connectors(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]

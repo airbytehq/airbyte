@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { LogsRequestError } from "core/request/LogsRequestError";
-
-import { useDestinationDefinitionSpecificationLoad } from "hooks/services/useDestinationHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinition } from "core/domain/connector";
@@ -12,6 +9,7 @@ import { ConnectorCard } from "views/Connector/ConnectorCard";
 import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 
 type IProps = {
   availableServices: DestinationDefinition[];
@@ -33,11 +31,13 @@ const DestinationStep: React.FC<IProps> = ({
   error,
   afterSelectConnector,
 }) => {
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState("");
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState<
+    string | null
+  >(null);
   const {
-    destinationDefinitionSpecification,
+    data: destinationDefinitionSpecification,
     isLoading,
-  } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
+  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
   const analyticsService = useAnalyticsService();
 
@@ -69,7 +69,7 @@ const DestinationStep: React.FC<IProps> = ({
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : "";
+  const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
     <>
@@ -89,15 +89,15 @@ const DestinationStep: React.FC<IProps> = ({
       </TitlesBlock>
       <ConnectorCard
         full
-        jobInfo={LogsRequestError.extractJobInfo(error)}
         formType="destination"
-        allowChangeConnector
         onServiceSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         hasSuccess={hasSuccess}
         availableServices={availableServices}
         errorMessage={errorMessage}
-        selectedConnector={destinationDefinitionSpecification}
+        selectedConnectorDefinitionSpecification={
+          destinationDefinitionSpecification
+        }
         isLoading={isLoading}
       />
     </>

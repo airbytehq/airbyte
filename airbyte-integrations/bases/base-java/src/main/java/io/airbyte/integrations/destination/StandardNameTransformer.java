@@ -22,6 +22,14 @@ public class StandardNameTransformer implements NamingConventionTransformer {
     return convertStreamName(name);
   }
 
+  /**
+   * Most destinations have the same naming requirement for namespace and stream names.
+   */
+  @Override
+  public String getNamespace(final String namespace) {
+    return convertStreamName(namespace);
+  }
+
   @Override
   public String getRawTableName(final String streamName) {
     return convertStreamName("_airbyte_raw_" + streamName);
@@ -32,8 +40,14 @@ public class StandardNameTransformer implements NamingConventionTransformer {
     return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName);
   }
 
-  protected String convertStreamName(final String input) {
+  @Override
+  public String convertStreamName(final String input) {
     return Names.toAlphanumericAndUnderscore(input);
+  }
+
+  @Override
+  public String applyDefaultCase(final String input) {
+    return input;
   }
 
   /**

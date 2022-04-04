@@ -8,6 +8,10 @@ plugins {
 // as a delivery mechanism for the common Airbyte libraries and clients. Proper
 // publishing is blocked on some gradle work.
 shadowJar {
+    // following properties need to be set here to have reproducible shadow archives, doesn't seem to inherit from AbstractArchiveTask
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+
     zip64 true
     mergeServiceFiles()
     exclude 'META-INF/*.RSA'
@@ -141,6 +145,13 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("server",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("server", "$project.projectDir")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
+
+// produce reproducible archives
+// (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}

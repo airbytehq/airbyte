@@ -4,6 +4,7 @@
 
 package io.airbyte.db.instance.jobs.migrations;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
@@ -21,6 +22,11 @@ public class V0_35_5_001__Add_failureSummary_col_to_Attempts extends BaseJavaMig
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
 
     final DSLContext ctx = DSL.using(context.getConnection());
+    migrate(ctx);
+  }
+
+  @VisibleForTesting
+  public static void migrate(final DSLContext ctx) {
     addFailureSummaryColumn(ctx);
   }
 

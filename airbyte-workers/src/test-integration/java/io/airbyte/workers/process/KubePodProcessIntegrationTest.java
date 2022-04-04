@@ -23,22 +23,29 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
 // Must have a timeout on this class because it tests child processes that may misbehave; otherwise
@@ -46,6 +53,8 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(value = 6,
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcessIntegrationTest.class);
 
   private static final int RANDOM_FILE_LINE_LENGTH = 100;
 
@@ -105,9 +114,10 @@ public class KubePodProcessIntegrationTest {
    */
   @Test
   public void testConcurrentRunning() throws Exception {
-    final var pool = Executors.newFixedThreadPool(10);
+    final var totalJobs = 5;
 
-    final var totalJobs = 30;
+    final var pool = Executors.newFixedThreadPool(totalJobs);
+
     final var successCount = new AtomicInteger(0);
     final var failCount = new AtomicInteger(0);
 
@@ -148,6 +158,19 @@ public class KubePodProcessIntegrationTest {
   }
 
   @Test
+  public void testLongSuccessfulSpawning() throws Exception {
+    // start a finite process
+    final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
+    final Process process = getProcess("echo hi; sleep 10; echo hi2");
+    process.waitFor();
+
+    // the pod should be dead and in a good state
+    assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(0, process.exitValue());
+  }
+
+  @RepeatedTest(5)
   public void testPortsReintroducedIntoPoolOnlyOnce() throws Exception {
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
 
@@ -179,7 +202,12 @@ public class KubePodProcessIntegrationTest {
       process.exitValue();
     }
 
-    // stop taking from available ports
+    assertEquals(0, process.exitValue());
+
+    // wait for the background loop to actually take the ports re-offered by the closure of the process
+    Thread.sleep(1000);
+
+    // interrupt background thread
     executor.shutdownNow();
 
     // prior to fixing this race condition, the close method would offer ports every time it was called.
@@ -196,7 +224,7 @@ public class KubePodProcessIntegrationTest {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("echo \"h\\\"i\"; sleep 1; echo hi2");
-    final var output = new String(process.getInputStream().readAllBytes());
+    final var output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     assertEquals("h\"i\nhi2\n", output);
     process.waitFor();
 
@@ -210,7 +238,7 @@ public class KubePodProcessIntegrationTest {
   public void testEnvMapSet() throws Exception {
     // start a finite process
     final Process process = getProcess("echo ENV_VAR_1=$ENV_VAR_1");
-    final var output = new String(process.getInputStream().readAllBytes());
+    final var output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     assertEquals("ENV_VAR_1=ENV_VALUE_1\n", output);
     process.waitFor();
 
@@ -230,6 +258,32 @@ public class KubePodProcessIntegrationTest {
     assertFalse(process.isAlive());
     assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
     assertEquals(0, process.exitValue());
+  }
+
+  @Test
+  @Timeout(20)
+  public void testDeletingPodImmediatelyAfterCompletion() throws Exception {
+    // start a process that requests
+    final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
+    final var uuid = UUID.randomUUID();
+    final Process process = getProcess(Map.of("uuid", uuid.toString()), "sleep 1 && exit 10");
+
+    final var pod = fabricClient.pods().list().getItems().stream()
+        .filter(p -> p.getMetadata() != null && p.getMetadata().getLabels() != null)
+        .filter(p -> p.getMetadata().getLabels().containsKey("uuid") && p.getMetadata().getLabels().get("uuid").equals(uuid.toString()))
+        .collect(Collectors.toList()).get(0);
+    fabricClient.resource(pod).watch(new ExitCodeWatcher(
+        exitCode -> {
+          fabricClient.pods().delete(pod);
+        },
+        exception -> {}));
+
+    process.waitFor();
+
+    // the pod should be dead with the correct error code
+    assertFalse(process.isAlive());
+    assertEquals(availablePortsBefore, KubePortManagerSingleton.getInstance().getNumAvailablePorts());
+    assertEquals(10, process.exitValue());
   }
 
   @Test
@@ -333,7 +387,16 @@ public class KubePodProcessIntegrationTest {
     return getProcess(entrypoint, files);
   }
 
+  private Process getProcess(final Map<String, String> customLabels, final String entrypoint) throws WorkerException {
+    return getProcess(customLabels, entrypoint, Map.of());
+  }
+
   private Process getProcess(final String entrypoint, final Map<String, String> files) throws WorkerException {
+    return getProcess(Map.of(), entrypoint, files);
+  }
+
+  private Process getProcess(final Map<String, String> customLabels, final String entrypoint, final Map<String, String> files)
+      throws WorkerException {
     return processFactory.create(
         "some-id",
         0,
@@ -343,8 +406,9 @@ public class KubePodProcessIntegrationTest {
         files,
         entrypoint,
         DEFAULT_RESOURCE_REQUIREMENTS,
-        Map.of(),
-        Map.of());
+        customLabels,
+        Collections.emptyMap(),
+        Collections.emptyMap());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {

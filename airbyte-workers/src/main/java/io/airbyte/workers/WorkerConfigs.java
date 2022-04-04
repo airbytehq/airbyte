@@ -7,7 +7,6 @@ package io.airbyte.workers;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -26,7 +25,6 @@ public class WorkerConfigs {
   private final String jobBusyboxImage;
   private final String jobCurlImage;
   private final Map<String, String> envMap;
-  private final Duration workerStatusCheckInterval;
 
   /**
    * Constructs a job-type-agnostic WorkerConfigs. For WorkerConfigs customized for specific
@@ -48,8 +46,7 @@ public class WorkerConfigs {
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
-        configs.getJobDefaultEnvMap(),
-        configs.getDefaultWorkerStatusCheckInterval());
+        configs.getJobDefaultEnvMap());
   }
 
   /**
@@ -79,8 +76,7 @@ public class WorkerConfigs {
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
-        configs.getJobDefaultEnvMap(),
-        configs.getSpecWorkerStatusCheckInterval());
+        configs.getJobDefaultEnvMap());
   }
 
   /**
@@ -110,8 +106,7 @@ public class WorkerConfigs {
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
-        configs.getJobDefaultEnvMap(),
-        configs.getCheckWorkerStatusCheckInterval());
+        configs.getJobDefaultEnvMap());
   }
 
   /**
@@ -141,8 +136,7 @@ public class WorkerConfigs {
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
-        configs.getJobDefaultEnvMap(),
-        configs.getDiscoverWorkerStatusCheckInterval());
+        configs.getJobDefaultEnvMap());
   }
 
   public static WorkerConfigs buildReplicationWorkerConfigs(final Configs configs) {
@@ -161,8 +155,7 @@ public class WorkerConfigs {
         configs.getJobKubeSocatImage(),
         configs.getJobKubeBusyboxImage(),
         configs.getJobKubeCurlImage(),
-        configs.getJobDefaultEnvMap(),
-        configs.getReplicationWorkerStatusCheckInterval());
+        configs.getJobDefaultEnvMap());
   }
 
   public Configs.WorkerEnvironment getWorkerEnvironment() {
@@ -207,10 +200,6 @@ public class WorkerConfigs {
 
   public Map<String, String> getEnvMap() {
     return envMap;
-  }
-
-  public Duration getWorkerStatusCheckInterval() {
-    return workerStatusCheckInterval;
   }
 
 }

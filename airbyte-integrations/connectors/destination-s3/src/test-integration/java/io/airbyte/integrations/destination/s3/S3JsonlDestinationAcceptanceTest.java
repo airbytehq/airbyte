@@ -15,6 +15,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
 
@@ -24,9 +26,7 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\"\n"
-        + "}");
+    return Jsons.jsonNode(Map.of("format_type", outputFormat));
   }
 
   @Override
@@ -40,7 +40,8 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (final BufferedReader reader = new BufferedReader(new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8))) {
+      try (final BufferedReader reader =
+          new BufferedReader(new InputStreamReader(new GZIPInputStream(object.getObjectContent()), StandardCharsets.UTF_8))) {
         String line;
         while ((line = reader.readLine()) != null) {
           jsonRecords.add(Jsons.deserialize(line).get(JavaBaseConstants.COLUMN_NAME_DATA));

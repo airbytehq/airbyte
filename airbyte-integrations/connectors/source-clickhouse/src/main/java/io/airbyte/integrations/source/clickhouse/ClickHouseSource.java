@@ -50,7 +50,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
                 .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
               try {
-                return database.resultSetQuery(connection -> {
+                return database.unsafeResultSetQuery(connection -> {
                   final String sql = "SELECT name FROM system.columns WHERE database = ? AND table = ? AND is_in_primary_key = 1";
                   final PreparedStatement preparedStatement = connection.prepareStatement(sql);
                   preparedStatement.setString(1, tableInfo.getNameSpace());

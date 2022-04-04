@@ -6,7 +6,7 @@
   "login.loginTitle": "Sign in to Airbyte",
   "login.lastStep": "One last step",
   "login.confirmEmail": "Confirm your email address!",
-  "login.confirmEmail.text": "We sent you a confirmation link to {email}. <br/>Please click on the link to access your new Airbyte account.",
+  "login.confirmEmail.text": "We sent you a confirmation link to {email}. Please click on the link to access your new Airbyte account.",
   "login.resendEmail": "Didn’t receive the email? Send it again",
   "confirmEmail.signOut": "Entered the wrong email address? Start over",
   "login.yourEmail": "Your work email*",
@@ -19,7 +19,7 @@
   "login.backLogin": "Back to Log in",
   "login.resetPassword": "Reset your password",
   "login.resetPassword.emailSent": "A password reset email has been sent to you",
-  "login.activateAccess": "Activate your 30-day free trial",
+  "login.activateAccess": "Activate your 14-day free trial",
   "login.activateAccess.subtitle": "Get our <special>Special launch offer</special> of <sum>$1,000</sum>  worth of <free>free usage</free>. No credit card required.",
   "login.fullName": "Full name*",
   "login.fullName.placeholder": "Christopher Smith",
@@ -114,6 +114,8 @@
 
   "signup.password.minLength": "Password should be at least 6 characters",
   "email.duplicate": "Email already exists",
+  "email.notfound": "Email not found",
+  "email.disabled": "Your account is disabled",
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password"
 }

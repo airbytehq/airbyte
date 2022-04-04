@@ -3,10 +3,11 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import Modal from "components/Modal";
-import { Button } from "components";
+import { Button, LoadingButton } from "components";
+import { useMutation } from "react-query";
 export type IProps = {
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: () => Promise<unknown>;
   type: "source" | "destination" | "connection";
 };
 
@@ -29,6 +30,8 @@ const ButtonWithMargin = styled(Button)`
 `;
 
 const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit, type }) => {
+  const { isLoading, mutateAsync } = useMutation(() => onSubmit());
+
   return (
     <Modal
       onClose={onClose}
@@ -40,9 +43,15 @@ const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit, type }) => {
           <ButtonWithMargin onClick={onClose} type="button" secondary>
             <FormattedMessage id="form.cancel" />
           </ButtonWithMargin>
-          <Button type="button" danger onClick={onSubmit} data-id="delete">
+          <LoadingButton
+            type="button"
+            danger
+            isLoading={isLoading}
+            onClick={() => mutateAsync()}
+            data-id="delete"
+          >
             <FormattedMessage id="form.delete" />
-          </Button>
+          </LoadingButton>
         </ButtonContent>
       </Content>
     </Modal>

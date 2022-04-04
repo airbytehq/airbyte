@@ -17,6 +17,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -73,20 +74,22 @@ class ConfigurationUpdateTest {
       .withConfiguration(NEW_CONFIGURATION);
 
   private ConfigRepository configRepository;
+  private SecretsRepositoryReader secretsRepositoryReader;
   private JsonSecretsProcessor secretsProcessor;
   private ConfigurationUpdate configurationUpdate;
 
   @BeforeEach
   void setup() {
     configRepository = mock(ConfigRepository.class);
+    secretsRepositoryReader = mock(SecretsRepositoryReader.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
 
-    configurationUpdate = new ConfigurationUpdate(configRepository, secretsProcessor);
+    configurationUpdate = new ConfigurationUpdate(configRepository, secretsRepositoryReader, secretsProcessor);
   }
 
   @Test
   void testSourceUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    when(configRepository.getSourceConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_SOURCE_CONNECTION);
+    when(secretsRepositoryReader.getSourceConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_SOURCE_CONNECTION);
     when(configRepository.getStandardSourceDefinition(UUID2)).thenReturn(SOURCE_DEFINITION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 
@@ -97,7 +100,7 @@ class ConfigurationUpdateTest {
 
   @Test
   void testDestinationUpdate() throws JsonValidationException, IOException, ConfigNotFoundException {
-    when(configRepository.getDestinationConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_DESTINATION_CONNECTION);
+    when(secretsRepositoryReader.getDestinationConnectionWithSecrets(UUID1)).thenReturn(ORIGINAL_DESTINATION_CONNECTION);
     when(configRepository.getStandardDestinationDefinition(UUID2)).thenReturn(DESTINATION_DEFINITION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 

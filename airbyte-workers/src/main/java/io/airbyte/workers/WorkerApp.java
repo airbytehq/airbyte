@@ -18,6 +18,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -52,6 +53,7 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
@@ -159,6 +161,7 @@ public class WorkerApp {
 
   private void registerConnectionManager(final WorkerFactory factory) {
     final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
@@ -177,7 +180,8 @@ public class WorkerApp {
             configRepository,
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
-        new ConnectionDeletionActivityImpl(connectionHelper));
+        new ConnectionDeletionActivityImpl(connectionHelper),
+        new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs));
   }
 
   private void registerSync(final WorkerFactory factory) {
@@ -365,11 +369,13 @@ public class WorkerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
-    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
-    final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+        .maskSecrets(!featureFlags.exposeSecretsInExport())
+        .copySecrets(false)
+        .build();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
     final Database jobDatabase = new JobsDatabaseInstance(
         configs.getDatabaseUser(),
@@ -386,13 +392,12 @@ public class WorkerApp {
         configRepository);
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
+        configs.connectorSpecificResourceDefaultsEnabled(),
         new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements()),
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
-
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
         temporalClient,

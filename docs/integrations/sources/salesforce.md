@@ -1,80 +1,95 @@
 # Salesforce
 
-## Overview
+Setting up the Salesforce source connector involves creating a read-only Salesforce user and configuring the Salesforce connector through the Airbyte UI.
 
-The Salesforce source supports both `Full Refresh` and `Incremental` syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+This page guides you through the process of setting up the Salesforce source connector.
 
-The Connector supports replicating both standard and custom Salesforce objects.
+## Prerequisites
 
-### Features
+* [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
+* Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US) (optional)
+* (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| SSL connection | Yes |
-| Namespaces | No |
+## Step 1: (Optional, Recommended) Create a read-only Salesforce user
 
-#### Incremental Deletes Sync
-This connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.  
+While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
 
-### Performance considerations
 
-The connector is restricted by daily Salesforce rate limiting.
-The connector uses as much rate limit as it can every day, then ends the sync early with success status and continues the sync from where it left the next time.
-Note that, picking up from where it ends will work only for incremental sync.
+To create a dedicated read only Salesforce user:
 
-## Getting Started (Airbyte Cloud)
-#### Sandbox accounts
+1. [Log into Salesforce](https://login.salesforce.com/) with an admin account.
+2. On the top right of the screen, click the gear icon and then click **Setup**.
+3. In the left navigation bar, under Administration, click **Users** > **Profiles**. The Profiles page is displayed. Click **New profile**.
+4. For Existing Profile, select **Read only**. For Profile Name, enter **Airbyte Read Only User**.
+5. Click **Save**. The Profiles page is displayed. Click **Edit**.
+6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable the **Read** checkbox for objects that you want to replicate via Airbyte.
+7. Scroll to the top and click **Save**.
+8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
+9. Fill out the required fields: 
+    1. For License, select **Salesforce**. 
+    2. For Profile, select **Airbyte Read Only User**. 
+    3. For Email, make sure to use an email address that you can access.
+10. Click **Save**.
+11. Copy the Username and keep it accessible. 
+12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
-If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then your account is not a sandbox. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then it's a sandbox. 
+## Step 2: Set up Salesforce as a Source in Airbyte
 
-If this is Greek to you, then you are likely not using a sandbox account.
+### For Airbyte Cloud
 
-### Requirements
+To set up Salesforce as a source in Airbyte Cloud:
 
-* Salesforce Account
-* Dedicated Salesforce user (optional)
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click + **new source**.
+3. On the Set up the source page, enter the name for the Salesforce connector and select **Salesforce** from the Source type dropdown.
+4. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
+5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. (Optional) In the Salesforce Object filtering criteria section, click **Add**. From the Search criteria dropdown, select the criteria relevant to you. For Search value, add the search terms relevant to you. If this field is blank, Airbyte will replicate all data.
+7. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
+8. Click **Set up source**.
 
-**Note**: In order to tightly scope Airbyte's access to your data, we recommend creating a dedicated read-only Salesforce user that is used for Airbyte syncs. You can also further the user's (and therefore Airbyte's) access to only the data and streams you need Airbyte to replicate by creating a profile in Salesforce and assigning it to the user.
+### For Airbyte OSS
 
-### Setup guide
+To set up Salesforce as a source in Airbyte Open Source:
 
-1. Toggle whether your Salesforce account is a Sandbox account or a live account.  
-2. Click `Authenticate your Salesforce account` to sign in with Salesforce and authorize your account.
-3. Fill in the rest of the details.
-4. You should be ready to sync data. 
+1. Follow this [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
 
-## Getting started (Airbyte OSS) 
-### Requirements
-* Salesforce Account
-* Salesforce OAuth credentials
-* Dedicated Salesforce user (optional)
+    1. If your Salesforce URL’s is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
+    2. When running a curl command, run it with the `-L` option to follow any redirects.
+    3. If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
 
-**Note**: In order to tightly scope Airbyte's access to your data, we recommend creating a dedicated read-only Salesforce user that is used for Airbyte syncs. You can also further the user's (and therefore Airbyte's) access to only the data and streams you need Airbyte to replicate by creating a profile in Salesforce and assigning it to the user.
+2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](link to previous section).
 
-### Setup guide
+## Supported sync modes
 
-#### Sandbox accounts
-If you log in using at [https://login.salesforce.com](https://login.salesforce.com), then your account is not a sandbox. If you log in at [https://test.salesforce.com](https://test.salesforce.com) then it's a sandbox. 
+The Salesforce source connector supports the following sync modes:
 
-If this is Greek to you, then you are likely not using a sandbox account.
-We recommend the following [walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) **while keeping in mind the edits we suggest below** for setting up a Salesforce app that can pull data from Salesforce and locating the credentials you need to provide to Airbyte.
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* (Recommended)[ Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-Suggested edits:
+**Incremental Deletes Sync**
+<br>The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.
 
-1. If your salesforce URL does not take the form `X.salesforce.com`, use your actual Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`. 
-2. When running a `curl` command, always run it with the `-L` option to follow any redirects.
 
-## Streams
+## Performance considerations
 
-**Note**: The connector supports reading both standard streams and Custom Objects from Salesforce.
+The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) sync mode. 
 
-We fetch and handle all the possible & available streams dynamically based on:
-- User Role & Permissions to read & fetch objects and their data
-- Whether or not the stream has the queryable property set to true. Queryable streams are available to be fetched via the API. If you cannot see your object available via Airbyte, please ensure it is API-accessible to the user you used for authenticating into Airbyte  
 
-**Note**: Using the BULK API is not possible to receive data from the following streams:
+## Supported Objects
+
+The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
+
+
+Airbyte fetches and handles all the possible and available streams dynamically based on:
+
+* If the authenticated Salesforce user has the Role and Permissions to read and fetch objects 
+
+* If the stream has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with in Step 2.
+
+**Note:** [BULK API](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) cannot be used to receive data from the following streams due to Salesforce API limitations. The Salesforce connector syncs them using the REST API which will occasionally cost more of your API quota:
 
 * AcceptedEventRelation
 * AssetTokenEvent
@@ -94,12 +109,20 @@ We fetch and handle all the possible & available streams dynamically based on:
 * TaskPriority
 * TaskStatus
 * TaskWhoRelation
-* UndecidedEventRelation
+
+## Salesforce tutorials
+
+Now that you have set up the Salesforce source connector, check out the following Salesforce tutorials:
+
+* [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
+* [Replicate Salesforce and Zendesk data to Keen for unified analytics](https://airbyte.com/tutorials/salesforce-zendesk-analytics)
+
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject                                                                                                                          |
 |:--------|:-----------| :--- |:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2 | 2022-03-01 | [10751](https://github.com/airbytehq/airbyte/pull/10751) | Fix broken link anchor in connector configuration |
 | 1.0.1 | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679) | Reorganize input parameter order on the UI |
 | 1.0.0 | 2022-02-27 | [10516](https://github.com/airbytehq/airbyte/pull/10516) | Speed up schema discovery by using parallelism |
 | 0.1.23  | 2022-02-10 | [10141](https://github.com/airbytehq/airbyte/pull/10141) | Processing of failed jobs                                                                                                        |

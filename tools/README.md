@@ -1,5 +1,7 @@
 # Tools
 
+Contains various tools (usually bash scripts) to improve quality of life or the build system.
+
 ## Releasing a new version
 ```
 Trigger the Github Action Release Open Source Airbyte (https://github.com/airbytehq/airbyte/actions/workflows/release-airbyte-os.yml)

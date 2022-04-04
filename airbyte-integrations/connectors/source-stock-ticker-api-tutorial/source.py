@@ -27,7 +27,8 @@ import sys
 import os
 import requests
 import datetime
-
+from datetime import date
+from datetime import timedelta
 
 def read(config, catalog):
     # Assert required configuration was provided
@@ -51,18 +52,17 @@ def read(config, catalog):
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
-    api_key = config["api_key"]
-    stock_ticker = config["stock_ticker"]
-    response = _call_api(f"/stock/{stock_ticker}/chart/7d", api_key)
+    response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling IEX API")
+        log("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Sort the stock prices ascending by date then output them one by one as AirbyteMessages
-        prices = sorted(response.json(), key=lambda record: datetime.datetime.strptime(record["date"], '%Y-%m-%d'))
-        for price in prices:
-            data = {"date": price["date"], "stock_ticker": price["symbol"], "price": price["close"]}
+        # Stock prices are returned sorted by by date in ascending order
+        # We want to output them one by one as AirbyteMessages
+        results = response.json()["results"]
+        for result in results:
+            data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
@@ -73,8 +73,11 @@ def read_json(filepath):
         return json.loads(f.read())
 
 
-def _call_api(endpoint, token):
-    return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
+def _call_api(ticker, token):
+    today = date.today()
+    to_day = today.strftime("%Y-%m-%d")
+    from_day = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+    return requests.get(f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{from_day}/{to_day}?sort=asc&limit=120&apiKey={token}")
 
 
 def check(config):
@@ -83,8 +86,8 @@ def check(config):
         log("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
     else:
-        # Validate input configuration by attempting to get the price of the input stock ticker for the previous day
-        response = _call_api(endpoint="stock/" + config["stock_ticker"] + "/previous", token=config["api_key"])
+        # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
+        response = _call_api(ticker=config["stock_ticker"], token=config["api_key"])
         if response.status_code == 200:
             result = {"status": "SUCCEEDED"}
         elif response.status_code == 403:
@@ -143,7 +146,7 @@ def spec():
 
     # form an Airbyte Message containing the spec and print it to stdout
     airbyte_message = {"type": "SPEC", "spec": specification}
-    # json.dumps converts the JSON (python dict) to a string
+    # json.dumps converts the JSON (Python dict) to a string
     print(json.dumps(airbyte_message))
 
 

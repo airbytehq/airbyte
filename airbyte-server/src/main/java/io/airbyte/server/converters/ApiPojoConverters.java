@@ -16,7 +16,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
-import io.airbyte.workers.helper.CatalogConverter;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.util.stream.Collectors;
 
 public class ApiPojoConverters {
@@ -86,6 +86,10 @@ public class ApiPojoConverters {
         .withOperationIds(update.getOperationIds())
         .withCatalog(CatalogConverter.toProtocol(update.getSyncCatalog()))
         .withStatus(toPersistenceStatus(update.getStatus()));
+
+    if (update.getName() != null) {
+      newConnection.withName(update.getName());
+    }
 
     // update Resource Requirements
     if (update.getResourceRequirements() != null) {

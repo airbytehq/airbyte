@@ -37,7 +37,7 @@ class DefaultSchedulerJobClientTest {
     jobPersistence = mock(JobPersistence.class);
     jobCreator = mock(JobCreator.class);
     job = mock(Job.class);
-    client = spy(new DefaultSchedulerJobClient(jobPersistence, jobCreator));
+    client = spy(new DefaultSchedulerJobClient(true, jobPersistence, jobCreator));
   }
 
   @Test
