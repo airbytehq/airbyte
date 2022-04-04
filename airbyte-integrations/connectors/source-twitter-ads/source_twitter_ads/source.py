@@ -242,7 +242,7 @@ class AdsAnalyticsMetrics(TwitterAdsStream):
         entity = "PROMOTED_TWEET"
 
         # getting activie promoted tweet ids
-        promoted_tweet_ids_url = "https://ads-api.twitter.com/9/stats/accounts/" + account_id + "/active_entities?"
+        promoted_tweet_ids_url = "https://ads-api.twitter.com/10/stats/accounts/" + account_id + "/active_entities?"
         promoted_tweet_ids_params = urllib.parse.urlencode({"start_time": start_time, "end_time": end_time, "entity": entity})
         promoted_tweet_ids_params = urllib.parse.unquote(promoted_tweet_ids_params)
         promoted_tweet_ids_url = promoted_tweet_ids_url + promoted_tweet_ids_params
