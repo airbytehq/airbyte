@@ -98,6 +98,10 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.6 | 2022-02-15 | [10186](https://github.com/airbytehq/airbyte/pull/10186) | Add SCRAM-SHA-512 Auth |
+| 0.1.5 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.1.4 | 2022-01-31 | [\#9905](https://github.com/airbytehq/airbyte/pull/9905) |  Fix SASL config read issue |
+| 0.1.3 | 2021-12-30 | [\#8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description |
 | 0.1.2 | 2021-09-14 | [\#6040](https://github.com/airbytehq/airbyte/pull/6040) | Change spec.json and config parser |
 | 0.1.1 | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json |
 | 0.1.0 | 2021-07-21 | [\#3746](https://github.com/airbytehq/airbyte/pull/3746) | Initial Release |

@@ -20,7 +20,7 @@ import com.mysql.cj.result.Field;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -168,17 +168,17 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   }
 
   @Override
-  public JsonSchemaPrimitive getJsonType(final MysqlType mysqlType) {
+  public JsonSchemaType getJsonType(MysqlType mysqlType) {
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
       // getFieldType}
-      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaPrimitive.NUMBER;
-      case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
-      case NULL -> JsonSchemaPrimitive.NULL;
+      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
+      case BOOLEAN -> JsonSchemaType.BOOLEAN;
+      case NULL -> JsonSchemaType.NULL;
       // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}
-      case BIT, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> JsonSchemaPrimitive.STRING_BINARY;
-      default -> JsonSchemaPrimitive.STRING;
+      case BIT, TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> JsonSchemaType.STRING_BASE_64;
+      default -> JsonSchemaType.STRING;
     };
   }
 

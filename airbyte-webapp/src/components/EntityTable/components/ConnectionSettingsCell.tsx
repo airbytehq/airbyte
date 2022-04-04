@@ -3,9 +3,10 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
 
-import useRouter from "hooks/useRouter";
-import { RoutePaths } from "pages/routes";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { Link } from "components";
+import { ConnectionSettingsRoutes } from "pages/ConnectionPage/pages/ConnectionItemPage/ConnectionSettingsRoutes";
+import { RoutePaths } from "../../../pages/routePaths";
 
 type IProps = {
   id: string;
@@ -19,6 +20,7 @@ const Content = styled.div`
 
 const Icon = styled(FontAwesomeIcon)`
   display: none;
+  color: ${({ theme }) => theme.greyColor60};
 
   tr:hover & {
     display: block;
@@ -29,20 +31,18 @@ const Icon = styled(FontAwesomeIcon)`
 `;
 
 const ConnectorCell: React.FC<IProps> = ({ id }) => {
-  const { push } = useRouter();
   const { workspaceId } = useCurrentWorkspace();
 
   const openSettings = (event: React.MouseEvent) => {
     event.stopPropagation();
-    // TODO: Replace with link instead of push
-    push(
-      `/${workspaceId}/${RoutePaths.Connections}/${id}/${RoutePaths.Settings}`
-    );
   };
 
+  const settingPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Connections}/${id}/${ConnectionSettingsRoutes.REPLICATION}`;
   return (
     <Content onClick={openSettings}>
-      <Icon icon={faCog} />
+      <Link to={settingPath}>
+        <Icon icon={faCog} />
+      </Link>
     </Content>
   );
 };

@@ -14,13 +14,13 @@ from .streams import Accounts, Agents, AgentTimelines, Bans, Chats, Departments,
 
 
 class ZendeskAuthentication:
-    """ Provides the authentication capabilities for both old and new methods. """
+    """Provides the authentication capabilities for both old and new methods."""
 
     def __init__(self, config: Dict):
         self.config = config
 
     def get_auth(self) -> TokenAuthenticator:
-        """ Return the TokenAuthenticator object with access_token. """
+        """Return the TokenAuthenticator object with access_token."""
 
         # the old config supports for backward capability
         access_token = self.config.get("access_token")

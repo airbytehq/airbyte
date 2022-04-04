@@ -1,6 +1,6 @@
 
 
-      create or replace transient table "AIRBYTE_DATABASE".TEST_NORMALIZATION."EXCHANGE_RATE"  as
+      create or replace  table "AIRBYTE_DATABASE".TEST_NORMALIZATION."EXCHANGE_RATE"  as
       (select * from(
             
 with __dbt__cte__EXCHANGE_RATE_AB1 as (

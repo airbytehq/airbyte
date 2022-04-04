@@ -18,6 +18,7 @@ info:
     * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
       * Adding fields to request or response bodies.
       * Adding new HTTP endpoints.
+    * All `web_backend` APIs are not considered public APIs and are not guaranteeing backwards compatibility.
 
   version: "1.0.0"
   title: Airbyte Configuration API
@@ -53,7 +54,9 @@ tags:
   - name: db_migration
     description: Database migration related resources.
   - name: web_backend
-    description: Connection between sources and destinations.
+    description: |
+      Endpoints for the Airbyte web application. Those APIs should not be called outside the web application implementation and are not
+      guaranteeing any backwards compatibility.
   - name: health
     description: Healthchecks
   - name: deployment
@@ -170,6 +173,29 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/WorkspaceUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/workspaces/update_name:
+    post:
+      tags:
+        - workspace
+      summary: Update workspace name
+      operationId: updateWorkspaceName
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceUpdateName"
         required: true
       responses:
         "200":
@@ -333,6 +359,170 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/list_private:
+    post:
+      tags:
+        - source_definition
+      summary:
+        List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used
+        by admins to view and modify a given workspace's grants.
+      operationId: listPrivateSourceDefinitions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateSourceDefinitionReadList"
+  /v1/source_definitions/list_for_workspace:
+    post:
+      tags:
+        - source_definition
+      summary: List all the sourceDefinitions the given workspace is configured to use
+      operationId: listSourceDefinitionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionReadList"
+  /v1/source_definitions/create_custom:
+    post:
+      tags:
+        - source_definition
+      summary: Creates a custom sourceDefinition for the given workspace
+      operationId: createCustomSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomSourceDefinitionCreate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/get_for_workspace:
+    post:
+      tags:
+        - source_definition
+      summary: Get a sourceDefinition that is configured for the given workspace
+      operationId: getSourceDefinitionForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/update_custom:
+    post:
+      tags:
+        - source_definition
+      summary: Update a custom sourceDefinition for the given workspace
+      operationId: updateCustomSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomSourceDefinitionUpdate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/delete_custom:
+    post:
+      tags:
+        - source_definition
+      summary: Delete a custom source definition for the given workspace
+      operationId: deleteCustomSourceDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/grant_definition:
+    post:
+      tags:
+        - source_definition
+      summary: grant a private, non-custom sourceDefinition to a given workspace
+      operationId: grantSourceDefinitionToWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateSourceDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/source_definitions/revoke_definition:
+    post:
+      tags:
+        - source_definition
+      summary: revoke a grant to a private, non-custom sourceDefinition from a given workspace
+      operationId: revokeSourceDefinitionFromWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definition_specifications/get:
     post:
       tags:
@@ -468,6 +658,29 @@ paths:
                 $ref: "#/components/schemas/SourceReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/clone:
+    post:
+      tags:
+        - source
+      summary: Clone source
+      operationId: cloneSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/delete:
     post:
       tags:
@@ -543,7 +756,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceIdRequestBody"
+              $ref: "#/components/schemas/SourceDiscoverSchemaRequestBody"
         required: true
       responses:
         "200":
@@ -660,6 +873,170 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/list_private:
+    post:
+      tags:
+        - destination_definition
+      summary:
+        List all private, non-custom destinationDefinitions, and for each indicate whether the given workspace has a grant for using the
+        definition. Used by admins to view and modify a given workspace's grants.
+      operationId: listPrivateDestinationDefinitions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateDestinationDefinitionReadList"
+  /v1/destination_definitions/list_for_workspace:
+    post:
+      tags:
+        - destination_definition
+      summary: List all the destinationDefinitions the given workspace is configured to use
+      operationId: listDestinationDefinitionsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionReadList"
+  /v1/destination_definitions/create_custom:
+    post:
+      tags:
+        - destination_definition
+      summary: Creates a custom destinationDefinition for the given workspace
+      operationId: createCustomDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomDestinationDefinitionCreate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/get_for_workspace:
+    post:
+      tags:
+        - destination_definition
+      summary: Get a destinationDefinition that is configured for the given workspace
+      operationId: getDestinationDefinitionForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/update_custom:
+    post:
+      tags:
+        - destination_definition
+      summary: Update a custom destinationDefinition for the given workspace
+      operationId: updateCustomDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomDestinationDefinitionUpdate"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/delete_custom:
+    post:
+      tags:
+        - destination_definition
+      summary: Delete a custom destination definition for the given workspace
+      operationId: deleteCustomDestinationDefinition
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "204":
+          description: The destination was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/grant_definition:
+    post:
+      tags:
+        - destination_definition
+      summary: grant a private, non-custom destinationDefinition to a given workspace
+      operationId: grantDestinationDefinitionToWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateDestinationDefinitionRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destination_definitions/revoke_definition:
+    post:
+      tags:
+        - destination_definition
+      summary: revoke a grant to a private, non-custom destinationDefinition from a given workspace
+      operationId: revokeDestinationDefinitionFromWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "204":
@@ -862,6 +1239,29 @@ paths:
       responses:
         "204":
           description: The resource was deleted successfully.
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destinations/clone:
+    post:
+      tags:
+        - destination
+      summary: Clone destination
+      operationId: cloneDestination
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1665,6 +2065,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_debug_info:
+    post:
+      tags:
+        - jobs
+      summary: Gets all information needed to debug this job
+      operationId: getJobDebugInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobDebugInfoRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/health:
     get:
       tags:
@@ -1867,6 +2290,8 @@ components:
           default: true
         slackConfiguration:
           $ref: "#/components/schemas/SlackNotificationConfiguration"
+        customerioConfiguration:
+          $ref: "#/components/schemas/CustomerioNotificationConfiguration"
     SlackNotificationConfiguration:
       type: object
       required:
@@ -1874,11 +2299,13 @@ components:
       properties:
         webhook:
           type: string
+    CustomerioNotificationConfiguration:
+      type: object
     NotificationType:
       type: string
       enum:
         - slack
-        # - email
+        - customerio
         # - webhook
     NotificationRead:
       type: object
@@ -1946,6 +2373,16 @@ components:
           type: boolean
         feedbackDone:
           type: boolean
+    WorkspaceUpdateName:
+      type: object
+      required:
+        - workspaceId
+        - name
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        name:
+          type: string
     WorkspaceUpdate:
       type: object
       required:
@@ -2019,6 +2456,8 @@ components:
           format: uri
         icon:
           type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionUpdate:
       type: object
       description: Update the SourceDefinition. Currently, the only allowed attribute to update is the default docker image version.
@@ -2030,6 +2469,8 @@ components:
           $ref: "#/components/schemas/SourceDefinitionId"
         dockerImageTag:
           type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionRead:
       type: object
       required:
@@ -2051,6 +2492,14 @@ components:
           format: uri
         icon:
           type: string
+        releaseStage:
+          $ref: "#/components/schemas/ReleaseStage"
+        releaseDate:
+          description: The date when this connector was first released, in yyyy-mm-dd format.
+          type: string
+          format: date
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionReadList:
       type: object
       required:
@@ -2060,6 +2509,55 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceDefinitionRead"
+    CustomSourceDefinitionCreate:
+      type: object
+      required:
+        - workspaceId
+        - sourceDefinition
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionCreate"
+    CustomSourceDefinitionUpdate:
+      type: object
+      required:
+        - workspaceId
+        - sourceDefinition
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionUpdate"
+    SourceDefinitionIdWithWorkspaceId:
+      type: object
+      required:
+        - sourceDefinitionId
+        - workspaceId
+      properties:
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+    PrivateSourceDefinitionRead:
+      type: object
+      required:
+        - sourceDefinition
+        - granted
+      properties:
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionRead"
+        granted:
+          type: boolean
+    PrivateSourceDefinitionReadList:
+      type: object
+      required:
+        - sourceDefinitions
+      properties:
+        sourceDefinitions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrivateSourceDefinitionRead"
     # SOURCE SPECIFICATION
     SourceDefinitionSpecification:
       description: The specification for what values are required to configure the sourceDefinition.
@@ -2181,6 +2679,15 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         name:
           type: string
+    SourceDiscoverSchemaRequestBody:
+      type: object
+      required:
+        - sourceId
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        disable_cache:
+          type: boolean
     SourceUpdate:
       type: object
       required:
@@ -2282,6 +2789,8 @@ components:
           format: uri
         icon:
           type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     DestinationDefinitionUpdate:
       type: object
       required:
@@ -2292,6 +2801,8 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         dockerImageTag:
           type: string
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     DestinationDefinitionRead:
       type: object
       required:
@@ -2314,6 +2825,14 @@ components:
           format: uri
         icon:
           type: string
+        releaseStage:
+          $ref: "#/components/schemas/ReleaseStage"
+        releaseDate:
+          description: The date when this connector was first released, in yyyy-mm-dd format.
+          type: string
+          format: date
+        resourceRequirements:
+          $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     DestinationDefinitionReadList:
       type: object
       required:
@@ -2323,6 +2842,55 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationDefinitionRead"
+    CustomDestinationDefinitionCreate:
+      type: object
+      required:
+        - workspaceId
+        - destinationDefinition
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionCreate"
+    CustomDestinationDefinitionUpdate:
+      type: object
+      required:
+        - workspaceId
+        - destinationDefinition
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionUpdate"
+    DestinationDefinitionIdWithWorkspaceId:
+      type: object
+      required:
+        - destinationDefinitionId
+        - workspaceId
+      properties:
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+    PrivateDestinationDefinitionRead:
+      type: object
+      required:
+        - destinationDefinition
+        - granted
+      properties:
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionRead"
+        granted:
+          type: boolean
+    PrivateDestinationDefinitionReadList:
+      type: object
+      required:
+        - destinationDefinitions
+      properties:
+        destinationDefinitions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrivateDestinationDefinitionRead"
     # DESTINATION DEFINITION SPECIFICATION
     DestinationDefinitionSpecification:
       description: The specification for what values are required to configure the destinationDefinition.
@@ -2453,6 +3021,14 @@ components:
           type: string
         destinationName:
           type: string
+    # SOURCE / DESTINATION RELEASE STAGE ENUM
+    ReleaseStage:
+      type: string
+      enum:
+        - alpha
+        - beta
+        - generally_available
+        - custom
     # CONNECTION
     ConnectionId:
       type: string
@@ -2573,6 +3149,9 @@ components:
           description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
           default: null
           example: "${SOURCE_NAMESPACE}"
+        name:
+          type: string
+          description: Name that will be set to this connection
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -2595,6 +3174,9 @@ components:
         - syncCatalog
         - status
       properties:
+        name:
+          type: string
+          description: Name that will be set to the connection
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
         namespaceDefinition:
@@ -2742,6 +3324,7 @@ components:
     ConnectionSchedule:
       description: if null, then no schedule is set.
       type: object
+      nullable: true
       required:
         - units
         - timeUnit
@@ -2772,9 +3355,9 @@ components:
     OperationIdRequestBody:
       type: object
       required:
-        - OperationId
+        - operationId
       properties:
-        OperationId:
+        operationId:
           $ref: "#/components/schemas/OperationId"
     OperationCreate:
       type: object
@@ -3066,6 +3649,31 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
+    JobDebugRead:
+      type: object
+      required:
+        - id
+        - configType
+        - configId
+        - status
+        - airbyteVersion
+        - sourceDefinition
+        - destinationDefinition
+      properties:
+        id:
+          $ref: "#/components/schemas/JobId"
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        configId:
+          type: string
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        airbyteVersion:
+          type: string
+        sourceDefinition:
+          $ref: "#/components/schemas/SourceDefinitionRead"
+        destinationDefinition:
+          $ref: "#/components/schemas/DestinationDefinitionRead"
     JobWithAttemptsRead:
       type: object
       properties:
@@ -3112,6 +3720,87 @@ components:
         recordsSynced:
           type: integer
           format: int64
+        totalStats:
+          $ref: "#/components/schemas/AttemptStats"
+        streamStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptStreamStats"
+        failureSummary:
+          $ref: "#/components/schemas/AttemptFailureSummary"
+    AttemptStats:
+      type: object
+      properties:
+        recordsEmitted:
+          type: integer
+          format: int64
+        bytesEmitted:
+          type: integer
+          format: int64
+        stateMessagesEmitted:
+          type: integer
+          format: int64
+        recordsCommitted:
+          type: integer
+          format: int64
+    AttemptStreamStats:
+      type: object
+      required:
+        - streamName
+        - stats
+      properties:
+        streamName:
+          type: string
+        stats:
+          $ref: "#/components/schemas/AttemptStats"
+    AttemptFailureSummary:
+      type: object
+      required:
+        - failures
+      properties:
+        failures:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptFailureReason"
+        partialSuccess:
+          description: True if the number of committed records for this attempt was greater than 0. False if 0 records were committed. If not set, the number of committed records is unknown.
+          type: boolean
+    AttemptFailureReason:
+      type: object
+      required:
+        - timestamp
+      properties:
+        failureOrigin:
+          $ref: "#/components/schemas/AttemptFailureOrigin"
+        failureType:
+          $ref: "#/components/schemas/AttemptFailureType"
+        externalMessage:
+          type: string
+        stacktrace:
+          type: string
+        retryable:
+          description: True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
+          type: boolean
+        timestamp:
+          type: integer
+          format: int64
+    AttemptFailureOrigin:
+      description: Indicates where the error originated. If not set, the origin of error is not well known.
+      type: string
+      enum:
+        - source
+        - destination
+        - replication
+        - persistence
+        - normalization
+        - dbt
+    AttemptFailureType:
+      description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
+      type: string
+      enum:
+        - config_error
+        - system_error
+        - manual_cancellation
     AttemptStatus:
       type: string
       enum:
@@ -3135,6 +3824,18 @@ components:
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
+        attempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptInfoRead"
+    JobDebugInfoRead:
+      type: object
+      required:
+        - job
+        - attempts
+      properties:
+        job:
+          $ref: "#/components/schemas/JobDebugRead"
         attempts:
           type: array
           items:
@@ -3196,9 +3897,9 @@ components:
     HealthCheckRead:
       type: object
       required:
-        - db
+        - available
       properties:
-        db:
+        available:
           type: boolean
     # General
     CheckConnectionRead:
@@ -3227,6 +3928,40 @@ components:
           $ref: "#/components/schemas/ConnectionStateObject"
     ConnectionStateObject:
       type: object
+    ActorDefinitionResourceRequirements:
+      description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
+      type: object
+      additionalProperties: false
+      properties:
+        default:
+          "$ref": "#/definitions/ResourceRequirements"
+        jobSpecific:
+          type: array
+          items:
+            "$ref": "#/definitions/JobTypeResourceLimit"
+    JobTypeResourceLimit:
+      description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
+      type: object
+      additionalProperties: false
+      required:
+        - jobType
+        - resourceRequirements
+      properties:
+        jobType:
+          "$ref": "#/definitions/JobType"
+        resourceRequirements:
+          "$ref": "#/definitions/ResourceRequirements"
+    JobType:
+      description: enum that describes the different types of jobs that the platform runs.
+      type: string
+      enum:
+        - get_spec
+        - check_connection
+        - discover_schema
+        - sync
+        - reset_connection
+        - connection_updater
+        - replicate
     ResourceRequirements:
       description: optional resource requirements to run workers (blank for unbounded allocations)
       type: object

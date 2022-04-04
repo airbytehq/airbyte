@@ -34,10 +34,10 @@ import org.slf4j.LoggerFactory;
  * <li>Log and close the write.</li>
  * </ul>
  */
-public abstract class BaseS3Writer implements S3Writer {
+public abstract class BaseS3Writer implements DestinationFileWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Writer.class);
-  public static final String DEFAULT_SUFFIX = "_0";
+  private static final String DEFAULT_SUFFIX = "_0";
 
   protected final S3DestinationConfig config;
   protected final AmazonS3 s3Client;
@@ -66,31 +66,37 @@ public abstract class BaseS3Writer implements S3Writer {
    * </ul>
    */
   @Override
-  public void initialize() {
-    final String bucket = config.getBucketName();
-    if (!s3Client.doesBucketExistV2(bucket)) {
-      LOGGER.info("Bucket {} does not exist; creating...", bucket);
-      s3Client.createBucket(bucket);
-      LOGGER.info("Bucket {} has been created.", bucket);
-    }
-
-    if (syncMode == DestinationSyncMode.OVERWRITE) {
-      LOGGER.info("Overwrite mode");
-      final List<KeyVersion> keysToDelete = new LinkedList<>();
-      final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
-          .getObjectSummaries();
-      for (final S3ObjectSummary object : objects) {
-        keysToDelete.add(new KeyVersion(object.getKey()));
+  public void initialize() throws IOException {
+    try {
+      final String bucket = config.getBucketName();
+      if (!s3Client.doesBucketExistV2(bucket)) {
+        LOGGER.info("Bucket {} does not exist; creating...", bucket);
+        s3Client.createBucket(bucket);
+        LOGGER.info("Bucket {} has been created.", bucket);
       }
 
-      if (keysToDelete.size() > 0) {
-        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
-            stream.getName());
-        final DeleteObjectsResult result = s3Client
-            .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
-        LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
-            stream.getName());
+      if (syncMode == DestinationSyncMode.OVERWRITE) {
+        LOGGER.info("Overwrite mode");
+        final List<KeyVersion> keysToDelete = new LinkedList<>();
+        final List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
+            .getObjectSummaries();
+        for (final S3ObjectSummary object : objects) {
+          keysToDelete.add(new KeyVersion(object.getKey()));
+        }
+
+        if (keysToDelete.size() > 0) {
+          LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
+              stream.getName());
+          final DeleteObjectsResult result = s3Client
+              .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
+          LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
+              stream.getName());
+        }
       }
+    } catch (Exception e) {
+      LOGGER.error("Failed to initialize: ", e);
+      closeWhenFail();
+      throw e;
     }
   }
 

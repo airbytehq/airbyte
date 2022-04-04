@@ -7,6 +7,7 @@ export type StepMenuItem = {
   id: string;
   name: string | React.ReactNode;
   status?: string;
+  isPartialSuccess?: boolean;
   onSelect?: () => void;
 };
 
@@ -35,6 +36,7 @@ const StepsMenu: React.FC<IProps> = ({
       {data.map((item, key) => (
         <Step
           status={item.status}
+          isPartialSuccess={item.isPartialSuccess}
           lightMode={lightMode}
           key={item.id}
           num={key + 1}

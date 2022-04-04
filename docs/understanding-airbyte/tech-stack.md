@@ -26,7 +26,8 @@ Connectors can be written in any language. However the most common languages are
 
 * CI/CD: [GitHub Actions](https://github.com/features/actions)
 * Containerization: [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
-* Linter \(Frontend\): [Prettier](https://prettier.io/)
+* Linter \(Frontend\): [ESLint](https://eslint.org/)
+* Formatter \(Frontend\): [Prettier](https://prettier.io/)
 * Formatter \(Backend\): [Spotless](https://github.com/diffplug/spotless)
 
 ## FAQ

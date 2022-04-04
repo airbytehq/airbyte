@@ -28,14 +28,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+/**
+ * This class implements two {@code filter()} methods that execute as part of the Jersey framework
+ * request/response chain.
+ * <p>
+ * The first {@code filter()} is the Request Filter. It takes an incoming
+ * {@link ContainerRequestContext} that contains request information, such as the request body. In
+ * this filter, we extract the request body and store it back on the request context as a custom
+ * property. We don't write any logs for requests. However, since we want to include the request
+ * body in logs for responses, we have to extract the request body in this filter.
+ * <p>
+ * The second @{code filter()} is the Response Filter. It takes an incoming
+ * {@link ContainerResponseContext} that contains response information, such as the status code.
+ * This method also has read-only access to the original {@link ContainerRequestContext}, where we
+ * set the request body as a custom property in the request filter. This is where we create and
+ * persist log lines that contain both the response status code and the original request body.
+ */
 public class RequestLogger implements ContainerRequestFilter, ContainerResponseFilter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RequestLogger.class);
+  private static final String REQUEST_BODY_PROPERTY = "requestBodyProperty";
 
   @Context
   private HttpServletRequest servletRequest;
-
-  private String requestBody = null;
 
   private final Map<String, String> mdc;
 
@@ -59,7 +74,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
       requestContext.setEntityStream(new ByteArrayInputStream(baos.toByteArray()));
       // end hack
 
-      requestBody = IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType()));
+      requestContext.setProperty(REQUEST_BODY_PROPERTY, IOUtils.toString(entity, MessageUtils.getCharset(requestContext.getMediaType())));
     }
   }
 
@@ -70,6 +85,8 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     final String remoteAddr = servletRequest.getRemoteAddr();
     final String method = servletRequest.getMethod();
     final String url = servletRequest.getRequestURI();
+
+    final String requestBody = (String) requestContext.getProperty(REQUEST_BODY_PROPERTY);
 
     final boolean isPrintable = servletRequest.getHeader("Content-Type") != null &&
         servletRequest.getHeader("Content-Type").toLowerCase().contains("application/json") &&

@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT", "cryptography"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT", "cryptography", "requests"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",

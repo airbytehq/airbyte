@@ -4,6 +4,7 @@ import {
   useQuery,
   useQueryClient,
 } from "react-query";
+import { useCallback } from "react";
 
 import type {
   CloudWorkspace,
@@ -13,12 +14,13 @@ import type {
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
-import { useDefaultRequestMiddlewares } from "packages/cloud/services/useDefaultRequestMiddlewares";
-import { useInitService } from "./useInitService";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
 import { QueryObserverSuccessResult } from "react-query/types/core/types";
+import { SCOPE_USER } from "services/Scope";
 
 export const workspaceKeys = {
-  all: ["cloud_workspaces"] as const,
+  all: [SCOPE_USER, "cloud_workspaces"] as const,
   lists: () => [...workspaceKeys.all, "list"] as const,
   list: (filters: string) => [...workspaceKeys.lists(), { filters }] as const,
   details: () => [...workspaceKeys.all, "detail"] as const,
@@ -45,6 +47,19 @@ export function useListCloudWorkspaces(): CloudWorkspace[] {
   return (useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
     service.listByUser(user.userId)
   ) as QueryObserverSuccessResult<CloudWorkspace[]>).data;
+}
+
+export function useListCloudWorkspacesAsync(): QueryObserverResult<
+  CloudWorkspace[]
+> {
+  const service = useGetWorkspaceService();
+  const user = useCurrentUser();
+
+  return useQuery<CloudWorkspace[]>(
+    workspaceKeys.lists(),
+    () => service.listByUser(user.userId),
+    { suspense: false }
+  );
 }
 
 export function useCreateWorkspace() {
@@ -132,6 +147,17 @@ export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   return (useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
     service.get(workspaceId)
   ) as QueryObserverSuccessResult<CloudWorkspace>).data;
+}
+
+export function useInvalidateCloudWorkspace(
+  workspaceId: string
+): () => Promise<void> {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    () => queryClient.invalidateQueries([workspaceKeys.detail(workspaceId)]),
+    [queryClient, workspaceId]
+  );
 }
 
 export function useGetUsage(

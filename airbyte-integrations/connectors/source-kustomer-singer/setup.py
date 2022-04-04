@@ -5,11 +5,12 @@
 import os
 import shutil
 from pathlib import Path
+from subprocess import check_call
+
 from setuptools import find_packages, setup
 from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
 from setuptools.command.install import install
-from subprocess import check_call
 
 
 def check_singer():
@@ -24,7 +25,6 @@ def check_singer():
 
 
 class CustomInstallCommand(install):
-    
     def run(self):
         check_singer()
         install.run(self)
@@ -48,14 +48,9 @@ class CustomEggInfoCommand(egg_info):
             shutil.rmtree("/tmp/singer-python")
 
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "tap-kustomer==1.0.2"
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "tap-kustomer==1.0.2"]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1"
-]
+TEST_REQUIREMENTS = ["pytest~=6.1"]
 
 setup(
     name="source_kustomer_singer",
@@ -65,13 +60,12 @@ setup(
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     cmdclass={
-        'install': CustomInstallCommand,
-        'develop': CustomDevelopCommand,
-        'egg_info': CustomEggInfoCommand,
+        "install": CustomInstallCommand,
+        "develop": CustomDevelopCommand,
+        "egg_info": CustomEggInfoCommand,
     },
     package_data={"": ["*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
-
 )

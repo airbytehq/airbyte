@@ -192,6 +192,9 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.CLICKHOUSE.value:
         copy_tree("../dbt-project-template-clickhouse", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-clickhouse/dbt_project.yml"
+    elif destination_type.value == DestinationType.SNOWFLAKE.value:
+        copy_tree("../dbt-project-template-snowflake", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-snowflake/dbt_project.yml"
     dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
@@ -246,8 +249,8 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
     dbt_test_utils.copy_replace(
         os.path.join(test_root_dir, "first_dbt_project.yml"),
         os.path.join(test_root_dir, "dbt_project.yml"),
-        pattern=r'source-paths: \["models"\]',
-        replace_value='source-paths: ["modified_models"]',
+        pattern=r'model-paths: \["models"\]',
+        replace_value='model-paths: ["modified_models"]',
     )
     # Run a sync to update raw tables in destinations
     return run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json")

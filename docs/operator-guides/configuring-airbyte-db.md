@@ -3,7 +3,9 @@
 Airbyte uses different objects to store internal state and metadata. This data is stored and manipulated by the various Airbyte components, but you have the ability to manage the deployment of this database in the following two ways:
 
 * Using the default Postgres database that Airbyte spins-up as part of the Docker service described in the `docker-compose.yml` file: `airbyte/db`.
-* Through a dedicated custom Postgres instance \(the `airbyte/db` is in this case unused, and can therefore be removed or de-activated from the `docker-compose.yml` file\).
+* Through a dedicated custom Postgres instance \(the `airbyte/db` is in this case unused, and can therefore be removed or de-activated from the `docker-compose.yml` file\). It's not a good practice to deploy mission-critical databases on Docker or Kubernetes. 
+Using a dedicated instance will provide more reliability to your Airbyte deployment. 
+Moreover, using a Cloud-managed Postgres instance (such as AWS RDS our GCP Cloud SQL), you will benefit from automatic backup and fine-grained sizing. You can start with a pretty small instance, but according to your Airbyte usage, the job database might grow and require more storage if you are not truncating the job history.
 
 The various entities are persisted in two internal databases:
 
@@ -87,5 +89,13 @@ The following command will allow you to access the database instance using `psql
 docker exec -ti airbyte-db psql -U docker -d airbyte
 ```
 
-To access the configuration files for sources, destinations, and connections that have been added, simply query the `airbyte-configs` table.
+Following tables are created 
+1. `workspace` : Contains workspace information such as name, notification configuration, etc.
+2. `actor_definition` : Contains the source and destination connector definitions. 
+3. `actor` : Contains source and destination connectors information.
+4. `actor_oauth_parameter` : Contains source and destination oauth parameters.
+5. `operation` : Contains dbt and custom normalization operations.
+6. `connection` : Contains connection configuration such as catalog details, source, destination, etc.
+7. `connection_operation` : Contains the operations configured for a given connection.
+8. `state`. Contains the last saved state for a connection.
 

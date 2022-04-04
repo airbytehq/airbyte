@@ -1,0 +1,19 @@
+{
+  "transactional_message_id": "%s",
+  "from": "%s",
+  "subject": "Connection Auto-Disabled Warning",
+  "to": "%s",
+  "identifiers": {
+    "email": "%s"
+  },
+  "message_data": {
+    "email_title": "Connection Auto-Disabled Warning",
+    "email_body": "Your connection from <b>%s</b> to <b>%s</b> is about to be disabled because it failed consecutively 50 times or that there were only failed jobs in the past 7 days. Once it has failed 100 times consecutively or has been failing for 14 days in a row, the connection will be automatically disabled.<p>Please address the failing issues and re-enable the connection. The most recent attempted %s You can access its logs here: %s"
+  },
+
+  "disable_message_retention": false,
+  "send_to_unsubscribed": true,
+  "tracked": true,
+  "queue_draft": false,
+  "disable_css_preprocessing": true
+}

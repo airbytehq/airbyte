@@ -24,7 +24,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -142,23 +142,23 @@ public class MongoDbSourceDataTypeTest {
             .withPrimaryKey(Lists.newArrayList())
             .withStream(CatalogHelpers.createAirbyteStream(
                 "test.acceptance_test",
-                Field.of("_id", JsonSchemaPrimitive.STRING),
-                Field.of("boolean", JsonSchemaPrimitive.BOOLEAN),
-                Field.of("int32", JsonSchemaPrimitive.NUMBER),
-                Field.of("int64", JsonSchemaPrimitive.NUMBER),
-                Field.of("double", JsonSchemaPrimitive.NUMBER),
-                Field.of("decimal", JsonSchemaPrimitive.NUMBER),
-                Field.of("tms", JsonSchemaPrimitive.STRING),
-                Field.of("dateTime", JsonSchemaPrimitive.STRING),
-                Field.of("binary", JsonSchemaPrimitive.STRING),
-                Field.of("symbol", JsonSchemaPrimitive.STRING),
-                Field.of("string", JsonSchemaPrimitive.STRING),
-                Field.of("objectId", JsonSchemaPrimitive.STRING),
-                Field.of("javaScript", JsonSchemaPrimitive.STRING),
-                Field.of("javaScriptWithScope", JsonSchemaPrimitive.OBJECT),
-                Field.of("document", JsonSchemaPrimitive.OBJECT),
-                Field.of("arrayWithDocs", JsonSchemaPrimitive.ARRAY),
-                Field.of("arrayWithStrings", JsonSchemaPrimitive.ARRAY))
+                Field.of("_id", JsonSchemaType.STRING),
+                Field.of("boolean", JsonSchemaType.BOOLEAN),
+                Field.of("int32", JsonSchemaType.NUMBER),
+                Field.of("int64", JsonSchemaType.NUMBER),
+                Field.of("double", JsonSchemaType.NUMBER),
+                Field.of("decimal", JsonSchemaType.NUMBER),
+                Field.of("tms", JsonSchemaType.STRING),
+                Field.of("dateTime", JsonSchemaType.STRING),
+                Field.of("binary", JsonSchemaType.STRING),
+                Field.of("symbol", JsonSchemaType.STRING),
+                Field.of("string", JsonSchemaType.STRING),
+                Field.of("objectId", JsonSchemaType.STRING),
+                Field.of("javaScript", JsonSchemaType.STRING),
+                Field.of("javaScriptWithScope", JsonSchemaType.OBJECT),
+                Field.of("document", JsonSchemaType.OBJECT),
+                Field.of("arrayWithDocs", JsonSchemaType.ARRAY),
+                Field.of("arrayWithStrings", JsonSchemaType.ARRAY))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL, SyncMode.FULL_REFRESH))
                 .withSourceDefinedPrimaryKey(List.of(List.of("_id"))))));
   }

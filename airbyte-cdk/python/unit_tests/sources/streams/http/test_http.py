@@ -29,18 +29,10 @@ class StubBasicReadHttpStream(HttpStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return ""
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stubResp
@@ -175,8 +167,10 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
     send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
 
-    with pytest.raises(UserDefinedBackoffException):
+    with pytest.raises(UserDefinedBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429") as excinfo:
         list(stream.read_records(SyncMode.full_refresh))
+    assert isinstance(excinfo.value.request, requests.PreparedRequest)
+    assert isinstance(excinfo.value.response, requests.Response)
     if retries <= 0:
         assert send_mock.call_count == 1
     else:
@@ -227,7 +221,7 @@ def test_raise_on_http_errors_off_429(mocker):
     req.status_code = 429
 
     mocker.patch.object(requests.Session, "send", return_value=req)
-    with pytest.raises(DefaultBackoffException):
+    with pytest.raises(DefaultBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429"):
         list(stream.read_records(SyncMode.full_refresh))
 
 
@@ -364,10 +358,10 @@ class CacheHttpSubStream(HttpSubStream):
     def __init__(self, parent):
         super().__init__(parent=parent)
 
-    def parse_response(self, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return []
 
-    def next_page_token(self, **kwargs) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
@@ -406,14 +400,14 @@ class CacheHttpStreamWithSlices(CacheHttpStream):
     paths = ["", "search"]
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f'{stream_slice.get("path")}'
+        return f'{stream_slice["path"]}' if stream_slice else ""
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for path in self.paths:
             yield {"path": path}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response
+        yield {"value": len(response.text)}
 
 
 @patch("airbyte_cdk.sources.streams.core.logging", MagicMock())

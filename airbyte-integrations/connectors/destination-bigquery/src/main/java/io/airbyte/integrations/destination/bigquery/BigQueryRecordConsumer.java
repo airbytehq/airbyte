@@ -4,12 +4,15 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -53,7 +56,18 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   @Override
   public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
-    uploaderMap.values().parallelStream().forEach(uploader -> uploader.close(hasFailed, outputRecordCollector, lastStateMessage));
+    final List<Exception> exceptionsThrown = new ArrayList<>();
+    uploaderMap.values().forEach(uploader -> {
+      try {
+        uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
+      } catch (Exception e) {
+        exceptionsThrown.add(e);
+        LOGGER.error("Exception while closing uploader {}", uploader, e);
+      }
+    });
+    if (!exceptionsThrown.isEmpty()) {
+      throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
+    }
   }
 
 }

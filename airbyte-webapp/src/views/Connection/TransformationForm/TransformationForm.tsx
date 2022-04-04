@@ -3,11 +3,12 @@ import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 import { getIn, useFormik } from "formik";
+import type { FormikErrors } from "formik/dist/types";
+
+import { equal } from "utils/objects";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
 import { Transformation } from "core/domain/connection/operation";
-import { equal } from "utils/objects";
-import { FormikErrors } from "formik/dist/types";
 import { useGetService } from "core/servicesProvider";
 import { OperationService } from "core/domain/connection";
 

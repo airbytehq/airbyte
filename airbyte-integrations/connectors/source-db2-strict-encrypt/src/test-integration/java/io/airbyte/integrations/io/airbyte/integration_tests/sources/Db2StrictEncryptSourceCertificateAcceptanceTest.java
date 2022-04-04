@@ -20,14 +20,12 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.testcontainers.containers.Db2Container;
 
@@ -70,8 +68,8 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
@@ -79,8 +77,8 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
@@ -91,20 +89,15 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
   }
 
   @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
-  }
-
-  @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     db = new Db2Container("ibmcom/db2:11.5.5.0").withCommand().acceptLicense()
         .withExposedPorts(50000);
     db.start();
 
-    var certificate = getCertificate();
+    final var certificate = getCertificate();
     try {
       convertAndImportCertificate(certificate);
-    } catch (IOException | InterruptedException e) {
+    } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
 
@@ -121,7 +114,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
             .build()))
         .build());
 
-    String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
+    final String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
         config.get("host").asText(),
         db.getMappedPort(50000),
         config.get("db").asText()) + SSL_CONFIG;
@@ -154,7 +147,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     new File("certificate.pem").delete();
     new File("certificate.der").delete();
     new File(KEY_STORE_FILE_PATH).delete();
@@ -178,6 +171,7 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_VERSIONS TLSV12");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2set -i db2inst1 DB2COMM=SSL");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2stop force");
@@ -185,9 +179,9 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
     return db.execInContainer("su", "-", "db2inst1", "-c", "cat server.arm").getStdout();
   }
 
-  private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
-    Runtime run = Runtime.getRuntime();
-    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+  private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
+    final Runtime run = Runtime.getRuntime();
+    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -197,8 +191,8 @@ public class Db2StrictEncryptSourceCertificateAcceptanceTest extends SourceAccep
         run);
   }
 
-  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
-    Process pr = run.exec(cmd);
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);

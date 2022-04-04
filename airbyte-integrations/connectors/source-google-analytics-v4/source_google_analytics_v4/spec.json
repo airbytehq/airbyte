@@ -17,8 +17,15 @@
         "order": 1,
         "type": "string",
         "title": "Start Date",
-        "description": "A date in the format YYYY-MM-DD.",
+        "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
         "examples": ["2020-06-01"]
+      },
+      "window_in_days": {
+        "type": "integer",
+        "title": "Window in days",
+        "description": "The amount of days for each data-chunk beginning from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
+        "examples": [30, 60, 90, 120, 200, 364],
+        "default": 1
       },
       "custom_reports": {
         "order": 3,
@@ -30,6 +37,7 @@
         "order": 0,
         "type": "object",
         "title": "Credentials",
+        "description": "Credentials for the service",
         "oneOf": [
           {
             "title": "Authenticate via Google (Oauth)",
@@ -46,25 +54,25 @@
               "client_id": {
                 "title": "Client ID",
                 "type": "string",
-                "description": "The Client ID of your developer application",
+                "description": "The Client ID of your Google Analytics developer application.",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "The client secret of your developer application",
+                "description": "The Client Secret of your Google Analytics developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
-                "description": "A refresh token generated using the above client ID and secret",
+                "description": "The token for obtaining a new access token.",
                 "airbyte_secret": true
               },
               "access_token": {
                 "title": "Access Token",
                 "type": "string",
-                "description": "A access token generated using the above client ID, secret and refresh_token",
+                "description": "Access Token for making authenticated requests.",
                 "airbyte_secret": true
               }
             }
@@ -82,6 +90,7 @@
                 "order": 0
               },
               "credentials_json": {
+                "title": "JSON credentials",
                 "type": "string",
                 "description": "The JSON key of the service account to use for authorization",
                 "examples": [

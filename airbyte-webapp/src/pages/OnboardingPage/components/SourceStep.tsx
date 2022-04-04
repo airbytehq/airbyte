@@ -4,13 +4,12 @@ import { FormattedMessage } from "react-intl";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-
-import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
 import { SourceDefinition } from "core/domain/connector";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 
 type IProps = {
   onSubmit: (values: {
@@ -32,13 +31,15 @@ const SourceStep: React.FC<IProps> = ({
   error,
   afterSelectConnector,
 }) => {
-  const [sourceDefinitionId, setSourceDefinitionId] = useState("");
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
+    null
+  );
   const analyticsService = useAnalyticsService();
 
   const {
-    sourceDefinitionSpecification,
+    data: sourceDefinitionSpecification,
     isLoading,
-  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onServiceSelect = (sourceId: string) => {
     const sourceDefinition = availableServices.find(
@@ -73,7 +74,7 @@ const SourceStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createFirstSource"
             values={{
-              name: (...name: React.ReactNode[]) => (
+              name: (name: React.ReactNode) => (
                 <HighlightedText>{name}</HighlightedText>
               ),
             }}
@@ -85,14 +86,13 @@ const SourceStep: React.FC<IProps> = ({
       <ConnectorCard
         full
         jobInfo={LogsRequestError.extractJobInfo(error)}
-        allowChangeConnector
         onServiceSelect={onServiceSelect}
         onSubmit={onSubmitForm}
         formType="source"
         availableServices={availableServices}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
-        selectedConnector={sourceDefinitionSpecification}
+        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
         isLoading={isLoading}
       />
     </>

@@ -14,7 +14,7 @@ public class MariadbColumnstoreNameTransformer extends ExtendedNameTransformer {
   }
 
   @Override
-  protected String applyDefaultCase(final String input) {
+  public String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
 

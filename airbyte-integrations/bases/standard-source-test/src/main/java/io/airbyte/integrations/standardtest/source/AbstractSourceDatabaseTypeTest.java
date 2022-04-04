@@ -19,7 +19,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -192,7 +192,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
                 .withStream(CatalogHelpers.createAirbyteStream(
                     String.format("%s", test.getNameWithTestPrefix()),
                     String.format("%s", getNameSpace()),
-                    Field.of(getIdColumnName(), JsonSchemaPrimitive.NUMBER),
+                    Field.of(getIdColumnName(), JsonSchemaType.NUMBER),
                     Field.of(getTestColumnName(), test.getAirbyteType()))
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(List.of(List.of(getIdColumnName())))

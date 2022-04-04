@@ -29,27 +29,24 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BigQueryUploaderFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
-
-  public static AbstractBigQueryUploader<?> getUploader(UploaderConfig uploaderConfig)
+  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    final String schemaName =
-        BigQueryUtils.getSchema(uploaderConfig.getConfig(), uploaderConfig.getConfigStream());
+    final String schemaName = BigQueryUtils.getSchema(
+        uploaderConfig.getConfig(),
+        uploaderConfig.getConfigStream());
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingSchemas = new HashSet<>();
 
     final boolean isGcsUploadingMode =
         UploadingMethod.GCS.equals(BigQueryUtils.getLoadingMethod(uploaderConfig.getConfig()));
-    BigQueryRecordFormatter recordFormatter =
+    final BigQueryRecordFormatter recordFormatter =
         (isGcsUploadingMode
             ? uploaderConfig.getFormatterMap().get(UploaderType.AVRO)
             : uploaderConfig.getFormatterMap().get(UploaderType.STANDARD));
-    Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
+    final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
 
     BigQueryUtils.createSchemaAndTableIfNeeded(
         uploaderConfig.getBigQuery(),
@@ -86,20 +83,20 @@ public class BigQueryUploaderFactory {
   }
 
   private static AbstractGscBigQueryUploader<?> getGcsBigQueryUploader(
-                                                                       JsonNode config,
-                                                                       ConfiguredAirbyteStream configStream,
-                                                                       TableId targetTable,
-                                                                       TableId tmpTable,
-                                                                       BigQuery bigQuery,
-                                                                       JobInfo.WriteDisposition syncMode,
-                                                                       BigQueryRecordFormatter formatter,
-                                                                       boolean isDefaultAirbyteTmpSchema)
+                                                                       final JsonNode config,
+                                                                       final ConfiguredAirbyteStream configStream,
+                                                                       final TableId targetTable,
+                                                                       final TableId tmpTable,
+                                                                       final BigQuery bigQuery,
+                                                                       final JobInfo.WriteDisposition syncMode,
+                                                                       final BigQueryRecordFormatter formatter,
+                                                                       final boolean isDefaultAirbyteTmpSchema)
       throws IOException {
 
     final GcsDestinationConfig gcsDestinationConfig =
         GcsDestinationConfig.getGcsDestinationConfig(
             BigQueryUtils.getGcsAvroJsonNodeConfig(config));
-    JsonNode tmpTableSchema =
+    final JsonNode tmpTableSchema =
         (isDefaultAirbyteTmpSchema ? null : formatter.getJsonSchema());
     final GcsAvroWriter gcsCsvWriter =
         initGcsWriter(gcsDestinationConfig, configStream, tmpTableSchema);
@@ -119,7 +116,7 @@ public class BigQueryUploaderFactory {
   private static GcsAvroWriter initGcsWriter(
                                              final GcsDestinationConfig gcsDestinationConfig,
                                              final ConfiguredAirbyteStream configuredStream,
-                                             final JsonNode bigQuerySchema)
+                                             final JsonNode jsonSchema)
       throws IOException {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
@@ -130,17 +127,17 @@ public class BigQueryUploaderFactory {
         configuredStream,
         uploadTimestamp,
         JSON_CONVERTER,
-        bigQuerySchema);
+        jsonSchema);
   }
 
   private static BigQueryDirectUploader getBigQueryDirectUploader(
-                                                                  JsonNode config,
-                                                                  TableId targetTable,
-                                                                  TableId tmpTable,
-                                                                  BigQuery bigQuery,
-                                                                  JobInfo.WriteDisposition syncMode,
-                                                                  String datasetLocation,
-                                                                  BigQueryRecordFormatter formatter) {
+                                                                  final JsonNode config,
+                                                                  final TableId targetTable,
+                                                                  final TableId tmpTable,
+                                                                  final BigQuery bigQuery,
+                                                                  final JobInfo.WriteDisposition syncMode,
+                                                                  final String datasetLocation,
+                                                                  final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(tmpTable)

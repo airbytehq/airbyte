@@ -39,7 +39,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   @BeforeAll
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = new DatabaseConfigPersistence(database);
+    configPersistence = new DatabaseConfigPersistence(database, jsonSecretsProcessor);
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -53,8 +53,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @BeforeEach
   public void resetDatabase() throws SQLException {
-    database.query(ctx -> ctx
-        .execute("TRUNCATE TABLE state, connection_operation, connection, operation, actor_oauth_parameter, actor, actor_definition, workspace"));
+    truncateAllTables();
   }
 
   @Test
@@ -92,6 +91,32 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
         Collections.singletonList(currentSource),
         Collections.singletonList(latestSource),
         Collections.singletonList(currentSourceWithNewFields));
+  }
+
+  @Test
+  @DisplayName("When a old connector is in use and there is a new patch version, update its version")
+  public void testOldConnectorInUseWithMinorVersion() throws Exception {
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1.0");
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.1.9");
+
+    assertUpdateConnectorDefinition(
+        Collections.singletonList(currentSource),
+        Collections.singletonList(currentSource),
+        Collections.singletonList(latestSource),
+        Collections.singletonList(latestSource));
+  }
+
+  @Test
+  @DisplayName("When a old connector is in use and there is a new minor version, do not update its version")
+  public void testOldConnectorInUseWithPathVersion() throws Exception {
+    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1.0");
+    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.2.0");
+
+    assertUpdateConnectorDefinition(
+        Collections.singletonList(currentSource),
+        Collections.singletonList(currentSource),
+        Collections.singletonList(latestSource),
+        Collections.singletonList(currentSource));
   }
 
   @Test

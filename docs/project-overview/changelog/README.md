@@ -1,5 +1,145 @@
 # Changelog
 
+## 1/28/2021 Summary
+
+* New Source: Chartmogul (contributyed by Titas Skrebė)
+* New Source: Hellobaton (contributed by Daniel Luftspring)
+* New Source: Flexport (contributed by Juozas)
+* New Source: PersistIq (contributed by Wadii Zaim)
+
+* ✨ Postgres Source: Users can now select which schemas they wish to sync before discovery. This makes the discovery stage for large instances much more performant.
+* ✨ Shopify Source: Now verifies permissions on the token before accessing resources.
+* ✨ Snowflake Destination: Users now have access to an option to purge their staging data.
+* ✨ HubSpot Source: Added some more fields for the email_events stream.
+* ✨ Amazon Seller Partner Source: Added the GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL report stream. (contributed by @ron-damon)
+* ✨ HubSpot Source: Added the form_submission and property_history streams.
+  
+* 🐛 DynamoDB Destination: The parameter dynamodb_table_name is now named dynamodb_table_name_prefix to more accurately represent it.
+* 🐛 Intercom Source: The handling of scroll param is now fixed when it is expired.
+* 🐛 S3 + GCS Destinations: Now support arrays with unknown item type.
+* 🐛 Postgres Source: Now supports handling of the Java SQL date type.
+* 🐛 Salesforce Source: No longer fails during schema generation.
+
+## 1/13/2021 Summary
+
+⚠️ WARNING ⚠️
+
+Snowflake Source: Normalization with Snowflake now produces permanent tables. [If you want to continue creating transient tables, you will need to create a new transient database for Airbyte.]
+
+* ✨ GitHub Source: PR related streams now support incremental sync.
+* ✨ HubSpot Source: We now support ListMemberships in the Contacts stream.
+* ✨ Azure Blob Storage Destination: Now has the option to add a BufferedOutputStream to improve performance and fix writing data with over 50GB in a stream. (contributed by @bmatticus)
+  
+* 🐛 Normalization partitioning now works as expected with FLOAT64 and BigQuery.
+* 🐛 Normalization now works properly with quoted and case sensitive columns.
+* 🐛 Source MSSQL: Added support for some missing data types.
+* 🐛 Snowflake Destination: Schema is now not created if it previously exists.
+* 🐛 Postgres Source: Now properly reads materialized views.
+* 🐛 Delighted Source: Pagination for survey_responses, bounces and unsubscribes streams now works as expected.
+* 🐛 Google Search Console Source: Incremental sync now works as expected.
+* 🐛 Recurly Source: Now does not load all accounts when importing account coupon redemptions.
+* 🐛 Salesforce Source: Now properly handles 400 when streams don't support query or queryAll.
+
+## 1/6/2021 Summary
+
+* New Source: 3PL Central (contributed by Juozas)
+* New Source: My Hours (contributed by Wisse Jelgersma)
+* New Source: Qualaroo (contributed by gunu)
+* New Source: SearchMetrics
+  
+* 💎 Salesforce Source: Now supports filtering streams at configuration, making it easier to handle large Salesforce instances.
+* 💎 Snowflake Destination: Now supports byte-buffering for staged inserts.
+* 💎 Redshift Destination: Now supports byte-buffering for staged inserts.
+* ✨ Postgres Source: Now supports all Postgres 14 types.
+* ✨ Recurly Source: Now supports incremental sync for all streams.
+* ✨ Zendesk Support Source: Added the Brands, CustomRoles, and Schedules streams.
+* ✨ Zendesk Support Source: Now uses cursor-based pagination.
+* ✨ Kustomer Source: Setup configuration is now more straightforward.
+* ✨ Hubspot Source: Now supports incremental sync on all streams where possible.
+* ✨ Facebook Marketing Source: Fixed schema for breakdowns fields.
+* ✨ Facebook Marketing Source: Added asset_feed_spec to AdCreatives stream.
+* ✨ Redshift Destination: Now has an option to toggle the deletion of staging data.
+
+* 🐛 S3 Destination: Avro and Parquet formats are now processed correctly.
+* 🐛 Snowflake Destination: Fixed SQL Compliation error.
+* 🐛 Kafka Source: SASL configurations no longer throw null pointer exceptions (contributed by Nitesh Kumar)
+* 🐛 Salesforce Source: Now throws a 400 for non-queryable streams.
+* 🐛 Amazon Ads Source: Polling for report generation is now much more resilient. (contributed by Juozas)
+* 🐛 Jira Source: The filters stream now works as expected.
+* 🐛 BigQuery Destination: You can now properly configure the buffer size with the part_size config field.
+* 🐛 Snowflake Destination: You can now properly configure the buffer size with the part_size config field.
+* 🐛 CockroachDB Source: Now correctly only discovers tables the user has permission to access.
+* 🐛 Stripe Source: The date and arrival_date fields are now typed correctly.
+
+## 12/16/2021 Summary
+
+🎉  First off... There's a brand new CDK! Menno Hamburg contributed a .NET/C# implementation for our CDK, allowing you to write HTTP API sources and Generic Dotnet sources. Thank you so much Menno, this is huge!
+
+* New Source: OpenWeather
+* New Destination: ClickHouse (contributed by @Bo)
+* New Destination: RabbitMQ (contributed by @Luis Gomez)
+* New Destination: Amazon SQS (contributed by @Alasdair Brown)
+* New Destination: Rockset (contributed by @Steve Baldwin)
+
+* ✨ Facebook Marketing Source: Updated the campaign schema with more relevant fields. (contributed by @Maxime Lavoie)
+* ✨ TikTok Marketing Source: Now supports the Basic Report stream.
+* ✨ MySQL Source: Now supports all MySQL 8.0 data types.
+* ✨ Klaviyo Source: Improved performance, added incremental sync support to the Global Exclusions stream.
+* ✨ Redshift Destination: You can now specify a bucket path to stage your data in before inserting.
+* ✨ Kubernetes deployments: Sidecar memory is now 25Mi, up from 6Mi to cover all usage cases.
+* ✨ Kubernetes deployments: The Helm chart can now set up writing logs to S3 easily. (contributed by @Valentin Nourdin)
+  
+* 🐛 Python CDK: Now shows the stack trace of unhandled exceptions.
+* 🐛 Google Analytics Source: Fix data window input validation, fix date type conversion.
+* 🐛 Google Ads Source: Data from the end_date for syncs is now included in a sync.
+* 🐛 Marketo Source: Fixed issues around input type conversion and conformation to the schema.
+* 🐛 Mailchimp Source: Fixed schema conversion error causing sync failures.
+* 🐛 PayPal Transactions Source: Now reports full error message details on failure.
+* 🐛 Shopify Source: Normalization now works as expected.
+
+## 12/9/2021 Summary
+
+⚠️ WARNING ⚠️
+
+v0.33.0 is a minor version with breaking changes. Take the normal precautions with upgrading safely to this version.
+v0.33.0 has a bug that affects GCS logs on Kubernetes. Upgrade straight to v0.33.2 if you are running a K8s deployment of Airbyte.
+
+* New Source: Mailgun
+
+🎉 Snowflake Destination: You can now stage your inserts, making them much faster.
+
+* ✨ Google Ads Source: Source configuration is now more clear.
+* ✨ Google Analytics Source: Source configuration is now more clear.
+* ✨ S3 Destination: You can now write timestamps in Avro and Parquet formats.
+* ✨ BigQuery & BigQuery Denormalized Destinations: Now use byte-based buffering for batch inserts.
+* ✨ Iterable Source: Now has email validation on the list_users stream.
+
+* 🐛 Incremental normalization now works properly with empty tables.
+* 🐛 LinkedIn Ads Source: 429 response is now properly handled.
+* 🐛 Intercom Source: Now handles failed pagination requests with backoffs.
+* 🐛 Intercom Source: No longer drops records from the conversation stream.
+* 🐛 Google Analytics Source: 400 errors no longer get ignored with custom reports.
+* 🐛 Marketo Source: The createdAt and updatedAt fields are now formatted correctly.
+
+## 12/2/2021 Summary
+
+🎃 **Hacktoberfest Submissions** 🎃
+-----------------------------------------
+* New Destination: Redis (contributed by @Ivica Taseski)
+* New Destination: MQTT (contributed by @Mario Molina)
+* New Destination: Google Firestore (contributed by @Adam Dobrawy)
+* New Destination: Kinesis (contributed by @Ivica Taseski)
+* New Source: Zenloop (contributed by @Alexander Batoulis)
+* New Source: Outreach (contributed by @Luis Gomez)
+
+* ✨ Zendesk Source: The chats stream now supports incremental sync and added testing for all streams.
+* 🐛 Monday Source: Pagination now works as expected and the schema has been fixed.
+* 🐛 Postgres Source: Views are now properly listed during schema discovery.
+* 🐛 Postgres Source: Using the money type with an amount greater than 1000 works properly now.
+* 🐛 Google Search Console Search: We now set a default end_data value.
+* 🐛 Mixpanel Source: Normalization now works as expected and streams are now displayed properly in the UI.
+* 🐛 MongoDB Source: The DATE_TIME type now uses milliseconds.
+
 ## 11/25/2021 Summary
 Hey Airbyte Community! Let's go over all the changes from v.32.5 and prior!
 

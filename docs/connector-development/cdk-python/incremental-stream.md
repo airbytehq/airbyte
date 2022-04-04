@@ -6,7 +6,8 @@ Several new pieces are essential to understand how incrementality works with the
 
 * `AirbyteStateMessage`
 * cursor fields
-* `Stream.get_updated_state`
+* `IncrementalMixin`
+* `Stream.get_updated_state` (deprecated)
 
   as well as a few other optional concepts.
 
@@ -22,13 +23,46 @@ Cursor fields can be input by the user \(e.g: a user can choose to use an auto-i
 
 In the context of the CDK, setting the `Stream.cursor_field` property to any truthy value informs the framework that this stream is incremental.
 
+### `IncrementalMixin`
+
+This class mixin adds property `state` with abstract setter and getter.
+The `state` attribute helps the CDK figure out the current state of sync at any moment (in contrast to deprecated `Stream.get_updated_state` method).
+The setter typically deserialize state saved by CDK and initialize internal state of the stream.
+The getter should serialize internal state of the stream. 
+
+```python
+@property
+def state(self) -> Mapping[str, Any]:
+   return {self.cursor_field: str(self._cursor_value)}
+
+@state.setter
+def state(self, value: Mapping[str, Any]):
+   self._cursor_value = value[self.cursor_field]
+```
+
+The actual logic of updating state during reading is implemented somewhere else, usually as part of `read_records` method, right after the latest record returned that matches the new state.
+Therefore, the state represents the latest checkpoint successfully achieved, and all next records should match the next state after that one.
+```python
+def read_records(self, ...):
+   ...
+   yield record
+   yield record
+   yield record
+   self._cursor_value = max(record[self.cursor_field], self._cursor_value)
+   yield record
+   yield record
+   yield record
+   self._cursor_value = max(record[self.cursor_field], self._cursor_value)
+```
+
 ### `Stream.get_updated_state`
+(deprecated since 1.48.0, see `IncrementalMixin`)
 
 This function helps the stream keep track of the latest state by inspecting every record output by the stream \(as returned by the `Stream.read_records` method\) and comparing it against the most recent state object. This allows sync to resume from where the previous sync last stopped, regardless of success or failure. This function typically compares the state object's and the latest record's cursor field, picking the latest one.
 
 ## Checkpointing state
 
-There are two ways to checkpointing state \(i.e: controling the timing of when state is saved\) while reading data from a connector:
+There are two ways to checkpointing state \(i.e: controlling the timing of when state is saved\) while reading data from a connector:
 
 1. Interval-based checkpointing
 2. Stream Slices
@@ -64,6 +98,6 @@ For a more in-depth description of stream slicing, see the [Stream Slices guide]
 In summary, an incremental stream requires:
 
 * the `cursor_field` property
-* the `get_updated_state` function
+* to be inherited from `IncrementalMixin` and state methods implemented
 * Optionally, the `stream_slices` function
 

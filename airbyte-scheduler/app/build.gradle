@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation 'io.fabric8:kubernetes-client:5.9.0'
-    implementation 'io.temporal:temporal-sdk:1.6.0'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
@@ -12,7 +12,7 @@ dependencies {
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-metrics')
+    implementation project(':airbyte-metrics:lib')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
@@ -24,7 +24,7 @@ dependencies {
 application {
     applicationName = "airbyte-scheduler"
     mainClass = 'io.airbyte.scheduler.app.SchedulerApp'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 Properties env = new Properties()

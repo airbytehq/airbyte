@@ -26,8 +26,9 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import io.airbyte.server.converters.CatalogConverter;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -174,7 +175,7 @@ public class ConnectionHelpers {
   }
 
   public static JsonNode generateBasicJsonSchema() {
-    return CatalogHelpers.fieldsToJsonSchema(Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+    return CatalogHelpers.fieldsToJsonSchema(Field.of(FIELD_NAME, JsonSchemaType.STRING));
   }
 
   public static ConfiguredAirbyteCatalog generateBasicConfiguredAirbyteCatalog() {
@@ -187,7 +188,7 @@ public class ConnectionHelpers {
   }
 
   private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream() {
-    return CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING))
+    return CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING))
         .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
         .withSourceDefinedCursor(false)
         .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
@@ -197,6 +198,16 @@ public class ConnectionHelpers {
     return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
         .stream(generateBasicApiStream())
         .config(generateBasicApiStreamConfig())));
+  }
+
+  public static AirbyteCatalog generateMultipleStreamsApiCatalog(final int streamsCount) {
+    final List<AirbyteStreamAndConfiguration> streamAndConfigurations = new ArrayList<>();
+    for (int i = 0; i < streamsCount; i++) {
+      streamAndConfigurations.add(new AirbyteStreamAndConfiguration()
+          .stream(generateBasicApiStream())
+          .config(generateBasicApiStreamConfig()));
+    }
+    return new AirbyteCatalog().streams(streamAndConfigurations);
   }
 
   private static AirbyteStreamConfiguration generateBasicApiStreamConfig() {

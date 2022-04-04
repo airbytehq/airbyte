@@ -12,6 +12,7 @@ import { equal, naturalComparatorBy } from "utils/objects";
 import { SelectContainer } from "./SelectContainer";
 import { CustomSelect } from "./CustomSelect";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OptionType = any;
 type DropdownProps = Props<OptionType> & {
   withBorder?: boolean;
@@ -34,18 +35,24 @@ const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
         ClearIndicator: null,
         MultiValueRemove: null,
         ...(propsComponents ?? {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any),
     [propsComponents]
   );
 
-  const currentValue = props.isMulti
-    ? props.options?.filter((op) =>
-        props.value.find((o: OptionType) => equal(o, op.value))
-      )
-    : props.options?.find((op) => equal(op.value, props.value));
+  // undefined value is assumed to mean that value was not selected
+  const currentValue =
+    props.value !== undefined
+      ? props.isMulti
+        ? props.options?.filter((op) =>
+            props.value.find((o: OptionType) => equal(o, op.value))
+          )
+        : props.options?.find((op) => equal(op.value, props.value))
+      : null;
 
   const styles = {
     ...(props.styles ?? {}),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     menuPortal: (base: CSSObject, menuPortalProps: any) => ({
       ...(props.styles?.menuPortal?.(base, menuPortalProps) ?? { ...base }),
       zIndex: 9999,

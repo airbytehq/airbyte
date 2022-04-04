@@ -287,7 +287,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .from(table("actor_oauth_parameter"))
         .where(actorType.eq(ActorType.source))
         .fetch();
-    final List<SourceOAuthParameter> expectedDefinitions = sourceOauthParameters();
+    final List<SourceOAuthParameter> expectedDefinitions = sourceOauthParameters().stream().filter(c -> c.getWorkspaceId() != null).toList();
     Assertions.assertEquals(expectedDefinitions.size(), sourceOauthParams.size());
 
     for (final Record record : sourceOauthParams) {
@@ -315,7 +315,8 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization_Test extends Abst
         .from(table("actor_oauth_parameter"))
         .where(actorType.eq(ActorType.destination))
         .fetch();
-    final List<DestinationOAuthParameter> expectedDefinitions = destinationOauthParameters();
+    final List<DestinationOAuthParameter> expectedDefinitions =
+        destinationOauthParameters().stream().filter(c -> c.getWorkspaceId() != null).toList();
     Assertions.assertEquals(expectedDefinitions.size(), destinationOauthParams.size());
 
     for (final Record record : destinationOauthParams) {

@@ -30,6 +30,10 @@ A **Full Refresh Sync** will attempt to retrieve all data from the source every 
 
 An **Incremental Sync** will only retrieve new data from the source when a sync occurs. The first sync will always attempt to retrieve all the data. If the [destination supports it](https://discuss.airbyte.io/t/what-destinations-support-the-incremental-deduped-sync-mode/89), you can have your data deduplicated. Simply put, this just means that if you sync an updated version of a record you've already synced, it will remove the old record.
 
+### Partial Success
+
+A **Partial Success** indicates that some records were successfully committed to the destination during a sync, even when the overall sync status was reported as a failure. 
+
 ### Raw Tables
 
 Airbyte spits out tables with the prefix `_airbyte_raw_`. This is your replicated data, but the prefix indicates that it's not normalized. If you select basic normalization, Airbyte will create renamed versions without the prefix.

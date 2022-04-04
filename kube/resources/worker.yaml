@@ -184,6 +184,32 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY
+            # todo: add other state storage keys
+            - name: STATE_STORAGE_MINIO_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: STATE_STORAGE_MINIO_BUCKET_NAME
+            - name: STATE_STORAGE_MINIO_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: STATE_STORAGE_MINIO_ENDPOINT
+            - name: STATE_STORAGE_MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: STATE_STORAGE_MINIO_ACCESS_KEY
+            - name: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+            - name: CONTAINER_ORCHESTRATOR_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONTAINER_ORCHESTRATOR_ENABLED
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

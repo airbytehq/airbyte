@@ -110,11 +110,6 @@ public class RedshiftStreamCopier extends S3StreamCopier {
     }
   }
 
-  @VisibleForTesting
-  String getTmpTableName() {
-    return tmpTableName;
-  }
-
   /**
    * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one
    * entry in a manifest file otherwise it is not considered valid for the COPY command.
@@ -122,11 +117,11 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    * @return null if no stagingFiles exist otherwise the manifest body String
    */
   private String createManifest() {
-    if (stagingWritersByFile.isEmpty()) {
+    if (getStagingFiles().isEmpty()) {
       return null;
     }
 
-    final var s3FileEntries = stagingWritersByFile.keySet().stream()
+    final var s3FileEntries = getStagingFiles().stream()
         .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
         .collect(Collectors.toList());
     final var manifest = new Manifest(s3FileEntries);

@@ -6,7 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
@@ -15,6 +15,9 @@ dependencies {
 
     // csv
     implementation 'org.apache.commons:commons-csv:1.4'
+
+    implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
+    implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-integrations:bases:base-java')

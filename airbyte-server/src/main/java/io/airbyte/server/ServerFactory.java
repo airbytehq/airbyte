@@ -5,13 +5,17 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -30,6 +34,8 @@ public interface ServerFactory {
                         SynchronousSchedulerClient cachingSchedulerClient,
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
+                        SecretsRepositoryReader secretsRepositoryReader,
+                        SecretsRepositoryWriter secretsRepositoryWriter,
                         JobPersistence jobPersistence,
                         ConfigPersistence seed,
                         Database configsDatabase,
@@ -41,7 +47,9 @@ public interface ServerFactory {
                         String webappUrl,
                         AirbyteVersion airbyteVersion,
                         Path workspaceRoot,
-                        HttpClient httpClient);
+                        HttpClient httpClient,
+                        FeatureFlags featureFlags,
+                        EventRunner eventRunner);
 
   class Api implements ServerFactory {
 
@@ -50,6 +58,8 @@ public interface ServerFactory {
                                  final SynchronousSchedulerClient synchronousSchedulerClient,
                                  final WorkflowServiceStubs temporalService,
                                  final ConfigRepository configRepository,
+                                 final SecretsRepositoryReader secretsRepositoryReader,
+                                 final SecretsRepositoryWriter secretsRepositoryWriter,
                                  final JobPersistence jobPersistence,
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
@@ -61,11 +71,15 @@ public interface ServerFactory {
                                  final String webappUrl,
                                  final AirbyteVersion airbyteVersion,
                                  final Path workspaceRoot,
-                                 final HttpClient httpClient) {
+                                 final HttpClient httpClient,
+                                 final FeatureFlags featureFlags,
+                                 final EventRunner eventRunner) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
           configRepository,
+          secretsRepositoryReader,
+          secretsRepositoryWriter,
           jobPersistence,
           seed,
           schedulerJobClient,
@@ -81,7 +95,9 @@ public interface ServerFactory {
           webappUrl,
           airbyteVersion,
           workspaceRoot,
-          httpClient);
+          httpClient,
+          featureFlags,
+          eventRunner);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

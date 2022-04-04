@@ -15,6 +15,8 @@ export class CommonRequestError extends Error {
   }
 }
 
-export function isCommonRequestError(error: any): error is CommonRequestError {
+export function isCommonRequestError(error: {
+  __type?: string;
+}): error is CommonRequestError {
   return error.__type === "common.error";
 }

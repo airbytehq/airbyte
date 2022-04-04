@@ -21,7 +21,7 @@ class CsvFormat(BaseModel):
     delimiter: str = Field(
         default=",",
         min_length=1,
-        description="The character delimiting individual cells in the CSV data. This may only be a 1-character string.",
+        description="The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
     )
     quote_char: str = Field(
         default='"', description="The character used optionally for quoting CSV values. To disallow quoting, make this field blank."

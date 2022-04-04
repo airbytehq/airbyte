@@ -43,7 +43,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.net.URI;
 import java.time.Instant;
@@ -272,7 +272,7 @@ public class SetupForNormalizedTablesTest {
   public static List<SourceOAuthParameter> sourceOauthParameters() {
     final SourceOAuthParameter sourceOAuthParameter1 = new SourceOAuthParameter()
         .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
-        .withWorkspaceId(WORKSPACE_ID)
+        .withWorkspaceId(null)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withOauthParameterId(SOURCE_OAUTH_PARAMETER_ID_1);
     final SourceOAuthParameter sourceOAuthParameter2 = new SourceOAuthParameter()
@@ -286,7 +286,7 @@ public class SetupForNormalizedTablesTest {
   public static List<DestinationOAuthParameter> destinationOauthParameters() {
     final DestinationOAuthParameter destinationOAuthParameter1 = new DestinationOAuthParameter()
         .withConfiguration(Jsons.jsonNode("'{\"name\":\"John\", \"age\":30, \"car\":null}'"))
-        .withWorkspaceId(WORKSPACE_ID)
+        .withWorkspaceId(null)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withOauthParameterId(DESTINATION_OAUTH_PARAMETER_ID_1);
     final DestinationOAuthParameter destinationOAuthParameter2 = new DestinationOAuthParameter()
@@ -397,9 +397,9 @@ public class SetupForNormalizedTablesTest {
         CatalogHelpers.createAirbyteStream(
             "models",
             "models_schema",
-            io.airbyte.protocol.models.Field.of("id", JsonSchemaPrimitive.NUMBER),
-            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaPrimitive.NUMBER),
-            io.airbyte.protocol.models.Field.of("model", JsonSchemaPrimitive.STRING))
+            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.NUMBER),
+            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaType.NUMBER),
+            io.airbyte.protocol.models.Field.of("model", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
     return CatalogHelpers.toDefaultConfiguredCatalog(catalog);

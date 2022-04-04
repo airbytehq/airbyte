@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 
 import { useConfig } from "config";
 import { RequestMiddleware } from "./request/RequestMiddleware";
 import { SourceDefinitionService } from "./domain/connector/SourceDefinitionService";
 import { DestinationDefinitionService } from "./domain/connector/DestinationDefinitionService";
-import { DeploymentService } from "./resources/DeploymentService";
+import { DeploymentService } from "./domain/deployment/DeploymentService";
 import { OperationService } from "./domain/connection";
 import { HealthService } from "./health/HealthService";
 import { useGetService, useInjectServices } from "./servicesProvider";
@@ -14,10 +14,6 @@ export const ApiServices: React.FC = React.memo(({ children }) => {
   const middlewares = useGetService<RequestMiddleware[]>(
     "DefaultRequestMiddlewares"
   );
-
-  useEffect(() => {
-    window._API_URL = config.apiUrl;
-  }, [config]);
 
   const services = useMemo(
     () => ({

@@ -1,35 +1,34 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: airbyte-env
+  name: {{ include "common.names.fullname" . }}-env
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-1"
 data:
   AIRBYTE_VERSION: {{ .Values.version | default .Chart.AppVersion }}
   API_URL: {{ .Values.webapp.api.url }}
-  AWS_ACCESS_KEY_ID: {{ .Values.logs.accessKey.password }}
-  AWS_SECRET_ACCESS_KEY: {{ .Values.logs.secretKey.password }}
   CONFIG_ROOT: /configs
-  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.32.8.001"
+  CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.15.001"
   DATA_DOCKER_MOUNT: airbyte_data
   DATABASE_DB: {{ include "airbyte.database.name" . }}
   DATABASE_HOST: {{ include "airbyte.database.host" . }}
-  DATABASE_PASSWORD: {{ .Values.postgresql.postgresqlPassword }}
   DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
   DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
-  DATABASE_USER: {{ include "airbyte.database.user" . }}
   DB_DOCKER_MOUNT: airbyte_db
   FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
   GCS_LOG_BUCKET: {{ .Values.logs.gcs.bucket | quote }}
-  GOOGLE_APPLICATION_CREDENTIALS: {{ .Values.logs.gcs.credentials | quote }}
+  GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
   INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
-  JOB_MAIN_CONTAINER_CPU_LIMIT: ""
-  JOB_MAIN_CONTAINER_CPU_REQUEST: ""
-  JOB_MAIN_CONTAINER_MEMORY_LIMIT: ""
-  JOB_MAIN_CONTAINER_MEMORY_REQUEST: ""
+  JOB_MAIN_CONTAINER_CPU_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).cpu | default "" | quote }}
+  JOB_MAIN_CONTAINER_CPU_REQUEST: {{ ((.Values.jobs.resources | default dict).requests | default dict).cpu | default "" | quote }}
+  JOB_MAIN_CONTAINER_MEMORY_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).memory | default "" | quote }}
+  JOB_MAIN_CONTAINER_MEMORY_REQUEST: {{ ((.Values.jobs.resources | default dict).requests | default dict).memory | default "" | quote }}
   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.29.15.001"
   LOCAL_ROOT: /tmp/airbyte_local
   RUN_DATABASE_MIGRATION_ON_STARTUP: "true"
-  S3_LOG_BUCKET: {{ .Values.logs.s3.bucket }}
+  S3_LOG_BUCKET: {{ .Values.logs.s3.bucket | quote }}
   S3_LOG_BUCKET_REGION: {{ .Values.logs.s3.bucketRegion | quote }}
   S3_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . | quote }}
   S3_PATH_STYLE_ACCESS: {{ include "airbyte.s3PathStyleAccess" . | quote }}

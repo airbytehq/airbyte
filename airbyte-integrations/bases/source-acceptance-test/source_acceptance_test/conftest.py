@@ -9,7 +9,7 @@ import logging
 import os
 from logging import Logger
 from pathlib import Path
-from subprocess import run
+from subprocess import STDOUT, check_output, run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
@@ -183,3 +183,26 @@ def detailed_logger() -> Logger:
     logger.log_json_list = lambda l: logger.info(json.dumps(list(l), indent=1))
     logger.handlers = [fh]
     return logger
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Called after whole test run finished, right before returning the exit status to the system.
+    https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
+    """
+    logger = logging.getLogger()
+
+    # this is specifically for contributors to run tests locally and show success for a git hash
+    # therefore if this fails for any reason we just treat as a no-op
+    try:
+        result = "PASSED" if session.testscollected > 0 and session.testsfailed == 0 else "FAILED"
+        print()  # create a line break
+        logger.info(
+            # session.startdir gives local path to the connector folder, so we can verify which cnctr was tested
+            f"{session.startdir} - SAT run - "
+            # using subprocess.check_output to run cmd to get git hash
+            f"{check_output('git rev-parse HEAD', stderr=STDOUT, shell=True).decode('ascii').strip()}"
+            f" - {result}"
+        )
+    except Exception as e:
+        logger.info(e)  # debug
+        pass

@@ -19,7 +19,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.gcs.writer.CommonWriter;
+import io.airbyte.integrations.destination.s3.writer.DestinationWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -28,7 +28,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractBigQueryUploader<T extends CommonWriter> {
+public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBigQueryUploader.class);
 

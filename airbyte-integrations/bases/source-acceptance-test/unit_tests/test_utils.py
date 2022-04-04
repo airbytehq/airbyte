@@ -281,7 +281,7 @@ def test_docker_runner(command, wait_timeout, expected_count):
     assert set(lines) == set(["something\n"])
     assert len(lines) == expected_count
 
-    for container in client.containers.list(all=True):
+    for container in client.containers.list(all=True, ignore_removed=True):
         assert container.id != new_container.id, "Container should be removed after reading"
 
 
