@@ -56,7 +56,7 @@ Please note that the stream name may contain a prefix, if it is configured on th
 
 The rationales behind this naming pattern are: 1. Each stream has its own directory. 2. The data output files can be sorted by upload time. 3. The upload time composes of a date part and millis part so that it is both readable and unique.
 
-Currently, each data sync will only create one file per stream. In the future, the output file can be partitioned by size. Each partition is identifiable by the partition ID, which is always 0 for now.
+A data sync may create multiple files as the output files can be partitioned by size (targeting a size of 200MB compressed or lower) .
 
 ## Output Schema
 
