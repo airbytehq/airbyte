@@ -73,7 +73,10 @@ public class SourceHandler {
         integrationSchemaValidation,
         connectionsHandler,
         UUID::randomUUID,
-        new JsonSecretsProcessor(),
+        JsonSecretsProcessor.builder()
+            .maskSecrets(true)
+            .copySecrets(true)
+            .build(),
         new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
@@ -250,8 +253,7 @@ public class SourceHandler {
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(
-        sourceConnection.getConfiguration(), spec.getConnectionSpecification());
+    final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }

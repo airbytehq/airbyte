@@ -1,28 +1,21 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
+
 import PageTitle from "components/PageTitle";
 import DestinationForm from "./components/DestinationForm";
 import useRouter from "hooks/useRouter";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import useDestination from "hooks/services/useDestinationHook";
 import { FormPageContent } from "components/ConnectorBlocks";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useCreateDestination } from "hooks/services/useDestinationHook";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
   const [successRequest, setSuccessRequest] = useState(false);
 
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
-  const { createDestination } = useDestination();
+  const { destinationDefinitions } = useDestinationDefinitionList();
+  const { mutateAsync: createDestination } = useCreateDestination();
 
   const onSubmitDestinationForm = async (values: {
     name: string;
