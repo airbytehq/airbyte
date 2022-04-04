@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_klaviyo.schemas import Campaign, Event, GlobalExclusion, Metric, PersonList
+from source_klaviyo.schemas import Campaign, Event, GlobalExclusion, Metric, PersonList, Flow
 
 
 class KlaviyoStream(HttpStream, ABC):
@@ -240,3 +240,26 @@ class Events(IncrementalKlaviyoStream):
 
     def path(self, **kwargs) -> str:
         return "metrics/timeline"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        response_json = response.json()
+        for record in response_json.get("data", []):
+            flow = record["event_properties"].get("$flow")
+            flow_message_id = record["event_properties"].get("$message")
+
+            record["flow_id"] = flow
+            record["flow_message_id"] = flow_message_id
+            record["campaign_id"] = flow_message_id if not flow else None
+
+            yield record
+
+
+class Flows(IncrementalKlaviyoStream):
+    schema = Flow
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "flows"

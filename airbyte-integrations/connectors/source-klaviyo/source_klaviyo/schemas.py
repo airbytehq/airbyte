@@ -104,6 +104,19 @@ class Event(BaseSchemaModel):
     statistic_id: str
     event_properties: dict
     person: dict
+    flow_id: str
+    campaign_id: str
+    flow_message_id: str
+
+
+class Flow(BaseSchemaModel):
+    id: str
+    name: str
+    status: str
+    created: datetime
+    updated: datetime
+    customer_filter: dict
+    trigger: dict
 
 
 class GlobalExclusion(BaseSchemaModel):
