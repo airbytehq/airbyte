@@ -92,7 +92,7 @@ class KyribaStream(HttpStream):
         return {**data, **nested}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return response.json().get("results")
+        return iter(response.json().get("results"))
 
 
 # Basic incremental stream
@@ -142,7 +142,7 @@ class AccountSubStream(HttpSubStream):
         pass
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        return [response.json()]
+        return iter([response.json()])
 
 
 class CashBalancesStream(AccountSubStream, KyribaStream):
@@ -251,7 +251,7 @@ class CashFlows(IncrementalKyribaStream):
         # the updatedDateTime is unnecessarily nested under date
         # Airbyte cannot accomodate nested cursors, so this needs to be fixed
         results = response.json().get("results")
-        return [self.unnest("date", r) for r in results]
+        return iter([self.unnest("date", r) for r in results])
 
 
 # Source

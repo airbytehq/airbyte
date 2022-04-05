@@ -4,19 +4,26 @@
 
 from unittest.mock import MagicMock
 
-from source_kyriba.source import SourceKyriba
+from source_kyriba.source import SourceKyriba, KyribaClient
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
+config = {
+    "username": "username",
+    "password": "password",
+    "domain": "demo.kyriba.com",
+    "version": 1,
+    "start_date": "2022-01-01",
+}
 
 def test_check_connection(mocker):
     source = SourceKyriba()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+    KyribaClient.login = MagicMock()
+    logger_mock = MagicMock()
+    assert source.check_connection(logger_mock, config) == (True, None)
 
 
 def test_streams(mocker):
     source = SourceKyriba()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
+    streams = source.streams(config)
+    expected_streams_number = 6
     assert len(streams) == expected_streams_number
