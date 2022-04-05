@@ -341,14 +341,14 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         if start_time != self.prev_start_time:
             self.prev_start_time = start_time
             return {self.cursor_field: int(start_time)}
-        
+
     def check_stream_state(self, stream_state: Mapping[str, Any] = None):
         """
         Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
         state = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
         return calendar.timegm(pendulum.parse(state).utctimetuple())
-            
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
@@ -369,32 +369,32 @@ class SourceZendeskTicketExportStream(SourceZendeskSupportCursorPaginationStream
     @ param sideload_param : parameter variable to include various information to response
         more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
     """
-    
+
     cursor_field = "updated_at"
     response_list_name: str = "tickets"
     sideload_param: str = None
-    
+
     @staticmethod
     def check_start_time_param(requested_start_time: int, value: int = 1):
         """
         Requesting tickets in the future is not allowed, hits 400 - bad request.
         We get current UNIX timestamp minus `value` from now(), default = 1 (minute).
-        
+
         Returns: either close to now UNIX timestamp or previously requested UNIX timestamp.
-        """    
+        """
         now = calendar.timegm(pendulum.now().subtract(minutes=value).utctimetuple())
         return now if requested_start_time > now else requested_start_time
-    
+
     def path(self, **kwargs) -> str:
         return f"incremental/{self.response_list_name}.json"
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Returns next_page_token based on `end_of_stream` parameter inside of response
         """
         next_page_token = super().next_page_token(response)
         return None if response.json().get(END_OF_STREAM_KEY, False) else next_page_token
-    
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
@@ -404,7 +404,7 @@ class SourceZendeskTicketExportStream(SourceZendeskSupportCursorPaginationStream
         if self.sideload_param:
             params["include"] = self.sideload_param
         return params
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in response.json().get(self.response_list_name, []):
             yield record
@@ -419,6 +419,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskTicketExportStre
     @ param list_entities_from_event : the list of nested child_events entities to include from parent record
     @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
     """
+
     cursor_field = "created_at"
     response_list_name: str = "ticket_events"
     response_target_entity: str = "child_events"
@@ -429,7 +430,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskTicketExportStre
     def update_event_from_record(self) -> bool:
         """Returns True/False based on list_entities_from_event property"""
         return True if len(self.list_entities_from_event) > 0 else False
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
             for event in record.get(self.response_target_entity, []):
