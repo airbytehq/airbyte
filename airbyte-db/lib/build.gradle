@@ -79,6 +79,6 @@ task copyInitSql(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("db", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
+Task dockerBuildTask = getDockerBuildTask("db",  "$project.projectDir")
 dockerBuildTask.dependsOn(copyInitSql)
 assemble.dependsOn(dockerBuildTask)
