@@ -22,6 +22,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
@@ -163,7 +164,12 @@ public class ServerApp implements ServerRunnable {
 
     LOGGER.info("Creating config repository...");
     final Database configDatabase = configsDatabaseInstance.getInitialized();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+        .maskSecrets(!featureFlags.exposeSecretsInExport())
+        .copySecrets(false)
+        .build();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
     final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
@@ -197,7 +203,6 @@ public class ServerApp implements ServerRunnable {
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final EventRunner eventRunner = new TemporalEventRunner(
         TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
 

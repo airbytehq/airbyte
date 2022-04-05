@@ -5,7 +5,7 @@
 package io.airbyte.config.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
@@ -39,7 +39,8 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   @BeforeEach
   public void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence(database));
+
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);

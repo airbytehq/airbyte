@@ -75,12 +75,12 @@ public interface JobPersistence {
   //
 
   /**
-   * Create a new attempt for a job. Throws {@link IllegalStateException} if the job is already in a
-   * terminal state.
+   * Create a new attempt for a job and return its attempt number. Throws
+   * {@link IllegalStateException} if the job is already in a terminal state.
    *
    * @param jobId job for which an attempt will be created
    * @param logPath path where logs should be written for the attempt
-   * @return id of the attempt
+   * @return The attempt number of the created attempt (see {@link DefaultJobPersistence})
    * @throws IOException exception due to interaction with persistence
    */
   int createAttempt(long jobId, Path logPath) throws IOException;
@@ -145,7 +145,6 @@ public interface JobPersistence {
   List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
 
   /**
-   *
    * @param configType The type of job
    * @param attemptEndedAtTimestamp The timestamp after which you want the jobs
    * @return List of jobs that have attempts after the provided timestamp
@@ -161,7 +160,20 @@ public interface JobPersistence {
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
+  /**
+   * @param connectionId The ID of the connection
+   * @param configTypes The types of jobs
+   * @param jobCreatedAtTimestamp The timestamp after which you want the jobs
+   * @return List of job statuses from a specific connection that have attempts after the provided
+   *         timestamp, sorted by jobs' createAt in descending order
+   * @throws IOException
+   */
+  List<JobStatus> listJobStatusWithConnection(UUID connectionId, Set<JobConfig.ConfigType> configTypes, Instant jobCreatedAtTimestamp)
+      throws IOException;
+
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
+
+  Optional<Job> getFirstReplicationJob(UUID connectionId) throws IOException;
 
   Optional<Job> getNextJob() throws IOException;
 

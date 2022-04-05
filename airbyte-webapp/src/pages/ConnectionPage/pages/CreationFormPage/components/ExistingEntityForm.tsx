@@ -1,18 +1,16 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useResource } from "rest-hooks";
-import { Formik, Form, Field, FieldProps } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import ContentCard from "components/ContentCard";
-import { DropDown, Button, ControlLabels } from "components";
-import useWorkspace from "hooks/services/useWorkspace";
-import SourceResource from "core/resources/Source";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationResource from "core/resources/Destination";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { Button, ControlLabels, DropDown } from "components";
 import ImageBlock from "components/ImageBlock";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceList } from "../../../../../hooks/services/useSourceHook";
+import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
 
 type IProps = {
   type: "source" | "destination";
@@ -42,27 +40,12 @@ const existingEntityValidationSchema = yup.object().shape({
 
 const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const formatMessage = useIntl().formatMessage;
-  const { workspace } = useWorkspace();
+  const { sources } = useSourceList();
+  const { sourceDefinitions } = useSourceDefinitionList();
 
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { destinations } = useDestinationList();
 
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
   const dropDownData = useMemo(() => {
     if (type === "source") {

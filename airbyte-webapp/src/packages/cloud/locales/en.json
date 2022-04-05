@@ -112,8 +112,10 @@
   "firebase.auth.error.tooManyRequests": "Too many retries. Please wait 10 minutes before trying again.",
   "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later.",
 
-  "signup.password.minLength": "Password should be at least 6 characters",
+  "signup.password.minLength": "Password should be at least 12 characters",
   "email.duplicate": "Email already exists",
+  "email.notfound": "Email not found",
+  "email.disabled": "Your account is disabled",
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password"
 }

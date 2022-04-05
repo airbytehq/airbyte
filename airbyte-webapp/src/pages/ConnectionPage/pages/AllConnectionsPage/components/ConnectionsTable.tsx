@@ -2,12 +2,12 @@ import React, { useCallback } from "react";
 
 import { ConnectionTable } from "components/EntityTable";
 import useRouter from "hooks/useRouter";
-import { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import useSyncActions from "components/EntityTable/hooks";
 import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
-import { useDestinationDefinitionList } from "hooks/services/useDestinationDefinition";
-import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
 type IProps = {
   connections: Connection[];

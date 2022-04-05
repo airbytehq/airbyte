@@ -39,7 +39,7 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
   @BeforeAll
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = new DatabaseConfigPersistence(database);
+    configPersistence = new DatabaseConfigPersistence(database, jsonSecretsProcessor);
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);

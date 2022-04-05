@@ -55,11 +55,13 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-youtube-analytics", new YouTubeAnalyticsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-drift", new DriftOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-zendesk-chat", new ZendeskChatOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-zendesk-support", new ZendeskSupportOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-monday", new MondayOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-zendesk-sunshine", new ZendeskSunshineOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-mailchimp", new MailchimpOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-shopify", new ShopifyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-tiktok-marketing", new TikTokMarketingOAuthFlow(configRepository, httpClient))
+        .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
         .build();
   }
 

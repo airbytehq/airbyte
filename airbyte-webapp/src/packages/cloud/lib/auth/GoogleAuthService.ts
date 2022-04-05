@@ -61,6 +61,7 @@ export class GoogleAuthService implements AuthService {
           case AuthErrorCodes.INVALID_EMAIL:
             throw new FieldError("email", ErrorCodes.Invalid);
           case AuthErrorCodes.USER_CANCELLED:
+          case AuthErrorCodes.USER_DISABLED:
             throw new FieldError("email", "disabled");
           case AuthErrorCodes.USER_DELETED:
             throw new FieldError("email", "notfound");
@@ -74,6 +75,9 @@ export class GoogleAuthService implements AuthService {
   }
 
   async signUp(email: string, password: string): Promise<UserCredential> {
+    if (password.length < 12) {
+      throw new FieldError("password", "signup.password.minLength");
+    }
     return createUserWithEmailAndPassword(this.auth, email, password).catch(
       (err) => {
         switch (err.code) {
@@ -125,11 +129,11 @@ export class GoogleAuthService implements AuthService {
         await updateEmail(user, email);
       } catch (e) {
         switch (e.code) {
-          case "auth/invalid-email":
+          case AuthErrorCodes.INVALID_EMAIL:
             throw new FieldError("email", ErrorCodes.Invalid);
-          case "auth/email-already-in-use":
+          case AuthErrorCodes.EMAIL_EXISTS:
             throw new FieldError("email", ErrorCodes.Duplicate);
-          case "auth/requires-recent-login":
+          case AuthErrorCodes.CREDENTIAL_TOO_OLD_LOGIN_AGAIN:
             throw new Error("auth/requires-recent-login");
         }
       }

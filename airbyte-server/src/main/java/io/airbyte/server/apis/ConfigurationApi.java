@@ -16,6 +16,10 @@ import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSearch;
 import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.CustomDestinationDefinitionCreate;
+import io.airbyte.api.model.CustomDestinationDefinitionUpdate;
+import io.airbyte.api.model.CustomSourceDefinitionCreate;
+import io.airbyte.api.model.CustomSourceDefinitionUpdate;
 import io.airbyte.api.model.DbMigrationExecutionRead;
 import io.airbyte.api.model.DbMigrationReadList;
 import io.airbyte.api.model.DbMigrationRequestBody;
@@ -23,6 +27,7 @@ import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
 import io.airbyte.api.model.DestinationDefinitionCreate;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
@@ -51,6 +56,10 @@ import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.OperatorConfiguration;
+import io.airbyte.api.model.PrivateDestinationDefinitionRead;
+import io.airbyte.api.model.PrivateDestinationDefinitionReadList;
+import io.airbyte.api.model.PrivateSourceDefinitionRead;
+import io.airbyte.api.model.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.SlugRequestBody;
@@ -58,11 +67,13 @@ import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceOauthConsentRequest;
 import io.airbyte.api.model.SourceRead;
@@ -76,6 +87,8 @@ import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
+import io.airbyte.api.model.WebBackendWorkspaceState;
+import io.airbyte.api.model.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.WorkspaceCreate;
 import io.airbyte.api.model.WorkspaceGiveFeedback;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -231,7 +244,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         schedulerHandler,
         operationsHandler,
         featureFlags,
-        eventRunner);
+        eventRunner,
+        configRepository);
     healthCheckHandler = new HealthCheckHandler();
     archiveHandler = new ArchiveHandler(
         airbyteVersion,
@@ -309,8 +323,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
   public SourceDefinitionReadList listLatestSourceDefinitions() {
     return execute(sourceDefinitionsHandler::listLatestSourceDefinitions);
+  }
+
+  @Override
+  public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> sourceDefinitionsHandler.listPrivateSourceDefinitions(workspaceIdRequestBody));
   }
 
   @Override
@@ -319,8 +343,20 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    return execute(() -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
+  }
+
+  // TODO: Deprecate this route in favor of createCustomSourceDefinition
+  // since all connector definitions created through the API are custom
+  @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
-    return execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(sourceDefinitionCreate));
+    return execute(() -> sourceDefinitionsHandler.createPrivateSourceDefinition(sourceDefinitionCreate));
+  }
+
+  @Override
+  public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
+    return execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(customSourceDefinitionCreate));
   }
 
   @Override
@@ -329,9 +365,35 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate) {
+    return execute(() -> sourceDefinitionsHandler.updateCustomSourceDefinition(customSourceDefinitionUpdate));
+  }
+
+  @Override
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     execute(() -> {
       sourceDefinitionsHandler.deleteSourceDefinition(sourceDefinitionIdRequestBody);
+      return null;
+    });
+  }
+
+  @Override
+  public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    execute(() -> {
+      sourceDefinitionsHandler.deleteCustomSourceDefinition(sourceDefinitionIdWithWorkspaceId);
+      return null;
+    });
+  }
+
+  @Override
+  public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    return execute(() -> sourceDefinitionsHandler.grantSourceDefinitionToWorkspace(sourceDefinitionIdWithWorkspaceId));
+  }
+
+  @Override
+  public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    execute(() -> {
+      sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(sourceDefinitionIdWithWorkspaceId);
       return null;
     });
   }
@@ -432,8 +494,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceIdRequestBody));
+  public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody) {
+    return execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaRequestBody));
   }
 
   // DB MIGRATION
@@ -456,8 +518,18 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     return execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
+  }
+
+  @Override
+  public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> destinationDefinitionsHandler.listPrivateDestinationDefinitions(workspaceIdRequestBody));
   }
 
   @Override
@@ -466,13 +538,31 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
+  public DestinationDefinitionRead getDestinationDefinitionForWorkspace(
+                                                                        final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
+    return execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
+  }
+
+  // TODO: Deprecate this route in favor of createCustomDestinationDefinition
+  // since all connector definitions created through the API are custom
+  @Override
   public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
-    return execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(destinationDefinitionCreate));
+    return execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
+  }
+
+  @Override
+  public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
+    return execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
   }
 
   @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
     return execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
+  }
+
+  @Override
+  public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
+    return execute(() -> destinationDefinitionsHandler.updateCustomDestinationDefinition(customDestinationDefinitionUpdate));
   }
 
   @Override
@@ -483,10 +573,33 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     });
   }
 
+  @Override
+  public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
+    execute(() -> {
+      destinationDefinitionsHandler.deleteCustomDestinationDefinition(destinationDefinitionIdWithWorkspaceId);
+      return null;
+    });
+  }
+
+  @Override
+  public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
+                                                                                final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
+    return execute(() -> destinationDefinitionsHandler.grantDestinationDefinitionToWorkspace(destinationDefinitionIdWithWorkspaceId));
+  }
+
+  @Override
+  public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
+    execute(() -> {
+      destinationDefinitionsHandler.revokeDestinationDefinitionFromWorkspace(destinationDefinitionIdWithWorkspaceId);
+      return null;
+    });
+  }
+
   // DESTINATION SPECIFICATION
 
   @Override
-  public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
+  public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(
+                                                                                      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
   }
 
@@ -705,6 +818,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
+  }
+
+  @Override
+  public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(WebBackendWorkspaceState webBackendWorkspaceState) {
+    return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
   }
 
   @Override

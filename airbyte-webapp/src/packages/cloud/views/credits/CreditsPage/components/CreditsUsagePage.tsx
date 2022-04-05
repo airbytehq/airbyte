@@ -54,7 +54,7 @@ const CreditsUsagePage: React.FC = () => {
     <>
       <ContentCard title={<FormattedMessage id="credits.totalUsage" />} light>
         <ChartWrapper>
-          {data && data.creditConsumptionByDay.length ? (
+          {data?.creditConsumptionByDay?.length ? (
             <BarChart
               data={chartData}
               legendLabels={LegendLabels}
@@ -77,7 +77,7 @@ const CreditsUsagePage: React.FC = () => {
         title={<FormattedMessage id="credits.usagePerConnection" />}
         light
       >
-        {data && data.creditConsumptionByConnector.length ? (
+        {data?.creditConsumptionByConnector?.length ? (
           <UsagePerConnectionTable
             creditConsumption={data.creditConsumptionByConnector}
           />

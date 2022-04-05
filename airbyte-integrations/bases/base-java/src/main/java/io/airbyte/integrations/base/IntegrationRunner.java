@@ -190,7 +190,6 @@ public class IntegrationRunner {
     watchForOrphanThreads(
         () -> consumeWriteStream(consumer),
         () -> System.exit(FORCED_EXIT_CODE),
-        true,
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
@@ -211,7 +210,6 @@ public class IntegrationRunner {
   @VisibleForTesting
   static void watchForOrphanThreads(final Procedure runMethod,
                                     final Runnable exitHook,
-                                    final boolean sentryEnabled,
                                     final int interruptTimeDelay,
                                     final TimeUnit interruptTimeUnit,
                                     final int exitTimeDelay,
@@ -249,9 +247,7 @@ public class IntegrationRunner {
           // So, we schedule an interrupt hook after a fixed time delay instead...
           scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
         }
-        if (!sentryEnabled) {
-          Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
-        }
+        Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
         scheduledExecutorService.schedule(() -> {
           if (ThreadUtils.getAllThreads().stream()
               .anyMatch(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(currentThread.getName()))) {
