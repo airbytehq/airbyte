@@ -171,6 +171,8 @@ public class S3StorageOperations implements BlobStorageOperations {
     ObjectListing objects = s3Client.listObjects(new ListObjectsRequest()
         .withBucketName(bucket)
         .withPrefix(objectPath)
+        // pathFormat may use subdirectories under the objectPath to organize files
+        // so we need to recursively list them and filter files matching the pathFormat
         .withDelimiter(""));
     final String regexFormat = getRegexFormat(namespace, streamName, pathFormat);
     while (objects.getObjectSummaries().size() > 0) {
