@@ -17,5 +17,5 @@ def patch_germany_class(mocker):
 
 def test_path(patch_germany_class):
     stream = Germany()
-    expected_params = {"path": "germany"}
+    expected_params = {"path": "germany/"}
     assert stream.path() == expected_params.get("path")

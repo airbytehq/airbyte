@@ -1,3 +1,7 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "incidence_in_days": 100,
+  "deaths_in_days": 100,
+  "recovered_in_days": 100,
+  "frozen_incidence_in_days": 100,
+  "hospitalization_in_days":100
 }

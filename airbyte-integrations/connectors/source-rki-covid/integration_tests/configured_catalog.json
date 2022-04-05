@@ -2,27 +2,9 @@
   "streams": [
     {
       "stream": {
-        "name": "germany",
-        "json_schema": {"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}, "weekIncidence": {"type": "number"}, "casesPer100k": {"type": "number"}, "casesPerWeek": {"type": "integer"}, "delta": {"type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}}, "required": ["cases", "deaths", "recovered"]}, "r": {"type": "object", "properties": {"value": {"type": "number"}, "rValue4Days": {"type": "object", "properties": {"value": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "rValue7Days": {"type": "object", "properties": {"value": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "lastUpdate": {"type": "string"}}, "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]}, "hospitalization": {"type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "lastUpdate": {"type": "string"}}, "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]}, "meta": {"type": "object", "properties": {"source": {"type": "string"}, "contact": {"type": "string"}, "info": {"type": "string"}, "lastUpdate": {"type": "string"}, "lastCheckedForUpdate": {"type": "string"}}, "required": ["contact", "info", "lastCheckedForUpdate", "lastUpdate", "source"]}}, "required": ["cases", "casesPer100k", "casesPerWeek", "deaths", "delta", "hospitalization", "meta", "r", "recovered", "weekIncidence"]},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
-    },
-    {
-      "stream": {
-        "name": "germany_age_groups",
-        "json_schema": {"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}, "weekIncidence": {"type": "number"}, "casesPer100k": {"type": "number"}, "casesPerWeek": {"type": "integer"}, "delta": {"type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}}, "required": ["cases", "deaths", "recovered"]}, "r": {"type": "object", "properties": {"value": {"type": "number"}, "rValue4Days": {"type": "object", "properties": {"value": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "rValue7Days": {"type": "object", "properties": {"value": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "lastUpdate": {"type": "string"}}, "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]}, "hospitalization": {"type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "lastUpdate": {"type": "string"}}, "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]}, "meta": {"type": "object", "properties": {"source": {"type": "string"}, "contact": {"type": "string"}, "info": {"type": "string"}, "lastUpdate": {"type": "string"}, "lastCheckedForUpdate": {"type": "string"}}, "required": ["contact", "info", "lastCheckedForUpdate", "lastUpdate", "source"]}}, "required": ["cases", "casesPer100k", "casesPerWeek", "deaths", "delta", "hospitalization", "meta", "r", "recovered", "weekIncidence"]},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
-    },
-    {
-      "stream": {
         "name": "germany_history_cases",
-        "json_schema": {"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}, "weekIncidence": {"type": "number"}, "casesPer100k": {"type": "number"}, "casesPerWeek": {"type": "integer"}, "delta": {"type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}}, "required": ["cases", "deaths", "recovered"]}, "r": {"type": "object", "properties": {"value": {"type": "number"}, "rValue4Days": {"type": "object", "properties": {"value": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "rValue7Days": {"type": "object", "properties": {"value": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "lastUpdate": {"type": "string"}}, "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]}, "hospitalization": {"type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "lastUpdate": {"type": "string"}}, "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]}, "meta": {"type": "object", "properties": {"source": {"type": "string"}, "contact": {"type": "string"}, "info": {"type": "string"}, "lastUpdate": {"type": "string"}, "lastCheckedForUpdate": {"type": "string"}}, "required": ["contact", "info", "lastCheckedForUpdate", "lastUpdate", "source"]}}, "required": ["cases", "casesPer100k", "casesPerWeek", "deaths", "delta", "hospitalization", "meta", "r", "recovered", "weekIncidence"]},
-        "supported_sync_modes": ["incremental"]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
@@ -30,8 +12,8 @@
     {
       "stream": {
         "name": "german_history_incidence",
-        "json_schema": {"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}, "weekIncidence": {"type": "number"}, "casesPer100k": {"type": "number"}, "casesPerWeek": {"type": "integer"}, "delta": {"type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}}, "required": ["cases", "deaths", "recovered"]}, "r": {"type": "object", "properties": {"value": {"type": "number"}, "rValue4Days": {"type": "object", "properties": {"value": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "rValue7Days": {"type": "object", "properties": {"value": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "lastUpdate": {"type": "string"}}, "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]}, "hospitalization": {"type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "lastUpdate": {"type": "string"}}, "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]}, "meta": {"type": "object", "properties": {"source": {"type": "string"}, "contact": {"type": "string"}, "info": {"type": "string"}, "lastUpdate": {"type": "string"}, "lastCheckedForUpdate": {"type": "string"}}, "required": ["contact", "info", "lastCheckedForUpdate", "lastUpdate", "source"]}}, "required": ["cases", "casesPer100k", "casesPerWeek", "deaths", "delta", "hospitalization", "meta", "r", "recovered", "weekIncidence"]},
-        "supported_sync_modes": ["incremental"]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
@@ -39,8 +21,8 @@
     {
       "stream": {
         "name": "german_history_deaths",
-        "json_schema": {"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}, "weekIncidence": {"type": "number"}, "casesPer100k": {"type": "number"}, "casesPerWeek": {"type": "integer"}, "delta": {"type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}}, "required": ["cases", "deaths", "recovered"]}, "r": {"type": "object", "properties": {"value": {"type": "number"}, "rValue4Days": {"type": "object", "properties": {"value": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "rValue7Days": {"type": "object", "properties": {"value": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "lastUpdate": {"type": "string"}}, "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]}, "hospitalization": {"type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "lastUpdate": {"type": "string"}}, "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]}, "meta": {"type": "object", "properties": {"source": {"type": "string"}, "contact": {"type": "string"}, "info": {"type": "string"}, "lastUpdate": {"type": "string"}, "lastCheckedForUpdate": {"type": "string"}}, "required": ["contact", "info", "lastCheckedForUpdate", "lastUpdate", "source"]}}, "required": ["cases", "casesPer100k", "casesPerWeek", "deaths", "delta", "hospitalization", "meta", "r", "recovered", "weekIncidence"]},
-        "supported_sync_modes": ["incremental"]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
@@ -48,8 +30,8 @@
     {
       "stream": {
         "name": "german_history_recovered",
-        "json_schema": {"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}, "weekIncidence": {"type": "number"}, "casesPer100k": {"type": "number"}, "casesPerWeek": {"type": "integer"}, "delta": {"type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}}, "required": ["cases", "deaths", "recovered"]}, "r": {"type": "object", "properties": {"value": {"type": "number"}, "rValue4Days": {"type": "object", "properties": {"value": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "rValue7Days": {"type": "object", "properties": {"value": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "lastUpdate": {"type": "string"}}, "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]}, "hospitalization": {"type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "lastUpdate": {"type": "string"}}, "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]}, "meta": {"type": "object", "properties": {"source": {"type": "string"}, "contact": {"type": "string"}, "info": {"type": "string"}, "lastUpdate": {"type": "string"}, "lastCheckedForUpdate": {"type": "string"}}, "required": ["contact", "info", "lastCheckedForUpdate", "lastUpdate", "source"]}}, "required": ["cases", "casesPer100k", "casesPerWeek", "deaths", "delta", "hospitalization", "meta", "r", "recovered", "weekIncidence"]},
-        "supported_sync_modes": ["incremental"]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
@@ -57,8 +39,8 @@
     {
       "stream": {
         "name": "german_history_frozen_incidence",
-        "json_schema": {"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}, "weekIncidence": {"type": "number"}, "casesPer100k": {"type": "number"}, "casesPerWeek": {"type": "integer"}, "delta": {"type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}}, "required": ["cases", "deaths", "recovered"]}, "r": {"type": "object", "properties": {"value": {"type": "number"}, "rValue4Days": {"type": "object", "properties": {"value": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "rValue7Days": {"type": "object", "properties": {"value": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "lastUpdate": {"type": "string"}}, "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]}, "hospitalization": {"type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "lastUpdate": {"type": "string"}}, "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]}, "meta": {"type": "object", "properties": {"source": {"type": "string"}, "contact": {"type": "string"}, "info": {"type": "string"}, "lastUpdate": {"type": "string"}, "lastCheckedForUpdate": {"type": "string"}}, "required": ["contact", "info", "lastCheckedForUpdate", "lastUpdate", "source"]}}, "required": ["cases", "casesPer100k", "casesPerWeek", "deaths", "delta", "hospitalization", "meta", "r", "recovered", "weekIncidence"]},
-        "supported_sync_modes": ["incremental"]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"
@@ -66,8 +48,8 @@
     {
       "stream": {
         "name": "german_history_hospitalization",
-        "json_schema": {"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}, "weekIncidence": {"type": "number"}, "casesPer100k": {"type": "number"}, "casesPerWeek": {"type": "integer"}, "delta": {"type": "object", "properties": {"cases": {"type": "integer"}, "deaths": {"type": "integer"}, "recovered": {"type": "integer"}}, "required": ["cases", "deaths", "recovered"]}, "r": {"type": "object", "properties": {"value": {"type": "number"}, "rValue4Days": {"type": "object", "properties": {"value": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "rValue7Days": {"type": "object", "properties": {"value": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "value"]}, "lastUpdate": {"type": "string"}}, "required": ["lastUpdate", "rValue4Days", "rValue7Days", "value"]}, "hospitalization": {"type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "lastUpdate": {"type": "string"}}, "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]}, "meta": {"type": "object", "properties": {"source": {"type": "string"}, "contact": {"type": "string"}, "info": {"type": "string"}, "lastUpdate": {"type": "string"}, "lastCheckedForUpdate": {"type": "string"}}, "required": ["contact", "info", "lastCheckedForUpdate", "lastUpdate", "source"]}}, "required": ["cases", "casesPer100k", "casesPerWeek", "deaths", "delta", "hospitalization", "meta", "r", "recovered", "weekIncidence"]},
-        "supported_sync_modes": ["incremental"]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append_dedup"

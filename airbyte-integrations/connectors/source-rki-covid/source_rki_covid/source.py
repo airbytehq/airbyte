@@ -105,10 +105,6 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
 
     @property
     def cursor_field(self) -> str:
-        """
-        date is cursor field in the stream.
-        :return str: The name of the cursor field.
-        """
         return "date"
 
     @property
@@ -128,7 +124,6 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
             yield record
             self._cursor_value = current_stream_state
             assert self._cursor_value == current_stream_state
-
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json().get("data")
@@ -157,10 +152,6 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
 
     @property
     def cursor_field(self) -> str:
-        """
-        date is cursor field in the stream.
-        :return str: The name of the cursor field.
-        """
         return "date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
@@ -198,10 +189,6 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
 
     @property
     def cursor_field(self) -> str:
-        """
-        date is cursor field in the stream.
-        :return str: The name of the cursor field.
-        """
         return "date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
@@ -237,10 +224,6 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
 
     @property
     def cursor_field(self) -> str:
-        """
-        date is cursor field in the stream.
-        :return str: The name of the cursor field.
-        """
         return "date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
@@ -276,10 +259,6 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
 
     @property
     def cursor_field(self) -> str:
-        """
-        date is cursor field in the stream.
-        :return str: The name of the cursor field.
-        """
         return "date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
@@ -315,10 +294,6 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
 
     @property
     def cursor_field(self) -> str:
-        """
-        date is cursor field in the stream.
-        :return str: The name of the cursor field.
-        """
         return "date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
@@ -361,7 +336,6 @@ class SourceRkiCovid(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        Defining streams to run.
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
 
