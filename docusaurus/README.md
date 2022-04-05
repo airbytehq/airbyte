@@ -1,6 +1,6 @@
 # Documentation and Docusaurus
 
-We use [docusaurus](https://docusaurus.io) for consitent process, in `Airbyte-Cloud` **no website is generated**.
+We use [docusaurus](https://docusaurus.io) for consitent process, in `Airbyte` **no website is generated**.
 Functionally this is a very fancy **linter**
 
 Running the build process will **check for broken links**, please read the output and address
