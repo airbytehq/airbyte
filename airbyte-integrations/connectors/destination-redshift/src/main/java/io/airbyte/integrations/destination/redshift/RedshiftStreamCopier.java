@@ -117,11 +117,11 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    * @return null if no stagingFiles exist otherwise the manifest body String
    */
   private String createManifest() {
-    if (stagingWritersByFile.isEmpty()) {
+    if (getStagingFiles().isEmpty()) {
       return null;
     }
 
-    final var s3FileEntries = stagingWritersByFile.keySet().stream()
+    final var s3FileEntries = getStagingFiles().stream()
         .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
         .collect(Collectors.toList());
     final var manifest = new Manifest(s3FileEntries);

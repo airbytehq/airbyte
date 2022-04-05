@@ -49,6 +49,11 @@ const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.Incremental, DestinationSyncMode.Dedupted],
 ];
 
+const DEFAULT_SCHEDULE: ScheduleProperties = {
+  units: 24,
+  timeUnit: ConnectionSchedule.Hours,
+};
+
 function useDefaultTransformation(): Transformation {
   const { workspace } = useWorkspace();
 
@@ -282,10 +287,10 @@ const useInitialValues = (
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
-      schedule: connection.schedule ?? {
-        units: 24,
-        timeUnit: ConnectionSchedule.Hours,
-      },
+      schedule:
+        connection.schedule !== undefined
+          ? connection.schedule
+          : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,

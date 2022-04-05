@@ -122,6 +122,7 @@ public class JsonToAvroSchemaConverter {
                               final boolean addStringToLogicalTypes,
                               final boolean isRootNode) {
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName);
+    final String stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(fieldNamespace);
     final SchemaBuilder.RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (!stdName.equals(fieldName)) {
       standardizedNames.put(fieldName, stdName);
@@ -133,8 +134,8 @@ public class JsonToAvroSchemaConverter {
               AvroConstants.DOC_KEY_VALUE_DELIMITER,
               fieldName));
     }
-    if (fieldNamespace != null) {
-      builder.namespace(fieldNamespace);
+    if (stdNamespace != null) {
+      builder.namespace(stdNamespace);
     }
 
     final JsonNode properties = jsonSchema.get("properties");
@@ -175,7 +176,7 @@ public class JsonToAvroSchemaConverter {
           // Omit the namespace for root level fields, because it is directly assigned in the builder above.
           // This may not be the correct choice.
           ? null
-          : (fieldNamespace == null ? stdName : (fieldNamespace + "." + stdName));
+          : (stdNamespace == null ? stdName : (stdNamespace + "." + stdName));
       fieldBuilder.type(parseJsonField(subfieldName, subfieldNamespace, subfieldDefinition, appendExtraProps, addStringToLogicalTypes))
           .withDefault(null);
     }

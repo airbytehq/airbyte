@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.helper;
+package io.airbyte.server.handlers.helpers;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.text.Names;

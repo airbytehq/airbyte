@@ -52,6 +52,7 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivityImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
@@ -159,6 +160,7 @@ public class WorkerApp {
 
   private void registerConnectionManager(final WorkerFactory factory) {
     final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
     final Worker connectionUpdaterWorker =
         factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
@@ -177,7 +179,8 @@ public class WorkerApp {
             configRepository,
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
-        new ConnectionDeletionActivityImpl(connectionHelper));
+        new ConnectionDeletionActivityImpl(connectionHelper),
+        new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs));
   }
 
   private void registerSync(final WorkerFactory factory) {

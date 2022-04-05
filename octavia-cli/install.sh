@@ -3,7 +3,7 @@
 # This install scripts currently only works for ZSH and Bash profiles.
 # It creates an octavia alias in your profile bound to a docker run command
 
-VERSION=dev
+VERSION=0.1.0
 OCTAVIA_ENV_FILE=${HOME}/.octavia
 
 detect_profile() {
@@ -55,8 +55,8 @@ create_octavia_env_file() {
 
 
 add_alias() {
-    echo 'alias octavia="pwd | xargs -I {} docker run --rm -v {}:/home/octavia-project --network host --env-file \${OCTAVIA_ENV_FILE} airbyte/octavia-cli:'${VERSION}'"'  >> ${DETECTED_PROFILE}
-    echo "🐙 - 🎉 octavia alias was added to ${DETECTED_PROFILE} , please open a new terminal window or run source ${DETECTED_PROFILE}"
+    echo 'alias octavia="pwd | xargs -o -I {} docker run -i --rm -v {}:/home/octavia-project --network host --env-file \${OCTAVIA_ENV_FILE} airbyte/octavia-cli:'${VERSION}'"'  >> ${DETECTED_PROFILE}
+    echo "🐙 - 🎉 octavia alias was added to ${DETECTED_PROFILE}, please open a new terminal window or run source ${DETECTED_PROFILE}"
 }
 
 install() {

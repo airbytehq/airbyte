@@ -4,6 +4,7 @@
 
 from unittest.mock import MagicMock
 
+import pytest
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from source_github.source import SourceGithub
@@ -52,3 +53,69 @@ def test_check_connection_org_only():
     assert status.status == Status.SUCCEEDED
     # One request to check organization
     assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_get_branches_data():
+
+    repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 10}
+
+    source = SourceGithub()
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test",
+        json={"full_name": "airbytehq/integration-test", "default_branch": "master"},
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/branches",
+        json=[
+            {"repository": "airbytehq/integration-test", "name": "feature/branch_0"},
+            {"repository": "airbytehq/integration-test", "name": "feature/branch_1"},
+            {"repository": "airbytehq/integration-test", "name": "feature/branch_2"},
+            {"repository": "airbytehq/integration-test", "name": "master"},
+        ],
+    )
+
+    default_branches, branches_to_pull = source._get_branches_data("", repository_args)
+    assert default_branches == {"airbytehq/integration-test": "master"}
+    assert branches_to_pull == {"airbytehq/integration-test": ["master"]}
+
+    default_branches, branches_to_pull = source._get_branches_data(
+        "airbytehq/integration-test/feature/branch_0 airbytehq/integration-test/feature/branch_1 airbytehq/integration-test/feature/branch_3",
+        repository_args,
+    )
+
+    assert default_branches == {"airbytehq/integration-test": "master"}
+    assert len(branches_to_pull["airbytehq/integration-test"]) == 2
+    assert "feature/branch_0" in branches_to_pull["airbytehq/integration-test"]
+    assert "feature/branch_1" in branches_to_pull["airbytehq/integration-test"]
+
+
+@responses.activate
+def test_generate_repositories():
+
+    source = SourceGithub()
+
+    with pytest.raises(Exception):
+        config = {"repository": ""}
+        source._generate_repositories(config, authenticator=None)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/orgs/docker/repos",
+        json=[
+            {"full_name": "docker/docker-py"},
+            {"full_name": "docker/compose"},
+        ],
+    )
+
+    config = {"repository": "airbytehq/integration-test docker/*"}
+    repositories_list, organisation_repos = source._generate_repositories(config, authenticator=None)
+
+    assert repositories_list == ["airbytehq/integration-test"]
+    assert len(organisation_repos) == 2
+    assert "docker/compose" in organisation_repos
+    assert "docker/docker-py" in organisation_repos

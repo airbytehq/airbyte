@@ -34,6 +34,8 @@ import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import { RoutePaths } from "pages/routes";
 import useRouter from "hooks/useRouter";
 import { storeUtmFromQuery } from "utils/utmStorage";
+import { DefaultView } from "./views/DefaultView";
+import { hasFromState } from "utils/stateUtils";
 
 export const CloudRoutes = {
   Root: "/",
@@ -117,11 +119,11 @@ const MainViewRoutes = () => {
             key={r}
             path={`${r}/*`}
             element={
-              <Navigate
-                // @ts-expect-error state is now unkown, needs proper typing
-                to={location.state?.from ?? `/${CloudRoutes.SelectWorkspace}`}
-                replace
-              />
+              hasFromState(location.state) ? (
+                <Navigate to={location.state.from} replace />
+              ) : (
+                <DefaultView />
+              )
             }
           />
         )
@@ -136,10 +138,7 @@ const MainViewRoutes = () => {
           </MainView>
         }
       />
-      <Route
-        path="*"
-        element={<Navigate to={CloudRoutes.SelectWorkspace} replace />}
-      />
+      <Route path="*" element={<DefaultView />} />
     </Routes>
   );
 };

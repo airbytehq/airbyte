@@ -156,4 +156,24 @@ public class ConfigRepositoryE2EReadWriteTest {
     assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
   }
 
+  @Test
+  public void testGetWorkspaceBySlug()
+      throws IOException {
+
+    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
+    final StandardWorkspace tombstonedWorkspace = MockData.standardWorkspaces().get(2);
+    final Optional<StandardWorkspace> retrievedWorkspace = configRepository.getWorkspaceBySlugOptional(workspace.getSlug(), false);
+    final Optional<StandardWorkspace> retrievedTombstonedWorkspaceNoTombstone =
+        configRepository.getWorkspaceBySlugOptional(tombstonedWorkspace.getSlug(), false);
+    final Optional<StandardWorkspace> retrievedTombstonedWorkspace = configRepository.getWorkspaceBySlugOptional(tombstonedWorkspace.getSlug(), true);
+
+    assertTrue(retrievedWorkspace.isPresent());
+    assertEquals(workspace, retrievedWorkspace.get());
+
+    assertFalse(retrievedTombstonedWorkspaceNoTombstone.isPresent());
+    assertTrue(retrievedTombstonedWorkspace.isPresent());
+
+    assertEquals(tombstonedWorkspace, retrievedTombstonedWorkspace.get());
+  }
+
 }

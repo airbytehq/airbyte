@@ -9,6 +9,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -88,13 +89,22 @@ public class ConfigRepository {
   }
 
   public Optional<StandardWorkspace> getWorkspaceBySlugOptional(final String slug, final boolean includeTombstone)
-      throws JsonValidationException, IOException {
-    for (final StandardWorkspace workspace : listStandardWorkspaces(includeTombstone)) {
-      if (workspace.getSlug().equals(slug)) {
-        return Optional.of(workspace);
-      }
+      throws IOException {
+    final Result<Record> result;
+    if (includeTombstone) {
+      result = database.query(ctx -> ctx.select(WORKSPACE.asterisk())
+          .from(WORKSPACE)
+          .where(WORKSPACE.SLUG.eq(slug))).fetch();
+    } else {
+      result = database.query(ctx -> ctx.select(WORKSPACE.asterisk())
+          .from(WORKSPACE)
+          .where(WORKSPACE.SLUG.eq(slug)).andNot(WORKSPACE.TOMBSTONE)).fetch();
     }
-    return Optional.empty();
+
+    if (result.size() == 0) {
+      return Optional.empty();
+    }
+    return Optional.of(DbConverter.buildStandardWorkspace(result.get(0)));
   }
 
   public StandardWorkspace getWorkspaceBySlug(final String slug, final boolean includeTombstone)

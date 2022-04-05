@@ -12,4 +12,6 @@ public interface FeatureFlags {
 
   boolean usesNewScheduler();
 
+  boolean autoDisablesFailingConnections();
+
 }
