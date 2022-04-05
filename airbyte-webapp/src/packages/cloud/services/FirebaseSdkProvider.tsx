@@ -1,12 +1,20 @@
 import React from "react";
-import { getAuth } from "firebase/auth";
-
+import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { useConfig } from "packages/cloud/services/config";
 import { FirebaseAppProvider, useFirebaseApp, AuthProvider } from "packages/firebaseReact";
 
 const FirebaseAppSdksProvider: React.FC = ({ children }) => {
+  const config = useConfig();
+  console.log("config.firebase:");
+  console.log(config.firebase);
+  console.log("config.firebase.authEmulatorHost:");
+  console.log(config.firebase.authEmulatorHost);
+
   const firebaseApp = useFirebaseApp();
   const auth = getAuth(firebaseApp);
+  if (config.firebase.authEmulatorHost) {
+    connectAuthEmulator(auth, config.firebase.authEmulatorHost);
+  }
 
   return <AuthProvider sdk={auth}>{children}</AuthProvider>;
 };
