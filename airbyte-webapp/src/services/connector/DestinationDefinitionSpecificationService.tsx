@@ -1,8 +1,4 @@
-import {
-  QueryObserverResult,
-  QueryObserverSuccessResult,
-  useQuery,
-} from "react-query";
+import { QueryObserverResult, useQuery } from "react-query";
 
 import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { useConfig } from "config";
@@ -11,6 +7,7 @@ import { useInitService } from "services/useInitService";
 import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
 import { isDefined } from "utils/common";
 import { SCOPE_WORKSPACE } from "../Scope";
+import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const destinationDefinitionSpecificationKeys = {
   all: [SCOPE_WORKSPACE, "destinationDefinitionSpecification"] as const,
@@ -38,9 +35,10 @@ export const useGetDestinationDefinitionSpecification = (
 ): DestinationDefinitionSpecification => {
   const service = useGetService();
 
-  return (useQuery(destinationDefinitionSpecificationKeys.detail(id), () =>
-    service.get(id)
-  ) as QueryObserverSuccessResult<DestinationDefinitionSpecification>).data;
+  return useSuspenseQuery(
+    destinationDefinitionSpecificationKeys.detail(id),
+    () => service.get(id)
+  );
 };
 
 export const useGetDestinationDefinitionSpecificationAsync = (
@@ -53,7 +51,6 @@ export const useGetDestinationDefinitionSpecificationAsync = (
     destinationDefinitionSpecificationKeys.detail(escapedId),
     () => service.get(escapedId),
     {
-      suspense: false,
       enabled: isDefined(id),
     }
   );

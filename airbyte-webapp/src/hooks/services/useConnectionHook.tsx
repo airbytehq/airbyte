@@ -1,9 +1,4 @@
-import {
-  QueryObserverSuccessResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { useConfig } from "config";
@@ -24,6 +19,7 @@ import { useInitService } from "services/useInitService";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useCurrentWorkspace } from "./useWorkspace";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 
 export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
@@ -142,11 +138,11 @@ const useGetConnection = (
 ): Connection => {
   const service = useWebConnectionService();
 
-  return (useQuery(
+  return useSuspenseQuery(
     connectionsKeys.detail(connectionId),
     () => service.getConnection(connectionId),
     options
-  ) as QueryObserverSuccessResult<Connection>).data;
+  );
 };
 
 const useCreateConnection = () => {
@@ -248,9 +244,9 @@ const useConnectionList = (): ListConnection => {
   const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
 
-  return (useQuery(connectionsKeys.lists(), () =>
+  return useSuspenseQuery(connectionsKeys.lists(), () =>
     service.list(workspace.workspaceId)
-  ) as QueryObserverSuccessResult<{ connections: Connection[] }>).data;
+  );
 };
 
 export {

@@ -1,9 +1,4 @@
-import {
-  QueryObserverSuccessResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { useCallback, useEffect, useState } from "react";
 
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
@@ -19,6 +14,7 @@ import { isDefined } from "utils/common";
 import { SyncSchema } from "core/domain/catalog";
 import { JobInfo } from "core/domain/job";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 
 export const sourcesKeys = {
   all: [SCOPE_WORKSPACE, "sources"] as const,
@@ -54,9 +50,9 @@ const useSourceList = (): SourceList => {
   const workspace = useCurrentWorkspace();
   const service = useSourceService();
 
-  return (useQuery(sourcesKeys.lists(), () =>
+  return useSuspenseQuery(sourcesKeys.lists(), () =>
     service.list(workspace.workspaceId)
-  ) as QueryObserverSuccessResult<SourceList>).data;
+  );
 };
 
 const useGetSource = <T extends string | undefined | null>(
@@ -64,13 +60,13 @@ const useGetSource = <T extends string | undefined | null>(
 ): T extends string ? Source : Source | undefined => {
   const service = useSourceService();
 
-  return (useQuery(
+  return useSuspenseQuery(
     sourcesKeys.detail(sourceId ?? ""),
     () => service.get(sourceId ?? ""),
     {
       enabled: isDefined(sourceId),
     }
-  ) as QueryObserverSuccessResult<Source>).data;
+  );
 };
 
 const useCreateSource = () => {

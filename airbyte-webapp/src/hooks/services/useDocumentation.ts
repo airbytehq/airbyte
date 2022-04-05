@@ -34,7 +34,6 @@ export const useDocumentation = (
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       retry: false,
-      suspense: false,
     }
   );
 };

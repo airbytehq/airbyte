@@ -1,9 +1,3 @@
-import {
-  QueryObserverResult,
-  QueryObserverSuccessResult,
-  useQuery,
-} from "react-query";
-
 import { SourceDefinitionSpecification } from "core/domain/connector";
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
@@ -11,6 +5,8 @@ import { useInitService } from "services/useInitService";
 import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { isDefined } from "utils/common";
 import { SCOPE_WORKSPACE } from "../Scope";
+import { useSuspenseQuery } from "./useSuspenseQuery";
+import { QueryObserverResult, useQuery } from "react-query";
 
 export const sourceDefinitionSpecificationKeys = {
   all: [SCOPE_WORKSPACE, "sourceDefinitionSpecification"] as const,
@@ -35,9 +31,9 @@ export const useGetSourceDefinitionSpecification = (
 ): SourceDefinitionSpecification => {
   const service = useGetService();
 
-  return (useQuery(sourceDefinitionSpecificationKeys.detail(id), () =>
+  return useSuspenseQuery(sourceDefinitionSpecificationKeys.detail(id), () =>
     service.get(id)
-  ) as QueryObserverSuccessResult<SourceDefinitionSpecification>).data;
+  );
 };
 
 export const useGetSourceDefinitionSpecificationAsync = (
@@ -50,7 +46,6 @@ export const useGetSourceDefinitionSpecificationAsync = (
     sourceDefinitionSpecificationKeys.detail(escapedId),
     () => service.get(escapedId),
     {
-      suspense: false,
       enabled: isDefined(id),
     }
   );

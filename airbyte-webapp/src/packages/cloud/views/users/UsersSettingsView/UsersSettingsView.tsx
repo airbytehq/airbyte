@@ -44,7 +44,7 @@ export const UsersSettingsView: React.FC = () => {
   const [modalIsOpen, toggleModal] = useToggle(false);
   const { workspaceId } = useCurrentWorkspace();
 
-  const { data: users } = useListUsers();
+  const users = useListUsers();
 
   const { user } = useAuthService();
 

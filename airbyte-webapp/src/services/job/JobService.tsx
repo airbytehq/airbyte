@@ -1,8 +1,6 @@
 import {
-  QueryObserverSuccessResult,
   UseMutateAsyncFunction,
   useMutation,
-  useQuery,
   useQueryClient,
 } from "react-query";
 
@@ -15,6 +13,7 @@ import {
   JobListItem,
   JobDebugInfoDetails,
 } from "core/domain/job/Job";
+import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 
 export const jobsKeys = {
   all: ["jobs"] as const,
@@ -40,21 +39,21 @@ function useGetJobService(): JobsService {
 
 export const useListJobs = (listParams: ListParams): JobListItem[] => {
   const service = useGetJobService();
-  return (useQuery(
+  return useSuspenseQuery(
     jobsKeys.list(listParams.configId),
     () => service.list(listParams),
     {
       refetchInterval: 2500, // every 2,5 seconds,
     }
-  ) as QueryObserverSuccessResult<{ jobs: JobListItem[] }>).data.jobs;
+  ).jobs;
 };
 
 export const useGetJob = (id: string | number): JobDetails => {
   const service = useGetJobService();
 
-  return (useQuery(jobsKeys.detail(id), () => service.get(id), {
+  return useSuspenseQuery(jobsKeys.detail(id), () => service.get(id), {
     refetchInterval: 2500, // every 2,5 seconds,
-  }) as QueryObserverSuccessResult<JobDetails>).data;
+  });
 };
 
 export const useGetDebugInfoJob = (
@@ -62,9 +61,13 @@ export const useGetDebugInfoJob = (
 ): JobDebugInfoDetails => {
   const service = useGetJobService();
 
-  return (useQuery(jobsKeys.getDebugInfo(id), () => service.getDebugInfo(id), {
-    refetchInterval: false,
-  }) as QueryObserverSuccessResult<JobDebugInfoDetails>).data;
+  return useSuspenseQuery(
+    jobsKeys.getDebugInfo(id),
+    () => service.getDebugInfo(id),
+    {
+      refetchInterval: false,
+    }
+  );
 };
 
 export const useCancelJob = (): UseMutateAsyncFunction<

@@ -1,10 +1,5 @@
 import React, { useCallback, useContext, useMemo } from "react";
-import {
-  QueryObserverSuccessResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import useRouter from "hooks/useRouter";
 import {
@@ -17,6 +12,7 @@ import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
 import { useInitService } from "../useInitService";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
+import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 
 export const workspaceKeys = {
   all: [SCOPE_USER, "workspaces"] as const,
@@ -116,7 +112,7 @@ export const useCurrentWorkspaceState = (): WorkspaceState => {
   const workspaceId = useCurrentWorkspaceId();
   const service = useWorkspaceApiService();
 
-  return (useQuery(
+  return useSuspenseQuery(
     workspaceKeys.state(workspaceId),
     () => service.getState(workspaceId),
     {
@@ -125,15 +121,14 @@ export const useCurrentWorkspaceState = (): WorkspaceState => {
       // without requiring to manually invalidate that query on each change.
       cacheTime: 5 * 1000,
     }
-  ) as QueryObserverSuccessResult<WorkspaceState>).data;
+  );
 };
 
 export const useListWorkspaces = (): Workspace[] => {
   const service = useWorkspaceApiService();
 
-  return (useQuery(workspaceKeys.lists(), () =>
-    service.list()
-  ) as QueryObserverSuccessResult<{ workspaces: Workspace[] }>).data.workspaces;
+  return useSuspenseQuery(workspaceKeys.lists(), () => service.list())
+    .workspaces;
 };
 
 export const useGetWorkspace = (
@@ -144,11 +139,11 @@ export const useGetWorkspace = (
 ): Workspace => {
   const service = useWorkspaceApiService();
 
-  return (useQuery(
+  return useSuspenseQuery(
     workspaceKeys.detail(workspaceId),
     () => service.get(workspaceId),
     options
-  ) as QueryObserverSuccessResult<Workspace>).data;
+  );
 };
 
 export const useUpdateWorkspace = () => {

@@ -1,23 +1,21 @@
+import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
+import type {
+  CloudWorkspace,
+  CloudWorkspaceUsage,
+} from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
+import { useConfig } from "packages/cloud/services/config";
+import { useCallback } from "react";
 import {
   QueryObserverResult,
   useMutation,
   useQuery,
   useQueryClient,
 } from "react-query";
-import { useCallback } from "react";
-
-import type {
-  CloudWorkspace,
-  CloudWorkspaceUsage,
-} from "packages/cloud/lib/domain/cloudWorkspaces/types";
-
-import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
-import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { useConfig } from "packages/cloud/services/config";
+import { SCOPE_USER } from "services/Scope";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { QueryObserverSuccessResult } from "react-query/types/core/types";
-import { SCOPE_USER } from "services/Scope";
+import { useSuspenseQuery } from "../../../../services/connector/useSuspenseQuery";
 
 export const workspaceKeys = {
   all: [SCOPE_USER, "cloud_workspaces"] as const,
@@ -44,9 +42,9 @@ export function useListCloudWorkspaces(): CloudWorkspace[] {
   const service = useGetWorkspaceService();
   const user = useCurrentUser();
 
-  return (useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
+  return useSuspenseQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
     service.listByUser(user.userId)
-  ) as QueryObserverSuccessResult<CloudWorkspace[]>).data;
+  );
 }
 
 export function useListCloudWorkspacesAsync(): QueryObserverResult<
@@ -55,10 +53,8 @@ export function useListCloudWorkspacesAsync(): QueryObserverResult<
   const service = useGetWorkspaceService();
   const user = useCurrentUser();
 
-  return useQuery<CloudWorkspace[]>(
-    workspaceKeys.lists(),
-    () => service.listByUser(user.userId),
-    { suspense: false }
+  return useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
+    service.listByUser(user.userId)
   );
 }
 
@@ -144,9 +140,10 @@ export function useRemoveWorkspace() {
 export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  return (useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
-    service.get(workspaceId)
-  ) as QueryObserverSuccessResult<CloudWorkspace>).data;
+  return useSuspenseQuery<CloudWorkspace>(
+    [workspaceKeys.detail(workspaceId)],
+    () => service.get(workspaceId)
+  );
 }
 
 export function useInvalidateCloudWorkspace(
@@ -160,13 +157,12 @@ export function useInvalidateCloudWorkspace(
   );
 }
 
-export function useGetUsage(
-  workspaceId: string
-): QueryObserverResult<CloudWorkspaceUsage> {
+export function useGetUsage(workspaceId: string): CloudWorkspaceUsage {
   const service = useGetWorkspaceService();
 
-  return useQuery<CloudWorkspaceUsage>([workspaceKeys.usage(workspaceId)], () =>
-    service.getUsage(workspaceId)
+  return useSuspenseQuery<CloudWorkspaceUsage>(
+    [workspaceKeys.usage(workspaceId)],
+    () => service.getUsage(workspaceId)
   );
 }
 
