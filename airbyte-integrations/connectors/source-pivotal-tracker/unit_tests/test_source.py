@@ -2,9 +2,9 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import responses
 from unittest.mock import MagicMock
 
+import responses
 from source_pivotal_tracker.source import SourcePivotalTracker
 
 

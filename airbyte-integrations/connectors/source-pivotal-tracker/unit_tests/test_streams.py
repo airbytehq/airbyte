@@ -4,7 +4,7 @@
 
 import responses
 from airbyte_cdk.models import SyncMode
-from source_pivotal_tracker.source import PivotalAuthenticator, Projects, ProjectMemberships, Activity, Labels, Releases, Epics, Stories
+from source_pivotal_tracker.source import Activity, Epics, Labels, PivotalAuthenticator, ProjectMemberships, Projects, Releases, Stories
 
 auth = PivotalAuthenticator("goodtoken")
 project_args = {"project_ids": [98, 99], "authenticator": auth}
