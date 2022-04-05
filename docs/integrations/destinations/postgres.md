@@ -84,6 +84,7 @@ Therefore, Airbyte Postgres destination will create tables and schemas using the
 
 | Version | Date | Pull Request | Subject                                                                                             |
 |:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------|
+| 0.3.16  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                   |
 | 0.3.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.3.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
 | 0.3.13  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                            |
