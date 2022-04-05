@@ -25,7 +25,7 @@ At this point you will see any broken links that docusaurus was able to find.
 This is all just markdown at the end of the day so open a PR against master like any other commit.
 
 # Local website
-If you want to run the docs as a docusaurus site locally just run `yarn run build`
+If you want to run the docs as a docusaurus site locally just run `yarn run build`.
 Url will show on successful command execution
 
 
