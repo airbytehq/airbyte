@@ -162,7 +162,7 @@ class CashBalancesStream(AccountSubStream, KyribaStream):
             }
             slices.extend([{**u, **date_params} for u in account_uuids])
             # ensure the next start date is never greater than today since we are getting EOD balances
-            start_date = end_date + timedelta(days=1)
+            start_date = seg_end_date + timedelta(days=1)
         return slices
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
