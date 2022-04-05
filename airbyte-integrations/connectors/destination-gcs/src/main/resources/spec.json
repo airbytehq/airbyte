@@ -21,7 +21,7 @@
         "title": "GCS Bucket Name",
         "order": 1,
         "type": "string",
-        "description": "You can find the bucket name in the  App Engine Admin console Application Settings page, under the label  Google Cloud Storage Bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
+        "description": "You can find the bucket name in the App Engine Admin console Application Settings page, under the label Google Cloud Storage Bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
         "examples": ["airbyte_sync"]
       },
       "gcs_bucket_path": {
@@ -36,7 +36,7 @@
         "type": "string",
         "order": 3,
         "default": "us",
-        "description": "Select a Region of the GCS Bucket.",
+        "description": "Select a Region of the GCS Bucket. Read more <a href=\"https://cloud.google.com/storage/docs/locations\">here</a>.",
         "enum": [
           "northamerica-northeast1",
           "northamerica-northeast2",
@@ -96,7 +96,7 @@
               },
               "hmac_key_access_id": {
                 "type": "string",
-                "description": "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
+                "description": "When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys#overview\">here</a>.",
                 "title": "Access ID",
                 "airbyte_secret": true,
                 "order": 0,
@@ -104,7 +104,7 @@
               },
               "hmac_key_secret": {
                 "type": "string",
-                "description": "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
+                "description": "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.  Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys#secrets\">here</a>.",
                 "title": "Secret",
                 "airbyte_secret": true,
                 "order": 1,
@@ -117,7 +117,7 @@
       "format": {
         "title": "Output Format",
         "type": "object",
-        "description": "Output data format",
+        "description": "Output data format. One of the following formats must be selected - <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#advantages_of_avro\">AVRO</a> format, <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet#parquet_schemas\">PARQUET</a> format, <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#loading_csv_data_into_a_table\">CSV</a> format, or <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#loading_json_data_into_a_new_table\">JSONL</a> format.",
         "order": 4,
         "oneOf": [
           {
@@ -186,7 +186,7 @@
                       },
                       "compression_level": {
                         "title": "Compression Level (Optional)",
-                        "description": "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\">here</a> for details.",
+                        "description": "The presets 0-3 are fast presets with medium compression. The presets 4-6 are fairly slow presets with high compression. The default preset is 6. The presets 7-9 are like the preset 6 but use bigger dictionaries and have higher compressor and decompressor memory requirements. Unless the uncompressed size of the file exceeds 8 MiB, 16 MiB, or 32 MiB, it is waste of memory to use the presets 7, 8, or 9, respectively. Read more <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\">here</a> for details.",
                         "type": "integer",
                         "default": 6,
                         "minimum": 0,
@@ -253,7 +253,7 @@
               "flattening": {
                 "type": "string",
                 "title": "Normalization (Optional)",
-                "description": "Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
+                "description": "Whether the input JSON data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
               },

@@ -29,7 +29,7 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | Format | object | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema). |
 | Part Size | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize \* 10,000 blocks. |
 
-Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future.
+Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
 
 ⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
 
