@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
@@ -127,6 +130,17 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
       LOGGER.error("No blobs were found for stream with name {}.", streamName);
       return "";
     }
+  }
+
+  @Override
+  protected void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog,
+                                                         List<AirbyteMessage> messages,
+                                                         String defaultSchema)
+      throws Exception {
+    final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
+    deserializeNestedObjects(messages, actualMessages);
+
+    assertSameMessages(messages, actualMessages, false);
   }
 
 }
