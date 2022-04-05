@@ -2,7 +2,7 @@ import pendulum
 import pytest
 
 
-@pytest.fixture(name="config")
+@pytest.fixture
 def config():
     return {
         "api_secret": "7607999ef26581e81726777b7b79f20e70e75602",
@@ -15,7 +15,7 @@ def config():
     }
 
 
-@pytest.fixture(name="funnels_response")
+@pytest.fixture
 def funnels_response():
     return setup_response(200, {
         "meta": {
@@ -48,7 +48,7 @@ def funnels_response():
     })
 
 
-@pytest.fixture(name="funnels_list_response")
+@pytest.fixture
 def funnels_list_response():
     return setup_response(200, [
         {
@@ -58,7 +58,7 @@ def funnels_list_response():
     ])
 
 
-@pytest.fixture(name="engage_schema_response")
+@pytest.fixture
 def engage_schema_response():
     return setup_response(200, {
         "results": {
@@ -78,7 +78,7 @@ def engage_schema_response():
     })
 
 
-@pytest.fixture(name="annotations_response")
+@pytest.fixture
 def annotations_response():
     return setup_response(200, {
         "annotations": [
@@ -98,7 +98,7 @@ def annotations_response():
     })
 
 
-@pytest.fixture(name="revenue_response")
+@pytest.fixture
 def revenue_response():
     return setup_response(200, {
         'computed_at': '2021-07-03T12:43:48.889421+00:00',
@@ -124,7 +124,7 @@ def revenue_response():
     })
 
 
-@pytest.fixture(name="export_schema_response")
+@pytest.fixture
 def export_schema_response():
     return setup_response(200, {
         "$browser": {
@@ -152,7 +152,7 @@ def export_schema_response():
     })
 
 
-@pytest.fixture(name="export_response")
+@pytest.fixture
 def export_response():
     return setup_response(200, {
         "event": "Viewed E-commerce Page",
@@ -171,12 +171,12 @@ def export_response():
     })
 
 
-@pytest.fixture(name="empty_response_ok")
+@pytest.fixture
 def empty_response_ok():
     return setup_response(200, {})
 
 
-@pytest.fixture(name="empty_response_bad")
+@pytest.fixture
 def empty_response_bad():
     return setup_response(400, {})
 

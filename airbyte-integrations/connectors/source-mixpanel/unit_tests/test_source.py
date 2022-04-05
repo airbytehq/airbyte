@@ -12,8 +12,7 @@ def test_check_connection(requests_mock, config, empty_response_ok):
 
     ok, error = SourceMixpanel().check_connection(logger, config)
 
-    assert ok
-    assert not error
+    assert ok and not error
 
 
 def test_check_connection_bad_request(requests_mock, config, empty_response_bad):
@@ -21,16 +20,14 @@ def test_check_connection_bad_request(requests_mock, config, empty_response_bad)
 
     ok, error = SourceMixpanel().check_connection(logger, config)
 
-    assert not ok
-    assert error
+    assert not ok and error
 
 
 def test_check_connection_empty():
     config = {}
     ok, error = SourceMixpanel().check_connection(logger, config)
 
-    assert not ok
-    assert error
+    assert not ok and error
 
 
 def test_check_connection_incomplete(config):
@@ -38,8 +35,7 @@ def test_check_connection_incomplete(config):
 
     ok, error = SourceMixpanel().check_connection(logger, config)
 
-    assert not ok
-    assert error
+    assert not ok and error
 
 
 def test_streams(config):
