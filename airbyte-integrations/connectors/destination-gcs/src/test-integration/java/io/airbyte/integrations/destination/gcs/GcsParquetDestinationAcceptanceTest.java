@@ -109,7 +109,6 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
               ((ObjectNode) data.at(pathWithoutLastField)).put(
                   pathFields.get(pathFields.size() - 1),
                   (DateTimeUtils.getEpochMicros(data.at(path).asText()) / 1000) * 1000);
-              ((ObjectNode) data.at(pathWithoutLastField)).set("_airbyte_additional_properties", null);
             }
           }
           case DATE -> {
@@ -119,7 +118,6 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
             } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1),
                   DateTimeUtils.getEpochDay((data.at(path).asText())));
-              ((ObjectNode) data.at(pathWithoutLastField)).set("_airbyte_additional_properties", null);
             }
           }
         }
