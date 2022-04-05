@@ -130,14 +130,17 @@ jobs:
           ci_credentials ${{ github.event.inputs.connector }}
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      - name: Prepare Sentry Release
+      - name: Set Name and Version Environment Vars
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
-          curl -sL https://sentry.io/get-cli/ | bash
           source tools/lib/lib.sh
           DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
           echo "IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
+      - name: Prepare Sentry
+        if: startsWith(github.event.inputs.connector, 'connectors')
+        run: |
+          curl -sL https://sentry.io/get-cli/ | bash
       - name: Create Sentry Release
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
