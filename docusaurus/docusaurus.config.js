@@ -16,7 +16,7 @@ const config = {
     onBrokenMarkdownLinks: 'warn',
     favicon: 'img/favicon.png',
     organizationName: 'airbytehq', // Usually your GitHub org/user name.
-    projectName: 'airbyte-cloud', // Usually your repo name.
+    projectName: 'airbyte', // Usually your repo name.
 
     plugins:    [
                     [
