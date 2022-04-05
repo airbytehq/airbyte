@@ -11,7 +11,6 @@
       "destination_sync_mode": "append"
     },
 
-
     {
       "stream": {
         "name": "ads",
@@ -48,7 +47,6 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
-
 
     {
       "stream": {
@@ -94,7 +92,6 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
     },
-
 
     {
       "stream": {

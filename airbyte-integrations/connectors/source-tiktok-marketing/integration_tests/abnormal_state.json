@@ -8,8 +8,7 @@
   "campaigns": {
     "modify_time": "2030-08-30 09:16:10"
   },
-  
-  
+
   "ads_reports": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
@@ -30,8 +29,7 @@
       "stat_time_day": "2030-01-01"
     }
   },
-  
-  
+
   "ads_audience_reports": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
