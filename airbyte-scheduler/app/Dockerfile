@@ -1,14 +1,11 @@
 ARG JDK_VERSION=17.0.1
 FROM openjdk:${JDK_VERSION}-slim AS scheduler
 
-ARG VERSION=0.35.65-alpha
-
 ENV APPLICATION airbyte-scheduler
-ENV VERSION ${VERSION}
 
 WORKDIR /app
 
-ADD bin/${APPLICATION}-${VERSION}.tar /app
+ADD bin/${APPLICATION}-0.35.65-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
-ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-${VERSION}/bin/${APPLICATION}"]
+ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-0.35.65-alpha/bin/${APPLICATION}"]
