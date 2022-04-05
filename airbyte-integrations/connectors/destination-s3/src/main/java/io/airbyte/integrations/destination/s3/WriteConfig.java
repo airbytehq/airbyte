@@ -21,6 +21,9 @@ public class WriteConfig {
   private final DestinationSyncMode syncMode;
   private final List<String> storedFiles;
 
+  /**
+   * @param fullOutputPath the path for a specific stream under the {@code outputBucketPath}
+   */
   public WriteConfig(final String namespace,
                      final String streamName,
                      final String outputBucketPath,
@@ -52,6 +55,9 @@ public class WriteConfig {
     return pathFormat;
   }
 
+  /**
+   * @return the sub-path under the outputBucketPath for the stream
+   */
   public String getFullOutputPath() {
     return fullOutputPath;
   }
