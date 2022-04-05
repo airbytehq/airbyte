@@ -374,6 +374,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final String curlImage,
                         final Map<String, String> envMap,
                         final Map<Integer, Integer> internalToExternalPorts,
+                        final String serviceAccountName,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -484,9 +485,8 @@ public class KubePodProcess extends Process implements KubePod {
         .withName(podName)
         .withLabels(labels)
         .endMetadata()
-        .withNewSpec();
-
-    podBuilder = podBuilder.withServiceAccount(isOrchestrator ? "airbyte-admin" : "airbyte")
+        .withNewSpec()
+        .withServiceAccount(serviceAccountName)
         .withAutomountServiceAccountToken(true);
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))

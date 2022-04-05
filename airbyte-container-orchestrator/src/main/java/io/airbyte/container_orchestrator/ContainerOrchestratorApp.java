@@ -212,7 +212,14 @@ public class ContainerOrchestratorApp {
       // exposed)
       KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
 
-      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
+      return new KubeProcessFactory(
+        workerConfigs,
+        configs.getJobKubeNamespace(),
+        fabricClient,
+        kubeHeartbeatUrl,
+        false,
+        configs.getJobKubeServiceAccountName()
+      );
     } else {
       return new DockerProcessFactory(
           workerConfigs,

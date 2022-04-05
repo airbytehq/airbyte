@@ -42,3 +42,4 @@ data:
   WORKER_ENVIRONMENT: kubernetes
   WORKSPACE_DOCKER_MOUNT: airbyte_workspace
   WORKSPACE_ROOT: /workspace
+  JOB_SERVICE_ACCOUNT_NAME: {{ include "serviceAccount.name" . | quote }}

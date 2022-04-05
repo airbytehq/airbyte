@@ -51,6 +51,7 @@ public class KubeProcessFactory implements ProcessFactory {
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
   private final boolean isOrchestrator;
+  private final String serviceAccountName;
 
   /**
    * Sets up a process factory with the default processRunnerHost.
@@ -59,14 +60,16 @@ public class KubeProcessFactory implements ProcessFactory {
                             final String namespace,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
-                            final boolean isOrchestrator) {
+                            final boolean isOrchestrator,
+                            final String serviceAccountName) {
     this(
         workerConfigs,
         namespace,
         fabricClient,
         kubeHeartbeatUrl,
         Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()),
-        isOrchestrator);
+        isOrchestrator,
+        serviceAccountName);
   }
 
   /**
@@ -77,6 +80,7 @@ public class KubeProcessFactory implements ProcessFactory {
    * @param processRunnerHost is the local host or ip of the machine running the process factory.
    *        injectable for testing.
    * @param isOrchestrator determines if this should run as airbyte-admin
+   * @param serviceAccountName the service account name
    */
   @VisibleForTesting
   public KubeProcessFactory(final WorkerConfigs workerConfigs,
@@ -84,13 +88,15 @@ public class KubeProcessFactory implements ProcessFactory {
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
                             final String processRunnerHost,
-                            final boolean isOrchestrator) {
+                            final boolean isOrchestrator,
+                            final String serviceAccountName) {
     this.workerConfigs = workerConfigs;
     this.namespace = namespace;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
     this.isOrchestrator = isOrchestrator;
+    this.serviceAccountName = serviceAccountName;
   }
 
   @Override
@@ -144,6 +150,7 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getJobCurlImage(),
           MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap()),
           internalToExternalPorts,
+          serviceAccountName,
           args);
     } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);

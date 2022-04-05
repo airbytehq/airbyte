@@ -93,7 +93,9 @@ public class KubePodProcessIntegrationTest {
             fabricClient,
             heartbeatUrl,
             getHost(),
-            false);
+            false,
+            "airbyte"
+        );
   }
 
   @BeforeEach

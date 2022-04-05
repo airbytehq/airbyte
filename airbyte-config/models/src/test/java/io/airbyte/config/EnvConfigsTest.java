@@ -205,6 +205,15 @@ class EnvConfigsTest {
   }
 
   @Test
+  void testJobKubeServiceAccountName() {
+    envMap.put(EnvConfigs.getJobKubeServiceAccountName, null);
+    assertEquals(config.getJobKubeServiceAccountName(), EnvConfigs.DEFAULT_SERVICE_ACCOUNT_NAME);
+
+    envMap.put(EnvConfigs.getJobKubeServiceAccountName, "airbyte");
+    assertEquals(config.getJobKubeServiceAccountName(), "airbyte");
+  }
+
+  @Test
   void testSpecKubeNodeSelectors() {
     envMap.put(EnvConfigs.SPEC_JOB_KUBE_NODE_SELECTORS, null);
     assertFalse(config.getSpecJobKubeNodeSelectors().isPresent());
@@ -367,5 +376,4 @@ class EnvConfigsTest {
         "WORKER_ENVIRONMENT", "DOCKER");
     assertEquals(expected, config.getJobDefaultEnvMap());
   }
-
 }

@@ -218,6 +218,11 @@ spec:
             configMapKeyRef:
               name: {{ include "common.names.fullname" . }}-env
               key: INTERNAL_API_HOST
+        - name: JOB_KUBE_SERVICE_ACCOUNT_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: JOB_SERVICE_ACCOUNT_NAME
         {{- if .Values.worker.extraEnv }}
         {{ .Values.worker.extraEnv | toYaml | nindent 8 }}
         {{- end }}
