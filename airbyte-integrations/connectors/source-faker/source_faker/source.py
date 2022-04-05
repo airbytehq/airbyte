@@ -66,21 +66,21 @@ class SourceFaker(Source):
             "type": "object",
             "properties": {
                 "id": {"type": "number"},
-                "created_at": {"type": "date"},
-                "updated_at": {"type": "date"},
+                "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
+                "updated_at":{"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
                 "job": {"type": "string"},
                 "company": {"type": "string"},
                 "ssn": {"type": "string"},
                 "residence": {"type": "string"},
-                "current_location": {"type": "array"}, # NUMBER ARRAY
+                "current_location": {"type": "array", "items": "number"},
                 "blood_group": {"type": "string"},
-                "website": {"type": "array"},  # STRING ARRAY
+                "website": {"type": "array", "items": "string"},
                 "username": {"type": "string"},
                 "name": {"type": "string"},
                 "sex": {"type": "string"},
                 "address": {"type": "string"},
                 "mail": {"type": "string"},
-                "birthdate": {"type": "date"},
+                "birthdate": {"type": "string", "format": "date"},
             },
         }
         streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
