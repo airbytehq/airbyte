@@ -5,6 +5,8 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -55,6 +57,7 @@ import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
+import io.airbyte.api.model.WebBackendWorkspaceState;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
@@ -64,6 +67,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -103,6 +107,7 @@ class WebBackendConnectionsHandlerTest {
   private FeatureFlags featureFlags;
   private EventRunner eventRunner;
   private ConnectionHelper connectionHelper;
+  private ConfigRepository configRepository;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
@@ -111,6 +116,7 @@ class WebBackendConnectionsHandlerTest {
     final SourceHandler sourceHandler = mock(SourceHandler.class);
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
+    configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
     featureFlags = mock(FeatureFlags.class);
     eventRunner = mock(EventRunner.class);
@@ -122,7 +128,8 @@ class WebBackendConnectionsHandlerTest {
         schedulerHandler,
         operationsHandler,
         featureFlags,
-        eventRunner);
+        eventRunner,
+        configRepository);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -232,6 +239,32 @@ class WebBackendConnectionsHandlerTest {
 
     when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
         .thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
+  }
+
+  @Test
+  public void testGetWorkspaceState() throws IOException {
+    final UUID uuid = UUID.randomUUID();
+    final WebBackendWorkspaceState request = new WebBackendWorkspaceState().workspaceId(uuid);
+    when(configRepository.countSourcesForWorkspace(uuid)).thenReturn(5);
+    when(configRepository.countDestinationsForWorkspace(uuid)).thenReturn(2);
+    when(configRepository.countConnectionsForWorkspace(uuid)).thenReturn(8);
+    final var actual = wbHandler.getWorkspaceState(request);
+    assertTrue(actual.getHasConnections());
+    assertTrue(actual.getHasDestinations());
+    assertTrue((actual.getHasSources()));
+  }
+
+  @Test
+  public void testGetWorkspaceStateEmpty() throws IOException {
+    final UUID uuid = UUID.randomUUID();
+    final WebBackendWorkspaceState request = new WebBackendWorkspaceState().workspaceId(uuid);
+    when(configRepository.countSourcesForWorkspace(uuid)).thenReturn(0);
+    when(configRepository.countDestinationsForWorkspace(uuid)).thenReturn(0);
+    when(configRepository.countConnectionsForWorkspace(uuid)).thenReturn(0);
+    final var actual = wbHandler.getWorkspaceState(request);
+    assertFalse(actual.getHasConnections());
+    assertFalse(actual.getHasDestinations());
+    assertFalse(actual.getHasSources());
   }
 
   @Test
