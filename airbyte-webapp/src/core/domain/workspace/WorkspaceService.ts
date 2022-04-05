@@ -1,5 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { Workspace } from "./Workspace";
+import { Workspace, WorkspaceState } from "./Workspace";
 
 class WorkspaceService extends AirbyteRequestService {
   get url() {
@@ -18,6 +18,12 @@ class WorkspaceService extends AirbyteRequestService {
 
   public async update(payload: Record<string, unknown>): Promise<Workspace> {
     return await this.fetch<Workspace>(`${this.url}/update`, payload);
+  }
+
+  public async getState(workspaceId: string): Promise<WorkspaceState> {
+    return await this.fetch<WorkspaceState>(`web_backend/workspace/state`, {
+      workspaceId,
+    });
   }
 }
 

@@ -81,7 +81,7 @@ public class S3ConsumerFactory {
       final String customOutputFormat = String.join("/", bucketPath, s3Config.getPathFormat());
       final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
-      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, bucketPath, fullOutputPath, syncMode);
+      final WriteConfig writeConfig = new WriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode);
       LOGGER.info("Write config: {}", writeConfig);
       return writeConfig;
     };
@@ -95,10 +95,16 @@ public class S3ConsumerFactory {
           final String namespace = writeConfig.getNamespace();
           final String stream = writeConfig.getStreamName();
           final String outputBucketPath = writeConfig.getFullOutputPath();
-          LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {}", namespace, stream, outputBucketPath);
+          final String pathFormat = writeConfig.getPathFormat();
+          LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {} pathFormat {}",
+              namespace, stream, outputBucketPath, pathFormat);
           AirbyteSentry.executeWithTracing("PrepareStreamStorage",
-              () -> storageOperations.dropBucketObject(outputBucketPath),
-              Map.of("namespace", Objects.requireNonNullElse(namespace, "null"), "stream", stream, "storage", outputBucketPath));
+              () -> storageOperations.cleanUpBucketObject(namespace, stream, outputBucketPath, pathFormat),
+              Map.of(
+                  "namespace", Objects.requireNonNullElse(namespace, "null"),
+                  "stream", stream,
+                  "storage", outputBucketPath,
+                  "pathFormat", pathFormat));
           LOGGER.info("Clearing storage area in destination completed for namespace {} stream {} bucketObject {}", namespace, stream,
               outputBucketPath);
         }

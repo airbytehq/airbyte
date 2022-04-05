@@ -710,7 +710,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         return "export"
 
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """Export API return response.text in JSONL format but each line is a valid JSON object
+        """Export API return response in JSONL format but each line is a valid JSON object
         Raw item example:
             {
                 "event": "Viewed E-commerce Page",
@@ -733,7 +733,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             self.logger.warn(f"Couldn't fetch data from Export API. Response: {response.text}")
             return []
 
-        for record_line in response.text.splitlines():
+        # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
+        for record_line in response.iter_lines():
             record = json.loads(record_line)
             # transform record into flat dict structure
             item = {"event": record["event"]}

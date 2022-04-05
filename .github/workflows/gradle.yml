@@ -837,7 +837,7 @@ jobs:
           df -h
           docker system df
 
-      - name: Run GCP End-to-End Acceptance Tests
+      - name: Run AWS/GCP Cloud Integration Tests
         env:
           USER: root
           HOME: /home/runner
@@ -846,7 +846,7 @@ jobs:
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         run: |
-          CI=true ./tools/bin/gcp_acceptance_tests.sh
+          CI=true ./tools/bin/cloud_integration_tests.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: "Platform: Stop Kube Acceptance Test EC2 Runner"
