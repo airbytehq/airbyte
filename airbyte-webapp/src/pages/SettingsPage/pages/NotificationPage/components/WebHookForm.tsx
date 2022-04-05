@@ -58,20 +58,10 @@ type WebHookFormProps = {
   onTest: (data: WebhookPayload) => void;
 };
 
-const WebHookForm: React.FC<WebHookFormProps> = ({
-  webhook,
-  onSubmit,
-  successMessage,
-  errorMessage,
-  onTest,
-}) => {
+const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMessage, errorMessage, onTest }) => {
   const formatMessage = useIntl().formatMessage;
 
-  const feedBackBlock = (
-    dirty: boolean,
-    isSubmitting: boolean,
-    webhook?: string
-  ) => {
+  const feedBackBlock = (dirty: boolean, isSubmitting: boolean, webhook?: string) => {
     if (successMessage) {
       return <Success>{successMessage}</Success>;
     }
@@ -118,14 +108,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
         <Form>
           <Label
             error={!!errors.webhook}
-            message={
-              !!errors.webhook && (
-                <FormattedMessage
-                  id={errors.webhook}
-                  defaultMessage={errors.webhook}
-                />
-              )
-            }
+            message={!!errors.webhook && <FormattedMessage id={errors.webhook} defaultMessage={errors.webhook} />}
           >
             <FormattedMessage id="settings.webhookTitle" />
           </Label>
@@ -146,9 +129,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
                 )}
               </Field>
             </Cell>
-            <FeedbackCell>
-              {feedBackBlock(dirty, isSubmitting, initialValues.webhook)}
-            </FeedbackCell>
+            <FeedbackCell>{feedBackBlock(dirty, isSubmitting, initialValues.webhook)}</FeedbackCell>
           </InputRow>
           {initialValues.webhook ? (
             <Message>

@@ -19,13 +19,9 @@ type Props = {
 };
 
 const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState<
-    string | null
-  >(null);
-  const {
-    data: destinationDefinitionSpecification,
-    isLoading,
-  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState<string | null>(null);
+  const { data: destinationDefinitionSpecification, isLoading } =
+    useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
   const { destinationDefinitions } = useDestinationDefinitionList();
   const [successRequest, setSuccessRequest] = useState(false);
   const [error, setError] = useState<{
@@ -47,9 +43,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
     setError(null);
-    const destinationConnector = getDestinationDefinitionById(
-      values.serviceType
-    );
+    const destinationConnector = getDestinationDefinitionById(values.serviceType);
 
     try {
       await createDestination({
@@ -69,27 +63,20 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   };
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
-    const destinationConnector = getDestinationDefinitionById(
-      destinationDefinitionId
-    );
+    const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
     analyticsService.track("New Destination - Action", {
       action: "Select a connector",
       connector_destination: destinationConnector?.name,
-      connector_destination_definition_id:
-        destinationConnector?.destinationDefinitionId,
+      connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
     });
 
     setError(null);
     setDestinationDefinitionId(destinationDefinitionId);
   };
-  const onSubmitForm = async (values: {
-    name: string;
-    serviceType: string;
-  }) => {
+  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
     await onSubmitDestinationStep({
       ...values,
-      destinationDefinitionId:
-        destinationDefinitionSpecification?.destinationDefinitionId,
+      destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });
   };
 
@@ -102,9 +89,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
           <FormattedMessage
             id="onboarding.createFirstDestination"
             values={{
-              name: (name: React.ReactNode[]) => (
-                <HighlightedText>{name}</HighlightedText>
-              ),
+              name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
             }}
           />
         }
@@ -119,9 +104,7 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
         hasSuccess={successRequest}
         availableServices={destinationDefinitions}
         errorMessage={errorMessage}
-        selectedConnectorDefinitionSpecification={
-          destinationDefinitionSpecification
-        }
+        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
         isLoading={isLoading}
       />
     </>

@@ -75,11 +75,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
             onChange({ anonymousDataCollection: event.target.checked });
           }}
         />
-        <FeedbackBlock
-          errorMessage={errorMessage}
-          successMessage={successMessage}
-          isLoading={isLoading}
-        />
+        <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} isLoading={isLoading} />
       </FormItem>
     </>
   );

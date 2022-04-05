@@ -51,16 +51,10 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
     id: index.toString(),
     isPartialSuccess: isPartialSuccess(item.attempt),
     status:
-      item.attempt.status === Status.FAILED ||
-      item.attempt.status === Status.SUCCEEDED
+      item.attempt.status === Status.FAILED || item.attempt.status === Status.SUCCEEDED
         ? item.attempt.status
         : undefined,
-    name: (
-      <FormattedMessage
-        id="sources.attemptNum"
-        values={{ number: index + 1 }}
-      />
-    ),
+    name: <FormattedMessage id="sources.attemptNum" values={{ number: index + 1 }} />,
   }));
 
   return (

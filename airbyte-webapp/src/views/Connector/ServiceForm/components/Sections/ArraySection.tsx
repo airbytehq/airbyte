@@ -19,11 +19,7 @@ export const ArraySection: React.FC<{
   formField: FormObjectArrayItem;
   path: string;
 }> = ({ formField, path }) => {
-  const {
-    addUnfinishedFlow,
-    removeUnfinishedFlow,
-    unfinishedFlows,
-  } = useServiceForm();
+  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows } = useServiceForm();
   const [field, , form] = useField(path);
 
   const items = field.value ?? [];
@@ -59,13 +55,7 @@ export const ArraySection: React.FC<{
               onRemove={arrayHelpers.remove}
               items={items}
             >
-              {() => (
-                <FormSection
-                  blocks={formField.properties}
-                  path={`${path}.${flow.id}`}
-                  skipAppend
-                />
-              )}
+              {() => <FormSection blocks={formField.properties} path={`${path}.${flow.id}`} skipAppend />}
             </ArrayOfObjectsEditor>
           )}
         />

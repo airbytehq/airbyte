@@ -18,15 +18,11 @@ function useGetLogsService(): LogsService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new LogsService(apiUrl, requestAuthMiddleware), [
-    apiUrl,
-    requestAuthMiddleware,
-  ]);
+  return useInitService(() => new LogsService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
 export function useGetLogs() {
   const service = useGetLogsService();
 
-  return useMutation((payload: GetLogsPayload) => service.get(payload))
-    .mutateAsync;
+  return useMutation((payload: GetLogsPayload) => service.get(payload)).mutateAsync;
 }

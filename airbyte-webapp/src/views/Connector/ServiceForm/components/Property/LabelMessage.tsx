@@ -16,13 +16,9 @@ const LabelMessage: React.FC<IProps> = ({ property, error, touched }) => {
       return null;
     }
 
-    const exampleText = Array.isArray(property.examples)
-      ? property.examples?.join(", ")
-      : property.examples;
+    const exampleText = Array.isArray(property.examples) ? property.examples?.join(", ") : property.examples;
 
-    return (
-      <FormattedMessage id="form.examples" values={{ examples: exampleText }} />
-    );
+    return <FormattedMessage id="form.examples" values={{ examples: exampleText }} />;
   };
 
   const displayError = !!error && touched;
@@ -32,9 +28,7 @@ const LabelMessage: React.FC<IProps> = ({ property, error, touched }) => {
       <FormattedMessage id={error} values={{ pattern: property.pattern }} />
     ) : null;
 
-  const message = property.description ? (
-    <TextWithHTML text={property.description} />
-  ) : null;
+  const message = property.description ? <TextWithHTML text={property.description} /> : null;
 
   return (
     <>

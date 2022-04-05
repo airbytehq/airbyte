@@ -14,10 +14,7 @@ const Normalization = styled.div`
 
 type NormalizationBlockProps = FieldProps<string>;
 
-const NormalizationField: React.FC<NormalizationBlockProps> = ({
-  form,
-  field,
-}) => {
+const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field }) => {
   const config = useConfig();
 
   return (

@@ -3,13 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import styled from "styled-components";
 
-import {
-  DestinationSyncMode,
-  Path,
-  SyncMode,
-  SyncSchemaField,
-  SyncSchemaStream,
-} from "core/domain/catalog";
+import { DestinationSyncMode, Path, SyncMode, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 
 import { Cell, CheckBox, DropDownRow, Toggle } from "components";
 import { Arrow as ArrowBlock } from "./components/Arrow";
@@ -65,12 +59,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   hasFields,
   onExpand,
 }) => {
-  const {
-    primaryKey,
-    syncMode,
-    cursorField,
-    destinationSyncMode,
-  } = stream.config;
+  const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config;
 
   const { defaultCursorField } = stream.stream;
   const syncSchema = useMemo(
@@ -91,20 +80,10 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
       </CheckboxCell>
       <ArrowCell>
-        {hasFields ? (
-          <ArrowBlock
-            onExpand={onExpand}
-            isItemHasChildren={hasFields}
-            isItemOpen={isRowExpanded}
-          />
-        ) : null}
+        {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
       </ArrowCell>
       <HeaderCell flex={0.4}>
-        <Toggle
-          small
-          checked={stream.config.selected}
-          onChange={onSelectStream}
-        />
+        <Toggle small checked={stream.config.selected} onChange={onSelectStream} />
       </HeaderCell>
       <HeaderCell ellipsis title={stream.stream.namespace || ""}>
         {stream.stream.namespace || (
@@ -117,23 +96,15 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         {stream.stream.name}
       </HeaderCell>
       <Cell flex={1.5}>
-        <SyncSettingsDropdown
-          value={syncSchema}
-          options={availableSyncModes}
-          onChange={onSelectSyncMode}
-        />
+        <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />
       </Cell>
       <HeaderCell>
         {cursorType && (
           <PathPopout
             pathType={cursorType}
             paths={paths}
-            path={
-              cursorType === "sourceDefined" ? defaultCursorField : cursorField
-            }
-            placeholder={
-              <FormattedMessage id="connectionForm.cursor.searchPlaceholder" />
-            }
+            path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
+            placeholder={<FormattedMessage id="connectionForm.cursor.searchPlaceholder" />}
             onPathChange={onCursorChange}
           />
         )}
@@ -145,9 +116,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             paths={paths}
             path={primaryKey}
             isMulti={true}
-            placeholder={
-              <FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />
-            }
+            placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
             onPathChange={onPrimaryKeyChange}
           />
         )}

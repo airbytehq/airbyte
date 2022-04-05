@@ -24,9 +24,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = destinationDefinitions.find(
-      (item) => item.destinationDefinitionId === values.serviceType
-    );
+    const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === values.serviceType);
     const result = await createDestination({
       values,
       destinationConnector: connector,

@@ -9,9 +9,7 @@ import { equal } from "utils/objects";
 
 const DEFAULT_APP_NAME = "[DEFAULT]";
 
-const FirebaseAppContext = React.createContext<FirebaseApp | undefined>(
-  undefined
-);
+const FirebaseAppContext = React.createContext<FirebaseApp | undefined>(undefined);
 const SuspenseEnabledContext = React.createContext<boolean>(false);
 
 interface FirebaseAppProviderProps {
@@ -21,9 +19,7 @@ interface FirebaseAppProviderProps {
   suspense?: boolean;
 }
 
-export function FirebaseAppProvider(
-  props: React.PropsWithChildren<FirebaseAppProviderProps>
-): JSX.Element {
+export function FirebaseAppProvider(props: React.PropsWithChildren<FirebaseAppProviderProps>): JSX.Element {
   const { firebaseConfig, appName, suspense } = props;
 
   const firebaseApp: FirebaseApp = React.useMemo(() => {
@@ -31,9 +27,7 @@ export function FirebaseAppProvider(
       return props.firebaseApp;
     }
 
-    const existingApp = getApps().find(
-      (app) => app.name === (appName || DEFAULT_APP_NAME)
-    );
+    const existingApp = getApps().find((app) => app.name === (appName || DEFAULT_APP_NAME));
     if (existingApp) {
       if (firebaseConfig && equal(existingApp.options, firebaseConfig)) {
         return existingApp;
@@ -65,9 +59,7 @@ export function FirebaseAppProvider(
 export function useFirebaseApp(): FirebaseApp {
   const firebaseApp = React.useContext(FirebaseAppContext);
   if (!firebaseApp) {
-    throw new Error(
-      "Cannot call useFirebaseApp unless your component is within a FirebaseAppProvider"
-    );
+    throw new Error("Cannot call useFirebaseApp unless your component is within a FirebaseAppProvider");
   }
 
   return firebaseApp;

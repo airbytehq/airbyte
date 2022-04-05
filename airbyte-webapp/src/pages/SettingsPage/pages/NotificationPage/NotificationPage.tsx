@@ -1,9 +1,6 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace, {
-  useCurrentWorkspace,
-  WebhookPayload,
-} from "hooks/services/useWorkspace";
+import useWorkspace, { useCurrentWorkspace, WebhookPayload } from "hooks/services/useWorkspace";
 import WebHookForm from "./components/WebHookForm";
 import HeadTitle from "components/HeadTitle";
 
@@ -64,12 +61,8 @@ const NotificationPage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle
-        titles={[{ id: "sidebar.settings" }, { id: "settings.notifications" }]}
-      />
-      <SettingsCard
-        title={<FormattedMessage id="settings.notificationSettings" />}
-      >
+      <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "settings.notifications" }]} />
+      <SettingsCard title={<FormattedMessage id="settings.notificationSettings" />}>
         <Content>
           <WebHookForm
             webhook={initialValues}

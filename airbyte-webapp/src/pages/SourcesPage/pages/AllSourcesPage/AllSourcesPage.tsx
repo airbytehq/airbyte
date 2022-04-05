@@ -29,11 +29,7 @@ const AllSourcesPage: React.FC = () => {
         />
       }
     >
-      {sources.length ? (
-        <SourcesTable sources={sources} />
-      ) : (
-        <Placeholder resource={ResourceTypes.Sources} />
-      )}
+      {sources.length ? <SourcesTable sources={sources} /> : <Placeholder resource={ResourceTypes.Sources} />}
     </MainPageWithScroll>
   );
 };

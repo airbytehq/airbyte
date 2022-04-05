@@ -49,13 +49,8 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
     args.selectedConnectorDefinitionSpecification &&
     !ConnectorSpecification.id(args.selectedConnectorDefinitionSpecification)
   ) {
-    if (
-      isSourceDefinitionSpecification(
-        args.selectedConnectorDefinitionSpecification
-      )
-    ) {
-      args.selectedConnectorDefinitionSpecification.sourceDefinitionId =
-        TempConnector.sourceDefinitionId;
+    if (isSourceDefinitionSpecification(args.selectedConnectorDefinitionSpecification)) {
+      args.selectedConnectorDefinitionSpecification.sourceDefinitionId = TempConnector.sourceDefinitionId;
     }
   }
 

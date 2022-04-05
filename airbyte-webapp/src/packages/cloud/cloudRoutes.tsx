@@ -13,10 +13,7 @@ import { useApiHealthPoll } from "hooks/services/Health";
 import { Auth } from "packages/cloud/views/auth";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useIntercom";
-import {
-  useCurrentWorkspace,
-  WorkspaceServiceProvider,
-} from "services/workspaces/WorkspacesService";
+import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import OnboardingPage from "pages/OnboardingPage";
 import { CreditsPage } from "packages/cloud/views/credits";
 import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
@@ -25,10 +22,7 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useConfig } from "./services/config";
 import useFullStory from "./services/thirdParty/fullstory/useFullStory";
-import {
-  useAnalyticsIdentifyUser,
-  useAnalyticsRegisterValues,
-} from "hooks/services/Analytics/useAnalyticsService";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
 import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import useRouter from "hooks/useRouter";
@@ -74,19 +68,13 @@ const MainRoutes: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
 
-  const mainNavigate = workspace.displaySetupWizard
-    ? RoutePaths.Onboarding
-    : RoutePaths.Connections;
+  const mainNavigate = workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections;
 
   const features = useMemo(
     () =>
-      cloudWorkspace.creditStatus !==
-        CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD &&
+      cloudWorkspace.creditStatus !== CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD &&
       cloudWorkspace.creditStatus !== CreditStatus.NEGATIVE_MAX_THRESHOLD
-        ? [
-            { id: FeatureItem.AllowCreateConnection },
-            { id: FeatureItem.AllowSync },
-          ]
+        ? [{ id: FeatureItem.AllowCreateConnection }, { id: FeatureItem.AllowSync }]
         : null,
     [cloudWorkspace]
   );
@@ -95,19 +83,10 @@ const MainRoutes: React.FC = () => {
 
   return (
     <Routes>
-      <Route
-        path={`${RoutePaths.Destination}/*`}
-        element={<DestinationPage />}
-      />
+      <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
       <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-      <Route
-        path={`${RoutePaths.Connections}/*`}
-        element={<ConnectionPage />}
-      />
-      <Route
-        path={`${RoutePaths.Settings}/*`}
-        element={<CloudSettingsPage />}
-      />
+      <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+      <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
       <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
 
       {workspace.displaySetupWizard && (
@@ -132,21 +111,13 @@ const MainViewRoutes = () => {
 
   return (
     <Routes>
-      {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map(
-        (r) => (
-          <Route
-            key={r}
-            path={`${r}/*`}
-            element={
-              hasFromState(location.state) ? (
-                <Navigate to={location.state.from} replace />
-              ) : (
-                <DefaultView />
-              )
-            }
-          />
-        )
-      )}
+      {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
+        <Route
+          key={r}
+          path={`${r}/*`}
+          element={hasFromState(location.state) ? <Navigate to={location.state.from} replace /> : <DefaultView />}
+        />
+      ))}
       <Route path={CloudRoutes.SelectWorkspace} element={<WorkspacesPage />} />
       <Route path={CloudRoutes.AuthFlow} element={<CompleteOauthRequest />} />
       <Route
@@ -197,18 +168,9 @@ export const Routing: React.FC = () => {
         {user && emailVerified && <MainViewRoutes />}
         {user && !emailVerified && (
           <Routes>
-            <Route
-              path={CloudRoutes.FirebaseAction}
-              element={<VerifyEmailAction />}
-            />
-            <Route
-              path={CloudRoutes.ConfirmVerifyEmail}
-              element={<ConfirmEmailPage />}
-            />
-            <Route
-              path="*"
-              element={<Navigate to={CloudRoutes.ConfirmVerifyEmail} replace />}
-            />
+            <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
+            <Route path={CloudRoutes.ConfirmVerifyEmail} element={<ConfirmEmailPage />} />
+            <Route path="*" element={<Navigate to={CloudRoutes.ConfirmVerifyEmail} replace />} />
           </Routes>
         )}
       </Suspense>

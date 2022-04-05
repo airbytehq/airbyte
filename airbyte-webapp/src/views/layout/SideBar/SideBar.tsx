@@ -96,13 +96,7 @@ const SideBar: React.FC = () => {
   return (
     <Bar>
       <div>
-        <Link
-          to={
-            workspace.displaySetupWizard
-              ? RoutePaths.Onboarding
-              : RoutePaths.Connections
-          }
-        >
+        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <Menu>
@@ -152,13 +146,7 @@ const SideBar: React.FC = () => {
           </MenuLinkItem>
         </li>
         <li>
-          <ResourcesPopup
-            options={[
-              { value: "docs" },
-              { value: "slack" },
-              { value: "recipes" },
-            ]}
-          >
+          <ResourcesPopup options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
             {({ onOpen }) => (
               <MenuItem onClick={onOpen} as="div">
                 <DocsIcon />

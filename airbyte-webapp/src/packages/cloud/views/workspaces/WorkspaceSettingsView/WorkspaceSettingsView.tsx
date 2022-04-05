@@ -3,10 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import {
-  Content,
-  SettingsCard,
-} from "pages/SettingsPage/pages/SettingsComponents";
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import { Button, LabeledInput, LoadingButton } from "components";
 import {
   useRemoveWorkspace,
@@ -47,11 +44,7 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.generalSettings" />
-            <Button
-              type="button"
-              onClick={exitWorkspace}
-              data-testid="button.changeWorkspace"
-            >
+            <Button type="button" onClick={exitWorkspace} data-testid="button.changeWorkspace">
               <FormattedMessage id="settings.generalSettings.changeWorkspace" />
             </Button>
           </Header>
@@ -73,36 +66,21 @@ export const WorkspaceSettingsView: React.FC = () => {
                   {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
                       {...field}
-                      label={
-                        <FormattedMessage id="settings.generalSettings.form.name.label" />
-                      }
+                      label={<FormattedMessage id="settings.generalSettings.form.name.label" />}
                       placeholder={formatMessage({
                         id: "settings.generalSettings.form.name.placeholder",
                       })}
                       type="text"
                       error={!!meta.error && meta.touched}
-                      message={
-                        meta.touched &&
-                        meta.error &&
-                        formatMessage({ id: meta.error })
-                      }
+                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                     />
                   )}
                 </Field>
                 <Buttons>
-                  <Button
-                    type="button"
-                    secondary
-                    disabled={!dirty}
-                    onClick={() => resetForm()}
-                  >
+                  <Button type="button" secondary disabled={!dirty} onClick={() => resetForm()}>
                     cancel
                   </Button>
-                  <LoadingButton
-                    type="submit"
-                    disabled={!isValid}
-                    isLoading={isSubmitting}
-                  >
+                  <LoadingButton type="submit" disabled={!isValid} isLoading={isSubmitting}>
                     save changes
                   </LoadingButton>
                 </Buttons>

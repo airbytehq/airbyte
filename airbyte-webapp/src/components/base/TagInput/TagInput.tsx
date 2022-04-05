@@ -15,17 +15,13 @@ const MainContainer = styled.div<{ error?: boolean }>`
   flex-direction: row;
   flex-wrap: wrap;
   align-self: stretch;
-  border: 1px solid
-    ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor0};
-  background: ${(props) =>
-    props.error ? props.theme.greyColor10 : props.theme.greyColor0};
+  border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
+  background: ${(props) => (props.error ? props.theme.greyColor10 : props.theme.greyColor0)};
   caret-color: ${({ theme }) => theme.primaryColor};
 
   &:hover {
     background: ${({ theme }) => theme.greyColor20};
-    border-color: ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor20};
+    border-color: ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor20)};
   }
 
   &:focus,
@@ -95,9 +91,7 @@ const TagInput: React.FC<TagInputProps> = ({
       return;
     }
 
-    const isValid = validationRegex
-      ? !!inputElement.current?.value.match(validationRegex)
-      : true;
+    const isValid = validationRegex ? !!inputElement.current?.value.match(validationRegex) : true;
 
     if (isValid) {
       onEnter(currentInputValue);
@@ -134,16 +128,10 @@ const TagInput: React.FC<TagInputProps> = ({
     }
   };
 
-  const inputPlaceholder =
-    !value.length && inputProps?.placeholder ? inputProps.placeholder : "";
+  const inputPlaceholder = !value.length && inputProps?.placeholder ? inputProps.placeholder : "";
 
   return (
-    <MainContainer
-      onBlur={handleContainerBlur}
-      onClick={handleContainerClick}
-      className={className}
-      error={error}
-    >
+    <MainContainer onBlur={handleContainerBlur} onClick={handleContainerClick} className={className} error={error}>
       {value.map((item, key) => (
         <TagItem
           disabled={disabled}

@@ -72,14 +72,8 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
       // @ts-expect-error need to solve issue with typings
       isMulti={props.isMulti}
       isSearchable
-      onChange={(
-        options: PathPopoutProps["isMulti"] extends true
-          ? { value: Path }[]
-          : { value: Path }
-      ) => {
-        const finalValues = Array.isArray(options)
-          ? options.map((op) => op.value)
-          : options.value;
+      onChange={(options: PathPopoutProps["isMulti"] extends true ? { value: Path }[] : { value: Path }) => {
+        const finalValues = Array.isArray(options) ? options.map((op) => op.value) : options.value;
 
         props.onPathChange(finalValues);
       }}
@@ -89,11 +83,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
         <div onClick={onOpen}>
           {text}
           <Arrow icon={faSortDown} />
-          <Tooltip
-            items={
-              props.isMulti ? props.path?.map(pathDisplayName) : props.path
-            }
-          />
+          <Tooltip items={props.isMulti ? props.path?.map(pathDisplayName) : props.path} />
         </div>
       )}
     />

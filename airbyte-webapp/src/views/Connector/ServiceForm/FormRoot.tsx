@@ -47,20 +47,9 @@ const FormRoot: React.FC<FormRootProps> = ({
   hasSuccess,
   onStopTestingConnector,
 }) => {
-  const {
-    resetForm,
-    dirty,
-    isSubmitting,
-    isValid,
-  } = useFormikContext<ServiceFormValues>();
+  const { resetForm, dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
 
-  const {
-    resetUiFormProgress,
-    isLoadingSchema,
-    selectedService,
-    isEditMode,
-    formType,
-  } = useServiceForm();
+  const { resetUiFormProgress, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
     <FormContainer>

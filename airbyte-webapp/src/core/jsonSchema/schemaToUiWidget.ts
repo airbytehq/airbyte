@@ -39,14 +39,7 @@ export const jsonSchemaToUiWidget = (
         if (typeof condition === "boolean") {
           return [];
         }
-        return [
-          condition.title,
-          jsonSchemaToUiWidget(
-            { ...condition, type: jsonSchema.type },
-            key,
-            path
-          ),
-        ];
+        return [condition.title, jsonSchemaToUiWidget({ ...condition, type: jsonSchema.type }, key, path)];
       })
     );
 
@@ -77,9 +70,7 @@ export const jsonSchemaToUiWidget = (
   }
 
   if (jsonSchema.type === "object") {
-    const properties = Object.entries(
-      jsonSchema.properties || []
-    ).map(([k, schema]) =>
+    const properties = Object.entries(jsonSchema.properties || []).map(([k, schema]) =>
       jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
     );
 
@@ -103,16 +94,11 @@ export const jsonSchemaToUiWidget = (
     isRequired,
     isSecret: !!jsonSchema.airbyte_secret,
     multiline: !!jsonSchema.multiline,
-    type:
-      (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
-      "null",
+    type: (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ?? "null",
   };
 };
 
-function isKeyRequired(
-  key: string,
-  parentSchema?: AirbyteJSONSchemaDefinition
-): boolean {
+function isKeyRequired(key: string, parentSchema?: AirbyteJSONSchemaDefinition): boolean {
   const isRequired =
     (typeof parentSchema !== "boolean" &&
       Array.isArray(parentSchema?.required) &&
@@ -135,22 +121,12 @@ const defaultFields: Array<keyof AirbyteJSONSchema> = [
   "airbyte_hidden",
 ];
 
-const pickDefaultFields = (
-  schema: AirbyteJSONSchema
-): Partial<AirbyteJSONSchema> => {
+const pickDefaultFields = (schema: AirbyteJSONSchema): Partial<AirbyteJSONSchema> => {
   const partialSchema: Partial<AirbyteJSONSchema> = {
-    ...Object.fromEntries(
-      Object.entries(schema).filter(([k]) =>
-        defaultFields.includes(k as keyof AirbyteJSONSchema)
-      )
-    ),
+    ...Object.fromEntries(Object.entries(schema).filter(([k]) => defaultFields.includes(k as keyof AirbyteJSONSchema))),
   };
 
-  if (
-    typeof schema.items === "object" &&
-    !Array.isArray(schema.items) &&
-    schema.items.enum
-  ) {
+  if (typeof schema.items === "object" && !Array.isArray(schema.items) && schema.items.enum) {
     partialSchema.enum = schema.items.enum;
   } else if (schema.enum) {
     if (schema.enum?.length === 1 && isDefined(schema.default)) {

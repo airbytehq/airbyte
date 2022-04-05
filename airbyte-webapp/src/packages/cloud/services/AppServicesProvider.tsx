@@ -2,11 +2,7 @@ import React, { useMemo } from "react";
 
 import { useAuth } from "packages/firebaseReact";
 
-import {
-  ServicesProvider,
-  useGetService,
-  useInjectServices,
-} from "core/servicesProvider";
+import { ServicesProvider, useGetService, useInjectServices } from "core/servicesProvider";
 import { ApiServices } from "core/ApiServices";
 import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
@@ -58,11 +54,7 @@ const ServiceOverrides: React.FC = React.memo(({ children }) => {
 
   const registeredMiddlewares = useGetService("DefaultRequestMiddlewares");
 
-  return (
-    <ApiServices>
-      {registeredMiddlewares ? <>{children}</> : <LoadingPage />}
-    </ApiServices>
-  );
+  return <ApiServices>{registeredMiddlewares ? <>{children}</> : <LoadingPage />}</ApiServices>;
 });
 
 export { AppServicesProvider };

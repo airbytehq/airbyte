@@ -22,10 +22,7 @@ import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
-import ResourcesPopup, {
-  Icon,
-  Item,
-} from "views/layout/SideBar/components/ResourcesPopup";
+import ResourcesPopup, { Icon, Item } from "views/layout/SideBar/components/ResourcesPopup";
 import { FeatureItem, WithFeature } from "hooks/services/Feature";
 import { RoutePaths } from "../../../../../pages/routePaths";
 
@@ -108,19 +105,11 @@ const SideBar: React.FC = () => {
   return (
     <Bar>
       <div>
-        <Link
-          to={
-            workspace.displaySetupWizard
-              ? RoutePaths.Onboarding
-              : RoutePaths.Connections
-          }
-        >
+        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <WorkspacePopout>
-          {({ onOpen, value }) => (
-            <WorkspaceButton onClick={onOpen}>{value}</WorkspaceButton>
-          )}
+          {({ onOpen, value }) => <WorkspaceButton onClick={onOpen}>{value}</WorkspaceButton>}
         </WorkspacePopout>
         <Menu>
           {workspace.displaySetupWizard ? (

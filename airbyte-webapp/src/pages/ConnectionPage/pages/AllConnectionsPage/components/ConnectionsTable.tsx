@@ -21,18 +21,11 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
 
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const data = getConnectionTableData(
-    connections,
-    sourceDefinitions,
-    destinationDefinitions,
-    "connection"
-  );
+  const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "connection");
 
   const onChangeStatus = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
 
       if (connection) {
         await changeStatus(connection);
@@ -43,9 +36,7 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
 
   const onSync = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
       if (connection) {
         await syncManualConnection(connection);
       }

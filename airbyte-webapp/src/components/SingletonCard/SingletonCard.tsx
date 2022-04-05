@@ -32,8 +32,7 @@ const Singleton = styled.div<{ hasError?: boolean }>`
 
   padding: 25px 25px 22px;
 
-  background: ${({ theme, hasError }) =>
-    hasError ? theme.lightDangerColor : theme.lightPrimaryColor};
+  background: ${({ theme, hasError }) => (hasError ? theme.lightDangerColor : theme.lightPrimaryColor)};
   border: 1px solid ${({ theme }) => theme.greyColor20};
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: 8px;
@@ -46,8 +45,7 @@ const Singleton = styled.div<{ hasError?: boolean }>`
 `;
 
 const Title = styled(H5)<{ hasError?: boolean }>`
-  color: ${({ theme, hasError }) =>
-    hasError ? theme.dangerColor : theme.primaryColor};
+  color: ${({ theme, hasError }) => (hasError ? theme.dangerColor : theme.primaryColor)};
 
   font-style: normal;
   font-weight: bold;

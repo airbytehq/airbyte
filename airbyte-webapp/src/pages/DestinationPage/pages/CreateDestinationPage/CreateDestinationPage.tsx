@@ -22,9 +22,7 @@ const CreateDestinationPage: React.FC = () => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = destinationDefinitions.find(
-      (item) => item.destinationDefinitionId === values.serviceType
-    );
+    const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === values.serviceType);
     const result = await createDestination({
       values,
       destinationConnector: connector,
@@ -39,10 +37,7 @@ const CreateDestinationPage: React.FC = () => {
   return (
     <>
       <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
-      <PageTitle
-        withLine
-        title={<FormattedMessage id="destinations.newDestinationTitle" />}
-      />
+      <PageTitle withLine title={<FormattedMessage id="destinations.newDestinationTitle" />} />
       <FormPageContent>
         <DestinationForm
           onSubmit={onSubmitDestinationForm}

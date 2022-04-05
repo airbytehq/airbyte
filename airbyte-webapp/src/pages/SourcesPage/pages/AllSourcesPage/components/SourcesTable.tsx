@@ -18,18 +18,11 @@ const SourcesTable: React.FC<IProps> = ({ sources }) => {
   const { connections } = useConnectionList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
-  const data = getEntityTableData(
-    sources,
-    connections,
-    sourceDefinitions,
-    "source"
-  );
+  const data = getEntityTableData(sources, connections, sourceDefinitions, "source");
 
   const clickRow = (source: EntityTableDataItem) => push(`${source.entityId}`);
 
-  return (
-    <ImplementationTable data={data} onClickRow={clickRow} entity="source" />
-  );
+  return <ImplementationTable data={data} onClickRow={clickRow} entity="source" />;
 };
 
 export default SourcesTable;

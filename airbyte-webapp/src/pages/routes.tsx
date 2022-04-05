@@ -16,11 +16,7 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { useNotificationService } from "hooks/services/Notification";
 import { useApiHealthPoll } from "hooks/services/Health";
-import {
-  TrackPageAnalytics,
-  useAnalyticsIdentifyUser,
-  useAnalyticsRegisterValues,
-} from "hooks/services/Analytics";
+import { TrackPageAnalytics, useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -62,33 +58,16 @@ const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
     <MainView>
       <TrackPageAnalytics />
       <Routes>
-        <Route
-          path={`${RoutePaths.Destination}/*`}
-          element={<DestinationPage />}
-        />
+        <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-        <Route
-          path={`${RoutePaths.Connections}/*`}
-          element={<ConnectionPage />}
-        />
+        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
         {workspace.displaySetupWizard ? (
-          <Route
-            path={`${RoutePaths.Onboarding}/*`}
-            element={<OnboardingPage />}
-          />
+          <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
         ) : null}
         <Route
           path="*"
-          element={
-            <Navigate
-              to={
-                workspace.displaySetupWizard
-                  ? RoutePaths.Onboarding
-                  : RoutePaths.Connections
-              }
-            />
-          }
+          element={<Navigate to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections} />}
         />
       </Routes>
     </MainView>
@@ -102,18 +81,14 @@ const PreferencesRoutes = () => (
   </Routes>
 );
 
-export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({
-  includePath,
-}) => {
+export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ includePath }) => {
   const location = useLocation();
   const workspaces = useListWorkspaces();
   const currentWorkspace = workspaces[0];
 
   return (
     <Navigate
-      to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${
-        includePath ? location.pathname : ""
-      }`}
+      to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${includePath ? location.pathname : ""}`}
       replace={true}
     />
   );
@@ -127,11 +102,7 @@ const RoutingWithWorkspace: React.FC = () => {
 
   return (
     <OnboardingServiceProvider>
-      {workspace.initialSetupComplete ? (
-        <MainViewRoutes workspace={workspace} />
-      ) : (
-        <PreferencesRoutes />
-      )}
+      {workspace.initialSetupComplete ? <MainViewRoutes workspace={workspace} /> : <PreferencesRoutes />}
     </OnboardingServiceProvider>
   );
 };
@@ -147,11 +118,7 @@ export const Routing: React.FC = () => {
   const OldRoutes = useMemo(
     () =>
       Object.values(RoutePaths).map((r) => (
-        <Route
-          path={`${r}/*`}
-          key={r}
-          element={<AutoSelectFirstWorkspace includePath />}
-        />
+        <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace includePath />} />
       )),
     []
   );
@@ -159,10 +126,7 @@ export const Routing: React.FC = () => {
     <Routes>
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
-      <Route
-        path={`${RoutePaths.Workspaces}/:workspaceId/*`}
-        element={<RoutingWithWorkspace />}
-      />
+      <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />
       <Route path="*" element={<AutoSelectFirstWorkspace />} />
     </Routes>
   );

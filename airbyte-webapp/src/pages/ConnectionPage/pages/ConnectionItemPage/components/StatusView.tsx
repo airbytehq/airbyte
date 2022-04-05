@@ -12,10 +12,7 @@ import { Connection } from "core/domain/connection";
 import JobsList from "./JobsList";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
-import {
-  useResetConnection,
-  useSyncConnection,
-} from "hooks/services/useConnectionHook";
+import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
@@ -59,13 +56,9 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const { hasFeature } = useFeatureService();
   const allowSync = hasFeature(FeatureItem.AllowSync);
 
-  const sourceDefinition = useSourceDefinition(
-    connection?.source.sourceDefinitionId
-  );
+  const sourceDefinition = useSourceDefinition(connection?.source.sourceDefinitionId);
 
-  const destinationDefinition = useDestinationDefinition(
-    connection.destination.destinationDefinitionId
-  );
+  const destinationDefinition = useDestinationDefinition(connection.destination.destinationDefinitionId);
 
   const jobs = useListJobs({
     configId: connection.connectionId,
@@ -114,11 +107,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
           </Title>
         }
       >
-        {jobs.length ? (
-          <JobsList jobs={jobs} />
-        ) : (
-          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
-        )}
+        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </StyledContentCard>
       {isModalOpen && (
         <ResetDataModal

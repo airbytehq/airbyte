@@ -30,9 +30,7 @@ const ConnectionItemPage: React.FC = () => {
 
   const analyticsService = useAnalyticsService();
 
-  const frequency = FrequencyConfig.find((item) =>
-    equal(item.config, connection.schedule)
-  );
+  const frequency = FrequencyConfig.find((item) => equal(item.config, connection.schedule));
 
   const onAfterSaveSchema = () => {
     analyticsService.track("Source - Action", {
@@ -61,46 +59,24 @@ const ConnectionItemPage: React.FC = () => {
           ]}
         />
       }
-      pageTitle={
-        <ConnectionPageTitle
-          source={source}
-          destination={destination}
-          currentStep={currentStep}
-        />
-      }
+      pageTitle={<ConnectionPageTitle source={source} destination={destination} currentStep={currentStep} />}
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route
             path={ConnectionSettingsRoutes.STATUS}
-            element={
-              <StatusView
-                connection={connection}
-                frequencyText={frequency?.text}
-              />
-            }
+            element={<StatusView connection={connection} frequencyText={frequency?.text} />}
           />
           <Route
             path={ConnectionSettingsRoutes.REPLICATION}
-            element={
-              <ReplicationView
-                onAfterSaveSchema={onAfterSaveSchema}
-                connectionId={connectionId}
-              />
-            }
+            element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
           />
           <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           />
-          <Route
-            path={ConnectionSettingsRoutes.SETTINGS}
-            element={<SettingsView connectionId={connectionId} />}
-          />
-          <Route
-            index
-            element={<Navigate to={ConnectionSettingsRoutes.STATUS} />}
-          />
+          <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} />} />
         </Routes>
       </Suspense>
     </MainPageWithScroll>

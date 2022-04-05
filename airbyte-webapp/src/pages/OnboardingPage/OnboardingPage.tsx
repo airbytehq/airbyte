@@ -58,11 +58,7 @@ const OnboardingPage: React.FC = () => {
   });
 
   const { finishOnboarding } = useWorkspace();
-  const {
-    hasConnections,
-    hasDestinations,
-    hasSources,
-  } = useCurrentWorkspaceState();
+  const { hasConnections, hasDestinations, hasSources } = useCurrentWorkspaceState();
 
   const [animateExit, setAnimateExit] = useState(false);
 
@@ -91,18 +87,14 @@ const OnboardingPage: React.FC = () => {
       ) : null}
       <Content
         big={currentStep === StepType.SET_UP_CONNECTION}
-        medium={
-          currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl
-        }
+        medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl}
       >
         <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
         <StepsCounter steps={steps} currentStep={currentStep} />
 
         <Suspense fallback={<LoadingPage />}>
           {currentStep === StepType.INSTRUCTION && (
-            <WelcomeStep
-              onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)}
-            />
+            <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
           )}
           {currentStep === StepType.CREATE_SOURCE && (
             <SourceStep

@@ -1,8 +1,4 @@
-import {
-  defaultConfig as coreDefaultConfig,
-  useConfig as useCoreConfig,
-  Config,
-} from "config";
+import { defaultConfig as coreDefaultConfig, useConfig as useCoreConfig, Config } from "config";
 import { CloudConfig, CloudConfigExtension } from "./types";
 import { FeatureItem } from "hooks/services/Feature";
 

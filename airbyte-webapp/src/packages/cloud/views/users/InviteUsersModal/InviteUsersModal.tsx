@@ -13,10 +13,7 @@ const requestConnectorValidationSchema = yup.object({
   users: yup.array().of(
     yup.object().shape({
       role: yup.string().required("form.empty.error"),
-      email: yup
-        .string()
-        .required("form.empty.error")
-        .email("form.email.error"),
+      email: yup.string().required("form.empty.error").email("form.email.error"),
     })
   ),
 });
@@ -58,10 +55,7 @@ export const InviteUsersModal: React.FC<{
     },
   ];
   return (
-    <Modal
-      title={<FormattedMessage id="modals.addUser.title" />}
-      onClose={props.onClose}
-    >
+    <Modal title={<FormattedMessage id="modals.addUser.title" />} onClose={props.onClose}>
       <Formik
         validateOnBlur={true}
         validateOnChange={true}
@@ -107,12 +101,7 @@ export const InviteUsersModal: React.FC<{
                         <FormRow>
                           <Cell flex={2}>
                             <Field name={`users[${index}].email`}>
-                              {({ field }: FieldProps<string>) => (
-                                <Input
-                                  {...field}
-                                  placeholder="email@company.com"
-                                />
-                              )}
+                              {({ field }: FieldProps<string>) => <Input {...field} placeholder="email@company.com" />}
                             </Field>
                           </Cell>
                           <Cell>
@@ -151,11 +140,7 @@ export const InviteUsersModal: React.FC<{
                 />
 
                 <Controls>
-                  <Button
-                    type="button"
-                    secondary
-                    onClick={() => props.onClose()}
-                  >
+                  <Button type="button" secondary onClick={() => props.onClose()}>
                     <FormattedMessage id="modals.addUser.button.cancel" />
                   </Button>
                   <SendInvitationButton

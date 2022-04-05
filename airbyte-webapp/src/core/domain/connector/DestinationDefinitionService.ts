@@ -12,32 +12,23 @@ class DestinationDefinitionService extends AirbyteRequestService {
     });
   }
 
-  public list(
-    workspaceId: string
-  ): Promise<{ destinationDefinitions: DestinationDefinition[] }> {
+  public list(workspaceId: string): Promise<{ destinationDefinitions: DestinationDefinition[] }> {
     return this.fetch(`${this.url}/list`, {
       workspaceId,
     });
   }
 
-  public listLatest(
-    workspaceId: string
-  ): Promise<{ destinationDefinitions: DestinationDefinition[] }> {
+  public listLatest(workspaceId: string): Promise<{ destinationDefinitions: DestinationDefinition[] }> {
     return this.fetch(`${this.url}/list_latest`, {
       workspaceId,
     });
   }
 
-  public update(body: {
-    destinationDefinitionId: string;
-    dockerImageTag: string;
-  }): Promise<DestinationDefinition> {
+  public update(body: { destinationDefinitionId: string; dockerImageTag: string }): Promise<DestinationDefinition> {
     return this.fetch<DestinationDefinition>(`${this.url}/update`, body);
   }
 
-  public create(
-    body: CreateDestinationDefinitionPayload
-  ): Promise<DestinationDefinition> {
+  public create(body: CreateDestinationDefinitionPayload): Promise<DestinationDefinition> {
     return this.fetch<DestinationDefinition>(`${this.url}/create`, body);
   }
 }

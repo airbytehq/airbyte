@@ -38,29 +38,22 @@ const LogsContent: React.FC = () => {
   };
 
   // TODO: get rid of useAsyncFn and use react-query
-  const [
-    { loading: serverLogsLoading },
-    downloadServerLogs,
-  ] = useAsyncFn(async () => await downloadLogs(LogType.Server), [
-    downloadLogs,
-  ]);
+  const [{ loading: serverLogsLoading }, downloadServerLogs] = useAsyncFn(
+    async () => await downloadLogs(LogType.Server),
+    [downloadLogs]
+  );
 
-  const [
-    { loading: schedulerLogsLoading },
-    downloadSchedulerLogs,
-  ] = useAsyncFn(async () => await downloadLogs(LogType.Scheduler), [
-    downloadLogs,
-  ]);
+  const [{ loading: schedulerLogsLoading }, downloadSchedulerLogs] = useAsyncFn(
+    async () => await downloadLogs(LogType.Scheduler),
+    [downloadLogs]
+  );
 
   return (
     <Content>
       <LogsButton onClick={downloadServerLogs} isLoading={serverLogsLoading}>
         <FormattedMessage id="admin.downloadServerLogs" />
       </LogsButton>
-      <LogsButton
-        onClick={downloadSchedulerLogs}
-        isLoading={schedulerLogsLoading}
-      >
+      <LogsButton onClick={downloadSchedulerLogs} isLoading={schedulerLogsLoading}>
         <FormattedMessage id="admin.downloadSchedulerLogs" />
       </LogsButton>
     </Content>

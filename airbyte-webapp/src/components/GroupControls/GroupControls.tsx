@@ -29,12 +29,7 @@ type GroupControlsProps = {
   name?: string;
 };
 
-const GroupControls: React.FC<GroupControlsProps> = ({
-  title,
-  description,
-  children,
-  name,
-}) => {
+const GroupControls: React.FC<GroupControlsProps> = ({ title, description, children, name }) => {
   return (
     <FormGroup data-testid={name}>
       <GroupTitle>{title}</GroupTitle>

@@ -18,9 +18,7 @@ export const LinkToAttemptButton: React.FC<Props> = ({ jobId, attemptId }) => {
   const { formatMessage } = useIntl();
 
   const [showCopyTooltip, setShowCopyTooltip] = useState(false);
-  const [hideTooltip] = useDebounce(() => setShowCopyTooltip(false), 3000, [
-    showCopyTooltip,
-  ]);
+  const [hideTooltip] = useDebounce(() => setShowCopyTooltip(false), 3000, [showCopyTooltip]);
 
   const onCopyLink = async () => {
     // Get the current URL and replace (or add) hash to current log

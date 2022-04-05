@@ -18,9 +18,7 @@ const ConnectionPage: React.FC = () => (
       <Route
         path=":connectionId/*"
         element={
-          <ResourceNotFoundErrorBoundary
-            errorComponent={<StartOverErrorView />}
-          >
+          <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
             <ConnectionItemPage />
           </ResourceNotFoundErrorBoundary>
         }

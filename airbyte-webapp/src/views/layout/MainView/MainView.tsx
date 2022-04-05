@@ -26,9 +26,7 @@ const MainView: React.FC = (props) => (
     <SideBar />
     <Content>
       <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-        <React.Suspense fallback={<LoadingPage />}>
-          {props.children}
-        </React.Suspense>
+        <React.Suspense fallback={<LoadingPage />}>{props.children}</React.Suspense>
       </ResourceNotFoundErrorBoundary>
     </Content>
   </MainContainer>

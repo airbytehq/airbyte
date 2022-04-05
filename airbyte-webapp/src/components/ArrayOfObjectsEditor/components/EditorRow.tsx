@@ -39,12 +39,7 @@ type EditorRowProps = {
   onRemove: (id: number) => void;
 };
 
-const EditorRow: React.FC<EditorRowProps> = ({
-  name,
-  id,
-  onEdit,
-  onRemove,
-}) => {
+const EditorRow: React.FC<EditorRowProps> = ({ name, id, onEdit, onRemove }) => {
   return (
     <Content>
       <div>{name || id}</div>

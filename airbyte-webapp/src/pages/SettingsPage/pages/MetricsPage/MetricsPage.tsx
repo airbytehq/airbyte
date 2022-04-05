@@ -9,12 +9,7 @@ import { Content, SettingsCard } from "../SettingsComponents";
 
 const MetricsPage: React.FC = () => {
   const workspace = useCurrentWorkspace();
-  const {
-    errorMessage,
-    successMessage,
-    loading,
-    updateData,
-  } = useWorkspaceEditor();
+  const { errorMessage, successMessage, loading, updateData } = useWorkspaceEditor();
 
   const onChange = async (data: { anonymousDataCollection: boolean }) => {
     await updateData({ ...workspace, ...data });
@@ -22,9 +17,7 @@ const MetricsPage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle
-        titles={[{ id: "sidebar.settings" }, { id: "settings.metrics" }]}
-      />
+      <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "settings.metrics" }]} />
       <SettingsCard title={<FormattedMessage id="settings.metricsSettings" />}>
         <Content>
           <MetricsForm

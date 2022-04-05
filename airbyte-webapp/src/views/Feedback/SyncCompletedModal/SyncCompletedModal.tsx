@@ -9,10 +9,7 @@ type SyncCompletedModalProps = {
   onPassFeedback: (feedback: string) => void;
 };
 
-const SyncCompletedModal: React.FC<SyncCompletedModalProps> = ({
-  onClose,
-  onPassFeedback,
-}) => {
+const SyncCompletedModal: React.FC<SyncCompletedModalProps> = ({ onClose, onPassFeedback }) => {
   return (
     <Modal>
       <ModalHeader />

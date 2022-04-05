@@ -23,9 +23,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = sourceDefinitions.find(
-      (item) => item.sourceDefinitionId === values.serviceType
-    );
+    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
     const result = await createSource({ values, sourceConnector: connector });
     setSuccessRequest(true);
     setTimeout(() => {
@@ -43,13 +41,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     }, 2000);
   };
 
-  return (
-    <SourceForm
-      onSubmit={onSubmitSourceStep}
-      sourceDefinitions={sourceDefinitions}
-      hasSuccess={successRequest}
-    />
-  );
+  return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
 };
 
 export default SourceFormComponent;

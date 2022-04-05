@@ -9,10 +9,7 @@ import { H5, Link } from "components";
 import { FormTitle } from "../components/FormTitle";
 import FormContent from "../components/FormContent";
 import News from "../components/News";
-import {
-  useAuthService,
-  useCurrentUser,
-} from "packages/cloud/services/auth/AuthService";
+import { useAuthService, useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
 const Text = styled(H5)`
@@ -129,10 +126,7 @@ const ConfirmEmailPage: React.FC = () => {
               <Img src="/newsletter.png" height={68} />
             </TitleBlock>
             <Text>
-              <FormattedMessage
-                id="login.confirmEmail.text"
-                values={{ email }}
-              />
+              <FormattedMessage id="login.confirmEmail.text" values={{ email }} />
             </Text>
             <Resend $light as="div" onClick={onClickSendEmailVerification}>
               <FormattedMessage id="login.resendEmail" />

@@ -1,17 +1,8 @@
 import React, { useCallback, useContext, useMemo } from "react";
-import {
-  QueryObserverSuccessResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { QueryObserverSuccessResult, useMutation, useQuery, useQueryClient } from "react-query";
 
 import useRouter from "hooks/useRouter";
-import {
-  Workspace,
-  WorkspaceService,
-  WorkspaceState,
-} from "core/domain/workspace";
+import { Workspace, WorkspaceService, WorkspaceState } from "core/domain/workspace";
 import { RoutePaths } from "pages/routePaths";
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
@@ -22,10 +13,8 @@ export const workspaceKeys = {
   all: [SCOPE_USER, "workspaces"] as const,
   lists: () => [...workspaceKeys.all, "list"] as const,
   list: (filters: string) => [...workspaceKeys.lists(), { filters }] as const,
-  detail: (workspaceId: string) =>
-    [...workspaceKeys.all, "details", workspaceId] as const,
-  state: (workspaceId: string) =>
-    [...workspaceKeys.all, "state", workspaceId] as const,
+  detail: (workspaceId: string) => [...workspaceKeys.all, "details", workspaceId] as const,
+  state: (workspaceId: string) => [...workspaceKeys.all, "state", workspaceId] as const,
 };
 
 type Context = {
@@ -33,13 +22,9 @@ type Context = {
   exitWorkspace: () => void;
 };
 
-export const WorkspaceServiceContext = React.createContext<Context | null>(
-  null
-);
+export const WorkspaceServiceContext = React.createContext<Context | null>(null);
 
-const useSelectWorkspace = (): ((
-  workspace?: string | null | Workspace
-) => void) => {
+const useSelectWorkspace = (): ((workspace?: string | null | Workspace) => void) => {
   const queryClient = useQueryClient();
   const { push } = useRouter();
 
@@ -69,19 +54,13 @@ export const WorkspaceServiceProvider: React.FC = ({ children }) => {
     [selectWorkspace]
   );
 
-  return (
-    <WorkspaceServiceContext.Provider value={ctx}>
-      {children}
-    </WorkspaceServiceContext.Provider>
-  );
+  return <WorkspaceServiceContext.Provider value={ctx}>{children}</WorkspaceServiceContext.Provider>;
 };
 
 export const useWorkspaceService = (): Context => {
   const workspaceService = useContext(WorkspaceServiceContext);
   if (!workspaceService) {
-    throw new Error(
-      "useWorkspaceService must be used within a WorkspaceServiceProvider."
-    );
+    throw new Error("useWorkspaceService must be used within a WorkspaceServiceProvider.");
   }
 
   return workspaceService;
@@ -116,24 +95,24 @@ export const useCurrentWorkspaceState = (): WorkspaceState => {
   const workspaceId = useCurrentWorkspaceId();
   const service = useWorkspaceApiService();
 
-  return (useQuery(
-    workspaceKeys.state(workspaceId),
-    () => service.getState(workspaceId),
-    {
+  return (
+    useQuery(workspaceKeys.state(workspaceId), () => service.getState(workspaceId), {
       // We want to keep this query only shortly in cache, so we refetch
       // the data whenever the user might have changed sources/destinations/connections
       // without requiring to manually invalidate that query on each change.
       cacheTime: 5 * 1000,
-    }
-  ) as QueryObserverSuccessResult<WorkspaceState>).data;
+    }) as QueryObserverSuccessResult<WorkspaceState>
+  ).data;
 };
 
 export const useListWorkspaces = (): Workspace[] => {
   const service = useWorkspaceApiService();
 
-  return (useQuery(workspaceKeys.lists(), () =>
-    service.list()
-  ) as QueryObserverSuccessResult<{ workspaces: Workspace[] }>).data.workspaces;
+  return (
+    useQuery(workspaceKeys.lists(), () => service.list()) as QueryObserverSuccessResult<{
+      workspaces: Workspace[];
+    }>
+  ).data.workspaces;
 };
 
 export const useGetWorkspace = (
@@ -144,23 +123,22 @@ export const useGetWorkspace = (
 ): Workspace => {
   const service = useWorkspaceApiService();
 
-  return (useQuery(
-    workspaceKeys.detail(workspaceId),
-    () => service.get(workspaceId),
-    options
-  ) as QueryObserverSuccessResult<Workspace>).data;
+  return (
+    useQuery(
+      workspaceKeys.detail(workspaceId),
+      () => service.get(workspaceId),
+      options
+    ) as QueryObserverSuccessResult<Workspace>
+  ).data;
 };
 
 export const useUpdateWorkspace = () => {
   const service = useWorkspaceApiService();
   const queryClient = useQueryClient();
 
-  return useMutation(
-    (workspace: Record<string, unknown>) => service.update(workspace),
-    {
-      onSuccess: (data) => {
-        queryClient.setQueryData(workspaceKeys.detail(data.workspaceId), data);
-      },
-    }
-  );
+  return useMutation((workspace: Record<string, unknown>) => service.update(workspace), {
+    onSuccess: (data) => {
+      queryClient.setQueryData(workspaceKeys.detail(data.workspaceId), data);
+    },
+  });
 };

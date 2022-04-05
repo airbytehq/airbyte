@@ -10,10 +10,7 @@ import JobItem from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
-import {
-  useCreateConnection,
-  ValuesProps,
-} from "hooks/services/useConnectionHook";
+import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { LogsRequestError } from "core/request/LogsRequestError";
@@ -53,12 +50,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
 
-  const {
-    schema,
-    isLoading,
-    schemaErrorStatus,
-    onDiscoverSchema,
-  } = useDiscoverSchema(source.sourceId);
+  const { schema, isLoading, schemaErrorStatus, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
 
   const connection = useMemo(
     () => ({
@@ -103,11 +95,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   if (schemaErrorStatus) {
     const jobInfo = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <ContentCard
-        title={
-          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
-        }
-      >
+      <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
@@ -118,11 +106,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
   }
 
   return (
-    <ContentCard
-      title={
-        noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
-      }
-    >
+    <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
       {isLoading ? (
         <LoadingSchema />
       ) : (

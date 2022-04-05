@@ -8,10 +8,7 @@ import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { Connector, Destination } from "core/domain/connector";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import {
-  useDeleteDestination,
-  useUpdateDestination,
-} from "hooks/services/useDestinationHook";
+import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
 
 const Content = styled.div`
   max-width: 813px;
@@ -23,17 +20,10 @@ type IProps = {
   connectionsWithDestination: Connection[];
 };
 
-const DestinationsSettings: React.FC<IProps> = ({
-  currentDestination,
-  connectionsWithDestination,
-}) => {
-  const destinationSpecification = useGetDestinationDefinitionSpecification(
-    currentDestination.destinationDefinitionId
-  );
+const DestinationsSettings: React.FC<IProps> = ({ currentDestination, connectionsWithDestination }) => {
+  const destinationSpecification = useGetDestinationDefinitionSpecification(currentDestination.destinationDefinitionId);
 
-  const destinationDefinition = useDestinationDefinition(
-    currentDestination.destinationDefinitionId
-  );
+  const destinationDefinition = useDestinationDefinition(currentDestination.destinationDefinitionId);
 
   const { mutateAsync: updateDestination } = useUpdateDestination();
   const { mutateAsync: deleteDestination } = useDeleteDestination();

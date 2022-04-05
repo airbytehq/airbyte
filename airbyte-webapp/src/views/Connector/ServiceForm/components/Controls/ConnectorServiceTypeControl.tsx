@@ -10,18 +10,10 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
 
 import { FormBaseItem } from "core/form/types";
-import {
-  Connector,
-  ConnectorDefinition,
-  ReleaseStage,
-} from "core/domain/connector";
+import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
 
 import Instruction from "./Instruction";
-import {
-  IDataItem,
-  IProps as OptionProps,
-  OptionView,
-} from "components/base/DropDown/components/Option";
+import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
 import {
   IProps as SingleValueProps,
   Icon as SingleValueIcon,
@@ -107,46 +99,28 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
   }
 }
 
-const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
-  children,
-  ...props
-}) => (
+const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
     <BottomElement>
-      <Block
-        onClick={() =>
-          props.selectProps.selectProps.onOpenRequestConnectorModal(
-            props.selectProps.inputValue
-          )
-        }
-      >
+      <Block onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}>
         <FormattedMessage id="connector.requestConnectorBlock" />
       </Block>
     </BottomElement>
   </>
 );
 
-const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({
-  releaseStage,
-}) =>
+const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) =>
   releaseStage && releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
     <Stage>
-      <FormattedMessage
-        id={`connector.releaseStage.${releaseStage}`}
-        defaultMessage={releaseStage}
-      />
+      <FormattedMessage id={`connector.releaseStage.${releaseStage}`} defaultMessage={releaseStage} />
     </Stage>
   ) : null;
 
 const Option: React.FC<OptionProps> = (props) => {
   return (
     <components.Option {...props}>
-      <OptionView
-        data-testid={props.data.label}
-        isSelected={props.isSelected}
-        isDisabled={props.isDisabled}
-      >
+      <OptionView data-testid={props.data.label} isSelected={props.isSelected} isDisabled={props.isDisabled}>
         <Text>
           {props.data.img || null}
           <Label>{props.label}</Label>
@@ -215,9 +189,7 @@ const ConnectorServiceTypeControl: React.FC<{
   const sortedDropDownData = useMemo(
     () =>
       availableServices
-        .filter(
-          (item) => !disallowedOauthConnectors.includes(Connector.id(item))
-        )
+        .filter((item) => !disallowedOauthConnectors.includes(Connector.id(item)))
         .map((item) => ({
           label: item.name,
           value: Connector.id(item),
@@ -231,10 +203,7 @@ const ConnectorServiceTypeControl: React.FC<{
           if (priorityA !== priorityB) {
             return priorityB - priorityA;
           } else if (a.releaseStage !== b.releaseStage) {
-            return (
-              getOrderForReleaseStage(a.releaseStage) -
-              getOrderForReleaseStage(b.releaseStage)
-            );
+            return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
           } else {
             return naturalComparator(a.label, b.label);
           }
@@ -262,9 +231,7 @@ const ConnectorServiceTypeControl: React.FC<{
 
   const onMenuOpen = () => {
     const eventName =
-      formType === "source"
-        ? "Airbyte.UI.NewSource.SelectionOpened"
-        : "Airbyte.UI.NewDestination.SelectionOpened";
+      formType === "source" ? "Airbyte.UI.NewSource.SelectionOpened" : "Airbyte.UI.NewDestination.SelectionOpened";
     analytics.track(eventName, {});
   };
 
@@ -295,14 +262,10 @@ const ConnectorServiceTypeControl: React.FC<{
         />
       </ControlLabels>
       {selectedService && documentationUrl && (
-        <Instruction
-          selectedService={selectedService}
-          documentationUrl={documentationUrl}
-        />
+        <Instruction selectedService={selectedService} documentationUrl={documentationUrl} />
       )}
       {selectedService &&
-        (selectedService.releaseStage === ReleaseStage.ALPHA ||
-          selectedService.releaseStage === ReleaseStage.BETA) && (
+        (selectedService.releaseStage === ReleaseStage.ALPHA || selectedService.releaseStage === ReleaseStage.BETA) && (
           <WarningMessage stage={selectedService.releaseStage} />
         )}
     </>

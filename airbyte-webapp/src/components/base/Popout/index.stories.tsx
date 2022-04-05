@@ -10,10 +10,7 @@ export default {
   component: Popout,
 } as ComponentMeta<typeof Popout>;
 
-const Target: React.FC<{ onOpen: () => void; title: string }> = ({
-  onOpen,
-  title,
-}) => {
+const Target: React.FC<{ onOpen: () => void; title: string }> = ({ onOpen, title }) => {
   return <Button onClick={() => onOpen()}>{title}</Button>;
 };
 
@@ -37,10 +34,7 @@ const Template: ComponentStory<typeof Popout> = (args) => (
     {...args}
     options={options}
     targetComponent={(targetProps) => (
-      <Target
-        onOpen={targetProps.onOpen}
-        title={`isSearchable: ${args.isSearchable}`}
-      />
+      <Target onOpen={targetProps.onOpen} title={`isSearchable: ${args.isSearchable}`} />
     )}
   />
 );

@@ -12,17 +12,12 @@ import { RoutePaths } from "../routePaths";
 const DestinationsPage: React.FC = () => {
   return (
     <Routes>
-      <Route
-        path={RoutePaths.DestinationNew}
-        element={<CreateDestinationPage />}
-      />
+      <Route path={RoutePaths.DestinationNew} element={<CreateDestinationPage />} />
       <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
       <Route
         path=":id"
         element={
-          <ResourceNotFoundErrorBoundary
-            errorComponent={<StartOverErrorView />}
-          >
+          <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
             <DestinationItemPage />
           </ResourceNotFoundErrorBoundary>
         }

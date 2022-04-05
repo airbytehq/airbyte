@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  FormattedDateParts,
-  FormattedMessage,
-  FormattedTimeParts,
-} from "react-intl";
+import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
@@ -24,18 +20,12 @@ const MainView = styled(Row)<{
   padding: 15px 44px 10px 40px;
   justify-content: space-between;
   border-bottom: 1px solid
-    ${({ theme, isOpen, isFailed }) =>
-      !isOpen
-        ? "none"
-        : isFailed
-        ? theme.dangerTransparentColor
-        : theme.greyColor20};
+    ${({ theme, isOpen, isFailed }) => (!isOpen ? "none" : isFailed ? theme.dangerTransparentColor : theme.greyColor20)};
 `;
 
 const Title = styled.div<{ isFailed?: boolean }>`
   position: relative;
-  color: ${({ theme, isFailed }) =>
-    isFailed ? theme.dangerColor : theme.darkPrimaryColor};
+  color: ${({ theme, isFailed }) => (isFailed ? theme.dangerColor : theme.darkPrimaryColor)};
 `;
 
 const ErrorSign = styled(StatusIcon)`
@@ -68,8 +58,7 @@ const Arrow = styled.div<{
   font-size: 22px;
   line-height: 22px;
   height: 22px;
-  color: ${({ theme, isFailed }) =>
-    isFailed ? theme.dangerColor : theme.darkPrimaryColor};
+  color: ${({ theme, isFailed }) => (isFailed ? theme.dangerColor : theme.darkPrimaryColor)};
   position: absolute;
   right: 18px;
   top: calc(50% - 11px);
@@ -113,9 +102,7 @@ const MainInfo: React.FC<IProps> = ({
     return cancelJob(job.id);
   };
 
-  const isNotCompleted =
-    job.status &&
-    [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
+  const isNotCompleted = job.status && [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
 
   const jobStatus = isPartialSuccess ? (
     <FormattedMessage id="sources.partialSuccess" />
@@ -146,10 +133,7 @@ const MainInfo: React.FC<IProps> = ({
                   <FormattedMessage id="sources.lastAttempt" />
                 </Text>
               )}
-              <AttemptDetails
-                attempt={attempts[attempts.length - 1]}
-                configType={job.configType}
-              />
+              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={job.configType} />
             </div>
           ) : null}
         </Title>
@@ -160,28 +144,15 @@ const MainInfo: React.FC<IProps> = ({
             <FormattedMessage id="form.cancel" />
           </CancelButton>
         )}
-        <FormattedTimeParts
-          value={job.createdAt * 1000}
-          hour="numeric"
-          minute="2-digit"
-        >
-          {(parts) => (
-            <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>
-          )}
+        <FormattedTimeParts value={job.createdAt * 1000} hour="numeric" minute="2-digit">
+          {(parts) => <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>}
         </FormattedTimeParts>
-        <FormattedDateParts
-          value={job.createdAt * 1000}
-          month="2-digit"
-          day="2-digit"
-        >
+        <FormattedDateParts value={job.createdAt * 1000} month="2-digit" day="2-digit">
           {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
         </FormattedDateParts>
         {attempts.length > 1 && (
           <AttemptCount>
-            <FormattedMessage
-              id="sources.countAttempts"
-              values={{ count: attempts.length }}
-            />
+            <FormattedMessage id="sources.countAttempts" values={{ count: attempts.length }} />
           </AttemptCount>
         )}
         <Arrow isOpen={isOpen} isFailed={isFailed}>

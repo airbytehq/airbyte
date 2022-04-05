@@ -14,8 +14,7 @@ export const Content = styled.div<{ small?: boolean }>`
   width: 25px;
   min-width: 25px;
   background: ${({ theme, small }) => (small ? "none" : theme.brightColor)};
-  box-shadow: ${({ theme, small }) =>
-    small ? "none" : `0 1px 2px 0 ${theme.shadowColor}`};
+  box-shadow: ${({ theme, small }) => (small ? "none" : `0 1px 2px 0 ${theme.shadowColor}`)};
   border-radius: ${({ small }) => (small ? 0 : 50)}%;
   text-align: center;
 

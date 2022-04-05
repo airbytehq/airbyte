@@ -73,11 +73,7 @@ const StatusMainInfo: React.FC<IProps> = ({
         </SourceCell>
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>
-          <EnabledControl
-            disabled={!allowSync}
-            connection={connection}
-            frequencyText={frequencyText}
-          />
+          <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
         </EnabledCell>
       </Row>
     </MainInfo>

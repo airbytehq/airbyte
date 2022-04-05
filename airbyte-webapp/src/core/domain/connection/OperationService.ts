@@ -7,9 +7,7 @@ class OperationService extends AirbyteRequestService {
     return "operations";
   }
 
-  public async check(
-    operation: Operation
-  ): Promise<{ status: "succeeded" | "failed"; message: string }> {
+  public async check(operation: Operation): Promise<{ status: "succeeded" | "failed"; message: string }> {
     const rs = await this.fetch<{
       status: "succeeded" | "failed";
       message: string;

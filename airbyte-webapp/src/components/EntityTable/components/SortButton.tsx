@@ -31,9 +31,7 @@ type IProps = {
 const SortButton: React.FC<IProps> = ({ wasActive, onClick, lowToLarge }) => {
   return (
     <SortButtonView wasActive={wasActive} onClick={onClick} iconOnly>
-      <FontAwesomeIcon
-        icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown}
-      />
+      <FontAwesomeIcon icon={lowToLarge || !wasActive ? faCaretUp : faCaretDown} />
     </SortButtonView>
   );
 };

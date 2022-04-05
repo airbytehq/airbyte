@@ -40,11 +40,7 @@ const ConnectorsLink = styled(Link)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const ConnectionPageTitle: React.FC<IProps> = ({
-  source,
-  destination,
-  currentStep,
-}) => {
+const ConnectionPageTitle: React.FC<IProps> = ({ source, destination, currentStep }) => {
   const { push } = useRouter<{ id: string }>();
 
   const steps = [
@@ -80,22 +76,13 @@ const ConnectionPageTitle: React.FC<IProps> = ({
         <FormattedMessage id="connection.title" />
       </H6>
       <Links>
-        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>
-          {source.name}
-        </ConnectorsLink>
+        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>{source.name}</ConnectorsLink>
         <FontAwesomeIcon icon={faArrowRight} />
-        <ConnectorsLink
-          to={`../../${RoutePaths.Destination}/${destination.destinationId}`}
-        >
+        <ConnectorsLink to={`../../${RoutePaths.Destination}/${destination.destinationId}`}>
           {destination.name}
         </ConnectorsLink>
       </Links>
-      <StepsMenu
-        lightMode
-        data={steps}
-        onSelect={onSelectStep}
-        activeStep={currentStep}
-      />
+      <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </Title>
   );
 };

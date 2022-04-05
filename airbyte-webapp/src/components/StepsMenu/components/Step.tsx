@@ -24,14 +24,11 @@ const StepView = styled.div<{
   min-height: 28px;
   padding: 6px 14px;
   border-radius: 4px;
-  pointer-events: ${({ isActive, nonClickable }) =>
-    isActive || nonClickable ? "none" : "all"};
+  pointer-events: ${({ isActive, nonClickable }) => (isActive || nonClickable ? "none" : "all")};
   cursor: ${({ nonClickable }) => (nonClickable ? "default" : "pointer")};
   text-align: center;
-  background: ${({ theme, isActive }) =>
-    isActive ? theme.primaryColor12 : "none"};
-  color: ${({ theme, isActive }) =>
-    isActive ? theme.primaryColor : theme.greyColor60};
+  background: ${({ theme, isActive }) => (isActive ? theme.primaryColor12 : "none")};
+  color: ${({ theme, isActive }) => (isActive ? theme.primaryColor : theme.greyColor60)};
   font-weight: 500;
   font-size: 14px;
   line-height: 15px;
@@ -47,8 +44,7 @@ const Num = styled.div<{ isActive?: boolean }>`
   height: 16px;
   border-radius: 50%;
   text-align: center;
-  background: ${({ theme, isActive }) =>
-    isActive ? theme.primaryColor : theme.greyColor60};
+  background: ${({ theme, isActive }) => (isActive ? theme.primaryColor : theme.greyColor60)};
   color: ${({ theme }) => theme.whiteColor};
   font-weight: 500;
   font-size: 12px;
@@ -58,16 +54,7 @@ const Num = styled.div<{ isActive?: boolean }>`
   box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
 `;
 
-const Step: React.FC<IProps> = ({
-  name,
-  id,
-  isActive,
-  onClick,
-  num,
-  lightMode,
-  status,
-  isPartialSuccess,
-}) => {
+const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, status, isPartialSuccess }) => {
   const onItemClickItem = () => {
     if (onClick) {
       onClick(id);
@@ -84,10 +71,7 @@ const Step: React.FC<IProps> = ({
     >
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
       {status ? (
-        <StatusIcon
-          success={status !== Status.FAILED && !isPartialSuccess}
-          warning={isPartialSuccess}
-        />
+        <StatusIcon success={status !== Status.FAILED && !isPartialSuccess} warning={isPartialSuccess} />
       ) : null}
       {name}
     </StepView>

@@ -47,21 +47,13 @@ const MainView: React.FC = (props) => {
 
   return (
     <MainContainer>
-      <InsufficientPermissionsErrorBoundary
-        errorComponent={<StartOverErrorView />}
-      >
+      <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar />
         <Content>
-          {cloudWorkspace.creditStatus && showBanner && (
-            <CreditsProblemBanner status={cloudWorkspace.creditStatus} />
-          )}
+          {cloudWorkspace.creditStatus && showBanner && <CreditsProblemBanner status={cloudWorkspace.creditStatus} />}
           <DataBlock hasBanner={showBanner}>
-            <ResourceNotFoundErrorBoundary
-              errorComponent={<StartOverErrorView />}
-            >
-              <React.Suspense fallback={<LoadingPage />}>
-                {props.children ?? <Outlet />}
-              </React.Suspense>
+            <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+              <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>
             </ResourceNotFoundErrorBoundary>
           </DataBlock>
         </Content>

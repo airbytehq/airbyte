@@ -85,11 +85,7 @@ export const ConditionSection: React.FC<{
       }
     >
       <ConditionControls>
-        <FormSection
-          blocks={formField.conditions[currentlySelectedCondition]}
-          path={path}
-          skipAppend
-        />
+        <FormSection blocks={formField.conditions[currentlySelectedCondition]} path={path} skipAppend />
       </ConditionControls>
     </GroupControls>
   );

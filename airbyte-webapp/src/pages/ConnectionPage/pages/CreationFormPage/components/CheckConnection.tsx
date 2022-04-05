@@ -41,13 +41,7 @@ const LinkButton = styled(Button)`
   margin-bottom: 6px;
 `;
 
-const CheckConnection: React.FC<IProps> = ({
-  isLoading,
-  type,
-  error,
-  retry,
-  linkToSettings,
-}) => {
+const CheckConnection: React.FC<IProps> = ({ isLoading, type, error, retry, linkToSettings }) => {
   if (error) {
     const errorMessage = createFormErrorMessage({ status: error });
 

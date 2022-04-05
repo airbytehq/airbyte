@@ -39,21 +39,11 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
           </H5>
           <FormattedMessage id={`tables.${type}DataDelete`} />
         </Text>
-        <Button
-          danger
-          onClick={() => setIsModalOpen(true)}
-          data-id="open-delete-modal"
-        >
+        <Button danger onClick={() => setIsModalOpen(true)} data-id="open-delete-modal">
           <FormattedMessage id={`tables.${type}Delete`} />
         </Button>
       </DeleteBlockComponent>
-      {isModalOpen && (
-        <DeleteModal
-          type={type}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={onDelete}
-        />
-      )}
+      {isModalOpen && <DeleteModal type={type} onClose={() => setIsModalOpen(false)} onSubmit={onDelete} />}
     </>
   );
 };

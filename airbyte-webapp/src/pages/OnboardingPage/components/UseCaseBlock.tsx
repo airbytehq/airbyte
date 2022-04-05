@@ -62,12 +62,7 @@ const Link = styled.a`
   }
 `;
 
-const UseCaseBlock: React.FC<UseCaseBlockProps> = ({
-  id,
-  count,
-  onSkip,
-  href,
-}) => {
+const UseCaseBlock: React.FC<UseCaseBlockProps> = ({ id, count, onSkip, href }) => {
   return (
     <Block>
       <div>

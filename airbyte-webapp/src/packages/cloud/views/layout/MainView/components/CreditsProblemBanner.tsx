@@ -26,9 +26,7 @@ type CreditsProblemBannerProps = {
   status: CreditStatus;
 };
 
-const CreditsProblemBanner: React.FC<CreditsProblemBannerProps> = ({
-  status,
-}) => (
+const CreditsProblemBanner: React.FC<CreditsProblemBannerProps> = ({ status }) => (
   <Container>
     <FormattedMessage id={`credits.creditsProblem.${status}`} />
     <CreditsLink to={CloudRoutes.Credits}>

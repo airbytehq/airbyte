@@ -33,9 +33,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
   const { mutateAsync: createSourceDefinition } = useCreateSourceDefinition();
 
-  const {
-    mutateAsync: createDestinationDefinition,
-  } = useCreateDestinationDefinition();
+  const { mutateAsync: createDestinationDefinition } = useCreateDestinationDefinition();
 
   const onSubmitSource = async (sourceDefinition: ICreateProps) => {
     setErrorMessage("");
@@ -81,11 +79,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
       )}
 
       {isModalOpen && (
-        <CreateConnectorModal
-          onClose={onChangeModalState}
-          onSubmit={onSubmit}
-          errorMessage={errorMessage}
-        />
+        <CreateConnectorModal onClose={onChangeModalState} onSubmit={onSubmit} errorMessage={errorMessage} />
       )}
     </>
   );

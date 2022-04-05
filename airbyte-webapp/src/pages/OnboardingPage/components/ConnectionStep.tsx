@@ -11,9 +11,7 @@ type IProps = {
   onNextStep: () => void;
 };
 
-const ConnectionStep: React.FC<IProps> = ({
-  onNextStep: afterSubmitConnection,
-}) => {
+const ConnectionStep: React.FC<IProps> = ({ onNextStep: afterSubmitConnection }) => {
   const { sources } = useSourceList();
   const { destinations } = useDestinationList();
 
@@ -24,9 +22,7 @@ const ConnectionStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createConnection"
             values={{
-              name: (name: React.ReactNode[]) => (
-                <HighlightedText>{name}</HighlightedText>
-              ),
+              name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
             }}
           />
         }

@@ -96,16 +96,10 @@ const ResetPasswordConfirmPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={
-                      <FormattedMessage id="confirmResetPassword.newPassword" />
-                    }
+                    label={<FormattedMessage id="confirmResetPassword.newPassword" />}
                     type="password"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -114,11 +108,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton
-                type="submit"
-                isLoading={isSubmitting}
-                data-testid="login.resetPassword"
-              >
+              <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
                 <FormattedMessage id="login.resetPassword" />
               </LoadingButton>
             </BottomBlock>

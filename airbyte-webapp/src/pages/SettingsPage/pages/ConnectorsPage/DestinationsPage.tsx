@@ -18,9 +18,7 @@ const DestinationsPage: React.FC = () => {
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const {
-    mutateAsync: updateDestinationDefinition,
-  } = useUpdateDestinationDefinition();
+  const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
 
   const { hasNewDestinationVersion } = useConnector();
 
@@ -33,8 +31,7 @@ const DestinationsPage: React.FC = () => {
         });
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        const messageId =
-          e.status === 422 ? "form.imageCannotFound" : "form.someError";
+        const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
@@ -48,16 +45,11 @@ const DestinationsPage: React.FC = () => {
     const destinationDefinitionMap = new Map<string, DestinationDefinition>();
     destinations.forEach((destination) => {
       const destinationDefinition = destinationDefinitions.find(
-        (destinationDefinition) =>
-          destinationDefinition.destinationDefinitionId ===
-          destination.destinationDefinitionId
+        (destinationDefinition) => destinationDefinition.destinationDefinitionId === destination.destinationDefinitionId
       );
 
       if (destinationDefinition) {
-        destinationDefinitionMap.set(
-          destinationDefinition.destinationDefinitionId,
-          destinationDefinition
-        );
+        destinationDefinitionMap.set(destinationDefinition.destinationDefinitionId, destinationDefinition);
       }
     });
 

@@ -54,11 +54,7 @@ const ResetPasswordPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -67,11 +63,7 @@ const ResetPasswordPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton
-                type="submit"
-                isLoading={isSubmitting}
-                data-testid="login.resetPassword"
-              >
+              <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
                 <FormattedMessage id="login.resetPassword" />
               </LoadingButton>
             </BottomBlock>

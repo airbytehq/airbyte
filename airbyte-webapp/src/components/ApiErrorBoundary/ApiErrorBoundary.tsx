@@ -20,11 +20,7 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
     this.state = {};
   }
 
-  static getDerivedStateFromError(error: {
-    message: string;
-    status?: number;
-    __type?: string;
-  }): BoundaryState {
+  static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): BoundaryState {
     // Update state so the next render will show the fallback UI.
     if (isVersionError(error)) {
       return { errorId: ErrorId.VersionMismatch, message: error.message };
@@ -49,11 +45,7 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
     }
 
     if (this.state.errorId === ErrorId.ServerUnavailable) {
-      return (
-        <ErrorOccurredView
-          message={<FormattedMessage id="webapp.cannotReachServer" />}
-        />
-      );
+      return <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />} />;
     }
 
     return !this.state.errorId ? (

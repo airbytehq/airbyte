@@ -67,10 +67,7 @@ export const AuthButton: React.FC = () => {
         {done ? (
           <FormattedMessage id="connectorForm.reauthenticate" />
         ) : (
-          <FormattedMessage
-            id={getAuthenticateMessageId(definitionId)}
-            values={{ connector: selectedService?.name }}
-          />
+          <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
         )}
       </Component>
       {done && (

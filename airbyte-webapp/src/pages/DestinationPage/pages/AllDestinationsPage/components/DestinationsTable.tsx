@@ -17,23 +17,11 @@ const DestinationsTable: React.FC<IProps> = ({ destinations }) => {
   const { connections } = useConnectionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const data = getEntityTableData(
-    destinations,
-    connections,
-    destinationDefinitions,
-    "destination"
-  );
+  const data = getEntityTableData(destinations, connections, destinationDefinitions, "destination");
 
-  const clickRow = (destination: EntityTableDataItem) =>
-    push(`${destination.entityId}`);
+  const clickRow = (destination: EntityTableDataItem) => push(`${destination.entityId}`);
 
-  return (
-    <ImplementationTable
-      data={data}
-      onClickRow={clickRow}
-      entity="destination"
-    />
-  );
+  return <ImplementationTable data={data} onClickRow={clickRow} entity="destination" />;
 };
 
 export default DestinationsTable;

@@ -33,23 +33,14 @@ const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit, type }) => {
   const { isLoading, mutateAsync } = useMutation(() => onSubmit());
 
   return (
-    <Modal
-      onClose={onClose}
-      title={<FormattedMessage id={`tables.${type}DeleteConfirm`} />}
-    >
+    <Modal onClose={onClose} title={<FormattedMessage id={`tables.${type}DeleteConfirm`} />}>
       <Content>
         <FormattedMessage id={`tables.${type}DeleteModalText`} />
         <ButtonContent>
           <ButtonWithMargin onClick={onClose} type="button" secondary>
             <FormattedMessage id="form.cancel" />
           </ButtonWithMargin>
-          <LoadingButton
-            type="button"
-            danger
-            isLoading={isLoading}
-            onClick={() => mutateAsync()}
-            data-id="delete"
-          >
+          <LoadingButton type="button" danger isLoading={isLoading} onClick={() => mutateAsync()} data-id="delete">
             <FormattedMessage id="form.delete" />
           </LoadingButton>
         </ButtonContent>

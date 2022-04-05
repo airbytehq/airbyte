@@ -23,10 +23,7 @@ const StreamOptions = [
   },
 ];
 
-const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({
-  field,
-  form,
-}) => {
+const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({ field, form }) => {
   const [, meta] = useField(field.name);
 
   return (
@@ -35,9 +32,7 @@ const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({
       error={!!meta.error && meta.touched}
       labelAdditionLength={0}
       label={<FormattedMessage id="connectionForm.namespaceDefinition.title" />}
-      message={
-        <FormattedMessage id="connectionForm.namespaceDefinition.subtitle" />
-      }
+      message={<FormattedMessage id="connectionForm.namespaceDefinition.subtitle" />}
     >
       <DropDown
         name="namespaceDefinition"

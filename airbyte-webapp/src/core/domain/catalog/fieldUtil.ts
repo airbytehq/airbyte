@@ -3,10 +3,7 @@ import { SyncSchemaField } from "./models";
 import { ConnectionNamespaceDefinition } from "../connection";
 import { SOURCE_NAMESPACE_TAG } from "../connector/source";
 
-const traverseSchemaToField = (
-  jsonSchema: JSONSchema7Definition,
-  key: string
-): SyncSchemaField[] => {
+const traverseSchemaToField = (jsonSchema: JSONSchema7Definition, key: string): SyncSchemaField[] => {
   // For the top level we should not insert an extra object
   return traverseJsonSchemaProperties(jsonSchema, key)[0].fields ?? [];
 };
@@ -23,9 +20,7 @@ const traverseJsonSchemaProperties = (
   let fields: SyncSchemaField[] | undefined;
   if (jsonSchema.properties) {
     fields = Object.entries(jsonSchema.properties)
-      .flatMap(([k, schema]) =>
-        traverseJsonSchemaProperties(schema, k, [...path, k])
-      )
+      .flatMap(([k, schema]) => traverseJsonSchemaProperties(schema, k, [...path, k]))
       .flat(2);
   }
 
@@ -45,9 +40,7 @@ const traverseJsonSchemaProperties = (
 
 type NamespaceOptions =
   | {
-      namespaceDefinition:
-        | ConnectionNamespaceDefinition.Source
-        | ConnectionNamespaceDefinition.Destination;
+      namespaceDefinition: ConnectionNamespaceDefinition.Source | ConnectionNamespaceDefinition.Destination;
       sourceNamespace?: string;
     }
   | {
@@ -68,10 +61,7 @@ function getDestinationNamespace(opt: NamespaceOptions): string {
         return destinationSetting;
       }
 
-      return opt.namespaceFormat.replace(
-        SOURCE_NAMESPACE_TAG,
-        opt.sourceNamespace
-      );
+      return opt.namespaceFormat.replace(SOURCE_NAMESPACE_TAG, opt.sourceNamespace);
   }
 }
 

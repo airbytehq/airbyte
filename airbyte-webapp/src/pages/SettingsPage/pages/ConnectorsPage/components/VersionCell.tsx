@@ -61,13 +61,7 @@ const ErrorMessage = styled(SuccessMessage)`
   line-height: 14px;
 `;
 
-const VersionCell: React.FC<IProps> = ({
-  id,
-  version,
-  onChange,
-  feedback,
-  currentVersion,
-}) => {
+const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, currentVersion }) => {
   const formatMessage = useIntl().formatMessage;
 
   const renderFeedback = (dirty: boolean, feedback?: string) => {
@@ -86,8 +80,7 @@ const VersionCell: React.FC<IProps> = ({
     return null;
   };
 
-  const isConnectorUpdateable =
-    currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
+  const isConnectorUpdateable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
 
   return (
     <FormContent>

@@ -97,9 +97,7 @@ const ResourcesPopup: React.FC<{
 
   return (
     <Popout
-      targetComponent={(targetProps) =>
-        children({ onOpen: targetProps.onOpen })
-      }
+      targetComponent={(targetProps) => children({ onOpen: targetProps.onOpen })}
       styles={{
         menuPortal: (base) => ({
           ...base,

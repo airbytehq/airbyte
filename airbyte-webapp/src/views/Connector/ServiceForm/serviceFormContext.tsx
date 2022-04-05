@@ -2,16 +2,9 @@ import React, { useContext, useMemo } from "react";
 import { getIn, useFormikContext } from "formik";
 
 import { WidgetConfigMap } from "core/form/types";
-import {
-  Connector,
-  ConnectorDefinition,
-  ConnectorDefinitionSpecification,
-} from "core/domain/connector";
+import { Connector, ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
-import {
-  makeConnectionConfigurationPath,
-  serverProvidedOauthPaths,
-} from "./utils";
+import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 import { ServiceFormValues } from "./types";
 
 type Context = {
@@ -36,9 +29,7 @@ const FormWidgetContext = React.createContext<Context | null>(null);
 const useServiceForm = (): Context => {
   const serviceFormHelpers = useContext(FormWidgetContext);
   if (!serviceFormHelpers) {
-    throw new Error(
-      "useServiceForm should be used within ServiceFormContextProvider"
-    );
+    throw new Error("useServiceForm should be used within ServiceFormContextProvider");
   }
   return serviceFormHelpers;
 };
@@ -77,12 +68,7 @@ const ServiceFormContextProvider: React.FC<{
       hasFeature(FeatureItem.AllowOAuthConnector) &&
       selectedConnector?.advancedAuth &&
       selectedConnector?.advancedAuth.predicateValue ===
-        getIn(
-          getValues(values),
-          makeConnectionConfigurationPath(
-            selectedConnector?.advancedAuth.predicateKey
-          )
-        ),
+        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey)),
     [selectedConnector, hasFeature, values, getValues]
   );
 
@@ -116,12 +102,9 @@ const ServiceFormContextProvider: React.FC<{
       removeUnfinishedFlow: (path: string) =>
         setUiWidgetsInfo(
           "_common.unfinishedFlows",
-          Object.fromEntries(
-            Object.entries(unfinishedFlows).filter(([key]) => key !== path)
-          )
+          Object.fromEntries(Object.entries(unfinishedFlows).filter(([key]) => key !== path))
         ),
-      resetUiFormProgress: () =>
-        setUiWidgetsInfo("_common.unfinishedFlows", {}),
+      resetUiFormProgress: () => setUiWidgetsInfo("_common.unfinishedFlows", {}),
     };
   }, [
     widgetsInfo,
@@ -136,11 +119,7 @@ const ServiceFormContextProvider: React.FC<{
     isEditMode,
   ]);
 
-  return (
-    <FormWidgetContext.Provider value={ctx}>
-      {children}
-    </FormWidgetContext.Provider>
-  );
+  return <FormWidgetContext.Provider value={ctx}>{children}</FormWidgetContext.Provider>;
 };
 
 export { useServiceForm, ServiceFormContextProvider };

@@ -20,9 +20,7 @@ function removeNestedPaths(
   const resultSchema: JSONSchema7 = schema;
 
   if (schema.oneOf) {
-    resultSchema.oneOf = schema.oneOf.map((o) =>
-      removeNestedPaths(o, pathList, ignoreProp)
-    );
+    resultSchema.oneOf = schema.oneOf.map((o) => removeNestedPaths(o, pathList, ignoreProp));
   }
 
   if (schema.properties) {
@@ -38,9 +36,7 @@ function removeNestedPaths(
 
       if (matchingPaths.some((p) => p.length === 1)) {
         if (schema.required) {
-          resultSchema.required = schema.required?.filter(
-            (requiredFiled) => requiredFiled !== propertiesKey
-          );
+          resultSchema.required = schema.required?.filter((requiredFiled) => requiredFiled !== propertiesKey);
         }
 
         if (!ignoreProp) {
@@ -53,11 +49,7 @@ function removeNestedPaths(
       } else {
         const innerPath = matchingPaths.map(([, ...rest]) => rest);
 
-        filteredProperties[propertiesKey] = removeNestedPaths(
-          properties[propertiesKey],
-          innerPath,
-          ignoreProp
-        );
+        filteredProperties[propertiesKey] = removeNestedPaths(properties[propertiesKey], innerPath, ignoreProp);
       }
     }
 
@@ -86,9 +78,7 @@ function applyFuncAt(
 
   if (schema.oneOf) {
     const idx = typeof pathElem === "number" ? pathElem : parseInt(pathElem);
-    resultSchema.oneOf = schema.oneOf.map((o, index) =>
-      index === idx ? applyFuncAt(o, restPath, f) : o
-    );
+    resultSchema.oneOf = schema.oneOf.map((o, index) => (index === idx ? applyFuncAt(o, restPath, f) : o));
   }
 
   if (schema.properties && typeof pathElem === "string") {

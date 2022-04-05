@@ -24,16 +24,8 @@ interface Props {
   tooltip?: boolean;
 }
 
-export const ReleaseStageBadge: React.FC<Props> = ({
-  stage,
-  small,
-  tooltip = true,
-}) => {
-  if (
-    !stage ||
-    stage === ReleaseStage.GENERALLY_AVAILABLE ||
-    stage === ReleaseStage.CUSTOM
-  ) {
+export const ReleaseStageBadge: React.FC<Props> = ({ stage, small, tooltip = true }) => {
+  if (!stage || stage === ReleaseStage.GENERALLY_AVAILABLE || stage === ReleaseStage.CUSTOM) {
     return null;
   }
 

@@ -11,9 +11,7 @@ type ShowLoadingMessageProps = {
 
 const TIMEOUT_MS = 10000;
 
-const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({
-  connector,
-}) => {
+const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({ connector }) => {
   const config = useConfig();
   const [longLoading, setLongLoading] = useState(false);
 

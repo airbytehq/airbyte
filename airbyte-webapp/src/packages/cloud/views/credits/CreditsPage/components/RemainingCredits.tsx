@@ -60,9 +60,7 @@ const RemainingCredits: React.FC = () => {
   const currentWorkspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(currentWorkspace.workspaceId);
   const [searchParams, setSearchParams] = useSearchParams();
-  const invalidateWorkspace = useInvalidateCloudWorkspace(
-    currentWorkspace.workspaceId
-  );
+  const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
 

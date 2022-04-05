@@ -44,9 +44,7 @@ const LogsDetails: React.FC<{
     <LogHeader>
       <LogPath>{path}</LogPath>
       <LinkToAttemptButton jobId={id} attemptId={currentAttempt?.id} />
-      {logs?.logLines && (
-        <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />
-      )}
+      {logs?.logLines && <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />}
       {jobDebugInfo && <DebugInfoButton jobDebugInfo={jobDebugInfo} />}
     </LogHeader>
     <LogsTable logsArray={logs?.logLines} />

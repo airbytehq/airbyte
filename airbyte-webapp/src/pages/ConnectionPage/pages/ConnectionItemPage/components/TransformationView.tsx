@@ -12,13 +12,7 @@ import {
   useDefaultTransformation,
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
-import {
-  Connection,
-  NormalizationType,
-  Operation,
-  OperatorType,
-  Transformation,
-} from "core/domain/connection";
+import { Connection, NormalizationType, Operation, OperatorType, Transformation } from "core/domain/connection";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { ContentCard, H4 } from "components";
@@ -69,12 +63,7 @@ const CustomTransformationsCard: React.FC<{
       }}
     >
       <FieldArray name="transformations">
-        {(formProps) => (
-          <TransformationField
-            defaultTransformation={defaultTransformation}
-            {...formProps}
-          />
-        )}
+        {(formProps) => <TransformationField defaultTransformation={defaultTransformation} {...formProps} />}
       </FieldArray>
     </FormCard>
   );
@@ -104,43 +93,23 @@ const NormalizationCard: React.FC<{
   );
 };
 
-const TransformationView: React.FC<TransformationViewProps> = ({
-  connection,
-}) => {
-  const definition = useGetDestinationDefinitionSpecification(
-    connection.destination.destinationDefinitionId
-  );
+const TransformationView: React.FC<TransformationViewProps> = ({ connection }) => {
+  const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
   const { hasFeature } = useFeatureService();
 
   const supportsNormalization = definition.supportsNormalization;
-  const supportsDbt =
-    hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
+  const supportsDbt = hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
-  const onSubmit = async (values: {
-    transformations?: Transformation[];
-    normalization?: NormalizationType;
-  }) => {
-    const newOp = mapFormPropsToOperation(
-      values,
-      connection.operations,
-      workspace.workspaceId
-    );
+  const onSubmit = async (values: { transformations?: Transformation[]; normalization?: NormalizationType }) => {
+    const newOp = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
 
     const operations = values.transformations
       ? connection.operations
-          .filter(
-            (op) =>
-              op.operatorConfiguration.operatorType ===
-              OperatorType.Normalization
-          )
+          .filter((op) => op.operatorConfiguration.operatorType === OperatorType.Normalization)
           .concat(newOp)
-      : newOp.concat(
-          connection.operations.filter(
-            (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
-          )
-        );
+      : newOp.concat(connection.operations.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Dbt));
 
     return updateConnection({
       namespaceDefinition: connection.namespaceDefinition,
@@ -156,18 +125,8 @@ const TransformationView: React.FC<TransformationViewProps> = ({
 
   return (
     <Content>
-      {supportsNormalization && (
-        <NormalizationCard
-          operations={connection.operations}
-          onSubmit={onSubmit}
-        />
-      )}
-      {supportsDbt && (
-        <CustomTransformationsCard
-          operations={connection.operations}
-          onSubmit={onSubmit}
-        />
-      )}
+      {supportsNormalization && <NormalizationCard operations={connection.operations} onSubmit={onSubmit} />}
+      {supportsDbt && <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} />}
       {!supportsNormalization && !supportsDbt && (
         <NoSupportedTransformationCard>
           <H4 center>

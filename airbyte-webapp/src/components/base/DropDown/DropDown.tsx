@@ -44,9 +44,7 @@ const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
   const currentValue =
     props.value !== undefined
       ? props.isMulti
-        ? props.options?.filter((op) =>
-            props.value.find((o: OptionType) => equal(o, op.value))
-          )
+        ? props.options?.filter((op) => props.value.find((o: OptionType) => equal(o, op.value)))
         : props.options?.find((op) => equal(op.value, props.value))
       : null;
 
@@ -79,9 +77,7 @@ const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
   );
 });
 
-const defaultDataItemSort = naturalComparatorBy<IDataItem>(
-  (dataItem) => dataItem.label || ""
-);
+const defaultDataItemSort = naturalComparatorBy<IDataItem>((dataItem) => dataItem.label || "");
 
 export default DropDown;
 export { DropDown, defaultDataItemSort };

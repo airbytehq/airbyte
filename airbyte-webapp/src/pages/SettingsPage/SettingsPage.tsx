@@ -94,16 +94,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
-      pageTitle={
-        <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
-      }
+      pageTitle={<PageTitle title={<FormattedMessage id="sidebar.settings" />} />}
     >
       <Content>
-        <SideMenu
-          data={menuItems}
-          onSelect={onSelectMenuItem}
-          activeItem={pathname}
-        />
+        <SideMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
 
         <MainView>
           <Suspense fallback={<LoadingPage />}>

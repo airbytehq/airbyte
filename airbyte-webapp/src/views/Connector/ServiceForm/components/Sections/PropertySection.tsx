@@ -8,19 +8,11 @@ import { Label } from "../Property/Label";
 import { Control } from "../Property/Control";
 import { useServiceForm } from "../../serviceFormContext";
 
-const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({
-  property,
-  path,
-}) => {
+const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({ property, path }) => {
   const propertyPath = path ?? property.path;
   const formikBag = useField(propertyPath);
   const [field, meta] = formikBag;
-  const {
-    addUnfinishedFlow,
-    removeUnfinishedFlow,
-    unfinishedFlows,
-    widgetsInfo,
-  } = useServiceForm();
+  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows, widgetsInfo } = useServiceForm();
 
   const overriddenComponent = widgetsInfo[propertyPath]?.component;
   if (overriddenComponent) {

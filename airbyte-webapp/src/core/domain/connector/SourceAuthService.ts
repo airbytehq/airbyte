@@ -6,13 +6,8 @@ class SourceAuthService extends AirbyteRequestService {
     return "source_oauths";
   }
 
-  public getConsentUrl(
-    body: SourceGetConsentPayload
-  ): Promise<{ consentUrl: string }> {
-    return this.fetch<{ consentUrl: string }>(
-      `${this.url}/get_consent_url`,
-      body
-    );
+  public getConsentUrl(body: SourceGetConsentPayload): Promise<{ consentUrl: string }> {
+    return this.fetch<{ consentUrl: string }>(`${this.url}/get_consent_url`, body);
   }
 
   public completeOauth(
@@ -20,10 +15,7 @@ class SourceAuthService extends AirbyteRequestService {
       queryParams: Record<string, unknown>;
     }
   ): Promise<Record<string, unknown>> {
-    return this.fetch<Record<string, unknown>>(
-      `${this.url}/complete_oauth`,
-      body
-    );
+    return this.fetch<Record<string, unknown>>(`${this.url}/complete_oauth`, body);
   }
 }
 

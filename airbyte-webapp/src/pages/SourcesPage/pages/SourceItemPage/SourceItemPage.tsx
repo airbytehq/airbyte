@@ -5,11 +5,7 @@ import { DropDownRow, ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import Breadcrumbs from "components/Breadcrumbs";
-import {
-  ItemTabs,
-  StepsTypes,
-  TableItemTitle,
-} from "components/ConnectorBlocks";
+import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 
@@ -47,9 +43,7 @@ const SourceItemPage: React.FC = () => {
     { name: source.name },
   ];
 
-  const connectionsWithSource = connections.filter(
-    (connectionItem) => connectionItem.sourceId === source.sourceId
-  );
+  const connectionsWithSource = connections.filter((connectionItem) => connectionItem.sourceId === source.sourceId);
 
   const destinationsDropDownData = useMemo(
     () =>
@@ -81,12 +75,7 @@ const SourceItemPage: React.FC = () => {
 
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
-      return (
-        <SourceSettings
-          currentSource={source}
-          connectionsWithSource={connectionsWithSource}
-        />
-      );
+      return <SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />;
     }
 
     return (
@@ -111,15 +100,11 @@ const SourceItemPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      headTitle={
-        <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
-      }
+      headTitle={<HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />}
       pageTitle={
         <PageTitle
           title={<Breadcrumbs data={breadcrumbsData} />}
-          middleComponent={
-            <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
-          }
+          middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
           withLine
         />
       }

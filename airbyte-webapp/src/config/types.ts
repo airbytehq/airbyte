@@ -39,6 +39,4 @@ export type Provider<T> = () => T;
 
 export type ValueProvider<T> = ProviderAsync<DeepPartial<T>>[];
 
-export type ConfigProvider<T extends Config = Config> = ProviderAsync<
-  DeepPartial<T>
->;
+export type ConfigProvider<T extends Config = Config> = ProviderAsync<DeepPartial<T>>;

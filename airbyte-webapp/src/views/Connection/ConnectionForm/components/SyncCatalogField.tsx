@@ -16,10 +16,7 @@ import { naturalComparatorBy } from "utils/objects";
 import InformationToolTip from "./InformationToolTip";
 
 import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
-import {
-  BatchEditProvider,
-  useBulkEdit,
-} from "hooks/services/BulkEdit/BulkEditService";
+import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 
 const TreeViewContainer = styled.div`
   margin-bottom: 29px;
@@ -195,16 +192,12 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   );
 
   const onChangeStream = useCallback(
-    (newValue: SyncSchemaStream) =>
-      onChangeSchema(
-        streams.map((str) => (str.id === newValue.id ? newValue : str))
-      ),
+    (newValue: SyncSchemaStream) => onChangeSchema(streams.map((str) => (str.id === newValue.id ? newValue : str))),
     [streams, onChangeSchema]
   );
 
   const sortedSchema = useMemo(
-    () =>
-      streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
+    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
     [streams]
   );
 
@@ -212,10 +205,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
     const filters: Array<(s: SyncSchemaStream) => boolean> = [
       (_: SyncSchemaStream) => true,
       searchString
-        ? (stream: SyncSchemaStream) =>
-            stream.stream.name
-              .toLowerCase()
-              .includes(searchString.toLowerCase())
+        ? (stream: SyncSchemaStream) => stream.stream.name.toLowerCase().includes(searchString.toLowerCase())
         : null,
     ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
 
@@ -232,9 +222,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       <StreamsContent>
         <CatalogHeader />
         <CatalogSubheader />
-        <BulkHeader
-          destinationSupportedSyncModes={destinationSupportedSyncModes}
-        />
+        <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
         <TreeViewContainer>
           <CatalogTree
             streams={filteredStreams}

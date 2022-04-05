@@ -21,9 +21,7 @@ const AccountPage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle
-        titles={[{ id: "sidebar.settings" }, { id: "settings.account" }]}
-      />
+      <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "settings.account" }]} />
       <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
         <Content>
           <AccountForm

@@ -19,10 +19,7 @@ const TransformationField: React.FC<
       items={form.values.transformations}
       editableItemIndex={editableItemIdx}
       mainTitle={
-        <FormattedMessage
-          id="form.transformationCount"
-          values={{ count: form.values.transformations.length }}
-        />
+        <FormattedMessage id="form.transformationCount" values={{ count: form.values.transformations.length }} />
       }
       addButtonText={<FormattedMessage id="form.addTransformation" />}
       onRemove={remove}

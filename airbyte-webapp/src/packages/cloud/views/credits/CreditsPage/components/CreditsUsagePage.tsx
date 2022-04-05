@@ -38,13 +38,10 @@ const CreditsUsagePage: React.FC = () => {
   const chartData = useMemo(
     () =>
       data?.creditConsumptionByDay?.map(({ creditsConsumed, date }) => ({
-        name: formatDate(
-          new Date(date[0], date[1] - 1 /* zero-indexed */, date[2]),
-          {
-            month: "short",
-            day: "numeric",
-          }
-        ),
+        name: formatDate(new Date(date[0], date[1] - 1 /* zero-indexed */, date[2]), {
+          month: "short",
+          day: "numeric",
+        }),
         value: creditsConsumed,
       })),
     [data, formatDate]
@@ -73,14 +70,9 @@ const CreditsUsagePage: React.FC = () => {
         </ChartWrapper>
       </ContentCard>
 
-      <CardBlock
-        title={<FormattedMessage id="credits.usagePerConnection" />}
-        light
-      >
+      <CardBlock title={<FormattedMessage id="credits.usagePerConnection" />} light>
         {data?.creditConsumptionByConnector?.length ? (
-          <UsagePerConnectionTable
-            creditConsumption={data.creditConsumptionByConnector}
-          />
+          <UsagePerConnectionTable creditConsumption={data.creditConsumptionByConnector} />
         ) : (
           <Empty>
             <FormattedMessage id="credits.noData" />

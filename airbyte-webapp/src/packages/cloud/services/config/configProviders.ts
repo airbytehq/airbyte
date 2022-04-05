@@ -46,9 +46,7 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
     },
     fullstory: {
       orgId: process.env.REACT_APP_FULL_STORY_ORG,
-      enabled:
-        isDefined(process.env.REACT_APP_FULLSTORY) &&
-        process.env.REACT_APP_FULLSTORY !== "disabled",
+      enabled: isDefined(process.env.REACT_APP_FULLSTORY) && process.env.REACT_APP_FULLSTORY !== "disabled",
     },
     intercom: {
       appId: process.env.REACT_APP_INTERCOM_APP_ID,
@@ -56,8 +54,4 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   };
 };
 
-export {
-  fileConfigProvider,
-  cloudWindowConfigProvider,
-  cloudEnvConfigProvider,
-};
+export { fileConfigProvider, cloudWindowConfigProvider, cloudEnvConfigProvider };

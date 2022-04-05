@@ -50,9 +50,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const dropDownData = useMemo(() => {
     if (type === "source") {
       return sources.map((item) => {
-        const sourceDef = sourceDefinitions.find(
-          (sd) => sd.sourceDefinitionId === item.sourceDefinitionId
-        );
+        const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
         return {
           label: item.name,
           value: item.sourceId,
@@ -81,9 +79,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
   const initialValues = { entityId: "" };
   return (
     <>
-      <ContentCard
-        title={<FormattedMessage id={`connectionForm.${type}Existing`} />}
-      >
+      <ContentCard title={<FormattedMessage id={`connectionForm.${type}Existing`} />}>
         <Formik
           initialValues={initialValues}
           validationSchema={existingEntityValidationSchema}

@@ -45,10 +45,7 @@ const I18NProvider: React.FC = ({ children }) => (
   </IntlProvider>
 );
 
-const configProviders: ValueProvider<Config> = [
-  envConfigProvider,
-  windowConfigProvider,
-];
+const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
 
 const Services: React.FC = ({ children }) => (
   <AnalyticsProvider>
@@ -72,10 +69,7 @@ const App: React.FC = () => {
           <StoreProvider>
             <ServicesProvider>
               <Suspense fallback={<LoadingPage />}>
-                <ConfigServiceProvider
-                  defaultConfig={defaultConfig}
-                  providers={configProviders}
-                >
+                <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
                   <Router>
                     <Services>
                       <Routing />

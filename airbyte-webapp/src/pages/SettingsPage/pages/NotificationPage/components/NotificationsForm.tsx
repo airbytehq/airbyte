@@ -36,11 +36,7 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
     <>
       <Subtitle>
         <FormattedMessage id="settings.emailNotifications" />
-        <FeedbackBlock
-          errorMessage={errorMessage}
-          successMessage={successMessage}
-          isLoading={isLoading}
-        />
+        <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} isLoading={isLoading} />
       </Subtitle>
       <FormItem>
         <LabeledToggle

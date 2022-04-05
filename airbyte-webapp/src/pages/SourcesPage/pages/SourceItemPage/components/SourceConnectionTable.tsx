@@ -22,18 +22,11 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
 
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const data = getConnectionTableData(
-    connections,
-    sourceDefinitions,
-    destinationDefinitions,
-    "source"
-  );
+  const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "source");
 
   const onChangeStatus = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
 
       if (connection) {
         await changeStatus(connection);
@@ -44,9 +37,7 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
 
   const onSync = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
       if (connection) {
         await syncManualConnection(connection);
       }
@@ -54,8 +45,7 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  const clickRow = (source: ITableDataItem) =>
-    push(`../../${RoutePaths.Connections}/${source.connectionId}`);
+  const clickRow = (source: ITableDataItem) => push(`../../${RoutePaths.Connections}/${source.connectionId}`);
 
   return (
     <ConnectionTable

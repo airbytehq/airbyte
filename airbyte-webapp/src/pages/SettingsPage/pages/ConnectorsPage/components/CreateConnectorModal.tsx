@@ -89,19 +89,12 @@ const validationSchema = yup.object().shape({
   dockerRepository: yup.string().required("form.empty.error"),
 });
 
-const CreateConnectorModal: React.FC<IProps> = ({
-  onClose,
-  onSubmit,
-  errorMessage,
-}) => {
+const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessage }) => {
   const config = useConfig();
   const formatMessage = useIntl().formatMessage;
 
   return (
-    <Modal
-      onClose={onClose}
-      title={<FormattedMessage id="admin.addNewConnector" />}
-    >
+    <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />}>
       <Content>
         <Subtitle>
           <FormattedMessage
@@ -220,10 +213,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                   <ButtonWithMargin onClick={onClose} type="button" secondary>
                     <FormattedMessage id="form.cancel" />
                   </ButtonWithMargin>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || !dirty || !isValid}
-                  >
+                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid}>
                     <FormattedMessage id="form.add" />
                   </Button>
                 </div>

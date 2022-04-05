@@ -40,18 +40,9 @@ type FormObjectArrayItem = {
   properties: FormBlock;
 } & FormItem;
 
-type FormBlock =
-  | FormGroupItem
-  | FormBaseItem
-  | FormConditionItem
-  | FormObjectArrayItem;
+type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectArrayItem;
 
-export type {
-  FormBlock,
-  FormConditionItem,
-  FormGroupItem,
-  FormObjectArrayItem,
-};
+export type { FormBlock, FormConditionItem, FormGroupItem, FormObjectArrayItem };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WidgetConfig = { [key: string]: any };

@@ -6,10 +6,7 @@ import useConnector from "hooks/services/useConnector";
 import ConnectorsView from "./components/ConnectorsView";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { SourceDefinition } from "core/domain/connector";
-import {
-  useSourceDefinitionList,
-  useUpdateSourceDefinition,
-} from "services/connector/SourceDefinitionService";
+import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
@@ -32,8 +29,7 @@ const SourcesPage: React.FC = () => {
         });
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        const messageId =
-          e.status === 422 ? "form.imageCannotFound" : "form.someError";
+        const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
@@ -47,8 +43,7 @@ const SourcesPage: React.FC = () => {
     const sourceDefinitionMap = new Map<string, SourceDefinition>();
     sources.forEach((source) => {
       const sourceDefinition = sourceDefinitions.find(
-        (sourceDefinition) =>
-          sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
+        (sourceDefinition) => sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
       );
 
       if (sourceDefinition) {

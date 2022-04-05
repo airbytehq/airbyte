@@ -29,12 +29,7 @@ const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {
       >
         <FontAwesomeIcon icon={faFileAlt} />
       </Button>
-      {isModalOpen && (
-        <DebugInfoDetailsModal
-          jobDebugInfo={jobDebugInfo}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
+      {isModalOpen && <DebugInfoDetailsModal jobDebugInfo={jobDebugInfo} onClose={() => setIsModalOpen(false)} />}
     </>
   );
 };

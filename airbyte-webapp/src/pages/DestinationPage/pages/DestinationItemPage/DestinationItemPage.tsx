@@ -5,21 +5,11 @@ import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import Breadcrumbs from "components/Breadcrumbs";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
-import {
-  ItemTabs,
-  StepsTypes,
-  TableItemTitle,
-} from "components/ConnectorBlocks";
+import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import DestinationSettings from "./components/DestinationSettings";
 import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
-import {
-  DropDownRow,
-  ImageBlock,
-  LoadingPage,
-  MainPageWithScroll,
-  PageTitle,
-} from "components";
+import { DropDownRow, ImageBlock, LoadingPage, MainPageWithScroll, PageTitle } from "components";
 import { RoutePaths } from "pages/routePaths";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
@@ -38,9 +28,7 @@ const DestinationItemPage: React.FC = () => {
 
   const destination = useGetDestination(params.id);
 
-  const destinationDefinition = useDestinationDefinition(
-    destination.destinationDefinitionId
-  );
+  const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
   const { connections } = useConnectionList();
 
@@ -55,16 +43,13 @@ const DestinationItemPage: React.FC = () => {
   ];
 
   const connectionsWithDestination = connections.filter(
-    (connectionItem) =>
-      connectionItem.destinationId === destination.destinationId
+    (connectionItem) => connectionItem.destinationId === destination.destinationId
   );
 
   const sourcesDropDownData = useMemo(
     () =>
       sources.map((item) => {
-        const sourceDef = sourceDefinitions.find(
-          (sd) => sd.sourceDefinitionId === item.sourceDefinitionId
-        );
+        const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
         return {
           label: item.name,
           value: item.sourceId,
@@ -90,10 +75,7 @@ const DestinationItemPage: React.FC = () => {
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
       return (
-        <DestinationSettings
-          currentDestination={destination}
-          connectionsWithDestination={connectionsWithDestination}
-        />
+        <DestinationSettings currentDestination={destination} connectionsWithDestination={connectionsWithDestination} />
       );
     }
 
@@ -105,17 +87,11 @@ const DestinationItemPage: React.FC = () => {
           onSelect={onSelect}
           entityName={destination.name}
           entity={destination.destinationName}
-          entityIcon={
-            destinationDefinition.icon
-              ? getIcon(destinationDefinition.icon)
-              : null
-          }
+          entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
           releaseStage={destinationDefinition.releaseStage}
         />
         {connectionsWithDestination.length ? (
-          <DestinationConnectionTable
-            connections={connectionsWithDestination}
-          />
+          <DestinationConnectionTable connections={connectionsWithDestination} />
         ) : (
           <Placeholder resource={ResourceTypes.Sources} />
         )}
@@ -125,18 +101,12 @@ const DestinationItemPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      headTitle={
-        <HeadTitle
-          titles={[{ id: "admin.destinations" }, { title: destination.name }]}
-        />
-      }
+      headTitle={<HeadTitle titles={[{ id: "admin.destinations" }, { title: destination.name }]} />}
       pageTitle={
         <PageTitle
           title={<Breadcrumbs data={breadcrumbsData} />}
           withLine
-          middleComponent={
-            <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
-          }
+          middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
         />
       }
     >

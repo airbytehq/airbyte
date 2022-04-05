@@ -39,13 +39,7 @@ const CustomAnnotation = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const ConnectorCell: React.FC<IProps> = ({
-  connectorName,
-  img,
-  hasUpdate,
-  isDeprecated,
-  releaseStage,
-}) => {
+const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate, isDeprecated, releaseStage }) => {
   return (
     <Content>
       {hasUpdate && <Notification />}

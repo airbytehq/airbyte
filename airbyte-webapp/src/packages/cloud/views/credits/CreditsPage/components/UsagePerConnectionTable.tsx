@@ -36,18 +36,13 @@ type FullTableProps = CreditConsumptionByConnector & {
   destinationIcon: string;
 };
 
-const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
-  creditConsumption,
-}) => {
+const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
   const { query, push } = useRouter();
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
   const creditConsumptionWithPercent = React.useMemo(() => {
-    const sumCreditsConsumed = creditConsumption.reduce(
-      (a, b) => a + b.creditsConsumed,
-      0
-    );
+    const sumCreditsConsumed = creditConsumption.reduce((a, b) => a + b.creditsConsumed, 0);
     return creditConsumption.map((item) => {
       const currentSourceDefinition = sourceDefinitions.find(
         (def) => def.sourceDefinitionId === item.sourceDefinitionId
@@ -60,9 +55,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
         ...item,
         sourceIcon: currentSourceDefinition?.icon,
         destinationIcon: currentDestinationDefinition?.icon,
-        creditsConsumedPercent: sumCreditsConsumed
-          ? (item.creditsConsumed / sumCreditsConsumed) * 100
-          : 0,
+        creditsConsumedPercent: sumCreditsConsumed ? (item.creditsConsumed / sumCreditsConsumed) * 100 : 0,
       };
     });
   }, [creditConsumption, sourceDefinitions, destinationDefinitions]);
@@ -73,11 +66,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
   const onSortClick = useCallback(
     (field: string) => {
       const order =
-        sortBy !== field
-          ? SortOrderEnum.ASC
-          : sortOrder === SortOrderEnum.ASC
-          ? SortOrderEnum.DESC
-          : SortOrderEnum.ASC;
+        sortBy !== field ? SortOrderEnum.ASC : sortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
       push({
         search: queryString.stringify(
           {
@@ -98,9 +87,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
           ? a.creditsConsumed - b.creditsConsumed
           : `${a.sourceDefinitionName}${a.destinationDefinitionName}`
               .toLowerCase()
-              .localeCompare(
-                `${b.sourceDefinitionName}${b.destinationDefinitionName}`.toLowerCase()
-              );
+              .localeCompare(`${b.sourceDefinitionName}${b.destinationDefinitionName}`.toLowerCase());
 
       if (sortOrder === SortOrderEnum.DESC) {
         return -1 * result;
@@ -154,17 +141,13 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({
         accessor: "creditsConsumed",
         collapse: true,
         customPadding: { right: 0 },
-        Cell: ({ cell }: CellProps<FullTableProps>) => (
-          <UsageValue>{cell.value}</UsageValue>
-        ),
+        Cell: ({ cell }: CellProps<FullTableProps>) => <UsageValue>{cell.value}</UsageValue>,
       },
       {
         Header: "",
         accessor: "creditsConsumedPercent",
         customPadding: { left: 0 },
-        Cell: ({ cell }: CellProps<FullTableProps>) => (
-          <UsageCell percent={cell.value} />
-        ),
+        Cell: ({ cell }: CellProps<FullTableProps>) => <UsageCell percent={cell.value} />,
       },
       // TODO: Replace to Grow column
       {

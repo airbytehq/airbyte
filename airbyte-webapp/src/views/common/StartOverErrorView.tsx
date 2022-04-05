@@ -18,9 +18,7 @@ export const StartOverErrorView: React.FC<{
 }> = ({ message, onReset }) => {
   const { push } = useRouter();
   return (
-    <ErrorOccurredView
-      message={message ?? <FormattedMessage id="errorView.notFound" />}
-    >
+    <ErrorOccurredView message={message ?? <FormattedMessage id="errorView.notFound" />}>
       <ResetSection>
         <Button
           onClick={() => {

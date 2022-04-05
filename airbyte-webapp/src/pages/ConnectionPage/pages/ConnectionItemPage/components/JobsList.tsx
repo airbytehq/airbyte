@@ -8,10 +8,7 @@ type IProps = {
 };
 
 const JobsList: React.FC<IProps> = ({ jobs }) => {
-  const sortJobs = useMemo(
-    () => jobs.sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)),
-    [jobs]
-  );
+  const sortJobs = useMemo(() => jobs.sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)), [jobs]);
 
   return (
     <div>

@@ -20,9 +20,7 @@ type IProps = {
 
 const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   const { sourceDefinitions } = useSourceDefinitionList();
-  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
-    null
-  );
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(null);
   const [successRequest, setSuccessRequest] = useState(false);
   const [error, setError] = useState<{
     status: number;
@@ -34,13 +32,10 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
 
   const analyticsService = useAnalyticsService();
 
-  const getSourceDefinitionById = (id: string) =>
-    sourceDefinitions.find((item) => item.sourceDefinitionId === id);
+  const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
-  const {
-    data: sourceDefinitionSpecification,
-    isLoading,
-  } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
+  const { data: sourceDefinitionSpecification, isLoading } =
+    useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -92,9 +87,7 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
           <FormattedMessage
             id="onboarding.createFirstSource"
             values={{
-              name: (name: React.ReactNode) => (
-                <HighlightedText>{name}</HighlightedText>
-              ),
+              name: (name: React.ReactNode) => <HighlightedText>{name}</HighlightedText>,
             }}
           />
         }

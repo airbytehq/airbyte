@@ -7,10 +7,7 @@ import urls from "rehype-urls";
 import rehypeSlug from "rehype-slug";
 import type { PluggableList } from "react-markdown/lib/react-markdown";
 
-import {
-  useDocumentation,
-  getDocumentationType,
-} from "hooks/services/useDocumentation";
+import { useDocumentation, getDocumentationType } from "hooks/services/useDocumentation";
 import { LoadingPage } from "components";
 import { SideView } from "components/SideView";
 import { Markdown } from "components/Markdown";
@@ -103,10 +100,7 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & IProps> = ({
       onClose={onClose}
       headerLink={
         <HeaderLink href={documentationUrl} target="_blank" rel="noreferrer">
-          <FormattedMessage
-            id="onboarding.instructionsLink"
-            values={{ name: selectedService.name }}
-          />
+          <FormattedMessage id="onboarding.instructionsLink" values={{ name: selectedService.name }} />
         </HeaderLink>
       }
     >
@@ -121,10 +115,7 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & IProps> = ({
   );
 };
 
-const Instruction: React.FC<IProps> = ({
-  selectedService,
-  documentationUrl,
-}) => {
+const Instruction: React.FC<IProps> = ({ selectedService, documentationUrl }) => {
   const [isSideViewOpen, setIsSideViewOpen] = useToggle(false);
   const docType = getDocumentationType(documentationUrl);
 
@@ -144,11 +135,7 @@ const Instruction: React.FC<IProps> = ({
         </SideViewButton>
       )}
       {docType === "external" && (
-        <DocumentationLink
-          href={documentationUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <DocumentationLink href={documentationUrl} target="_blank" rel="noopener noreferrer">
           <FormattedMessage id="form.setupGuide" />
         </DocumentationLink>
       )}
