@@ -133,6 +133,16 @@ Once you've finished iterating on the changes to a connector as specified in its
    
 5. The new version of the connector is now available for everyone who uses it. Thank you!
 
+### The /publish command
+
+Publishing a connector can be done using the `/publish` command as outlined in the above section. The command runs a [github workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-command.yml), and has the following configurable parameters:
+* **connector** - Required. This tells the workflow which connector to publish. e.g. `connector=connectors/source-amazon-ads`
+* **repo** - Defaults to the main airbyte repo. Set this when building connectors from forked repos. e.g. `repo=userfork/airbyte`
+* **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
+* **run-tests** - Defaults to true. Should always run the tests as part of the publish flow so that if tests fail, the connector is not published.
+* **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
+* **auto-bump-version** - Defaults to true, automates the post-publish process of bumping the connector's version in the yaml seed definitions and generating spec.
+
 ## Using credentials in CI
 
 In order to run integration tests in CI, you'll often need to inject credentials into CI. There are a few steps for doing this:
