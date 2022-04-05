@@ -26,6 +26,7 @@ from .streams import (
     AdsAudienceReports,
     AdsReports,
     Advertisers,
+    AdvertiserIds,
     AdvertisersAudienceReports,
     AdvertisersReports,
     Campaigns,
@@ -94,6 +95,7 @@ class SourceTiktokMarketing(AbstractSource):
             "advertiser_id": advertiser_id,
             "app_id": app_id,
             "secret": secret,
+            "access_token": access_token,
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -108,21 +110,41 @@ class SourceTiktokMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
+
+        # 1. Basic streams:
+        streams = [
+            Advertisers(**args),
+            AdvertiserIds(**args),
+            Ads(**args),
+            AdGroups(**args),
+            Campaigns(**args),
+        ]
+
+        # 2. Basic report streams:
         report_granularity = config.get("report_granularity") or ReportGranularity.default()
         report_args = dict(report_granularity=report_granularity, **args)
-        advertisers_reports = AdvertisersReports(**report_args)
-        streams = [
-            Ads(**args),
+        streams.extend([
             AdsReports(**report_args),
-            Advertisers(**args),
-            advertisers_reports if not advertisers_reports.is_sandbox else None,
-            AdGroups(**args),
             AdGroupsReports(**report_args),
-            Campaigns(**args),
             CampaignsReports(**report_args),
-            CampaignsAudienceReportsByCountry(**report_args),
-            AdGroupAudienceReports(**report_args),
-            AdsAudienceReports(**report_args),
-            AdvertisersAudienceReports(**report_args),
-        ]
-        return [stream for stream in streams if stream]
+        ])
+        if not args['advertiser_id']:
+            # stream works only in prod env
+            streams.append(
+                AdvertisersReports(**report_args)
+            )
+
+        # 3. Audience report streams:
+        streams.append(
+            AdvertisersAudienceReports(**report_args)
+        )
+        if not report_granularity == ReportGranularity.LIFETIME:
+            # https://ads.tiktok.com/marketing_api/docs?id=1707957217727489
+            # Audience report only supports lifetime metrics at the ADVERTISER level.
+            streams.extend([
+                AdsAudienceReports(**report_args),
+                AdGroupAudienceReports(**report_args),
+                CampaignsAudienceReportsByCountry(**report_args),
+            ])
+
+        return streams
