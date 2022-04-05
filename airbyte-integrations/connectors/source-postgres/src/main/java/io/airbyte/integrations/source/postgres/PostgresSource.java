@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -325,7 +326,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
-    return false;
+    return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
   }
 
   /*
