@@ -7,7 +7,7 @@ import { Button, LoadingButton } from "components";
 import { useMutation } from "react-query";
 export type IProps = {
   onClose: () => void;
-  onSubmit: () => Promise<void>;
+  onSubmit: () => Promise<unknown>;
   type: "source" | "destination" | "connection";
 };
 

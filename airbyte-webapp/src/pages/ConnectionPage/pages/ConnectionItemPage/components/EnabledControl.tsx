@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Toggle } from "components";
-import { Connection } from "core/resources/Connection";
-import useConnection from "hooks/services/useConnectionHook";
+import { Connection } from "core/domain/connection";
+import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { Status } from "components/EntityTable/types";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
@@ -36,7 +36,7 @@ const EnabledControl: React.FC<IProps> = ({
   disabled,
   frequencyText,
 }) => {
-  const { updateConnection } = useConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection();
   const analyticsService = useAnalyticsService();
 
   const onChangeStatus = async () => {

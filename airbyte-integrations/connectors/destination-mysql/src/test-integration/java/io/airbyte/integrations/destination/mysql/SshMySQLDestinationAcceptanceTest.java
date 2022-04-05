@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,12 +18,15 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -160,7 +164,27 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
         });
   }
 
-  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        if (DATE.equals(dateTimeFieldNames.get(path))) {
+          data.put(key.toLowerCase(), DateTimeUtils.convertToDateFormat(data.at(path).asText()));
+        }
+      }
+    }
+  }
+
+  protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue.isBoolean()) {
       // Boolean in MySQL are stored as TINYINT (0 or 1) so we force them to boolean values here
       assertEquals(expectedValue.asBoolean(), actualValue.asBoolean());
