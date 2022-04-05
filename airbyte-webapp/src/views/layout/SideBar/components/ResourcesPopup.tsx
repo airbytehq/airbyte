@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
-
+import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { useConfig } from "config";
 import { Popout } from "components";
 
@@ -85,6 +85,22 @@ const ResourcesPopup: React.FC<{
                 </Item>
               ),
             };
+          case "ticket":
+            return {
+              value: "ticket",
+              label: (
+                //TODO: is this the link it should be?
+                <Item
+                  href="https://airbyte.com/contact-support"
+                  target="_blank"
+                >
+                  <Icon>
+                    <FontAwesomeIcon icon={faEnvelope} />
+                  </Icon>
+                  <FormattedMessage id="sidebar.supportTicket" />
+                </Item>
+              ),
+            };
           default:
             return {
               value: item.value,
@@ -104,7 +120,7 @@ const ResourcesPopup: React.FC<{
         menuPortal: (base) => ({
           ...base,
           // TODO: temporary dirty hack
-          transform: "translate3D(100px, -200px, 0px)",
+          transform: "translate3D(100px, -100px, 0px)",
         }),
       }}
       isSearchable={false}

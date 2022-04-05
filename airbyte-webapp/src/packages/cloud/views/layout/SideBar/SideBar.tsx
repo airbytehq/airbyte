@@ -4,6 +4,7 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
+import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 
@@ -174,6 +175,23 @@ const SideBar: React.FC = () => {
               { value: "docs" },
               { value: "slack" },
               { value: "status" },
+              { value: "recipes" },
+            ]}
+          >
+            {({ onOpen }) => (
+              <MenuItem onClick={onOpen} as="div">
+                <DocsIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.resources" />
+                </Text>
+              </MenuItem>
+            )}
+          </ResourcesPopup>
+        </li>
+        <li>
+          <ResourcesPopup
+            options={[
+              { value: "ticket" },
               {
                 value: "chat",
                 label: (
@@ -185,14 +203,13 @@ const SideBar: React.FC = () => {
                   </Item>
                 ),
               },
-              { value: "recipes" },
             ]}
           >
             {({ onOpen }) => (
               <MenuItem onClick={onOpen} as="div">
-                <DocsIcon />
+                <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
                 <Text>
-                  <FormattedMessage id="sidebar.resources" />
+                  <FormattedMessage id="sidebar.support" />
                 </Text>
               </MenuItem>
             )}
