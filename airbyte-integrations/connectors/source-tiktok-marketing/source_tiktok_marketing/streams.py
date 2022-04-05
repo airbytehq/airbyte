@@ -241,10 +241,6 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         return json.dumps(arr)
 
     @property
-    def is_finished(self):
-        return len(self._advertiser_ids) == 0
-
-    @property
     def advertiser_ids(self):
         if self.is_sandbox:
             # for sandbox: just return advertiser_id provided in spec
@@ -261,8 +257,14 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         """Each stream slice is for separate advertiser id"""
         ids = self.advertiser_ids
         while self._advertiser_ids:
+            # self._advertiser_ids need to be exhausted so that JsonUpdatedState knows
+            # when all stream slices are processed (stream.is_finished)
             advertiser_id = self._advertiser_ids.pop(0)
             yield {"advertiser_id": advertiser_id}
+
+    @property
+    def is_finished(self):
+        return len(self._advertiser_ids) == 0
 
     def request_params(
         self,
