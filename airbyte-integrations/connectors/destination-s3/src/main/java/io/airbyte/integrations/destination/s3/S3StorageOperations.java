@@ -18,11 +18,13 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.apache.commons.io.FilenameUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,7 @@ public class S3StorageOperations implements BlobStorageOperations {
   private static final String FORMAT_VARIABLE_MILLISECOND = "${MILLISECOND}";
   private static final String FORMAT_VARIABLE_EPOCH = "${EPOCH}";
   private static final String FORMAT_VARIABLE_UUID = "${UUID}";
+  private static final String GZ_FILE_EXTENSION = ".gz";
 
   private final NamingConventionTransformer nameTransformer;
   protected final S3DestinationConfig s3Config;
@@ -118,10 +121,10 @@ public class S3StorageOperations implements BlobStorageOperations {
     return recordsData.getFilename();
   }
 
-  private void loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) {
+  private void loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String objectKeyWithPartId = String.format("%s%s", objectPath, getPartId(objectPath));
+    final String objectKeyWithPartId = String.format("%s%s%s", objectPath, getPartId(objectPath), getExtension(recordsData));
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
         .getDefault(bucket, objectKeyWithPartId, s3Client, partSize)
         .checkIntegrity(true)
@@ -146,6 +149,15 @@ public class S3StorageOperations implements BlobStorageOperations {
       LOGGER.error("Failed to upload data into storage, object {} not found", objectKeyWithPartId);
       throw new RuntimeException("Upload failed");
     }
+  }
+
+  private String getExtension(final SerializableBuffer recordsData) throws IOException {
+    final String filename = recordsData.getFilename();
+    final String result = FilenameUtils.getExtension(filename);
+    if (GZ_FILE_EXTENSION.equals(result)) {
+      return FilenameUtils.getExtension(filename.substring(0, filename.length() - 3)) + GZ_FILE_EXTENSION;
+    }
+    return result;
   }
 
   private String getPartId(final String objectPath) {
