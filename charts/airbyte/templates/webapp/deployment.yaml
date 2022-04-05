@@ -36,32 +36,32 @@ spec:
         - name: AIRBYTE_VERSION
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: AIRBYTE_VERSION
         - name: API_URL
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: API_URL
         - name: TRACKING_STRATEGY
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: TRACKING_STRATEGY
         - name: FULLSTORY
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: FULLSTORY
         - name: IS_DEMO
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: IS_DEMO
         - name: INTERNAL_API_HOST
           valueFrom:
             configMapKeyRef:
-              name: airbyte-env
+              name: {{ include "common.names.fullname" . }}-env
               key: INTERNAL_API_HOST
         {{- if .Values.webapp.extraEnv }}
         {{ .Values.webapp.extraEnv | toYaml | nindent 8 }}

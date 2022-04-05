@@ -11,8 +11,8 @@ import SortButton from "components/EntityTable/components/SortButton";
 import useRouter from "hooks/useRouter";
 import ConnectionCell from "./ConnectionCell";
 import UsageCell from "./UsageCell";
-import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
-import { useDestinationDefinitionList } from "hooks/services/useDestinationDefinition";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 const Content = styled.div`
   padding: 0 60px 0 15px;

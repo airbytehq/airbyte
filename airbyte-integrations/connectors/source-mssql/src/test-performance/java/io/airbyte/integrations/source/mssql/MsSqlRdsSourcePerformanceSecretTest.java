@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {

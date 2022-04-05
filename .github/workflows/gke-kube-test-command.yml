@@ -1,7 +1,5 @@
 name: GKE Kube Acceptance Test
 on:
-  schedule:
-    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       repo:
@@ -13,14 +11,32 @@ on:
         required: false
         default: master
       comment-id:
-        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
 
 jobs:
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
   start-gke-kube-acceptance-test-runner:
     timeout-minutes: 10
     name: Start GKE Kube Acceptance Test EC2 Runner
     runs-on: ubuntu-latest
+    needs: find_valid_pat
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
@@ -36,7 +52,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
   gke-kube-acceptance-test:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-gke-kube-acceptance-test-runner # required to start the main job when the runner is ready
@@ -60,11 +76,11 @@ jobs:
 
       - uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "17"
 
       - uses: actions/setup-node@v1
         with:
-          node-version: '16.13.0'
+          node-version: "16.13.0"
 
       - name: Fix EC-2 Runner
         run: |
@@ -76,7 +92,7 @@ jobs:
           sudo apt-get install socat
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           project_id: ${{ secrets.GKE_TEST_PROJECT_ID }}
           service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
@@ -126,6 +142,7 @@ jobs:
     needs:
       - start-gke-kube-acceptance-test-runner # required to get output from the start-runner job
       - gke-kube-acceptance-test # required to wait when the main job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
@@ -136,10 +153,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.3.0
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-gke-kube-acceptance-test-runner.outputs.ec2-instance-id }}
-

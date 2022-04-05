@@ -13,6 +13,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
+  private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
@@ -33,8 +35,8 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  public boolean isSchemaExists(JdbcDatabase database, String outputSchema) throws Exception {
-    try (final Stream<JsonNode> results = database.query(SHOW_SCHEMAS)) {
+  public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
+    try (final Stream<JsonNode> results = database.unsafeQuery(SHOW_SCHEMAS)) {
       return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
     }
   }
@@ -58,6 +60,17 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
+  }
+
+  protected String generateFilesList(final List<String> files) {
+    if (0 < files.size() && files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
+      // see https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files
+      final StringJoiner joiner = new StringJoiner(",");
+      files.forEach(filename -> joiner.add("'" + filename.substring(filename.lastIndexOf("/") + 1) + "'"));
+      return " files = (" + joiner + ")";
+    } else {
+      return "";
+    }
   }
 
 }

@@ -19,8 +19,8 @@ const configProviders: ValueProvider<Config> = [
   // fileConfigProvider,
   cloudEnvConfigProvider,
   cloudWindowConfigProvider,
-  windowConfigProvider,
   envConfigProvider,
+  windowConfigProvider,
 ];
 
 /**

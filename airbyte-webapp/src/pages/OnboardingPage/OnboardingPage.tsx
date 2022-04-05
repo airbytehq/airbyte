@@ -1,20 +1,9 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useState } from "react";
 import styled from "styled-components";
-import { useResource } from "rest-hooks";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
 import HeadTitle from "components/HeadTitle";
-import useSource, { useSourceList } from "hooks/services/useSourceHook";
-import useDestination, {
-  useDestinationList,
-} from "hooks/services/useDestinationHook";
-import useConnection, {
-  useConnectionList,
-} from "hooks/services/useConnectionHook";
-import { ConnectionConfiguration } from "core/domain/connection";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useGetStepsConfig from "./useStepsConfig";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
@@ -28,8 +17,9 @@ import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
-import { RoutePaths } from "pages/routes";
-import { JobInfo } from "../../core/domain/job/Job";
+import { RoutePaths } from "../routePaths";
+import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
+import { useEffectOnce } from "react-use";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -63,172 +53,41 @@ const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
   const { push } = useRouterHook();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     analyticsService.page("Onboarding Page");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
-  const { sources } = useSourceList();
-  const { destinations } = useDestinationList();
-  const { connections } = useConnectionList();
-  const { syncConnection } = useConnection();
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {}
-  );
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {}
-  );
-
-  const { createSource, recreateSource } = useSource();
-  const { createDestination, recreateDestination } = useDestination();
   const { finishOnboarding } = useWorkspace();
+  const {
+    hasConnections,
+    hasDestinations,
+    hasSources,
+  } = useCurrentWorkspaceState();
 
-  const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<{
-    status: number;
-    response: JobInfo;
-    message: string;
-  } | null>(null);
+  const [animateExit, setAnimateExit] = useState(false);
 
   const afterUpdateStep = () => {
-    setSuccessRequest(false);
-    setErrorStatusRequest(null);
+    setAnimateExit(false);
   };
 
   const { currentStep, setCurrentStep, steps } = useGetStepsConfig(
-    !!sources.length,
-    !!destinations.length,
-    !!connections.length,
+    hasSources,
+    hasDestinations,
+    hasConnections,
     afterUpdateStep
   );
-
-  const getSourceDefinitionById = (id: string) =>
-    sourceDefinitions.find((item) => item.sourceDefinitionId === id);
-
-  const getDestinationDefinitionById = (id: string) =>
-    destinationDefinitions.find((item) => item.destinationDefinitionId === id);
 
   const handleFinishOnboarding = () => {
     finishOnboarding();
     push(RoutePaths.Connections);
   };
 
-  const renderStep = () => {
-    if (currentStep === StepType.INSTRUCTION) {
-      const onStart = () => setCurrentStep(StepType.CREATE_SOURCE);
-      //TODO: add username
-      return <WelcomeStep onSubmit={onStart} userName="" />;
-    }
-    if (currentStep === StepType.CREATE_SOURCE) {
-      const onSubmitSourceStep = async (values: {
-        name: string;
-        serviceType: string;
-        sourceId?: string;
-        connectionConfiguration?: ConnectionConfiguration;
-      }) => {
-        setErrorStatusRequest(null);
-        const sourceConnector = getSourceDefinitionById(values.serviceType);
-
-        try {
-          if (!!sources.length) {
-            await recreateSource({
-              values,
-              sourceId: sources[0].sourceId,
-            });
-          } else {
-            await createSource({ values, sourceConnector });
-          }
-
-          setSuccessRequest(true);
-          setTimeout(() => {
-            setSuccessRequest(false);
-            setCurrentStep(StepType.CREATE_DESTINATION);
-          }, 2000);
-        } catch (e) {
-          setErrorStatusRequest(e);
-        }
-      };
-      return (
-        <SourceStep
-          afterSelectConnector={() => setErrorStatusRequest(null)}
-          onSubmit={onSubmitSourceStep}
-          availableServices={sourceDefinitions}
-          hasSuccess={successRequest}
-          error={errorStatusRequest}
-        />
-      );
-    }
-    if (currentStep === StepType.CREATE_DESTINATION) {
-      const onSubmitDestinationStep = async (values: {
-        name: string;
-        serviceType: string;
-        destinationDefinitionId?: string;
-        connectionConfiguration?: ConnectionConfiguration;
-      }) => {
-        setErrorStatusRequest(null);
-        const destinationConnector = getDestinationDefinitionById(
-          values.serviceType
-        );
-
-        try {
-          if (!!destinations.length) {
-            await recreateDestination({
-              values,
-              destinationId: destinations[0].destinationId,
-            });
-          } else {
-            await createDestination({
-              values,
-              destinationConnector,
-            });
-          }
-
-          setSuccessRequest(true);
-          setTimeout(() => {
-            setSuccessRequest(false);
-            setCurrentStep(StepType.SET_UP_CONNECTION);
-          }, 2000);
-        } catch (e) {
-          setErrorStatusRequest(e);
-        }
-      };
-      return (
-        <DestinationStep
-          afterSelectConnector={() => setErrorStatusRequest(null)}
-          onSubmit={onSubmitDestinationStep}
-          availableServices={destinationDefinitions}
-          hasSuccess={successRequest}
-          error={errorStatusRequest}
-        />
-      );
-    }
-
-    if (currentStep === StepType.SET_UP_CONNECTION) {
-      return (
-        <ConnectionStep
-          errorStatus={errorStatusRequest?.status}
-          source={sources[0]}
-          destination={destinations[0]}
-          afterSubmitConnection={() => setCurrentStep(StepType.FINAl)}
-        />
-      );
-    }
-
-    const onSync = () => syncConnection(connections[0]);
-
-    return (
-      <FinalStep connectionId={connections[0].connectionId} onSync={onSync} />
-    );
-  };
-
   return (
     <ScreenContent>
       {currentStep === StepType.CREATE_SOURCE ? (
-        <LetterLine exit={successRequest} />
+        <LetterLine exit={animateExit} />
       ) : currentStep === StepType.CREATE_DESTINATION ? (
-        <LetterLine onRight exit={successRequest} />
+        <LetterLine onRight exit={animateExit} />
       ) : null}
       <Content
         big={currentStep === StepType.SET_UP_CONNECTION}
@@ -239,7 +98,29 @@ const OnboardingPage: React.FC = () => {
         <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
         <StepsCounter steps={steps} currentStep={currentStep} />
 
-        <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+        <Suspense fallback={<LoadingPage />}>
+          {currentStep === StepType.INSTRUCTION && (
+            <WelcomeStep
+              onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)}
+            />
+          )}
+          {currentStep === StepType.CREATE_SOURCE && (
+            <SourceStep
+              onSuccess={() => setAnimateExit(true)}
+              onNextStep={() => setCurrentStep(StepType.CREATE_DESTINATION)}
+            />
+          )}
+          {currentStep === StepType.CREATE_DESTINATION && (
+            <DestinationStep
+              onSuccess={() => setAnimateExit(true)}
+              onNextStep={() => setCurrentStep(StepType.SET_UP_CONNECTION)}
+            />
+          )}
+          {currentStep === StepType.SET_UP_CONNECTION && (
+            <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAl)} />
+          )}
+          {currentStep === StepType.FINAl && <FinalStep />}
+        </Suspense>
 
         <Footer>
           <Button secondary onClick={() => handleFinishOnboarding()}>

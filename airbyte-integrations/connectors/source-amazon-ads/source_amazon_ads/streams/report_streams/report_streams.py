@@ -95,10 +95,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     CHECK_INTERVAL_SECONDS = 30
     # Amazon ads updates the data for the next 3 days
     LOOK_BACK_WINDOW = 3
-    # Async report generation time is 15 minutes according to docs:
-    # https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes
     # (Service limits section)
-    REPORT_WAIT_TIMEOUT = timedelta(minutes=30).total_seconds
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
@@ -107,6 +104,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
+        self.report_wait_timeout = timedelta(minutes=config.report_wait_timeout).total_seconds
+        self.report_generation_maximum_retries = config.report_generation_max_retries
         # Set start date from config file, should be in UTC timezone.
         self._start_date = pendulum.parse(config.start_date).set(tz="UTC") if config.start_date else None
         super().__init__(config, profiles)
@@ -150,25 +149,32 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     metric=metric_object,
                 ).dict()
 
-    @backoff.on_exception(
-        backoff.expo,
-        ReportGenerationFailure,
-        max_tries=5,
-    )
+    def backoff_max_time(func):
+        def wrapped(self, *args, **kwargs):
+            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout)(func)(
+                self, *args, **kwargs
+            )
+
+        return wrapped
+
+    def backoff_max_tries(func):
+        def wrapped(self, *args, **kwargs):
+            return backoff.on_exception(backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries)(func)(
+                self, *args, **kwargs
+            )
+
+        return wrapped
+
+    @backoff_max_tries
     def _init_and_try_read_records(self, report_date):
         report_infos = self._init_reports(report_date)
         logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
         self._try_read_records(report_infos)
         return report_infos
 
-    @backoff.on_exception(
-        backoff.constant,
-        RetryableException,
-        max_time=REPORT_WAIT_TIMEOUT,
-    )
+    @backoff_max_time
     def _try_read_records(self, report_infos):
         incomplete_report_infos = self._incomplete_report_infos(report_infos)
-
         logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
         for report_info in incomplete_report_infos:
             report_status, download_url = self._check_status(report_info)

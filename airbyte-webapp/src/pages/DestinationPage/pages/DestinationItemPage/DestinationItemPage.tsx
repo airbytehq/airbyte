@@ -1,63 +1,48 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
-import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import ConnectionResource from "core/resources/Connection";
-import { RoutePaths } from "pages/routes";
 import Breadcrumbs from "components/Breadcrumbs";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
-import DestinationResource from "core/resources/Destination";
 import {
   ItemTabs,
   StepsTypes,
   TableItemTitle,
 } from "components/ConnectorBlocks";
 import DestinationSettings from "./components/DestinationSettings";
-import LoadingPage from "components/LoadingPage";
-import SourceResource from "core/resources/Source";
-import MainPageWithScroll from "components/MainPageWithScroll";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import { getIcon } from "utils/imageUtils";
-import ImageBlock from "components/ImageBlock";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
 import HeadTitle from "components/HeadTitle";
-import useWorkspace from "hooks/services/useWorkspace";
-import { DropDownRow } from "components";
+import {
+  DropDownRow,
+  ImageBlock,
+  LoadingPage,
+  MainPageWithScroll,
+  PageTitle,
+} from "components";
+import { RoutePaths } from "pages/routePaths";
+import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useSourceList } from "hooks/services/useSourceHook";
+import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
 
 const DestinationItemPage: React.FC = () => {
   const { params, push } = useRouter<unknown, { id: string }>();
-  const { workspace } = useWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
 
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { sources } = useSourceList();
 
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
+  const { sourceDefinitions } = useSourceDefinitionList();
+
+  const destination = useGetDestination(params.id);
+
+  const destinationDefinition = useDestinationDefinition(
+    destination.destinationDefinitionId
   );
 
-  const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: params.id,
-  });
-
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    {
-      destinationDefinitionId: destination.destinationDefinitionId,
-    }
-  );
-
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { connections } = useConnectionList();
 
   const onClickBack = () => push("..");
 
@@ -125,6 +110,7 @@ const DestinationItemPage: React.FC = () => {
               ? getIcon(destinationDefinition.icon)
               : null
           }
+          releaseStage={destinationDefinition.releaseStage}
         />
         {connectionsWithDestination.length ? (
           <DestinationConnectionTable

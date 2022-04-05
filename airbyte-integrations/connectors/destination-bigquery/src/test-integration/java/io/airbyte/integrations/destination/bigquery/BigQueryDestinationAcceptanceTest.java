@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -25,25 +29,32 @@ import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final NamingConventionTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationAcceptanceTest.class);
 
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
@@ -70,7 +81,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
+  protected JsonNode getFailCheckConfig() {
     ((ObjectNode) config).put(CONFIG_PROJECT_ID, "fake");
     return config;
   }
@@ -88,6 +99,30 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   @Override
   protected boolean implementsNamespaces() {
     return true;
+  }
+
+  @Override
+  protected boolean supportNamespaceTest() {
+    return true;
+  }
+
+  @Override
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.of(NAME_TRANSFORMER);
+  }
+
+  @Override
+  protected void assertNamespaceNormalization(final String testCaseId,
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
+    final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
+    if (testCaseId.equals("S3A-1")) {
+      // bigquery allows namespace starting with a number, and prepending underscore
+      // will hide the dataset, so we don't do it as we do for other destinations
+      assertEquals("99namespace", actualNormalizedNamespace, message);
+    } else {
+      assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace, message);
+    }
   }
 
   @Override
@@ -259,6 +294,42 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
       return queryJob.waitFor();
     } catch (final Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> {
+            var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(data.at(path).asText())).divide(new BigDecimal(1000000)));
+            data.put(key.toLowerCase(), !result.contains(".") ? result + ".0" : result);
+          }
+          case DATE -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToDateFormat(data.at(path).asText()));
+        }
+      }
+    }
+  }
+
+  @Override
+  protected void assertSameValue(String key,
+                                 JsonNode expectedValue,
+                                 JsonNode actualValue) {
+    if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
+      Assertions.assertEquals(expectedValue.asLong() / 1000000, actualValue.asLong());
+    } else {
+      super.assertSameValue(key, expectedValue, actualValue);
     }
   }
 

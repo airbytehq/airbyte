@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.53
+Remove a false positive error logging during the send process.
+
+## 0.1.52
+Fix BaseBackoffException constructor
+
+## 0.1.50
+Improve logging for Error handling during send process.
+
 ## 0.1.49
 Add support for streams with explicit state attribute.
 

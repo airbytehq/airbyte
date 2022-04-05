@@ -48,15 +48,15 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
    */
   @Override
   @MustBeClosed
-  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                   final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try {
       final Connection connection = dataSource.getConnection();
       final PreparedStatement ps = statementCreator.apply(connection);
       // allow configuration of connection and prepared statement to make streaming possible.
       jdbcStreamingQueryConfiguration.accept(connection, ps);
-      return toStream(ps.executeQuery(), recordTransform)
+      return toUnsafeStream(ps.executeQuery(), recordTransform)
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);

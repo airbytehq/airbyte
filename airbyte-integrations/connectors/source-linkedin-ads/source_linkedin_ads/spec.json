@@ -15,16 +15,16 @@
         "examples": ["2021-05-17"]
       },
       "account_ids": {
-        "title": "Account IDs",
+        "title": "Account IDs (Optional)",
         "type": "array",
-        "description": "Specify the Account IDs separated by space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts.",
+        "description": "Specify the Account IDs separated by space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">official LinkedIn Ads docs</a> for more info.",
         "items": {
           "type": "integer"
         },
         "default": []
       },
       "credentials": {
-        "title": "Authorization Method",
+        "title": "Authentication *",
         "type": "object",
         "oneOf": [
           {
@@ -68,7 +68,7 @@
               "access_token": {
                 "type": "string",
                 "title": "Access Token",
-                "description": "The token value generated using Authentication Code.",
+                "description": "The token value generated using the authentication code. See the <a href=\"https://docs.airbyte.com/integrations/sources/linkedin-ads#authentication\">docs</a> to obtain yours.",
                 "airbyte_secret": true
               }
             }

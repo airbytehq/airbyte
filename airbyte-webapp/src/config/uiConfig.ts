@@ -7,6 +7,7 @@ const uiConfig = {
   helpLink: "https://airbyte.com/community",
   gitLink: "https://docs.airbyte.com/quickstart/deploy-airbyte",
   updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
+  productReleaseStages: `${BASE_DOCS_LINK}/project-overview/product-release-stages`,
   slackLink: "https://slack.airbyte.com",
   docsLink: BASE_DOCS_LINK,
   configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
@@ -18,6 +19,7 @@ const uiConfig = {
   syncModeLink:
     "https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history",
   demoLink: "https://demo.airbyte.io",
+  contactSales: "https://airbyte.com/talk-to-sales",
   webpageLink: "https://airbyte.com",
 } as const;
 

@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,23 +46,22 @@ class SnowflakeS3StreamCopierTest {
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);
 
+    final S3DestinationConfig s3Config = S3DestinationConfig.create(
+        "fake-bucket",
+        "fake-bucketPath",
+        "fake-region")
+        .withEndpoint("fake-endpoint")
+        .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
+        .withPartSize(PART_SIZE)
+        .get();
+
     copier = (SnowflakeS3StreamCopier) new SnowflakeS3StreamCopierFactory().create(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
         "fake-staging-folder",
         "fake-schema",
         s3Client,
         db,
-        new S3CopyConfig(
-            true,
-            new S3DestinationConfig(
-                "fake-endpoint",
-                "fake-bucket",
-                "fake-bucketPath",
-                "fake-region",
-                "fake-access-key-id",
-                "fake-secret-access-key",
-                PART_SIZE,
-                null)),
+        new S3CopyConfig(true, s3Config),
         new ExtendedNameTransformer(),
         sqlOperations,
         new ConfiguredAirbyteStream()
@@ -78,7 +79,11 @@ class SnowflakeS3StreamCopierTest {
     }
 
     copier.copyStagingFileToTemporaryTable();
-    final List<List<String>> partition = Lists.partition(new ArrayList<>(copier.getStagingWritersByFile().keySet()), 1000);
+    final Set<String> stagingFiles = copier.getStagingFiles();
+    // check the use of all files for staging
+    Assertions.assertTrue(stagingFiles.size() > 1);
+
+    final List<List<String>> partition = Lists.partition(new ArrayList<>(stagingFiles), 1000);
     for (final List<String> files : partition) {
       verify(db).execute(String.format(
           "COPY INTO fake-schema.%s FROM '%s' "
