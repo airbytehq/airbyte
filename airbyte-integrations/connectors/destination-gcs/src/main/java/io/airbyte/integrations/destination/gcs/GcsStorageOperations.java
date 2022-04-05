@@ -30,6 +30,7 @@ public class GcsStorageOperations extends S3StorageOperations {
   @Override
   protected void cleanUpObjects(final String bucket, final List<KeyVersion> keysToDelete) {
     for (final KeyVersion keyToDelete : keysToDelete) {
+      LOGGER.info("Deleting object {}", keyToDelete.getKey());
       s3Client.deleteObject(bucket, keyToDelete.getKey());
     }
   }

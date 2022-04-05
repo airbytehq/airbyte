@@ -173,12 +173,12 @@ public class S3StorageOperations implements BlobStorageOperations {
         // pathFormat may use subdirectories under the objectPath to organize files
         // so we need to recursively list them and filter files matching the pathFormat
         .withDelimiter(""));
-    final String regexFormat = getRegexFormat(namespace, streamName, pathFormat);
+    final Pattern regexFormat = Pattern.compile(getRegexFormat(namespace, streamName, pathFormat));
     while (objects.getObjectSummaries().size() > 0) {
       final List<KeyVersion> keysToDelete = objects.getObjectSummaries()
           .stream()
+          .filter(obj -> regexFormat.matcher(obj.getKey()).matches())
           .map(obj -> new KeyVersion(obj.getKey()))
-          .filter(obj -> Pattern.matches(regexFormat, obj.getKey()))
           .toList();
       cleanUpObjects(bucket, keysToDelete);
       LOGGER.info("Storage bucket {} has been cleaned-up ({} objects matching {} were deleted)...", objectPath, keysToDelete.size(), regexFormat);
@@ -205,6 +205,7 @@ public class S3StorageOperations implements BlobStorageOperations {
         .replaceAll(Pattern.quote(FORMAT_VARIABLE_MILLISECOND), "[0-9]{4}")
         .replaceAll(Pattern.quote(FORMAT_VARIABLE_EPOCH), "[0-9]+")
         .replaceAll(Pattern.quote(FORMAT_VARIABLE_UUID), ".*")
+        .replaceAll("/+", "/")
         // match part_id and extension at the end
         + ".*");
   }
@@ -216,8 +217,8 @@ public class S3StorageOperations implements BlobStorageOperations {
     while (objects.getObjectSummaries().size() > 0) {
       final List<KeyVersion> keysToDelete = objects.getObjectSummaries()
           .stream()
-          .map(obj -> new KeyVersion(obj.getKey()))
           .filter(obj -> stagedFiles.isEmpty() || stagedFiles.contains(obj.getKey()))
+          .map(obj -> new KeyVersion(obj.getKey()))
           .toList();
       cleanUpObjects(bucket, keysToDelete);
       LOGGER.info("Storage bucket {} has been cleaned-up ({} objects were deleted)...", objectPath, keysToDelete.size());
@@ -229,8 +230,11 @@ public class S3StorageOperations implements BlobStorageOperations {
     }
   }
 
-  protected void cleanUpObjects(final String bucket, final List<KeyVersion> toDelete) {
-    s3Client.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(toDelete));
+  protected void cleanUpObjects(final String bucket, final List<KeyVersion> keysToDelete) {
+    if (!keysToDelete.isEmpty()) {
+      LOGGER.info("Deleting objects {}", String.join(", ", keysToDelete.stream().map(KeyVersion::getKey).toList()));
+      s3Client.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
+    }
   }
 
   @Override

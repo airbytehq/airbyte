@@ -21,6 +21,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -62,10 +63,22 @@ public class S3StorageOperationsTest {
 
   @Test
   void testRegexMatch() {
-    final String regexFormat = s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, S3DestinationConstants.DEFAULT_PATH_FORMAT);
-    assertTrue(Pattern.matches(regexFormat, OBJECT_TO_DELETE));
-    assertFalse(Pattern.matches(regexFormat, NAMESPACE + "/" + STREAM_NAME + "/some_random_file_0.doc"));
-    assertFalse(Pattern.matches(regexFormat, NAMESPACE + "/stream_name2/2022_04_04_123456789_0.csv.gz"));
+    final Pattern regexFormat =
+        Pattern.compile(s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, S3DestinationConstants.DEFAULT_PATH_FORMAT));
+    assertTrue(regexFormat.matcher(OBJECT_TO_DELETE).matches());
+    assertTrue(regexFormat
+        .matcher(s3StorageOperations.getBucketObjectPath(NAMESPACE, STREAM_NAME, DateTime.now(), S3DestinationConstants.DEFAULT_PATH_FORMAT))
+        .matches());
+    assertFalse(regexFormat.matcher(NAMESPACE + "/" + STREAM_NAME + "/some_random_file_0.doc").matches());
+    assertFalse(regexFormat.matcher(NAMESPACE + "/stream_name2/2022_04_04_123456789_0.csv.gz").matches());
+  }
+
+  @Test
+  void testCustomRegexMatch() {
+    final String customFormat = "${NAMESPACE}_${STREAM_NAME}_${YEAR}-${MONTH}-${DAY}-${HOUR}-${MINUTE}-${SECOND}-${MILLISECOND}-${EPOCH}-${UUID}";
+    assertTrue(Pattern
+        .compile(s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, customFormat))
+        .matcher(s3StorageOperations.getBucketObjectPath(NAMESPACE, STREAM_NAME, DateTime.now(), customFormat)).matches());
   }
 
   @Test
