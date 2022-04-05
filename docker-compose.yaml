@@ -18,6 +18,9 @@ services:
     ports:
       - "80:80"
       - "8080:8080"
+    networks:
+      - default
+      - prefect-server
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
   # hook in case we need to add init behavior
@@ -225,3 +228,6 @@ volumes:
     name: ${DATA_DOCKER_MOUNT}
   db:
     name: ${DB_DOCKER_MOUNT}
+networks:
+  prefect-server:
+    external: true  
