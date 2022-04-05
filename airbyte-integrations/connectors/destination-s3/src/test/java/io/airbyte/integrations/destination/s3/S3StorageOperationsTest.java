@@ -82,6 +82,14 @@ public class S3StorageOperationsTest {
   }
 
   @Test
+  void testGetExtension() {
+    assertEquals(".csv.gz", S3StorageOperations.getExtension("test.csv.gz"));
+    assertEquals(".gz", S3StorageOperations.getExtension("test.gz"));
+    assertEquals(".avro", S3StorageOperations.getExtension("test.avro"));
+    assertEquals("", S3StorageOperations.getExtension("test-file"));
+  }
+
+  @Test
   void testCleanUpBucketObject() {
     final String pathFormat = S3DestinationConstants.DEFAULT_PATH_FORMAT;
     s3StorageOperations.cleanUpBucketObject(NAMESPACE, STREAM_NAME, FAKE_BUCKET_PATH, pathFormat);
