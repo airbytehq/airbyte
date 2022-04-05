@@ -1,2 +1,0 @@
-{"stream": "profiles", "data": {"profileId": 3893573341008362, "countryCode": "US", "currencyCode": "USD", "dailyBudget": 0.0, "timezone": "America/Los_Angeles", "accountInfo": {"marketplaceStringId": "ATVPDKIKX0DER", "id": "A3LUQZ2NBMFGO4", "type": "seller"}}, "emitted_at": 1627977383000}
-{"stream": "profiles", "data": {"profileId": 3530193827159538, "countryCode": "UK", "currencyCode": "GBP", "dailyBudget": 0.0, "timezone": "Europe/London", "accountInfo": {"marketplaceStringId": "A1F83G8C2ARO7P", "id": "A3LUQZ2NBMFGO4", "type": "seller"}}, "emitted_at": 1648488985591}
