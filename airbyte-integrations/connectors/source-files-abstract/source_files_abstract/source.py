@@ -3,103 +3,101 @@
 #
 
 
-import json
-from datetime import datetime
-from typing import Dict, Generator
+from abc import ABC, abstractmethod
+from traceback import format_exc
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
-)
-from airbyte_cdk.sources import Source
+from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
+
+# ideas on extending this to handle multiple streams:
+# - "dataset" is currently the name of the single table/stream. We could allow comma-split table names in this string for many streams.
+# - "path_pattern" currently uses https://facelessuser.github.io/wcmatch/glob/ to match a single string pattern (can be multiple | separated)
+#   we could change this to a JSON string in format {"stream_name": "pattern(s)"} to allow many streams and match to names in dataset.
+# - "format" I think we'd have to enforce like-for-like formats across streams otherwise the UI would become chaotic imo.
+# - "schema" could become a nested object such as {"stream_name": {schema}} allowing specifying schema for one/all/none/some tables.
 
 
-class SourceFilesAbstract(Source):
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+class SourceFilesAbstract(AbstractSource, ABC):
+    @property
+    @abstractmethod
+    def stream_class(self) -> type:
         """
-        Tests if the input configuration can be used to successfully connect to the integration
-            e.g: if a provided Stripe API token can be used to connect to the Stripe API.
+        :return: reference to the relevant FileStream class e.g. IncrementalFileStreamS3
+        """
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.json file
+    @property
+    @abstractmethod
+    def spec_class(self) -> type:
+        """
+        :return: reference to the relevant pydantic spec class e.g. SourceS3Spec
+        """
 
-        :return: AirbyteConnectionStatus indicating a Success or Failure
+    @property
+    @abstractmethod
+    def documentation_url(self) -> str:
+        """
+        :return: link to docs page for this source e.g. "https://docs.airbyte.io/integrations/sources/s3"
+        """
+
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        """
+        This method checks two things:
+            - That the credentials provided in config are valid for access.
+            - That the path pattern(s) provided in config are valid to be matched against.
+
+        :param logger: an instance of AirbyteLogger to use
+        :param config: The user-provided configuration as specified by the source's spec.
+                                This usually contains information required to check connection e.g. tokens, secrets and keys etc.
+        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
+        source using the provided configuration.
+        Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
+        The error object will be cast to string to display the problem to the user.
         """
         try:
-            # Not Implemented
+            for file_info in self.stream_class(**config).filepath_iterator():
+                # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
+                # test that matching on the pattern doesn't error
+                globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
+                # just need first file here to test connection and valid patterns
+                return True, None
 
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+            logger.error(format_exc())
+            return False, e
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+        logger.warn("Found 0 files (but connection is valid).")
+        return True, None
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration.
-        For example, given valid credentials to a Postgres database,
-        returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
+        We just have a single stream per source so construct that here
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.json file
-
-        :return: AirbyteCatalog is an object describing a list of all available streams in this source.
-            A stream is an AirbyteStream object that includes:
-            - its stream name (or table name in the case of Postgres)
-            - json_schema providing the specifications of expected schema for this stream (a list of columns described
-            by their names and types)
+        :param config: The user-provided configuration as specified by the source's spec.
+        :return: A list of the streams in this source connector.
         """
-        streams = []
+        return [self.stream_class(**config)]
 
-        stream_name = "TableName"  # Example
-        json_schema = {  # Example
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {"columnName": {"type": "string"}},
-        }
-
-        # Not Implemented
-
-        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
-        return AirbyteCatalog(streams=streams)
-
-    def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
-        Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
-        catalog, and state.
-
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-            the properties of the spec.json file
-        :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
-            returned by discover(), but
-        in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
-        with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
-        :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
-            replication in the future from that saved checkpoint.
-            This is the object that is provided with state from previous runs and avoid replicating the entire set of
-            data everytime.
-
-        :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
+        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+        required to run this integration.
         """
-        stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
+        # make dummy instance of stream_class in order to get 'supports_incremental' property
+        incremental = self.stream_class(dataset="", provider="", format="", path_pattern="").supports_incremental
 
-        # Not Implemented
+        supported_dest_sync_modes = [DestinationSyncMode.overwrite]
+        if incremental:
+            supported_dest_sync_modes.extend([DestinationSyncMode.append, DestinationSyncMode.append_dedup])
 
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+        return ConnectorSpecification(
+            documentationUrl=self.documentation_url,
+            changelogUrl=self.documentation_url,
+            supportsIncremental=incremental,
+            supported_destination_sync_modes=supported_dest_sync_modes,
+            connectionSpecification=self.spec_class.schema(),  # type: ignore[attr-defined]
         )
