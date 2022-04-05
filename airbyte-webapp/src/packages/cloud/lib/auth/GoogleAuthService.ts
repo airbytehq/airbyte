@@ -75,6 +75,9 @@ export class GoogleAuthService implements AuthService {
   }
 
   async signUp(email: string, password: string): Promise<UserCredential> {
+    if (password.length < 12) {
+      throw new FieldError("password", "signup.password.minLength");
+    }
     return createUserWithEmailAndPassword(this.auth, email, password).catch(
       (err) => {
         switch (err.code) {

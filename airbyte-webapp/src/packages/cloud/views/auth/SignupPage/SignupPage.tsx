@@ -35,7 +35,7 @@ const SignupPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
   password: yup
     .string()
-    .min(6, "signup.password.minLength")
+    .min(12, "signup.password.minLength")
     .required("form.empty.error"),
   name: yup.string().required("form.empty.error"),
   companyName: yup.string().required("form.empty.error"),
