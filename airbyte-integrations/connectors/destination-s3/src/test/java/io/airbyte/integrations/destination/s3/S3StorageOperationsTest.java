@@ -18,6 +18,7 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +37,7 @@ public class S3StorageOperationsTest {
 
   @BeforeEach
   public void setup() {
-    final NamingConventionTransformer nameTransformer = mock(NamingConventionTransformer.class);
+    final NamingConventionTransformer nameTransformer = new S3NameTransformer();
     s3Client = mock(AmazonS3.class);
 
     final S3ObjectSummary objectSummary1 = mock(S3ObjectSummary.class);
@@ -61,7 +62,7 @@ public class S3StorageOperationsTest {
 
   @Test
   void testRegexMatch() {
-    final String regexFormat = S3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, S3DestinationConstants.DEFAULT_PATH_FORMAT);
+    final String regexFormat = s3StorageOperations.getRegexFormat(NAMESPACE, STREAM_NAME, S3DestinationConstants.DEFAULT_PATH_FORMAT);
     assertTrue(Pattern.matches(regexFormat, OBJECT_TO_DELETE));
     assertFalse(Pattern.matches(regexFormat, NAMESPACE + "/" + STREAM_NAME + "/some_random_file_0.doc"));
     assertFalse(Pattern.matches(regexFormat, NAMESPACE + "/stream_name2/2022_04_04_123456789_0.csv.gz"));

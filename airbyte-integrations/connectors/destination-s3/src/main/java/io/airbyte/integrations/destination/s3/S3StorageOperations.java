@@ -14,7 +14,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -191,11 +190,12 @@ public class S3StorageOperations implements BlobStorageOperations {
     }
   }
 
-  @VisibleForTesting
-  static String getRegexFormat(final String namespace, final String streamName, final String pathFormat) {
-    return pathFormat
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_NAMESPACE), namespace)
-        .replaceAll(Pattern.quote(FORMAT_VARIABLE_STREAM_NAME), streamName)
+  protected String getRegexFormat(final String namespace, final String streamName, final String pathFormat) {
+    final String namespaceStr = nameTransformer.getNamespace(isNotBlank(namespace) ? namespace : "");
+    final String streamNameStr = nameTransformer.getIdentifier(streamName);
+    return nameTransformer.applyDefaultCase(pathFormat
+        .replaceAll(Pattern.quote(FORMAT_VARIABLE_NAMESPACE), namespaceStr)
+        .replaceAll(Pattern.quote(FORMAT_VARIABLE_STREAM_NAME), streamNameStr)
         .replaceAll(Pattern.quote(FORMAT_VARIABLE_YEAR), "[0-9]{4}")
         .replaceAll(Pattern.quote(FORMAT_VARIABLE_MONTH), "[0-9]{2}")
         .replaceAll(Pattern.quote(FORMAT_VARIABLE_DAY), "[0-9]{2}")
@@ -206,7 +206,7 @@ public class S3StorageOperations implements BlobStorageOperations {
         .replaceAll(Pattern.quote(FORMAT_VARIABLE_EPOCH), "[0-9]+")
         .replaceAll(Pattern.quote(FORMAT_VARIABLE_UUID), ".*")
         // match part_id and extension at the end
-        + ".*";
+        + ".*");
   }
 
   @Override
