@@ -12,6 +12,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -107,6 +110,17 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected void retrieveRawRecordsAndAssertSameMessages(final AirbyteCatalog catalog,
+      final List<AirbyteMessage> messages,
+      final String defaultSchema)
+      throws Exception {
+    final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
+    deserializeNestedObjects(messages, actualMessages);
+
+    assertSameMessages(messages, actualMessages, false);
   }
 
 }
