@@ -297,8 +297,8 @@ public class IntegrationRunner {
     final String version = parseConnectorVersion(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
     final String airbyteVersion = env.getOrDefault(EnvConfigs.AIRBYTE_VERSION, "");
     final String airbyteRole = env.getOrDefault(EnvConfigs.AIRBYTE_ROLE, "");
-    final boolean isDev = version.startsWith(AirbyteVersion.DEV_VERSION_PREFIX)
-        || airbyteVersion.startsWith(AirbyteVersion.DEV_VERSION_PREFIX)
+    final boolean isDev = version.equals(AirbyteVersion.DEV_VERSION)
+        || airbyteVersion.equals(AirbyteVersion.DEV_VERSION)
         || airbyteRole.equals("airbyter");
     if (isDev) {
       LOGGER.debug("Skip Sentry transaction for dev environment");
