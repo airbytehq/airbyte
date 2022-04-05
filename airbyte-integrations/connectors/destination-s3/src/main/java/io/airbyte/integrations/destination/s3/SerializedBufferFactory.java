@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -44,28 +43,27 @@ public class SerializedBufferFactory {
    * creating a new buffer where to store data. Note that we typically associate which format is being
    * stored in the storage object thanks to its file extension.
    */
-  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> getCreateFunction(final JsonNode config,
+  public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> getCreateFunction(final S3DestinationConfig config,
                                                                                                                                              final Function<String, BufferStorage> createStorageFunctionWithoutExtension) {
-    final JsonNode formatConfig = config.get("format");
+    final S3FormatConfig formatConfig = config.getFormatConfig();
     LOGGER.info("S3 format config: {}", formatConfig.toString());
-    final S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
-    switch (formatType) {
+    switch (formatConfig.getFormat()) {
       case AVRO -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".avro");
-        return AvroSerializedBuffer.createFunction(new S3AvroFormatConfig(formatConfig), createStorageFunctionWithExtension);
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(AvroSerializedBuffer.DEFAULT_SUFFIX);
+        return AvroSerializedBuffer.createFunction((S3AvroFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case CSV -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".csv.gz");
-        return CsvSerializedBuffer.createFunction(new S3CsvFormatConfig(formatConfig), createStorageFunctionWithExtension);
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(CsvSerializedBuffer.CSV_GZ_SUFFIX);
+        return CsvSerializedBuffer.createFunction((S3CsvFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case JSONL -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(".jsonl.gz");
-        return JsonLSerializedBuffer.createFunction(new S3JsonlFormatConfig(formatConfig), createStorageFunctionWithExtension);
+        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(JsonLSerializedBuffer.JSONL_GZ_SUFFIX);
+        return JsonLSerializedBuffer.createFunction((S3JsonlFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case PARQUET -> {
         // we can't choose the type of buffer storage with parquet because of how the underlying hadoop
         // library is imposing file usage.
-        return ParquetSerializedBuffer.createFunction(S3DestinationConfig.getS3DestinationConfig(config));
+        return ParquetSerializedBuffer.createFunction(config);
       }
       default -> {
         throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));

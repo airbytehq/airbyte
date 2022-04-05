@@ -88,10 +88,24 @@ type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
  * A higher positive number will put the given connector to the top of the list
  * a low negative number to the end of it.
  */
-const ORDER_OVERWRITE: Record<string, number> = {
-  // Push Google Sheets connector to top
-  "71607ba1-c0ac-4799-8049-7f4b90dd50f7": 1,
-};
+const ORDER_OVERWRITE: Record<string, number> = {};
+
+/**
+ * Returns the order for a specific release stage label. This will define
+ * in what order the different release stages are shown inside the select.
+ * They will be shown in an increasing order (i.e. 0 on top), unless not overwritten
+ * by ORDER_OVERWRITE above.
+ */
+function getOrderForReleaseStage(stage?: ReleaseStage): number {
+  switch (stage) {
+    case ReleaseStage.BETA:
+      return 1;
+    case ReleaseStage.ALPHA:
+      return 2;
+    default:
+      return 0;
+  }
+}
 
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   children,
@@ -163,14 +177,12 @@ const ConnectorServiceTypeControl: React.FC<{
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
   documentationUrl?: string;
-  allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
   onOpenRequestConnectorModal: (initialName: string) => void;
 }> = ({
   property,
   formType,
   isEditMode,
-  allowChangeConnector,
   onChangeServiceType,
   availableServices,
   documentationUrl,
@@ -216,9 +228,16 @@ const ConnectorServiceTypeControl: React.FC<{
           const priorityA = ORDER_OVERWRITE[a.value] ?? 0;
           const priorityB = ORDER_OVERWRITE[b.value] ?? 0;
           // If they have different priority use the higher priority first, otherwise use the label
-          return priorityA !== priorityB
-            ? priorityB - priorityA
-            : naturalComparator(a.label, b.label);
+          if (priorityA !== priorityB) {
+            return priorityB - priorityA;
+          } else if (a.releaseStage !== b.releaseStage) {
+            return (
+              getOrderForReleaseStage(a.releaseStage) -
+              getOrderForReleaseStage(b.releaseStage)
+            );
+          } else {
+            return naturalComparator(a.label, b.label);
+          }
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices]
@@ -265,7 +284,7 @@ const ConnectorServiceTypeControl: React.FC<{
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
-          isDisabled={isEditMode && !allowChangeConnector}
+          isDisabled={isEditMode}
           isSearchable
           placeholder={formatMessage({
             id: "form.selectConnector",

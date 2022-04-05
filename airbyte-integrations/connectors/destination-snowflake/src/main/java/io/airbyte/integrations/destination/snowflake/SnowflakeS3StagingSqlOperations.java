@@ -12,6 +12,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.util.List;
 import java.util.Map;
@@ -98,12 +99,13 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                 final List<String> stagedFiles,
                                 final String dstTableName,
                                 final String schemaName) {
+    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
     return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";",
         schemaName,
         dstTableName,
         generateBucketPath(stageName, stagingPath),
-        s3Config.getAccessKeyId(),
-        s3Config.getSecretAccessKey());
+        credentialConfig.getAccessKeyId(),
+        credentialConfig.getSecretAccessKey());
   }
 
   private String generateBucketPath(final String stageName, final String stagingPath) {

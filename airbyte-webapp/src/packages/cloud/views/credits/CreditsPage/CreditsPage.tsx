@@ -10,9 +10,9 @@ import LoadingPage from "components/LoadingPage";
 import { CategoryItem } from "components/SideMenu/SideMenu";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import useRouter from "hooks/useRouter";
-import CreditsTitle from "./components/CreditsTitle";
 import RemainingCredits from "./components/RemainingCredits";
 import CreditsUsagePage from "./components/CreditsUsagePage";
+import { PageTitle } from "components";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;
@@ -51,7 +51,9 @@ const CreditsPage: React.FC = () => {
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "credits.credits" }]} />}
-      pageTitle={<CreditsTitle />}
+      pageTitle={
+        <PageTitle title={<FormattedMessage id="credits.credits" />} />
+      }
     >
       <Content>
         <RemainingCredits />

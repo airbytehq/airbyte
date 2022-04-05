@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -60,7 +59,6 @@ public class ConfigRepositoryE2EReadWriteTest {
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
   private JsonSecretsProcessor jsonSecretsProcessor;
-  private FeatureFlags featureFlags;
 
   @BeforeAll
   public static void dbSetup() {
@@ -75,8 +73,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   void setup() throws IOException, JsonValidationException, SQLException {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    featureFlags = mock(FeatureFlags.class);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     configRepository = spy(new ConfigRepository(configPersistence, database));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
