@@ -57,7 +57,40 @@
     },
     "phone_number": { "type": ["string", "null"] },
     "profile_photo_url": { "type": ["string", "null"] },
-    "questionnaire": {},
+    "questionnaire": {
+      "_id": { "type": ["string", "null"] },
+      "name": { "type": ["string", "null"] },
+      "questions": {
+        "type": ["array", "null"],
+        "items": {
+          "type": ["object", "null"],
+          "properties": {
+            "text": { "type": ["string", "null"] },
+            "type": {
+              "type": ["object", "null"],
+              "properties": {
+                "id": { "type": ["string", "null"] },
+                "name": { "type": ["string", "null"] }
+              }
+            },
+            "required": { "type": ["boolean", "null"] },
+            "_id": { "type": ["string", "null"] }
+          }
+        }
+      },
+      "message_template": {
+        "type": ["object", "null"],
+        "properties": {
+          "type": { "type": ["string", "null"] },
+          "body": { "type": ["string", "null"] }
+        }
+      },
+      "options": {
+        "move_to": {
+          "type": ["object", "null"]
+        }
+      }
+    },
     "recruited_by": {
       "type": ["object", "null"],
       "properties": {
