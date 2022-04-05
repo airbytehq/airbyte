@@ -6,6 +6,23 @@ x-logging: &default-logging
     max-file: "5"
   driver: json-file
 services:
+  traefik:
+    image: "traefik:v2.6"
+    container_name: "traefik"
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - default
+      - prefect-server
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
   # hook in case we need to add init behavior
   # every root service (no depends_on) should depend on init
   init:
@@ -179,6 +196,12 @@ services:
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.airbyte-webapp.rule=Host(`airbyte.brigad.tools`)"
+      - "traefik.http.routers.airbyte-webapp.entrypoints=web"
+      - "traefik.http.routers.airbyte-webapp.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=brigad:$$apr1$$bPS1GxpI$$apo1WVidIblY0A.e2rAnf1"
   airbyte-temporal:
     image: airbyte/temporal:${VERSION}
     logging: *default-logging
@@ -206,3 +229,6 @@ volumes:
     name: ${DATA_DOCKER_MOUNT}
   db:
     name: ${DB_DOCKER_MOUNT}
+networks:
+  prefect-server:
+    external: true  
