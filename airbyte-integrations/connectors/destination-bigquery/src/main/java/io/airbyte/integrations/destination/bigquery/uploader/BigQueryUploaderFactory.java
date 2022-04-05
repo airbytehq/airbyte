@@ -22,24 +22,20 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.gcs.avro.GcsAvroWriter;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BigQueryUploaderFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
-
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    final String schemaName =
-        BigQueryUtils.getSchema(uploaderConfig.getConfig(), uploaderConfig.getConfigStream());
+    final String schemaName = BigQueryUtils.getSchema(
+        uploaderConfig.getConfig(),
+        uploaderConfig.getConfigStream());
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingSchemas = new HashSet<>();
 
@@ -123,7 +119,7 @@ public class BigQueryUploaderFactory {
       throws IOException {
     final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
-    final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    final AmazonS3 s3Client = gcsDestinationConfig.getS3Client();
     return new GcsAvroWriter(
         gcsDestinationConfig,
         s3Client,

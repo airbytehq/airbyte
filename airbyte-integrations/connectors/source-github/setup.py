@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = [
     "vcrpy==4.1.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "responses==0.13.3"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "responses~=0.19.0"]
 
 setup(
     name="source_github",

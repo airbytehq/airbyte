@@ -35,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -70,11 +71,11 @@ public class TemporalUtils {
 
   public static final String DEFAULT_NAMESPACE = "default";
 
-  private static final Duration WORKFLOW_EXECUTION_TTL = Duration.ofDays(7);
+  private static final Duration WORKFLOW_EXECUTION_TTL = Duration.ofDays(configs.getTemporalRetentionInDays());
   private static final String HUMAN_READABLE_WORKFLOW_EXECUTION_TTL =
       DurationFormatUtils.formatDurationWords(WORKFLOW_EXECUTION_TTL.toMillis(), true, true);
 
-  public static void configureTemporalNamespace(WorkflowServiceStubs temporalService) {
+  public static void configureTemporalNamespace(final WorkflowServiceStubs temporalService) {
     final var client = temporalService.blockingStub();
     final var describeNamespaceRequest = DescribeNamespaceRequest.newBuilder().setNamespace(DEFAULT_NAMESPACE).build();
     final var currentRetentionGrpcDuration = client.describeNamespace(describeNamespaceRequest).getConfig().getWorkflowExecutionRetentionTtl();
@@ -216,7 +217,7 @@ public class TemporalUtils {
    * Runs the code within the supplier while heartbeating in the backgroud. Also makes sure to shut
    * down the heartbeat server after the fact.
    */
-  public static <T> T withBackgroundHeartbeat(Callable<T> callable) {
+  public static <T> T withBackgroundHeartbeat(final Callable<T> callable) {
     final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     try {
@@ -228,7 +229,36 @@ public class TemporalUtils {
     } catch (final ActivityCompletionException e) {
       LOGGER.warn("Job either timed out or was cancelled.");
       throw new RuntimeException(e);
-    } catch (Exception e) {
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      LOGGER.info("Stopping temporal heartbeating...");
+      scheduledExecutor.shutdown();
+    }
+  }
+
+  public static <T> T withBackgroundHeartbeat(final AtomicReference<Runnable> cancellationCallbackRef, final Callable<T> callable) {
+    final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    try {
+      scheduledExecutor.scheduleAtFixedRate(() -> {
+        final CancellationHandler cancellationHandler = new CancellationHandler.TemporalCancellationHandler();
+
+        cancellationHandler.checkAndHandleCancellation(() -> {
+          if (cancellationCallbackRef != null) {
+            final Runnable cancellationCallback = cancellationCallbackRef.get();
+            if (cancellationCallback != null) {
+              cancellationCallback.run();
+            }
+          }
+        });
+      }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+
+      return callable.call();
+    } catch (final ActivityCompletionException e) {
+      LOGGER.warn("Job either timed out or was cancelled.");
+      throw new RuntimeException(e);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     } finally {
       LOGGER.info("Stopping temporal heartbeating...");

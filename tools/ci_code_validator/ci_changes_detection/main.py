@@ -6,17 +6,17 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from ci_sonar_qube import ROOT_DIR
-
 from ci_common_utils import Logger
 
-# Filenames used to detect whether the dir is a module
-LANGUAGE_MODULE_ID_FILE = {
-    ".py": "setup.py",
-    # TODO: Add ID files for other languages
-}
+from ci_sonar_qube import ROOT_DIR
 
 LOGGER = Logger()
+
+AVAILABLE_SCAN_FOLDERS = (
+    "airbyte-integrations/connectors",
+    "airbyte-cdk/python",
+    "airbyte-integrations/bases/source-acceptance-test",
+)
 
 
 def folder_generator(dir_path: Path) -> Path:
@@ -66,10 +66,15 @@ def list_changed_modules(changed_files: List[str]) -> List[Dict[str, str]]:
     modules = []
     for module_folder, lang in module_folders.items():
         module_folder = str(module_folder)
-        if "airbyte-integrations/connectors" not in module_folder:
-            # now we need to detect connectors only
+        has = False
+        for available_folder in AVAILABLE_SCAN_FOLDERS:
+            if available_folder in module_folder:
+                has = True
+                break
+        if not has:
             LOGGER.info(f"skip the folder {module_folder}...")
             continue
+
         parts = module_folder.split("/")
         module_name = "/".join(parts[-2:])
         modules.append({"folder": module_folder, "lang": lang, "module": module_name})

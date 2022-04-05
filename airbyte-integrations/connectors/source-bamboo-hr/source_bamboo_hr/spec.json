@@ -17,6 +17,16 @@
         "title": "API Key",
         "description": "Bamboo HR API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/bamboo-hr\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true
+      },
+      "custom_reports_fields": {
+        "type": "string",
+        "default": "",
+        "description": "Comma-separated list of fields to include in custom reports."
+      },
+      "custom_reports_include_default_fields": {
+        "type": "boolean",
+        "default": true,
+        "description": "If true, the custom reports endpoint will include the default fields defined here: https://documentation.bamboohr.com/docs/list-of-field-names."
       }
     }
   }

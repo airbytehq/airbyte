@@ -19,6 +19,21 @@
     },
     "campaign.name": {
       "type": ["null", "string"]
+    },
+    "segments.ad_network_type": {
+      "type": ["null", "string"]
+    },
+    "campaign.network_settings.target_content_network": {
+      "type": ["null", "boolean"]
+    },
+    "campaign.network_settings.target_google_search": {
+      "type": ["null", "boolean"]
+    },
+    "campaign.network_settings.target_partner_search_network": {
+      "type": ["null", "boolean"]
+    },
+    "campaign.network_settings.target_search_network": {
+      "type": ["null", "boolean"]
     }
   }
 }

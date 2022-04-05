@@ -9,6 +9,7 @@ The BambooHr source supports Full Refresh sync. You can choose if this connector
 This connector outputs the following streams:
 
 * [Employees](https://documentation.bamboohr.com/reference#get-employees-directory-1)
+* [Custom Reports](https://documentation.bamboohr.com/reference/request-custom-report-1)
 
 ### Features
 
@@ -33,7 +34,7 @@ BambooHR has the [rate limits](https://documentation.bamboohr.com/docs/api-detai
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.1 | 2022-02-14 | [8661](https://github.com/airbytehq/airbyte/pull/8661) | Update fields in source-connectors specifications |
-| 0.1.0 | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054) | Initial release with Employees API |
-
+|:--------| :--- | :--- | :--- |
+| 0.2.1   | 2022-04-05 | [8661](https://github.com/airbytehq/airbyte/pull/8661) | Update fields in source-connectors specifications |
+| 0.2.0   | 2022-03-24 | [11326](https://github.com/airbytehq/airbyte/pull/11326) | Added support for Custom Reports endpoint |
+| 0.1.0   | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054) | Initial release with Employees API |

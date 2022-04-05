@@ -56,6 +56,7 @@ function useInitSdk<Sdk extends FirebaseSdks>(
     );
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initializeSdk = React.useMemo(() => sdkInitializer(firebaseApp), [
     firebaseApp,
   ]);

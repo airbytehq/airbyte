@@ -27,24 +27,34 @@
         "examples": ["8123"],
         "order": 1
       },
+      "tcp-port": {
+        "title": "Native Port",
+        "description": "Native port (not the JDBC) of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 9000,
+        "examples": ["9000"],
+        "order": 2
+      },
       "database": {
         "title": "DB Name",
         "description": "Name of the database.",
         "type": "string",
-        "order": 2
+        "order": 3
       },
       "username": {
         "title": "User",
         "description": "Username to use to access the database.",
         "type": "string",
-        "order": 3
+        "order": 4
       },
       "password": {
         "title": "Password",
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
-        "order": 4
+        "order": 5
       },
       "tunnel_method": {
         "type": "object",

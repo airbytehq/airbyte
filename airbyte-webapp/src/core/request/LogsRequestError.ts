@@ -12,7 +12,8 @@ export class LogsRequestError extends CommonRequestError {
     this._status = 400;
   }
 
-  static extractJobInfo(error: unknown): JobInfo | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static extractJobInfo(error: any): JobInfo | null {
     if (!error) {
       return null;
     }
@@ -20,6 +21,8 @@ export class LogsRequestError extends CommonRequestError {
   }
 }
 
-export function isLogsRequestError(error: any): error is LogsRequestError {
+export function isLogsRequestError(error: {
+  __type?: string;
+}): error is LogsRequestError {
   return error.__type === "common.errorWithLogs";
 }

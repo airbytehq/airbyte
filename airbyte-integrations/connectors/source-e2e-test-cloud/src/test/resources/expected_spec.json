@@ -47,8 +47,8 @@
         "order": 50,
         "oneOf": [
           {
-            "title": "Single Stream",
-            "description": "A catalog with one stream.",
+            "title": "Single Schema",
+            "description": "A catalog with one or multiple streams that share the same schema.",
             "required": ["type", "stream_name", "stream_schema"],
             "properties": {
               "type": {
@@ -67,12 +67,20 @@
                 "description": "A Json schema for the stream. The schema should be compatible with <a href=\"https://json-schema.org/draft-07/json-schema-release-notes.html\">draft-07</a>. See <a href=\"https://cswr.github.io/JsonSchema/spec/introduction/\">this doc</a> for examples.",
                 "type": "string",
                 "default": "{ \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } }"
+              },
+              "stream_duplication": {
+                "title": "Duplicate the stream N times",
+                "description": "Duplicate the stream for easy load testing. Each stream name will have a number suffix. For example, if the stream name is \"ds\", the duplicated streams will be \"ds_0\", \"ds_1\", etc.",
+                "type": "integer",
+                "default": 1,
+                "min": 1,
+                "max": 10000
               }
             }
           },
           {
-            "title": "Multi-Stream",
-            "description": "A catalog with multiple data streams.",
+            "title": "Multi Schema",
+            "description": "A catalog with multiple data streams, each with a different schema.",
             "required": ["type", "stream_schemas"],
             "properties": {
               "type": {

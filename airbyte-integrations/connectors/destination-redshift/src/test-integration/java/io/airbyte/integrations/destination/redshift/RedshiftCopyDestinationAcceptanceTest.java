@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
@@ -13,12 +16,15 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
@@ -141,7 +147,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
             baseConfig.get("port").asText(),
             baseConfig.get("database").asText()),
         "com.amazon.redshift.jdbc.Driver", null,
-        "ssl=true;sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
+        RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
   }
 
   @Override
@@ -152,6 +158,29 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   @Override
   protected int getMaxRecordValueLimit() {
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+  }
+
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToRedshiftFormat(data.at(path).asText()));
+          case DATE -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToDateFormat(data.at(path).asText()));
+        }
+      }
+    }
   }
 
 }

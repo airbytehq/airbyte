@@ -5,6 +5,7 @@ type ServiceContainer = {
   [key: string]: Service;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Service = any;
 
 type ServicesProviderApi = {
@@ -33,12 +34,9 @@ export const ServicesProvider: React.FC<{ inject?: ServiceContainer }> = ({
       unregister: remove,
       registeredServices,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [registeredServices]
   );
-
-  useEffect(() => {
-    services = registeredServices;
-  }, [registeredServices]);
 
   return (
     <ServicesProviderContext.Provider value={ctxValue}>
@@ -70,6 +68,7 @@ export function useInjectServices(serviceInject: ServiceContainer): void {
     );
 
     return () => Object.keys(serviceInject).forEach(unregister);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serviceInject]);
 }
 
@@ -95,13 +94,6 @@ export function useGetService<T>(serviceToken: string): T {
     registeredServices,
     serviceToken,
   ]);
-}
-
-// This is workaround for rest-hooks
-let services: ServiceContainer = {};
-
-export function getService<T extends Service>(serviceId: string): T {
-  return services[serviceId];
 }
 
 //

@@ -133,6 +133,9 @@
                 }
               }
             },
+            "shop_url": {
+              "type": ["null", "string"]
+            },
             "_links": {
               "type": ["null", "object"],
               "properties": {
@@ -164,10 +167,10 @@
         },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["date_modified"]
+        "default_cursor_field": ["date_created"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["date_modified"],
+      "cursor_field": ["date_created"],
       "destination_sync_mode": "append"
     },
     {
@@ -367,6 +370,9 @@
                 }
               }
             },
+            "shop_url": {
+              "type": ["null", "string"]
+            },
             "line_items": {
               "type": ["null", "array"],
               "items": {
@@ -385,7 +391,7 @@
                     "type": ["null", "integer"]
                   },
                   "quantity": {
-                    "type": ["null", "integer"]
+                    "type": ["null", "number"]
                   },
                   "tax_class": {
                     "type": ["null", "string"]
@@ -469,7 +475,7 @@
                     "type": ["null", "string"]
                   },
                   "price": {
-                    "type": ["null", "integer"]
+                    "type": ["null", "number"]
                   }
                 }
               }
@@ -888,11 +894,12 @@
                   "key": {
                     "type": ["null", "string"]
                   },
-                  "value": {
-                    "type": ["null", "string"]
-                  }
+                  "value": {}
                 }
               }
+            },
+            "shop_url": {
+              "type": ["null", "string"]
             },
             "_links": {
               "type": ["null", "object"],

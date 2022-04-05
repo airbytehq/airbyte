@@ -8,6 +8,7 @@ import static io.airbyte.integrations.destination.s3.S3DestinationConstants.PART
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import java.util.Objects;
@@ -47,8 +48,10 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   public S3CsvFormatConfig(final JsonNode formatConfig) {
     this(
-        Flattening.fromValue(formatConfig.get("flattening").asText()),
-        formatConfig.get(PART_SIZE_MB_ARG_NAME) != null ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong() : null);
+        Flattening.fromValue(formatConfig.has("flattening") ? formatConfig.get("flattening").asText() : Flattening.NO.value),
+        formatConfig.get(PART_SIZE_MB_ARG_NAME) != null
+            ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
+            : S3DestinationConstants.DEFAULT_PART_SIZE_MB);
   }
 
   public S3CsvFormatConfig(final Flattening flattening, final Long partSize) {

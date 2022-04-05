@@ -9,14 +9,14 @@ MAIN_REQUIREMENTS = [
     "requests",
     "ci_common_utils",
     "unidiff",
-    "mdutils~=1.3.1"
+    "mdutils~=1.3.1",
+    "mypy==0.930",
 ]
 
 TEST_REQUIREMENTS = [
     "requests-mock",
     "pytest",
     "black",
-    "mypy",
     "lxml",
     "isort"
 ]

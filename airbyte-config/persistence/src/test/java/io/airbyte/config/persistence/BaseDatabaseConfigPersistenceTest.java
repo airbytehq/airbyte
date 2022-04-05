@@ -6,15 +6,20 @@ package io.airbyte.config.persistence;
 
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,6 +43,7 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   protected static PostgreSQLContainer<?> container;
   protected static Database database;
   protected static DatabaseConfigPersistence configPersistence;
+  protected static JsonSecretsProcessor jsonSecretsProcessor;
 
   @BeforeAll
   public static void dbSetup() {
@@ -46,11 +52,19 @@ public abstract class BaseDatabaseConfigPersistenceTest {
         .withUsername("docker")
         .withPassword("docker");
     container.start();
+    jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
   }
 
   @AfterAll
   public static void dbDown() {
     container.close();
+  }
+
+  protected static void truncateAllTables() throws SQLException {
+    database.query(ctx -> ctx
+        .execute(
+            "TRUNCATE TABLE state, actor_catalog, actor_catalog_fetch_event, connection_operation, connection, operation, actor_oauth_parameter, "
+                + "actor, actor_definition, actor_definition_workspace_grant, workspace"));
   }
 
   protected static final StandardSourceDefinition SOURCE_GITHUB = new StandardSourceDefinition()
@@ -90,9 +104,50 @@ public abstract class BaseDatabaseConfigPersistenceTest {
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(), source);
   }
 
+  protected static void writeSourceWithSourceConnection(final ConfigPersistence configPersistence, final StandardSourceDefinition source)
+      throws Exception {
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(), source);
+    final UUID connectionId = UUID.randomUUID();
+    final UUID workspaceId = UUID.randomUUID();
+    final StandardWorkspace workspace = new StandardWorkspace()
+        .withWorkspaceId(workspaceId)
+        .withName("can not be null")
+        .withSlug("can not be null")
+        .withInitialSetupComplete(true);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), workspace);
+
+    final SourceConnection sourceConnection = new SourceConnection()
+        .withSourceId(connectionId)
+        .withWorkspaceId(workspaceId)
+        .withName("can not be null")
+        .withSourceDefinitionId(source.getSourceDefinitionId());
+    configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, connectionId.toString(), sourceConnection);
+  }
+
   protected static void writeDestination(final ConfigPersistence configPersistence, final StandardDestinationDefinition destination)
       throws Exception {
     configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destination);
+  }
+
+  protected static void writeDestinationWithDestinationConnection(final ConfigPersistence configPersistence,
+                                                                  final StandardDestinationDefinition destination)
+      throws Exception {
+    configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(), destination);
+    final UUID connectionId = UUID.randomUUID();
+    final UUID workspaceId = UUID.randomUUID();
+    final StandardWorkspace workspace = new StandardWorkspace()
+        .withWorkspaceId(workspaceId)
+        .withName("can not be null")
+        .withSlug("can not be null")
+        .withInitialSetupComplete(true);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), workspace);
+
+    final DestinationConnection destinationConnection = new DestinationConnection()
+        .withDestinationId(connectionId)
+        .withWorkspaceId(workspaceId)
+        .withName("can not be null")
+        .withDestinationDefinitionId(destination.getDestinationDefinitionId());
+    configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, connectionId.toString(), destinationConnection);
   }
 
   protected static void writeDestinations(final ConfigPersistence configPersistence, final List<StandardDestinationDefinition> destinations)

@@ -30,12 +30,13 @@ import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -132,7 +133,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 // read the column metadata Json object, and determine its type
                 .map(f -> {
                   final Datatype datatype = getFieldType(f);
-                  final JsonSchemaPrimitive jsonType = getType(datatype);
+                  final JsonSchemaType jsonType = getType(datatype);
                   LOGGER.info("Table {} column {} (type {}[{}]) -> Json type {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
@@ -147,7 +148,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   protected Predicate<JsonNode> excludeNotAccessibleTables(final Set<String> internalSchemas,
-                                                         final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
+                                                           final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege) {
     return jsonNode -> {
       if (tablesWithSelectGrantPrivilege.isEmpty()) {
         return isNotInternalSchema(jsonNode, internalSchemas);
@@ -160,8 +161,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     };
   }
 
-  // needs to override isNotInternalSchema for connectors that override getPrivilegesTableForCurrentUser()
-  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+  // needs to override isNotInternalSchema for connectors that override
+  // getPrivilegesTableForCurrentUser()
+  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
     return !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
   }
 
@@ -198,7 +200,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
-  public JsonSchemaPrimitive getType(final Datatype columnType) {
+  public JsonSchemaType getType(final Datatype columnType) {
     return sourceOperations.getJsonType(columnType);
   }
 
@@ -260,7 +262,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.query(
+        final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
@@ -292,7 +294,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         jdbcStreamingQueryConfiguration,
-        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null,
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);

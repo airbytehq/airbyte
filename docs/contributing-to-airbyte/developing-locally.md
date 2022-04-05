@@ -6,8 +6,7 @@ The following technologies are required to build Airbyte locally.
 2. `Node 16`
 3. `Python 3.7`
 4. `Docker`
-5. `Postgresql`
-6. `Jq`
+5. `Jq`
 
 {% hint style="info" %}
 Manually switching between different language versions can get hairy. We recommend using a version manager such as [`pyenv`](https://github.com/pyenv/pyenv) or [`jenv`](https://github.com/jenv/jenv).
@@ -27,28 +26,15 @@ To start contributing:
 
 ## Build with `gradle`
 
+{% hint style="info" %}
+If you're using Mac M1 \(Apple Silicon\) machines, you may run into some problems (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
+{% endhint %}
+
 To compile and build just the platform \(not all the connectors\):
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
 ```
-
-{% hint style="info" %}
-If you're using Mac M1 \(Apple Silicon\) machines, it is possible to compile Airbyte by setting
-some additional environment variables:
-
-```bash
-export DOCKER_BUILD_PLATFORM=linux/arm64
-export DOCKER_BUILD_ARCH=arm64
-export ALPINE_IMAGE=arm64v8/alpine:3.14
-export POSTGRES_IMAGE=arm64v8/postgres:13-alpine
-export JDK_VERSION=17
-SUB_BUILD=PLATFORM ./gradlew build
-```
-
-There are some known issues (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
-
-{% endhint %}
 
 This will build all the code and run all the unit tests.
 
@@ -85,12 +71,17 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
 ## Run acceptance tests
 
-To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
+To run acceptance \(end-to-end\) tests:
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew clean build
-VERSION=dev docker-compose up
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
+```
+
+Test containers start Airbyte locally, run the tests, and shutdown Airbyte after running the tests. If you want to run acceptance tests against local Airbyte that is not managed by the test containers, you need to set `USE_EXTERNAL_DEPLOYMENT` environment variable to true:
+
+```bash
+USE_EXTERNAL_DEPLOYMENT=true SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests 
 ```
 
 ## Run formatting automation/tests

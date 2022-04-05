@@ -15,12 +15,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestingSources extends BaseConnector implements Source {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TestingSources.class);
 
   private final Map<TestingSourceType, Source> sourceMap;
 

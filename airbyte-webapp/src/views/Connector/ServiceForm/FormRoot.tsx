@@ -26,22 +26,26 @@ const LoadingMessage = styled.div`
   margin-top: 10px;
 `;
 
-const FormRoot: React.FC<{
+type FormRootProps = {
   formFields: FormBlock;
   hasSuccess?: boolean;
-  additionBottomControls?: React.ReactNode;
+  isTestConnectionInProgress?: boolean;
   errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error;
+  fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
-}> = ({
+  onStopTestingConnector?: () => void;
+};
+
+const FormRoot: React.FC<FormRootProps> = ({
+  isTestConnectionInProgress = false,
   onRetest,
   formFields,
   successMessage,
   errorMessage,
   fetchingConnectorError,
   hasSuccess,
-  additionBottomControls,
+  onStopTestingConnector,
 }) => {
   const {
     resetForm,
@@ -72,7 +76,9 @@ const FormRoot: React.FC<{
 
       {isEditMode ? (
         <EditControls
-          isSubmitting={isSubmitting}
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
           formType={formType}
           onRetest={onRetest}
@@ -86,12 +92,13 @@ const FormRoot: React.FC<{
         />
       ) : (
         <CreateControls
-          isSubmitting={isSubmitting}
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
+          formType={formType}
           isLoadSchema={isLoadingSchema}
           fetchingConnectorError={fetchingConnectorError}
-          formType={formType}
-          additionBottomControls={additionBottomControls}
           hasSuccess={hasSuccess}
         />
       )}

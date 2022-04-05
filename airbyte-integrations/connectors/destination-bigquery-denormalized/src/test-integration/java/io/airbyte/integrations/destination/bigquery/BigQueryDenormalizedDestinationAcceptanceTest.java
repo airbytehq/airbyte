@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -26,20 +30,28 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -52,11 +64,12 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationAcceptanceTest.class);
+  private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private static final String CONFIG_DATASET_ID = "dataset_id";
-  private static final String CONFIG_PROJECT_ID = "project_id";
+  protected static final String CONFIG_PROJECT_ID = "project_id";
   private static final String CONFIG_DATASET_LOCATION = "dataset_location";
   private static final String CONFIG_CREDS = "credentials_json";
   private static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
@@ -78,7 +91,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
+  protected JsonNode getFailCheckConfig() {
     ((ObjectNode) config).put(CONFIG_PROJECT_ID, "fake");
     return config;
   }
@@ -91,6 +104,30 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   @Override
   protected boolean implementsNamespaces() {
     return true;
+  }
+
+  @Override
+  protected boolean supportNamespaceTest() {
+    return true;
+  }
+
+  @Override
+  protected Optional<NamingConventionTransformer> getNameTransformer() {
+    return Optional.of(NAME_TRANSFORMER);
+  }
+
+  @Override
+  protected void assertNamespaceNormalization(final String testCaseId,
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
+    final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
+    if (testCaseId.equals("S3A-1")) {
+      // bigquery allows namespace starting with a number, and prepending underscore
+      // will hide the dataset, so we don't do it as we do for other destinations
+      assertEquals("99namespace", actualNormalizedNamespace, message);
+    } else {
+      assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace, message);
+    }
   }
 
   @Override
@@ -173,6 +210,21 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     }
   }
 
+  protected JsonNode createConfig() throws IOException {
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
+    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
+    final String datasetLocation = "US";
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(CONFIG_PROJECT_ID, projectId)
+        .put(CONFIG_CREDS, credentialsJson.toString())
+        .put(CONFIG_DATASET_ID, datasetId)
+        .put(CONFIG_DATASET_LOCATION, datasetLocation)
+        .build());
+  }
+
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
@@ -181,23 +233,10 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    config = createConfig();
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes(StandardCharsets.UTF_8)));
 
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
-    final String datasetLocation = "US";
-
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(CONFIG_PROJECT_ID, projectId)
-        .put(CONFIG_CREDS, credentialsJson.toString())
-        .put(CONFIG_DATASET_ID, datasetId)
-        .put(CONFIG_DATASET_LOCATION, datasetLocation)
-        .build());
-
-    final ServiceAccountCredentials credentials =
-        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(config.get(CONFIG_CREDS).asText().getBytes()));
     bigquery = BigQueryOptions.newBuilder()
         .setProjectId(config.get(CONFIG_PROJECT_ID).asText())
         .setCredentials(credentials)
@@ -217,6 +256,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
                     tearDownBigQuery();
                   }
                 }));
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
   }
 
   @Override
@@ -224,7 +264,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     tearDownBigQuery();
   }
 
-  private void tearDownBigQuery() {
+  protected void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
@@ -286,7 +326,68 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
     final String defaultSchema = getDefaultSchema(config);
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    dateTimeFieldNames = getDateTimeFieldsFormat(catalog.getStreams());
+    convertDateTimeFields(messages, dateTimeFieldNames);
+    deserializeNestedObjects(messages, actualMessages);
     assertSameMessages(messages, actualMessages, true);
+  }
+
+  @Override
+  public boolean requiresDateTimeConversionForSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (!data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
+        pathFields.remove(0); // first element always empty string
+        // if pathFields.size() == 1 -> /field else /field/nestedField..
+        var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
+            : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> {
+            if (pathFields.size() == 1) {
+              data.put(pathFields.get(0).toLowerCase(),
+                  DateTimeUtils.convertToBigqueryDenormalizedFormat(
+                      (data.get(pathFields.get(0)).asText())));
+            } else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1),
+                  DateTimeUtils.convertToBigqueryDenormalizedFormat(data.at(path).asText()));
+            }
+          }
+          case DATE -> {
+            if (pathFields.size() == 1) {
+              data.put(pathFields.get(0).toLowerCase(),
+                  DateTimeUtils.convertToDateFormat(data.get(pathFields.get(0)).asText()));
+            } else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(
+                  pathFields.get(pathFields.size() - 1),
+                  DateTimeUtils.convertToDateFormat((data.at(path).asText())));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
+    for (AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        var iterator = message.getRecord().getData().fieldNames();
+        if (iterator.hasNext()) {
+          var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
+              var data = message.getRecord().getData().get(fieldName).get(f).asText();
+              ((ObjectNode) message.getRecord().getData()).put(fieldName, String.format("[FieldValue{attribute=PRIMITIVE, value=%s}]", data));
+            });
+          }
+        }
+      }
+    }
   }
 
 }

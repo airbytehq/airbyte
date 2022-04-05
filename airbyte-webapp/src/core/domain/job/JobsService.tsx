@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { JobDebugInfoDetails } from "core/domain/job/Job";
 

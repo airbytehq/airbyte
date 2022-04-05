@@ -3,7 +3,7 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -111,7 +111,9 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     primary_key = None
     range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
-    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], end_date: str = None, **kwargs):
+    def __init__(
+        self, start_date: str, conversion_window_days: int, time_zone: Union[pendulum.timezone, str], end_date: str = None, **kwargs
+    ):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
         self.time_zone = time_zone
@@ -215,36 +217,63 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return query
 
 
-class Accounts(GoogleAdsStream):
+class Accounts(IncrementalGoogleAdsStream):
     """
     Accounts stream: https://developers.google.com/google-ads/api/fields/v8/customer
     """
 
-    primary_key = "customer.id"
+    primary_key = ["customer.id", "segments.date"]
 
 
-class Campaigns(GoogleAdsStream):
+class Campaigns(IncrementalGoogleAdsStream):
     """
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v8/campaign
     """
 
-    primary_key = "campaign.id"
+    primary_key = ["campaign.id", "segments.date"]
 
 
-class AdGroups(GoogleAdsStream):
+class CampaignLabels(GoogleAdsStream):
+    """
+    Campaign labels stream: https://developers.google.com/google-ads/api/fields/v8/campaign_label
+    """
+
+    # Note that this is a string type. Google doesn't return a more convenient identifier.
+    primary_key = ["campaign_label.resource_name"]
+
+
+class AdGroups(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group
     """
 
-    primary_key = "ad_group.id"
+    primary_key = ["ad_group.id", "segments.date"]
 
 
-class AdGroupAds(GoogleAdsStream):
+class AdGroupLabels(GoogleAdsStream):
+    """
+    Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_label
+    """
+
+    # Note that this is a string type. Google doesn't return a more convenient identifier.
+    primary_key = ["ad_group_label.resource_name"]
+
+
+class AdGroupAds(IncrementalGoogleAdsStream):
     """
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad
     """
 
-    primary_key = "ad_group_ad.ad.id"
+    primary_key = ["ad_group_ad.ad.id", "segments.date"]
+
+
+class AdGroupAdLabels(GoogleAdsStream):
+    """
+    Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v8/ad_group_ad_label
+    """
+
+    # Note that this is a string type. Google doesn't return a more convenient identifier.
+    primary_key = ["ad_group_ad_label.resource_name"]
 
 
 class AccountPerformanceReport(IncrementalGoogleAdsStream):
@@ -306,5 +335,6 @@ class ClickView(IncrementalGoogleAdsStream):
     ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView
     """
 
+    primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
     days_of_data_storage = 90
     range_days = 1

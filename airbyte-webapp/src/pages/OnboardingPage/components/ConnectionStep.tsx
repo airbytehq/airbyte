@@ -1,23 +1,22 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import CreateConnectionContent from "components/CreateConnectionContent";
 import TitlesBlock from "./TitlesBlock";
-import { FormattedMessage } from "react-intl";
 import HighlightedText from "./HighlightedText";
-import { Destination, Source } from "core/domain/connector";
+import { useSourceList } from "hooks/services/useSourceHook";
+import { useDestinationList } from "hooks/services/useDestinationHook";
 
 type IProps = {
-  errorStatus?: number;
-  source: Source;
-  destination: Destination;
-  afterSubmitConnection: () => void;
+  onNextStep: () => void;
 };
 
 const ConnectionStep: React.FC<IProps> = ({
-  source,
-  destination,
-  afterSubmitConnection,
+  onNextStep: afterSubmitConnection,
 }) => {
+  const { sources } = useSourceList();
+  const { destinations } = useDestinationList();
+
   return (
     <>
       <TitlesBlock
@@ -25,7 +24,7 @@ const ConnectionStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createConnection"
             values={{
-              name: (...name: React.ReactNode[]) => (
+              name: (name: React.ReactNode[]) => (
                 <HighlightedText>{name}</HighlightedText>
               ),
             }}
@@ -36,8 +35,8 @@ const ConnectionStep: React.FC<IProps> = ({
       </TitlesBlock>
       <CreateConnectionContent
         noTitles
-        source={source}
-        destination={destination}
+        source={sources[0]}
+        destination={destinations[0]}
         afterSubmitConnection={afterSubmitConnection}
       />
     </>

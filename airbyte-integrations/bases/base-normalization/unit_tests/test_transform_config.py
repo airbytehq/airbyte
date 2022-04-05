@@ -174,6 +174,41 @@ class TestTransformConfig:
         assert expected_output == actual_output
         assert extract_schema(actual_output) == "my_dataset_id"
 
+    def test_transform_bigquery_with_embedded_project_id(self):
+        input = {"project_id": "my_project_id", "dataset_id": "my_project_id:my_dataset_id"}
+
+        actual_output = TransformConfig().transform_bigquery(input)
+        expected_output = {
+            "type": "bigquery",
+            "method": "oauth",
+            "project": "my_project_id",
+            "dataset": "my_dataset_id",
+            "priority": "interactive",
+            "retries": 3,
+            "threads": 8,
+        }
+
+        assert expected_output == actual_output
+        assert extract_schema(actual_output) == "my_dataset_id"
+
+    def test_transform_bigquery_with_embedded_mismatched_project_id(self):
+        input = {"project_id": "my_project_id", "dataset_id": "bad_project_id:my_dataset_id"}
+
+        try:
+            TransformConfig().transform_bigquery(input)
+            assert False, "transform_bigquery should have raised an exception"
+        except ValueError:
+            pass
+
+    def test_transform_bigquery_with_invalid_format(self):
+        input = {"project_id": "my_project_id", "dataset_id": "foo:bar:baz"}
+
+        try:
+            TransformConfig().transform_bigquery(input)
+            assert False, "transform_bigquery should have raised an exception"
+        except ValueError:
+            pass
+
     def test_transform_postgres(self):
         input = {
             "host": "airbyte.io",
@@ -265,6 +300,49 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
+    def test_transform_snowflake_oauth(self):
+
+        input = {
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
+            "role": "AIRBYTE_ROLE",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "database": "AIRBYTE_DATABASE",
+            "schema": "AIRBYTE_SCHEMA",
+            "username": "AIRBYTE_USER",
+            "credentials": {
+                "auth_type": "OAuth2.0",
+                "client_id": "AIRBYTE_CLIENT_ID",
+                "access_token": "AIRBYTE_ACCESS_TOKEN",
+                "client_secret": "AIRBYTE_CLIENT_SECRET",
+                "refresh_token": "AIRBYTE_REFRESH_TOKEN",
+            },
+        }
+
+        actual = TransformConfig().transform_snowflake(input)
+        expected = {
+            "account": "123abc.us-east-7.aws",
+            "client_session_keep_alive": False,
+            "database": "AIRBYTE_DATABASE",
+            "query_tag": "normalization",
+            "role": "AIRBYTE_ROLE",
+            "schema": "AIRBYTE_SCHEMA",
+            "threads": 5,
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
+            "type": "snowflake",
+            "user": "AIRBYTE_USER",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "authenticator": "oauth",
+            "oauth_client_id": "AIRBYTE_CLIENT_ID",
+            "oauth_client_secret": "AIRBYTE_CLIENT_SECRET",
+            "token": "AIRBYTE_REFRESH_TOKEN",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "AIRBYTE_SCHEMA"
+
     def test_transform_mysql(self):
         input = {
             "type": "mysql5",
@@ -316,6 +394,23 @@ class TestTransformConfig:
         assert expected == actual
         # DBT schema is equivalent to MySQL database
         assert extract_schema(actual) == "my_db"
+
+    def test_transform_clickhouse(self):
+        input = {"host": "airbyte.io", "port": 9440, "database": "default", "username": "ch", "password": "password1234", "ssl": True}
+
+        actual = TransformConfig().transform_clickhouse(input)
+        expected = {
+            "type": "clickhouse",
+            "host": "airbyte.io",
+            "port": 9440,
+            "schema": "default",
+            "user": "ch",
+            "password": "password1234",
+            "secure": True,
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "default"
 
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):

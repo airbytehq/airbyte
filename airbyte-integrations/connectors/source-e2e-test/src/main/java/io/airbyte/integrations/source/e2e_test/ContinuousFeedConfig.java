@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.e2e_test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -30,7 +28,6 @@ public class ContinuousFeedConfig {
 
   private static final JsonNode JSON_SCHEMA_DRAFT_07;
   private static final JsonSchemaValidator SCHEMA_VALIDATOR = new JsonSchemaValidator();
-  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   static {
     try {
@@ -72,14 +69,27 @@ public class ContinuousFeedConfig {
       case SINGLE_STREAM -> {
         final String streamName = mockCatalogConfig.get("stream_name").asText();
         final String streamSchemaText = mockCatalogConfig.get("stream_schema").asText();
+        final int streamDuplication = mockCatalogConfig.has("stream_duplication")
+            ? mockCatalogConfig.get("stream_duplication").asInt()
+            : 1;
         final Optional<JsonNode> streamSchema = Jsons.tryDeserialize(streamSchemaText);
         if (streamSchema.isEmpty()) {
           throw new JsonValidationException(String.format("Stream \"%s\" has invalid schema: %s", streamName, streamSchemaText));
         }
         checkSchema(streamName, streamSchema.get());
 
-        final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get());
-        return new AirbyteCatalog().withStreams(Collections.singletonList(stream));
+        if (streamDuplication == 1) {
+          final AirbyteStream stream = new AirbyteStream().withName(streamName).withJsonSchema(streamSchema.get());
+          return new AirbyteCatalog().withStreams(Collections.singletonList(stream));
+        } else {
+          final List<AirbyteStream> streams = new ArrayList<>(streamDuplication);
+          for (int i = 0; i < streamDuplication; ++i) {
+            streams.add(new AirbyteStream()
+                .withName(String.join("_", streamName, String.valueOf(i)))
+                .withJsonSchema(streamSchema.get()));
+          }
+          return new AirbyteCatalog().withStreams(streams);
+        }
       }
       case MULTI_STREAM -> {
         final String streamSchemasText = mockCatalogConfig.get("stream_schemas").asText();

@@ -10,20 +10,17 @@ class OperationService extends AirbyteRequestService {
   public async check(
     operation: Operation
   ): Promise<{ status: "succeeded" | "failed"; message: string }> {
-    const rs = ((await this.fetch(
-      `${this.url}/check`,
-      operation.operatorConfiguration
-    )) as any) as {
+    const rs = await this.fetch<{
       status: "succeeded" | "failed";
       message: string;
-    };
+    }>(`${this.url}/check`, operation.operatorConfiguration);
 
     if (rs.status === Status.FAILED) {
       // TODO: place proper error
       throw new Error("failed");
     }
 
-    return rs as any;
+    return rs;
   }
 }
 
