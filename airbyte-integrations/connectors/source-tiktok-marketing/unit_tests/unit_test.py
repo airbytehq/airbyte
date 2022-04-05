@@ -88,6 +88,7 @@ def test_random_items(prepared_prod_args):
             m.register_uri("GET", "/open_api/v1.2/oauth2/advertiser/get/", json=page_response)
         stream = Ads(**prepared_prod_args)
         stream.page_size = page_size
+        stream.get_advertiser_ids()
         assert not set(test_advertiser_ids).symmetric_difference(stream._advertiser_ids), "stream found not all  advertiser IDs"
 
         current_state = None

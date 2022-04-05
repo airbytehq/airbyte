@@ -123,28 +123,28 @@ class SourceTiktokMarketing(AbstractSource):
         # 2. Basic report streams:
         report_granularity = config.get("report_granularity") or ReportGranularity.default()
         report_args = dict(report_granularity=report_granularity, **args)
-        streams.extend([
-            AdsReports(**report_args),
-            AdGroupsReports(**report_args),
-            CampaignsReports(**report_args),
-        ])
-        if not args['advertiser_id']:
+        streams.extend(
+            [
+                AdsReports(**report_args),
+                AdGroupsReports(**report_args),
+                CampaignsReports(**report_args),
+            ]
+        )
+        if not args["advertiser_id"]:
             # stream works only in prod env
-            streams.append(
-                AdvertisersReports(**report_args)
-            )
+            streams.append(AdvertisersReports(**report_args))
 
         # 3. Audience report streams:
-        streams.append(
-            AdvertisersAudienceReports(**report_args)
-        )
+        streams.append(AdvertisersAudienceReports(**report_args))
         if not report_granularity == ReportGranularity.LIFETIME:
             # https://ads.tiktok.com/marketing_api/docs?id=1707957217727489
             # Audience report only supports lifetime metrics at the ADVERTISER level.
-            streams.extend([
-                AdsAudienceReports(**report_args),
-                AdGroupAudienceReports(**report_args),
-                CampaignsAudienceReportsByCountry(**report_args),
-            ])
+            streams.extend(
+                [
+                    AdsAudienceReports(**report_args),
+                    AdGroupAudienceReports(**report_args),
+                    CampaignsAudienceReportsByCountry(**report_args),
+                ]
+            )
 
         return streams

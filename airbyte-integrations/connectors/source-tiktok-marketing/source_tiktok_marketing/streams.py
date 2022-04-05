@@ -17,7 +17,6 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -116,9 +115,9 @@ class TiktokStream(HttpStream, ABC):
     page_size = 1000
 
     def __init__(self, **kwargs):
-        super().__init__(authenticator=kwargs.get('authenticator'))
+        super().__init__(authenticator=kwargs.get("authenticator"))
 
-        self._advertiser_id = kwargs.get('advertiser_id')
+        self._advertiser_id = kwargs.get("advertiser_id")
 
         # only sandbox has non-empty self._advertiser_id
         self.is_sandbox = bool(self._advertiser_id)
@@ -198,7 +197,7 @@ class AdvertiserIds(TiktokStream):
     use_cache = True  # it is used in all streams
 
     def __init__(self, app_id: int, secret: str, access_token: str, **kwargs):
-        super().__init__(advertiser_id=0, authenticator=NoAuth())
+        super().__init__(advertiser_id=0, authenticator=None)
 
         # for Production env
         self._secret = secret
@@ -240,22 +239,22 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     def convert_array_param(arr: List[Union[str, int]]) -> str:
         return json.dumps(arr)
 
-    @property
-    def advertiser_ids(self):
+    # @property
+    def get_advertiser_ids(self):
         if self.is_sandbox:
             # for sandbox: just return advertiser_id provided in spec
             ids = [self._advertiser_id]
         else:
             # for prod: return list of all available ids from AdvertiserIds stream:
             advertiser_ids = AdvertiserIds(**self.kwargs).read_records(sync_mode=SyncMode.full_refresh)
-            ids = [advertiser['advertiser_id'] for advertiser in advertiser_ids]
+            ids = [advertiser["advertiser_id"] for advertiser in advertiser_ids]
 
         self._advertiser_ids = ids
         return ids
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Each stream slice is for separate advertiser id"""
-        ids = self.advertiser_ids
+        self.get_advertiser_ids
         while self._advertiser_ids:
             # self._advertiser_ids need to be exhausted so that JsonUpdatedState knows
             # when all stream slices are processed (stream.is_finished)
@@ -360,7 +359,7 @@ class Advertisers(FullRefreshTiktokStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["advertiser_ids"] = self.convert_array_param(self.advertiser_ids)
+        params["advertiser_ids"] = self.convert_array_param(self.get_advertiser_ids())
         return params
 
     def path(self, *args, **kwargs) -> str:
@@ -402,7 +401,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
 
     primary_key = None
-    schema_name = 'basic_reports'
+    schema_name = "basic_reports"
 
     @property
     @abstractmethod
@@ -599,7 +598,7 @@ class AudienceReport(BasicReports):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957217727489"""
 
     audience_dimensions: List = ["gender", "age"]
-    schema_name = 'audience_reports'
+    schema_name = "audience_reports"
 
     def _get_metrics(self):
         result = super()._get_metrics()
