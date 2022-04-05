@@ -1,4 +1,5 @@
 import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
+
 import { AirbyteJSONSchema } from "core/jsonSchema";
 
 type FormItem = {

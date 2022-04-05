@@ -4,9 +4,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 
-import { Source, Destination } from "core/domain/connector/types";
 import { H6, Link } from "components";
 import StepsMenu from "components/StepsMenu";
+
+import { Source, Destination } from "core/domain/connector/types";
 import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";

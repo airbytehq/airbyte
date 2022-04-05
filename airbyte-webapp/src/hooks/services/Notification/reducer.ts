@@ -1,4 +1,5 @@
 import { ActionType, createAction, createReducer } from "typesafe-actions";
+
 import { Notification, NotificationServiceState } from "./types";
 
 export const actions = {

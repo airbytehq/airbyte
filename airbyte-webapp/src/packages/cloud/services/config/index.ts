@@ -1,6 +1,7 @@
 import { defaultConfig as coreDefaultConfig, useConfig as useCoreConfig, Config } from "config";
-import { CloudConfig, CloudConfigExtension } from "./types";
 import { FeatureItem } from "hooks/services/Feature";
+
+import { CloudConfig, CloudConfigExtension } from "./types";
 
 export function useConfig(): CloudConfig {
   return useCoreConfig<CloudConfig>();

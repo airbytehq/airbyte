@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+
 import { ResourceTypes } from "./types";
 
 type PlaceholderProps = {

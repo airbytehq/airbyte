@@ -3,6 +3,8 @@ import { useToggle } from "react-use";
 import styled from "styled-components";
 import { FormikErrors, getIn } from "formik";
 
+import { DropDownRow } from "components";
+
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
@@ -13,16 +15,13 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
-import { DropDownRow } from "components";
-import { TreeRowWrapper } from "./components/TreeRowWrapper";
-
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
-
-import { StreamHeader } from "./StreamHeader";
-
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
+
+import { StreamHeader } from "./StreamHeader";
+import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { flatten, getPathType } from "./utils";
 

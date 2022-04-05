@@ -1,8 +1,9 @@
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { Connection } from "core/domain/connection";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
-import { Status } from "./types";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+
+import { Status } from "./types";
 
 const useSyncActions = (): {
   changeStatus: (connection: Connection) => Promise<void>;

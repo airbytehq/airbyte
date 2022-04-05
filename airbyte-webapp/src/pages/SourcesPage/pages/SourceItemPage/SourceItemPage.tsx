@@ -3,23 +3,24 @@ import { FormattedMessage } from "react-intl";
 
 import { DropDownRow, ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
-import useRouter from "hooks/useRouter";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-
-import SourceConnectionTable from "./components/SourceConnectionTable";
-import SourceSettings from "./components/SourceSettings";
-import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import { RoutePaths } from "../../../routePaths";
+
+import { getIcon } from "utils/imageUtils";
+import useRouter from "hooks/useRouter";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetSource } from "hooks/services/useSourceHook";
+
+import { RoutePaths } from "../../../routePaths";
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
+import SourceSettings from "./components/SourceSettings";
+import SourceConnectionTable from "./components/SourceConnectionTable";
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();

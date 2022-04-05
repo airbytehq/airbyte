@@ -6,6 +6,7 @@ import isEmpty from "lodash/isEmpty";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
+
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
 import { ServiceFormValues } from "../../../types";
 import { useServiceForm } from "../../../serviceFormContext";

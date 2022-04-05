@@ -3,15 +3,15 @@ import { FormattedMessage } from "react-intl";
 
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import TitlesBlock from "./TitlesBlock";
-import HighlightedText from "./HighlightedText";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { JobInfo } from "core/domain/job";
+
+import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
 
 type Props = {
   onNextStep: () => void;

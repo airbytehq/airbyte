@@ -2,10 +2,11 @@ import React from "react";
 import { FieldArray, useField } from "formik";
 
 import { ArrayOfObjectsEditor } from "components";
+import GroupControls from "components/GroupControls";
 
 import { FormObjectArrayItem } from "core/form/types";
+
 import { useServiceForm } from "../../serviceFormContext";
-import GroupControls from "components/GroupControls";
 import { FormSection } from "./FormSection";
 import { SectionContainer } from "./common";
 

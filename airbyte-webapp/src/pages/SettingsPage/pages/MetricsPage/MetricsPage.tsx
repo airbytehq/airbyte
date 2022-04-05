@@ -1,11 +1,13 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import HeadTitle from "components/HeadTitle";
-import MetricsForm from "./components/MetricsForm";
-import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 
+import HeadTitle from "components/HeadTitle";
+
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
+import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 import { Content, SettingsCard } from "../SettingsComponents";
+import MetricsForm from "./components/MetricsForm";
 
 const MetricsPage: React.FC = () => {
   const workspace = useCurrentWorkspace();

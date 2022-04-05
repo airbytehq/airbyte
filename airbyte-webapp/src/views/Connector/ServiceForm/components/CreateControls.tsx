@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
+
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";

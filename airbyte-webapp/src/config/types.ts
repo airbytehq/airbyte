@@ -1,6 +1,7 @@
 import { SegmentAnalytics } from "core/analytics/types";
-import { UiConfig } from "./uiConfig";
 import { Feature } from "hooks/services/Feature";
+
+import { UiConfig } from "./uiConfig";
 
 declare global {
   interface Window {

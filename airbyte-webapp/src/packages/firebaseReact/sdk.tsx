@@ -1,11 +1,11 @@
-import * as React from "react";
-
 import type { Auth } from "firebase/auth";
-import { FirebaseApp } from "firebase/app";
 
-import { useFirebaseApp } from "./firebaseApp";
+import * as React from "react";
+import { FirebaseApp } from "firebase/app";
 import { useAsync } from "react-use";
 import { AsyncState } from "react-use/lib/useAsyncFn";
+
+import { useFirebaseApp } from "./firebaseApp";
 
 const AuthSdkContext = React.createContext<Auth | undefined>(undefined);
 

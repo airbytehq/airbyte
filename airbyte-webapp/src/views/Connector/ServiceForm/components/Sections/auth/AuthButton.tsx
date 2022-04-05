@@ -3,9 +3,11 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+
+import { ConnectorSpecification } from "core/domain/connector";
+
 import { useServiceForm } from "../../../serviceFormContext";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
-import { ConnectorSpecification } from "core/domain/connector";
 import GoogleAuthButton from "./GoogleAuthButton";
 
 const AuthSectionRow = styled.div`

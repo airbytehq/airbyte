@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
 import { Button, H5 } from "components";
+
 import DeleteModal from "./components/DeleteModal";
 
 type IProps = {

@@ -3,10 +3,11 @@ import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
 import useConnector from "hooks/services/useConnector";
-import ConnectorsView from "./components/ConnectorsView";
 import { useSourceList } from "hooks/services/useSourceHook";
 import { SourceDefinition } from "core/domain/connector";
 import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
+
+import ConnectorsView from "./components/ConnectorsView";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);

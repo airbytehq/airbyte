@@ -6,6 +6,7 @@ import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewa
 import { useInitService } from "services/useInitService";
 import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { isDefined } from "utils/common";
+
 import { SCOPE_WORKSPACE } from "../Scope";
 
 export const sourceDefinitionSpecificationKeys = {

@@ -1,6 +1,7 @@
 import { FormBlock } from "core/form/types";
-import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
 import { isDefined } from "utils/common";
+
+import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema

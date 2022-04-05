@@ -1,4 +1,5 @@
 import { ActionType, createAction, createReducer } from "typesafe-actions";
+
 import { User } from "packages/cloud/lib/domain/users";
 
 export const actions = {

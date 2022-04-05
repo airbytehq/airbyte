@@ -1,16 +1,18 @@
-import React from "react";
 import type { Url } from "url";
+import type { PluggableList } from "react-markdown/lib/react-markdown";
+
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useToggle } from "react-use";
 import urls from "rehype-urls";
 import rehypeSlug from "rehype-slug";
-import type { PluggableList } from "react-markdown/lib/react-markdown";
 
-import { useDocumentation, getDocumentationType } from "hooks/services/useDocumentation";
 import { LoadingPage } from "components";
 import { SideView } from "components/SideView";
 import { Markdown } from "components/Markdown";
+
+import { useDocumentation, getDocumentationType } from "hooks/services/useDocumentation";
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { useConfig } from "config";
 

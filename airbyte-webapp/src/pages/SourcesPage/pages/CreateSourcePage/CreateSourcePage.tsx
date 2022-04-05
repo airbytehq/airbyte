@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import PageTitle from "components/PageTitle";
-import SourceForm from "./components/SourceForm";
-import useRouter from "hooks/useRouter";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
+
+import useRouter from "hooks/useRouter";
+import { ConnectionConfiguration } from "core/domain/connection";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useCreateSource } from "hooks/services/useSourceHook";
+
+import SourceForm from "./components/SourceForm";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();

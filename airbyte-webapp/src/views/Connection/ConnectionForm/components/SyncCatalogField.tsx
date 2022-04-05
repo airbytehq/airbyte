@@ -3,20 +3,19 @@ import { FieldProps } from "formik";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { useConfig } from "config";
-
-import type { DestinationSyncMode } from "core/domain/catalog";
-import { SyncSchemaStream } from "core/domain/catalog";
-
 import { CheckBox } from "components";
 import { Cell, Header } from "components/SimpleTableComponents";
+
+import { useConfig } from "config";
+import type { DestinationSyncMode } from "core/domain/catalog";
+import { SyncSchemaStream } from "core/domain/catalog";
 import CatalogTree from "views/Connection/CatalogTree";
-import Search from "./Search";
 import { naturalComparatorBy } from "utils/objects";
-import InformationToolTip from "./InformationToolTip";
+import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 
 import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
-import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
+import Search from "./Search";
+import InformationToolTip from "./InformationToolTip";
 
 const TreeViewContainer = styled.div`
   margin-bottom: 29px;

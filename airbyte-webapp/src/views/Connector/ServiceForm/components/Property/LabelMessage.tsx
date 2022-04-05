@@ -2,6 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { TextWithHTML } from "components";
+
 import { FormBaseItem } from "core/form/types";
 
 type IProps = {

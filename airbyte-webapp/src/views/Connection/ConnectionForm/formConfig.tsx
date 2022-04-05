@@ -3,6 +3,8 @@ import { useIntl } from "react-intl";
 import * as yup from "yup";
 import { setIn } from "formik";
 
+import { DropDownRow } from "components";
+
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
@@ -19,7 +21,6 @@ import {
   OperatorType,
   Transformation,
 } from "core/domain/connection/operation";
-import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { Connection, ScheduleProperties } from "core/domain/connection";
 import { ConnectionNamespaceDefinition, ConnectionSchedule } from "core/domain/connection";

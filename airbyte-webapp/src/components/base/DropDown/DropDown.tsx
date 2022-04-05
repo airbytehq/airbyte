@@ -3,12 +3,12 @@ import { Props } from "react-select";
 import { SelectComponentsConfig } from "react-select/src/components";
 import { CSSObject } from "styled-components";
 
+import { equal, naturalComparatorBy } from "utils/objects";
+
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
 import SingleValue from "./components/SingleValue";
 import Option, { IDataItem } from "./components/Option";
-
-import { equal, naturalComparatorBy } from "utils/objects";
 import { SelectContainer } from "./SelectContainer";
 import { CustomSelect } from "./CustomSelect";
 

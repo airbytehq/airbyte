@@ -1,5 +1,6 @@
 import { ConnectionConfiguration, ConnectionSpecification } from "core/domain/connection";
 import { DestinationSyncMode, SourceDiscoverSchemaRead } from "core/domain/catalog";
+
 import { JobInfo } from "../job";
 
 export enum ReleaseStage {

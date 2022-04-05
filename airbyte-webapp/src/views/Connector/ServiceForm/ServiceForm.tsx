@@ -3,6 +3,12 @@ import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
 
+import RequestConnectorModal from "views/Connector/RequestConnectorModal";
+import { FormBaseItem } from "core/form/types";
+import { ConnectorDefinition, ConnectorDefinitionSpecification, Scheduler } from "core/domain/connector";
+import { isDefined } from "utils/common";
+
+import { ConnectionConfiguration } from "../../../core/domain/connection";
 import {
   useBuildForm,
   useBuildInitialSchema,
@@ -13,13 +19,8 @@ import {
 import { ServiceFormValues } from "./types";
 import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
 import { FormRoot } from "./FormRoot";
-import RequestConnectorModal from "views/Connector/RequestConnectorModal";
-import { FormBaseItem } from "core/form/types";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
-import { ConnectorDefinition, ConnectorDefinitionSpecification, Scheduler } from "core/domain/connector";
-import { isDefined } from "utils/common";
-import { ConnectionConfiguration } from "../../../core/domain/connection";
 
 const FormikPatch: React.FC = () => {
   usePatchFormik();

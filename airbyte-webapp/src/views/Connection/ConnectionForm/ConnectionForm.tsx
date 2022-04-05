@@ -3,16 +3,16 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldProps, Form, Formik } from "formik";
 
+import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
+
 import { equal } from "utils/objects";
-
-import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
-
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-
 import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import CreateControls from "./components/CreateControls";
 import SchemaField from "./components/SyncCatalogField";
@@ -26,7 +26,6 @@ import {
   useInitialValues,
 } from "./formConfig";
 import { OperationsSection } from "./components/OperationsSection";
-import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 
 const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { UserService } from "packages/cloud/lib/domain/users";
 
+import { UserService } from "packages/cloud/lib/domain/users";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useConfig } from "packages/cloud/services/config";
 

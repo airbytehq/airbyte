@@ -2,17 +2,17 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Formik } from "formik";
 import * as yup from "yup";
+import { AuthErrorCodes } from "firebase/auth";
 
 import { LabeledInput, Link, LoadingButton } from "components";
-import useRouterHook from "hooks/useRouter";
 
+import useRouterHook from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { FormTitle } from "../components/FormTitle";
-
-import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
-import { AuthErrorCodes } from "firebase/auth";
+
+import { FormTitle } from "../components/FormTitle";
+import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   newPassword: yup.string().required("form.empty.error"),

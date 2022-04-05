@@ -4,8 +4,10 @@ import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { Input, LoadingButton } from "components";
-import { FormContent } from "./PageComponents";
+
 import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
+
+import { FormContent } from "./PageComponents";
 
 type IProps = {
   version: string;

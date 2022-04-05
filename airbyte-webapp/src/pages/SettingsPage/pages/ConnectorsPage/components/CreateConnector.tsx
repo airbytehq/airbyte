@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components";
-import useRouter from "hooks/useRouter";
 
-import CreateConnectorModal from "./CreateConnectorModal";
+import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
+
+import CreateConnectorModal from "./CreateConnectorModal";
 
 type IProps = {
   type: string;

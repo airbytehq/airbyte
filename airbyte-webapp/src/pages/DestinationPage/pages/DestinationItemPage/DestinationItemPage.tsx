@@ -1,21 +1,23 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import Breadcrumbs from "components/Breadcrumbs";
-import DestinationConnectionTable from "./components/DestinationConnectionTable";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
-import DestinationSettings from "./components/DestinationSettings";
-import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
 import { DropDownRow, ImageBlock, LoadingPage, MainPageWithScroll, PageTitle } from "components";
+
+import { getIcon } from "utils/imageUtils";
+import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceList } from "hooks/services/useSourceHook";
+
 import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
+import DestinationSettings from "./components/DestinationSettings";
+import DestinationConnectionTable from "./components/DestinationConnectionTable";
 
 const DestinationItemPage: React.FC = () => {
   const { params, push } = useRouter<unknown, { id: string }>();

@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
-
-import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
 
 import { JobDebugInfoMeta } from "core/domain/job";
+
+import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
 
 type IProps = {
   jobDebugInfo: JobDebugInfoMeta;

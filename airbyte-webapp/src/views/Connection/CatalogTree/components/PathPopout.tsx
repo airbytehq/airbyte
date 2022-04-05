@@ -3,8 +3,9 @@ import styled from "styled-components";
 import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { Path } from "core/domain/catalog";
 import { Popout } from "components";
+
+import { Path } from "core/domain/catalog";
 
 import Tooltip from "./Tooltip";
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-
 import { FormattedMessage } from "react-intl";
 
-import { useConfig } from "config";
 import { Link } from "components";
+
+import { useConfig } from "config";
 
 type ShowLoadingMessageProps = {
   connector?: string;

@@ -1,15 +1,16 @@
 import React, { useMemo } from "react";
 
-import { useAuth } from "packages/firebaseReact";
+import { LoadingPage } from "components";
 
+import { useAuth } from "packages/firebaseReact";
 import { ServicesProvider, useGetService, useInjectServices } from "core/servicesProvider";
 import { ApiServices } from "core/ApiServices";
-import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
-import { useConfig } from "./config";
 import { UserService } from "packages/cloud/lib/domain/users";
 import { RequestMiddleware } from "core/request/RequestMiddleware";
-import { LoadingPage } from "components";
+
+import { useConfig } from "./config";
+import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 
 /**
  * This Provider is main services entrypoint

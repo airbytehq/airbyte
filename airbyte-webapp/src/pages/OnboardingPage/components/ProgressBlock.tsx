@@ -4,10 +4,12 @@ import styled, { keyframes } from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-import { Connection } from "core/domain/connection";
 import Link from "components/Link";
 import { Button, H1 } from "components/base";
+
+import { Connection } from "core/domain/connection";
 import Status from "core/statuses";
+
 import { RoutePaths } from "../../routePaths";
 
 const run = keyframes`

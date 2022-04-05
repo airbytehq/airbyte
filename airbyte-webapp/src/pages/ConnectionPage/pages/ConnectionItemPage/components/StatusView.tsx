@@ -4,19 +4,20 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
-import { useListJobs } from "services/job/JobService";
-
 import { Button, ContentCard, LoadingButton } from "components";
-import StatusMainInfo from "./StatusMainInfo";
-import { Connection } from "core/domain/connection";
-import JobsList from "./JobsList";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
+
+import { Connection } from "core/domain/connection";
+import { useListJobs } from "services/job/JobService";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+
+import JobsList from "./JobsList";
+import StatusMainInfo from "./StatusMainInfo";
 
 type IProps = {
   connection: Connection;

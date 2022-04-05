@@ -1,16 +1,16 @@
 import React from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
-
 import { AuthErrorCodes } from "firebase/auth";
 
 import { H5, Link } from "components";
 
+import { useAuthService, useCurrentUser } from "packages/cloud/services/auth/AuthService";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
+
 import { FormTitle } from "../components/FormTitle";
 import FormContent from "../components/FormContent";
 import News from "../components/News";
-import { useAuthService, useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
 const Text = styled(H5)`
   padding: 27px 0 30px;

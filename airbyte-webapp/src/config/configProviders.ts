@@ -1,6 +1,8 @@
 import merge from "lodash/merge";
-import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
+
 import { isDefined } from "utils/common";
+
+import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {

@@ -6,17 +6,17 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useAsyncFn } from "react-use";
 
 import { Button, Card } from "components";
+import ResetDataModal from "components/ResetDataModal";
+import { ModalTypes } from "components/ResetDataModal/types";
+import LoadingSchema from "components/LoadingSchema";
+
+import ConnectionForm from "views/Connection/ConnectionForm";
 import {
   useConnectionLoad,
   useResetConnection,
   useUpdateConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import ResetDataModal from "components/ResetDataModal";
-import { ModalTypes } from "components/ResetDataModal/types";
-import LoadingSchema from "components/LoadingSchema";
-
 import { equal } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 

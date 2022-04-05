@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 
+import { StepType } from "../../types";
 import StepItem from "./components/StepItem";
 import StarsIcon from "./components/StarsIcon";
-import { StepType } from "../../types";
 
 type StepsCounterProps = {
   steps: { id: StepType; name?: React.ReactNode }[];

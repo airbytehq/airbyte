@@ -4,13 +4,14 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Formik } from "formik";
 import styled from "styled-components";
 
-import { useConfig } from "config";
-
-import { BottomBlock, FieldItem, Form, RowFieldItem } from "../components/FormComponents";
 import { H1, LabeledInput, Link, LoadingButton } from "components";
-import CheckBoxControl from "../components/CheckBoxControl";
+
+import { useConfig } from "config";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
+
+import CheckBoxControl from "../components/CheckBoxControl";
+import { BottomBlock, FieldItem, Form, RowFieldItem } from "../components/FormComponents";
 import SpecialBlock from "./components/SpecialBlock";
 
 type FormValues = {

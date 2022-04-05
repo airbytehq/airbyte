@@ -1,10 +1,11 @@
 /**
  * Impressed by https://github.com/FirebaseExtended/reactfire
  */
+import type { FirebaseApp, FirebaseOptions } from "firebase/app";
+
 import * as React from "react";
 import { getApps, initializeApp, registerVersion } from "firebase/app";
 
-import type { FirebaseApp, FirebaseOptions } from "firebase/app";
 import { equal } from "utils/objects";
 
 const DEFAULT_APP_NAME = "[DEFAULT]";

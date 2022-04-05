@@ -4,9 +4,11 @@ import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
 import BarChart from "components/BarChart";
-import UsagePerConnectionTable from "./UsagePerConnectionTable";
+
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetUsage } from "packages/cloud/services/workspaces/WorkspacesService";
+
+import UsagePerConnectionTable from "./UsagePerConnectionTable";
 
 export const ChartWrapper = styled.div`
   width: 100%;

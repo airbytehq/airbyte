@@ -4,9 +4,9 @@ import styled from "styled-components";
 import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import { useConfig } from "config";
-
 import { Button, LabeledInput, Link, Modal, StatusIcon } from "components";
+
+import { useConfig } from "config";
 
 export type IProps = {
   errorMessage?: string;

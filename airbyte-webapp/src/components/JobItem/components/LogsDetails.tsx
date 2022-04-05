@@ -1,9 +1,9 @@
 import React from "react";
-
-import { Attempt, Logs, JobDebugInfoMeta } from "core/domain/job";
-import DownloadButton from "./DownloadButton";
 import styled from "styled-components";
 
+import { Attempt, Logs, JobDebugInfoMeta } from "core/domain/job";
+
+import DownloadButton from "./DownloadButton";
 import DebugInfoButton from "./DebugInfoButton";
 import LogsTable from "./Logs";
 import AttemptDetails from "./AttemptDetails";

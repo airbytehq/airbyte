@@ -5,12 +5,13 @@ import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
-import { useConfig } from "config";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-
 import { Link } from "components";
 import Version from "components/Version";
 
+import { useConfig } from "config";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+
+import { RoutePaths } from "../../../pages/routePaths";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
 import DocsIcon from "./components/DocsIcon";
@@ -19,7 +20,6 @@ import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
 import ResourcesPopup from "./components/ResourcesPopup";
 import { NotificationIndicator } from "./NotificationIndicator";
-import { RoutePaths } from "../../../pages/routePaths";
 
 const Bar = styled.nav`
   width: 100px;

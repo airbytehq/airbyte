@@ -1,14 +1,16 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
+
 import useConnector from "hooks/services/useConnector";
-import ConnectorsView from "./components/ConnectorsView";
 import { DestinationDefinition } from "core/domain/connector";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
 } from "services/connector/DestinationDefinitionService";
+
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
+import ConnectorsView from "./components/ConnectorsView";
 
 const DestinationsPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);

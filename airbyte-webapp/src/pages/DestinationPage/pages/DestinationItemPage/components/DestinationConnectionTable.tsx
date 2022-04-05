@@ -1,11 +1,12 @@
 import React, { useCallback } from "react";
 
 import { ConnectionTable } from "components/EntityTable";
-import useRouter from "hooks/useRouter";
-import { Connection } from "core/domain/connection";
 import useSyncActions from "components/EntityTable/hooks";
 import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
+
+import { Connection } from "core/domain/connection";
+import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";

@@ -3,6 +3,7 @@ import { FieldProps, useField } from "formik";
 import { FormattedMessage } from "react-intl";
 
 import { ControlLabels, DropDown } from "components";
+
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 const StreamOptions = [

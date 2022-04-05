@@ -1,6 +1,6 @@
-import { useConfig } from "config";
 import { UseQueryResult, useQuery } from "react-query";
 
+import { useConfig } from "config";
 import { fetchDocumentation } from "core/domain/Documentation";
 
 type UseDocumentationResult = UseQueryResult<string, Error>;

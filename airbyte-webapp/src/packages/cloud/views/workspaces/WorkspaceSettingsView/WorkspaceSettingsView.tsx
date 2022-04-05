@@ -3,8 +3,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import { Button, LabeledInput, LoadingButton } from "components";
+
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import {
   useRemoveWorkspace,
   useUpdateWorkspace,

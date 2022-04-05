@@ -1,4 +1,5 @@
 import { SyncSchemaField } from "core/domain/catalog";
+
 import { IndexerType } from "./components/PathPopout";
 
 export const flatten = (fArr: SyncSchemaField[], arr: SyncSchemaField[] = []): SyncSchemaField[] =>

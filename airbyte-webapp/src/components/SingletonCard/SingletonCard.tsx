@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import { Button, H5 } from "components";
+
 import ErrorSign from "./components/ErrorSign";
 
 type SingletonCardProps = {

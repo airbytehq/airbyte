@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import { LoadingPage } from "components";
+
 import SideBar from "views/layout/SideBar";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";

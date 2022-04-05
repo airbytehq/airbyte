@@ -4,8 +4,7 @@ import styled from "styled-components";
 import intersection from "lodash/intersection";
 
 import { Button, Cell, Header, Toggle } from "components";
-import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
-import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
+
 import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import {
   DestinationSyncMode,
@@ -15,9 +14,12 @@ import {
   SyncSchemaStream,
   traverseSchemaToField,
 } from "core/domain/catalog";
+
+import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { flatten, getPathType } from "../utils";
-import { pathDisplayName, PathPopout } from "./PathPopout";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
+import { pathDisplayName, PathPopout } from "./PathPopout";
+import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 
 const ActionCell = styled.div`
   display: flex;

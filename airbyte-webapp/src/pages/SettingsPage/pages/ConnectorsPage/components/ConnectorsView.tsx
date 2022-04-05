@@ -3,15 +3,17 @@ import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
 import Table from "components/Table";
+import HeadTitle from "components/HeadTitle";
+
+import { Connector, ConnectorDefinition, DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { FeatureItem, useFeatureService, WithFeature } from "hooks/services/Feature";
+
 import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import { Block, FormContentTitle, Title } from "./PageComponents";
 import UpgradeAllButton from "./UpgradeAllButton";
 import CreateConnector from "./CreateConnector";
-import HeadTitle from "components/HeadTitle";
-import { Connector, ConnectorDefinition, DestinationDefinition, SourceDefinition } from "core/domain/connector";
-import { FeatureItem, useFeatureService, WithFeature } from "hooks/services/Feature";
 
 type ConnectorsViewProps = {
   type: "sources" | "destinations";

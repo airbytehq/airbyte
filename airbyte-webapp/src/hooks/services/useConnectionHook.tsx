@@ -11,14 +11,14 @@ import {
 import { SyncSchema } from "core/domain/catalog";
 import { Operation } from "core/domain/connection/operation";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-
 import { equal } from "utils/objects";
 import { Destination, Source, SourceDefinition } from "core/domain/connector";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
-import { useCurrentWorkspace } from "./useWorkspace";
+
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,

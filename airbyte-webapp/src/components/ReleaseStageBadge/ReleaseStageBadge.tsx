@@ -1,8 +1,9 @@
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { ReleaseStage } from "core/domain/connector";
 import ToolTip from "components/ToolTip";
+
+import { ReleaseStage } from "core/domain/connector";
 
 const Stage = styled.div<{ $small: boolean }>`
   display: inline-block;

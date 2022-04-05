@@ -4,11 +4,12 @@ import styled from "styled-components";
 
 import { ContentCard, ImageBlock } from "components";
 import { Header, Row, Cell } from "components/SimpleTableComponents";
-import EnabledControl from "./EnabledControl";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
-
-import { Connection } from "core/domain/connection";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { Connection } from "core/domain/connection";
+
+import EnabledControl from "./EnabledControl";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;

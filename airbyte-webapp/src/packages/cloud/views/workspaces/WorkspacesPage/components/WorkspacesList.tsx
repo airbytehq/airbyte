@@ -1,13 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 
-import WorkspaceItem from "./WorkspaceItem";
-import WorkspacesControl from "./WorkspacesControl";
 import {
   useCreateWorkspace,
   useListCloudWorkspaces,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
+
+import WorkspaceItem from "./WorkspaceItem";
+import WorkspacesControl from "./WorkspacesControl";
 
 const Content = styled.div`
   width: 100%;

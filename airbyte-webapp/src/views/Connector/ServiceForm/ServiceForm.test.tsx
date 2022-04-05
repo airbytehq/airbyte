@@ -5,8 +5,9 @@ import selectEvent from "react-select-event";
 
 import { ServiceForm } from "views/Connector/ServiceForm";
 import { render } from "utils/testutils";
-import { ServiceFormValues } from "./types";
 import { AirbyteJSONSchema } from "core/jsonSchema";
+
+import { ServiceFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
 jest.mock(

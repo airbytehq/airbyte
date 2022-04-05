@@ -2,8 +2,9 @@ import React, { useCallback } from "react";
 import { Field, FieldProps, setIn } from "formik";
 
 import { AirbyteStreamConfiguration, DestinationSyncMode, SyncSchemaStream } from "core/domain/catalog";
-import { CatalogSection } from "./CatalogSection";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+
+import { CatalogSection } from "./CatalogSection";
 
 type IProps = {
   streams: SyncSchemaStream[];

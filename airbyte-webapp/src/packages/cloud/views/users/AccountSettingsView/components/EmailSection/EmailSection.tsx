@@ -4,10 +4,10 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import styled from "styled-components";
 
 import { Button } from "components";
+import { LabeledInput } from "components/LabeledInput";
 
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
-import { LabeledInput } from "components/LabeledInput";
 import NotificationsForm from "pages/SettingsPage/pages/NotificationPage/components/NotificationsForm";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";

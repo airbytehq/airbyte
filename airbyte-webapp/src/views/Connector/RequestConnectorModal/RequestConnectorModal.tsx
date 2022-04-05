@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import ConnectorForm from "./components/ConnectorForm";
-
 import { Modal } from "components";
+
 import useRequestConnector from "hooks/services/useRequestConnector";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
+import ConnectorForm from "./components/ConnectorForm";
 import { Values } from "./types";
 
 type RequestConnectorModalProps = {

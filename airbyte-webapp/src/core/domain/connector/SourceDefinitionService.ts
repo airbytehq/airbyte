@@ -1,4 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+
 import { SourceDefinition } from "./types";
 
 class SourceDefinitionService extends AirbyteRequestService {

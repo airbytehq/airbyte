@@ -3,9 +3,9 @@ import { Field, FieldProps, Formik } from "formik";
 import * as yup from "yup";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
-
 import { LabeledInput, Link, LoadingButton } from "components";
+
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";

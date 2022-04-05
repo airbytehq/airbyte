@@ -1,5 +1,7 @@
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
+
 import { isDefined } from "utils/common";
+
 import { AirbyteJSONSchema, AirbyteJSONSchemaDefinition } from "./types";
 
 function removeNestedPaths(

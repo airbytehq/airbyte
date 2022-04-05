@@ -4,12 +4,14 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-import { Attempt, JobInfo, JobMeta as JobApiItem } from "core/domain/job/Job";
 import { Cell, Row } from "components/SimpleTableComponents";
 import { Button, StatusIcon } from "components";
-import AttemptDetails from "./AttemptDetails";
+
+import { Attempt, JobInfo, JobMeta as JobApiItem } from "core/domain/job/Job";
 import Status from "core/statuses";
+
 import { useCancelJob } from "../../../services/job/JobService";
+import AttemptDetails from "./AttemptDetails";
 
 const MainView = styled(Row)<{
   isOpen?: boolean;

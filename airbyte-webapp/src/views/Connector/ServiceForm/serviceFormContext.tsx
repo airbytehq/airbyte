@@ -4,6 +4,7 @@ import { getIn, useFormikContext } from "formik";
 import { WidgetConfigMap } from "core/form/types";
 import { Connector, ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 import { ServiceFormValues } from "./types";
 

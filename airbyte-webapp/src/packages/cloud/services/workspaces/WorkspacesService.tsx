@@ -1,14 +1,13 @@
 import { QueryObserverResult, useMutation, useQuery, useQueryClient } from "react-query";
 import { useCallback } from "react";
+import { QueryObserverSuccessResult } from "react-query/types/core/types";
 
 import type { CloudWorkspace, CloudWorkspaceUsage } from "packages/cloud/lib/domain/cloudWorkspaces/types";
-
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { QueryObserverSuccessResult } from "react-query/types/core/types";
 import { SCOPE_USER } from "services/Scope";
 
 export const workspaceKeys = {

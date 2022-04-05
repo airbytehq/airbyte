@@ -1,6 +1,7 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { Operation } from "./operation";
 import Status from "core/statuses";
+
+import { Operation } from "./operation";
 
 class OperationService extends AirbyteRequestService {
   get url() {

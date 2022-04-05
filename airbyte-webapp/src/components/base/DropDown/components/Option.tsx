@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { components, OptionProps, OptionTypeBase } from "react-select";
 
 import CheckBox from "components/base/CheckBox";
+
 import Text from "./Text";
 
 export type IProps = {

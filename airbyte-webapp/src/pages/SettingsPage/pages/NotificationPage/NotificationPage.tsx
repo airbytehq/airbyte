@@ -1,10 +1,12 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace, { useCurrentWorkspace, WebhookPayload } from "hooks/services/useWorkspace";
-import WebHookForm from "./components/WebHookForm";
+
 import HeadTitle from "components/HeadTitle";
 
+import useWorkspace, { useCurrentWorkspace, WebhookPayload } from "hooks/services/useWorkspace";
+
 import { Content, SettingsCard } from "../SettingsComponents";
+import WebHookForm from "./components/WebHookForm";
 
 function useAsyncWithTimeout<K, T>(f: (data: K) => Promise<T>) {
   const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);

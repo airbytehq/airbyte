@@ -1,4 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+
 import { DestinationDefinition } from "./types";
 
 class DestinationDefinitionService extends AirbyteRequestService {

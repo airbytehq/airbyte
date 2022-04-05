@@ -3,17 +3,18 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
 import { H1 } from "components";
-import { useConfig } from "config";
 
-import VideoItem from "./VideoItem";
-import ProgressBlock from "./ProgressBlock";
-import HighlightedText from "./HighlightedText";
-import UseCaseBlock from "./UseCaseBlock";
+import { useConfig } from "config";
 import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import Status from "core/statuses";
 import useWorkspace from "hooks/services/useWorkspace";
 import { useConnectionList, useGetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
+
+import UseCaseBlock from "./UseCaseBlock";
+import HighlightedText from "./HighlightedText";
+import ProgressBlock from "./ProgressBlock";
+import VideoItem from "./VideoItem";
 
 const Title = styled(H1)`
   margin: 21px 0;

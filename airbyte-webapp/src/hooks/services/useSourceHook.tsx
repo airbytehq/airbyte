@@ -4,8 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Source } from "core/domain/connector";
-import { connectionsKeys, ListConnection } from "./useConnectionHook";
-import { useCurrentWorkspace } from "./useWorkspace";
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
@@ -13,7 +11,10 @@ import { SourceService } from "core/domain/connector/SourceService";
 import { isDefined } from "utils/common";
 import { SyncSchema } from "core/domain/catalog";
 import { JobInfo } from "core/domain/job";
+
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useCurrentWorkspace } from "./useWorkspace";
+import { connectionsKeys, ListConnection } from "./useConnectionHook";
 
 export const sourcesKeys = {
   all: [SCOPE_WORKSPACE, "sources"] as const,

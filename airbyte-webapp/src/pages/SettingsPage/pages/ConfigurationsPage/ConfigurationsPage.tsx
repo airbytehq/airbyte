@@ -3,14 +3,15 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useAsyncFn } from "react-use";
 
-import { useConfig } from "config";
-
 import { Button, ContentCard, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
+
+import { useConfig } from "config";
 import { DeploymentService } from "core/domain/deployment/DeploymentService";
+import { useServicesProvider } from "core/servicesProvider";
+
 import ImportConfigurationModal from "./components/ImportConfigurationModal";
 import LogsContent from "./components/LogsContent";
-import { useServicesProvider } from "core/servicesProvider";
 
 const Content = styled.div`
   max-width: 813px;

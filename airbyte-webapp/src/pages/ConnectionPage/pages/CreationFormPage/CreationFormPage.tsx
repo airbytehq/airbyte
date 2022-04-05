@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import useRouter from "hooks/useRouter";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
@@ -11,15 +10,17 @@ import ConnectionBlock from "components/ConnectionBlock";
 import HeadTitle from "components/HeadTitle";
 import CreateConnectionContent from "components/CreateConnectionContent";
 
-import ExistingEntityForm from "./components/ExistingEntityForm";
-import SourceForm from "./components/SourceForm";
-import DestinationForm from "./components/DestinationForm";
+import useRouter from "hooks/useRouter";
 import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
 import { Connection } from "core/domain/connection";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetSource } from "hooks/services/useSourceHook";
 import { useGetDestination } from "hooks/services/useDestinationHook";
+
+import DestinationForm from "./components/DestinationForm";
+import SourceForm from "./components/SourceForm";
+import ExistingEntityForm from "./components/ExistingEntityForm";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",

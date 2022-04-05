@@ -2,9 +2,10 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+import { Button } from "components";
+
 import useRouter from "hooks/useRouter";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
-import { Button } from "components";
 
 const ResetSection = styled.div`
   margin-top: 30px;

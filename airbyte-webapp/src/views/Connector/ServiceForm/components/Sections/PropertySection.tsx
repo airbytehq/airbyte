@@ -1,9 +1,10 @@
 import React from "react";
-
 import { useField } from "formik";
 
 import { LabeledToggle, TextWithHTML } from "components";
+
 import { FormBaseItem } from "core/form/types";
+
 import { Label } from "../Property/Label";
 import { Control } from "../Property/Control";
 import { useServiceForm } from "../../serviceFormContext";

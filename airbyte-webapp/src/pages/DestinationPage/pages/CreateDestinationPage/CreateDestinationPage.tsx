@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import PageTitle from "components/PageTitle";
-import DestinationForm from "./components/DestinationForm";
-import useRouter from "hooks/useRouter";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
+
+import useRouter from "hooks/useRouter";
+import { ConnectionConfiguration } from "core/domain/connection";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
+
+import DestinationForm from "./components/DestinationForm";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();

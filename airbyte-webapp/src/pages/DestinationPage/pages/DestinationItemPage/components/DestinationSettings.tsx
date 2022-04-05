@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
+
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { Connector, Destination } from "core/domain/connector";

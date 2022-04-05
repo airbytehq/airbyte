@@ -1,4 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+
 import { SourceGetConsentPayload } from "./types";
 
 class SourceAuthService extends AirbyteRequestService {

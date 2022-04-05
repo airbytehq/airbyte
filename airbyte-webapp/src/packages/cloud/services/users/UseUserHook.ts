@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useGetUserService } from "./UserService";
 import { SCOPE_WORKSPACE } from "services/Scope";
+
+import { useGetUserService } from "./UserService";
 
 export const userKeys = {
   all: [SCOPE_WORKSPACE, "users"] as const,

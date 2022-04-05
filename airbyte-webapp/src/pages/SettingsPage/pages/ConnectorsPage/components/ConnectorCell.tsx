@@ -1,10 +1,11 @@
 import React from "react";
 import styled from "styled-components";
+import { FormattedMessage } from "react-intl";
 
 import Indicator from "components/Indicator";
-import { getIcon } from "utils/imageUtils";
-import { FormattedMessage } from "react-intl";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+
+import { getIcon } from "utils/imageUtils";
 import { ReleaseStage } from "core/domain/connector";
 
 type IProps = {

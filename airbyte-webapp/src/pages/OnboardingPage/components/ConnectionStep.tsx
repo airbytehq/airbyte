@@ -2,10 +2,12 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import CreateConnectionContent from "components/CreateConnectionContent";
-import TitlesBlock from "./TitlesBlock";
-import HighlightedText from "./HighlightedText";
+
 import { useSourceList } from "hooks/services/useSourceHook";
 import { useDestinationList } from "hooks/services/useDestinationHook";
+
+import TitlesBlock from "./TitlesBlock";
+import HighlightedText from "./HighlightedText";
 
 type IProps = {
   onNextStep: () => void;

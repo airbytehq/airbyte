@@ -1,14 +1,14 @@
 import React, { useMemo } from "react";
 
 import { FormBlock } from "core/form/types";
-import { useServiceForm } from "../../serviceFormContext";
-import { SectionContainer } from "./common";
 
+import { useServiceForm } from "../../serviceFormContext";
+import { makeConnectionConfigurationPath, OrderComparator } from "../../utils";
+import { SectionContainer } from "./common";
 import { PropertySection } from "./PropertySection";
 import { ConditionSection } from "./ConditionSection";
 import { ArraySection } from "./ArraySection";
 import { AuthSection } from "./auth/AuthSection";
-import { makeConnectionConfigurationPath, OrderComparator } from "../../utils";
 
 const FormNode: React.FC<{
   sectionPath: string;

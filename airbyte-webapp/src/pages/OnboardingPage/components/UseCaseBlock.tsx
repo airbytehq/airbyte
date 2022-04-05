@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
+import { FormattedMessage } from "react-intl";
 
 import ContentCard from "components/ContentCard";
-import { FormattedMessage } from "react-intl";
 
 type UseCaseBlockProps = {
   count: number;

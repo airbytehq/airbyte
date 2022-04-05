@@ -2,9 +2,11 @@ import React from "react";
 import { FieldArray, useField } from "formik";
 
 import { DropDown, Input, Multiselect, TextArea, TagInput } from "components";
-import ConfirmationControl from "./ConfirmationControl";
+
 import { FormBaseItem } from "core/form/types";
 import { isDefined } from "utils/common";
+
+import ConfirmationControl from "./ConfirmationControl";
 
 type IProps = {
   property: FormBaseItem;

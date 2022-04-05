@@ -10,6 +10,7 @@ import {
 } from "core/domain/connector/DestinationDefinitionService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
+
 import { SCOPE_WORKSPACE } from "../Scope";
 
 export const destinationDefinitionKeys = {

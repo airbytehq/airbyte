@@ -9,8 +9,9 @@ import { JobInfo } from "core/domain/job/Job";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useTestConnector } from "./useTestConnector";
 import { useAnalytics } from "hooks/services/Analytics";
+
+import { useTestConnector } from "./useTestConnector";
 
 export type ConnectorCardProvidedProps = {
   isTestConnectionInProgress: boolean;

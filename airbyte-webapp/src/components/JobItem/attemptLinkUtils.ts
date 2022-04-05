@@ -1,5 +1,6 @@
-import { Attempt } from "core/domain/job";
 import { useLocation } from "react-router-dom";
+
+import { Attempt } from "core/domain/job";
 
 const PARSE_REGEXP = /^#(?<jobId>\w*)::(?<attemptId>\w*)$/;
 

@@ -4,8 +4,9 @@ import { FormattedMessage } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 
-import { useConfig } from "config";
 import { Popout } from "components";
+
+import { useConfig } from "config";
 
 import DocsIcon from "./DocsIcon";
 import RecipesIcon from "./RecipesIcon";

@@ -8,7 +8,9 @@ import { BigButton } from "components/CenteredPageComponents";
 import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
+
 import { useConfig } from "config";
+
 import EditControls from "./components/EditControls";
 
 export type PreferencesFormProps = {

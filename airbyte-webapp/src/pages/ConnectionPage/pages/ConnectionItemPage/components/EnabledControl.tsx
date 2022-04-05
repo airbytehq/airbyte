@@ -3,9 +3,10 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Toggle } from "components";
+import { Status } from "components/EntityTable/types";
+
 import { Connection } from "core/domain/connection";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
-import { Status } from "components/EntityTable/types";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 const ToggleLabel = styled.label`

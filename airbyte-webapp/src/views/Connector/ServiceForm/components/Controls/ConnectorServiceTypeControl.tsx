@@ -4,23 +4,23 @@ import { useField } from "formik";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
-import { WarningMessage } from "../WarningMessage";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
-
-import { FormBaseItem } from "core/form/types";
-import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
-
-import Instruction from "./Instruction";
 import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
 import {
   IProps as SingleValueProps,
   Icon as SingleValueIcon,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
+
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { FormBaseItem } from "core/form/types";
+import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { naturalComparator } from "utils/objects";
+
+import { WarningMessage } from "../WarningMessage";
+import Instruction from "./Instruction";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};

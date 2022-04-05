@@ -1,18 +1,16 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-
 import { clamp } from "lodash";
+import { useLocation } from "react-router-dom";
 
 import Status from "core/statuses";
 import { useGetJob, useGetDebugInfoJob } from "services/job/JobService";
-
 import { Attempt } from "core/domain/job/Job";
 
+import { parseAttemptLink } from "../attemptLinkUtils";
 import Logs from "./Logs";
 import Tabs from "./Tabs";
 import { LogsDetails } from "./LogsDetails";
-import { useLocation } from "react-router-dom";
-import { parseAttemptLink } from "../attemptLinkUtils";
 
 type IProps = {
   id: number | string;

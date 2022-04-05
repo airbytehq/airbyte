@@ -1,7 +1,9 @@
 import React, { useContext, useMemo, useState } from "react";
-import { Feature, FeatureItem, FeatureServiceApi } from "./types";
-import { useConfig } from "config";
 import { useDeepCompareEffect } from "react-use";
+
+import { useConfig } from "config";
+
+import { Feature, FeatureItem, FeatureServiceApi } from "./types";
 
 const featureServiceContext = React.createContext<FeatureServiceApi | null>(null);
 

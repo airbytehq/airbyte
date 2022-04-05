@@ -2,10 +2,11 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
-import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import { LabeledInput } from "components/LabeledInput";
 import { LoadingButton } from "components";
+
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
+import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";
 
 import { usePassword } from "./hooks";

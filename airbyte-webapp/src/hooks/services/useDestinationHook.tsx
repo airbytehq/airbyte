@@ -3,14 +3,15 @@ import { QueryObserverSuccessResult, useMutation, useQuery, useQueryClient } fro
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { Destination } from "core/domain/connector";
-import { connectionsKeys, ListConnection } from "./useConnectionHook";
-import { useCurrentWorkspace } from "./useWorkspace";
 import { isDefined } from "utils/common";
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { DestinationService } from "core/domain/connector/DestinationService";
+
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useCurrentWorkspace } from "./useWorkspace";
+import { connectionsKeys, ListConnection } from "./useConnectionHook";
 
 export const destinationsKeys = {
   all: [SCOPE_WORKSPACE, "destinations"] as const,

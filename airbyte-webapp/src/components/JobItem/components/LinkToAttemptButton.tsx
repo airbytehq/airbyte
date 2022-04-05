@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { useDebounce } from "react-use";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLink } from "@fortawesome/free-solid-svg-icons";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components";
 import ToolTip from "components/ToolTip";
+
 import { copyToClipboard } from "utils/clipboard";
+
 import { buildAttemptLink } from "../attemptLinkUtils";
-import { FormattedMessage, useIntl } from "react-intl";
 
 interface Props {
   jobId: string | number;

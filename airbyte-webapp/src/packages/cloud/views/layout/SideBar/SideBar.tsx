@@ -5,14 +5,12 @@ import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
 
-import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
-
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
-
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Link } from "components";
-import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
 import DocsIcon from "views/layout/SideBar/components/DocsIcon";
@@ -24,6 +22,7 @@ import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/Workspa
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import ResourcesPopup, { Icon, Item } from "views/layout/SideBar/components/ResourcesPopup";
 import { FeatureItem, WithFeature } from "hooks/services/Feature";
+
 import { RoutePaths } from "../../../../../pages/routePaths";
 
 const CreditsIcon = styled(FontAwesomeIcon)`

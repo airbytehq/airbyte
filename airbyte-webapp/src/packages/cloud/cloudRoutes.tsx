@@ -2,11 +2,11 @@ import React, { Suspense, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
+import LoadingPage from "components/LoadingPage";
+
 import SourcesPage from "pages/SourcesPage";
 import DestinationPage from "pages/DestinationPage";
 import ConnectionPage from "pages/ConnectionPage";
-
-import LoadingPage from "components/LoadingPage";
 import MainView from "packages/cloud/views/layout/MainView";
 import { WorkspacesPage } from "packages/cloud/views/workspaces";
 import { useApiHealthPoll } from "hooks/services/Health";
@@ -16,21 +16,22 @@ import { useIntercom } from "packages/cloud/services/thirdParty/intercom/useInte
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import OnboardingPage from "pages/OnboardingPage";
 import { CreditsPage } from "packages/cloud/views/credits";
-import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import { TrackPageAnalytics } from "hooks/services/Analytics/TrackPageAnalytics";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-import { useConfig } from "./services/config";
-import useFullStory from "./services/thirdParty/fullstory/useFullStory";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
-import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
-import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import useRouter from "hooks/useRouter";
 import { storeUtmFromQuery } from "utils/utmStorage";
-import { DefaultView } from "./views/DefaultView";
 import { hasFromState } from "utils/stateUtils";
-import { RoutePaths } from "../../pages/routePaths";
 import { FeatureItem, useFeatureRegisterValues } from "hooks/services/Feature";
+
+import { RoutePaths } from "../../pages/routePaths";
+import { useConfig } from "./services/config";
+import useFullStory from "./services/thirdParty/fullstory/useFullStory";
+import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
+import { VerifyEmailAction } from "./views/FirebaseActionRoute";
+import { DefaultView } from "./views/DefaultView";
+import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 

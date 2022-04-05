@@ -1,6 +1,6 @@
 import React from "react";
-
 import styled from "styled-components";
+
 import { IProps } from "components/base/Button/types";
 
 const StyledButton = styled.button<IProps>`

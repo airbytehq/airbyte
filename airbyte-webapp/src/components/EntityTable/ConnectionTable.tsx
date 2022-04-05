@@ -6,6 +6,9 @@ import queryString from "query-string";
 
 import Table from "components/Table";
 
+import useRouter from "hooks/useRouter";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+
 import LastSyncCell from "./components/LastSyncCell";
 import ConnectorCell from "./components/ConnectorCell";
 import NameCell from "./components/NameCell";
@@ -14,8 +17,6 @@ import FrequencyCell from "./components/FrequencyCell";
 import StatusCell from "./components/StatusCell";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
-import useRouter from "hooks/useRouter";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;

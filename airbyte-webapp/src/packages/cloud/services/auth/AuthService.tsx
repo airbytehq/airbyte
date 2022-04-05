@@ -5,7 +5,6 @@ import { useEffectOnce } from "react-use";
 
 import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
-import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
 import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
@@ -13,6 +12,8 @@ import { useAuth } from "packages/firebaseReact";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { getUtmFromStorage } from "utils/utmStorage";
 import { useInitService } from "services/useInitService";
+
+import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
 
 export type AuthUpdatePassword = (email: string, currentPassword: string, newPassword: string) => Promise<void>;
 

@@ -2,8 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { Link } from "components/Link";
+
+import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 
 const Container = styled.div`

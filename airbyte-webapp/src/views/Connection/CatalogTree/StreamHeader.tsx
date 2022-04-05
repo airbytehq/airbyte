@@ -1,14 +1,14 @@
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-
 import styled from "styled-components";
 
-import { DestinationSyncMode, Path, SyncMode, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
-
 import { Cell, CheckBox, DropDownRow, Toggle } from "components";
+
+import { DestinationSyncMode, Path, SyncMode, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
+import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
+
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
-import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { IndexerType, PathPopout } from "./components/PathPopout";
 import { ArrowCell, CheckboxCell, HeaderCell } from "./styles";
 

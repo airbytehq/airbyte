@@ -1,10 +1,12 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
+import withMock from "storybook-addon-mock";
 
-import { ServiceForm } from "./ServiceForm";
 import { ContentCard } from "components";
+
 import { ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
-import withMock from "storybook-addon-mock";
+
+import { ServiceForm } from "./ServiceForm";
 
 const TempConnector = {
   name: "Service",

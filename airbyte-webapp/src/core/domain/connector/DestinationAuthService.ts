@@ -1,4 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+
 import { DestinationGetConsentPayload } from "./types";
 
 class DestinationAuthService extends AirbyteRequestService {

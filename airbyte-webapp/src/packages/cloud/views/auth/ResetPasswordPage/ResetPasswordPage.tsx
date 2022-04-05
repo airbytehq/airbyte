@@ -3,12 +3,14 @@ import { Field, FieldProps, Formik } from "formik";
 import * as yup from "yup";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { LoadingButton, LabeledInput, Link } from "components";
-import { FormTitle } from "../components/FormTitle";
-import { CloudRoutes } from "../../../cloudRoutes";
+
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
+
+import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
+import { FormTitle } from "../components/FormTitle";
+import { CloudRoutes } from "../../../cloudRoutes";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),

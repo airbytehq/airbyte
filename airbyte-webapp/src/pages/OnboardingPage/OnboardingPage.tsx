@@ -1,9 +1,18 @@
 import React, { Suspense, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import { useEffectOnce } from "react-use";
 
 import { Button } from "components";
 import HeadTitle from "components/HeadTitle";
+import LoadingPage from "components/LoadingPage";
+
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import useWorkspace from "hooks/services/useWorkspace";
+import useRouterHook from "hooks/useRouter";
+import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
+
+import { RoutePaths } from "../routePaths";
 import useGetStepsConfig from "./useStepsConfig";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
@@ -12,14 +21,7 @@ import WelcomeStep from "./components/WelcomeStep";
 import FinalStep from "./components/FinalStep";
 import LetterLine from "./components/LetterLine";
 import { StepType } from "./types";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import StepsCounter from "./components/StepsCounter";
-import LoadingPage from "components/LoadingPage";
-import useWorkspace from "hooks/services/useWorkspace";
-import useRouterHook from "hooks/useRouter";
-import { RoutePaths } from "../routePaths";
-import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
-import { useEffectOnce } from "react-use";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;

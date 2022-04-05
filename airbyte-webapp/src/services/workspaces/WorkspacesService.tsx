@@ -5,6 +5,7 @@ import useRouter from "hooks/useRouter";
 import { Workspace, WorkspaceService, WorkspaceState } from "core/domain/workspace";
 import { RoutePaths } from "pages/routePaths";
 import { useConfig } from "config";
+
 import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
 import { useInitService } from "../useInitService";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";

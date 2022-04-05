@@ -3,16 +3,16 @@ import styled from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
+
 import useRouter from "hooks/useRouter";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { ResetPasswordAction } from "packages/cloud/views/FirebaseActionRoute";
+
 import FormContent from "./components/FormContent";
 import News from "./components/News";
-
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
-
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
-import { ResetPasswordAction } from "packages/cloud/views/FirebaseActionRoute";
 
 const Content = styled.div`
   width: 100%;

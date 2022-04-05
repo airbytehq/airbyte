@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 
-import { Status } from "../types";
 import StatusIcon from "components/StatusIcon";
+
+import { Status } from "../types";
 
 type AllConnectionsStatusCellProps = {
   connectEntities: {

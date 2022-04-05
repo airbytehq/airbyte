@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 
-import useRouter from "hooks/useRouter";
-
 // TODO: create separate component for source and destinations forms
 import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import useRouter from "hooks/useRouter";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useCreateSource } from "hooks/services/useSourceHook";

@@ -5,6 +5,7 @@ import styled from "styled-components";
 
 import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+
 import { useDefaultTransformation } from "../formConfig";
 import { NormalizationField } from "./NormalizationField";
 import { TransformationField } from "./TransformationField";

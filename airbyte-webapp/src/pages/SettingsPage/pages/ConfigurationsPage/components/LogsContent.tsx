@@ -4,7 +4,9 @@ import styled from "styled-components";
 import { useAsyncFn } from "react-use";
 
 import { LoadingButton } from "components";
+
 import { useGetLogs } from "services/logs/LogsService";
+
 import { LogType } from "../../../../../core/domain/logs/types";
 
 const Content = styled.div`

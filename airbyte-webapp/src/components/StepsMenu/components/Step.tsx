@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
+
 import StatusIcon from "components/StatusIcon";
+
 import Status from "core/statuses";
 
 type IProps = {

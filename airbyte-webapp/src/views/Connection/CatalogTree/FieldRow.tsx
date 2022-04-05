@@ -2,6 +2,7 @@ import React, { memo } from "react";
 import styled from "styled-components";
 
 import { Cell, CheckBox, RadioButton } from "components";
+
 import DataTypeCell from "./components/DataTypeCell";
 import { NameContainer } from "./styles";
 

@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
+import { FormattedMessage } from "react-intl";
 
 import { Button, ProgressBar } from "components";
-import { FormattedMessage } from "react-intl";
 
 const LoadingContainer = styled.div`
   margin: 34px 0 9px;

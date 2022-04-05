@@ -1,4 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+
 import { StripeCheckoutSessionRead, StripeCheckoutSessionCreate } from "./types";
 
 export class StripeService extends AirbyteRequestService {

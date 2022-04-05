@@ -6,12 +6,13 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import HighlightedText from "./HighlightedText";
-import TitlesBlock from "./TitlesBlock";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import { JobInfo } from "core/domain/job";
+
+import TitlesBlock from "./TitlesBlock";
+import HighlightedText from "./HighlightedText";
 
 type IProps = {
   onSuccess: () => void;

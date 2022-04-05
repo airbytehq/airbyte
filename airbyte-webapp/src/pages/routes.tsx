@@ -4,16 +4,8 @@ import { useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
 
 import { useConfig } from "config";
-
-import SourcesPage from "./SourcesPage";
-import DestinationPage from "./DestinationPage";
-import PreferencesPage from "./PreferencesPage";
-import OnboardingPage from "./OnboardingPage";
-import ConnectionPage from "./ConnectionPage";
-import SettingsPage from "./SettingsPage";
 import MainView from "views/layout/MainView";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
-
 import { useNotificationService } from "hooks/services/Notification";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { TrackPageAnalytics, useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
@@ -22,6 +14,13 @@ import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Workspace } from "core/domain/workspace/Workspace";
 import { storeUtmFromQuery } from "utils/utmStorage";
+
+import SettingsPage from "./SettingsPage";
+import ConnectionPage from "./ConnectionPage";
+import OnboardingPage from "./OnboardingPage";
+import PreferencesPage from "./PreferencesPage";
+import DestinationPage from "./DestinationPage";
+import SourcesPage from "./SourcesPage";
 import { RoutePaths } from "./routePaths";
 
 function useDemo() {

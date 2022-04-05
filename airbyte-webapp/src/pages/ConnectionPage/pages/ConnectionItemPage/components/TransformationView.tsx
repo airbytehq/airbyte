@@ -3,6 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldArray } from "formik";
 
+import { ContentCard, H4 } from "components";
+
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
 import {
@@ -15,7 +17,6 @@ import { FormCard } from "views/Connection/FormCard";
 import { Connection, NormalizationType, Operation, OperatorType, Transformation } from "core/domain/connection";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { ContentCard, H4 } from "components";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 

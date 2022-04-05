@@ -4,7 +4,9 @@ import { FormattedMessage } from "react-intl";
 
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
+
 import { useConfig } from "config";
+
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
 export type MetricsFormProps = {

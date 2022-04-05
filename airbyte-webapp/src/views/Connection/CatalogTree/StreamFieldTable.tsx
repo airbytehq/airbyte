@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 import { AirbyteStreamConfiguration, SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { equal } from "utils/objects";
+
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { FieldHeader } from "./FieldHeader";
 import { FieldRow } from "./FieldRow";

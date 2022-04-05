@@ -6,8 +6,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
-import { CloudRoutes } from "../../../cloudRoutes";
+
 import { useConfig } from "config";
+
+import { CloudRoutes } from "../../../cloudRoutes";
 
 const Links = styled.div`
   width: 100%;

@@ -4,15 +4,17 @@ import styled from "styled-components";
 import queryString from "query-string";
 import { CellProps } from "react-table";
 
-import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import Table from "components/Table";
 import { SortOrderEnum } from "components/EntityTable/types";
 import SortButton from "components/EntityTable/components/SortButton";
+
+import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import useRouter from "hooks/useRouter";
-import ConnectionCell from "./ConnectionCell";
-import UsageCell from "./UsageCell";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+
+import ConnectionCell from "./ConnectionCell";
+import UsageCell from "./UsageCell";
 
 const Content = styled.div`
   padding: 0 60px 0 15px;

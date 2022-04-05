@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 
 import JobItem from "components/JobItem";
+
 import { JobListItem } from "core/domain/job/Job";
 
 type IProps = {
