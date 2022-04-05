@@ -4,16 +4,11 @@
   "permission-list": [
     {
       "domain": "abs",
-      "grants": [
-        "admin"
-      ]
+      "grants": ["admin"]
     },
     {
       "domain": "tools",
-      "grants": [
-        "read",
-        "write"
-      ]
+      "grants": ["read", "write"]
     }
   ]
 }

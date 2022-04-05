@@ -40,11 +40,14 @@ import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionSearch;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WebBackendOperationCreateOrUpdate;
+import io.airbyte.api.model.WebBackendWorkspaceState;
+import io.airbyte.api.model.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -72,6 +75,19 @@ public class WebBackendConnectionsHandler {
   private final OperationsHandler operationsHandler;
   private final FeatureFlags featureFlags;
   private final EventRunner eventRunner;
+  private final ConfigRepository configRepository;
+
+  public WebBackendWorkspaceStateResult getWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) throws IOException {
+    final var workspaceId = webBackendWorkspaceState.getWorkspaceId();
+    final var connectionCount = configRepository.countConnectionsForWorkspace(workspaceId);
+    final var destinationCount = configRepository.countDestinationsForWorkspace(workspaceId);
+    final var sourceCount = configRepository.countSourcesForWorkspace(workspaceId);
+
+    return new WebBackendWorkspaceStateResult()
+        .hasConnections(connectionCount > 0)
+        .hasDestinations(destinationCount > 0)
+        .hasSources(sourceCount > 0);
+  }
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
