@@ -29,30 +29,6 @@ This Source is capable of syncing the following core Streams:
 * [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
 * [Users](https://developer.zendesk.com/rest_api/docs/support/users)
 
-The streams below are not implemented. Please open a Github issue or request it through Airbyte Cloud's support box if you are interested in them.
-
-**Tickets**
-
-* [Ticket Attachments](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket-attachments/)
-* [Ticket Requests](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket-requests/)
-* [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/)
-* [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/)
-
-**Help Center**
-
-* [Articles](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/)
-* [Article Attachments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_attachments/)
-* [Article Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_comments/)
-* [Categories](https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/)
-* [Management Permission Groups](https://developer.zendesk.com/api-reference/help_center/help-center-api/permission_groups/)
-* [Translations](https://developer.zendesk.com/api-reference/help_center/help-center-api/translations/)
-* [Sections](https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/)
-* [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics)
-* [Themes](https://developer.zendesk.com/api-reference/help_center/help-center-api/theming)
-* [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts)
-* [Themes](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts)
-* [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/)
-
 ### Data type mapping
 
 | Integration Type | Airbyte Type |
@@ -78,30 +54,27 @@ The connector is restricted by normal Zendesk [requests limitation](https://deve
 The Zendesk connector should not run into Zendesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
+1. Click `Authenticate your Zendesk account`
+2. Enter a `Start Date` as the minimum date of your data replication.
+3. Enter your `Subdomain`. Learn how to find it in the `Requirements` section.
+4. Click on `Setup Source`.
+5. You're now ready to sync your data.
 
 ### Requirements
 
-* Zendesk Subdomain
-* Auth Method
-  * API Token
-    * Zendesk API Token 
-    * Zendesk Email 
-  * OAuth2.0 (obtain access_token by authorising your Zendesk Account)
+* `Subdomain` - this is your Zendesk subdomain that can be found in your account URL. For example, in `https://{MY_SUBDOMAIN}.zendesk.com/`, where `MY_SUBDOMAIN` is the value of your subdomain. 
+* `Authentication` - Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.
+  * Authentication using `OAuth2.0` (Only for Airbyte Cloud) - obtain `access_token` by authorising using your Zendesk Account credentials. Simply proceed by pressing "Authenticate your Zendesk Account" and complete the authentication.
+  * Authentication using `API Token`:
+    * `API Token` - the value of the API token generated. See the [generating API Token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token) for more information.
+    * `Email` - the user email for your Zendesk account.
 
-### Setup guide
-
-* API Token
-Generate a API access token using the [Zendesk support](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token)
-
-We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
-
-* OAuth2.0 (Only for Airbyte Cloud)
-Simply proceed by pressing "Authenticate your Account" and complete the authentication with your Zendesk credentials.
 
 ### CHANGELOG
 
 | Version  | Date       | Pull Request | Subject                                                |
 |:---------|:-----------| :-----       |:-------------------------------------------------------|
+| `0.2.4`  | 2022-04-04 | [11688](https://github.com/airbytehq/airbyte/pull/11688) | Small documentation corrections
 | `0.2.3`  | 2022-03-23 | [11349](https://github.com/airbytehq/airbyte/pull/11349) | Fixed the bug when Tickets stream didn't return deleted records
 | `0.2.2`  | 2022-03-17 | [11237](https://github.com/airbytehq/airbyte/pull/11237) | Fixed the bug when TicketComments stream didn't return all records
 | `0.2.1`  | 2022-03-15 | [11162](https://github.com/airbytehq/airbyte/pull/11162) | Added support of OAuth2.0 authentication method
