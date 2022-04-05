@@ -48,7 +48,7 @@
     },
     "automatic_planning": {
       "type": ["null", "boolean"]
-    }, 
+    },
     "enable_tasks": {
       "type": ["null", "boolean"]
     },
@@ -60,16 +60,16 @@
     },
     "number_of_done_iterations_to_show": {
       "type": ["null", "integer"]
-    }, 
+    },
     "has_google_domain": {
       "type": ["null", "boolean"]
-    }, 
+    },
     "enable_incoming_emails": {
       "type": ["null", "boolean"]
     },
     "initial_velocity": {
       "type": ["null", "integer"]
-    }, 
+    },
     "public": {
       "type": ["null", "boolean"]
     },
