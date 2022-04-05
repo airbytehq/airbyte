@@ -136,10 +136,10 @@ def test_parallel_discover(input_sandbox_config):
     consecutive_schemas = {}
     start_time = datetime.now()
     for stream_name, sobject_options in stream_objects.items():
-        consecutive_schemas[stream_name] = sf.generate_schema(stream_name, sobject_options)
+        consecutive_schemas[stream_name], _ = sf.generate_schema(stream_name, sobject_options)
     consecutive_loading_time = (datetime.now() - start_time).total_seconds()
     start_time = datetime.now()
-    parallel_schemas = sf.generate_schemas(stream_objects)
+    parallel_schemas, _ = sf.generate_schemas(stream_objects)
     parallel_loading_time = (datetime.now() - start_time).total_seconds()
 
     assert parallel_loading_time < consecutive_loading_time / 5.0, "parallel should be more than 10x faster"
