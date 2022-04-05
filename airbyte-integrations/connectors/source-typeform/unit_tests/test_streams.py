@@ -45,12 +45,12 @@ def test_stream_responses_configured(requests_mock, config, response_response):
     assert len(merged_records) == 8
 
 
-def test_stream_responses_unconfigured(requests_mock, config, forms_response, response_response):
+def test_stream_responses_unconfigured(requests_mock, config_without_forms, forms_response, response_response):
     requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms/u6nXL7/responses", response_response)
     requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms/k9xNV4/responses", response_response)
     requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms?page_size=200&page=1", forms_response)
 
-    stream = Responses(authenticator=MagicMock(), **config)
+    stream = Responses(authenticator=MagicMock(), **config_without_forms)
 
     merged_records = merge_records(stream, SyncMode.incremental)
 
