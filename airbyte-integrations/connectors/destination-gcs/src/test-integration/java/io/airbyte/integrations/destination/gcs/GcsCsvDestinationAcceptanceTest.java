@@ -114,8 +114,8 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
 
   @Override
   protected void retrieveRawRecordsAndAssertSameMessages(final AirbyteCatalog catalog,
-      final List<AirbyteMessage> messages,
-      final String defaultSchema)
+                                                         final List<AirbyteMessage> messages,
+                                                         final String defaultSchema)
       throws Exception {
     final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
     deserializeNestedObjects(messages, actualMessages);

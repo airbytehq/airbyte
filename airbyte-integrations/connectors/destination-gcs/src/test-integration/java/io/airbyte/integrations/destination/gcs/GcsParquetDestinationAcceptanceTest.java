@@ -127,7 +127,6 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
     }
   }
 
-
   @Override
   protected void deserializeNestedObjects(final List<AirbyteMessage> messages, final List<AirbyteRecordMessage> actualMessages) {
     for (final AirbyteMessage message : messages) {
