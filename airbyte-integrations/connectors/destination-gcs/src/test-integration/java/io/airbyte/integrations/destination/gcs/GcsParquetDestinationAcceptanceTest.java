@@ -9,7 +9,9 @@ import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DAT
 
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
@@ -19,6 +21,9 @@ import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.apache.avro.generic.GenericData;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroReadSupport;
 import org.apache.parquet.hadoop.ParquetReader;
@@ -85,13 +91,13 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
   }
 
   @Override
-  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    for (String path : dateTimeFieldNames.keySet()) {
+  public void convertDateTime(final ObjectNode data, final Map<String, String> dateTimeFieldNames) {
+    for (final String path : dateTimeFieldNames.keySet()) {
       if (!data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
-        var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
+        final var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
         pathFields.remove(0); // first element always empty string
         // if pathFields.size() == 1 -> /field else /field/nestedField..
-        var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
+        final var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
             : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
         switch (dateTimeFieldNames.get(path)) {
           case DATE_TIME -> {
@@ -103,7 +109,6 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
               ((ObjectNode) data.at(pathWithoutLastField)).put(
                   pathFields.get(pathFields.size() - 1),
                   (DateTimeUtils.getEpochMicros(data.at(path).asText()) / 1000) * 1000);
-              ((ObjectNode) data.at(pathWithoutLastField)).set("_airbyte_additional_properties", null);
             }
           }
           case DATE -> {
@@ -113,8 +118,31 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
             } else {
               ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1),
                   DateTimeUtils.getEpochDay((data.at(path).asText())));
-              ((ObjectNode) data.at(pathWithoutLastField)).set("_airbyte_additional_properties", null);
             }
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  protected void deserializeNestedObjects(final List<AirbyteMessage> messages, final List<AirbyteRecordMessage> actualMessages) {
+    for (final AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        final var iterator = message.getRecord().getData().fieldNames();
+        while (iterator.hasNext()) {
+          final var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
+              final var data = message.getRecord().getData().get(fieldName).get(f);
+              final var wrappedData = String.format("{\"%s\":%s,\"_airbyte_additional_properties\":null}", f,
+                  dateTimeFieldNames.containsKey(f) || !data.isTextual() ? data.asText() : StringUtils.wrap(data.asText(), "\""));
+              try {
+                ((ObjectNode) message.getRecord().getData()).set(fieldName, new ObjectMapper().readTree(wrappedData));
+              } catch (final JsonProcessingException e) {
+                e.printStackTrace();
+              }
+            });
           }
         }
       }
