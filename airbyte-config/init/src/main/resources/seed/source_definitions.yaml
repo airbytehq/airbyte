@@ -590,7 +590,7 @@
   icon: pipedrive.svg
   sourceType: api
 - name: Pivotal Tracker
-  sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
+  sourceDefinitionId: d60f5393-f99e-4310-8d05-b1876820f40e
   dockerRepository: airbyte/source-pivotal-tracker
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/pivotal-tracker
