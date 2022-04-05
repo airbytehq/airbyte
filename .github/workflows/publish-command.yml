@@ -20,6 +20,10 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      auto-bump-version:
+        description: "after publishing, the workflow will automatically bump the connector version in definitions and generate seed spec"
+        required: true
+        default: "true"
 
 jobs:
   find_valid_pat:
@@ -108,6 +112,7 @@ jobs:
           source venv/bin/activate
           pip install --quiet tox==3.24.4
       - name: Install yq
+        if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
           sudo add-apt-repository ppa:rmescandon/yq
@@ -185,6 +190,7 @@ jobs:
           SLACK_TITLE: "Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}"
           SLACK_FOOTER: ""
       - name: Check if connector in definitions yaml
+        if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           connector="airbyte/${{ env.IMAGE_NAME }}"
           definitionpath=./airbyte-config/init/src/main/resources/seed/
@@ -194,6 +200,7 @@ jobs:
           then exit 1
           fi
       - name: Bump version in definitions yaml
+        if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           connector="airbyte/${{ env.IMAGE_NAME }}"
           definitionpath=./airbyte-config/init/src/main/resources/seed/
@@ -204,26 +211,29 @@ jobs:
           else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
           fi
       - name: Run gradle process changes
+        if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           ./gradlew :airbyte-config:init:processResources
       - name: git config
+        if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
       - name: git commit and push
+        if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           git add -u
           git commit -m "auto-bump connector version"
           git push origin ${{ github.ref }}
       - name: Add Version Bump Success Comment
-        if: github.event.inputs.comment-id && success()
+        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :rocket: Auto-bumped version for ${{github.event.inputs.connector}}
       - name: Add Version Bump Failure Comment
-        if: github.event.inputs.comment-id && !success()
+        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && !success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
