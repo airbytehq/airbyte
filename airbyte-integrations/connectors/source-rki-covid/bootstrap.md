@@ -1,4 +1,4 @@
-The Robert Koch-Institut - von Marlon Lückert) Covid-19 is [a REST based API](https://api.corona-zahlen.org/). 
+The (Robert Koch-Institut - von Marlon Lückert) Covid-19 is [a REST based API](https://api.corona-zahlen.org/). 
 Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
 ## Cases In Germany Covid api stream
