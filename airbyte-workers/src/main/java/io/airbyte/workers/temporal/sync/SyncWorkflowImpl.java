@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
+import io.airbyte.config.StandardNormalizationSummary;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -58,7 +59,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
               .withCatalog(run.getOutputCatalog())
               .withResourceRequirements(syncInput.getDestinationResourceRequirements());
 
-          normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
+          final StandardNormalizationSummary normalizationSummary = normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
+          persistActivity.persist(connectionId, run.withStandardNormalizationSummary(normalizationSummary));
         } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
           final OperatorDbtInput operatorDbtInput = new OperatorDbtInput()
               .withDestinationConfiguration(syncInput.getDestinationConfiguration())

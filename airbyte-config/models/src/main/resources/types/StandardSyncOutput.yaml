@@ -12,6 +12,8 @@ required:
 properties:
   standardSyncSummary:
     "$ref": StandardSyncSummary.yaml
+  standardNormalizationSummary:
+    "$ref": StandardNormalizationSummary.yaml
   state:
     "$ref": State.yaml
   output_catalog:

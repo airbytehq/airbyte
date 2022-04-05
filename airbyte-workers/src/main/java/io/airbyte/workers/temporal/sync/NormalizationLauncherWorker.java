@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.StandardNormalizationSummary;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerApp;
@@ -13,7 +14,7 @@ import io.airbyte.workers.WorkerConfigs;
 import java.util.Map;
 import java.util.UUID;
 
-public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInput, Void> {
+public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInput, StandardNormalizationSummary> {
 
   public static final String NORMALIZATION = "normalization-orchestrator";
   private static final String POD_NAME_PREFIX = "orchestrator-norm";
@@ -33,7 +34,7 @@ public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInp
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
         workerConfigs.getResourceRequirements(),
-        Void.class);
+        StandardNormalizationSummary.class);
   }
 
 }
