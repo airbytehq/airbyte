@@ -293,7 +293,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void assertSqlServerAgentRunning(final JdbcDatabase database) throws SQLException {
     try {
       final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
-        final String sql = "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%'";
+        final String sql = "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%' OR [servicename] LIKE 'SQL Server 代理%' ";
         final PreparedStatement ps = connection.prepareStatement(sql);
         LOGGER.info(String
             .format("Checking that the SQL Server Agent is running using the query: '%s'", sql));

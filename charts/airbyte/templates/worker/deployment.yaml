@@ -112,6 +112,16 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: JOB_KUBE_ANNOTATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: JOB_KUBE_ANNOTATIONS
+        - name: JOB_KUBE_NODE_SELECTORS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: JOB_KUBE_NODE_SELECTORS
         - name: SUBMITTER_NUM_THREADS
           valueFrom:
             configMapKeyRef:
