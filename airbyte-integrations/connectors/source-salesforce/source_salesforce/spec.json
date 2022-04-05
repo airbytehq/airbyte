@@ -46,9 +46,16 @@
         "examples": ["2021-07-25", "2021-07-25T00:00:00Z"],
         "order": 5
       },
+      "include_field_metadata": {
+        "title": "Include field metadata",
+        "description": "If checked, field metadata will be provided along with Salesforce records.",
+        "type": "boolean",
+        "default": false,
+        "order": 6
+      },
       "streams_criteria": {
         "type": "array",
-        "order": 6,
+        "order": 7,
         "items": {
           "type": "object",
           "required": ["criteria", "value"],

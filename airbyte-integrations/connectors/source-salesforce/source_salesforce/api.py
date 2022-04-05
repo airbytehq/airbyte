@@ -290,35 +290,37 @@ class Salesforce:
         resp_json: Mapping[str, Any] = resp.json()
         return resp_json
 
-    def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Tuple[Mapping[str, Any], Mapping[str, Any]]:
         response = self.describe(stream_name, stream_options)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)  # type: ignore[index]
-        return schema
+        return schema, response["fields"]
 
     def generate_schemas(self, stream_objects: Mapping[str, Any]) -> Mapping[str, Any]:
-        def load_schema(name: str, stream_options: Mapping[str, Any]) -> Tuple[str, Optional[Mapping[str, Any]], Optional[str]]:
+        def load_schema(name: str, stream_options: Mapping[str, Any]) -> Tuple[str, Optional[Mapping[str, Any]], Optional[Mapping[str, Any]], Optional[str]]:
             try:
-                result = self.generate_schema(stream_name=name, stream_options=stream_options)
+                result, fields = self.generate_schema(stream_name=name, stream_options=stream_options)
             except RequestException as e:
-                return name, None, str(e)
-            return name, result, None
+                return name, None, None, str(e)
+            return name, result, fields, None
 
         stream_names = list(stream_objects.keys())
         # try to split all requests by chunks
         stream_schemas = {}
+        stream_fields = {}
         for i in range(0, len(stream_names), self.parallel_tasks_size):
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
-                for stream_name, schema, err in executor.map(
+                for stream_name, schema, fields, err in executor.map(
                     lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
                 ):
                     if err:
                         self.logger.error(f"Loading error of the {stream_name} schema: {err}")
                         continue
                     stream_schemas[stream_name] = schema
-        return stream_schemas
+                    stream_fields[stream_name] = fields
+        return stream_schemas, stream_fields
 
     @staticmethod
     def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:

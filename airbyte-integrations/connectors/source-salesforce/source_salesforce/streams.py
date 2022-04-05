@@ -32,7 +32,7 @@ class SalesforceStream(HttpStream, ABC):
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(
-        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
+        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, describe_fields: List[Any] = [], **kwargs
     ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
@@ -40,6 +40,7 @@ class SalesforceStream(HttpStream, ABC):
         self.stream_name = stream_name
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
+        self.describe_fields = describe_fields
 
     @property
     def name(self) -> str:
@@ -92,7 +93,7 @@ class SalesforceStream(HttpStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
-            self.schema = self.sf_api.generate_schema(self.name)
+            self.schema, self.describe_fields = self.sf_api.generate_schema(self.name)
         return self.schema
 
     def read_records(
@@ -103,9 +104,11 @@ class SalesforceStream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         try:
-            yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
+            for record in super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+                record["_fields"] = self.describe_fields
+                yield record
+
         except exceptions.HTTPError as error:
             """
             There are several types of Salesforce sobjects that require additional processing:

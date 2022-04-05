@@ -46,11 +46,14 @@ class SourceSalesforce(AbstractSource):
     ) -> List[Stream]:
         """ "Generates a list of stream by their names. It can be used for different tests too"""
         authenticator = TokenAuthenticator(sf_object.access_token)
-        stream_properties = sf_object.generate_schemas(stream_objects)
+        stream_properties, stream_fields = sf_object.generate_schemas(stream_objects)
         streams = []
         for stream_name, sobject_options in stream_objects.items():
             streams_kwargs = {"sobject_options": sobject_options}
             stream_state = state.get(stream_name, {}) if state else {}
+
+            if config.get("include_field_metadata"):
+                streams_kwargs["describe_fields"] = stream_fields.get(stream_name, [])
 
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
             # Salesforce BULK API currently does not support loading fields with data type base64 and compound data
