@@ -1,31 +1,30 @@
-/*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
- */
-
 package io.airbyte.integrations.destination.aws_datalake;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
+
+
 import software.amazon.awssdk.services.glue.GlueClient;
-import software.amazon.awssdk.services.glue.model.BatchDeleteTableRequest;
 import software.amazon.awssdk.services.glue.model.GetTablesRequest;
+import software.amazon.awssdk.services.glue.paginators.GetTablesIterable;
 import software.amazon.awssdk.services.glue.model.GetTablesResponse;
 import software.amazon.awssdk.services.glue.model.Table;
-import software.amazon.awssdk.services.glue.paginators.GetTablesIterable;
+import software.amazon.awssdk.services.glue.model.BatchDeleteTableRequest;
+import software.amazon.awssdk.services.glue.model.GlueRequest;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class GlueHelper {
-
   private AwsCredentials awsCredentials;
   private Region region;
   private GlueClient glueClient;
 
   public GlueHelper(AwsCredentials credentials, Region region) {
     this.awsCredentials = credentials;
-    this.region = region;
+    this.region = region;    
 
     var credProvider = StaticCredentialsProvider.create(credentials);
     this.glueClient = GlueClient.builder().region(region).credentialsProvider(credProvider).build();
@@ -53,18 +52,17 @@ public class GlueHelper {
     return batchDeleteRequest;
   }
 
-  public void purgeDatabase(String databaseName) {
-    int countRetries = 0;
-    while (countRetries < 5) {
-      try {
-        GetTablesIterable allTables = getAllTables(databaseName);
-        BatchDeleteTableRequest batchDeleteTableRequest = getBatchDeleteRequest(databaseName, allTables);
-        glueClient.batchDeleteTable(batchDeleteTableRequest);
-        return;
-      } catch (Exception e) {
-        countRetries++;
-      }
+    public void purgeDatabase(String databaseName) {
+        int countRetries = 0;
+        while (countRetries < 5) {
+            try {
+                GetTablesIterable allTables = getAllTables(databaseName);
+                BatchDeleteTableRequest batchDeleteTableRequest = getBatchDeleteRequest(databaseName, allTables);
+                glueClient.batchDeleteTable(batchDeleteTableRequest);
+                return;
+            } catch (Exception e) {
+                countRetries++;
+            }
+        }
     }
-  }
-
 }

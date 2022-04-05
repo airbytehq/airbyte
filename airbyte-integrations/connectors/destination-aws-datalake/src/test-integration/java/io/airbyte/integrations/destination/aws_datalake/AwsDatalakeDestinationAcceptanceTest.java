@@ -1,30 +1,64 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package io.airbyte.integrations.destination.aws_datalake;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import com.google.common.collect.ImmutableMap;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.aws_datalake.AwsDatalakeDestinationConfig;
+import io.airbyte.integrations.destination.aws_datalake.AthenaHelper;
+import io.airbyte.integrations.destination.aws_datalake.GlueHelper;
+import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+
+// import com.amazonaws.auth.AWSCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.athena.model.ColumnInfo;
-import software.amazon.awssdk.services.athena.model.Datum;
 import software.amazon.awssdk.services.athena.model.GetQueryResultsResponse;
-import software.amazon.awssdk.services.athena.model.Row;
 import software.amazon.awssdk.services.athena.paginators.GetQueryResultsIterable;
+import software.amazon.awssdk.services.athena.model.ColumnInfo;
+import software.amazon.awssdk.services.athena.model.Row;
+import software.amazon.awssdk.services.athena.model.Datum;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import com.google.common.collect.Maps;
+
+//import com.amazonaws.auth.BasicAWSCredentials;
+import software.amazon.awssdk.regions.Region;
+
 
 public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -121,7 +155,7 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
 
   private static Object getTypedFieldValue(String typeName, String varCharValue) {
     if (varCharValue == null)
-      return null;
+      return null; 
     return switch (typeName) {
       case "real", "double", "float" -> Double.parseDouble(varCharValue);
       case "varchar" -> varCharValue;
@@ -147,12 +181,12 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
   @Override
   protected void setup(TestDestinationEnv testEnv) throws IOException {
     configJson = loadJsonFile(CONFIG_PATH);
+    
 
     this.config = AwsDatalakeDestinationConfig.getAwsDatalakeDestinationConfig(configJson);
 
     AwsBasicCredentials awsCreds = AwsBasicCredentials.create(config.getAccessKeyId(), config.getSecretAccessKey());
-    athenaHelper = new AthenaHelper(awsCreds, Region.US_EAST_1, String.format("s3://%s/airbyte_athena/", config.getBucketName()),
-        "AmazonAthenaLakeFormationPreview");
+    athenaHelper = new AthenaHelper(awsCreds, Region.US_EAST_1, String.format("s3://%s/airbyte_athena/", config.getBucketName()), "AmazonAthenaLakeFormationPreview");
     glueHelper = new GlueHelper(awsCreds, Region.US_EAST_1);
     glueHelper.purgeDatabase(config.getDatabaseName());
   }
