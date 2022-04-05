@@ -10,7 +10,6 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -292,24 +291,46 @@ public interface Configs {
   List<TolerationPOJO> getJobKubeTolerations();
 
   /**
-   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
+   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`. Used for the sync
+   * job and as fallback in case job specific (spec, check, discover) node selectors are not defined.
    */
-  Optional<Map<String, String>> getJobKubeNodeSelectors();
+  Map<String, String> getJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getSpecJobKubeNodeSelectors();
+  Map<String, String> getSpecJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Check job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getCheckJobKubeNodeSelectors();
+  Map<String, String> getCheckJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Discover job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors();
+  Map<String, String> getDiscoverJobKubeNodeSelectors();
+
+  /**
+   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`. Used for the sync job
+   * and as fallback in case job specific (spec, check, discover) annotations are not defined.
+   */
+  Map<String, String> getJobKubeAnnotations();
+
+  /**
+   * Define annotations for Spec job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getSpecJobKubeAnnotations();
+
+  /**
+   * Define annotations for Check job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getCheckJobKubeAnnotations();
+
+  /**
+   * Define annotations for Discover job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getDiscoverJobKubeAnnotations();
 
   /**
    * Define the Job pod connector image pull policy.

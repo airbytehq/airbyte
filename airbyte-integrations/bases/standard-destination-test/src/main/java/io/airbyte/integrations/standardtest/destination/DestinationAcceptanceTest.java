@@ -10,7 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -62,6 +64,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -69,10 +72,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +94,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class DestinationAcceptanceTest {
+public abstract class DestinationAcceptanceTest implements DateTimeConverter {
 
   private static final Random RANDOM = new Random();
   private static final String NORMALIZATION_VERSION = "dev";
@@ -102,6 +110,8 @@ public abstract class DestinationAcceptanceTest {
   protected Path localRoot;
   private ProcessFactory processFactory;
   private WorkerConfigs workerConfigs;
+
+  protected Map<String, String> dateTimeFieldNames = Collections.emptyMap();
 
   /**
    * Name of the docker image that the tests will run against.
@@ -369,6 +379,11 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+    if (requiresDateTimeConversionForSync()) {
+      dateTimeFieldNames = getDateTimeFieldsFormat(catalog.getStreams());
+      convertDateTimeFields(messages, dateTimeFieldNames);
+      deserializeNestedObjects(messages, null);
+    }
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
@@ -568,6 +583,11 @@ public abstract class DestinationAcceptanceTest {
 
     final String defaultSchema = getDefaultSchema(config);
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    if (requiresDateTimeConversionForNormalizedSync()) {
+      dateTimeFieldNames = getDateTimeFieldsFormat(catalog.getStreams());
+      convertDateTimeFields(messages, dateTimeFieldNames);
+      deserializeNestedObjects(messages, actualMessages);
+    }
     assertSameMessages(messages, actualMessages, true);
   }
 
@@ -1109,18 +1129,27 @@ public abstract class DestinationAcceptanceTest {
                                                          final List<AirbyteMessage> messages,
                                                          final String defaultSchema)
       throws Exception {
+    final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
+
+    assertSameMessages(messages, actualMessages, false);
+  }
+
+  protected List<AirbyteRecordMessage> retrieveRawRecords(final AirbyteCatalog catalog, final String defaultSchema)
+      throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
-      final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
-          .stream()
-          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
-          .collect(Collectors.toList());
+      final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema,
+          stream.getJsonSchema())
+              .stream()
+              .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema)
+                  .withData(data))
+              .toList();
       actualMessages.addAll(msgList);
     }
 
-    assertSameMessages(messages, actualMessages, false);
+    return actualMessages;
   }
 
   // ignores emitted at.
@@ -1133,11 +1162,15 @@ public abstract class DestinationAcceptanceTest {
         .peek(recordMessage -> recordMessage.setEmittedAt(null))
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(AirbyteRecordMessage::getData)
+        .peek(this::sortDataFields)
+        .sorted(Comparator.comparing(JsonNode::toString))
         .collect(Collectors.toList());
 
     final List<JsonNode> actualProcessed = actual.stream()
         .map(recordMessage -> pruneAirbyteInternalFields ? safePrune(recordMessage) : recordMessage)
         .map(AirbyteRecordMessage::getData)
+        .peek(this::sortDataFields)
+        .sorted(Comparator.comparing(JsonNode::toString))
         .collect(Collectors.toList());
 
     assertSameData(expectedProcessed, actualProcessed);
@@ -1170,13 +1203,27 @@ public abstract class DestinationAcceptanceTest {
         }
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
         assertTrue(actualData.has(key));
-        assertSameValue(expectedValue, actualValue);
+        assertSameValue(key, expectedValue, actualValue);
       }
     }
   }
 
+  /**
+   * Method that will sort all fields by name and rewrite JsonNode in sorted order
+   *
+   * @param data - data node from AirbyteMessage
+   */
+  protected void sortDataFields(JsonNode data) {
+    var sortedFields = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(),
+        Spliterator.ORDERED), false)
+        .sorted(Entry.comparingByKey(Comparator.comparing(String::toLowerCase))).toList();
+    ((ObjectNode) data).removeAll();
+    IntStream.range(0, sortedFields.size())
+        .forEach(i -> ((ObjectNode) data).set(sortedFields.get(i).getKey().toLowerCase(), sortedFields.get(i).getValue()));
+  }
+
   // Allows subclasses to implement custom comparison asserts
-  protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
+  protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
     assertEquals(expectedValue, actualValue);
   }
 
@@ -1378,6 +1425,40 @@ public abstract class DestinationAcceptanceTest {
     destination.notifyEndOfStream();
   }
 
+  /**
+   * This method goes through stream schemas and collect field names which format is "date" or
+   * "date-time"
+   *
+   * @return map where key is a field name and value is "date" or "date-time"
+   */
+  protected static Map<String, String> getDateTimeFieldsFormat(final List<AirbyteStream> streams) {
+    final Map<String, String> fieldFormats = new HashMap<>();
+
+    streams.stream().map(AirbyteStream::getJsonSchema).forEach(streamSchema -> {
+      findDateTimeFields(streamSchema, fieldFormats, StringUtils.EMPTY);
+    });
+
+    return fieldFormats;
+  }
+
+  private static void findDateTimeFields(JsonNode streamSchema, Map<String, String> fieldFormats, String parent) {
+    final JsonNode fieldDefinitions = streamSchema.get("properties");
+    final Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
+    while (iterator.hasNext()) {
+      Map.Entry<String, JsonNode> entry = iterator.next();
+      if (entry.getValue().has("type") && entry.getValue().get("type").asText().equals("object")
+          && entry.getValue().has("properties")) {
+        findDateTimeFields(entry.getValue(), fieldFormats, parent + "/" + entry.getKey());
+      }
+      if (entry.getValue().has("format")) {
+        String format = entry.getValue().get("format").asText();
+        if (format.equalsIgnoreCase("date") || format.equalsIgnoreCase("date-time")) {
+          fieldFormats.put(parent + "/" + entry.getKey(), format);
+        }
+      }
+    }
+  }
+
   private final static String LOREM_IPSUM =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque malesuada lacinia aliquet. Nam feugiat mauris vel magna dignissim feugiat. Nam non dapibus sapien, ac mattis purus. Donec mollis libero erat, a rutrum ipsum pretium id. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer nec aliquam leo. Aliquam eu dictum augue, a ornare elit.\n"
           + "\n"
@@ -1466,6 +1547,46 @@ public abstract class DestinationAcceptanceTest {
       }
     });
     return airbyteMessages;
+  }
+
+  /**
+   * Converts serialized json blob for nested object to real json object. E.g. {"key":
+   * "{\"nestedObject\" : \"one\"}"} will be converted to {"key": {"nestedObject" : "one"}} This
+   * method goes through @messages and store names of nested object fields to the set. After that it
+   * goes through
+   *
+   * @actualMessages and deserialize jsonb string fields from set, to JsonNode
+   *
+   * @param messages from edge_case_messages.txt
+   * @param actualMessages fetched messages from destination which could contain serialized json
+   *        objects
+   */
+  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
+    HashSet<String> nestedFieldNames = new HashSet<>();
+    for (AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        var iterator = message.getRecord().getData().fieldNames();
+        while (iterator.hasNext()) {
+          var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            nestedFieldNames.add(fieldName);
+          }
+        }
+      }
+    }
+    if (actualMessages != null) {
+      for (AirbyteRecordMessage message : actualMessages) {
+        nestedFieldNames.stream().filter(name -> message.getData().has(name)).forEach(name -> {
+          String data = message.getData().get(name).asText();
+          try {
+            ((ObjectNode) message.getData()).set(name,
+                new ObjectMapper().readTree(data));
+          } catch (JsonProcessingException e) {
+            e.printStackTrace();
+          }
+        });
+      }
+    }
   }
 
 }
