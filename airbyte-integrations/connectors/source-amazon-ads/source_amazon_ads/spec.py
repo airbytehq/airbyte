@@ -14,17 +14,11 @@ class AmazonAdsConfig(BaseModel):
 
     client_id: str = Field(
         name="Client ID",
-        description=(
-            'Oauth client id <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">'
-            "How to create your Login with Amazon</a>"
-        ),
+        description=("The Client ID of your Amazon developer application."),
     )
     client_secret: str = Field(
         name="Client secret",
-        description=(
-            'Oauth client secret <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">'
-            "How to create your Login with Amazon</a>"
-        ),
+        description=("The Client Secret of your Amazon developer application."),
         airbyte_secret=True,
     )
 
@@ -44,8 +38,7 @@ class AmazonAdsConfig(BaseModel):
     refresh_token: str = Field(
         name="Oauth refresh token",
         description=(
-            'Oauth 2.0 refresh_token, <a href="https://developer.amazon.com/docs/login-with-amazon/conceptual-overview.html">'
-            "read details here</a>"
+            'Amazon  Ads Refresh Token. See the <a href="https://docs.airbyte.io/integrations/sources/amazon-ads">docs</a> for more information on how to obtain this token.'
         ),
         airbyte_secret=True,
     )
@@ -53,7 +46,7 @@ class AmazonAdsConfig(BaseModel):
     start_date: str = Field(
         None,
         name="Start date",
-        description="Start date for collectiong reports, should not be more than 60 days in past. In YYYY-MM-DD format",
+        description="Start date for collecting reports, should not be more than 60 days in past. In YYYY-MM-DD format",
         examples=["2022-10-10", "2022-10-22"],
     )
 
@@ -62,7 +55,7 @@ class AmazonAdsConfig(BaseModel):
     profiles: List[int] = Field(
         None,
         name="Profile Ids",
-        description="profile Ids you want to fetch data for",
+        description="Profile IDs you want to fetch data for.",
     )
 
     report_wait_timeout: int = Field(
