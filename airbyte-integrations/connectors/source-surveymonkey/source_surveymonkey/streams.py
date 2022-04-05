@@ -5,6 +5,7 @@
 import tempfile
 import urllib.parse
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -249,13 +250,20 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         """
         survey_id = latest_record.get("survey_id")
         latest_cursor_value = latest_record.get(self.cursor_field)
+
         current_stream_state = current_stream_state or {}
         current_state = current_stream_state.get(survey_id) if current_stream_state else None
         if current_state:
             current_state = current_state.get(self.cursor_field)
         current_state_value = current_state or latest_cursor_value
         max_value = max(current_state_value, latest_cursor_value)
-        new_value = {self.cursor_field: max_value}
+
+        # API pulls records ON and after this date, so add one second to prevent duplicate responses
+        updated_max_value = (datetime.strptime(max_value, "%Y-%m-%dT%H:%M:%S+00:00") + timedelta(seconds=1)).strftime(
+            "%Y-%m-%dT%H:%M:%S+00:00"
+        )
+
+        new_value = {self.cursor_field: updated_max_value}
 
         current_stream_state[survey_id] = new_value
         return current_stream_state
@@ -264,6 +272,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         params = super().request_params(stream_state=stream_state, **kwargs)
 
         since_value_surv = stream_state.get(stream_slice["survey_id"])
+
         if since_value_surv:
             since_value = (
                 pendulum.parse(since_value_surv.get(self.cursor_field)) if since_value_surv.get(self.cursor_field) else self._start_date
@@ -271,5 +280,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
             since_value = max(since_value, self._start_date)
         else:
             since_value = self._start_date
+
         params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
+
         return params
