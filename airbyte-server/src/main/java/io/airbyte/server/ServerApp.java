@@ -101,6 +101,8 @@ public class ServerApp implements ServerRunnable {
 
     final ResourceConfig rc =
         new ResourceConfig()
+            .register(new CorsFilter())
+            .register(new AuthenticationFilter())
             .register(new RequestLogger(mdc))
             .register(InvalidInputExceptionMapper.class)
             .register(InvalidJsonExceptionMapper.class)
