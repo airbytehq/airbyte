@@ -2,7 +2,11 @@ import {
   ConnectionConfiguration,
   ConnectionSpecification,
 } from "core/domain/connection";
-import { DestinationSyncMode } from "core/domain/catalog";
+import {
+  DestinationSyncMode,
+  SourceDiscoverSchemaRead,
+} from "core/domain/catalog";
+import { JobInfo } from "../job";
 
 export enum ReleaseStage {
   "ALPHA" = "alpha",
@@ -118,4 +122,17 @@ export interface Destination {
   workspaceId: string;
   destinationDefinitionId: string;
   connectionConfiguration: ConnectionConfiguration;
+}
+
+export type ConnectorT = Destination | Source;
+
+export interface Scheduler {
+  status: string;
+  message: string;
+  jobInfo?: JobInfo;
+}
+
+export interface Schema extends SourceDiscoverSchemaRead {
+  // TODO: probably this could be removed. Legacy proper that was used in rest-hooks
+  id: string;
 }

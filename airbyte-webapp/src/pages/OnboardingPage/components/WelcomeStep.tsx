@@ -9,7 +9,7 @@ import { BigButton } from "components/CenteredPageComponents";
 import { useConfig } from "config";
 
 type WelcomeStepProps = {
-  onSubmit: () => void;
+  onNextStep: () => void;
   userName?: string;
 };
 
@@ -23,7 +23,7 @@ const Videos = styled.div`
   margin: 20px 0 67px;
 `;
 
-const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
+const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
   const config = useConfig();
 
   return (
@@ -66,7 +66,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
           link={config.ui.demoLink}
         />
       </Videos>
-      <BigButton onClick={onSubmit} shadow>
+      <BigButton onClick={onNextStep} shadow>
         <FormattedMessage id="onboarding.firstConnection" />
       </BigButton>
     </>

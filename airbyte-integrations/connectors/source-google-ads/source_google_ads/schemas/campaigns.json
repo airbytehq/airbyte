@@ -35,6 +35,9 @@
     "campaign.campaign_budget": {
       "type": ["null", "string"]
     },
+    "campaign_budget.amount_micros": {
+      "type": ["null", "integer"]
+    },
     "campaign.commission.commission_rate_micros": {
       "type": ["null", "integer"]
     },
