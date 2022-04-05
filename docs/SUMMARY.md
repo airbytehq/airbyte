@@ -75,7 +75,7 @@
     * [Freshdesk](integrations/sources/freshdesk.md)
     * [Freshsales](integrations/sources/freshsales.md)
     * [Freshservice](integrations/sources/freshservice.md)
-    * [Gas Prices](integrations/sources/gas-prices.md)
+    * [USA Gas Prices](integrations/sources/gas-prices.md)
     * [GitHub](integrations/sources/github.md)
     * [GitLab](integrations/sources/gitlab.md)
     * [Google Ads](integrations/sources/google-ads.md)

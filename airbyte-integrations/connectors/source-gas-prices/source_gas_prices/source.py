@@ -13,9 +13,8 @@ from requests.auth import HTTPBasicAuth
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.models import SyncMode
 # from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-from .helpers import Helpers
 from . import state_code_list
 
 
@@ -56,6 +55,11 @@ class Prices(HttpStream, ABC):
 
         return {"state": self.state_code}
 
+    def read_records(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        if sync_mode == SyncMode.full_refresh:
+            stream_state = None
+        return super().read_records(sync_mode, stream_state=stream_state, **kwargs)
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         
         return [response.json()]
@@ -65,17 +69,19 @@ class Prices(HttpStream, ABC):
 # Source
 class SourceGasPrices(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-            api_key = config["api_key"]
-            state = config["state"]
 
-            if state not in state_code_list.STATE_CODE_LIST:
+            state_code = config["state"]
+            api_key = config["api_key"]
+
+            if state_code not in state_code_list.STATE_CODE_LIST:
                 return False, "Not a valid USA State code"
-            
             try:
-                Helpers.get_states(state, api_key)
-            except Exception as e:
-                return False, str(e)
-            return True, None
+                stream = Prices(state_code, api_key)
+                records = stream.read_records(sync_mode=SyncMode.full_refresh)
+                next(records)
+                return True, None
+            except requests.exceptions.RequestException as e:
+                return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [Prices(config["state"], config["api_key"])]

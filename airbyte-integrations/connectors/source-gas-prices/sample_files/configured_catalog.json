@@ -9,6 +9,9 @@
             "properties": {
               "state_code": {
                 "type": "string"
+              },
+              "api_key": {
+                "type": "string"
               }
             }
           },

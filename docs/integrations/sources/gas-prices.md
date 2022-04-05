@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the [Asana API](https://developers.asana.com/docs). It supports only Full Refresh syncs.
+This source can sync data for the [Gas Prices API](https://www.collectapi.com/api/gasPrice/gas-prices-api/). It supports only Full Refresh syncs.
 
 ### Output schema
 
