@@ -291,8 +291,8 @@ public interface Configs {
   List<TolerationPOJO> getJobKubeTolerations();
 
   /**
-   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
-   * Used for the sync job and as fallback in case job specific (spec, check, discover) node selectors are not defined.
+   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`. Used for the sync
+   * job and as fallback in case job specific (spec, check, discover) node selectors are not defined.
    */
   Map<String, String> getJobKubeNodeSelectors();
 
@@ -312,8 +312,8 @@ public interface Configs {
   Map<String, String> getDiscoverJobKubeNodeSelectors();
 
   /**
-   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`.
-   * Used for the sync job and as fallback in case job specific (spec, check, discover) annotations are not defined.
+   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`. Used for the sync job
+   * and as fallback in case job specific (spec, check, discover) annotations are not defined.
    */
   Map<String, String> getJobKubeAnnotations();
 
