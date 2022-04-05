@@ -28,7 +28,8 @@ def add_venv_to_xml_root(module: str, module_full_path: str, python_version: str
 
 
 def create_parser():
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument("-python", required=True, help="Python version")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-modules', nargs='?', help='Modules to add')
     group.add_argument('--all-modules', action='store_true')
@@ -36,10 +37,9 @@ def create_parser():
     parser.add_argument("-input", help="Path to input jdk table")
     parser.add_argument("-intellij-version", help="Intellij version to use")
     parser.add_argument("-output", help="Path to output jdk table")
-    parser.add_argument("-python", required=True, help="Python version")
     parser.add_argument(INTELLIJ_VERSION_FLAG, help="Instance of IntelliJ to update")
 
-    parser.add_argument('-airbyte', help='Path to Airbyte root directory')
+    parser.add_argument('-airbyte', default=f"{os.path.dirname(__file__)}/../..", help='Path to Airbyte root directory')
     return parser
 
 
@@ -65,11 +65,10 @@ if __name__ == "__main__":
                 f"Please select which instance of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}")
             sys.exit(-1)
         input_path = f"{path_to_intellij_settings}/{intellij_instance_to_update}/options/jdk.table.xml"
-        print(input_path)
-        exit(0)
+
     output_path = args.output
     if output_path is None:
-        output_path = args.input
+        output_path = input_path
 
     if args.all_modules:
         print(path_to_connectors)
