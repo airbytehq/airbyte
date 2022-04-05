@@ -16,6 +16,11 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/amazonsqs
   icon: amazonsqs.svg
+- name: AWS Datalake
+  destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
+  dockerRepository: airbyte/destination-aws-datalake
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/aws-datalake
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
@@ -78,7 +83,7 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.24
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
   resourceRequirements:
@@ -96,7 +101,7 @@
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
   icon: googlepubsub.svg
 - name: Kafka

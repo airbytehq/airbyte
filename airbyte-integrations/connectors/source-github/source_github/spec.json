@@ -41,8 +41,8 @@
               "option_title": {
                 "type": "string",
                 "const": "PAT Credentials",
-                "enum": ["PAT Credential"],
-                "default": "PAT Credential",
+                "enum": ["PAT Credentials"],
+                "default": "PAT Credentials",
                 "order": 0
               },
               "personal_access_token": {

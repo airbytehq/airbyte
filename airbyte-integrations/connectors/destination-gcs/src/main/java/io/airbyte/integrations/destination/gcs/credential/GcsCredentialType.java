@@ -4,6 +4,6 @@
 
 package io.airbyte.integrations.destination.gcs.credential;
 
-public enum GcsCredential {
+public enum GcsCredentialType {
   HMAC_KEY
 }
