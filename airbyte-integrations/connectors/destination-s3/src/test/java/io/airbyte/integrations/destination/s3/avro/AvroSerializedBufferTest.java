@@ -49,13 +49,12 @@ public class AvroSerializedBufferTest {
       Field.of("another field", JsonSchemaType.BOOLEAN),
       Field.of("nested_column", JsonSchemaType.OBJECT));
   private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
-  private static final String AVRO_FILE_EXTENSION = ".avro";
 
   @Test
   public void testSnappyAvroWriter() throws Exception {
     final S3AvroFormatConfig config = new S3AvroFormatConfig(Jsons.jsonNode(Map.of("compression_codec", Map.of(
         "codec", "snappy"))));
-    runTest(new InMemoryBuffer(AVRO_FILE_EXTENSION), 965L, 980L, config, getExpectedString());
+    runTest(new InMemoryBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 965L, 980L, config, getExpectedString());
   }
 
   @Test
@@ -64,14 +63,14 @@ public class AvroSerializedBufferTest {
         "codec", "zstandard",
         "compression_level", 20,
         "include_checksum", true))));
-    runTest(new FileBuffer(AVRO_FILE_EXTENSION), 970L, 980L, config, getExpectedString());
+    runTest(new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 970L, 980L, config, getExpectedString());
   }
 
   @Test
   public void testUncompressedAvroWriter() throws Exception {
     final S3AvroFormatConfig config = new S3AvroFormatConfig(Jsons.jsonNode(Map.of("compression_codec", Map.of(
         "codec", "no compression"))));
-    runTest(new InMemoryBuffer(AVRO_FILE_EXTENSION), 1010L, 1020L, config, getExpectedString());
+    runTest(new InMemoryBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 1010L, 1020L, config, getExpectedString());
   }
 
   private static String getExpectedString() {

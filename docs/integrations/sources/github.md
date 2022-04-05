@@ -111,6 +111,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.27  | 2022-04-02 | [11678](https://github.com/airbytehq/airbyte/pull/11678) | Fix "PAT Credentials" in spec                                                                              |
 | 0.2.26  | 2022-03-31 | [11623](https://github.com/airbytehq/airbyte/pull/11623) | Re-factored incremental sync for `Reviews` stream                                                          |
 | 0.2.25  | 2022-03-31 | [11567](https://github.com/airbytehq/airbyte/pull/11567) | Improve code for better error handling                                                                     |
 | 0.2.24  | 2022-03-30 | [9251](https://github.com/airbytehq/airbyte/pull/9251) | Add Streams Workflow and WorkflowRuns                                                                        |
