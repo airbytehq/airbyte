@@ -63,7 +63,7 @@ services:
         JDK_VERSION: ${JDK_VERSION}
       context: airbyte-server
       labels:
-        io.airbyte.git-revision: ${GIT_REVISIO}
+        io.airbyte.git-revision: ${GIT_REVISION}
   webapp:
     platform: linux/amd64
     image: airbyte/webapp:${VERSION}
