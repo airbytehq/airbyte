@@ -2,6 +2,8 @@ import argparse
 import os
 import xml.etree.ElementTree as ET
 
+INTELLIJ_VERSION_FLAG = "-version"
+
 
 def add_venv_to_xml_root(module: str, module_full_path: str, python_version: str, xml_root):
     table = xml_root.find("component")
@@ -31,9 +33,11 @@ def create_parser():
     group.add_argument('-modules', nargs='?', help='Modules to add')
     group.add_argument('--all-modules', action='store_true')
 
-    parser.add_argument("-input", required=True, help="Path to input jdk table")
+    parser.add_argument("-input", help="Path to input jdk table")
+    parser.add_argument("-intellij-version", help="Intellij version to use")
     parser.add_argument("-output", help="Path to output jdk table")
     parser.add_argument("-python", required=True, help="Python version")
+    parser.add_argument(INTELLIJ_VERSION_FLAG, help="Instance of IntelliJ to update")
 
     parser.add_argument('-airbyte', help='Path to Airbyte root directory')
     return parser
@@ -45,6 +49,24 @@ if __name__ == "__main__":
 
     path_to_connectors = f"{args.airbyte}/airbyte-integrations/connectors/"
 
+    input_path = args.input
+    if input_path is None:
+        home_directory = os.getenv('HOME')
+        path_to_intellij_settings = f"{home_directory}/Library/Application Support/JetBrains/"
+        intellij_versions = next(os.walk(path_to_intellij_settings))[1]
+        intellij_versions = [iv for iv in intellij_versions if iv != "consentOptions"]
+        if args.version in intellij_versions:
+            intellij_instance_to_update = args.version
+        elif len(intellij_versions) == 1:
+            intellij_instance_to_update = intellij_versions[1]
+            print(intellij_instance_to_update)
+        else:
+            print(
+                f"Please select which instance of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}")
+            sys.exit(-1)
+        input_path = f"{path_to_intellij_settings}/{intellij_instance_to_update}/options/jdk.table.xml"
+        print(input_path)
+        exit(0)
     output_path = args.output
     if output_path is None:
         output_path = args.input
@@ -54,7 +76,7 @@ if __name__ == "__main__":
         modules = next(os.walk(path_to_connectors))[1]
     else:
         modules = args.modules.split(",")
-    with open(args.input, 'r') as f:
+    with open(input_path, 'r') as f:
         root = ET.fromstring(f.read())
 
         for module in modules:
