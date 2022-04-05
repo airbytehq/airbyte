@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import xml.etree.ElementTree as ET
 
 INTELLIJ_VERSION_FLAG = "-version"
@@ -27,6 +28,13 @@ def add_venv_to_xml_root(module: str, module_full_path: str, python_version: str
                                           })
 
 
+def get_output_path(input_path, output_path):
+    if output_path is None:
+        return input_path
+    else:
+        return output_path
+
+
 def create_parser():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-python", required=True, help="Python version")
@@ -43,32 +51,40 @@ def create_parser():
     return parser
 
 
-if __name__ == "__main__":
+def parse_args(args):
     parser = create_parser()
-    args = parser.parse_args()
+    return parser.parse_args(args)
+
+
+def get_input_path(input_from_args, version):
+    if input_from_args is not None:
+        return input_from_args
+    else:
+        home_directory = os.getenv('HOME')
+        path_to_intellij_settings = f"{home_directory}/Library/Application Support/JetBrains/"
+        walk = os.walk(path_to_intellij_settings)
+        intellij_versions = [version for version in next(walk)[1] if version != "consentOptions"]
+        print(intellij_versions)
+        if version in intellij_versions:
+            intellij_instance_to_update = version
+        elif len(intellij_versions) == 1:
+            intellij_instance_to_update = intellij_versions[0]
+            print(intellij_instance_to_update)
+        else:
+            msg = f"Please select which instance of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}"
+            print(msg)
+            raise RuntimeError(msg)
+        return f"{path_to_intellij_settings}{intellij_instance_to_update}/options/jdk.table.xml"
+
+
+if __name__ == "__main__":
+    args = parse_args(sys.argv[1:])
 
     path_to_connectors = f"{args.airbyte}/airbyte-integrations/connectors/"
 
-    input_path = args.input
-    if input_path is None:
-        home_directory = os.getenv('HOME')
-        path_to_intellij_settings = f"{home_directory}/Library/Application Support/JetBrains/"
-        intellij_versions = next(os.walk(path_to_intellij_settings))[1]
-        intellij_versions = [iv for iv in intellij_versions if iv != "consentOptions"]
-        if args.version in intellij_versions:
-            intellij_instance_to_update = args.version
-        elif len(intellij_versions) == 1:
-            intellij_instance_to_update = intellij_versions[1]
-            print(intellij_instance_to_update)
-        else:
-            print(
-                f"Please select which instance of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}")
-            sys.exit(-1)
-        input_path = f"{path_to_intellij_settings}/{intellij_instance_to_update}/options/jdk.table.xml"
+    input_path = get_input_path(args.input, args.version)
 
-    output_path = args.output
-    if output_path is None:
-        output_path = input_path
+    output_path = get_output_path(input_path, args.output)
 
     if args.all_modules:
         print(path_to_connectors)
@@ -89,3 +105,53 @@ if __name__ == "__main__":
                 print(f"Skipping {module}")
         with open(output_path, 'w') as fout:
             fout.write(ET.tostring(root, encoding="unicode"))
+
+
+# --- tests ---
+def setup_module():
+    global pytest
+    global mock
+
+
+if "pytest" in sys.argv[0]:
+    import unittest
+
+
+    class TestNoneTypeError(unittest.TestCase):
+        def test_get_output_path(self):
+            input_path = "/input_path"
+            output_path = get_output_path(input_path, None)
+            assert input_path == output_path
+
+        def test_output_is_input_if_not_set(self):
+            input_path = "/input_path"
+            output_path = "/input_path"
+            assert output_path == get_output_path(input_path, output_path)
+
+        @unittest.mock.patch('os.walk')
+        def test_input_is_selected(self, mock_os):
+            os.walk.return_value = iter(
+                (('./test1', ['consentOptions', 'IdeaIC2021.3', "PyCharmCE2021.3"], []),))
+            input_from_args = None
+            version = "IdeaIC2021.3"
+            input_path = get_input_path(input_from_args, version)
+            assert "/Users/alex/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
+
+        @unittest.mock.patch('os.walk')
+        def test_input_single_intellij_version(self, mock_os):
+            os.walk.return_value = iter(
+                (('./test1', ['consentOptions', 'IdeaIC2021.3'], []),))
+            input_from_args = None
+
+            version = None
+            input_path = get_input_path(input_from_args, version)
+            assert "/Users/alex/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
+
+        @unittest.mock.patch('os.walk')
+        def test_input_multiple_intellij_versions(self, mock_os):
+            os.walk.return_value = iter(
+                (('./test1', ['consentOptions', 'IdeaIC2021.3', "PyCharmCE2021.3"], []),))
+            input_from_args = None
+
+            version = None
+            self.assertRaises(RuntimeError, get_input_path, input_from_args, version)
