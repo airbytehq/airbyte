@@ -6,12 +6,13 @@ import ConnectorForm from "./components/ConnectorForm";
 
 import { Modal } from "components";
 import useRequestConnector from "hooks/services/useRequestConnector";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { Values } from "./types";
 
 type RequestConnectorModalProps = {
   onClose: () => void;
   connectorType: "source" | "destination";
+  initialName?: string;
 };
 const Content = styled.div`
   width: 492px;
@@ -21,11 +22,11 @@ const Content = styled.div`
 const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
   onClose,
   connectorType,
+  initialName,
 }) => {
   const [hasFeedback, setHasFeedback] = useState(false);
   const { requestConnector } = useRequestConnector();
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const onSubmit = (values: Values) => {
     requestConnector(values);
     setHasFeedback(true);
@@ -46,9 +47,9 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
           onSubmit={onSubmit}
           onCancel={onClose}
           currentValues={{
-            connectorType: connectorType,
-            name: "",
-            website: "",
+            connectorType,
+            name: initialName ?? "",
+            additionalInfo: "",
             email: workspace.email,
           }}
           hasFeedback={hasFeedback}

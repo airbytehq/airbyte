@@ -23,7 +23,6 @@ class Price(HttpStream, ABC):
     Based on the documentation found at https://stackoverflow.com/questions/44030983/yahoo-finance-url-not-working.
     """
 
-
     url_base = "https://query1.finance.yahoo.com/"
     primary_key = None
 
@@ -35,10 +34,7 @@ class Price(HttpStream, ABC):
         self.range = range
 
     def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         next_index = next_page_token or 0  # At the first request next_page_token is None
         return f"v8/finance/chart/{self.tickers[next_index]}"
@@ -54,10 +50,7 @@ class Price(HttpStream, ABC):
         return self.next_index
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         next_index = next_page_token or 0  # At the first request next_page_token is None
         return {
@@ -68,10 +61,7 @@ class Price(HttpStream, ABC):
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         base_headers = super().request_headers(**kwargs)
-        headers = {
-            "Accept": "application/json",
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)" # Required to avoid 403 response
-        }
+        headers = {"Accept": "application/json", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"}  # Required to avoid 403 response
         return {**base_headers, **headers}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -84,17 +74,14 @@ class Price(HttpStream, ABC):
 class SourceYahooFinancePrice(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         # Check that the tickers are valid
-        tickers = list(map(str.strip, config["tickers"].split(',')))
+        tickers = list(map(str.strip, config["tickers"].split(",")))
         if len(tickers) == 0:
             return False, "No valid tickers provided"
         for ticker in tickers:
             # Check that yahoo finance has the ticker
             response = requests.get(
                 url=f"https://query1.finance.yahoo.com/v6/finance/autocomplete?query={ticker}&lang=en",
-                headers={
-                    "Accept": "application/json",
-                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)" # Required to avoid 403 response
-                }
+                headers={"Accept": "application/json", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"},  # Required to avoid 403 response
             )
             if response.status_code != 200:
                 return False, f"Ticker {ticker} not found"
@@ -105,7 +92,7 @@ class SourceYahooFinancePrice(AbstractSource):
                 return False, f"Invalid check response format for ticker {ticker}"
             if len(response_json["ResultSet"]["Result"]) == 0:
                 return False, f"Ticker {ticker} not found"
-            
+
         # Check that the range parameter is configured according to the interval parameter
         # If the range DOES NOT end in "d" we cannot use minute intervals (end in "m")
         if "interval" in config and "range" in config:
@@ -116,8 +103,8 @@ class SourceYahooFinancePrice(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = {
             # Split tickers by comma and strip whitespaces
-            "tickers": list(map(str.strip, config["tickers"].split(','))),
+            "tickers": list(map(str.strip, config["tickers"].split(","))),
             "interval": config.get("interval", "7d"),
-            "range": config.get("range", "1m")
+            "range": config.get("range", "1m"),
         }
         return [Price(**args)]

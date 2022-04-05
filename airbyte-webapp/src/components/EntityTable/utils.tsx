@@ -1,4 +1,4 @@
-import { Connection } from "core/resources/Connection";
+import { Connection } from "core/domain/connection";
 import Status from "core/statuses";
 import {
   ITableDataItem,
