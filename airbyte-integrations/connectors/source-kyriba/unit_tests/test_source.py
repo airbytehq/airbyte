@@ -13,6 +13,13 @@ config = {
     "start_date": "2022-01-01",
 }
 
+config = {
+    "username": "username",
+    "password": "password",
+    "domain": "demo.kyriba.com",
+    "version": 1,
+    "start_date": "2022-01-01",
+}
 
 def test_check_connection(mocker):
     source = SourceKyriba()
