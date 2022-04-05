@@ -2009,7 +2009,7 @@ paths:
               $ref: "#/components/schemas/WebBackendWorkspaceState"
       responses:
         "200":
-          description: Successfull operation
+          description: Successful operation
           content:
             application/json:
               schema:

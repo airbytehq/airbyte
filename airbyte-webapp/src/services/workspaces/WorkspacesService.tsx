@@ -24,6 +24,8 @@ export const workspaceKeys = {
   list: (filters: string) => [...workspaceKeys.lists(), { filters }] as const,
   detail: (workspaceId: string) =>
     [...workspaceKeys.all, "details", workspaceId] as const,
+  state: (workspaceId: string) =>
+    [...workspaceKeys.all, "state", workspaceId] as const,
 };
 
 type Context = {
@@ -114,12 +116,16 @@ export const useCurrentWorkspaceState = (): WorkspaceState => {
   const workspaceId = useCurrentWorkspaceId();
   const service = useWorkspaceApiService();
 
-  return (useQuery(["todo"], () => service.getState(workspaceId), {
-    // We want to keep this query only shortly in cache, so we refetch
-    // the data whenever the user might have changed sources/destinations/connections
-    // without requiring to manually invalidate that query on each change.
-    cacheTime: 5 * 1000,
-  }) as QueryObserverSuccessResult<WorkspaceState>).data;
+  return (useQuery(
+    workspaceKeys.state(workspaceId),
+    () => service.getState(workspaceId),
+    {
+      // We want to keep this query only shortly in cache, so we refetch
+      // the data whenever the user might have changed sources/destinations/connections
+      // without requiring to manually invalidate that query on each change.
+      cacheTime: 5 * 1000,
+    }
+  ) as QueryObserverSuccessResult<WorkspaceState>).data;
 };
 
 export const useListWorkspaces = (): Workspace[] => {
