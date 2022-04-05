@@ -215,6 +215,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: CONTAINER_ORCHESTRATOR_ENABLED
+            - name: JOB_KUBE_SERVICE_ACCOUNT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: JOB_SERVICE_ACCOUNT_NAME
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

@@ -159,7 +159,7 @@ public class EnvConfigs implements Configs {
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
 
   private static final String JOB_KUBE_SERVICE_ACCOUNT_NAME = "JOB_KUBE_SERVICE_ACCOUNT_NAME";
-  private static final DEFAULT_SERVICE_ACCOUNT_NAME = "airbyte-admin";
+  private static final String DEFAULT_SERVICE_ACCOUNT_NAME = "airbyte-admin";
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
