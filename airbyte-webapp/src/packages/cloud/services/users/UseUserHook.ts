@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useGetUserService } from "./UserService";
 import { SCOPE_WORKSPACE } from "services/Scope";
+
 import { useSuspenseQuery } from "../../../../services/connector/useSuspenseQuery";
+import { useGetUserService } from "./UserService";
 
 export const userKeys = {
   all: [SCOPE_WORKSPACE, "users"] as const,
@@ -17,9 +18,7 @@ export const useListUsers = () => {
   const userService = useGetUserService();
   const { workspaceId } = useCurrentWorkspace();
 
-  return useSuspenseQuery(userKeys.list(workspaceId), () =>
-    userService.listByWorkspaceId(workspaceId)
-  );
+  return useSuspenseQuery(userKeys.list(workspaceId), () => userService.listByWorkspaceId(workspaceId));
 };
 
 export const useUserHook = () => {
@@ -28,8 +27,7 @@ export const useUserHook = () => {
 
   return {
     removeUserLogic: useMutation(
-      async (payload: { email: string; workspaceId: string }) =>
-        service.remove(payload.workspaceId, payload.email),
+      async (payload: { email: string; workspaceId: string }) => service.remove(payload.workspaceId, payload.email),
       {
         onSuccess: async () => {
           await queryClient.invalidateQueries(userKeys.lists());

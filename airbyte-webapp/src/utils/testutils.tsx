@@ -19,10 +19,7 @@ type WrapperProps = {
   children?: React.ReactNode;
 };
 
-export function render(
-  ui: React.ReactNode,
-  renderOptions?: RenderOptions
-): RenderResult {
+export function render(ui: React.ReactNode, renderOptions?: RenderOptions): RenderResult {
   function Wrapper({ children }: WrapperProps) {
     return (
       <TestWrapper>

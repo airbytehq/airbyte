@@ -1,17 +1,18 @@
+import { QueryObserverResult, useQuery } from "react-query";
+
 import { SourceDefinitionSpecification } from "core/domain/connector";
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { isDefined } from "utils/common";
+
 import { SCOPE_WORKSPACE } from "../Scope";
 import { useSuspenseQuery } from "./useSuspenseQuery";
-import { QueryObserverResult, useQuery } from "react-query";
 
 export const sourceDefinitionSpecificationKeys = {
   all: [SCOPE_WORKSPACE, "sourceDefinitionSpecification"] as const,
-  detail: (id: string | number) =>
-    [...sourceDefinitionSpecificationKeys.all, "details", id] as const,
+  detail: (id: string | number) => [...sourceDefinitionSpecificationKeys.all, "details", id] as const,
 };
 
 function useGetService(): SourceDefinitionSpecificationService {
@@ -20,20 +21,15 @@ function useGetService(): SourceDefinitionSpecificationService {
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () =>
-      new SourceDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
+    () => new SourceDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
     [apiUrl, requestAuthMiddleware]
   );
 }
 
-export const useGetSourceDefinitionSpecification = (
-  id: string
-): SourceDefinitionSpecification => {
+export const useGetSourceDefinitionSpecification = (id: string): SourceDefinitionSpecification => {
   const service = useGetService();
 
-  return useSuspenseQuery(sourceDefinitionSpecificationKeys.detail(id), () =>
-    service.get(id)
-  );
+  return useSuspenseQuery(sourceDefinitionSpecificationKeys.detail(id), () => service.get(id));
 };
 
 export const useGetSourceDefinitionSpecificationAsync = (
@@ -42,11 +38,7 @@ export const useGetSourceDefinitionSpecificationAsync = (
   const service = useGetService();
 
   const escapedId = id ?? "";
-  return useQuery(
-    sourceDefinitionSpecificationKeys.detail(escapedId),
-    () => service.get(escapedId),
-    {
-      enabled: isDefined(id),
-    }
-  );
+  return useQuery(sourceDefinitionSpecificationKeys.detail(escapedId), () => service.get(escapedId), {
+    enabled: isDefined(id),
+  });
 };

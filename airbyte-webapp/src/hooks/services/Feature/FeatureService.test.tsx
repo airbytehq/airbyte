@@ -1,13 +1,11 @@
 import React from "react";
 import { act, renderHook } from "@testing-library/react-hooks";
-import {
-  FeatureService,
-  useFeatureRegisterValues,
-  useFeatureService,
-} from "./FeatureService";
-import { FeatureItem } from "./types";
+
 import { TestWrapper } from "utils/testutils";
 import { ConfigContext, configContext } from "config";
+
+import { FeatureService, useFeatureRegisterValues, useFeatureService } from "./FeatureService";
+import { FeatureItem } from "./types";
 
 const predefinedFeatures = [
   {
@@ -19,9 +17,9 @@ const wrapper: React.FC = ({ children }) => (
   <TestWrapper>
     <configContext.Provider
       value={
-        ({
+        {
           config: { features: predefinedFeatures },
-        } as unknown) as ConfigContext
+        } as unknown as ConfigContext
       }
     >
       <FeatureService>{children}</FeatureService>
@@ -85,9 +83,6 @@ describe("useFeatureRegisterValues", () => {
       result.current.unregisterFeature([FeatureItem.AllowCreateConnection]);
     });
 
-    expect(result.current.features).toEqual([
-      ...predefinedFeatures,
-      { id: FeatureItem.AllowSync },
-    ]);
+    expect(result.current.features).toEqual([...predefinedFeatures, { id: FeatureItem.AllowSync }]);
   });
 });

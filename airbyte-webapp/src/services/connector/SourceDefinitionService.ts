@@ -4,12 +4,10 @@ import { SourceDefinition } from "core/domain/connector";
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import {
-  CreateSourceDefinitionPayload,
-  SourceDefinitionService,
-} from "core/domain/connector/SourceDefinitionService";
+import { CreateSourceDefinitionPayload, SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
+
 import { SCOPE_WORKSPACE } from "../Scope";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 
@@ -42,19 +40,16 @@ const useSourceDefinitionList = (): {
       service.listLatest(workspace.workspaceId),
     ]);
 
-    const sourceDefinitions: SourceDefinition[] = definition.sourceDefinitions.map(
-      (source: SourceDefinition) => {
-        const withLatest = latestDefinition.sourceDefinitions.find(
-          (latestSource: SourceDefinition) =>
-            latestSource.sourceDefinitionId === source.sourceDefinitionId
-        );
+    const sourceDefinitions: SourceDefinition[] = definition.sourceDefinitions.map((source: SourceDefinition) => {
+      const withLatest = latestDefinition.sourceDefinitions.find(
+        (latestSource: SourceDefinition) => latestSource.sourceDefinitionId === source.sourceDefinitionId
+      );
 
-        return {
-          ...source,
-          latestDockerImageTag: withLatest?.dockerImageTag ?? "",
-        };
-      }
-    );
+      return {
+        ...source,
+        latestDockerImageTag: withLatest?.dockerImageTag ?? "",
+      };
+    });
 
     return { sourceDefinitions };
   });
@@ -65,13 +60,9 @@ const useSourceDefinition = <T extends string | undefined>(
 ): T extends string ? SourceDefinition : SourceDefinition | undefined => {
   const service = useGetSourceDefinitionService();
 
-  return useSuspenseQuery(
-    sourceDefinitionKeys.detail(id || ""),
-    () => service.get(id || ""),
-    {
-      enabled: isDefined(id),
-    }
-  );
+  return useSuspenseQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
+    enabled: isDefined(id),
+  });
 };
 
 const useCreateSourceDefinition = () => {
@@ -106,27 +97,18 @@ const useUpdateSourceDefinition = () => {
     }
   >((sourceDefinition) => service.update(sourceDefinition), {
     onSuccess: (data) => {
-      queryClient.setQueryData(
-        sourceDefinitionKeys.detail(data.sourceDefinitionId),
-        data
-      );
+      queryClient.setQueryData(sourceDefinitionKeys.detail(data.sourceDefinitionId), data);
 
       queryClient.setQueryData(
         sourceDefinitionKeys.lists(),
         (oldData: { sourceDefinitions: SourceDefinition[] } | undefined) => ({
           sourceDefinitions:
-            oldData?.sourceDefinitions.map((sd) =>
-              sd.sourceDefinitionId === data.sourceDefinitionId ? data : sd
-            ) ?? [],
+            oldData?.sourceDefinitions.map((sd) => (sd.sourceDefinitionId === data.sourceDefinitionId ? data : sd)) ??
+            [],
         })
       );
     },
   });
 };
 
-export {
-  useSourceDefinition,
-  useSourceDefinitionList,
-  useCreateSourceDefinition,
-  useUpdateSourceDefinition,
-};
+export { useSourceDefinition, useSourceDefinitionList, useCreateSourceDefinition, useUpdateSourceDefinition };

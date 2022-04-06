@@ -31,14 +31,10 @@ const Breadcrumbs: React.FC<IProps> = ({ data }) => {
     <BreadcrumbsContainer>
       {data.map((item, key) =>
         key === lastIndex ? (
-          <LastBreadcrumbsItem key={`breadcrumbs-item-${key}`}>
-            {item.name}
-          </LastBreadcrumbsItem>
+          <LastBreadcrumbsItem key={`breadcrumbs-item-${key}`}>{item.name}</LastBreadcrumbsItem>
         ) : (
           <span key={`breadcrumbs-item-${key}`}>
-            <BreadcrumbsItem onClick={item.onClick}>
-              {item.name}
-            </BreadcrumbsItem>
+            <BreadcrumbsItem onClick={item.onClick}>{item.name}</BreadcrumbsItem>
             <span> / </span>
           </span>
         )
