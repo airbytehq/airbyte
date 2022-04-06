@@ -89,7 +89,6 @@ const SidebarPopout: React.FC<{
             return {
               value: "ticket",
               label: (
-                //TODO: is this the link it should be?
                 <Item href={config.ui.supportTicketLink} target="_blank">
                   <Icon>
                     <FontAwesomeIcon icon={faEnvelope} />
