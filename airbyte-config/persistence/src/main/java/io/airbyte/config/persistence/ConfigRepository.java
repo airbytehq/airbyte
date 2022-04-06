@@ -84,6 +84,22 @@ public class ConfigRepository {
     this.database = new ExceptionWrappingDatabase(database);;
   }
 
+  /**
+   * Conduct a health check by attempting to read from the database. Since there isn't an
+   * out-of-the-box call for this, mimic doing so by reading the ID column from the Cloud Workspace
+   * table's first row. This query needs to be fast as this call can be made multiple times a second.
+   *
+   * @return true if read succeeds, even if the table is empty, and false if any error happens.
+   */
+  public boolean healthCheck() {
+    try {
+      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+    } catch (Exception e) {
+      return false;
+    }
+    return true;
+  }
+
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardWorkspace workspace = persistence.getConfig(ConfigSchema.STANDARD_WORKSPACE, workspaceId.toString(), StandardWorkspace.class);

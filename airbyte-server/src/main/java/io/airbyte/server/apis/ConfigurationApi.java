@@ -246,7 +246,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         featureFlags,
         eventRunner,
         configRepository);
-    healthCheckHandler = new HealthCheckHandler();
+    healthCheckHandler = new HealthCheckHandler(configRepository);
     archiveHandler = new ArchiveHandler(
         airbyteVersion,
         configRepository,
