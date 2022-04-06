@@ -314,6 +314,8 @@ subprojects {
         testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
 
+        testImplementation 'org.junit-pioneer:junit-pioneer:1.6.2'
+
         // adds owasp plugin
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     }
