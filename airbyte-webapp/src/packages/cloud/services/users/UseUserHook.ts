@@ -1,8 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { SCOPE_WORKSPACE } from "services/Scope";
 
+import { useSuspenseQuery } from "../../../../services/connector/useSuspenseQuery";
 import { useGetUserService } from "./UserService";
 
 export const userKeys = {
@@ -17,9 +18,7 @@ export const useListUsers = () => {
   const userService = useGetUserService();
   const { workspaceId } = useCurrentWorkspace();
 
-  return useQuery(userKeys.list(workspaceId), () => userService.listByWorkspaceId(workspaceId), {
-    suspense: true,
-  });
+  return useSuspenseQuery(userKeys.list(workspaceId), () => userService.listByWorkspaceId(workspaceId));
 };
 
 export const useUserHook = () => {
