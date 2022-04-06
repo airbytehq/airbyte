@@ -4,16 +4,19 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Stripe Source Spec",
     "type": "object",
-    "required": ["spreadsheet_id"],
+    "required": ["spreadsheet_id","credentials"],
     "additionalProperties": true,
     "properties": {
       "spreadsheet_id": {
         "type": "string",
-        "title": "Spreadsheet ID",
-        "description": "The ID of the spreadsheet to be replicated."
+        "title": "Spreadsheet Link",
+        "description": "The link to your spreadsheet. See <a href='https://docs.airbyte.com/integrations/sources/google-sheets#sheetlink'>this guide</a> for more details.",
+        "examples": ["https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit"]
       },
       "credentials": {
         "type": "object",
+        "title": "Authentication",
+        "description": "Google API Credentials for connecting to Google Sheets and Google Drive APIs",
         "oneOf": [
           {
             "title": "Authenticate via Google (OAuth)",
@@ -61,7 +64,7 @@
               "service_account_info": {
                 "type": "string",
                 "title": "Service Account Information.",
-                "description": "The JSON key of the service account to use for authorization.",
+                "description": "The JSON key of the service account to use for authorization. See <a href='https://github.com/airbytehq/airbyte/blob/master/docs/integrations/sources/google-sheets.md#setupguide'>Setup Guide</a> for more details",
                 "airbyte_secret": true,
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"

@@ -6,7 +6,7 @@ from abc import ABC
 from datetime import datetime
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qsl, urlparse
+from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -314,6 +314,13 @@ class ConversationParts(ChildStreamMixin, IncrementalIntercomStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/conversations/{stream_slice['id']}"
 
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        records = super().parse_response(response, stream_state, **kwargs)
+        conversation_id = response.json().get("id")
+        for conversation_part in records:
+            conversation_part.setdefault("conversation_id", conversation_id)
+            yield conversation_part
+
 
 class Segments(IncrementalIntercomStream):
     """Return list of all segments.
@@ -426,7 +433,7 @@ class SourceIntercom(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         authenticator = VersionApiAuthenticator(token=config["access_token"])
         try:
-            url = f"{IntercomStream.url_base}/tags"
+            url = urljoin(IntercomStream.url_base, "/tags")
             auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
             session = requests.get(url, headers=auth_headers)
             session.raise_for_status()

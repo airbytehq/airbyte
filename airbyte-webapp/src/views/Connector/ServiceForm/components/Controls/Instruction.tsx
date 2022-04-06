@@ -1,8 +1,10 @@
 import React from "react";
+import type { Url } from "url";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useToggle } from "react-use";
 import urls from "rehype-urls";
+import rehypeSlug from "rehype-slug";
 import type { PluggableList } from "react-markdown/lib/react-markdown";
 
 import {
@@ -19,6 +21,10 @@ type IProps = {
   selectedService: SourceDefinition | DestinationDefinition;
   documentationUrl: string;
 };
+
+interface Element {
+  tagName: string;
+}
 
 const SideViewButton = styled.button`
   cursor: pointer;
@@ -71,14 +77,27 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & IProps> = ({
   const config = useConfig();
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
-  const removeBaseUrl = (url: { path: string }) => {
-    if (url.path.startsWith("../../")) {
-      return url.path.replace("../../", `${config.integrationUrl}/`);
+  const sanitizeLinks = (url: Url, element: Element) => {
+    // Relative URLs pointing to another place within the documentation.
+    if (url.path?.startsWith("../../")) {
+      if (element.tagName === "img") {
+        // In images replace relative URLs with links to our bundled assets
+        return url.path.replace("../../", `${config.integrationUrl}/`);
+      } else {
+        // In links replace with a link to the external documentation instead
+        // The external path is the markdown URL without the "../../" prefix and the .md extension
+        const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
+        return `${config.ui.docsLink}/${docPath}`;
+      }
     }
-    return url.path;
+    return url.href;
   };
 
-  const urlReplacerPlugin: PluggableList = [[urls, removeBaseUrl]];
+  const urlReplacerPlugin: PluggableList = [
+    [urls, sanitizeLinks],
+    // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
+    [rehypeSlug],
+  ];
   return (
     <SideView
       onClose={onClose}

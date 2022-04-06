@@ -15,6 +15,7 @@ import StatusCell from "./components/StatusCell";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
 import useRouter from "hooks/useRouter";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;
@@ -36,6 +37,8 @@ const ConnectionTable: React.FC<IProps> = ({
   onSync,
 }) => {
   const { query, push } = useRouter();
+  const { hasFeature } = useFeatureService();
+  const allowSync = hasFeature(FeatureItem.AllowSync);
 
   const sortBy = query.sortBy || "entity";
   const sortOrder = query.order || SortOrderEnum.ASC;
@@ -165,6 +168,7 @@ const ConnectionTable: React.FC<IProps> = ({
             isManual={!row.original.schedule}
             onChangeStatus={onChangeStatus}
             onSync={onSync}
+            allowSync={allowSync}
           />
         ),
       },
@@ -177,7 +181,7 @@ const ConnectionTable: React.FC<IProps> = ({
         ),
       },
     ],
-    [entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
+    [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
   );
 
   return (
