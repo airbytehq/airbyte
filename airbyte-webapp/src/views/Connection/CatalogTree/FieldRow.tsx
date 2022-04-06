@@ -10,6 +10,7 @@ interface FieldRowProps {
   name: string;
   path: string[];
   type: string;
+  format?: string;
   nullable?: boolean;
   destinationName: string;
   isPrimaryKey: boolean;
@@ -29,13 +30,20 @@ const LastCell = styled(Cell)`
   margin-right: -10px;
 `;
 
+function humanize(str: string) {
+  return str
+    .replace(/^[\s_]+|[\s_]+$/g, " ")
+    .replace(/[_\s]+/g, " ")
+    .replace(/^[a-z]/, (m) => m.toUpperCase());
+}
+
 const FieldRowInner: React.FC<FieldRowProps> = ({ onPrimaryKeyChange, onCursorChange, path, ...props }) => {
   return (
     <>
       <FirstCell ellipsis flex={1.5}>
         <NameContainer title={props.name}>{props.name}</NameContainer>
       </FirstCell>
-      <DataTypeCell nullable={props.nullable}>{props.type}</DataTypeCell>
+      <DataTypeCell nullable={props.nullable}>{humanize(props.format ?? props.type)}</DataTypeCell>
       <Cell>
         {props.isCursorEnabled && <RadioButton checked={props.isCursor} onChange={() => onCursorChange(path)} />}
       </Cell>
@@ -51,5 +59,4 @@ const FieldRowInner: React.FC<FieldRowProps> = ({ onPrimaryKeyChange, onCursorCh
   );
 };
 
-const FieldRow = memo(FieldRowInner);
-export { FieldRow };
+export const FieldRow = memo(FieldRowInner);
