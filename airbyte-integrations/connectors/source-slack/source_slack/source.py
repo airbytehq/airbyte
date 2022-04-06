@@ -116,6 +116,7 @@ class Channels(ChanneledStream):
 
 class ChannelMembers(ChanneledStream):
     data_field = "members"
+    primary_key = ["member_id", "channel_id"]
 
     def path(self, **kwargs) -> str:
         return "conversations.members"
