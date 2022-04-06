@@ -59,9 +59,6 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       } else {
         queryContext.getObject(i);
       }
-      if (queryContext.wasNull()) {
-        continue;
-      }
 
       // convert to java types that will convert into reasonable json.
       setJsonField(queryContext, i, jsonNode);
