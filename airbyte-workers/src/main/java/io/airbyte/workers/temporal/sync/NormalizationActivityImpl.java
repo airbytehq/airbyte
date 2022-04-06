@@ -67,8 +67,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
 
   @Override
   public StandardNormalizationSummary normalize(final JobRunConfig jobRunConfig,
-                        final IntegrationLauncherConfig destinationLauncherConfig,
-                        final NormalizationInput input) {
+                                                final IntegrationLauncherConfig destinationLauncherConfig,
+                                                final NormalizationInput input) {
     return TemporalUtils.withBackgroundHeartbeat(() -> {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
@@ -101,9 +101,9 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   }
 
   private CheckedSupplier<Worker<NormalizationInput, StandardNormalizationSummary>, Exception> getLegacyWorkerFactory(
-                                                                                              final WorkerConfigs workerConfigs,
-                                                                                              final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                              final JobRunConfig jobRunConfig) {
+                                                                                                                      final WorkerConfigs workerConfigs,
+                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                                      final JobRunConfig jobRunConfig) {
     return () -> new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -116,9 +116,9 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   }
 
   private CheckedSupplier<Worker<NormalizationInput, StandardNormalizationSummary>, Exception> getContainerLauncherWorkerFactory(
-                                                                                                         final WorkerConfigs workerConfigs,
-                                                                                                         final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                         final JobRunConfig jobRunConfig)
+                                                                                                                                 final WorkerConfigs workerConfigs,
+                                                                                                                                 final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                                                 final JobRunConfig jobRunConfig)
       throws IOException {
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
     final var connectionId = UUID.fromString(jobScope);

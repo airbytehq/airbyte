@@ -16,7 +16,7 @@ public interface NormalizationActivity {
 
   @ActivityMethod
   StandardNormalizationSummary normalize(JobRunConfig jobRunConfig,
-                 IntegrationLauncherConfig destinationLauncherConfig,
-                 NormalizationInput input);
+                                         IntegrationLauncherConfig destinationLauncherConfig,
+                                         NormalizationInput input);
 
 }

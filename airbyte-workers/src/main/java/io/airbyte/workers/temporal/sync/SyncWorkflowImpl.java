@@ -59,7 +59,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
               .withCatalog(run.getOutputCatalog())
               .withResourceRequirements(syncInput.getDestinationResourceRequirements());
 
-          final StandardNormalizationSummary normalizationSummary = normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
+          final StandardNormalizationSummary normalizationSummary =
+              normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
           persistActivity.persist(connectionId, run.withStandardNormalizationSummary(normalizationSummary));
         } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
           final OperatorDbtInput operatorDbtInput = new OperatorDbtInput()
