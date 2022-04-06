@@ -1,8 +1,5 @@
 import { useEffect } from "react";
-import {
-  useIntercom as useIntercomProvider,
-  IntercomContextValues,
-} from "react-use-intercom";
+import { useIntercom as useIntercomProvider, IntercomContextValues } from "react-use-intercom";
 
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useAnalytics } from "hooks/services/Analytics";

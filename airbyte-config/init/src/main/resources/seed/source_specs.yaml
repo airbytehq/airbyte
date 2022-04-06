@@ -480,7 +480,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-apify-dataset:0.1.3"
+- dockerImage: "airbyte/source-apify-dataset:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/apify-dataset"
     connectionSpecification:
@@ -2412,7 +2412,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.26"
+- dockerImage: "airbyte/source-github:0.2.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2456,8 +2456,8 @@
                 type: "string"
                 const: "PAT Credentials"
                 enum:
-                - "PAT Credential"
-                default: "PAT Credential"
+                - "PAT Credentials"
+                default: "PAT Credentials"
                 order: 0
               personal_access_token:
                 type: "string"
@@ -2602,7 +2602,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.33"
+- dockerImage: "airbyte/source-google-ads:0.1.34"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -4289,7 +4289,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.5"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -4309,16 +4309,17 @@
           examples:
           - "2021-05-17"
         account_ids:
-          title: "Account IDs"
+          title: "Account IDs (Optional)"
           type: "array"
           description: "Specify the Account IDs separated by space, to pull the data\
             \ from. Leave empty, if you want to pull the data from all associated\
-            \ accounts."
+            \ accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\"\
+            >official LinkedIn Ads docs</a> for more info."
           items:
             type: "integer"
           default: []
         credentials:
-          title: "Authorization Method"
+          title: "Authentication *"
           type: "object"
           oneOf:
           - type: "object"
@@ -4357,7 +4358,9 @@
               access_token:
                 type: "string"
                 title: "Access Token"
-                description: "The token value generated using Authentication Code."
+                description: "The token value generated using the authentication code.\
+                  \ See the <a href=\"https://docs.airbyte.com/integrations/sources/linkedin-ads#authentication\"\
+                  >docs</a> to obtain yours."
                 airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
@@ -4637,7 +4640,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.18"
+- dockerImage: "airbyte/source-mssql:0.3.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -4993,7 +4996,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.10"
+- dockerImage: "airbyte/source-mixpanel:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -6324,6 +6327,25 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-pivotal-tracker:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Pivotal Tracker Spec"
+      type: "object"
+      required:
+      - "api_token"
+      additionalProperties: false
+      properties:
+        api_token:
+          type: "string"
+          description: "Pivotal Tracker API token"
+          examples:
+          - "5c054d0de3440452190fdc5d5a04d871"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-plaid:0.3.1"
   spec:
     documentationUrl: "https://plaid.com/docs/api/"
@@ -9001,7 +9023,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.3"
+- dockerImage: "airbyte/source-zendesk-support:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -9025,10 +9047,11 @@
         subdomain:
           type: "string"
           title: "Subdomain"
-          description: "Identifier of your Zendesk Subdomain, like: https://{MY_SUBDOMAIN}.zendesk.com/,\
-            \ where MY_SUBDOMAIN is the value of your subdomain"
+          description: "This is your Zendesk subdomain that can be found in your account\
+            \ URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN\
+            \ is the value of your subdomain."
         credentials:
-          title: "Authorization Method"
+          title: "Authentication *"
           type: "object"
           description: "Zendesk service provides two authentication methods. Choose\
             \ between: `OAuth2.0` or `API token`."
@@ -9075,8 +9098,8 @@
                 title: "API Token"
                 type: "string"
                 description: "The value of the API token generated. See the <a href=\"\
-                  https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a>\
-                  \ for more information."
+                  https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide\"\
+                  >docs</a> for more information."
                 airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
@@ -9361,6 +9384,86 @@
           description: "The date from which you'd like to replicate the data"
           examples:
           - "2019-01-01T00:00:00Z"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-zoho-crm:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/zoho-crm"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Zoho Crm Configuration"
+      type: "object"
+      required:
+      - "client_id"
+      - "client_secret"
+      - "refresh_token"
+      - "environment"
+      - "dc_region"
+      - "edition"
+      additionalProperties: false
+      properties:
+        client_id:
+          type: "string"
+          title: "Client ID"
+          description: "OAuth2.0 Client ID"
+          airbyte_secret: true
+        client_secret:
+          type: "string"
+          title: "Client Secret"
+          description: "OAuth2.0 Client Secret"
+          airbyte_secret: true
+        refresh_token:
+          type: "string"
+          title: "Refresh Token"
+          description: "OAuth2.0 Refresh Token"
+          airbyte_secret: true
+        dc_region:
+          title: "Data Center Location"
+          type: "string"
+          description: "Please choose the region of your Data Center location. More\
+            \ info by this <a href=\"https://www.zoho.com/crm/developer/docs/api/v2/multi-dc.html\"\
+            >Link</a>"
+          enum:
+          - "US"
+          - "AU"
+          - "EU"
+          - "IN"
+          - "CN"
+          - "JP"
+        environment:
+          title: "Environment"
+          type: "string"
+          description: "Please choose the environment"
+          enum:
+          - "Production"
+          - "Developer"
+          - "Sandbox"
+        start_datetime:
+          title: "Start Date"
+          type:
+          - "null"
+          - "string"
+          examples:
+          - "2000-01-01"
+          - "2000-01-01 13:00"
+          - "2000-01-01 13:00:00"
+          - "2000-01-01T13:00+00:00"
+          - "2000-01-01T13:00:00-07:00"
+          description: "ISO 8601, for instance: `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS+HH:MM`"
+          format: "date-time"
+        edition:
+          title: "Zoho CRM Edition"
+          type: "string"
+          description: "Choose your Edition of Zoho CRM to determine API Concurrency\
+            \ Limits"
+          enum:
+          - "Free"
+          - "Standard"
+          - "Professional"
+          - "Enterprise"
+          - "Ultimate"
+          default: "Free"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
