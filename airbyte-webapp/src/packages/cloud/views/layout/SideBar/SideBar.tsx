@@ -23,10 +23,10 @@ import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
-import ResourcesPopup, {
+import SidebarPopout, {
   Icon,
   Item,
-} from "views/layout/SideBar/components/ResourcesPopup";
+} from "views/layout/SideBar/components/SidebarPopout";
 import { FeatureItem, WithFeature } from "hooks/services/Feature";
 import { RoutePaths } from "../../../../../pages/routePaths";
 
@@ -170,7 +170,7 @@ const SideBar: React.FC = () => {
           </MenuItem>
         </li>
         <li>
-          <ResourcesPopup
+          <SidebarPopout
             options={[
               { value: "docs" },
               { value: "slack" },
@@ -186,10 +186,10 @@ const SideBar: React.FC = () => {
                 </Text>
               </MenuItem>
             )}
-          </ResourcesPopup>
+          </SidebarPopout>
         </li>
         <li>
-          <ResourcesPopup
+          <SidebarPopout
             options={[
               { value: "ticket" },
               {
@@ -213,7 +213,7 @@ const SideBar: React.FC = () => {
                 </Text>
               </MenuItem>
             )}
-          </ResourcesPopup>
+          </SidebarPopout>
         </li>
         <li>
           <MenuItem to={RoutePaths.Settings}>

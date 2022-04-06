@@ -26,7 +26,7 @@ export const Icon = styled.div`
   font-size: 22px;
 `;
 
-const ResourcesPopup: React.FC<{
+const SidebarPopout: React.FC<{
   children: (props: { onOpen: () => void }) => React.ReactNode;
   options: { value: string; label?: React.ReactNode }[];
 }> = ({ children, options }) => {
@@ -129,4 +129,4 @@ const ResourcesPopup: React.FC<{
   );
 };
 
-export default ResourcesPopup;
+export default SidebarPopout;

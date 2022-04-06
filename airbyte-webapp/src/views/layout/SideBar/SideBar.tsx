@@ -17,7 +17,7 @@ import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
-import ResourcesPopup from "./components/ResourcesPopup";
+import SidebarPopout from "./components/SidebarPopout";
 import { NotificationIndicator } from "./NotificationIndicator";
 import { RoutePaths } from "../../../pages/routePaths";
 
@@ -152,7 +152,7 @@ const SideBar: React.FC = () => {
           </MenuLinkItem>
         </li>
         <li>
-          <ResourcesPopup
+          <SidebarPopout
             options={[
               { value: "docs" },
               { value: "slack" },
@@ -167,7 +167,7 @@ const SideBar: React.FC = () => {
                 </Text>
               </MenuItem>
             )}
-          </ResourcesPopup>
+          </SidebarPopout>
         </li>
 
         <li>
