@@ -58,11 +58,10 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
-def get_input_path(input_from_args, version):
+def get_input_path(input_from_args, version, home_directory):
     if input_from_args is not None:
         return input_from_args
     else:
-        home_directory = os.getenv('HOME')
         path_to_intellij_settings = f"{home_directory}/Library/Application Support/JetBrains/"
         walk = os.walk(path_to_intellij_settings)
         intellij_versions = [version for version in next(walk)[1] if version != "consentOptions"]
@@ -84,7 +83,8 @@ if __name__ == "__main__":
 
     path_to_connectors = f"{args.airbyte}/airbyte-integrations/connectors/"
 
-    input_path = get_input_path(args.input, args.version)
+    home_directory = os.getenv('HOME')
+    input_path = get_input_path(args.input, args.version, home_directory)
 
     output_path = get_output_path(input_path, args.output)
 
@@ -142,10 +142,11 @@ if "pytest" in sys.argv[0]:
         def test_input_is_selected(self, mock_os):
             os.walk.return_value = iter(
                 (('./test1', ['consentOptions', 'IdeaIC2021.3', "PyCharmCE2021.3"], []),))
+            os.getenv.return_value = '{HOME}'
             input_from_args = None
             version = "IdeaIC2021.3"
-            input_path = get_input_path(input_from_args, version)
-            assert "/Users/alex/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
+            input_path = get_input_path(input_from_args, version, "{HOME}")
+            assert "{HOME}/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
 
         @unittest.mock.patch('os.walk')
         def test_input_single_intellij_version(self, mock_os):
@@ -154,8 +155,8 @@ if "pytest" in sys.argv[0]:
             input_from_args = None
 
             version = None
-            input_path = get_input_path(input_from_args, version)
-            assert "/Users/alex/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
+            input_path = get_input_path(input_from_args, version, "{HOME}")
+            assert "{HOME}/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
 
         @unittest.mock.patch('os.walk')
         def test_input_multiple_intellij_versions(self, mock_os):
@@ -164,4 +165,4 @@ if "pytest" in sys.argv[0]:
             input_from_args = None
 
             version = None
-            self.assertRaises(RuntimeError, get_input_path, input_from_args, version)
+            self.assertRaises(RuntimeError, get_input_path, input_from_args, version, "{HOME}")
