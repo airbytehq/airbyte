@@ -14,10 +14,7 @@ function useApiHealthPoll(): void {
   const { formatMessage } = useIntl();
   const { healthCheckInterval } = useConfig();
   const healthService = useGetService<HealthService>("HealthService");
-  const {
-    registerNotification,
-    unregisterNotificationById,
-  } = useNotificationService();
+  const { registerNotification, unregisterNotificationById } = useNotificationService();
 
   useEffect(() => {
     const errorNotification = {
@@ -43,14 +40,7 @@ function useApiHealthPoll(): void {
     }, healthCheckInterval);
 
     return () => clearInterval(interval);
-  }, [
-    count,
-    healthCheckInterval,
-    formatMessage,
-    unregisterNotificationById,
-    registerNotification,
-    healthService,
-  ]);
+  }, [count, healthCheckInterval, formatMessage, unregisterNotificationById, registerNotification, healthService]);
 }
 
 export { useApiHealthPoll };

@@ -51,12 +51,7 @@ type AccountFormProps = {
   onSubmit: (data: { email: string }) => void;
 };
 
-const AccountForm: React.FC<AccountFormProps> = ({
-  email,
-  onSubmit,
-  successMessage,
-  errorMessage,
-}) => {
+const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessage, errorMessage }) => {
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -79,24 +74,14 @@ const AccountForm: React.FC<AccountFormProps> = ({
                       id: "form.email.placeholder",
                     })}
                     error={!!meta.error && meta.touched}
-                    message={
-                      !!meta.error && meta.touched ? (
-                        <FormattedMessage id={meta.error} />
-                      ) : (
-                        ""
-                      )
-                    }
+                    message={!!meta.error && meta.touched ? <FormattedMessage id={meta.error} /> : ""}
                     label={<FormattedMessage id="form.yourEmail" />}
                   />
                 )}
               </Field>
             </Cell>
             <ButtonCell>
-              <LoadingButton
-                isLoading={isSubmitting}
-                type="submit"
-                disabled={!dirty || !values.email}
-              >
+              <LoadingButton isLoading={isSubmitting} type="submit" disabled={!dirty || !values.email}>
                 <FormattedMessage id="form.saveChanges" />
               </LoadingButton>
             </ButtonCell>

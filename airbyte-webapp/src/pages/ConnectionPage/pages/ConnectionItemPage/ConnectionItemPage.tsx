@@ -5,17 +5,16 @@ import { LoadingPage, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
 
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { equal } from "utils/objects";
-import ReplicationView from "./components/ReplicationView";
-
-import StatusView from "./components/StatusView";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
+import { useGetConnection } from "hooks/services/useConnectionHook";
+
+import ReplicationView from "./components/ReplicationView";
+import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
-import { useGetConnection } from "hooks/services/useConnectionHook";
 
 const ConnectionItemPage: React.FC = () => {
   const params = useParams<{
@@ -30,9 +29,7 @@ const ConnectionItemPage: React.FC = () => {
 
   const analyticsService = useAnalyticsService();
 
-  const frequency = FrequencyConfig.find((item) =>
-    equal(item.config, connection.schedule)
-  );
+  const frequency = FrequencyConfig.find((item) => equal(item.config, connection.schedule));
 
   const onAfterSaveSchema = () => {
     analyticsService.track("Source - Action", {
@@ -61,46 +58,24 @@ const ConnectionItemPage: React.FC = () => {
           ]}
         />
       }
-      pageTitle={
-        <ConnectionPageTitle
-          source={source}
-          destination={destination}
-          currentStep={currentStep}
-        />
-      }
+      pageTitle={<ConnectionPageTitle source={source} destination={destination} currentStep={currentStep} />}
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route
             path={ConnectionSettingsRoutes.STATUS}
-            element={
-              <StatusView
-                connection={connection}
-                frequencyText={frequency?.text}
-              />
-            }
+            element={<StatusView connection={connection} frequencyText={frequency?.text} />}
           />
           <Route
             path={ConnectionSettingsRoutes.REPLICATION}
-            element={
-              <ReplicationView
-                onAfterSaveSchema={onAfterSaveSchema}
-                connectionId={connectionId}
-              />
-            }
+            element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
           />
           <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           />
-          <Route
-            path={ConnectionSettingsRoutes.SETTINGS}
-            element={<SettingsView connectionId={connectionId} />}
-          />
-          <Route
-            index
-            element={<Navigate to={ConnectionSettingsRoutes.STATUS} />}
-          />
+          <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} />} />
         </Routes>
       </Suspense>
     </MainPageWithScroll>

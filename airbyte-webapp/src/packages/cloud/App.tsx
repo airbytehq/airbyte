@@ -2,23 +2,24 @@ import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { BrowserRouter as Router } from "react-router-dom";
+import GlobalStyle from "global-styles";
+
+import LoadingPage from "components/LoadingPage";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 import en from "locales/en.json";
 import cloudLocales from "packages/cloud/locales/en.json";
-import GlobalStyle from "global-styles";
 import { theme } from "packages/cloud/theme";
-
 import { Routing } from "packages/cloud/cloudRoutes";
-import LoadingPage from "components/LoadingPage";
-import ApiErrorBoundary from "components/ApiErrorBoundary";
 import NotificationServiceProvider from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
+import { StoreProvider } from "views/common/StoreProvider";
+
 import { AppServicesProvider } from "./services/AppServicesProvider";
 import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 import { ConfigProvider } from "./services/ConfigProvider";
-import { StoreProvider } from "views/common/StoreProvider";
 
 const messages = Object.assign({}, en, cloudLocales);
 

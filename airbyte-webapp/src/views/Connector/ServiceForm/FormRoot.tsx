@@ -5,9 +5,9 @@ import styled from "styled-components";
 import { Spinner } from "components";
 
 import { FormBlock } from "core/form/types";
-import { ServiceFormValues } from "./types";
-import { useServiceForm } from "./serviceFormContext";
 
+import { useServiceForm } from "./serviceFormContext";
+import { ServiceFormValues } from "./types";
 import { FormSection } from "./components/Sections/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import EditControls from "./components/EditControls";
@@ -47,20 +47,9 @@ const FormRoot: React.FC<FormRootProps> = ({
   hasSuccess,
   onStopTestingConnector,
 }) => {
-  const {
-    resetForm,
-    dirty,
-    isSubmitting,
-    isValid,
-  } = useFormikContext<ServiceFormValues>();
+  const { resetForm, dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
 
-  const {
-    resetUiFormProgress,
-    isLoadingSchema,
-    selectedService,
-    isEditMode,
-    formType,
-  } = useServiceForm();
+  const { resetUiFormProgress, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
     <FormContainer>

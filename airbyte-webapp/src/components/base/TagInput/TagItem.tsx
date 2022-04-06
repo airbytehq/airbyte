@@ -12,9 +12,7 @@ const Tag = styled.div<{ isSelected?: boolean }>`
   border-radius: 4px;
   padding-left: 6px;
   margin: 0 5px 4px 0;
-  border: 2px solid
-    ${({ theme, isSelected }) =>
-      isSelected ? theme.primaryColor : theme.mediumPrimaryColor};
+  border: 2px solid ${({ theme, isSelected }) => (isSelected ? theme.primaryColor : theme.mediumPrimaryColor)};
 `;
 
 const Text = styled.div`
@@ -52,12 +50,7 @@ export type IItemProps = {
   id: string;
 };
 
-const TagItem: React.FC<IProps> = ({
-  item,
-  onDeleteTag,
-  isSelected,
-  disabled,
-}) => {
+const TagItem: React.FC<IProps> = ({ item, onDeleteTag, isSelected, disabled }) => {
   const clickOnDeleteButton = () => onDeleteTag(item.id);
 
   return (
