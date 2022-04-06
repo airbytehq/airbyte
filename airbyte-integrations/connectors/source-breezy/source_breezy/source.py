@@ -5,7 +5,7 @@
 
 from abc import ABC
 from http import cookies
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from datetime import datetime
 from urllib.error import HTTPError
 import pendulum
@@ -66,7 +66,7 @@ class BreezyStream(HttpStream, ABC):
     start_time: str
     data_field = 'data'
 
-    def __init__(self, limit=None, page_size=1, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
+    def __init__(self, limit=None, page_size=2500, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
         super().__init__(**kwargs)
         self.limit = limit
         self.page_size = page_size
@@ -79,13 +79,9 @@ class BreezyStream(HttpStream, ABC):
     def url_base(self) -> str:
         return f'https://app.breezy.hr/api/company/{self.company_id}/'
 
-    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        response = response.text()
-        print(isinstance(response, Mapping))
-        print(isinstance(response, list))
-        print(response)
-        max = 1000
+        response = response.json()
+        max = response['total']
         if (self.current_page * self.page_size) < (self.limit or max):
             self.current_page += 1
             result = {'limit': self.page_size,
@@ -102,33 +98,24 @@ class BreezyStream(HttpStream, ABC):
     ) -> Mapping[str, Any]:
         return {'cookie': self.cookie, 'origin': self.app_base}
 
-    # def request_params(
-    #     self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    # ) -> MutableMapping[str, Any]:
-    #     """
-    #     TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-    #     Usually contains common params e.g. pagination size etc.
-    #     """
-    #     return { 'page': next_page_token.page, 'page_size': 5000, 'sort': 'updated' }
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
         response = response.json()
-        print('Inside parse')
-        print(response)
         if isinstance(response, Mapping):
             if response.get("status", None) == "error":
-                self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
+                self.logger.warning(
+                    f"Stream `{self.name}` cannot be procced. {response.get('message')}")
                 return
 
             if response.get(self.data_field) is None:
                 """
                 When the response doen't have the stream's data, raise an exception.
                 """
-                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+                raise RuntimeError("Unexpected API response: {} not in {}".format(
+                    self.data_field, response.keys()))
             yield from response[self.data_field]
         else:
             response = list(response)
@@ -146,6 +133,7 @@ class IncrementalBreezyStream(BreezyStream, ABC):
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = 1000
     state_pk = "timestamp"
+    need_chunk = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -166,9 +154,9 @@ class IncrementalBreezyStream(BreezyStream, ABC):
         if self.state:
             return self.state
         return (
-            {self.updated_at_field: int(self._start_date.timestamp() * 1000)}
+            {self.cursor_field: int(self._start_date.timestamp() * 1000)}
             if self.state_pk == "timestamp"
-            else {self.updated_at_field: str(self._start_date)}
+            else {self.cursor_field: str(self._start_date)}
         )
 
     @property
@@ -176,21 +164,43 @@ class IncrementalBreezyStream(BreezyStream, ABC):
         """Current state, if wasn't set return None"""
         if self._state:
             return (
-                {self.updated_at_field: int(self._state.timestamp() * 1000)}
+                {self.cursor_field: int(self._state.timestamp() * 1000)}
                 if self.state_pk == "timestamp"
-                else {self.updated_at_field: str(self._state)}
+                else {self.cursor_field: str(self._state)}
             )
         return None
 
     @state.setter
     def state(self, value):
-        state_value = value.get(self.updated_at_field, self._state)
+        state_value = value.get(self.cursor_field, self._state)
         self._state = (
             pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
             if isinstance(state_value, int)
             else pendulum.parse(state_value)
         )
         self._start_date = max(self._state, self._start_date)
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        chunk_size = pendulum.duration(days=30)
+        slices = []
+
+        now_ts = int(pendulum.now().timestamp() * 1000)
+        start_ts = int(self._start_date.timestamp() * 1000)
+        max_delta = now_ts - start_ts
+        chunk_size = int(chunk_size.total_seconds() *
+                         1000) if self.need_chunk else max_delta
+
+        for ts in range(start_ts, now_ts, chunk_size):
+            end_ts = ts + chunk_size
+            slices.append({'date_range': {
+                "start": ts,
+                "end": end_ts
+            }}
+            )
+
+        return slices
 
 
 class Candidates(IncrementalBreezyStream):
@@ -204,24 +214,26 @@ class Candidates(IncrementalBreezyStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         return "candidates"
 
     def request_body_json(
         self,
-        stream_state: Mapping[str, Any],
+        stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-        common = {"get_totals": "true", "all_positions": "true", "sort": {
+        common = {"get_totals": True, "all_positions": True, "sort": {
             "column": "updated_date", "sort": "DESC"}}
+        if stream_slice:
+            common.update(stream_slice)
         if next_page_token:
-            return next_page_token.update(common)
-        return {'limit': self.page_size,
-                'skip': self.current_page * self.page_size}.update(common)
+            common.update(next_page_token)
+        else:
+            common.update({'limit': self.page_size,
+                           'skip': self.current_page * self.page_size})
+        print(f'Requesting with headers : {common}')
+        return common
+
 # Source
 
 
