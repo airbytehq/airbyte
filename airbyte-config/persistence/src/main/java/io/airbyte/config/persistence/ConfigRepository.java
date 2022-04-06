@@ -86,15 +86,17 @@ public class ConfigRepository {
 
   /**
    * Conduct a health check by attempting to read from the database. Since there isn't an
-   * out-of-the-box call for this, mimic doing so by reading the ID column from the Cloud Workspace
-   * table's first row. This query needs to be fast as this call can be made multiple times a second.
+   * out-of-the-box call for this, mimic doing so by reading the ID column from the Workspace table's
+   * first row. This query needs to be fast as this call can be made multiple times a second.
    *
    * @return true if read succeeds, even if the table is empty, and false if any error happens.
    */
   public boolean healthCheck() {
     try {
-      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+      var a = database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+      System.out.println(a);
     } catch (Exception e) {
+      LOGGER.error("Health check error: ", e);
       return false;
     }
     return true;
