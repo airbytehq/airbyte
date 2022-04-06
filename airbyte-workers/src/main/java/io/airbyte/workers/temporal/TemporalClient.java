@@ -283,8 +283,6 @@ public class TemporalClient {
   public void update(final UUID connectionId) {
     final boolean workflowReachable = isWorkflowReachable(getConnectionManagerName(connectionId));
 
-    // TODO test this behavior out. see if it's fine to just call the submitConnectionUpdaterAsync
-    // without further action.
     if (!workflowReachable) {
       // if a workflow is not reachable for update, create a new workflow
       submitConnectionUpdaterAsync(connectionId);
