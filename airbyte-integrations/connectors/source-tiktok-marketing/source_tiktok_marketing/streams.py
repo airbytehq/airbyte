@@ -239,8 +239,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     def convert_array_param(arr: List[Union[str, int]]) -> str:
         return json.dumps(arr)
 
-    # @property
-    def get_advertiser_ids(self):
+    def get_advertiser_ids(self) -> Iterable[int]:
         if self.is_sandbox:
             # for sandbox: just return advertiser_id provided in spec
             ids = [self._advertiser_id]
@@ -254,7 +253,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Each stream slice is for separate advertiser id"""
-        self.get_advertiser_ids
+        self.get_advertiser_ids()
         while self._advertiser_ids:
             # self._advertiser_ids need to be exhausted so that JsonUpdatedState knows
             # when all stream slices are processed (stream.is_finished)
