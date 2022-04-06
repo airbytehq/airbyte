@@ -78,20 +78,10 @@ public class JobNotifier {
     try {
       final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
       final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-      final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
-      final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
-      final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
-      final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
-      final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
-      final String durationString = formatDurationPart(duration.toDaysPart(), "day")
-          + formatDurationPart(duration.toHoursPart(), "hour")
-          + formatDurationPart(duration.toMinutesPart(), "minute")
-          + formatDurationPart(duration.toSecondsPart(), "second");
       final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
       final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
       final String failReason = Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
-      final String jobDescription =
-          String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, failReason);
+      final String jobDescription = getJobDescription(job, failReason);
       final String logUrl = connectionPageUrl + connectionId;
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
@@ -178,17 +168,7 @@ public class JobNotifier {
       final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
       final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
       final String logUrl = connectionPageUrl + connectionId;
-      final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
-      final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
-      final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
-      final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
-      final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
-      final String durationString = formatDurationPart(duration.toDaysPart(), "day")
-          + formatDurationPart(duration.toHoursPart(), "hour")
-          + formatDurationPart(duration.toMinutesPart(), "minute")
-          + formatDurationPart(duration.toSecondsPart(), "second");
-      final String jobDescription =
-          String.format("sync started on %s, running for%s.", formatter.format(jobStartedDate), durationString);
+      final String jobDescription = getJobDescription(job, "");
 
       if (CONNECTION_DISABLED_NOTIFICATION.equals(action)) {
         if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
@@ -205,6 +185,19 @@ public class JobNotifier {
     } catch (final Exception e) {
       LOGGER.error("Unable to send auto disable alert:", e);
     }
+  }
+
+  private String getJobDescription(final Job job, final String reason) {
+    final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
+    final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
+    final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
+    final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
+    final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
+    final String durationString = formatDurationPart(duration.toDaysPart(), "day")
+        + formatDurationPart(duration.toHoursPart(), "hour")
+        + formatDurationPart(duration.toMinutesPart(), "minute")
+        + formatDurationPart(duration.toSecondsPart(), "second");
+    return String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, reason);
   }
 
   public void failJob(final String reason, final Job job) {
