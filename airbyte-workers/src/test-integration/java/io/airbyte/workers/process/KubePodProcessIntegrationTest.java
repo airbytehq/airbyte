@@ -97,8 +97,8 @@ public class KubePodProcessIntegrationTest {
             heartbeatUrl,
             getHost(),
             false,
-            "airbyte"
-        );
+            "airbyte-admin",
+            null);
   }
 
   @BeforeEach

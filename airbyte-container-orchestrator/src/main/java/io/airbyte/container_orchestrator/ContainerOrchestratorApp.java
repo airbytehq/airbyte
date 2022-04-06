@@ -218,7 +218,8 @@ public class ContainerOrchestratorApp {
         fabricClient,
         kubeHeartbeatUrl,
         false,
-        configs.getJobKubeServiceAccountName()
+        configs.getOrchestratorKubeServiceAccountName(),
+        configs.getConnectorKubeServiceAccountName()
       );
     } else {
       return new DockerProcessFactory(

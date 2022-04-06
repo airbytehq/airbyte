@@ -158,8 +158,8 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
 
-  private static final String JOB_KUBE_SERVICE_ACCOUNT_NAME = "JOB_KUBE_SERVICE_ACCOUNT_NAME";
-  private static final String DEFAULT_SERVICE_ACCOUNT_NAME = "airbyte-admin";
+  public static final String CONNECTOR_KUBE_SERVICE_ACCOUNT_NAME = "CONNECTOR_KUBE_SERVICE_ACCOUNT_NAME";
+  public static final String ORCHESTRATOR_KUBE_SERVICE_ACCOUNT_NAME = "ORCHESTRATOR_KUBE_SERVICE_ACCOUNT_NAME";
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -359,10 +359,14 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getJobKubeServiceAccountName() {
-    return getEnvOrDefault(JOB_KUBE_SERVICE_ACCOUNT_NAME, DEFAULT_SERVICE_ACCOUNT_NAME);
+  public String getConnectorKubeServiceAccountName() {
+    return getEnvOrDefault(CONNECTOR_KUBE_SERVICE_ACCOUNT_NAME, null);
   }
 
+  @Override
+  public String getOrchestratorKubeServiceAccountName() {
+    return getEnvOrDefault(ORCHESTRATOR_KUBE_SERVICE_ACCOUNT_NAME, "airbyte-admin");
+  }
 
   @Override
   public String getConfigDatabaseUser() {

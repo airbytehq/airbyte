@@ -136,9 +136,14 @@ public interface Configs {
   long getJobsDatabaseInitializationTimeoutMs();
 
   /**
-  * Define the Kubernetes service account
-  */
-  String getJobKubeServiceAccountName();
+   * Define the Connector Kubernetes service account
+   */
+  String getConnectorKubeServiceAccountName();
+
+  /**
+   * Define the Orchestrator Kubernetes service account
+   */
+  String getOrchestratorKubeServiceAccountName();
 
   /**
    * Define the Configs Database user. Defaults to the Jobs Database user if empty.

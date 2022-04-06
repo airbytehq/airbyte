@@ -12,7 +12,7 @@ spec:
       labels:
         airbyte: worker
     spec:
-      serviceAccountName: airbyte-admin
+      serviceAccountName: airbyte
       automountServiceAccountToken: true
       containers:
         - name: airbyte-worker-container
@@ -215,11 +215,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: CONTAINER_ORCHESTRATOR_ENABLED
-            - name: JOB_KUBE_SERVICE_ACCOUNT_NAME
+            - name: ORCHESTRATOR_KUBE_SERVICE_ACCOUNT_NAME
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: JOB_SERVICE_ACCOUNT_NAME
+                  key: ORCHESTRATOR_KUBE_SERVICE_ACCOUNT_NAME
+            - name: CONNECTOR_KUBE_SERVICE_ACCOUNT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONNECTOR_KUBE_SERVICE_ACCOUNT_NAME
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

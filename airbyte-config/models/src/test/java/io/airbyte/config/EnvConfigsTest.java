@@ -232,12 +232,19 @@ class EnvConfigsTest {
   }
 
   @Test
-  void testJobKubeServiceAccountName() {
-    envMap.put(EnvConfigs.getJobKubeServiceAccountName, null);
-    assertEquals(config.getJobKubeServiceAccountName(), EnvConfigs.DEFAULT_SERVICE_ACCOUNT_NAME);
+  void testConnectorKubeServiceAccountName() {
+    assertNull(config.getConnectorKubeServiceAccountName());
 
-    envMap.put(EnvConfigs.getJobKubeServiceAccountName, "airbyte");
-    assertEquals(config.getJobKubeServiceAccountName(), "airbyte");
+    envMap.put(EnvConfigs.CONNECTOR_KUBE_SERVICE_ACCOUNT_NAME, "airbyte");
+    assertEquals(config.getConnectorKubeServiceAccountName(), "airbyte");
+  }
+
+  @Test
+  void testOrchestratorKubeServiceAccountName() {
+    assertEquals(config.getOrchestratorKubeServiceAccountName(), "airbyte-admin");
+
+    envMap.put(EnvConfigs.ORCHESTRATOR_KUBE_SERVICE_ACCOUNT_NAME, "airbyte");
+    assertEquals(config.getOrchestratorKubeServiceAccountName(), "airbyte");
   }
 
   @Test

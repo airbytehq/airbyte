@@ -374,7 +374,8 @@ public class KubePodProcess extends Process implements KubePod {
                         final String curlImage,
                         final Map<String, String> envMap,
                         final Map<Integer, Integer> internalToExternalPorts,
-                        final String serviceAccountName,
+                        final String orchestratorServiceAccountName,
+                        final String connectorServiceAccountName,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -486,9 +487,17 @@ public class KubePodProcess extends Process implements KubePod {
         .withLabels(labels)
         .withAnnotations(annotations)
         .endMetadata()
-        .withNewSpec()
-        .withServiceAccount(serviceAccountName)
-        .withAutomountServiceAccountToken(true);
+        .withNewSpec();
+
+    if (isOrchestrator) {
+      podBuilder = podBuilder
+          .withServiceAccount(orchestratorServiceAccountName)
+          .withAutomountServiceAccountToken(true);
+    } else if (connectorServiceAccountName != null) {
+      podBuilder = podBuilder
+          .withServiceAccount(connectorServiceAccountName)
+          .withAutomountServiceAccountToken(true);
+    }
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.

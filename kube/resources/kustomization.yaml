@@ -15,3 +15,4 @@ resources:
   - volume-db.yaml
   - webapp.yaml
   - worker.yaml
+  - worker-service-account.yaml
