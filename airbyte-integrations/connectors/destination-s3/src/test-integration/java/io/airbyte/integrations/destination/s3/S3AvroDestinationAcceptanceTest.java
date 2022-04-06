@@ -86,13 +86,13 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
   }
 
   @Override
-  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    for (String path : dateTimeFieldNames.keySet()) {
+  public void convertDateTime(final ObjectNode data, final Map<String, String> dateTimeFieldNames) {
+    for (final String path : dateTimeFieldNames.keySet()) {
       if (!data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
-        var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
+        final var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
         pathFields.remove(0); // first element always empty string
         // if pathFields.size() == 1 -> /field else /field/nestedField..
-        var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
+        final var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
             : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
         switch (dateTimeFieldNames.get(path)) {
           case DATE_TIME -> {
@@ -122,20 +122,20 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
   }
 
   @Override
-  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
-    for (AirbyteMessage message : messages) {
+  protected void deserializeNestedObjects(final List<AirbyteMessage> messages, final List<AirbyteRecordMessage> actualMessages) {
+    for (final AirbyteMessage message : messages) {
       if (message.getType() == Type.RECORD) {
-        var iterator = message.getRecord().getData().fieldNames();
+        final var iterator = message.getRecord().getData().fieldNames();
         while (iterator.hasNext()) {
-          var fieldName = iterator.next();
+          final var fieldName = iterator.next();
           if (message.getRecord().getData().get(fieldName).isContainerNode()) {
             message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
-              var data = message.getRecord().getData().get(fieldName).get(f);
-              var wrappedData = String.format("{\"%s\":%s,\"_airbyte_additional_properties\":null}", f,
+              final var data = message.getRecord().getData().get(fieldName).get(f);
+              final var wrappedData = String.format("{\"%s\":%s,\"_airbyte_additional_properties\":null}", f,
                   dateTimeFieldNames.containsKey(f) || !data.isTextual() ? data.asText() : StringUtils.wrap(data.asText(), "\""));
               try {
                 ((ObjectNode) message.getRecord().getData()).set(fieldName, new ObjectMapper().readTree(wrappedData));
-              } catch (JsonProcessingException e) {
+              } catch (final JsonProcessingException e) {
                 e.printStackTrace();
               }
             });

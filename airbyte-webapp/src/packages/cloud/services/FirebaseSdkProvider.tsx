@@ -1,12 +1,8 @@
 import React from "react";
 import { getAuth } from "firebase/auth";
-import { useConfig } from "packages/cloud/services/config";
 
-import {
-  FirebaseAppProvider,
-  useFirebaseApp,
-  AuthProvider,
-} from "packages/firebaseReact";
+import { useConfig } from "packages/cloud/services/config";
+import { FirebaseAppProvider, useFirebaseApp, AuthProvider } from "packages/firebaseReact";
 
 const FirebaseAppSdksProvider: React.FC = ({ children }) => {
   const firebaseApp = useFirebaseApp();

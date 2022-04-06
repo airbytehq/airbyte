@@ -6,17 +6,17 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useAsyncFn } from "react-use";
 
 import { Button, Card } from "components";
+import ResetDataModal from "components/ResetDataModal";
+import { ModalTypes } from "components/ResetDataModal/types";
+import LoadingSchema from "components/LoadingSchema";
+
+import ConnectionForm from "views/Connection/ConnectionForm";
 import {
   useConnectionLoad,
   useResetConnection,
   useUpdateConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import ResetDataModal from "components/ResetDataModal";
-import { ModalTypes } from "components/ResetDataModal/types";
-import LoadingSchema from "components/LoadingSchema";
-
 import { equal } from "utils/objects";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
@@ -47,14 +47,9 @@ const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const ReplicationView: React.FC<IProps> = ({
-  onAfterSaveSchema,
-  connectionId,
-}) => {
+const ReplicationView: React.FC<IProps> = ({ onAfterSaveSchema, connectionId }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
-    false
-  );
+  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
     namespaceDefinition: ConnectionNamespaceDefinition.Source,
@@ -69,19 +64,14 @@ const ReplicationView: React.FC<IProps> = ({
 
   const onReset = () => resetConnection(connectionId);
 
-  const {
-    connection: initialConnection,
+  const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
+
+  const [{ value: connectionWithRefreshCatalog, loading: isRefreshingCatalog }, refreshCatalog] = useAsyncFn(
     refreshConnectionCatalog,
-  } = useConnectionLoad(connectionId);
+    [connectionId]
+  );
 
-  const [
-    { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },
-    refreshCatalog,
-  ] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
-
-  const connection = activeUpdatingSchemaMode
-    ? connectionWithRefreshCatalog
-    : initialConnection;
+  const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
 
   const onSubmit = async (values: ValuesProps) => {
     const initialSyncSchema = connection?.syncCatalog;
@@ -154,9 +144,7 @@ const ReplicationView: React.FC<IProps> = ({
             connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}
-            successMessage={
-              saved && <FormattedMessage id="form.changesSaved" />
-            }
+            successMessage={saved && <FormattedMessage id="form.changesSaved" />}
             onCancel={onExitRefreshCatalogMode}
             editSchemeMode={activeUpdatingSchemaMode}
             additionalSchemaControl={renderUpdateSchemaButton()}

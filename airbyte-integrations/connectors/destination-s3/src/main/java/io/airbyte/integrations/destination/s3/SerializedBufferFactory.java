@@ -49,15 +49,18 @@ public class SerializedBufferFactory {
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     switch (formatConfig.getFormat()) {
       case AVRO -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(AvroSerializedBuffer.DEFAULT_SUFFIX);
+        final Callable<BufferStorage> createStorageFunctionWithExtension =
+            () -> createStorageFunctionWithoutExtension.apply(AvroSerializedBuffer.DEFAULT_SUFFIX);
         return AvroSerializedBuffer.createFunction((S3AvroFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case CSV -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(CsvSerializedBuffer.CSV_GZ_SUFFIX);
+        final Callable<BufferStorage> createStorageFunctionWithExtension =
+            () -> createStorageFunctionWithoutExtension.apply(CsvSerializedBuffer.CSV_GZ_SUFFIX);
         return CsvSerializedBuffer.createFunction((S3CsvFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case JSONL -> {
-        final Callable<BufferStorage> createStorageFunctionWithExtension = () -> createStorageFunctionWithoutExtension.apply(JsonLSerializedBuffer.JSONL_GZ_SUFFIX);
+        final Callable<BufferStorage> createStorageFunctionWithExtension =
+            () -> createStorageFunctionWithoutExtension.apply(JsonLSerializedBuffer.JSONL_GZ_SUFFIX);
         return JsonLSerializedBuffer.createFunction((S3JsonlFormatConfig) formatConfig, createStorageFunctionWithExtension);
       }
       case PARQUET -> {

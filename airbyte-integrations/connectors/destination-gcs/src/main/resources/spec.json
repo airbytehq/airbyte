@@ -9,12 +9,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "GCS Destination Spec",
     "type": "object",
-    "required": [
-      "gcs_bucket_name",
-      "gcs_bucket_path",
-      "credential",
-      "format"
-    ],
+    "required": ["gcs_bucket_name", "gcs_bucket_path", "credential", "format"],
     "additionalProperties": false,
     "properties": {
       "gcs_bucket_name": {

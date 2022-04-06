@@ -1,4 +1,5 @@
 import styled from "styled-components";
+
 import { ContentCard } from "components/ContentCard";
 
 export const SettingsCard = styled(ContentCard)`

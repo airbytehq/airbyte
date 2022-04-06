@@ -7,6 +7,7 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -33,8 +34,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -186,16 +189,20 @@ public class KubePodProcessIntegrationTest {
     // run a background process to continuously consume available ports
     final var portsTaken = new ArrayList<Integer>();
     final var executor = Executors.newSingleThreadExecutor();
+    final var shouldContinueTakingPorts = new AtomicBoolean(true);
+    final var doneTakingPorts = new CountDownLatch(1);
 
     executor.submit(() -> {
-      try {
-        while (true) {
-          portsTaken.add(KubePortManagerSingleton.getInstance().take());
+      while (shouldContinueTakingPorts.get()) {
+        final var portTaken = KubePortManagerSingleton.getInstance().takeImmediately();
+
+        if (portTaken != null) {
+          LOGGER.info("portTaken = " + portTaken);
+          portsTaken.add(portTaken);
         }
-      } catch (final InterruptedException e) {
-        e.printStackTrace();
-        throw new RuntimeException(e);
       }
+
+      doneTakingPorts.countDown();
     });
 
     // repeatedly call exitValue (and therefore the close method)
@@ -209,7 +216,13 @@ public class KubePodProcessIntegrationTest {
     // wait for the background loop to actually take the ports re-offered by the closure of the process
     Thread.sleep(1000);
 
-    // interrupt background thread
+    // tell the thread to stop taking ports
+    shouldContinueTakingPorts.set(false);
+
+    // wait for the thread to actually stop taking ports
+    assertTrue(doneTakingPorts.await(5, TimeUnit.SECONDS));
+
+    // interrupt thread
     executor.shutdownNow();
 
     // prior to fixing this race condition, the close method would offer ports every time it was called.
