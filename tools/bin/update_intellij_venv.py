@@ -8,9 +8,20 @@ INTELLIJ_VERSION_FLAG = "-version"
 
 
 def add_venv_to_xml_root(module: str, module_full_path: str, python_version: str, xml_root):
+    environment_name = f"{python_version} ({module})"
+
     table = xml_root.find("component")
+
+    for elem in table:
+        for subelem in elem:
+            attribute = subelem.attrib
+            if attribute.get("value") == environment_name:
+                print(f"{environment_name} already exists. Skipping...")
+                return
+
     jdk_node = ET.SubElement(table, 'jdk', {"version": "2"})
-    ET.SubElement(jdk_node, "name", {"value": f"{python_version} ({module})"})
+
+    ET.SubElement(jdk_node, "name", {"value": environment_name})
     ET.SubElement(jdk_node, "type", {"value": "Python SDK"})
     ET.SubElement(jdk_node, "version", {"value": f"{python_version}"})
     ET.SubElement(jdk_node, "homePath",
