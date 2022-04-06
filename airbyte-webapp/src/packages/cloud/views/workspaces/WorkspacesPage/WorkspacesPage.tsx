@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
 import { H1, H3 } from "components";
+
 import WorkspacesList from "./components/WorkspacesList";
 
 const MainContent = styled.div`

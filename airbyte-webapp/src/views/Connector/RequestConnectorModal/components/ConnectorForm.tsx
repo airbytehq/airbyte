@@ -5,6 +5,7 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import { Input, ControlLabels, DropDown, Button } from "components";
+
 import { Values } from "../types";
 
 const Buttons = styled.div`
@@ -41,12 +42,7 @@ const requestConnectorValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
 });
 
-const ConnectorForm: React.FC<ConnectorFormProps> = ({
-  onSubmit,
-  onCancel,
-  currentValues,
-  hasFeedback,
-}) => {
+const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, currentValues, hasFeedback }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = [
     { value: "source", label: <FormattedMessage id="connector.source" /> },
@@ -76,10 +72,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
               <ControlLabelsWithMargin
                 error={!!meta.error && meta.touched}
                 label={<FormattedMessage id="connector.type" />}
-                message={
-                  !!meta.error &&
-                  meta.touched && <FormattedMessage id={meta.error} />
-                }
+                message={!!meta.error && meta.touched && <FormattedMessage id={meta.error} />}
               >
                 <DropDown
                   {...field}
@@ -107,12 +100,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                   )
                 }
               >
-                <Input
-                  {...field}
-                  autoFocus
-                  error={!!meta.error && meta.touched}
-                  type="text"
-                />
+                <Input {...field} autoFocus error={!!meta.error && meta.touched} type="text" />
               </ControlLabelsWithMargin>
             )}
           </Field>
@@ -121,15 +109,9 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
               <ControlLabelsWithMargin
                 error={!!meta.error && meta.touched}
                 label={<FormattedMessage id="connector.additionalInfo" />}
-                message={
-                  <FormattedMessage id="connector.additionalInfo.message" />
-                }
+                message={<FormattedMessage id="connector.additionalInfo.message" />}
               >
-                <Input
-                  {...field}
-                  type="text"
-                  error={!!meta.error && meta.touched}
-                />
+                <Input {...field} type="text" error={!!meta.error && meta.touched} />
               </ControlLabelsWithMargin>
             )}
           </Field>
@@ -139,10 +121,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                 <ControlLabelsWithMargin
                   error={!!meta.error && meta.touched}
                   label={<FormattedMessage id="connector.email" />}
-                  message={
-                    !!meta.error &&
-                    meta.touched && <FormattedMessage id={meta.error} />
-                  }
+                  message={!!meta.error && meta.touched && <FormattedMessage id={meta.error} />}
                 >
                   <Input
                     {...field}
@@ -157,12 +136,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
             </Field>
           )}
           <Buttons>
-            <Button
-              type="button"
-              secondary
-              onClick={onCancel}
-              disabled={hasFeedback}
-            >
+            <Button type="button" secondary onClick={onCancel} disabled={hasFeedback}>
               <FormattedMessage id="form.cancel" />
             </Button>
             <RequestButton type="submit" wasActive={hasFeedback}>
