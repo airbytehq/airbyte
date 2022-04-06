@@ -13,7 +13,7 @@ def is_environment_in_jdk_table(environment_name, table):
             attribute = subelem.attrib
             if attribute.get("value") == environment_name:
                 return True
-    return false
+    return False
 
 
 def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
