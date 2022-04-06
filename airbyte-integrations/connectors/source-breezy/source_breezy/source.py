@@ -194,7 +194,7 @@ class IncrementalBreezyStream(BreezyStream, ABC):
 
         for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
-            slices.append({'date_range': {
+            slices.append({'updated_date': {
                 "start": ts,
                 "end": end_ts
             }}
