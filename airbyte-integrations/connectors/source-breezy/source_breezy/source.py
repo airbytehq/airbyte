@@ -66,7 +66,7 @@ class BreezyStream(HttpStream, ABC):
     start_time: str
     data_field = 'data'
 
-    def __init__(self, limit=None, page_size=5000, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
+    def __init__(self, limit=5000, page_size=5000, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
         super().__init__(**kwargs)
         self.limit = limit
         self.page_size = page_size
@@ -210,6 +210,7 @@ class Candidates(IncrementalBreezyStream):
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "_id"
+    max_retries = 42
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
