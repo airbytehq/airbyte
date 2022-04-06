@@ -9444,8 +9444,12 @@
         subdomain:
           type: "string"
           title: "Subdomain"
+<<<<<<< HEAD
           description:
             "This is your Zendesk subdomain that can be found in your account\
+=======
+          description: "This is your Zendesk subdomain that can be found in your account\
+>>>>>>> master
             \ URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN\
             \ is the value of your subdomain."
         credentials:

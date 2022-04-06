@@ -119,15 +119,17 @@ Once you've finished iterating on the changes to a connector as specified in its
    # Example: /test connector=connectors/source-hubspot
    /test connector=(connectors|bases)/<connector_name> 
 
-   # to run integration tests and publish the connector
+   # to run integration tests, publish the connector and bump the connector version
    # Example: /publish connector=connectors/source-hubspot
    /publish connector=(connectors|bases)/<connector_name>
    ```
-4. Update the connector definition in the Airbyte connector index to use the new version:
-   * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
-   * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
-   Then run the commend `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
+4. OPTIONAL: Only necessary if the automated connector version bump fails
+   * Update the connector definition in the Airbyte connector index to use the new version:
+        * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
+        * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
+   
+   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
    
 5. The new version of the connector is now available for everyone who uses it. Thank you!
 
