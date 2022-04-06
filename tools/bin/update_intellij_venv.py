@@ -4,7 +4,7 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-INTELLIJ_INSTANCE_FLAG = "-intellij-instance"
+INTELLIJ_VERSION_FLAG = "-intellij-version"
 
 
 def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
@@ -59,17 +59,14 @@ def get_input_path(input_from_args, version, home_directory):
         path_to_intellij_settings = f"{home_directory}/Library/Application Support/JetBrains/"
         walk = os.walk(path_to_intellij_settings)
         intellij_versions = [version for version in next(walk)[1] if version != "consentOptions"]
-        print(intellij_versions)
         if version in intellij_versions:
-            intellij_instance_to_update = version
+            intellij_version_to_update = version
         elif len(intellij_versions) == 1:
-            intellij_instance_to_update = intellij_versions[0]
-            print(intellij_instance_to_update)
+            intellij_version_to_update = intellij_versions[0]
         else:
-            msg = f"Please select which instance of Intellij to update with the `{INTELLIJ_INSTANCE_FLAG}` flag. Options are: {intellij_versions}"
-            print(msg)
-            raise RuntimeError(msg)
-        return f"{path_to_intellij_settings}{intellij_instance_to_update}/options/jdk.table.xml"
+            raise RuntimeError(
+                f"Please select which version of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}")
+        return f"{path_to_intellij_settings}{intellij_version_to_update}/options/jdk.table.xml"
 
 
 def module_has_requirements_file(module):
@@ -95,7 +92,7 @@ def create_parser():
 
     group.add_argument("-input", help="Path to input IntelliJ's jdk table")
     group.add_argument("-output", help="Path to output jdk table")
-    group.add_argument(INTELLIJ_INSTANCE_FLAG, help="Instance of IntelliJ to update (Only required if multiple versions are installed)")
+    group.add_argument(INTELLIJ_VERSION_FLAG, help="IntelliJ version to update (Only required if multiple versions are installed)")
 
     return parser
 
@@ -136,7 +133,7 @@ if __name__ == "__main__":
 
     if args.update_intellij:
         home_directory = os.getenv("HOME")
-        input_path = get_input_path(args.input, args.intellij_instance, home_directory)
+        input_path = get_input_path(args.input, args.intellij_version, home_directory)
 
         output_path = get_output_path(input_path, args.output)
         with open(input_path, 'r') as f:
@@ -150,7 +147,7 @@ if __name__ == "__main__":
                 add_venv_to_xml_root(module, path_to_module, root)
             with open(output_path, "w") as fout:
                 fout.write(ET.tostring(root, encoding="unicode"))
-    print("Done running.")
+    print("Done.")
 
 
 # --- tests ---
