@@ -177,6 +177,7 @@
     * [Zendesk Support](integrations/sources/zendesk-support.md)
     * [Zendesk Talk](integrations/sources/zendesk-talk.md)
     * [Zenloop](integrations/sources/zenloop.md)
+    * [Zoho CRM](integrations/sources/zoho-crm.md)
     * [Zoom](integrations/sources/zoom.md)
     * [Zuora](integrations/sources/zuora.md)
   * [Destinations](integrations/destinations/README.md)
