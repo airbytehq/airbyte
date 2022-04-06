@@ -97,34 +97,39 @@ public class S3StorageOperations implements BlobStorageOperations {
   }
 
   @Override
-  public String uploadRecordsToBucket(final SerializableBuffer recordsData, final String namespace, final String streamName, final String objectPath)
-      throws Exception {
+  public String uploadRecordsToBucket(final SerializableBuffer recordsData,
+                                      final String namespace,
+                                      final String streamName,
+                                      final String objectPath) {
     final List<Exception> exceptionsThrown = new ArrayList<>();
-    boolean succeeded = false;
-    while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
-      try {
-        loadDataIntoBucket(objectPath, recordsData);
-        succeeded = true;
-      } catch (final Exception e) {
-        LOGGER.error("Failed to upload records into storage {}", objectPath, e);
-        exceptionsThrown.add(e);
-      }
-      if (!succeeded) {
+    while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
+      if (exceptionsThrown.size() > 0) {
         LOGGER.info("Retrying to upload records into storage {} ({}/{}})", objectPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
         // Force a reconnection before retrying in case error was due to network issues...
         s3Client = s3Config.resetS3Client();
       }
+
+      try {
+        return loadDataIntoBucket(objectPath, recordsData);
+      } catch (final Exception e) {
+        LOGGER.error("Failed to upload records into storage {}", objectPath, e);
+        exceptionsThrown.add(e);
+      }
     }
-    if (!succeeded) {
-      throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
-    }
-    return recordsData.getFilename();
+    throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
   }
 
-  private void loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
+  /**
+   * Upload the file from {@code recordsData} to S3 and simplify the filename as <partId>.<extension>.
+   * @return the uploaded filename, which is different from the serialized buffer filename
+   */
+  private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String objectKeyWithPartId = String.format("%s%s%s", objectPath, getPartId(objectPath), getExtension(recordsData.getFilename()));
+    final String partId = getPartId(objectPath);
+    final String extension = getExtension(recordsData.getFilename());
+    final String uploadedFilename = partId + extension;
+    final String objectKeyWithPartId = objectPath + uploadedFilename;
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
         .getDefault(bucket, objectKeyWithPartId, s3Client, partSize)
         .checkIntegrity(true)
@@ -149,6 +154,8 @@ public class S3StorageOperations implements BlobStorageOperations {
       LOGGER.error("Failed to upload data into storage, object {} not found", objectKeyWithPartId);
       throw new RuntimeException("Upload failed");
     }
+    LOGGER.info("Uploaded buffer file to storage: {} -> {}", recordsData.getFilename(), objectKeyWithPartId);
+    return uploadedFilename;
   }
 
   protected static String getExtension(final String filename) {
