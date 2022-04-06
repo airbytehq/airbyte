@@ -90,10 +90,7 @@ const SidebarPopout: React.FC<{
               value: "ticket",
               label: (
                 //TODO: is this the link it should be?
-                <Item
-                  href="https://airbyte.com/contact-support"
-                  target="_blank"
-                >
+                <Item href={config.ui.supportTicketLink} target="_blank">
                   <Icon>
                     <FontAwesomeIcon icon={faEnvelope} />
                   </Icon>
