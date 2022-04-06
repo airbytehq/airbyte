@@ -174,11 +174,7 @@ class API:
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
         try:
-            accounts = fb_user.User(fbid="me").get_ad_accounts()
-            for account in accounts:
-                if account["account_id"] == account_id:
-                    return account
+            return AdAccount(f"act_{account_id}")
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
-        raise FacebookAPIException("Couldn't find account with id {}".format(account_id))
