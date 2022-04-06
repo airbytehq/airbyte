@@ -120,11 +120,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -310,7 +310,7 @@ public class AcceptanceTests {
 
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(-2)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -322,7 +322,7 @@ public class AcceptanceTests {
     assertNotNull(spec.getConnectionSpecification());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(-1)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -332,7 +332,7 @@ public class AcceptanceTests {
     assertEquals(404, e.getCode());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(0)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -344,7 +344,7 @@ public class AcceptanceTests {
     assertNotNull(spec.getConnectionSpecification());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(1)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -365,7 +365,7 @@ public class AcceptanceTests {
     assertEquals(getDestinationDbConfigWithHiddenPassword(), createdDestination.getConnectionConfiguration());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(2)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -379,7 +379,7 @@ public class AcceptanceTests {
     assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkOperationStatus);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(3)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -403,7 +403,7 @@ public class AcceptanceTests {
     assertEquals(expectedConfig, response.getConnectionConfiguration());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(4)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -418,7 +418,7 @@ public class AcceptanceTests {
         checkConnectionRead.getMessage());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -454,7 +454,7 @@ public class AcceptanceTests {
     assertEquals(expected, actual);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(6)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -479,7 +479,7 @@ public class AcceptanceTests {
     assertEquals(name, createdConnection.getName());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(7)
   public void testManualSync() throws Exception {
     final String connectionName = "test-connection";
@@ -497,7 +497,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(8)
   public void testCancelSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
@@ -532,7 +532,7 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(9)
   public void testIncrementalSync() throws Exception {
     LOGGER.info("Starting testIncrementalSync()");
@@ -614,7 +614,7 @@ public class AcceptanceTests {
 
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(10)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -641,7 +641,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(11)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -665,7 +665,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(12)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -690,7 +690,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(13)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -737,7 +737,7 @@ public class AcceptanceTests {
     assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(14)
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
@@ -801,7 +801,7 @@ public class AcceptanceTests {
     assertEquals(0, connectionState.getState().get("column1").asInt() % 5);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(15)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
@@ -825,7 +825,7 @@ public class AcceptanceTests {
   }
 
   // verify that when the worker uses backpressure from pipes that no records are lost.
-  @Test
+  @RetryingTest(3)
   @Order(16)
   public void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
@@ -888,7 +888,7 @@ public class AcceptanceTests {
   // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
   // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
-  @Test
+  @RetryingTest(3)
   @Order(17)
   @Disabled
   public void testFailureTimeout() throws Exception {
@@ -946,7 +946,7 @@ public class AcceptanceTests {
     }
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(18)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
@@ -1016,7 +1016,7 @@ public class AcceptanceTests {
     }
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(19)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
@@ -1045,7 +1045,7 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(20)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
@@ -1089,7 +1089,7 @@ public class AcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(21)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
@@ -1150,7 +1150,7 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.get().getJob().getStatus());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(22)
   public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
