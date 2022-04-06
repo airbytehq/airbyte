@@ -91,6 +91,25 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   }
 
   /**
+   * In case of redshift we need to discover all tables with not super type and update them after to SUPER type. This would be done once.
+   *
+   * @param database         - Database object for interacting with a JDBC connection.
+   * @param writeConfigsList - list of write configs.
+   */
+  @Override
+  public void executeSpecificLogicForDBEngine(final JdbcDatabase database, final List<WriteConfig> writeConfigsList) {
+    LOGGER.info("Executing specific logic for Redshift Destination DB engine...");
+    Set<String> schemas = writeConfigsList.stream().map(WriteConfig::getOutputSchemaName).collect(toSet());
+    List<String> schemaAndTableWithNotSuperType = schemas
+        .stream()
+        .flatMap(schemaName -> discoverNotSuperTables(database, schemaName).stream())
+        .toList();
+    if (!schemaAndTableWithNotSuperType.isEmpty()) {
+      updateJSONDataColumnToSuperDataColumn(database, schemaAndTableWithNotSuperType);
+    }
+  }
+
+  /**
    * @param database   - Database object for interacting with a JDBC connection.
    * @param schemaName - schema to update.
    */
@@ -108,8 +127,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
       if (tablesNameWithoutSuperDatatype.isEmpty()) {
         return Collections.emptyList();
       } else {
-        tablesNameWithoutSuperDatatype.forEach(e -> 
-            schemaAndTableWithNotSuperType.add(e.get("schemaname").textValue()  + "." + e.get("tablename").textValue()));
+        tablesNameWithoutSuperDatatype.forEach(e ->
+            schemaAndTableWithNotSuperType.add(e.get("schemaname").textValue() + "." + e.get("tablename").textValue()));
         return schemaAndTableWithNotSuperType;
       }
     } catch (SQLException e) {
@@ -121,31 +140,12 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   }
 
   /**
-   * In case of redshift we need to discover all tables with not super type and update them after to SUPER type.
-   * This would be done once.
-   * @param database - Database object for interacting with a JDBC connection.
-   * @param writeConfigsList - list of write configs.
-   */
-  @Override
-  public void executeSpecificLogicForDBEngine(JdbcDatabase database, List<WriteConfig> writeConfigsList) {
-    LOGGER.info("Executing specific logic for Redshift Destination DB engine...");
-    List<String> schemaAndTableWithNotSuperType = new ArrayList<>();
-    Set<String> schemas = writeConfigsList.stream().map(WriteConfig::getOutputSchemaName).collect(toSet());
-    for (String schemaName : schemas) {
-      schemaAndTableWithNotSuperType.addAll(discoverNotSuperTables(database, schemaName));
-    }
-    if (!schemaAndTableWithNotSuperType.isEmpty()) {
-      updateJSONDataColumnToSuperDataColumn(database, schemaAndTableWithNotSuperType);
-    }
-  }
-
-  /**
    * We prepare one query for all tables with not super type for updating.
    *
-   * @param database - Database object for interacting with a JDBC connection.
+   * @param database                       - Database object for interacting with a JDBC connection.
    * @param schemaAndTableWithNotSuperType - list of tables with not super type.
    */
-  private void updateJSONDataColumnToSuperDataColumn(JdbcDatabase database, List <String> schemaAndTableWithNotSuperType) {
+  private void updateJSONDataColumnToSuperDataColumn(final JdbcDatabase database, final List<String> schemaAndTableWithNotSuperType) {
     LOGGER.info("Updating JSON data column to super...");
     StringBuilder finalSqlStatement = new StringBuilder();
     // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
