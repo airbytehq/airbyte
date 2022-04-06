@@ -6,7 +6,7 @@ import ConnectorForm from "./components/ConnectorForm";
 
 import { Modal } from "components";
 import useRequestConnector from "hooks/services/useRequestConnector";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { Values } from "./types";
 
 type RequestConnectorModalProps = {
@@ -26,8 +26,7 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
 }) => {
   const [hasFeedback, setHasFeedback] = useState(false);
   const { requestConnector } = useRequestConnector();
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const onSubmit = (values: Values) => {
     requestConnector(values);
     setHasFeedback(true);

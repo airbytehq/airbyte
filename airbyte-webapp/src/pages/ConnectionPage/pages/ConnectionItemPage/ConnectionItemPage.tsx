@@ -1,5 +1,4 @@
 import React, { Suspense } from "react";
-import { useResource } from "rest-hooks";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
@@ -8,8 +7,6 @@ import HeadTitle from "components/HeadTitle";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-
-import ConnectionResource from "core/resources/Connection";
 import { equal } from "utils/objects";
 import ReplicationView from "./components/ReplicationView";
 
@@ -18,6 +15,7 @@ import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/co
 import SettingsView from "./components/SettingsView";
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
+import { useGetConnection } from "hooks/services/useConnectionHook";
 
 const ConnectionItemPage: React.FC = () => {
   const params = useParams<{
@@ -26,9 +24,7 @@ const ConnectionItemPage: React.FC = () => {
   }>();
   const connectionId = params.connectionId || "";
   const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
-  const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId,
-  });
+  const connection = useGetConnection(connectionId);
 
   const { source, destination } = connection;
 

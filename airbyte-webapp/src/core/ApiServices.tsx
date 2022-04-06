@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 
 import { useConfig } from "config";
 import { RequestMiddleware } from "./request/RequestMiddleware";
@@ -14,10 +14,6 @@ export const ApiServices: React.FC = React.memo(({ children }) => {
   const middlewares = useGetService<RequestMiddleware[]>(
     "DefaultRequestMiddlewares"
   );
-
-  useEffect(() => {
-    window._API_URL = config.apiUrl;
-  }, [config]);
 
   const services = useMemo(
     () => ({
