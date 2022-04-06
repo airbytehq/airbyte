@@ -1,9 +1,4 @@
-import {
-  QueryFunction,
-  QueryKey,
-  useQuery,
-  UseQueryOptions,
-} from "react-query";
+import { QueryFunction, QueryKey, useQuery, UseQueryOptions } from "react-query";
 
 type Disabled = Readonly<{ enabled: false }>;
 
@@ -16,10 +11,7 @@ export function useSuspenseQuery<
   queryKey: TQueryKey,
   queryFn: QueryFunction<TQueryFnData, TQueryKey>,
   options: Readonly<
-    Omit<
-      UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
-      "queryKey" | "queryFn" | "suspense"
-    >
+    Omit<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, "queryKey" | "queryFn" | "suspense">
   > = {}
 ) {
   return useQuery<TQueryFnData, TError, TData, TQueryKey>(queryKey, queryFn, {
