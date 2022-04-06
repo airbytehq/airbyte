@@ -185,6 +185,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date         | Pull Request                                               | Subject                                                                                                          |
 |:--------|:-------------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+| 0.5.7   | 2022-04-06   | [11514](https://github.com/airbytehq/airbyte/pull/11514)   | Upgrade sshd-mina in base-java               |
 | 0.5.6   | 2022-02-21   | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats           |
 | 0.5.5   | 2022-02-18   | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Updated timestamp transformation with microseconds                                                               |
 | 0.5.4   | 2022-02-11   | [10251](https://github.com/airbytehq/airbyte/issues/10251) | bug Source MySQL CDC: sync failed when has Zero-date value in mandatory column                                   |

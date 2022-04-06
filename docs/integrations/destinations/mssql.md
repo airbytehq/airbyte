@@ -119,6 +119,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request                                             | Subject                                                                                             |
 |:--------| :--- |:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.1.16  | 2022-04-06 | [11514](https://github.com/airbytehq/airbyte/pull/11514) | Upgrade sshd-mina in base-java |  
 | 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.1.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                        |
 | 0.1.13  | 2021-12-28 | [\#9158](https://github.com/airbytehq/airbyte/pull/9158) | Update connector fields title/description                                                           |

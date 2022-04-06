@@ -76,6 +76,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------|
+| 0.1.5   | 2022-04-06 | [11514](https://github.com/airbytehq/airbyte/pull/11514) | Upgrade sshd-mina in base-java               |
 | 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling            |
 | 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.2   | 2021-12-30 | [\#8809](https://github.com/airbytehq/airbyte/pull/8809) | Update connector fields title/description    |
