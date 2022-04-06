@@ -86,6 +86,7 @@
     "eslint-config-react-app": "^7.0.0",
     "eslint-plugin-jest": "^26.1.1",
     "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "express": "^4.17.3",
     "husky": "^4.2.3",
     "license-checker": "^25.0.1",
