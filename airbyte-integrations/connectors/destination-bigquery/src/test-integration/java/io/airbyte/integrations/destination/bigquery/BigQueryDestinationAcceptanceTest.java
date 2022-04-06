@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,9 +31,11 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +46,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -288,6 +294,42 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
       return queryJob.waitFor();
     } catch (final Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> {
+            var result = String.valueOf(new BigDecimal(DateTimeUtils.getEpochMicros(data.at(path).asText())).divide(new BigDecimal(1000000)));
+            data.put(key.toLowerCase(), !result.contains(".") ? result + ".0" : result);
+          }
+          case DATE -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToDateFormat(data.at(path).asText()));
+        }
+      }
+    }
+  }
+
+  @Override
+  protected void assertSameValue(String key,
+                                 JsonNode expectedValue,
+                                 JsonNode actualValue) {
+    if (DATE_TIME.equals(dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY))) {
+      Assertions.assertEquals(expectedValue.asLong() / 1000000, actualValue.asLong());
+    } else {
+      super.assertSameValue(key, expectedValue, actualValue);
     }
   }
 

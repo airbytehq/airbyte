@@ -24,31 +24,20 @@ type IProps = {
   error?: { message?: string; status?: number } | null;
 };
 
-const hasSourceDefinitionId = (
-  state: unknown
-): state is { sourceDefinitionId: string } => {
+const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
   return (
     typeof state === "object" &&
     state !== null &&
-    typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId ===
-      "string"
+    typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId === "string"
   );
 };
 
-const SourceForm: React.FC<IProps> = ({
-  onSubmit,
-  sourceDefinitions,
-  error,
-  hasSuccess,
-  afterSelectConnector,
-}) => {
+const SourceForm: React.FC<IProps> = ({ onSubmit, sourceDefinitions, error, hasSuccess, afterSelectConnector }) => {
   const { location } = useRouter();
   const analyticsService = useAnalyticsService();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
-    hasSourceDefinitionId(location.state)
-      ? location.state.sourceDefinitionId
-      : null
+    hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
   );
 
   const {
@@ -59,9 +48,7 @@ const SourceForm: React.FC<IProps> = ({
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
-    const connector = sourceDefinitions.find(
-      (item) => item.sourceDefinitionId === sourceDefinitionId
-    );
+    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
 
     if (afterSelectConnector) {
       afterSelectConnector();
@@ -94,11 +81,7 @@ const SourceForm: React.FC<IProps> = ({
       fetchingConnectorError={sourceDefinitionError}
       errorMessage={errorMessage}
       isLoading={isLoading}
-      formValues={
-        sourceDefinitionId
-          ? { serviceType: sourceDefinitionId, name: "" }
-          : undefined
-      }
+      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />

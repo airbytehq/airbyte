@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 import Modal from "components/Modal";
 import { Button } from "components";
+
 import { ModalTypes } from "./types";
 
 export type IProps = {

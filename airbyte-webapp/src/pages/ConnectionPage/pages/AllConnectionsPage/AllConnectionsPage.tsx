@@ -2,13 +2,15 @@ import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
-import ConnectionsTable from "./components/ConnectionsTable";
-import useRouter from "hooks/useRouter";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
+
+import useRouter from "hooks/useRouter";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
-import { RoutePaths } from "../../../routePaths";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+
+import { RoutePaths } from "../../../routePaths";
+import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();

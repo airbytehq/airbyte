@@ -294,6 +294,8 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date | Pull Request | Subject |
 |:------- | :--------- | :----------------------------------------------------- | :------------------------------------- |
+| 0.3.19  | 2022-03-31 | [11495](https://github.com/airbytehq/airbyte/pull/11495) | Adds Support to Chinese MSSQL Server Agent |
+| 0.3.18  | 2022-03-29 | [11010](https://github.com/airbytehq/airbyte/pull/11010) | Adds JDBC Params |
 | 0.3.17  | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
 | 0.3.16  | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
 | 0.3.15  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |

@@ -28,18 +28,10 @@ const ControlComponent = (props: ControlProps<Value, false>) => (
 );
 
 type PopoutProps = DropdownProps & {
-  targetComponent: (props: {
-    onOpen: () => void;
-    isOpen?: boolean;
-    value: Value;
-  }) => ReactNode;
+  targetComponent: (props: { onOpen: () => void; isOpen?: boolean; value: Value }) => ReactNode;
 };
 
-const Popout: React.FC<PopoutProps> = ({
-  onChange,
-  targetComponent,
-  ...props
-}) => {
+const Popout: React.FC<PopoutProps> = ({ onChange, targetComponent, ...props }) => {
   const [isOpen, toggleOpen] = useToggle(false);
 
   const onSelectChange = (value: Value, meta: ActionMeta<Value>) => {

@@ -5,14 +5,12 @@ import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
 
-import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
-
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
-
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Link } from "components";
-import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
 import DocsIcon from "views/layout/SideBar/components/DocsIcon";
@@ -22,11 +20,9 @@ import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
-import ResourcesPopup, {
-  Icon,
-  Item,
-} from "views/layout/SideBar/components/ResourcesPopup";
+import ResourcesPopup, { Icon, Item } from "views/layout/SideBar/components/ResourcesPopup";
 import { FeatureItem, WithFeature } from "hooks/services/Feature";
+
 import { RoutePaths } from "../../../../../pages/routePaths";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
@@ -108,19 +104,11 @@ const SideBar: React.FC = () => {
   return (
     <Bar>
       <div>
-        <Link
-          to={
-            workspace.displaySetupWizard
-              ? RoutePaths.Onboarding
-              : RoutePaths.Connections
-          }
-        >
+        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <WorkspacePopout>
-          {({ onOpen, value }) => (
-            <WorkspaceButton onClick={onOpen}>{value}</WorkspaceButton>
-          )}
+          {({ onOpen, value }) => <WorkspaceButton onClick={onOpen}>{value}</WorkspaceButton>}
         </WorkspacePopout>
         <Menu>
           {workspace.displaySetupWizard ? (
