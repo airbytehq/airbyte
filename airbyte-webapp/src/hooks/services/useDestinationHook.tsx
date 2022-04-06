@@ -45,11 +45,9 @@ const useDestinationList = (): DestinationList => {
   const workspace = useCurrentWorkspace();
   const service = useDestinationService();
 
-  return (
-    useQuery(destinationsKeys.lists(), () =>
-      service.list(workspace.workspaceId)
-    ) as QueryObserverSuccessResult<DestinationList>
-  ).data;
+  return (useQuery(destinationsKeys.lists(), () =>
+    service.list(workspace.workspaceId)
+  ) as QueryObserverSuccessResult<DestinationList>).data;
 };
 
 const useGetDestination = <T extends string | undefined | null>(
@@ -57,11 +55,9 @@ const useGetDestination = <T extends string | undefined | null>(
 ): T extends string ? Destination : Destination | undefined => {
   const service = useDestinationService();
 
-  return (
-    useQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
-      enabled: isDefined(destinationId),
-    }) as QueryObserverSuccessResult<Destination>
-  ).data;
+  return (useQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
+    enabled: isDefined(destinationId),
+  }) as QueryObserverSuccessResult<Destination>).data;
 };
 
 const useCreateDestination = () => {

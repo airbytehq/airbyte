@@ -49,9 +49,9 @@ const useSourceList = (): SourceList => {
   const workspace = useCurrentWorkspace();
   const service = useSourceService();
 
-  return (
-    useQuery(sourcesKeys.lists(), () => service.list(workspace.workspaceId)) as QueryObserverSuccessResult<SourceList>
-  ).data;
+  return (useQuery(sourcesKeys.lists(), () =>
+    service.list(workspace.workspaceId)
+  ) as QueryObserverSuccessResult<SourceList>).data;
 };
 
 const useGetSource = <T extends string | undefined | null>(
@@ -59,11 +59,9 @@ const useGetSource = <T extends string | undefined | null>(
 ): T extends string ? Source : Source | undefined => {
   const service = useSourceService();
 
-  return (
-    useQuery(sourcesKeys.detail(sourceId ?? ""), () => service.get(sourceId ?? ""), {
-      enabled: isDefined(sourceId),
-    }) as QueryObserverSuccessResult<Source>
-  ).data;
+  return (useQuery(sourcesKeys.detail(sourceId ?? ""), () => service.get(sourceId ?? ""), {
+    enabled: isDefined(sourceId),
+  }) as QueryObserverSuccessResult<Source>).data;
 };
 
 const useCreateSource = () => {

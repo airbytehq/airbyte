@@ -23,25 +23,31 @@ export const initialState: NotificationServiceState = {
 };
 
 export const notificationServiceReducer = createReducer<NotificationServiceState, Actions>(initialState)
-  .handleAction(actions.addNotification, (state, action): NotificationServiceState => {
-    if (findNotification(state.notifications, action.payload)) {
-      return state;
+  .handleAction(
+    actions.addNotification,
+    (state, action): NotificationServiceState => {
+      if (findNotification(state.notifications, action.payload)) {
+        return state;
+      }
+
+      const notifications = [action.payload].concat(state.notifications);
+      return {
+        ...state,
+        notifications,
+      };
     }
+  )
+  .handleAction(
+    actions.deleteNotificationById,
+    (state, action): NotificationServiceState => {
+      const notifications = removeNotification(state.notifications, action.payload);
 
-    const notifications = [action.payload].concat(state.notifications);
-    return {
-      ...state,
-      notifications,
-    };
-  })
-  .handleAction(actions.deleteNotificationById, (state, action): NotificationServiceState => {
-    const notifications = removeNotification(state.notifications, action.payload);
-
-    return {
-      ...state,
-      notifications,
-    };
-  })
+      return {
+        ...state,
+        notifications,
+      };
+    }
+  )
   .handleAction(
     actions.clearAll,
     (state, _): NotificationServiceState => ({

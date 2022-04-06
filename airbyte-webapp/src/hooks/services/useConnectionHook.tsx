@@ -127,13 +127,11 @@ export const useResetConnection = () => {
 const useGetConnection = (connectionId: string, options?: { refetchInterval: number }): Connection => {
   const service = useWebConnectionService();
 
-  return (
-    useQuery(
-      connectionsKeys.detail(connectionId),
-      () => service.getConnection(connectionId),
-      options
-    ) as QueryObserverSuccessResult<Connection>
-  ).data;
+  return (useQuery(
+    connectionsKeys.detail(connectionId),
+    () => service.getConnection(connectionId),
+    options
+  ) as QueryObserverSuccessResult<Connection>).data;
 };
 
 const useCreateConnection = () => {
@@ -217,11 +215,9 @@ const useConnectionList = (): ListConnection => {
   const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
 
-  return (
-    useQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId)) as QueryObserverSuccessResult<{
-      connections: Connection[];
-    }>
-  ).data;
+  return (useQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId)) as QueryObserverSuccessResult<{
+    connections: Connection[];
+  }>).data;
 };
 
 export { useConnectionList, useGetConnection, useUpdateConnection, useCreateConnection, useDeleteConnection };

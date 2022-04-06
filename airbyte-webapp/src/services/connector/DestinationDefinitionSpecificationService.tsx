@@ -19,20 +19,18 @@ function useGetService(): DestinationDefinitionSpecificationService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new DestinationDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new DestinationDefinitionSpecificationService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
 }
 
 export const useGetDestinationDefinitionSpecification = (id: string): DestinationDefinitionSpecification => {
   const service = useGetService();
 
-  return (
-    useQuery(destinationDefinitionSpecificationKeys.detail(id), () =>
-      service.get(id)
-    ) as QueryObserverSuccessResult<DestinationDefinitionSpecification>
-  ).data;
+  return (useQuery(destinationDefinitionSpecificationKeys.detail(id), () =>
+    service.get(id)
+  ) as QueryObserverSuccessResult<DestinationDefinitionSpecification>).data;
 };
 
 export const useGetDestinationDefinitionSpecificationAsync = (

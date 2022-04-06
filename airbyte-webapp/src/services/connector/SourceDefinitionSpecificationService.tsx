@@ -19,20 +19,18 @@ function useGetService(): SourceDefinitionSpecificationService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new SourceDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new SourceDefinitionSpecificationService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
 }
 
 export const useGetSourceDefinitionSpecification = (id: string): SourceDefinitionSpecification => {
   const service = useGetService();
 
-  return (
-    useQuery(sourceDefinitionSpecificationKeys.detail(id), () =>
-      service.get(id)
-    ) as QueryObserverSuccessResult<SourceDefinitionSpecification>
-  ).data;
+  return (useQuery(sourceDefinitionSpecificationKeys.detail(id), () =>
+    service.get(id)
+  ) as QueryObserverSuccessResult<SourceDefinitionSpecification>).data;
 };
 
 export const useGetSourceDefinitionSpecificationAsync = (

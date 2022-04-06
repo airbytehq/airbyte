@@ -66,10 +66,10 @@ const ReplicationView: React.FC<IProps> = ({ onAfterSaveSchema, connectionId }) 
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
 
-  const [{ value: connectionWithRefreshCatalog, loading: isRefreshingCatalog }, refreshCatalog] = useAsyncFn(
-    refreshConnectionCatalog,
-    [connectionId]
-  );
+  const [
+    { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },
+    refreshCatalog,
+  ] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
 
   const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
 

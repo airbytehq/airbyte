@@ -59,10 +59,10 @@ const ServiceFormContextProvider: React.FC<{
   const { hasFeature } = useFeatureService();
 
   const serviceType = values.serviceType;
-  const selectedService = useMemo(
-    () => availableServices.find((s) => Connector.id(s) === serviceType),
-    [availableServices, serviceType]
-  );
+  const selectedService = useMemo(() => availableServices.find((s) => Connector.id(s) === serviceType), [
+    availableServices,
+    serviceType,
+  ]);
 
   const isAuthFlowSelected = useMemo(
     () =>

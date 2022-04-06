@@ -25,6 +25,7 @@ export type AirbyteJSONSchema = {
     : JSONSchema7[Property] extends JSONSchema7Definition | JSONSchema7Definition[]
     ? AirbyteJSONSchemaDefinition | AirbyteJSONSchemaDefinition[]
     : JSONSchema7[Property];
-} & AirbyteJSONSchemaProps;
+} &
+  AirbyteJSONSchemaProps;
 
 export type AirbyteJSONSchemaDefinition = AirbyteJSONSchema | boolean;

@@ -24,21 +24,19 @@ function useGetWorkspaceService(): CloudWorkspacesService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new CloudWorkspacesService(cloudApiUrl, requestAuthMiddleware),
-    [cloudApiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new CloudWorkspacesService(cloudApiUrl, requestAuthMiddleware), [
+    cloudApiUrl,
+    requestAuthMiddleware,
+  ]);
 }
 
 export function useListCloudWorkspaces(): CloudWorkspace[] {
   const service = useGetWorkspaceService();
   const user = useCurrentUser();
 
-  return (
-    useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
-      service.listByUser(user.userId)
-    ) as QueryObserverSuccessResult<CloudWorkspace[]>
-  ).data;
+  return (useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
+    service.listByUser(user.userId)
+  ) as QueryObserverSuccessResult<CloudWorkspace[]>).data;
 }
 
 export function useListCloudWorkspacesAsync(): QueryObserverResult<CloudWorkspace[]> {
@@ -113,20 +111,18 @@ export function useRemoveWorkspace() {
 export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  return (
-    useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
-      service.get(workspaceId)
-    ) as QueryObserverSuccessResult<CloudWorkspace>
-  ).data;
+  return (useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
+    service.get(workspaceId)
+  ) as QueryObserverSuccessResult<CloudWorkspace>).data;
 }
 
 export function useInvalidateCloudWorkspace(workspaceId: string): () => Promise<void> {
   const queryClient = useQueryClient();
 
-  return useCallback(
-    () => queryClient.invalidateQueries([workspaceKeys.detail(workspaceId)]),
-    [queryClient, workspaceId]
-  );
+  return useCallback(() => queryClient.invalidateQueries([workspaceKeys.detail(workspaceId)]), [
+    queryClient,
+    workspaceId,
+  ]);
 }
 
 export function useGetUsage(workspaceId: string): QueryObserverResult<CloudWorkspaceUsage> {

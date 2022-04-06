@@ -11,7 +11,9 @@ import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../..
 import { ServiceFormValues } from "../../../types";
 import { useServiceForm } from "../../../serviceFormContext";
 
-function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
+function useFormikOauthAdapter(
+  connector: ConnectorDefinitionSpecification
+): {
   loading: boolean;
   done?: boolean;
   run: () => Promise<void>;

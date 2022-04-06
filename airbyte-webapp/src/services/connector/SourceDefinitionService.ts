@@ -21,10 +21,10 @@ function useGetSourceDefinitionService(): SourceDefinitionService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new SourceDefinitionService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new SourceDefinitionService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
 }
 
 const useSourceDefinitionList = (): {
@@ -33,27 +33,25 @@ const useSourceDefinitionList = (): {
   const service = useGetSourceDefinitionService();
   const workspace = useCurrentWorkspace();
 
-  return (
-    useQuery(sourceDefinitionKeys.lists(), async () => {
-      const [definition, latestDefinition] = await Promise.all([
-        service.list(workspace.workspaceId),
-        service.listLatest(workspace.workspaceId),
-      ]);
+  return (useQuery(sourceDefinitionKeys.lists(), async () => {
+    const [definition, latestDefinition] = await Promise.all([
+      service.list(workspace.workspaceId),
+      service.listLatest(workspace.workspaceId),
+    ]);
 
-      const sourceDefinitions: SourceDefinition[] = definition.sourceDefinitions.map((source: SourceDefinition) => {
-        const withLatest = latestDefinition.sourceDefinitions.find(
-          (latestSource: SourceDefinition) => latestSource.sourceDefinitionId === source.sourceDefinitionId
-        );
+    const sourceDefinitions: SourceDefinition[] = definition.sourceDefinitions.map((source: SourceDefinition) => {
+      const withLatest = latestDefinition.sourceDefinitions.find(
+        (latestSource: SourceDefinition) => latestSource.sourceDefinitionId === source.sourceDefinitionId
+      );
 
-        return {
-          ...source,
-          latestDockerImageTag: withLatest?.dockerImageTag ?? "",
-        };
-      });
+      return {
+        ...source,
+        latestDockerImageTag: withLatest?.dockerImageTag ?? "",
+      };
+    });
 
-      return { sourceDefinitions };
-    }) as QueryObserverSuccessResult<{ sourceDefinitions: SourceDefinition[] }>
-  ).data;
+    return { sourceDefinitions };
+  }) as QueryObserverSuccessResult<{ sourceDefinitions: SourceDefinition[] }>).data;
 };
 
 const useSourceDefinition = <T extends string | undefined>(
@@ -61,11 +59,9 @@ const useSourceDefinition = <T extends string | undefined>(
 ): T extends string ? SourceDefinition : SourceDefinition | undefined => {
   const service = useGetSourceDefinitionService();
 
-  return (
-    useQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
-      enabled: isDefined(id),
-    }) as QueryObserverSuccessResult<SourceDefinition>
-  ).data;
+  return (useQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
+    enabled: isDefined(id),
+  }) as QueryObserverSuccessResult<SourceDefinition>).data;
 };
 
 const useCreateSourceDefinition = () => {

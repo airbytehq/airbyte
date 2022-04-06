@@ -33,10 +33,9 @@ const useConnector = (): ConnectorService => {
 
   const newSourceDefinitions = useMemo(() => sourceDefinitions.filter(Connector.hasNewerVersion), [sourceDefinitions]);
 
-  const newDestinationDefinitions = useMemo(
-    () => destinationDefinitions.filter(Connector.hasNewerVersion),
-    [destinationDefinitions]
-  );
+  const newDestinationDefinitions = useMemo(() => destinationDefinitions.filter(Connector.hasNewerVersion), [
+    destinationDefinitions,
+  ]);
 
   const updateAllSourceVersions = async () => {
     await Promise.all(

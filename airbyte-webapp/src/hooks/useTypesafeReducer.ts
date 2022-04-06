@@ -13,7 +13,7 @@ function useTypesafeReducer<StateShape, Actions extends { [key: string]: (...arg
       return function (this: any) {
         return dispatcher(
           // eslint-disable-next-line prefer-rest-params
-          actionCreator.apply(this as any, arguments as any as any[])
+          actionCreator.apply(this as any, (arguments as any) as any[])
         );
       };
     }

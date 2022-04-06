@@ -6,7 +6,9 @@ export function makeConnectionConfigurationPath(path: string[]): string {
   return `connectionConfiguration.${path.join(".")}`;
 }
 
-export function serverProvidedOauthPaths(connector?: ConnectorDefinitionSpecification): {
+export function serverProvidedOauthPaths(
+  connector?: ConnectorDefinitionSpecification
+): {
   [key: string]: { path_in_connector_config: string[] };
 } {
   return {
