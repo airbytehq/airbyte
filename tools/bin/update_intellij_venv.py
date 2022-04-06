@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
@@ -96,9 +97,7 @@ if __name__ == "__main__":
 
     if args.install_venv:
         for module in modules:
-            pass
-            # rc = subprocess.call("sleep.sh")
-            # TODO
+            subprocess.run(["tools/bin/setup_connector_venv.sh", module], check=True)
     if args.update_intellij:
         with open(input_path, 'r') as f:
             root = ET.fromstring(f.read())
