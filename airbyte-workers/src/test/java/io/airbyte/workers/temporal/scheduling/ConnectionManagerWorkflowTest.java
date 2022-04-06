@@ -176,6 +176,10 @@ public class ConnectionManagerWorkflowTest {
           .fromJobResetFailure(false)
           .build();
 
+      final List<Integer> test = new ArrayList<>();
+      Assertions.assertThat(test).map(e -> e.toString())
+          .contains("test", "test");
+
       startWorkflowAndWaitUntilReady(workflow, input);
       // wait to be scheduled, then to run, then schedule again
       testEnv.sleep(Duration.ofMinutes(SCHEDULE_WAIT.toMinutes() + SCHEDULE_WAIT.toMinutes() + 1));

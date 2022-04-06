@@ -46,6 +46,8 @@ services:
       - DATABASE_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_USER=${DATABASE_USER}
+    ports:
+      - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data
   scheduler:
@@ -201,8 +203,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./vault/config:/vault/config
-      - ./vault/policies:/vault/policies
-      - ./vault/data:/vault/data
+      #- ./vault/policies:/vault/policies
+      #- ./vault/data:/vault/data
       - ./vault/file:/vault/file
     ports:
       - 8400:8400
@@ -210,7 +212,7 @@ services:
       - VAULT_ADDR=http://0.0.0.0:8400
       - VAULT_API_ADDR=http://0.0.0.0:8400
       - VAULT_ADDRESS=http://0.0.0.0:8400
-      - VAULT_TOKEN=${VAULT_TOKEN}
+      # - VAULT_TOKEN=${VAULT_TOKEN}
     cap_add:
       - IPC_LOCK
     command: vault server -config=/vault/config/vault.json
@@ -219,13 +221,14 @@ services:
     logging: *default-logging
     container_name: airbyte-vault-init
     restart: unless-stopped
-    command: start
+    command: start --storage=postgres
     depends_on:
       - vault
+      - db
     environment:
-      - VAULT_ADDR=http://0.0.0.0:8400
+      - VAULT_ADDR=http://vault:8400
       - ENCRYPTION_LOCAL_SECRET_KEY=FjaUCqqTIorGTe1Z86rs2YfkRgQ6iIgo
-      - STORAGE_POSTGRES_CONNECTION_URL=postgres://docker:docker@postgres:5432/airbyte?sslmode=disable
+      - STORAGE_POSTGRES_CONNECTION_URL=postgres://docker:docker@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}?sslmode=disable
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}

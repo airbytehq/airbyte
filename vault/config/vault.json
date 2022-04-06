@@ -12,6 +12,13 @@
   },
   "ui": "true",
   "default_lease_ttl": "168h",
-  "max_lease_ttl": "0h",
-  "api_addr": "http://0.0.0.0:8400"
+  "max_lease_ttl": "168h",
+  "api_addr": "http://0.0.0.0:8400",
+  "policy": {
+    "path": {
+      "secret/test": {
+        "capabilities": ["create", "read", "update", "delete", "list"]
+      }
+    }
+  }
 }

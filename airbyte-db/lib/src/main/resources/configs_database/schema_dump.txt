@@ -142,6 +142,13 @@ create table "public"."state"(
       "connection_id"
     )
 );
+create table "public"."vault_init_data"(
+  "encryption_type" text null,
+  "encryption_version" text null,
+  "root_token" text null,
+  "unseal_keys" text[] null,
+  "created_at" timestamptz(35) null
+);
 create table "public"."workspace"(
   "id" uuid not null,
   "customer_id" uuid null,
