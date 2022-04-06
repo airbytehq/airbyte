@@ -957,7 +957,7 @@ jobs:
   ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
   ## JOB_KUBE_NODE_SELECTORS
   ## pod node selectors of the sync job and the default pod node selectors fallback for others jobs
-  ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
+  ## @params jobs.kube.selectors [object] key/value node selectors applied to kube jobs
   kube:
     annotations: {}
     selectors: {}
