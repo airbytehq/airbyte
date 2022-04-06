@@ -11,7 +11,7 @@ def is_environment_in_jdk_table(environment_name, table):
     for elem in table:
         for subelem in elem:
             attribute = subelem.attrib
-            if attribute.get("value") == name:
+            if attribute.get("value") == environment_name:
                 return True
     return false
 
