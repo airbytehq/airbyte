@@ -17,5 +17,5 @@ export function useSuspenseQuery<
   return useQuery<TQueryFnData, TError, TData, TQueryKey>(queryKey, queryFn, {
     ...options,
     suspense: true,
-  }).data as typeof options extends Disabled ? TData | undefined : TData; // useQuery returns TData | undefined but we know we always get TData
+  }).data as typeof options extends Disabled ? TData | undefined : TData;
 }
