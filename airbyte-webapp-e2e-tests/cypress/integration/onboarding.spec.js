@@ -12,6 +12,6 @@ describe("Preferences actions", () => {
 
     cy.submitButtonClick();
 
-    cy.url().should("match", /.*\/onboarding/);
+    cy.url().should("match", /.*\/testfailure/);
   });
 });
