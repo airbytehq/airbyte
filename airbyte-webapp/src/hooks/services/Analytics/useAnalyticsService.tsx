@@ -13,9 +13,7 @@ export type AnalyticsServiceProviderValue = {
   service: AnalyticsService;
 };
 
-export const analyticsServiceContext = React.createContext<AnalyticsServiceProviderValue | null>(
-  null
-);
+export const analyticsServiceContext = React.createContext<AnalyticsServiceProviderValue | null>(null);
 
 function AnalyticsServiceProvider({
   children,
@@ -28,10 +26,10 @@ function AnalyticsServiceProvider({
 }) {
   const [analyticsContext, { set, setAll, remove }] = useMap(initialContext);
 
-  const analyticsService: AnalyticsService = useMemo(
-    () => new AnalyticsService(analyticsContext, version),
-    [version, analyticsContext]
-  );
+  const analyticsService: AnalyticsService = useMemo(() => new AnalyticsService(analyticsContext, version), [
+    version,
+    analyticsContext,
+  ]);
 
   const handleAddContextProps = (props: AnalyticsContext) => {
     Object.entries(props).forEach((value) => set(...value));
@@ -62,9 +60,7 @@ export const useAnalytics = (): AnalyticsServiceProviderValue => {
   const analyticsContext = useContext(analyticsServiceContext);
 
   if (!analyticsContext) {
-    throw new Error(
-      "analyticsContext must be used within a AnalyticsServiceProvider."
-    );
+    throw new Error("analyticsContext must be used within a AnalyticsServiceProvider.");
   }
 
   return analyticsContext;
@@ -89,9 +85,7 @@ export const useTrackPage = (page: string): void => {
   }, [analyticsService, page]);
 };
 
-export const useAnalyticsRegisterValues = (
-  props?: AnalyticsContext | null
-): void => {
+export const useAnalyticsRegisterValues = (props?: AnalyticsContext | null): void => {
   const { addContextProps, removeContextProps } = useAnalytics();
 
   useEffect(() => {

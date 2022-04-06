@@ -82,9 +82,7 @@ const EditControls: React.FC<IProps> = ({
           <Button
             type="button"
             secondary
-            disabled={
-              (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
-            }
+            disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
             onClick={resetForm}
           >
             <FormattedMessage id="form.cancel" />
@@ -92,9 +90,7 @@ const EditControls: React.FC<IProps> = ({
           <ControlButton
             type="submit"
             isLoading={isSubmitting}
-            disabled={
-              (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
-            }
+            disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
           >
             {editSchemeMode ? (
               <FormattedMessage id="connection.saveAndReset" />

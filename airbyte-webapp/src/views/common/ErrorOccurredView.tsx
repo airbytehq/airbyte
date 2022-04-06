@@ -10,10 +10,7 @@ const Content = styled(ContentCard)`
   padding: 50px 15px;
 `;
 
-const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({
-  message,
-  children,
-}) => {
+const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({ message, children }) => {
   return (
     <BaseClearView>
       <Content>

@@ -2,10 +2,11 @@ import React from "react";
 import { FieldArray, useField } from "formik";
 
 import { ArrayOfObjectsEditor } from "components";
+import GroupControls from "components/GroupControls";
 
 import { FormObjectArrayItem } from "core/form/types";
+
 import { useServiceForm } from "../../serviceFormContext";
-import GroupControls from "components/GroupControls";
 import { FormSection } from "./FormSection";
 import { SectionContainer } from "./common";
 
@@ -19,11 +20,7 @@ export const ArraySection: React.FC<{
   formField: FormObjectArrayItem;
   path: string;
 }> = ({ formField, path }) => {
-  const {
-    addUnfinishedFlow,
-    removeUnfinishedFlow,
-    unfinishedFlows,
-  } = useServiceForm();
+  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows } = useServiceForm();
   const [field, , form] = useField(path);
 
   const items = field.value ?? [];
@@ -59,13 +56,7 @@ export const ArraySection: React.FC<{
               onRemove={arrayHelpers.remove}
               items={items}
             >
-              {() => (
-                <FormSection
-                  blocks={formField.properties}
-                  path={`${path}.${flow.id}`}
-                  skipAppend
-                />
-              )}
+              {() => <FormSection blocks={formField.properties} path={`${path}.${flow.id}`} skipAppend />}
             </ArrayOfObjectsEditor>
           )}
         />

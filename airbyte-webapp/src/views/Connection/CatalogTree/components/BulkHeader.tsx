@@ -4,8 +4,7 @@ import styled from "styled-components";
 import intersection from "lodash/intersection";
 
 import { Button, Cell, Header, Toggle } from "components";
-import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
-import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
+
 import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import {
   DestinationSyncMode,
@@ -15,9 +14,12 @@ import {
   SyncSchemaStream,
   traverseSchemaToField,
 } from "core/domain/catalog";
+
+import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { flatten, getPathType } from "../utils";
-import { pathDisplayName, PathPopout } from "./PathPopout";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
+import { pathDisplayName, PathPopout } from "./PathPopout";
+import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 
 const ActionCell = styled.div`
   display: flex;
@@ -42,10 +44,7 @@ type BulkHeaderProps = {
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {
-    const traversedFields = traverseSchemaToField(
-      stream.jsonSchema,
-      stream.name
-    );
+    const traversedFields = traverseSchemaToField(stream.jsonSchema, stream.name);
     const flattenedFields = flatten(traversedFields);
 
     return flattenedFields.filter(SyncSchemaFieldObject.isPrimitive);
@@ -56,9 +55,7 @@ function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   // calculate intersection of primitive fields across all selected streams
   primitiveFieldsByStream.forEach((fields, index) => {
     if (index === 0) {
-      fields.forEach((field) =>
-        pathMap.set(pathDisplayName(field.path), field)
-      );
+      fields.forEach((field) => pathMap.set(pathDisplayName(field.path), field));
     } else {
       const fieldMap = new Set(fields.map((f) => pathDisplayName(f.path)));
       pathMap.forEach((_, k) => (!fieldMap.has(k) ? pathMap.delete(k) : null));
@@ -68,53 +65,32 @@ function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   return Array.from(pathMap.values());
 }
 
-export const BulkHeader: React.FC<BulkHeaderProps> = ({
-  destinationSupportedSyncModes,
-}) => {
-  const {
-    selectedBatchNodes,
-    options,
-    onChangeOption,
-    onApply,
-    isActive,
-    onCancel,
-  } = useBulkEdit();
+export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSyncModes }) => {
+  const { selectedBatchNodes, options, onChangeOption, onApply, isActive, onCancel } = useBulkEdit();
 
   const availableSyncModes = useMemo(
     () =>
       SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
-        const supportableModes = intersection(
-          selectedBatchNodes.flatMap((n) => n.stream.supportedSyncModes)
-        );
-        return (
-          supportableModes.includes(syncMode) &&
-          destinationSupportedSyncModes.includes(destinationSyncMode)
-        );
+        const supportableModes = intersection(selectedBatchNodes.flatMap((n) => n.stream.supportedSyncModes));
+        return supportableModes.includes(syncMode) && destinationSupportedSyncModes.includes(destinationSyncMode);
       }).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
       })),
     [selectedBatchNodes, destinationSupportedSyncModes]
   );
 
-  const primitiveFields: SyncSchemaField[] = useMemo(
-    () => calculateSharedFields(selectedBatchNodes),
-    [selectedBatchNodes]
-  );
+  const primitiveFields: SyncSchemaField[] = useMemo(() => calculateSharedFields(selectedBatchNodes), [
+    selectedBatchNodes,
+  ]);
 
   if (!isActive) {
     return null;
   }
 
-  const pkRequired =
-    options.destinationSyncMode === DestinationSyncMode.Dedupted;
-  const shouldDefinePk =
-    selectedBatchNodes.every(
-      (n) => n.stream.sourceDefinedPrimaryKey.length === 0
-    ) && pkRequired;
+  const pkRequired = options.destinationSyncMode === DestinationSyncMode.Dedupted;
+  const shouldDefinePk = selectedBatchNodes.every((n) => n.stream.sourceDefinedPrimaryKey.length === 0) && pkRequired;
   const cursorRequired = options.syncMode === SyncMode.Incremental;
-  const shouldDefineCursor =
-    selectedBatchNodes.every((n) => !n.stream.sourceDefinedCursor) &&
-    cursorRequired;
+  const shouldDefineCursor = selectedBatchNodes.every((n) => !n.stream.sourceDefinedCursor) && cursorRequired;
 
   const pkType = getPathType(pkRequired, shouldDefinePk);
   const cursorType = getPathType(cursorRequired, shouldDefineCursor);
@@ -126,11 +102,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({
       <CheckboxCell />
       <ArrowCell />
       <HeaderCell flex={0.4}>
-        <Toggle
-          small
-          checked={options.selected}
-          onChange={() => onChangeOption({ selected: !options.selected })}
-        />
+        <Toggle small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
       </HeaderCell>
       <HeaderCell />
       <HeaderCell />

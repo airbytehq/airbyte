@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
 import DeleteBlock from "components/DeleteBlock";
+
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { Source } from "core/domain/connector";
@@ -20,20 +21,13 @@ type IProps = {
   connectionsWithSource: Connection[];
 };
 
-const SourceSettings: React.FC<IProps> = ({
-  currentSource,
-  connectionsWithSource,
-}) => {
+const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource }) => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
 
-  const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(
-    currentSource.sourceDefinitionId
-  );
+  const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(currentSource.sourceDefinitionId);
 
-  const sourceDefinition = useSourceDefinition(
-    currentSource?.sourceDefinitionId
-  );
+  const sourceDefinition = useSourceDefinition(currentSource?.sourceDefinitionId);
 
   const onSubmit = async (values: {
     name: string;
@@ -45,8 +39,7 @@ const SourceSettings: React.FC<IProps> = ({
       sourceId: currentSource.sourceId,
     });
 
-  const onDelete = () =>
-    deleteSource({ connectionsWithSource, source: currentSource });
+  const onDelete = () => deleteSource({ connectionsWithSource, source: currentSource });
 
   return (
     <Content>

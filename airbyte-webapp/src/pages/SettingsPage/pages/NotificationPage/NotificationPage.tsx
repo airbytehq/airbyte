@@ -1,13 +1,12 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import useWorkspace, {
-  useCurrentWorkspace,
-  WebhookPayload,
-} from "hooks/services/useWorkspace";
-import WebHookForm from "./components/WebHookForm";
+
 import HeadTitle from "components/HeadTitle";
 
+import useWorkspace, { useCurrentWorkspace, WebhookPayload } from "hooks/services/useWorkspace";
+
 import { Content, SettingsCard } from "../SettingsComponents";
+import WebHookForm from "./components/WebHookForm";
 
 function useAsyncWithTimeout<K, T>(f: (data: K) => Promise<T>) {
   const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
@@ -45,11 +44,9 @@ const NotificationPage: React.FC = () => {
   const { updateWebhook, testWebhook } = useWorkspace();
   const workspace = useCurrentWorkspace();
 
-  const {
-    call: onSubmitWebhook,
-    errorMessage,
-    successMessage,
-  } = useAsyncWithTimeout(async (data: WebhookPayload) => updateWebhook(data));
+  const { call: onSubmitWebhook, errorMessage, successMessage } = useAsyncWithTimeout(async (data: WebhookPayload) =>
+    updateWebhook(data)
+  );
 
   const firstNotification = workspace.notifications?.[0];
 
@@ -64,12 +61,8 @@ const NotificationPage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle
-        titles={[{ id: "sidebar.settings" }, { id: "settings.notifications" }]}
-      />
-      <SettingsCard
-        title={<FormattedMessage id="settings.notificationSettings" />}
-      >
+      <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "settings.notifications" }]} />
+      <SettingsCard title={<FormattedMessage id="settings.notificationSettings" />}>
         <Content>
           <WebHookForm
             webhook={initialValues}

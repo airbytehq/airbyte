@@ -4,8 +4,11 @@ import { FormattedMessage } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
-import { useConfig } from "config";
+
 import { Popout } from "components";
+
+import { useConfig } from "config";
+import { useConfig } from "config";
 
 import DocsIcon from "./DocsIcon";
 import RecipesIcon from "./RecipesIcon";
@@ -109,9 +112,7 @@ const SidebarPopout: React.FC<{
 
   return (
     <Popout
-      targetComponent={(targetProps) =>
-        children({ onOpen: targetProps.onOpen })
-      }
+      targetComponent={(targetProps) => children({ onOpen: targetProps.onOpen })}
       styles={{
         menuPortal: (base) => ({
           ...base,

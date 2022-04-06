@@ -22,11 +22,7 @@ type IProps = {
   onClickRow?: (data: EntityTableDataItem) => void;
 };
 
-const ImplementationTable: React.FC<IProps> = ({
-  data,
-  entity,
-  onClickRow,
-}) => {
+const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
   const columns = React.useMemo(
     () => [
       {
@@ -42,41 +38,28 @@ const ImplementationTable: React.FC<IProps> = ({
         Header: <FormattedMessage id="tables.connector" />,
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
-          <ConnectorCell
-            value={cell.value}
-            enabled={row.original.enabled}
-            img={row.original.connectorIcon}
-          />
+          <ConnectorCell value={cell.value} enabled={row.original.enabled} img={row.original.connectorIcon} />
         ),
       },
       {
         Header: <FormattedMessage id={`tables.${entity}ConnectWith`} />,
         accessor: "connectEntities",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
-          <ConnectEntitiesCell
-            values={cell.value}
-            entity={entity}
-            enabled={row.original.enabled}
-          />
+          <ConnectEntitiesCell values={cell.value} entity={entity} enabled={row.original.enabled} />
         ),
       },
       {
         Header: <FormattedMessage id="tables.lastSync" />,
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
-          <LastSyncCell
-            timeInSecond={cell.value}
-            enabled={row.original.enabled}
-          />
+          <LastSyncCell timeInSecond={cell.value} enabled={row.original.enabled} />
         ),
       },
       {
         Header: <FormattedMessage id="sources.status" />,
         id: "status",
         accessor: "connectEntities",
-        Cell: ({ cell }: CellProps<EntityTableDataItem>) => (
-          <AllConnectionsStatusCell connectEntities={cell.value} />
-        ),
+        Cell: ({ cell }: CellProps<EntityTableDataItem>) => <AllConnectionsStatusCell connectEntities={cell.value} />,
       },
     ],
     [entity]
@@ -84,12 +67,7 @@ const ImplementationTable: React.FC<IProps> = ({
 
   return (
     <Content>
-      <Table
-        columns={columns}
-        data={data}
-        onClickRow={onClickRow}
-        erroredRows
-      />
+      <Table columns={columns} data={data} onClickRow={onClickRow} erroredRows />
     </Content>
   );
 };
