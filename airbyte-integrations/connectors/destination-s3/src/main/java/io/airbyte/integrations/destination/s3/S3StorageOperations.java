@@ -14,6 +14,7 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -126,8 +127,7 @@ public class S3StorageOperations implements BlobStorageOperations {
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String newFilename = getPartId(objectPath) + getExtension(recordsData.getFilename());
-    final String fullObjectKey = objectPath + newFilename;
+    final String fullObjectKey = objectPath + getPartId(objectPath) + getExtension(recordsData.getFilename());
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
         .getDefault(bucket, fullObjectKey, s3Client, partSize)
         .checkIntegrity(true)
@@ -152,8 +152,14 @@ public class S3StorageOperations implements BlobStorageOperations {
       LOGGER.error("Failed to upload data into storage, object {} not found", fullObjectKey);
       throw new RuntimeException("Upload failed");
     }
-    LOGGER.info("Uploaded buffer file to storage: {} -> {}", recordsData.getFilename(), fullObjectKey);
+    final String newFilename = getFilename(fullObjectKey);
+    LOGGER.info("Uploaded buffer file to storage: {} -> {} (filename: {})", recordsData.getFilename(), fullObjectKey, newFilename);
     return newFilename;
+  }
+
+  @VisibleForTesting
+  static String getFilename(final String fullPath) {
+    return fullPath.substring(fullPath.lastIndexOf("/") + 1);
   }
 
   protected static String getExtension(final String filename) {
