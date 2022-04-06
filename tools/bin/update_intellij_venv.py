@@ -35,7 +35,7 @@ def add_venv_to_xml_root(module: str, module_full_path: str, python_version: str
     classPathRoot = ET.SubElement(classPath, "root", {"type": "composite"})
 
     ET.SubElement(classPathRoot, "root", {"url":
-                                              f'file://{module_full_path}/.venv/lib/{python_version}/site-packages',
+                                              f"file://{module_full_path}/.venv/lib/{python_version}/site-packages",
                                           "type": "simple"
                                           })
 
@@ -51,8 +51,8 @@ def create_parser():
     parser = argparse.ArgumentParser(description="TODO")
     parser.add_argument("-python", required=True, help="Python version")
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-modules', nargs='?', help='Modules to add')
-    group.add_argument('--all-modules', action='store_true')
+    group.add_argument("-modules", nargs="?", help="Modules to add")
+    group.add_argument("--all-modules", action="store_true")
 
     parser.add_argument("-input", help="Path to input jdk table")
     parser.add_argument("-intellij-version", help="Intellij version to use")
@@ -61,7 +61,7 @@ def create_parser():
     parser.add_argument("--install-venv", action="store_true", help="TODO")
     parser.add_argument("--update-intellij", action="store_true", help="TODO")
 
-    parser.add_argument('-airbyte', default=f"{os.path.dirname(__file__)}/../..", help='Path to Airbyte root directory')
+    parser.add_argument("-airbyte", default=f"{os.path.dirname(__file__)}/../..", help="Path to Airbyte root directory")
     return parser
 
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     path_to_connectors = f"{args.airbyte}/airbyte-integrations/connectors/"
 
-    home_directory = os.getenv('HOME')
+    home_directory = os.getenv("HOME")
     input_path = get_input_path(args.input, args.version, home_directory)
 
     output_path = get_output_path(input_path, args.output)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
                     add_venv_to_xml_root(module, path_to_module, args.python, root)
                 else:
                     print(f"Skipping {module}")
-            with open(output_path, 'w') as fout:
+            with open(output_path, "w") as fout:
                 fout.write(ET.tostring(root, encoding="unicode"))
     print("Done running")
 
@@ -148,27 +148,27 @@ if "pytest" in sys.argv[0]:
             output_path = "/input_path"
             assert output_path == get_output_path(input_path, output_path)
 
-        @unittest.mock.patch('os.walk')
+        @unittest.mock.patch("os.walk")
         def test_input_is_selected(self, mock_os):
             os.walk.return_value = iter(
-                (('./test1', ['consentOptions', 'IdeaIC2021.3', "PyCharmCE2021.3"], []),))
-            os.getenv.return_value = '{HOME}'
+                (("./test1", ["consentOptions", "IdeaIC2021.3", "PyCharmCE2021.3"], []),))
+            os.getenv.return_value = "{HOME}"
             input_from_args = None
             version = "IdeaIC2021.3"
             input_path = get_input_path(input_from_args, version, "{HOME}")
             assert "{HOME}/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
 
-        @unittest.mock.patch('os.walk')
+        @unittest.mock.patch("os.walk")
         def test_input_single_intellij_version(self, mock_os):
             os.walk.return_value = iter(
-                (('./test1', ['consentOptions', 'IdeaIC2021.3'], []),))
+                (("./test1", ["consentOptions", "IdeaIC2021.3"], []),))
             input_from_args = None
 
             version = None
             input_path = get_input_path(input_from_args, version, "{HOME}")
             assert "{HOME}/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
 
-        @unittest.mock.patch('os.walk')
+        @unittest.mock.patch("os.walk")
         def test_input_multiple_intellij_versions(self, mock_os):
             os.walk.return_value = iter(
                 (('./test1', ['consentOptions', 'IdeaIC2021.3', "PyCharmCE2021.3"], []),))
