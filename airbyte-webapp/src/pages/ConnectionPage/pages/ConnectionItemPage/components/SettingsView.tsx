@@ -1,8 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 
-import { useDeleteConnection } from "hooks/services/useConnectionHook";
 import DeleteBlock from "components/DeleteBlock";
+
+import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
 type IProps = {
   connectionId: string;

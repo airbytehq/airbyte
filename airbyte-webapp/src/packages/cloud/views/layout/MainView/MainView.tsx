@@ -5,12 +5,13 @@ import { Outlet } from "react-router-dom";
 import { LoadingPage } from "components";
 
 import SideBar from "packages/cloud/views/layout/SideBar";
-import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+
+import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 import { CreditsProblemBanner } from "./components/CreditsProblemBanner";
 
 const MainContainer = styled.div`
@@ -47,21 +48,13 @@ const MainView: React.FC = (props) => {
 
   return (
     <MainContainer>
-      <InsufficientPermissionsErrorBoundary
-        errorComponent={<StartOverErrorView />}
-      >
+      <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar />
         <Content>
-          {cloudWorkspace.creditStatus && showBanner && (
-            <CreditsProblemBanner status={cloudWorkspace.creditStatus} />
-          )}
+          {cloudWorkspace.creditStatus && showBanner && <CreditsProblemBanner status={cloudWorkspace.creditStatus} />}
           <DataBlock hasBanner={showBanner}>
-            <ResourceNotFoundErrorBoundary
-              errorComponent={<StartOverErrorView />}
-            >
-              <React.Suspense fallback={<LoadingPage />}>
-                {props.children ?? <Outlet />}
-              </React.Suspense>
+            <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+              <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>
             </ResourceNotFoundErrorBoundary>
           </DataBlock>
         </Content>

@@ -60,8 +60,7 @@ const Text = styled.div<{ delay: number }>`
   color: ${({ theme }) => theme.whiteColor};
   font-size: 12px;
   font-weight: bold;
-  animation: ${fadeInAnimation} 1s linear ${({ delay }) => delay + 0.5}s
-    forwards;
+  animation: ${fadeInAnimation} 1s linear ${({ delay }) => delay + 0.5}s forwards;
   opacity: 0;
 `;
 
@@ -70,9 +69,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ runTime, text }) => {
   return (
     <Bar>
       <Progress runTime={animationRunTime} />
-      <Text delay={animationRunTime}>
-        {text || <FormattedMessage id="form.wait" />}
-      </Text>
+      <Text delay={animationRunTime}>{text || <FormattedMessage id="form.wait" />}</Text>
     </Bar>
   );
 };

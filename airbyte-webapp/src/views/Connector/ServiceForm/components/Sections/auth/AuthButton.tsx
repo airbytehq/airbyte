@@ -3,9 +3,11 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+
+import { ConnectorSpecification } from "core/domain/connector";
+
 import { useServiceForm } from "../../../serviceFormContext";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
-import { ConnectorSpecification } from "core/domain/connector";
 import GoogleAuthButton from "./GoogleAuthButton";
 
 const AuthSectionRow = styled.div`
@@ -67,10 +69,7 @@ export const AuthButton: React.FC = () => {
         {done ? (
           <FormattedMessage id="connectorForm.reauthenticate" />
         ) : (
-          <FormattedMessage
-            id={getAuthenticateMessageId(definitionId)}
-            values={{ connector: selectedService?.name }}
-          />
+          <FormattedMessage id={getAuthenticateMessageId(definitionId)} values={{ connector: selectedService?.name }} />
         )}
       </Component>
       {done && (
