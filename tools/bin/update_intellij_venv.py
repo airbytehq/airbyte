@@ -138,12 +138,12 @@ if "pytest" in sys.argv[0]:
 
 
     class TestNoneTypeError(unittest.TestCase):
-        def test_get_output_path(self):
+        def test_output_is_input_if_not_set(self):
             input_path = "/input_path"
             output_path = get_output_path(input_path, None)
             assert input_path == output_path
 
-        def test_output_is_input_if_not_set(self):
+        def test_get_output_path(self):
             input_path = "/input_path"
             output_path = "/input_path"
             assert output_path == get_output_path(input_path, output_path)
