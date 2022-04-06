@@ -26,10 +26,10 @@ function AnalyticsServiceProvider({
 }) {
   const [analyticsContext, { set, setAll, remove }] = useMap(initialContext);
 
-  const analyticsService: AnalyticsService = useMemo(() => new AnalyticsService(analyticsContext, version), [
-    version,
-    analyticsContext,
-  ]);
+  const analyticsService: AnalyticsService = useMemo(
+    () => new AnalyticsService(analyticsContext, version),
+    [version, analyticsContext]
+  );
 
   const handleAddContextProps = (props: AnalyticsContext) => {
     Object.entries(props).forEach((value) => set(...value));

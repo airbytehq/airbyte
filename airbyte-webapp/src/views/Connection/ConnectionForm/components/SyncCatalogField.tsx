@@ -185,19 +185,20 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   const [searchString, setSearchString] = useState("");
   const setField = form.setFieldValue;
 
-  const onChangeSchema = useCallback((newValue: SyncSchemaStream[]) => setField(fieldName, newValue), [
-    fieldName,
-    setField,
-  ]);
+  const onChangeSchema = useCallback(
+    (newValue: SyncSchemaStream[]) => setField(fieldName, newValue),
+    [fieldName, setField]
+  );
 
   const onChangeStream = useCallback(
     (newValue: SyncSchemaStream) => onChangeSchema(streams.map((str) => (str.id === newValue.id ? newValue : str))),
     [streams, onChangeSchema]
   );
 
-  const sortedSchema = useMemo(() => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)), [
-    streams,
-  ]);
+  const sortedSchema = useMemo(
+    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
+    [streams]
+  );
 
   const filteredStreams = useMemo(() => {
     const filters: Array<(s: SyncSchemaStream) => boolean> = [

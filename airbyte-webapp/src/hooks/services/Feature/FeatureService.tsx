@@ -23,10 +23,10 @@ export function FeatureService({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const features = useMemo(() => [...instanceWideFeatures, ...additionFeatures], [
-    instanceWideFeatures,
-    additionFeatures,
-  ]);
+  const features = useMemo(
+    () => [...instanceWideFeatures, ...additionFeatures],
+    [instanceWideFeatures, additionFeatures]
+  );
 
   const featureService = useMemo(
     () => ({

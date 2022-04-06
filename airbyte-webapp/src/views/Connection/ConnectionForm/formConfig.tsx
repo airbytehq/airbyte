@@ -250,8 +250,8 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
 const getInitialTransformations = (operations: Operation[]): Transformation[] => operations.filter(isDbtTransformation);
 
 const getInitialNormalization = (operations: Operation[], isEditMode?: boolean): NormalizationType => {
-  let initialNormalization = operations.find(isNormalizationTransformation)?.operatorConfiguration?.normalization
-    ?.option;
+  let initialNormalization =
+    operations.find(isNormalizationTransformation)?.operatorConfiguration?.normalization?.option;
 
   // If no normalization was selected for already present normalization -> select Raw one
   if (!initialNormalization && isEditMode) {

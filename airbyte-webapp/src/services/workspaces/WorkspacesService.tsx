@@ -96,20 +96,24 @@ export const useCurrentWorkspaceState = (): WorkspaceState => {
   const workspaceId = useCurrentWorkspaceId();
   const service = useWorkspaceApiService();
 
-  return (useQuery(workspaceKeys.state(workspaceId), () => service.getState(workspaceId), {
-    // We want to keep this query only shortly in cache, so we refetch
-    // the data whenever the user might have changed sources/destinations/connections
-    // without requiring to manually invalidate that query on each change.
-    cacheTime: 5 * 1000,
-  }) as QueryObserverSuccessResult<WorkspaceState>).data;
+  return (
+    useQuery(workspaceKeys.state(workspaceId), () => service.getState(workspaceId), {
+      // We want to keep this query only shortly in cache, so we refetch
+      // the data whenever the user might have changed sources/destinations/connections
+      // without requiring to manually invalidate that query on each change.
+      cacheTime: 5 * 1000,
+    }) as QueryObserverSuccessResult<WorkspaceState>
+  ).data;
 };
 
 export const useListWorkspaces = (): Workspace[] => {
   const service = useWorkspaceApiService();
 
-  return (useQuery(workspaceKeys.lists(), () => service.list()) as QueryObserverSuccessResult<{
-    workspaces: Workspace[];
-  }>).data.workspaces;
+  return (
+    useQuery(workspaceKeys.lists(), () => service.list()) as QueryObserverSuccessResult<{
+      workspaces: Workspace[];
+    }>
+  ).data.workspaces;
 };
 
 export const useGetWorkspace = (
@@ -120,11 +124,13 @@ export const useGetWorkspace = (
 ): Workspace => {
   const service = useWorkspaceApiService();
 
-  return (useQuery(
-    workspaceKeys.detail(workspaceId),
-    () => service.get(workspaceId),
-    options
-  ) as QueryObserverSuccessResult<Workspace>).data;
+  return (
+    useQuery(
+      workspaceKeys.detail(workspaceId),
+      () => service.get(workspaceId),
+      options
+    ) as QueryObserverSuccessResult<Workspace>
+  ).data;
 };
 
 export const useUpdateWorkspace = () => {
