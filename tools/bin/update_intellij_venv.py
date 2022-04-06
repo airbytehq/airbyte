@@ -8,6 +8,9 @@ INTELLIJ_INSTANCE_FLAG = "-intellij-instance"
 
 
 def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
+    """
+    Add a new entry for the virtual environment to IntelliJ's list of known interpreters
+    """
     path_to_lib = f"{module_full_path}/.venv/lib/"
     python_version = os.listdir(path_to_lib)[0]
     environment_name = f"{python_version.capitalize()} ({module})"
@@ -49,6 +52,32 @@ def get_output_path(input_path, output_path):
         return output_path
 
 
+def get_input_path(input_from_args, version, home_directory):
+    if input_from_args is not None:
+        return input_from_args
+    else:
+        path_to_intellij_settings = f"{home_directory}/Library/Application Support/JetBrains/"
+        walk = os.walk(path_to_intellij_settings)
+        intellij_versions = [version for version in next(walk)[1] if version != "consentOptions"]
+        print(intellij_versions)
+        if version in intellij_versions:
+            intellij_instance_to_update = version
+        elif len(intellij_versions) == 1:
+            intellij_instance_to_update = intellij_versions[0]
+            print(intellij_instance_to_update)
+        else:
+            msg = f"Please select which instance of Intellij to update with the `{INTELLIJ_INSTANCE_FLAG}` flag. Options are: {intellij_versions}"
+            print(msg)
+            raise RuntimeError(msg)
+        return f"{path_to_intellij_settings}{intellij_instance_to_update}/options/jdk.table.xml"
+
+
+def module_has_requirements_file(module):
+    path_to_module = f"{path_to_connectors}{module}"
+    path_to_requirements_file = f"{path_to_module}/requirements.txt"
+    return os.path.exists(path_to_requirements_file)
+
+
 def create_parser():
     parser = argparse.ArgumentParser(description="Prepare Python virtual environments for Python connectors")
     actions_group = parser.add_argument_group("actions")
@@ -76,26 +105,6 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
-def get_input_path(input_from_args, version, home_directory):
-    if input_from_args is not None:
-        return input_from_args
-    else:
-        path_to_intellij_settings = f"{home_directory}/Library/Application Support/JetBrains/"
-        walk = os.walk(path_to_intellij_settings)
-        intellij_versions = [version for version in next(walk)[1] if version != "consentOptions"]
-        print(intellij_versions)
-        if version in intellij_versions:
-            intellij_instance_to_update = version
-        elif len(intellij_versions) == 1:
-            intellij_instance_to_update = intellij_versions[0]
-            print(intellij_instance_to_update)
-        else:
-            msg = f"Please select which instance of Intellij to update with the `{INTELLIJ_INSTANCE_FLAG}` flag. Options are: {intellij_versions}"
-            print(msg)
-            raise RuntimeError(msg)
-        return f"{path_to_intellij_settings}{intellij_instance_to_update}/options/jdk.table.xml"
-
-
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     if not args.install_venv and not args.update_intellij:
@@ -109,9 +118,22 @@ if __name__ == "__main__":
     else:
         modules = args.modules.split(",")
 
+    modules = [m for m in modules if module_has_requirements_file(m)]
+
     if args.install_venv:
+        errors = []
+        modules_installed = []
         for module in modules:
-            subprocess.run(["tools/bin/setup_connector_venv.sh", module], check=True)
+            result = subprocess.run(["tools/bin/setup_connector_venv.sh", module, sys.executable], check=False)
+            if result.returncode == 0:
+                modules_installed.append(module)
+            else:
+                errors.append(module)
+        if len(modules_installed) > 0:
+            print(f"Successfully installed virtual environment for {modules_installed}")
+        if len(errors) > 0:
+            print(f"Failed to install virtual environment for {errors}")
+
     if args.update_intellij:
         home_directory = os.getenv("HOME")
         input_path = get_input_path(args.input, args.intellij_instance, home_directory)
@@ -124,14 +146,11 @@ if __name__ == "__main__":
                 path_to_module = f"{path_to_connectors}{module}"
                 path_to_requirements_file = f"{path_to_module}/requirements.txt"
                 requirements_file_exists = os.path.exists(path_to_requirements_file)
-                if requirements_file_exists:
-                    print(f"Adding {module} to jdk table")
-                    add_venv_to_xml_root(module, path_to_module, root)
-                else:
-                    print(f"Skipping {module}")
+                print(f"Adding {module} to jdk table")
+                add_venv_to_xml_root(module, path_to_module, root)
             with open(output_path, "w") as fout:
                 fout.write(ET.tostring(root, encoding="unicode"))
-    print("Done running")
+    print("Done running.")
 
 
 # --- tests ---
