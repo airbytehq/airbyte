@@ -148,7 +148,7 @@ class IncrementalBreezyStream(BreezyStream, ABC):
 
         :return str: The name of the cursor field.
         """
-        return 'updated_at'
+        return 'updated_date'
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         if self.state:
