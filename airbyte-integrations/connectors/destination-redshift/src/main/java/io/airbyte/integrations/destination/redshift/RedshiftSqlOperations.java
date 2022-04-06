@@ -148,16 +148,16 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   private void updateJSONDataColumnToSuperDataColumn(JdbcDatabase database, List <String> schemaAndTableWithNotSuperType) {
     LOGGER.info("Updating JSON data column to super...");
     StringBuilder finalSqlStatement = new StringBuilder();
-    for (String schemaAndTable : schemaAndTableWithNotSuperType) {
-      // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
-      // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at column recreated to keep
-      // the COLUMN order. This order is required to INSERT the values in correct way.
+    // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
+    // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at column recreated to keep
+    // the COLUMN order. This order is required to INSERT the values in correct way.
+    schemaAndTableWithNotSuperType.forEach(schemaAndTable -> {
       LOGGER.info("Altering table {} column _airbyte_data to SUPER.", schemaAndTable);
       finalSqlStatement.append(String.format(ALTER_TMP_TABLES_WITH_NOT_SUPER_TYPE_TO_SUPER_TYPE,
           schemaAndTable,
           JavaBaseConstants.COLUMN_NAME_DATA,
           JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
-    }
+    });
     try {
       database.execute(finalSqlStatement.toString());
     } catch (SQLException e) {

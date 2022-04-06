@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.redshift;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -15,21 +18,22 @@ import io.airbyte.db.Database;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.protocol.models.*;
-import org.jooq.Record;
-import org.jooq.Result;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
@@ -41,10 +45,8 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
   private static final String TYPE = "type";
   private ConfiguredAirbyteCatalog catalog;
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
-
   private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users";
+  private static final String USERS_STREAM_NAME = "users_" + RandomStringUtils.random(5);
 
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
@@ -61,8 +63,6 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
 
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
           .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
-
-  private static final NamingConventionTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
   public JsonNode getStaticConfig() {
     return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
