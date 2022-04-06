@@ -8,7 +8,6 @@ import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { Popout } from "components";
 
 import { useConfig } from "config";
-import { useConfig } from "config";
 
 import DocsIcon from "./DocsIcon";
 import RecipesIcon from "./RecipesIcon";
