@@ -700,7 +700,7 @@ bootloader:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
     tag: 0.35.65-alpha
-  
+
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
   podAnnotations: {}
@@ -951,3 +951,13 @@ jobs:
     ##    cpu: 200m
     ##    memory: 1Gi
     limits: {}
+
+  ## JOB_KUBE_ANNOTATIONS
+  ## pod annotations of the sync job and the default pod annotations fallback for others jobs
+  ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
+  ## JOB_KUBE_NODE_SELECTORS
+  ## pod node selectors of the sync job and the default pod node selectors fallback for others jobs
+  ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
+  kube:
+    annotations: {}
+    selectors: {}
