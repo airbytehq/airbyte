@@ -21,7 +21,7 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 6. For **End Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
 7. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762). 
 8. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
-    <br> **_What does this mean?_** The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
+    <br/> **_What does this mean?_** The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
 9.  (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 10. (Optional) In the Custom Insights section, click **Add**. 
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. 
