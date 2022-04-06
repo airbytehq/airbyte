@@ -14,6 +14,8 @@ import { JobInfo } from "core/domain/job";
 
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 export const sourcesKeys = {
   all: [SCOPE_WORKSPACE, "sources"] as const,

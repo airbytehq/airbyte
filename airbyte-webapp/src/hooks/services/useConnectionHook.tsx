@@ -19,6 +19,7 @@ import { ConnectionService } from "core/domain/connection/ConnectionService";
 
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
