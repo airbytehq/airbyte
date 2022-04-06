@@ -1,9 +1,10 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { ConnectionConfiguration } from "../connection";
-import { Scheduler, Schema, Source } from "./types";
 import Status from "core/statuses";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { CommonRequestError } from "core/request/CommonRequestError";
+
+import { ConnectionConfiguration } from "../connection";
+import { Scheduler, Schema, Source } from "./types";
 
 class SourceService extends AirbyteRequestService {
   get url(): string {

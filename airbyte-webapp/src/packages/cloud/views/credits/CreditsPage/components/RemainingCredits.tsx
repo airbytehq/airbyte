@@ -2,17 +2,18 @@ import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
-
 import styled from "styled-components";
+import { useSearchParams } from "react-router-dom";
+import { useEffectOnce } from "react-use";
+
+import { Button, LoadingButton } from "components";
+
 import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
 } from "packages/cloud/services/workspaces/WorkspacesService";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { Button, LoadingButton } from "components";
 import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
-import { useSearchParams } from "react-router-dom";
-import { useEffectOnce } from "react-use";
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useConfig } from "config";
 
@@ -60,9 +61,7 @@ const RemainingCredits: React.FC = () => {
   const currentWorkspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(currentWorkspace.workspaceId);
   const [searchParams, setSearchParams] = useSearchParams();
-  const invalidateWorkspace = useInvalidateCloudWorkspace(
-    currentWorkspace.workspaceId
-  );
+  const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
 
