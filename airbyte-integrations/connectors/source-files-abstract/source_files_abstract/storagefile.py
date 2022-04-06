@@ -9,7 +9,7 @@ from typing import BinaryIO, Iterator, TextIO, Union
 
 from airbyte_cdk.logger import AirbyteLogger
 
-from .file_info import FileInfo
+from .fileinfo import FileInfo
 
 
 class StorageFile(ABC):

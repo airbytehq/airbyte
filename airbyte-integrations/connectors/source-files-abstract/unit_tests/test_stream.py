@@ -2,19 +2,29 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import os
+from datetime import datetime
 from typing import Any, Dict, List, Mapping
 from unittest.mock import patch
 
 import pytest
 from airbyte_cdk import AirbyteLogger
-from source_s3.source_files_abstract.stream import FileStream
+from source_files_abstract.fileinfo import FileInfo
+from source_files_abstract.stream import FileStream
 
-from .abstract_test_parser import create_by_local_file, memory_limit
+from .abstract_test_parser import memory_limit
 
 LOGGER = AirbyteLogger()
 
 
 class TestFileStream:
+    @staticmethod
+    def create_fileinfo_for_local_file(filepath: str) -> FileInfo:
+        "Generates a FileInfo instance for local files"
+        if not os.path.exists(filepath):
+            return FileInfo(key=filepath, size=0, last_modified=datetime.now())
+        return FileInfo(key=filepath, size=os.stat(filepath).st_size, last_modified=datetime.fromtimestamp(os.path.getmtime(filepath)))
+
     @pytest.mark.parametrize(  # set return_schema to None for an expected fail
         "schema_string, return_schema",
         [
@@ -95,7 +105,7 @@ class TestFileStream:
         ids=["simple_case", "additional_columns", "missing_columns", "additional_and_missing_columns"],
     )
     @patch(
-        "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
+        "source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_match_target_schema(
         self, target_columns: List[str], record: Dict[str, Any], expected_return_record: Mapping[str, Any]
@@ -130,7 +140,7 @@ class TestFileStream:
         ids=["one_extra_field", "multiple_extra_fields", "empty_extra_map"],
     )
     @patch(
-        "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
+        "source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     @memory_limit(512)
     def test_add_extra_fields_from_map(
@@ -316,10 +326,10 @@ class TestFileStream:
         ],
     )
     @patch(
-        "source_s3.source_files_abstract.stream.FileStream.__abstractmethods__", set()
+        "source_files_abstract.stream.FileStream.__abstractmethods__", set()
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     @memory_limit(512)
     def test_pattern_matched_filepath_iterator(self, patterns: str, filepaths: List[str], expected_filepaths: List[str]) -> None:
         fs = FileStream(dataset="dummy", provider={}, format={}, path_pattern=patterns)
-        file_infos = [create_by_local_file(filepath) for filepath in filepaths]
+        file_infos = [self.create_fileinfo_for_local_file(filepath) for filepath in filepaths]
         assert set([p.key for p in fs.pattern_matched_filepath_iterator(file_infos)]) == set(expected_filepaths)

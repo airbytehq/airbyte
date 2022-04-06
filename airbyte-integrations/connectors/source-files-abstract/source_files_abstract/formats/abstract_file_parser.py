@@ -7,7 +7,7 @@ from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
-from source_s3.source_files_abstract.file_info import FileInfo
+from source_files_abstract.fileinfo import FileInfo
 
 
 class AbstractFileParser(ABC):
@@ -63,7 +63,7 @@ class AbstractFileParser(ABC):
         :return: PyArrow type if reverse is False, else Json type
         """
         str_typ = str(typ)
-        # this is a map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the one to use where required.
+        # Map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the preferred type to use.
         map = {
             "boolean": ("bool_", "bool"),
             "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),

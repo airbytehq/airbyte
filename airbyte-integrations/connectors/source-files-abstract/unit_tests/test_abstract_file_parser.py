@@ -7,13 +7,13 @@ from typing import Any, Mapping, Tuple
 import pyarrow as pa
 import pytest
 from airbyte_cdk import AirbyteLogger
-from source_s3.source_files_abstract.formats.abstract_file_parser import AbstractFileParser
+from source_files_abstract.formats.abstract_file_parser import AbstractFileParser
 
 LOGGER = AirbyteLogger()
 
 
 class TestAbstractFileParserStatics:
-    @pytest.mark.parametrize(  # testing all datatypes as laid out here: https://json-schema.org/understanding-json-schema/reference/type.html
+    @pytest.mark.parametrize(  # testing datatypes as laid out here: https://json-schema.org/understanding-json-schema/reference/type.html
         "input_json_type, output_pyarrow_type",
         [
             ("string", pa.large_string()),

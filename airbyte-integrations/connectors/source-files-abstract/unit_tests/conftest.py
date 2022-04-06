@@ -15,7 +15,8 @@ os.makedirs(TMP_FOLDER, exist_ok=True)
 
 def pytest_generate_tests(metafunc: Any) -> None:
     if "file_info" in metafunc.fixturenames:
-        cases = metafunc.cls.cached_cases()
+        cls_obj = metafunc.cls()
+        cases = cls_obj.cached_cases()
         metafunc.parametrize("file_info", cases.values(), ids=cases.keys())
 
 

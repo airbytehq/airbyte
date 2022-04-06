@@ -6,107 +6,26 @@ import json
 import os
 import random
 import shutil
-import string
 from pathlib import Path
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Mapping, Tuple
 
 import pytest
 from smart_open import open as smart_open
-from source_s3.source_files_abstract.formats.csv_parser import CsvParser
+from source_files_abstract.formats.csv_parser import CsvParser
 
 from .abstract_test_parser import AbstractTestParser, memory_limit
 from .conftest import TMP_FOLDER
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
 
-# All possible CSV data types
-CSV_TYPES = {
-    # logical_type: (json_type, csv_types, convert_function)
-    # standard types
-    "string": ("string", ["string"], None),
-    "boolean": ("boolean", ["boolean"], None),
-    "number": ("number", ["number"], None),
-    "integer": ("integer", ["integer"], None),
-}
-
-
-def _generate_value(typ: str) -> Any:
-    if typ == "string":
-        if AbstractTestParser._generate_value("boolean"):
-            return None
-        random_length = random.randint(0, 512)
-        return "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(random_length))
-    return AbstractTestParser._generate_value(typ)
-
-
-def _generate_row(types: List[str]) -> List[Any]:
-    """Generates random values with request types"""
-    row = []
-    for needed_type in types:
-        for json_type in CSV_TYPES:
-            if json_type == needed_type:
-                value = _generate_value(needed_type)
-                if value is None:
-                    value = ""
-                row.append(str(value))
-                break
-    return row
-
-
-def generate_csv_file(filename: str, columns: Mapping[str, str], num_rows: int, delimiter: str) -> str:
-    """Generates  a random CSV data and save it to a tmp file"""
-    header_line = delimiter.join(columns.keys())
-    types = list(columns.values()) if num_rows else []
-    with open(filename, "w") as f:
-        f.write(header_line + "\n")
-        for _ in range(num_rows):
-            f.write(delimiter.join(_generate_row(types)) + "\n")
-    return filename
-
-
-def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: int, template_file: str = None) -> Tuple[dict, float]:
-    temp_files = [filepath + ".1", filepath + ".2"]
-    if template_file:
-        shutil.copyfile(template_file, filepath)
-        schema = None
-    else:
-        schema = {f"column {i}": random.choice(["integer", "string", "boolean", "number"]) for i in range(columns_number)}
-        generate_csv_file(filepath, schema, 456, ",")
-
-    skip_headers = False
-    with open(filepath, "r") as f:
-        with open(temp_files[0], "w") as tf:
-            for line in f:
-                if not skip_headers:
-                    skip_headers = True
-                    continue
-                tf.write(str(line))
-
-    with open(filepath, "ab") as f:
-        while True:
-            file_size = os.stat(filepath).st_size / (1024**3)
-            if file_size > size_in_gigabytes:
-                break
-            with open(temp_files[0], "rb") as tf:  # type: ignore[assignment]
-                with open(temp_files[1], "wb") as tf2:
-                    buf = tf.read(50 * 1024**2)  # by 50Mb
-                    if buf:
-                        f.write(buf)  # type: ignore[arg-type]
-                        tf2.write(buf)  # type: ignore[arg-type]
-            temp_files.append(temp_files.pop(0))
-    # remove temp files
-    for temp_file in temp_files:
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-    return schema, file_size
+CSV_TYPES = {"string": "string", "boolean": "boolean", "number": "number", "integer": "integer"}
 
 
 class TestCsvParser(AbstractTestParser):
     record_types = CSV_TYPES
     filetype = "csv"
 
-    @classmethod
-    def cases(cls) -> Mapping[str, Any]:
+    def cases(self) -> Mapping[str, Any]:
         return {
             "basic_normal_test": {
                 "AbstractFileParser": CsvParser(
@@ -358,12 +277,69 @@ class TestCsvParser(AbstractTestParser):
             },
         }
 
+    def _process_value(self, value: Any, delimiter: str) -> str:
+        if isinstance(value, str):
+            return value[:1024].replace(delimiter, "a").replace("'", "").replace('"', "").replace("\\", "")
+        elif value is None:
+            return ""
+        else:
+            return str(value)
+
+    def _generate_csv_file(self, filename: str, columns: Mapping[str, str], num_rows: int, delimiter: str) -> str:
+        """Generates a random CSV and save it to a tmp file"""
+        header_line = delimiter.join(columns.keys())
+        types = list(columns.values()) if num_rows else []
+        with open(filename, "w") as f:
+            f.write(header_line + "\n")
+            for _ in range(num_rows):
+                row_list = [self._process_value(v, delimiter) for v in self._generate_row(types)]
+                f.write(delimiter.join(row_list) + "\n")
+        return filename
+
+    def _generate_big_file(
+        self, filepath: str, size_in_gigabytes: float, columns_number: int, template_file: str = None
+    ) -> Tuple[dict, float]:
+        temp_files = [filepath + ".1", filepath + ".2"]
+        if template_file:
+            shutil.copyfile(template_file, filepath)
+            schema = None
+        else:
+            schema = {f"column {i}": random.choice(["integer", "string", "boolean", "number"]) for i in range(columns_number)}
+            self._generate_csv_file(filepath, schema, 456, ",")
+
+        skip_headers = False
+        with open(filepath, "r") as f:
+            with open(temp_files[0], "w") as tf:
+                for line in f:
+                    if not skip_headers:
+                        skip_headers = True
+                        continue
+                    tf.write(str(line))
+
+        with open(filepath, "ab") as f:
+            while True:
+                file_size = os.stat(filepath).st_size / (1024**3)
+                if file_size > size_in_gigabytes:
+                    break
+                with open(temp_files[0], "rb") as tf:  # type: ignore[assignment]
+                    with open(temp_files[1], "wb") as tf2:
+                        buf = tf.read(50 * 1024**2)  # by 50Mb
+                        if buf:
+                            f.write(buf)  # type: ignore[arg-type]
+                            tf2.write(buf)  # type: ignore[arg-type]
+                temp_files.append(temp_files.pop(0))
+        # remove temp files
+        for temp_file in temp_files:
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+        return schema, file_size
+
     @memory_limit(20)
     @pytest.mark.order(1)
     def test_big_file(self) -> None:
         """tests a big csv file (>= 1.5G records)"""
         filepath = os.path.join(TMP_FOLDER, "big_csv_file." + self.filetype)
-        schema, file_size = generate_big_file(filepath, 0.1, 123)
+        schema, file_size = self._generate_big_file(filepath, 0.1, 123)
         expected_count = sum(1 for _ in open(filepath)) - 1
         self.logger.info(f"generated file {filepath} with size {file_size}Gb, lines: {expected_count}")
         for _ in range(3):

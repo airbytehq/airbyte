@@ -16,7 +16,7 @@ from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
-from .file_info import FileInfo
+from .fileinfo import FileInfo
 from .formats.abstract_file_parser import AbstractFileParser
 from .formats.csv_parser import CsvParser
 from .formats.parquet_parser import ParquetParser

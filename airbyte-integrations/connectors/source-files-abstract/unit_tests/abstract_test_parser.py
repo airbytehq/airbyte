@@ -2,9 +2,13 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import bz2
+import gzip
 import linecache
 import os
 import random
+import shutil
+import string
 import sys
 import tracemalloc
 from abc import ABC, abstractmethod
@@ -15,7 +19,6 @@ from typing import Any, Callable, List, Mapping
 import pytest
 from airbyte_cdk import AirbyteLogger
 from smart_open import open as smart_open
-from source_s3.source_files_abstract.file_info import FileInfo
 
 
 def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callable:
@@ -54,11 +57,18 @@ def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callabl
     return decorator
 
 
-def create_by_local_file(filepath: str) -> FileInfo:
-    "Generates a FileInfo instance for local files"
-    if not os.path.exists(filepath):
-        return FileInfo(key=filepath, size=0, last_modified=datetime.now())
-    return FileInfo(key=filepath, size=os.stat(filepath).st_size, last_modified=datetime.fromtimestamp(os.path.getmtime(filepath)))
+def compress(archive_name: str, filename: str) -> str:
+    compress_filename = f"{filename}.{archive_name}"
+    with open(filename, "rb") as f_in:
+        if archive_name == "gz":
+            with gzip.open(compress_filename, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        elif archive_name == "bz2":
+            with bz2.open(compress_filename, "wb") as f_out:  # type: ignore[assignment]
+                shutil.copyfileobj(f_in, f_out)
+        else:
+            raise NotImplementedError(f"archive type {archive_name} currently unsupported")
+    return compress_filename
 
 
 class AbstractTestParser(ABC):
@@ -66,27 +76,26 @@ class AbstractTestParser(ABC):
 
     logger = AirbyteLogger()
     record_types: Mapping[str, Any] = {}
+    string_shuffle = [i for i in string.printable]
 
-    @classmethod
-    def _generate_row(cls, types: List[str]) -> List[Any]:
+    def _generate_row(self, types: List[str]) -> List[Any]:
         """Generates random values with request types"""
         row = []
         for needed_type in types:
-            for json_type in cls.record_types:
+            for json_type in self.record_types:
                 if json_type == needed_type:
-                    row.append(cls._generate_value(needed_type))
+                    row.append(self._generate_value(needed_type))
                     break
         return row
 
-    @classmethod
-    def _generate_value(cls, typ: str) -> Any:
-        if typ not in ["boolean", "integer"] and cls._generate_value("boolean"):
+    def _generate_value(self, typ: str) -> Any:
+        if typ not in ["boolean", "integer"] and self._generate_value("boolean"):
             # return 'None' for +- 33% of all requests
             return None
 
         if typ == "number":
             while True:
-                int_value = cls._generate_value("integer")
+                int_value = self._generate_value("integer")
                 if int_value:
                     break
             return float(int_value) + random.random()
@@ -97,25 +106,30 @@ class AbstractTestParser(ABC):
             return random.choice([True, False, None])
         elif typ == "string":
             random_length = random.randint(0, 10 * 1024)  # max size of bytes is 10k
-            return os.urandom(random_length)
+            random.shuffle(self.string_shuffle)
+            rand_string = "".join("".join(self.string_shuffle).split())
+            if random_length >= len(rand_string):
+                multiplier = int(random_length / len(rand_string))
+                rand_string = rand_string * multiplier
+            else:
+                rand_string = rand_string[:random_length]
+            return rand_string
         elif typ == "timestamp":
             return datetime.now() + timedelta(seconds=random.randint(0, 7200))
         elif typ == "date":
-            dt = cls._generate_value("timestamp")
+            dt = self._generate_value("timestamp")
             return dt.date() if dt else None
         elif typ == "time":
-            dt = cls._generate_value("timestamp")
+            dt = self._generate_value("timestamp")
             return dt.time() if dt else None
         raise Exception(f"not supported type: {typ}")
 
-    @classmethod
     @lru_cache(maxsize=None)
-    def cached_cases(cls) -> Mapping[str, Any]:
-        return cls.cases()
+    def cached_cases(self) -> Mapping[str, Any]:
+        return self.cases()
 
-    @classmethod
     @abstractmethod
-    def cases(cls) -> Mapping[str, Any]:
+    def cases(self) -> Mapping[str, Any]:
         """return a map of test_file dicts in structure:
         {
            "small_file": {"AbstractFileParser": CsvParser(format, master_schema), "filepath": "...", "num_records": 5, "inferred_schema": {...}, line_checks:{}, fails: []},
