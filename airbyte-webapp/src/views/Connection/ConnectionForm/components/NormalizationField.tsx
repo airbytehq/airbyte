@@ -3,10 +3,10 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FieldProps } from "formik";
 
-import { useConfig } from "config";
-
 import { LabeledRadioButton, Link } from "components";
+
 import { NormalizationType } from "core/domain/connection/operation";
+import { useConfig } from "config";
 
 const Normalization = styled.div`
   margin: 16px 0;
@@ -14,10 +14,7 @@ const Normalization = styled.div`
 
 type NormalizationBlockProps = FieldProps<string>;
 
-const NormalizationField: React.FC<NormalizationBlockProps> = ({
-  form,
-  field,
-}) => {
+const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field }) => {
   const config = useConfig();
 
   return (

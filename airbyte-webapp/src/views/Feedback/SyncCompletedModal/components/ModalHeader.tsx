@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+
 import { H3 } from "components/base";
 
 const Header = styled.div`

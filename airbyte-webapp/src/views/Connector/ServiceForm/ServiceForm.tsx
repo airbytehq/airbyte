@@ -1,14 +1,14 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
 
+import RequestConnectorModal from "views/Connector/RequestConnectorModal";
+import { FormBaseItem } from "core/form/types";
+import { ConnectorDefinition, ConnectorDefinitionSpecification, Scheduler } from "core/domain/connector";
+import { isDefined } from "utils/common";
+
+import { ConnectionConfiguration } from "../../../core/domain/connection";
 import {
   useBuildForm,
   useBuildInitialSchema,
@@ -17,22 +17,10 @@ import {
   usePatchFormik,
 } from "./useBuildForm";
 import { ServiceFormValues } from "./types";
-import {
-  ServiceFormContextProvider,
-  useServiceForm,
-} from "./serviceFormContext";
+import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
 import { FormRoot } from "./FormRoot";
-import RequestConnectorModal from "views/Connector/RequestConnectorModal";
-import { FormBaseItem } from "core/form/types";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
-import {
-  ConnectorDefinition,
-  ConnectorDefinitionSpecification,
-  Scheduler,
-} from "core/domain/connector";
-import { isDefined } from "utils/common";
-import { ConnectionConfiguration } from "../../../core/domain/connection";
 
 const FormikPatch: React.FC = () => {
   usePatchFormik();
@@ -62,10 +50,7 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{
     // set default fields as current values, so values could be populated correctly
     // fix for https://github.com/airbytehq/airbyte/issues/6791
     const defaultPatchedValues = Object.entries(widgetsInfo)
-      .filter(
-        ([k, v]) =>
-          isDefined(v.default) && !isDefined(getIn(constPatchedValues, k))
-      )
+      .filter(([k, v]) => isDefined(v.default) && !isDefined(getIn(constPatchedValues, k)))
       .reduce((acc, [k, v]) => setIn(acc, k, v.default), constPatchedValues);
 
     setFieldValue("connectionConfiguration", defaultPatchedValues);
@@ -127,18 +112,14 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     selectedConnectorDefinitionSpecification,
   } = props;
 
-  const specifications = useBuildInitialSchema(
-    selectedConnectorDefinitionSpecification
-  );
+  const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
 
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: "object",
       properties: {
         serviceType: { type: "string" },
-        ...(selectedConnectorDefinitionSpecification
-          ? { name: { type: "string" } }
-          : {}),
+        ...(selectedConnectorDefinitionSpecification ? { name: { type: "string" } } : {}),
         ...Object.fromEntries(
           Object.entries({
             connectionConfiguration: isLoading ? null : specifications,
@@ -155,18 +136,14 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const uiOverrides = useMemo(
     () => ({
       name: {
-        component: (property: FormBaseItem) => (
-          <ConnectorNameControl property={property} formType={formType} />
-        ),
+        component: (property: FormBaseItem) => <ConnectorNameControl property={property} formType={formType} />,
       },
       serviceType: {
         component: (property: FormBaseItem) => (
           <ConnectorServiceTypeControl
             property={property}
             formType={formType}
-            documentationUrl={
-              selectedConnectorDefinitionSpecification?.documentationUrl
-            }
+            documentationUrl={selectedConnectorDefinitionSpecification?.documentationUrl}
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
             isEditMode={props.isEditMode}
@@ -188,16 +165,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     ]
   );
 
-  const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgetsContext(
-    formFields,
-    initialValues,
-    uiOverrides
-  );
+  const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues, uiOverrides);
 
-  const validationSchema = useConstructValidationSchema(
-    jsonSchema,
-    uiWidgetsInfo
-  );
+  const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
 
   const getValues = useCallback(
     (values: ServiceFormValues) =>
@@ -242,12 +212,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             {...props}
             errorMessage={props.errorMessage}
             isTestConnectionInProgress={isTestConnectionInProgress}
-            onStopTestingConnector={
-              onStopTesting ? () => onStopTesting() : undefined
-            }
-            onRetest={
-              testConnector ? async () => await testConnector() : undefined
-            }
+            onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
+            onRetest={testConnector ? async () => await testConnector() : undefined}
             formFields={formFields}
           />
           {isOpenRequestModal && (
