@@ -20,8 +20,7 @@ const ToolTipView = styled.div<{ $disabled?: boolean }>`
   line-height: initial;
   position: absolute;
   padding: 9px 8px 8px;
-  box-shadow: 0 24px 38px rgba(53, 53, 66, 0.14),
-    0 9px 46px rgba(53, 53, 66, 0.12), 0 11px 15px rgba(53, 53, 66, 0.2);
+  box-shadow: 0 24px 38px rgba(53, 53, 66, 0.14), 0 9px 46px rgba(53, 53, 66, 0.12), 0 11px 15px rgba(53, 53, 66, 0.2);
   border-radius: 4px;
   background: rgba(26, 26, 33, 0.9);
   color: ${({ theme }) => theme.whiteColor};
@@ -38,13 +37,7 @@ const ToolTipView = styled.div<{ $disabled?: boolean }>`
   }
 `;
 
-const ToolTip: React.FC<ToolTipProps> = ({
-  children,
-  control,
-  className,
-  disabled,
-  cursor,
-}) => {
+const ToolTip: React.FC<ToolTipProps> = ({ children, control, className, disabled, cursor }) => {
   return (
     <Control $cursor={cursor}>
       {control}

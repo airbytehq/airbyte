@@ -65,23 +65,22 @@ class RedshiftStreamCopierTest {
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);
 
+    final S3DestinationConfig s3Config = S3DestinationConfig.create(
+        "fake-bucket",
+        "fake-bucketPath",
+        "fake-region")
+        .withEndpoint("fake-endpoint")
+        .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
+        .withPartSize(PART_SIZE)
+        .get();
+
     copier = new RedshiftStreamCopier(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
         "fake-staging-folder",
         "fake-schema",
         s3Client,
         db,
-        new S3CopyConfig(
-            true,
-            new S3DestinationConfig(
-                "fake-endpoint",
-                "fake-bucket",
-                "fake-bucketPath",
-                "fake-region",
-                "fake-access-key-id",
-                "fake-secret-access-key",
-                PART_SIZE,
-                null)),
+        new S3CopyConfig(true, s3Config),
         new ExtendedNameTransformer(),
         sqlOperations,
         UPLOAD_TIME,

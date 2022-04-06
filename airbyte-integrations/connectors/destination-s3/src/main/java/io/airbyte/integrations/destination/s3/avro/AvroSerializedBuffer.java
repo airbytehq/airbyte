@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class AvroSerializedBuffer extends BaseSerializedBuffer {
 
+  public static final String DEFAULT_SUFFIX = ".avro";
+
   private final CodecFactory codecFactory;
   private final Schema schema;
   private final AvroRecordFactory avroRecordFactory;

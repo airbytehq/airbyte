@@ -4,7 +4,9 @@ import { FormattedMessage } from "react-intl";
 
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
+
 import { useConfig } from "config";
+
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
 export type MetricsFormProps = {
@@ -75,11 +77,7 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
             onChange({ anonymousDataCollection: event.target.checked });
           }}
         />
-        <FeedbackBlock
-          errorMessage={errorMessage}
-          successMessage={successMessage}
-          isLoading={isLoading}
-        />
+        <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} isLoading={isLoading} />
       </FormItem>
     </>
   );
