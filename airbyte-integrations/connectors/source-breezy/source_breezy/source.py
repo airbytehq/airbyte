@@ -66,7 +66,7 @@ class BreezyStream(HttpStream, ABC):
     start_time: str
     data_field = 'data'
 
-    def __init__(self, limit=None, page_size=2500, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
+    def __init__(self, limit=None, page_size=5000, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
         super().__init__(**kwargs)
         self.limit = limit
         self.page_size = page_size
