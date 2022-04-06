@@ -12,8 +12,8 @@ from uuid import uuid4
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_s3.source_files_abstract.formats.csv_parser import CsvParser
-from source_s3.source_files_abstract.stream import FileStream
+from source_files_abstract.formats.csv_parser import CsvParser
+from source_files_abstract.stream import FileStream
 
 HERE = Path(__file__).resolve().parent
 SAMPLE_DIR = HERE.joinpath("sample_files/")
@@ -22,7 +22,7 @@ JSONTYPE_TO_PYTHONTYPE = {"string": str, "number": float, "integer": int, "objec
 
 
 class AbstractTestIncrementalFileStream(ABC):
-    """Prefix this class with Abstract so the tests don't run here but only in the children"""
+    """Prefix this class with Abstract so the tests don't run here"""
 
     temp_bucket_prefix = "airbytetest-"
 
@@ -63,7 +63,8 @@ class AbstractTestIncrementalFileStream(ABC):
     @abstractmethod
     def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
         """
-        See S3 for example what the override of this needs to achieve.
+        This method should upload the files_to_upload into the cloud bucket
+        See S3 source for a direct example.
 
         :param cloud_bucket_name: name of bucket (or equivalent)
         :param credentials: mapping of provider specific credentials
@@ -76,7 +77,7 @@ class AbstractTestIncrementalFileStream(ABC):
     def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping) -> None:
         """
         Provider-specific logic to tidy up any cloud resources.
-        See S3 for example.
+        See S3 source for example.
 
         :param cloud_bucket_name: bucket (or equivalent) name
         :param credentials: mapping of provider specific credentials
