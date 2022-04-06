@@ -64,8 +64,9 @@ class BreezyStream(HttpStream, ABC):
     current_page = 0
     limit: int
     start_time: str
+    data_field = 'data'
 
-    def __init__(self, limit=None, page_size=1000, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
+    def __init__(self, limit=None, page_size=1, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
         super().__init__(**kwargs)
         self.limit = limit
         self.page_size = page_size
@@ -78,8 +79,14 @@ class BreezyStream(HttpStream, ABC):
     def url_base(self) -> str:
         return f'https://app.breezy.hr/api/company/{self.company_id}/'
 
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if len(response.json()) or (self.current_page * self.page_size) < self.limit:
+        response = response.text()
+        print(isinstance(response, Mapping))
+        print(isinstance(response, list))
+        print(response)
+        max = 1000
+        if (self.current_page * self.page_size) < (self.limit or max):
             self.current_page += 1
             result = {'limit': self.page_size,
                       'skip': self.current_page * self.page_size}
@@ -109,9 +116,23 @@ class BreezyStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        result = response.json()
-        print(result)
-        yield result
+        response = response.json()
+        print('Inside parse')
+        print(response)
+        if isinstance(response, Mapping):
+            if response.get("status", None) == "error":
+                self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
+                return
+
+            if response.get(self.data_field) is None:
+                """
+                When the response doen't have the stream's data, raise an exception.
+                """
+                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+            yield from response[self.data_field]
+        else:
+            response = list(response)
+            yield from response
 
 # Basic incremental stream
 
@@ -195,13 +216,12 @@ class Candidates(IncrementalBreezyStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-        common = {"get_totals": True, "sort": {
+        common = {"get_totals": "true", "all_positions": "true", "sort": {
             "column": "updated_date", "sort": "DESC"}}
         if next_page_token:
             return next_page_token.update(common)
-        print(common)
         return {'limit': self.page_size,
-                'skip': self.current_page * self.page_size}
+                'skip': self.current_page * self.page_size}.update(common)
 # Source
 
 
