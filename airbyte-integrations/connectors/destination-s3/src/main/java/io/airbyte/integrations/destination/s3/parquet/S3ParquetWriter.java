@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
+import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -78,8 +79,9 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
 
   public static Configuration getHadoopConfig(final S3DestinationConfig config) {
     final Configuration hadoopConfig = new Configuration();
-    hadoopConfig.set(Constants.ACCESS_KEY, config.getAccessKeyId());
-    hadoopConfig.set(Constants.SECRET_KEY, config.getSecretAccessKey());
+    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) config.getS3CredentialConfig();
+    hadoopConfig.set(Constants.ACCESS_KEY, credentialConfig.getAccessKeyId());
+    hadoopConfig.set(Constants.SECRET_KEY, credentialConfig.getSecretAccessKey());
     if (config.getEndpoint().isEmpty()) {
       hadoopConfig.set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion()));
     } else {
@@ -137,7 +139,7 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   }
 
   @Override
-  public void write(JsonNode formattedData) throws IOException {
+  public void write(final JsonNode formattedData) throws IOException {
     parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
   }
 
