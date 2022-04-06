@@ -7,6 +7,15 @@ import xml.etree.ElementTree as ET
 INTELLIJ_VERSION_FLAG = "-intellij-version"
 
 
+def is_environment_in_jdk_table(environment_name, table):
+    for elem in table:
+        for subelem in elem:
+            attribute = subelem.attrib
+            if attribute.get("value") == name:
+                return True
+    return false
+
+
 def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
     """
     Add a new entry for the virtual environment to IntelliJ's list of known interpreters
@@ -17,12 +26,9 @@ def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
 
     table = xml_root.find("component")
 
-    for elem in table:
-        for subelem in elem:
-            attribute = subelem.attrib
-            if attribute.get("value") == environment_name:
-                print(f"{environment_name} already exists. Skipping...")
-                return
+    if is_environment_in_jdk_table(environment_name, table):
+        print(f"{environment_name} already exists. Skipping...")
+        return
 
     jdk_node = ET.SubElement(table, 'jdk', {"version": "2"})
 
