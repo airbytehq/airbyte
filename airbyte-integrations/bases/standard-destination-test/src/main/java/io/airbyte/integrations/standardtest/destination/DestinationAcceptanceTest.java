@@ -1157,31 +1157,33 @@ public abstract class DestinationAcceptanceTest {
     final Iterator<JsonNode> expectedIterator = expected.iterator();
     final Iterator<JsonNode> actualIterator = actual.iterator();
     while (expectedIterator.hasNext() && actualIterator.hasNext()) {
-      final JsonNode expectedData = expectedIterator.next();
-      final JsonNode actualData = actualIterator.next();
-      final Iterator<Entry<String, JsonNode>> expectedDataIterator = expectedData.fields();
-      LOGGER.info("Expected row {}", expectedData);
-      LOGGER.info("Actual row   {}", actualData);
-      if (areBothEmpty(expectedData, actualData)) {
-        LOGGER.info("Both rows are empty.");
-      } else {
-        assertEquals(expectedData.size(), actualData.size(), "Unequal row size");
-        while (expectedDataIterator.hasNext()) {
-          final Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
-          final JsonNode expectedValue = expectedEntry.getValue();
-          JsonNode actualValue = null;
-          String key = expectedEntry.getKey();
-          for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
-            actualValue = actualData.get(tmpKey);
-            if (actualValue != null) {
-              key = tmpKey;
-              break;
-            }
+      compareObjects(expectedIterator.next(), actualIterator.next());
+    }
+  }
+
+  protected void compareObjects(final JsonNode expectedObject, final JsonNode actualObject) {
+    final Iterator<Entry<String, JsonNode>> expectedDataIterator = expectedObject.fields();
+    LOGGER.info("Expected Object : {}", expectedObject);
+    LOGGER.info("Actual Object   : {}", actualObject);
+    if (areBothEmpty(expectedObject, actualObject)) {
+      LOGGER.info("Both rows are empty.");
+    } else {
+      assertEquals(expectedObject.size(), actualObject.size(), "Unequal row size");
+      while (expectedDataIterator.hasNext()) {
+        final Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
+        final JsonNode expectedValue = expectedEntry.getValue();
+        JsonNode actualValue = null;
+        String key = expectedEntry.getKey();
+        for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
+          actualValue = actualObject.get(tmpKey);
+          if (actualValue != null) {
+            key = tmpKey;
+            break;
           }
-          LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
-          assertTrue(actualData.has(key));
-          assertSameValue(expectedValue, actualValue);
         }
+        LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
+        assertTrue(actualObject.has(key));
+        assertSameValue(expectedValue, actualValue);
       }
     }
   }
@@ -1208,6 +1210,10 @@ public abstract class DestinationAcceptanceTest {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
     else if (expectedValue.isArray() && actualValue.isArray())
       return compareArrays(expectedValue, actualValue);
+    else if (expectedValue.isObject() && actualValue.isObject()) {
+      compareObjects(expectedValue, actualValue);
+      return true;
+    }
     else
       return compareString(expectedValue, actualValue);
   }
