@@ -518,10 +518,9 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     assert isinstance(rest_stream, IncrementalSalesforceStream)
 
 
-@pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 193434])
-def test_stream_contains_field_metadata(item_number, stream_config_with_field_metadata, stream_api):
+def test_stream_contains_field_metadata(stream_config_with_field_metadata, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_with_field_metadata, stream_api)
-    test_ids = [i for i in range(1, item_number)]
+    test_ids = [i for i in range(1, 35000)]
     pages = [test_ids[i : i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
     if not pages:
         pages = [[]]
