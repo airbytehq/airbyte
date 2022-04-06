@@ -505,7 +505,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-apify-dataset:0.1.3"
+- dockerImage: "airbyte/source-apify-dataset:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/apify-dataset"
     connectionSpecification:
@@ -6615,6 +6615,25 @@
           - - "client_secret"
         oauthFlowOutputParameters:
           - - "refresh_token"
+- dockerImage: "airbyte/source-pivotal-tracker:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Pivotal Tracker Spec"
+      type: "object"
+      required:
+        - "api_token"
+      additionalProperties: false
+      properties:
+        api_token:
+          type: "string"
+          description: "Pivotal Tracker API token"
+          examples:
+            - "5c054d0de3440452190fdc5d5a04d871"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-plaid:0.3.1"
   spec:
     documentationUrl: "https://plaid.com/docs/api/"
@@ -9400,7 +9419,7 @@
               path_in_connector_config:
                 - "credentials"
                 - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.3"
+- dockerImage: "airbyte/source-zendesk-support:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -9426,10 +9445,11 @@
           type: "string"
           title: "Subdomain"
           description:
-            "Identifier of your Zendesk Subdomain, like: https://{MY_SUBDOMAIN}.zendesk.com/,\
-            \ where MY_SUBDOMAIN is the value of your subdomain"
+            "This is your Zendesk subdomain that can be found in your account\
+            \ URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN\
+            \ is the value of your subdomain."
         credentials:
-          title: "Authorization Method"
+          title: "Authentication *"
           type: "object"
           description:
             "Zendesk service provides two authentication methods. Choose\
@@ -9479,8 +9499,8 @@
                   type: "string"
                   description:
                     "The value of the API token generated. See the <a href=\"\
-                    https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a>\
-                    \ for more information."
+                    https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide\"\
+                    >docs</a> for more information."
                   airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
