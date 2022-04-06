@@ -88,22 +88,22 @@ class TestSpec(BaseTest):
             for variant in variants:
                 assert "properties" in variant, f"Each item in the oneOf array should be a property with type object. {docs_msg}"
 
-            variant_props = [set(list(v["properties"].keys())) for v in variants]
+            oneof_path = '.'.join(variant_path)
+            variant_props = [set(v["properties"].keys()) for v in variants]
             common_props = set.intersection(*variant_props)
-            assert common_props, "There should be at least one common property for oneOf subobjects"
-            assert any(
-                [all(["const" in var["properties"][prop] for var in variants]) for prop in common_props]
-            ), f"Any of {common_props} properties in {'.'.join(variant_path)} has no const keyword. {docs_msg}"
+            assert common_props, f"There should be at least one common property for {oneof_path} subobjects. {docs_msg}"
 
-            for variant in variants:
-                for common_prop in common_props:
-                    prop_obj = variant['properties'][common_prop]
-                    if prop_obj.get("type") == "string" and {"const", "enum", "default"} & prop_obj.keys():
-                        const = prop_obj["const"]
-                        default = prop_obj["default"]
-                        enum = prop_obj["enum"]
-                        assert const == default, f"{const} != {default}"
-                        assert const in enum
+            const_common_props = set()
+            for common_prop in common_props:
+                if all(["const" in variant["properties"][common_prop] for variant in variants]):
+                    const_common_props.add(common_prop)
+            assert len(const_common_props) == 1, f"There should be exactly one common property with 'const' keyword for {oneof_path} subobjects. {docs_msg}"
+
+            const_common_prop = const_common_props.pop()
+            for n, variant in enumerate(variants):
+                prop_obj = variant["properties"][const_common_prop]
+                assert "default" not in prop_obj, f"There should not be 'default' keyword in common property {oneof_path}[{n}].{const_common_prop}. {docs_msg}"
+                assert "enum" not in prop_obj, f"There should not be 'enum' keyword in common property {oneof_path}[{n}].{const_common_prop}. {docs_msg}"
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
