@@ -105,7 +105,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
         .flatMap(schemaName -> discoverNotSuperTables(database, schemaName).stream())
         .toList();
     if (!schemaAndTableWithNotSuperType.isEmpty()) {
-      updateJSONDataColumnToSuperDataColumn(database, schemaAndTableWithNotSuperType);
+      updateVarcharDataColumnToSuperDataColumn(database, schemaAndTableWithNotSuperType);
     }
   }
 
@@ -145,8 +145,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
    * @param database                       - Database object for interacting with a JDBC connection.
    * @param schemaAndTableWithNotSuperType - list of tables with not super type.
    */
-  private void updateJSONDataColumnToSuperDataColumn(final JdbcDatabase database, final List<String> schemaAndTableWithNotSuperType) {
-    LOGGER.info("Updating JSON data column to super...");
+  private void updateVarcharDataColumnToSuperDataColumn(final JdbcDatabase database, final List<String> schemaAndTableWithNotSuperType) {
+    LOGGER.info("Updating VARCHAR data column to super...");
     StringBuilder finalSqlStatement = new StringBuilder();
     // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
     // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at column recreated to keep
@@ -161,7 +161,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
     try {
       database.execute(finalSqlStatement.toString());
     } catch (SQLException e) {
-      LOGGER.error("Error during updateJSONDataColumnToSuperDataColumn() appears: ", e);
+      LOGGER.error("Error during updateVarcharDataColumnToSuperDataColumn() appears: ", e);
     }
   }
 }
