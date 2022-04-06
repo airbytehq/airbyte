@@ -158,10 +158,9 @@ public class JobNotifier {
 
   // This method allows for the alert to be sent without the customerio configuration set in the
   // database
-  // this is only needed because there is no UI element to allow for users to create that
+  // This is only needed because there is no UI element to allow for users to create that
   // configuration.
   // Once that exists, this can be removed and we should be using `notifyJobByEmail`.
-  // Github issue tracking this: todo add link
   // The alert is sent to the email associated with the workspace.
   public void autoDisableConnectionAlertWithoutCustomerioConfig(final String action, final Job job) {
     try {
