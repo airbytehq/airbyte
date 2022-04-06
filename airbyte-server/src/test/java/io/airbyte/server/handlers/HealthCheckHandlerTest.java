@@ -24,7 +24,7 @@ class HealthCheckHandlerTest {
   }
 
   @Test
-  void testDbHealtFailh() {
+  void testDbHealthFail() {
     final var mRepository = mock(ConfigRepository.class);
     when(mRepository.healthCheck()).thenReturn(false);
 
