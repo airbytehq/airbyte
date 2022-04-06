@@ -516,3 +516,26 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalSalesforceStream)
+
+
+@pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 193434])
+def test_stream_contains_field_metadata(item_number, stream_config_with_field_metadata, stream_api):
+    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_with_field_metadata, stream_api)
+    test_ids = [i for i in range(1, item_number)]
+    pages = [test_ids[i : i + stream.page_size] for i in range(0, len(test_ids), stream.page_size)]
+    if not pages:
+        pages = [[]]
+    with requests_mock.Mocker() as m:
+        creation_responses = []
+
+        for page in range(len(pages)):
+            job_id = f"fake_job_{page}"
+            creation_responses.append({"json": {"id": job_id}})
+            m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+            resp = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in pages[page]]
+            m.register_uri("GET", stream.path() + f"/{job_id}/results", text="\n".join(resp))
+            m.register_uri("DELETE", stream.path() + f"/{job_id}")
+        m.register_uri("POST", stream.path(), creation_responses)
+
+        for record in stream.read_records(sync_mode=SyncMode.full_refresh):
+            assert "_fields" in record and record["_fields"]

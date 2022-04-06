@@ -329,6 +329,7 @@ class BulkSalesforceStream(SalesforceStream):
             count = 0
             record: Mapping[str, Any] = {}
             for count, record in self.download_data(url=job_full_url):
+                record["_fields"] = self.describe_fields
                 yield record
             self.delete_job(url=job_full_url)
 

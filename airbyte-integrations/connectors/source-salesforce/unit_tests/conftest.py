@@ -38,6 +38,20 @@ def stream_config():
 
 
 @pytest.fixture(scope="module")
+def stream_config_with_field_metadata():
+    """Generates streams settings with field metadata"""
+    return {
+        "client_id": "fake_client_id",
+        "client_secret": "fake_client_secret",
+        "refresh_token": "fake_refresh_token",
+        "start_date": "2010-01-18T21:18:20Z",
+        "is_sandbox": False,
+        "wait_timeout": 15,
+        "include_field_metadata": True
+    }
+
+
+@pytest.fixture(scope="module")
 def stream_config_date_format():
     """Generates streams settings with `start_date` in format YYYY-MM-DD"""
     return {
