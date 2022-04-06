@@ -93,7 +93,7 @@ public class ConfigRepository {
    */
   public boolean healthCheck() {
     try {
-      var a = database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
     } catch (Exception e) {
       LOGGER.error("Health check error: ", e);
       return false;
