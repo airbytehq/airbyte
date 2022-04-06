@@ -12,8 +12,9 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
   public static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
@@ -31,64 +33,64 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    final HashMap<String, String> properties = new HashMap<>();
+    if (config.has("ssl_method")) {
+      switch (config.get("ssl_method").asText()) {
+        case "unencrypted" -> properties.put("encrypt", "false");
+        case "encrypted_trust_server_certificate" -> {
+          properties.put("encrypt", "true");
+          properties.put("trustServerCertificate", "true");
+        }
+        case "encrypted_verify_certificate" -> {
+          properties.put("encrypt", "true");
+          properties.put("trustStore", getTrustStoreLocation());
+          final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+          if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
+            properties.put("trustStorePassword", config.get("trustStorePassword").asText());
+          }
+          if (config.has("hostNameInCertificate")) {
+            properties.put("hostNameInCertificate", config.get("hostNameInCertificate").asText());
+          }
+        }
+      }
+    }
+
+    return properties;
+  }
+
+  @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
-    final List<String> additionalParameters = new ArrayList<>();
-
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+    final String jdbcUrl = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText()));
-
-    if (config.has("ssl_method")) {
-      readSsl(config, additionalParameters);
-    }
-
-    if (!additionalParameters.isEmpty()) {
-      jdbcUrl.append(String.join(";", additionalParameters));
-    }
+        config.get("database").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("jdbc_url", jdbcUrl.toString())
+        .put("jdbc_url", jdbcUrl)
         .put("username", config.get("username").asText())
         .put("password", config.get("password").asText())
         .put("schema", schema);
 
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put("connection_properties", config.get(JDBC_URL_PARAMS_KEY));
+    }
+
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private void readSsl(final JsonNode config, final List<String> additionalParameters) {
-    switch (config.get("ssl_method").asText()) {
-      case "unencrypted":
-        additionalParameters.add("encrypt=false");
-        break;
-      case "encrypted_trust_server_certificate":
-        additionalParameters.add("encrypt=true");
-        additionalParameters.add("trustServerCertificate=true");
-        break;
-      case "encrypted_verify_certificate":
-        additionalParameters.add("encrypt=true");
-
-        // trust store location code found at https://stackoverflow.com/a/56570588
-        final String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
-            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
-        final File trustStoreFile = new File(trustStoreLocation);
-        if (!trustStoreFile.exists()) {
-          throw new RuntimeException("Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
-              + trustStoreLocation + " does not exist.");
-        }
-        final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-
-        additionalParameters.add("trustStore=" + trustStoreLocation);
-        if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
-          additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
-        }
-        if (config.has("hostNameInCertificate")) {
-          additionalParameters.add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
-        }
-        break;
+  private String getTrustStoreLocation() {
+    // trust store location code found at https://stackoverflow.com/a/56570588
+    final String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+        .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
+    final File trustStoreFile = new File(trustStoreLocation);
+    if (!trustStoreFile.exists()) {
+      throw new RuntimeException("Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
+          + trustStoreLocation + " does not exist.");
     }
+    return trustStoreLocation;
   }
 
   public static Destination sshWrappedDestination() {

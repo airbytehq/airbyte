@@ -19,7 +19,7 @@ import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.util.concurrent.Callable;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -31,21 +31,20 @@ import org.testcontainers.containers.MySQLContainer;
 class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   protected static final String TEST_USER = "test";
-  protected static final String TEST_PASSWORD = "test";
+  protected static final Callable<String> TEST_PASSWORD = () -> "test";
   protected static MySQLContainer<?> container;
 
-  protected JsonNode config;
   protected Database database;
 
   @BeforeAll
-  static void init() throws SQLException {
+  static void init() throws Exception {
     container = new MySQLContainer<>("mysql:8.0")
         .withUsername(TEST_USER)
-        .withPassword(TEST_PASSWORD)
+        .withPassword(TEST_PASSWORD.call())
         .withEnv("MYSQL_ROOT_HOST", "%")
-        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
+        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD.call());
     container.start();
-    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
+    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD.call());
     connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 
@@ -56,7 +55,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("port", container.getFirstMappedPort())
         .put("database", Strings.addRandomSuffix("db", "_", 10))
         .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
+        .put("password", TEST_PASSWORD.call())
         .build());
 
     database = Databases.createDatabase(

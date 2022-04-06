@@ -117,4 +117,14 @@ public interface SqlOperations {
    */
   boolean isSchemaRequired();
 
+
+  /**
+   * The method is responsible for executing some specific DB Engine logic in onStart method.
+   *
+   * @param database - Database that the connector is interacting with
+   * @param writeConfigsList - List of write configs
+   */
+  default void executeSpecificLogicForDBEngine(JdbcDatabase database, List<WriteConfig> writeConfigsList) {
+    // do nothing
+  }
 }

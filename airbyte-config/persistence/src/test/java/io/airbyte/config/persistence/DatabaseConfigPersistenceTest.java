@@ -13,7 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -29,6 +34,7 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -37,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,7 +58,7 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   @BeforeEach
   public void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence(database));
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
     final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
@@ -168,6 +175,26 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         STANDARD_SOURCE_DEFINITION.name(), Stream.of(Jsons.jsonNode(SOURCE_GITHUB), Jsons.jsonNode(SOURCE_POSTGRES)),
         STANDARD_DESTINATION_DEFINITION.name(), Stream.of(Jsons.jsonNode(DESTINATION_S3)));
     assertSameConfigDump(expected, actual);
+  }
+
+  @Test
+  public void testDumpConfigsWithoutSecret() throws Exception {
+    final ConnectorSpecification mockedConnectorSpec = new ConnectorSpecification()
+        .withConnectionSpecification(
+            Jsons.emptyObject());
+    doReturn(new StandardDestinationDefinition()
+        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_DESTINATION_DEFINITION), any(), any());
+    doReturn(new StandardSourceDefinition()
+        .withSpec(mockedConnectorSpec)).when(configPersistence).getConfig(eq(ConfigSchema.STANDARD_SOURCE_DEFINITION), any(), any());
+
+    writeSourceWithSourceConnection(configPersistence, SOURCE_GITHUB);
+    writeSourceWithSourceConnection(configPersistence, SOURCE_POSTGRES);
+    writeDestinationWithDestinationConnection(configPersistence, DESTINATION_S3);
+    final Map<String, Stream<JsonNode>> result = configPersistence.dumpConfigs();
+    result.values().forEach(stream -> {
+      stream.collect(Collectors.toList());
+    });
+    verify(jsonSecretsProcessor, times(3)).prepareSecretsForOutput(any(), any());
   }
 
   @Test

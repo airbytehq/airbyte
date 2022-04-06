@@ -73,5 +73,6 @@
         }
       }
     }
-  }
+  },
+  "required": ["id", "created_at"]
 }

@@ -251,8 +251,8 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
     )
 
     def update(config_yaml):
-        if config_yaml["source-paths"] == ["models"]:
-            config_yaml["source-paths"] = ["modified_models"]
+        if config_yaml["model-paths"] == ["models"]:
+            config_yaml["model-paths"] = ["modified_models"]
             return True, config_yaml
         return False, None
 

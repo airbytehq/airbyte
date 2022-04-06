@@ -15,6 +15,7 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Path;
+import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 
@@ -56,10 +57,10 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             config.get("host").asText()),
         SnowflakeSource.DRIVER_CLASS,
         SQLDialect.DEFAULT,
-        String.format("role=%s;warehouse=%s;database=%s",
-            config.get("role").asText(),
-            config.get("warehouse").asText(),
-            config.get("database").asText()));
+        Map.of(
+            "role", config.get("role").asText(),
+            "warehouse", config.get("warehouse").asText(),
+            "database", config.get("database").asText()));
   }
 
   @Override

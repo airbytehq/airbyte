@@ -107,7 +107,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
           <FormattedMessage
             id="admin.learnMore"
             values={{
-              lnk: (...lnk: React.ReactNode[]) => (
+              lnk: (lnk: React.ReactNode) => (
                 <DocLink target="_blank" href={config.ui.docsLink} as="a">
                   {lnk}
                 </DocLink>

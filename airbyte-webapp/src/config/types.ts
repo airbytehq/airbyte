@@ -13,10 +13,8 @@ declare global {
     REACT_APP_WEBAPP_TAG?: string;
     REACT_APP_INTERCOM_APP_ID?: string;
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
+    SEGMENT_TOKEN?: string;
     analytics: SegmentAnalytics;
-
-    // API_URL to hack rest-hooks resources
-    _API_URL: string;
   }
 }
 

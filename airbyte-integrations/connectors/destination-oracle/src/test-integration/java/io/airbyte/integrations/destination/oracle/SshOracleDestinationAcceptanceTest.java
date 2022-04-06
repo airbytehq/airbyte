@@ -175,7 +175,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
 
   @Override
   protected boolean supportsDBT() {
-    return true;
+    return false;
   }
 
   @Override

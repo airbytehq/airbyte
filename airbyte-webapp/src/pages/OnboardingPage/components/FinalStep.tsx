@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useResource, useSubscription } from "rest-hooks";
+
+import { H1 } from "components";
+import { useConfig } from "config";
 
 import VideoItem from "./VideoItem";
 import ProgressBlock from "./ProgressBlock";
 import HighlightedText from "./HighlightedText";
-import { H1 } from "components/base";
 import UseCaseBlock from "./UseCaseBlock";
-import ConnectionResource from "core/resources/Connection";
 import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
 import Status from "core/statuses";
 import useWorkspace from "hooks/services/useWorkspace";
-import { useConfig } from "config";
+import { useGetConnection } from "hooks/services/useConnectionHook";
 
 type FinalStepProps = {
   connectionId: string;
@@ -41,14 +41,12 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
   const {
     feedbackPassed,
     passFeedback,
-    useCases,
+    visibleUseCases,
+    useCaseLinks,
     skipCase,
   } = useOnboardingService();
-  const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId,
-  });
-  useSubscription(ConnectionResource.detailShape(), {
-    connectionId: connectionId,
+  const connection = useGetConnection(connectionId, {
+    refetchInterval: 2500,
   });
   const [isOpen, setIsOpen] = useState(false);
 
@@ -60,6 +58,11 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
       setIsOpen(true);
     }
   }, [connection.latestSyncJobStatus, feedbackPassed]);
+
+  const onSkipFeedback = () => {
+    passFeedback();
+    setIsOpen(false);
+  };
 
   const onSendFeedback = (feedback: string) => {
     sendFeedback({
@@ -95,26 +98,26 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
         <FormattedMessage
           id="onboarding.useCases"
           values={{
-            name: (...name: React.ReactNode[]) => (
+            name: (name: React.ReactNode[]) => (
               <HighlightedText>{name}</HighlightedText>
             ),
           }}
         />
       </Title>
 
-      {useCases &&
-        useCases.map((item, key) => (
-          <UseCaseBlock
-            key={item}
-            count={key + 1}
-            onSkip={skipCase}
-            id={item}
-          />
-        ))}
+      {visibleUseCases?.map((item, key) => (
+        <UseCaseBlock
+          key={item}
+          count={key + 1}
+          href={useCaseLinks[item]}
+          onSkip={skipCase}
+          id={item}
+        />
+      ))}
 
       {isOpen ? (
         <SyncCompletedModal
-          onClose={() => setIsOpen(false)}
+          onClose={onSkipFeedback}
           onPassFeedback={onSendFeedback}
         />
       ) : null}

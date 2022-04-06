@@ -21,13 +21,13 @@ import {
 } from "core/domain/connection/operation";
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { Connection, ScheduleProperties } from "core/domain/connection";
 import {
   ConnectionNamespaceDefinition,
   ConnectionSchedule,
 } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
 
 type FormikConnectionFormValues = {
@@ -49,9 +49,13 @@ const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.Incremental, DestinationSyncMode.Dedupted],
 ];
 
-function useDefaultTransformation(): Transformation {
-  const { workspace } = useWorkspace();
+const DEFAULT_SCHEDULE: ScheduleProperties = {
+  units: 24,
+  timeUnit: ConnectionSchedule.Hours,
+};
 
+function useDefaultTransformation(): Transformation {
+  const workspace = useCurrentWorkspace();
   return {
     name: "My dbt transformations",
     workspaceId: workspace.workspaceId,
@@ -93,7 +97,11 @@ const connectionValidationSchema = yup
           id: yup
             .string()
             // This is required to get rid of id fields we are using to detect stream for edition
-            .strip(true),
+            .when(
+              "$isRequest",
+              (isRequest: boolean, schema: yup.StringSchema) =>
+                isRequest ? schema.strip(true) : schema
+            ),
           stream: yup.object(),
           config: yup
             .object({
@@ -282,10 +290,10 @@ const useInitialValues = (
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
-      schedule: connection.schedule ?? {
-        units: 24,
-        timeUnit: ConnectionSchedule.Hours,
-      },
+      schedule:
+        connection.schedule !== undefined
+          ? connection.schedule
+          : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,

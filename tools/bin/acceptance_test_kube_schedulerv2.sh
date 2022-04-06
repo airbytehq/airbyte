@@ -34,7 +34,7 @@ echo "Listing nodes scheduled for pods..."
 kubectl describe pods | grep "Name\|Node"
 
 # allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
-sleep 120s
+sleep 120
 
 if [ -n "$CI" ]; then
   bootloader_logs () { kubectl logs pod/airbyte-bootloader > /tmp/kubernetes_logs/bootloader.txt; }

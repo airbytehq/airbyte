@@ -5,14 +5,9 @@ import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
 import { WarningMessage } from "../WarningMessage";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
-import {
-  ControlLabels,
-  defaultDataItemSort,
-  DropDown,
-  DropDownRow,
-  ImageBlock,
-} from "components";
+import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
 
 import { FormBaseItem } from "core/form/types";
 import {
@@ -27,6 +22,13 @@ import {
   IProps as OptionProps,
   OptionView,
 } from "components/base/DropDown/components/Option";
+import {
+  IProps as SingleValueProps,
+  Icon as SingleValueIcon,
+  ItemView as SingleValueView,
+} from "components/base/DropDown/components/SingleValue";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { naturalComparator } from "utils/objects";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -70,7 +72,40 @@ const Stage = styled.div`
   color: ${({ theme }) => theme.textColor};
 `;
 
+const SingleValueContent = styled(components.SingleValue)`
+  width: 100%;
+  padding-right: 38px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false>;
+
+/**
+ * Can be used to overwrite the alphabetical order of connectors in the select.
+ * A higher positive number will put the given connector to the top of the list
+ * a low negative number to the end of it.
+ */
+const ORDER_OVERWRITE: Record<string, number> = {};
+
+/**
+ * Returns the order for a specific release stage label. This will define
+ * in what order the different release stages are shown inside the select.
+ * They will be shown in an increasing order (i.e. 0 on top), unless not overwritten
+ * by ORDER_OVERWRITE above.
+ */
+function getOrderForReleaseStage(stage?: ReleaseStage): number {
+  switch (stage) {
+    case ReleaseStage.BETA:
+      return 1;
+    case ReleaseStage.ALPHA:
+      return 2;
+    default:
+      return 0;
+  }
+}
 
 const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
   children,
@@ -80,13 +115,29 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
     <components.MenuList {...props}>{children}</components.MenuList>
     <BottomElement>
       <Block
-        onClick={props.selectProps.selectProps.onOpenRequestConnectorModal}
+        onClick={() =>
+          props.selectProps.selectProps.onOpenRequestConnectorModal(
+            props.selectProps.inputValue
+          )
+        }
       >
         <FormattedMessage id="connector.requestConnectorBlock" />
       </Block>
     </BottomElement>
   </>
 );
+
+const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({
+  releaseStage,
+}) =>
+  releaseStage && releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
+    <Stage>
+      <FormattedMessage
+        id={`connector.releaseStage.${releaseStage}`}
+        defaultMessage={releaseStage}
+      />
+    </Stage>
+  ) : null;
 
 const Option: React.FC<OptionProps> = (props) => {
   return (
@@ -100,17 +151,23 @@ const Option: React.FC<OptionProps> = (props) => {
           {props.data.img || null}
           <Label>{props.label}</Label>
         </Text>
-        {props.data.releaseStage &&
-        props.data.releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
-          <Stage>
-            <FormattedMessage
-              id={`connector.releaseStage.${props.data.releaseStage}`}
-              defaultMessage={props.data.releaseStage}
-            />
-          </Stage>
-        ) : null}
+        <StageLabel releaseStage={props.data.releaseStage} />
       </OptionView>
     </components.Option>
+  );
+};
+
+const SingleValue: React.FC<SingleValueProps> = (props) => {
+  return (
+    <SingleValueView>
+      {props.data.img && <SingleValueIcon>{props.data.img}</SingleValueIcon>}
+      <div>
+        <SingleValueContent {...props}>
+          {props.data.label}
+          <StageLabel releaseStage={props.data.releaseStage} />
+        </SingleValueContent>
+      </div>
+    </SingleValueView>
   );
 };
 
@@ -120,14 +177,12 @@ const ConnectorServiceTypeControl: React.FC<{
   availableServices: ConnectorDefinition[];
   isEditMode?: boolean;
   documentationUrl?: string;
-  allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
-  onOpenRequestConnectorModal: () => void;
+  onOpenRequestConnectorModal: (initialName: string) => void;
 }> = ({
   property,
   formType,
   isEditMode,
-  allowChangeConnector,
   onChangeServiceType,
   availableServices,
   documentationUrl,
@@ -135,6 +190,7 @@ const ConnectorServiceTypeControl: React.FC<{
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
+  const analytics = useAnalyticsService();
 
   // TODO Begin hack
   // During the Cloud private beta, we let users pick any connector in our catalog.
@@ -144,12 +200,16 @@ const ConnectorServiceTypeControl: React.FC<{
   // This way, they will not be available for usage in new connections, but they will be available for users
   // already leveraging them.
   // TODO End hack
+  const workspace = useCurrentWorkspace();
   const disallowedOauthConnectors =
     // I would prefer to use windowConfigProvider.cloud but that function is async
     window.CLOUD === "true"
       ? [
           "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b", // Snapchat
           "2470e835-feaf-4db6-96f3-70fd645acc77", // Salesforce Singer
+          ...(workspace.workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace for review
+            ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
+            : []),
         ]
       : [];
   const sortedDropDownData = useMemo(
@@ -164,7 +224,21 @@ const ConnectorServiceTypeControl: React.FC<{
           img: <ImageBlock img={item.icon} />,
           releaseStage: item.releaseStage,
         }))
-        .sort(defaultDataItemSort),
+        .sort((a, b) => {
+          const priorityA = ORDER_OVERWRITE[a.value] ?? 0;
+          const priorityB = ORDER_OVERWRITE[b.value] ?? 0;
+          // If they have different priority use the higher priority first, otherwise use the label
+          if (priorityA !== priorityB) {
+            return priorityB - priorityA;
+          } else if (a.releaseStage !== b.releaseStage) {
+            return (
+              getOrderForReleaseStage(a.releaseStage) -
+              getOrderForReleaseStage(b.releaseStage)
+            );
+          } else {
+            return naturalComparator(a.label, b.label);
+          }
+        }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices]
   );
@@ -186,6 +260,14 @@ const ConnectorServiceTypeControl: React.FC<{
     [setValue, onChangeServiceType]
   );
 
+  const onMenuOpen = () => {
+    const eventName =
+      formType === "source"
+        ? "Airbyte.UI.NewSource.SelectionOpened"
+        : "Airbyte.UI.NewDestination.SelectionOpened";
+    analytics.track(eventName, {});
+  };
+
   return (
     <>
       <ControlLabels
@@ -198,16 +280,18 @@ const ConnectorServiceTypeControl: React.FC<{
           components={{
             MenuList: ConnectorList,
             Option,
+            SingleValue,
           }}
           selectProps={{ onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
-          isDisabled={isEditMode && !allowChangeConnector}
+          isDisabled={isEditMode}
           isSearchable
           placeholder={formatMessage({
             id: "form.selectConnector",
           })}
           options={sortedDropDownData}
           onChange={handleSelect}
+          onMenuOpen={onMenuOpen}
         />
       </ControlLabels>
       {selectedService && documentationUrl && (

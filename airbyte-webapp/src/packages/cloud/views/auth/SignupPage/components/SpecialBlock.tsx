@@ -62,11 +62,11 @@ const SpecialBlock: React.FC = () => {
         <FormattedMessage
           id="login.activateAccess.subtitle"
           values={{
-            sum: (...sum: React.ReactNode[]) => <SumBlock>{sum}</SumBlock>,
-            special: (...special: React.ReactNode[]) => (
+            sum: (sum: React.ReactNode) => <SumBlock>{sum}</SumBlock>,
+            special: (special: React.ReactNode) => (
               <HighlightBlock red>{special}</HighlightBlock>
             ),
-            free: (...free: React.ReactNode[]) => (
+            free: (free: React.ReactNode) => (
               <HighlightBlock>{free}</HighlightBlock>
             ),
           }}

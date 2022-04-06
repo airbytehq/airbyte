@@ -25,7 +25,7 @@ class InsightAsyncJobManager:
 
     # When current insights throttle hit this value no new jobs added.
     THROTTLE_LIMIT = 70
-    MAX_NUMBER_OF_ATTEMPTS = 5
+    MAX_NUMBER_OF_ATTEMPTS = 20
     # Time to wait before checking job status update again.
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
     # Maximum of concurrent jobs that could be scheduled. Since throttling

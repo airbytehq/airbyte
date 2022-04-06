@@ -6,11 +6,11 @@ package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ReplicationOutput;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerApp;
-import io.airbyte.workers.WorkerConfigs;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,7 +31,7 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
                                    final IntegrationLauncherConfig sourceLauncherConfig,
                                    final IntegrationLauncherConfig destinationLauncherConfig,
                                    final JobRunConfig jobRunConfig,
-                                   final WorkerConfigs workerConfigs) {
+                                   final ResourceRequirements resourceRequirements) {
     super(
         connectionId,
         REPLICATION,
@@ -41,7 +41,7 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
             INIT_FILE_SOURCE_LAUNCHER_CONFIG, Jsons.serialize(sourceLauncherConfig),
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
-        workerConfigs.getResourceRequirements(),
+        resourceRequirements,
         ReplicationOutput.class);
   }
 

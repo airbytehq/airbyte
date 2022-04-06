@@ -12,13 +12,15 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -32,6 +34,8 @@ public interface ServerFactory {
                         SynchronousSchedulerClient cachingSchedulerClient,
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
+                        SecretsRepositoryReader secretsRepositoryReader,
+                        SecretsRepositoryWriter secretsRepositoryWriter,
                         JobPersistence jobPersistence,
                         ConfigPersistence seed,
                         Database configsDatabase,
@@ -45,7 +49,7 @@ public interface ServerFactory {
                         Path workspaceRoot,
                         HttpClient httpClient,
                         FeatureFlags featureFlags,
-                        TemporalWorkerRunFactory temporalWorkerRunFactory);
+                        EventRunner eventRunner);
 
   class Api implements ServerFactory {
 
@@ -54,6 +58,8 @@ public interface ServerFactory {
                                  final SynchronousSchedulerClient synchronousSchedulerClient,
                                  final WorkflowServiceStubs temporalService,
                                  final ConfigRepository configRepository,
+                                 final SecretsRepositoryReader secretsRepositoryReader,
+                                 final SecretsRepositoryWriter secretsRepositoryWriter,
                                  final JobPersistence jobPersistence,
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
@@ -67,11 +73,13 @@ public interface ServerFactory {
                                  final Path workspaceRoot,
                                  final HttpClient httpClient,
                                  final FeatureFlags featureFlags,
-                                 final TemporalWorkerRunFactory temporalWorkerRunFactory) {
+                                 final EventRunner eventRunner) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
           configRepository,
+          secretsRepositoryReader,
+          secretsRepositoryWriter,
           jobPersistence,
           seed,
           schedulerJobClient,
@@ -89,7 +97,7 @@ public interface ServerFactory {
           workspaceRoot,
           httpClient,
           featureFlags,
-          temporalWorkerRunFactory);
+          eventRunner);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

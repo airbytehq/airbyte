@@ -60,6 +60,7 @@ OR
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.12 | 2022-03-17| [10975](https://github.com/airbytehq/airbyte/pull/10975) | Fix campaign's stream normalization |
 | 0.2.11 | 2021-12-24| [7159](https://github.com/airbytehq/airbyte/pull/7159) | Add oauth2.0 support |
 | 0.2.10 | 2021-12-21 | [9000](https://github.com/airbytehq/airbyte/pull/9000) | Update connector fields title/description |
 | 0.2.9  | 2021-12-13 | [7975](https://github.com/airbytehq/airbyte/pull/7975) | Updated JSON schemas |

@@ -113,8 +113,11 @@ runs:
 
           [ -f ${{ steps.ci-py-tests.outputs.coverage-paths }} ] && OPTIONS+=("-Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}")
           [ -f ${{ steps.ci-py-tests.outputs.flake8-logs }} ] && OPTIONS+=("-Dsonar.python.flake8.reportPaths=${{ steps.ci-py-tests.outputs.flake8-logs }}")
+          # TODO: figure out how to make this check work for Java-based connectors
+          # See more in https://github.com/airbytehq/airbyte/issues/10924
+          cat ${REPORT_FOLDER}/*
         fi
-        cat ${REPORT_FOLDER}/*
+
         if [ ${{ inputs.module-lang }} == 'java' ]; then
              [ -d "./src/main/java" ] && OPTIONS+=("-Dsonar.sources=./src/main/java")
              [ -d "./src/test/java" ] && OPTIONS+=("-Dsonar.tests=./src/test/java")

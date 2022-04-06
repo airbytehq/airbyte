@@ -24,8 +24,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
-import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -47,7 +46,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -70,7 +68,7 @@ import org.slf4j.MDC;
  */
 public class SchedulerApp {
 
-  public static AtomicInteger PENDING_JOBS = new AtomicInteger();
+  public static final AtomicInteger PENDING_JOBS = new AtomicInteger();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerApp.class);
 
@@ -131,7 +129,12 @@ public class SchedulerApp {
           featureFlags);
       final JobRetrier jobRetrier = new JobRetrier(jobPersistence, Instant::now, jobNotifier, maxSyncJobAttempts);
       final TrackingClient trackingClient = TrackingClientSingleton.get();
-      final JobScheduler jobScheduler = new JobScheduler(jobPersistence, configRepository, trackingClient, workerConfigs);
+      final JobScheduler jobScheduler = new JobScheduler(
+          configs.connectorSpecificResourceDefaultsEnabled(),
+          jobPersistence,
+          configRepository,
+          trackingClient,
+          workerConfigs);
       final JobSubmitter jobSubmitter = new JobSubmitter(
           workerThreadPool,
           jobPersistence,
@@ -246,12 +249,13 @@ public class SchedulerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
-    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configs);
-    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
-    final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence, secretsHydrator, secretPersistence, ephemeralSecretPersistence, configDatabase);
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+        .maskSecrets(!featureFlags.exposeSecretsInExport())
+        .copySecrets(true)
+        .build();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     final JobCleaner jobCleaner = new JobCleaner(

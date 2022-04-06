@@ -21,6 +21,12 @@ spec:
     spec:
       containers:
         - name: airbyte-scheduler-container
+          env:
+            - name: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
           resources:
             limits:
               cpu: 2
@@ -35,6 +41,12 @@ spec:
     spec:
       containers:
         - name: airbyte-worker-container
+          env:
+            - name: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
           resources:
             limits:
               cpu: 2
@@ -49,6 +61,12 @@ spec:
     spec:
       containers:
         - name: airbyte-server-container
+          env:
+            - name: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
           resources:
             limits:
               cpu: 1
