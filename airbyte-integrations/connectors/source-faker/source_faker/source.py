@@ -110,9 +110,8 @@ class SourceFaker(Source):
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
 
-        count = config["count"] or 0
-        seed = config["seed"] or -1
-
+        count = config["count"] if "count" in config else 0
+        seed = config["seed"] if "seed" in config else -1
         Faker.seed(seed) if seed >= 0 else None
         fake = Faker()
 
@@ -136,9 +135,8 @@ class SourceFaker(Source):
             else:
                 raise ValueError(stream.stream.name)
 
-
 def get_stream_cursor(state, stream) -> int:
-    cursor = (state[stream]["cursor"] or 0) if state[stream] else 0
+    cursor = (state[stream]["cursor"] or 0) if stream in state else 0
     return cursor
 
 
