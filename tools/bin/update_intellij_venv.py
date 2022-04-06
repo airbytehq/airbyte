@@ -4,11 +4,13 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-INTELLIJ_VERSION_FLAG = "-version"
+INTELLIJ_INSTANCE_FLAG = "-intellij-instance"
 
 
-def add_venv_to_xml_root(module: str, module_full_path: str, python_version: str, xml_root):
-    environment_name = f"{python_version} ({module})"
+def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
+    path_to_lib = f"{module_full_path}/.venv/lib/"
+    python_version = os.listdir(path_to_lib)[0]
+    environment_name = f"{python_version.capitalize()} ({module})"
 
     table = xml_root.find("component")
 
@@ -35,7 +37,7 @@ def add_venv_to_xml_root(module: str, module_full_path: str, python_version: str
     classPathRoot = ET.SubElement(classPath, "root", {"type": "composite"})
 
     ET.SubElement(classPathRoot, "root", {"url":
-                                              f"file://{module_full_path}/.venv/lib/{python_version}/site-packages",
+                                              f"file://{path_to_lib}{python_version}/site-packages",
                                           "type": "simple"
                                           })
 
@@ -48,20 +50,24 @@ def get_output_path(input_path, output_path):
 
 
 def create_parser():
-    parser = argparse.ArgumentParser(description="TODO")
-    parser.add_argument("-python", required=True, help="Python version")
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-modules", nargs="?", help="Modules to add")
-    group.add_argument("--all-modules", action="store_true")
-
-    parser.add_argument("-input", help="Path to input jdk table")
-    parser.add_argument("-intellij-version", help="Intellij version to use")
-    parser.add_argument("-output", help="Path to output jdk table")
-    parser.add_argument(INTELLIJ_VERSION_FLAG, help="Instance of IntelliJ to update")
-    parser.add_argument("--install-venv", action="store_true", help="TODO")
-    parser.add_argument("--update-intellij", action="store_true", help="TODO")
+    parser = argparse.ArgumentParser(description="Prepare Python virtual environments for Python connectors")
+    actions_group = parser.add_argument_group("actions")
+    actions_group.add_argument("--install-venv", action="store_true",
+                               help="Create virtual environment and install the module's dependencies")
+    actions_group.add_argument("--update-intellij", action="store_true", help="Add interpreter to IntelliJ's list of known interpreters")
 
     parser.add_argument("-airbyte", default=f"{os.path.dirname(__file__)}/../..", help="Path to Airbyte root directory")
+
+    modules_group = parser.add_mutually_exclusive_group(required=True)
+    modules_group.add_argument("-modules", nargs="?", help="Comma separated list of modules to add (eg source-strava,source-stripe)")
+    modules_group.add_argument("--all-modules", action="store_true", help="Select all Python connector modules")
+
+    group = parser.add_argument_group("Update intelliJ")
+
+    group.add_argument("-input", help="Path to input IntelliJ's jdk table")
+    group.add_argument("-output", help="Path to output jdk table")
+    group.add_argument(INTELLIJ_INSTANCE_FLAG, help="Instance of IntelliJ to update (Only required if multiple versions are installed)")
+
     return parser
 
 
@@ -84,7 +90,7 @@ def get_input_path(input_from_args, version, home_directory):
             intellij_instance_to_update = intellij_versions[0]
             print(intellij_instance_to_update)
         else:
-            msg = f"Please select which instance of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}"
+            msg = f"Please select which instance of Intellij to update with the `{INTELLIJ_INSTANCE_FLAG}` flag. Options are: {intellij_versions}"
             print(msg)
             raise RuntimeError(msg)
         return f"{path_to_intellij_settings}{intellij_instance_to_update}/options/jdk.table.xml"
@@ -92,13 +98,10 @@ def get_input_path(input_from_args, version, home_directory):
 
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
-
+    if not args.install_venv and not args.update_intellij:
+        print("No action requested. Add -h for help")
+        exit(-1)
     path_to_connectors = f"{args.airbyte}/airbyte-integrations/connectors/"
-
-    home_directory = os.getenv("HOME")
-    input_path = get_input_path(args.input, args.version, home_directory)
-
-    output_path = get_output_path(input_path, args.output)
 
     if args.all_modules:
         print(path_to_connectors)
@@ -110,6 +113,10 @@ if __name__ == "__main__":
         for module in modules:
             subprocess.run(["tools/bin/setup_connector_venv.sh", module], check=True)
     if args.update_intellij:
+        home_directory = os.getenv("HOME")
+        input_path = get_input_path(args.input, args.intellij_instance, home_directory)
+
+        output_path = get_output_path(input_path, args.output)
         with open(input_path, 'r') as f:
             root = ET.fromstring(f.read())
 
@@ -119,7 +126,7 @@ if __name__ == "__main__":
                 requirements_file_exists = os.path.exists(path_to_requirements_file)
                 if requirements_file_exists:
                     print(f"Adding {module} to jdk table")
-                    add_venv_to_xml_root(module, path_to_module, args.python, root)
+                    add_venv_to_xml_root(module, path_to_module, root)
                 else:
                     print(f"Skipping {module}")
             with open(output_path, "w") as fout:
