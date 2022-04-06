@@ -126,12 +126,10 @@ public class S3StorageOperations implements BlobStorageOperations {
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String partId = getPartId(objectPath);
-    final String extension = getExtension(recordsData.getFilename());
-    final String uploadedFilename = partId + extension;
-    final String objectKeyWithPartId = objectPath + uploadedFilename;
+    final String newFilename = getPartId(objectPath) + getExtension(recordsData.getFilename());
+    final String fullObjectKey = objectPath + newFilename;
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
-        .getDefault(bucket, objectKeyWithPartId, s3Client, partSize)
+        .getDefault(bucket, fullObjectKey, s3Client, partSize)
         .checkIntegrity(true)
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
@@ -150,12 +148,12 @@ public class S3StorageOperations implements BlobStorageOperations {
         uploadManager.complete();
       }
     }
-    if (!s3Client.doesObjectExist(bucket, objectKeyWithPartId)) {
-      LOGGER.error("Failed to upload data into storage, object {} not found", objectKeyWithPartId);
+    if (!s3Client.doesObjectExist(bucket, fullObjectKey)) {
+      LOGGER.error("Failed to upload data into storage, object {} not found", fullObjectKey);
       throw new RuntimeException("Upload failed");
     }
-    LOGGER.info("Uploaded buffer file to storage: {} -> {}", recordsData.getFilename(), objectKeyWithPartId);
-    return uploadedFilename;
+    LOGGER.info("Uploaded buffer file to storage: {} -> {}", recordsData.getFilename(), fullObjectKey);
+    return newFilename;
   }
 
   protected static String getExtension(final String filename) {
