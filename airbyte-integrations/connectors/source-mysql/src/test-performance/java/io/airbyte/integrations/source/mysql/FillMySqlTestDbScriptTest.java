@@ -12,9 +12,9 @@ import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData {
@@ -35,7 +35,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   }
 
   @Override
-  protected Database setupDatabase(String dbName) throws Exception {
+  protected Database setupDatabase(final String dbName) throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", "your_host")
         .put("port", 3306)
@@ -54,7 +54,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
             dbName),
         "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL,
-        "zeroDateTimeBehavior=convertToNull");
+        Map.of("zeroDateTimeBehavior", "convertToNull"));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"
@@ -73,12 +73,10 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
    * - a number of streams to read in configured airbyte Catalog. Each stream\table in DB should be
    * names like "test_0", "test_1",..., test_n.
    */
-  @BeforeAll
-  public static void beforeAll() {
-    AbstractSourceFillDbWithTestData.testArgs = Stream.of(
-        Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000)
+  @Override
+  protected Stream<Arguments> provideParameters() {
     // for MySQL DB name ans schema name would be the same
-    );
+    return Stream.of(Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000));
   }
 
 }

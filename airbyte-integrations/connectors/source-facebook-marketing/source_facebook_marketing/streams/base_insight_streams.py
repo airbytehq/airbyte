@@ -63,6 +63,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         fields: List[str] = None,
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
+        time_increment: Optional[int] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -71,6 +72,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._fields = fields
         self.action_breakdowns = action_breakdowns or self.action_breakdowns
         self.breakdowns = breakdowns or self.breakdowns
+        self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
 
         # state
@@ -115,18 +117,27 @@ class AdsInsights(FBMarketingIncrementalStream):
             return {
                 self.cursor_field: self._cursor_value.isoformat(),
                 "slices": [d.isoformat() for d in self._completed_slices],
+                "time_increment": self.time_increment,
             }
 
         if self._completed_slices:
             return {
                 "slices": [d.isoformat() for d in self._completed_slices],
+                "time_increment": self.time_increment,
             }
 
         return {}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        """State setter"""
+        """State setter, will ignore saved state if time_increment is different from previous."""
+        # if the time increment configured for this stream is different from the one in the previous state
+        # then the previous state object is invalid and we should start replicating data from scratch
+        # to achieve this, we skip setting the state
+        if value.get("time_increment", 1) != self.time_increment:
+            logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment` option.")
+            return
+
         self._cursor_value = pendulum.parse(value[self.cursor_field]).date() if value.get(self.cursor_field) else None
         self._completed_slices = set(pendulum.parse(v).date() for v in value.get("slices", []))
         self._next_cursor_value = self._get_start_date()
@@ -140,10 +151,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         return self.state
 
     def _date_intervals(self) -> Iterator[pendulum.Date]:
+        """Get date period to sync"""
         if self._end_date < self._next_cursor_value:
-            return []
+            return
         date_range = self._end_date - self._next_cursor_value
-        return date_range.range("days", self.time_increment)
+        yield from date_range.range("days", self.time_increment)
 
     def _advance_cursor(self):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
@@ -213,7 +225,6 @@ class AdsInsights(FBMarketingIncrementalStream):
                 logger.info(
                     f"The cursor value within refresh period ({self.INSIGHTS_LOOKBACK_PERIOD}), start sync from {refresh_date} instead."
                 )
-            # FIXME: change cursor logic to not update cursor earlier than 28 days, after that we don't need this line
             start_date = min(start_date, refresh_date)
 
             if start_date < self._start_date:

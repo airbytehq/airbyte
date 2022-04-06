@@ -16,14 +16,12 @@ const Item = styled.div<{
   padding: 6px 8px 7px;
   border-radius: 4px;
   cursor: pointer;
-  background: ${({ theme, isActive }) =>
-    isActive ? theme.primaryColor12 : "none"};
+  background: ${({ theme, isActive }) => (isActive ? theme.primaryColor12 : "none")};
   font-style: normal;
   font-weight: ${({ isActive }) => (isActive ? "bold" : "500")};
   font-size: 12px;
   line-height: 15px;
-  color: ${({ theme, isActive }) =>
-    isActive ? theme.primaryColor : theme.greyColor60};
+  color: ${({ theme, isActive }) => (isActive ? theme.primaryColor : theme.greyColor60)};
 `;
 
 const Counter = styled.div`

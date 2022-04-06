@@ -53,8 +53,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void putArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    ArrayNode arrayNode = new ObjectMapper().createArrayNode();
-    ResultSet arrayResultSet = resultSet.getArray(index).getResultSet();
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(index).getResultSet();
     while (arrayResultSet.next()) {
       arrayNode.add(arrayResultSet.getString(2));
     }
@@ -144,10 +144,10 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     // value in the following format
     try {
       var valueWithoutMicros = value;
-      StringBuilder nanos = new StringBuilder();
-      var dotIndex = value.indexOf(".");
+      final StringBuilder nanos = new StringBuilder();
+      final var dotIndex = value.indexOf(".");
       if (dotIndex > 0) {
-        var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
+        final var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
         nanos.append(micro);
         valueWithoutMicros = value.replace("." + micro, "");
       }
@@ -155,8 +155,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
         nanos.append("0");
       }
 
-      var timestamp = Timestamp
-          .from(DataTypeUtils.DATE_FORMAT.parse(valueWithoutMicros).toInstant());
+      final var timestamp = Timestamp
+          .from(DataTypeUtils.getDateFormat().parse(valueWithoutMicros).toInstant());
       timestamp.setNanos(Integer.parseInt(nanos.toString()));
       preparedStatement.setTimestamp(parameterIndex, timestamp);
     } catch (final ParseException e) {
@@ -166,7 +166,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
-      final Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
+      final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
       preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
     } catch (final ParseException e) {
       throw new RuntimeException(e);

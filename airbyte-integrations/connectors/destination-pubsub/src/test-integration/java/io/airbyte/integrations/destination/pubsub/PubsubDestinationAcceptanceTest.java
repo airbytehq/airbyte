@@ -40,6 +40,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -156,6 +157,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
             e -> fromJsonNode(e).equals(new AirbyteStreamNameNamespacePair(nullToEmpty(streamName),
                 nullToEmpty(namespace))))
         .map(e -> e.get("data"))
+        .distinct()
         .collect(Collectors.toList());
   }
 
@@ -168,7 +170,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
 
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
@@ -183,7 +185,8 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     credentials =
         ServiceAccountCredentials
-            .fromStream(new ByteArrayInputStream(configJson.get(CONFIG_CREDS).asText().getBytes()));
+            .fromStream(new ByteArrayInputStream(configJson.get(CONFIG_CREDS).asText().getBytes(
+                StandardCharsets.UTF_8)));
     // create topic
     topicName = TopicName.of(projectId, topicId);
     topicAdminClient = TopicAdminClient

@@ -1,4 +1,5 @@
 import { ActionType, createAction, createReducer } from "typesafe-actions";
+
 import { User } from "packages/cloud/lib/domain/users";
 
 export const actions = {
@@ -24,9 +25,7 @@ export const initialState: AuthServiceState = {
   loading: false,
 };
 
-export const authStateReducer = createReducer<AuthServiceState, Actions>(
-  initialState
-)
+export const authStateReducer = createReducer<AuthServiceState, Actions>(initialState)
   .handleAction(
     actions.authInited,
     (state): AuthServiceState => {

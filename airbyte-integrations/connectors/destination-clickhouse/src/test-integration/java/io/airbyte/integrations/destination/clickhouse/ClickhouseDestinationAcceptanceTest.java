@@ -101,7 +101,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    return jdbcDB.query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+    return jdbcDB.unsafeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
         .collect(Collectors.toList());
   }

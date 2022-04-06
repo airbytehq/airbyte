@@ -1,4 +1,8 @@
 describe("Preferences actions", () => {
+  beforeEach(() => {
+    cy.initialSetupCompleted(false);
+  });
+
   it("Should redirect to onboarding after email is entered", () => {
     cy.visit("/preferences");
     cy.url().should("include", `/preferences`);

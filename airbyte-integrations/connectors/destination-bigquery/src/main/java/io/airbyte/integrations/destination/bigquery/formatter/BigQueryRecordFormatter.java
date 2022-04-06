@@ -28,6 +28,12 @@ public abstract class BigQueryRecordFormatter {
   protected final StandardNameTransformer namingResolver;
   protected final JsonNode jsonSchema;
 
+  /**
+   * These parameters are required for the correct operation of denormalize version of the connector.
+   */
+  protected final Set<String> invalidKeys = new HashSet<>();
+  protected final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
+
   public BigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
     this.namingResolver = namingResolver;
     this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());

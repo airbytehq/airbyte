@@ -8,7 +8,9 @@ import { BigButton } from "components/CenteredPageComponents";
 import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
+
 import { useConfig } from "config";
+
 import EditControls from "./components/EditControls";
 
 export type PreferencesFormProps = {
@@ -74,8 +76,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
     <Formik
       initialValues={{
         email: preferencesValues?.email || "",
-        anonymousDataCollection:
-          preferencesValues?.anonymousDataCollection || false,
+        anonymousDataCollection: preferencesValues?.anonymousDataCollection || false,
         news: preferencesValues?.news || false,
         securityUpdates: preferencesValues?.securityUpdates || false,
       }}
@@ -86,15 +87,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
         await onSubmit(values);
       }}
     >
-      {({
-        isSubmitting,
-        values,
-        handleChange,
-        setFieldValue,
-        resetForm,
-        isValid,
-        dirty,
-      }) => (
+      {({ isSubmitting, values, handleChange, setFieldValue, resetForm, isValid, dirty }) => (
         <Form>
           <FormItem>
             <Field name="email">
@@ -107,25 +100,15 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
                   })}
                   type="text"
                   error={!!meta.error && meta.touched}
-                  message={
-                    meta.touched &&
-                    meta.error &&
-                    formatMessage({ id: meta.error })
-                  }
+                  message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   onChange={(event) => {
                     handleChange(event);
                     if (isEdit) {
                       return;
                     }
-                    if (
-                      field.value.length === 0 &&
-                      event.target.value.length > 0
-                    ) {
+                    if (field.value.length === 0 && event.target.value.length > 0) {
                       setFieldValue("securityUpdates", true);
-                    } else if (
-                      field.value.length > 0 &&
-                      event.target.value.length === 0
-                    ) {
+                    } else if (field.value.length > 0 && event.target.value.length === 0) {
                       resetForm();
                       setFieldValue("email", "");
                     }
@@ -141,7 +124,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
             <FormattedMessage
               id={"preferences.collectData"}
               values={{
-                docs: (...docs: React.ReactNode[]) => (
+                docs: (docs: React.ReactNode) => (
                   <DocsLink target="_blank" href={config.ui.docsLink}>
                     {docs}
                   </DocsLink>
@@ -170,9 +153,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
                   {...field}
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.featureUpdates" />}
-                  message={
-                    <FormattedMessage id="preferences.unsubscribeAnyTime" />
-                  }
+                  message={<FormattedMessage id="preferences.unsubscribeAnyTime" />}
                 />
               )}
             </Field>

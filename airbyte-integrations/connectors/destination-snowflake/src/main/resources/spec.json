@@ -8,20 +8,15 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Snowflake Destination Spec",
     "type": "object",
-    "required": [
-      "host",
-      "role",
-      "warehouse",
-      "database",
-      "schema",
-      "username",
-      "password"
-    ],
+    "required": ["host", "role", "warehouse", "database", "schema", "username"],
     "additionalProperties": true,
     "properties": {
       "host": {
-        "description": "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
-        "examples": ["accountname.us-east-2.aws.snowflakecomputing.com"],
+        "description": "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). The account identifier differs depending on your cloud region, be sure to verify with Snowflake's documentation.",
+        "examples": [
+          "accountname.us-east-2.aws.snowflakecomputing.com",
+          "accountname.snowflakecomputing.com"
+        ],
         "type": "string",
         "title": "Host",
         "order": 0
@@ -61,11 +56,65 @@
         "title": "Username",
         "order": 5
       },
-      "password": {
-        "description": "The password associated with the username.",
-        "type": "string",
-        "airbyte_secret": true,
-        "title": "Password",
+      "credentials": {
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "order": 0,
+            "required": ["access_token", "refresh_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "OAuth2.0",
+                "enum": ["OAuth2.0"],
+                "default": "OAuth2.0",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your Drift developer application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret of your Drift developer application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh Token",
+                "description": "Refresh Token for making authenticated requests.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Username and Password",
+            "type": "object",
+            "required": ["password"],
+            "order": 1,
+            "properties": {
+              "password": {
+                "description": "The password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 1
+              }
+            }
+          }
+        ],
         "order": 6
       },
       "jdbc_url_params": {
@@ -234,8 +283,115 @@
                 "order": 3
               }
             }
+          },
+          {
+            "title": "Azure Blob Storage Staging",
+            "additionalProperties": false,
+            "description": "Writes large batches of records to a file, uploads the file to Azure Blob Storage, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "required": [
+              "method",
+              "azure_blob_storage_account_name",
+              "azure_blob_storage_container_name",
+              "azure_blob_storage_sas_token"
+            ],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["Azure Blob Staging"],
+                "default": "Azure Blob Staging",
+                "order": 0
+              },
+              "azure_blob_storage_endpoint_domain_name": {
+                "title": "Endpoint Domain Name",
+                "type": "string",
+                "default": "blob.core.windows.net",
+                "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+                "examples": ["blob.core.windows.net"],
+                "order": 1
+              },
+              "azure_blob_storage_account_name": {
+                "title": "Azure Blob Storage Account Name",
+                "type": "string",
+                "description": "The account's name of the Azure Blob Storage.",
+                "examples": ["airbyte5storage"],
+                "order": 2
+              },
+              "azure_blob_storage_container_name": {
+                "title": "Azure blob storage container (Bucket) Name",
+                "type": "string",
+                "description": "The name of the Azure blob storage container. *This needs to coincide with the container specified in the Snowflake Storage Integration and Snowflake Azure External Stage (see description of 'Snowflake Azure External Stage' for details",
+                "examples": ["airbytetestcontainername"],
+                "order": 3
+              },
+              "azure_blob_storage_sas_token": {
+                "title": "SAS Token",
+                "type": "string",
+                "airbyte_secret": true,
+                "description": "Shared access signature(SAS) token to grant Snowflake limited access to objects in your storage account. See more https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token",
+                "examples": [
+                  "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
+                ],
+                "order": 4
+              }
+            }
           }
         ]
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "OAuth2.0",
+    "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "path_in_connector_config": ["host"]
+          }
+        }
+      },
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
       }
     }
   }

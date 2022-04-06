@@ -350,6 +350,12 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+| 0.35.61-alpha   | 0.1.74 | 2022-03-24 | [\#10905](https://github.com/airbytehq/airbyte/pull/10905) | Update clickhouse dbt version |
+| 0.35.60-alpha   | 0.1.73 | 2022-03-25 | [\#11267](https://github.com/airbytehq/airbyte/pull/11267) | Set `--event-buffer-size` to reduce memory usage |
+| 0.35.59-alpha   | 0.1.72 | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added Snowflake OAuth2.0 support |
+| 0.35.53-alpha   | 0.1.71 | 2022-03-14 | [\#11077](https://github.com/airbytehq/airbyte/pull/11077) | Enable BigQuery to handle project ID embedded inside dataset ID |
+| 0.35.49-alpha   | 0.1.70 | 2022-03-11 | [\#11051](https://github.com/airbytehq/airbyte/pull/11051) | Upgrade dbt to 1.0.0 (except for MySQL and Oracle) |
+| 0.35.45-alpha   | 0.1.69 | 2022-03-04 | [\#10754](https://github.com/airbytehq/airbyte/pull/10754) | Enable Clickhouse normalization over SSL |
 | 0.35.32-alpha   | 0.1.68 | 2022-02-20 | [\#10485](https://github.com/airbytehq/airbyte/pull/10485) | Fix row size too large for table with numerous `string` fields |
 |                 | 0.1.66 | 2022-02-04 | [\#9341](https://github.com/airbytehq/airbyte/pull/9341) | Fix normalization for bigquery datasetId and tables |
 | 0.35.13-alpha   | 0.1.65 | 2021-01-28 | [\#9846](https://github.com/airbytehq/airbyte/pull/9846) | Tweak dbt multi-thread parameter down |

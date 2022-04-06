@@ -70,15 +70,4 @@ properties:
   manual:
     type: boolean
   resourceRequirements:
-    type: object
-    description: optional resource requirements to run sync workers
-    additionalProperties: false
-    properties:
-      cpu_request:
-        type: string
-      cpu_limit:
-        type: string
-      memory_request:
-        type: string
-      memory_limit:
-        type: string
+    "$ref": ResourceRequirements.yaml

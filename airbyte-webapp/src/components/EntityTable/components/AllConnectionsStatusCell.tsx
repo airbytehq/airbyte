@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
 import { useIntl } from "react-intl";
 
-import { Status } from "../types";
 import StatusIcon from "components/StatusIcon";
+
+import { Status } from "../types";
 
 type AllConnectionsStatusCellProps = {
   connectEntities: {
@@ -13,42 +14,24 @@ type AllConnectionsStatusCellProps = {
   }[];
 };
 
-const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
-  connectEntities,
-}) => {
+const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({ connectEntities }) => {
   const formatMessage = useIntl().formatMessage;
 
-  const active = useMemo(
-    () =>
-      connectEntities.filter(
-        (entity) => entity.lastSyncStatus === Status.ACTIVE
-      ),
-    [connectEntities]
-  );
+  const active = useMemo(() => connectEntities.filter((entity) => entity.lastSyncStatus === Status.ACTIVE), [
+    connectEntities,
+  ]);
 
-  const inactive = useMemo(
-    () =>
-      connectEntities.filter(
-        (entity) => entity.lastSyncStatus === Status.INACTIVE
-      ),
-    [connectEntities]
-  );
+  const inactive = useMemo(() => connectEntities.filter((entity) => entity.lastSyncStatus === Status.INACTIVE), [
+    connectEntities,
+  ]);
 
-  const failed = useMemo(
-    () =>
-      connectEntities.filter(
-        (entity) => entity.lastSyncStatus === Status.FAILED
-      ),
-    [connectEntities]
-  );
+  const failed = useMemo(() => connectEntities.filter((entity) => entity.lastSyncStatus === Status.FAILED), [
+    connectEntities,
+  ]);
 
-  const empty = useMemo(
-    () =>
-      connectEntities.filter(
-        (entity) => entity.lastSyncStatus === Status.EMPTY
-      ),
-    [connectEntities]
-  );
+  const empty = useMemo(() => connectEntities.filter((entity) => entity.lastSyncStatus === Status.EMPTY), [
+    connectEntities,
+  ]);
 
   if (!connectEntities.length) {
     return null;

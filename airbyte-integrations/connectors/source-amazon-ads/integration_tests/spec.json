@@ -52,7 +52,25 @@
         "description": "profile Ids you want to fetch data for",
         "name": "Profile Ids",
         "type": "array",
-        "items": { "type": "integer" }
+        "items": {
+          "type": "integer"
+        }
+      },
+      "report_wait_timeout": {
+        "title": "Report Wait Timeout",
+        "description": "Timeout duration in minutes for Reports. Eg. 30",
+        "default": 30,
+        "name": "Report Wait Timeout",
+        "examples": [30, 120],
+        "type": "integer"
+      },
+      "report_generation_max_retries": {
+        "title": "Report Generation Max Retries",
+        "description": "Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
+        "default": 5,
+        "name": "Report Geration Maximum Retries",
+        "examples": [5, 10, 15],
+        "type": "integer"
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"]

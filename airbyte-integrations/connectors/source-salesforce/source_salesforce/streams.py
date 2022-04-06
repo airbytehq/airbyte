@@ -8,17 +8,18 @@ import io
 import math
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import pendulum
-import requests
+import requests  # type: ignore[import]
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pendulum import DateTime
+from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .exceptions import SalesforceException
 from .rate_limiting import default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
@@ -37,7 +38,7 @@ class SalesforceStream(HttpStream, ABC):
         self.sf_api = sf_api
         self.pk = pk
         self.stream_name = stream_name
-        self.schema = schema
+        self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
 
     @property
@@ -52,20 +53,22 @@ class SalesforceStream(HttpStream, ABC):
     def url_base(self) -> str:
         return self.sf_api.instance_url
 
-    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
         if next_page_token:
             """
             If `next_page_token` is set, subsequent requests use `nextRecordsUrl`.
             """
-            return next_page_token
+            next_token: str = next_page_token["next_token"]
+            return next_token
         return f"/services/data/{self.sf_api.version}/queryAll"
 
-    def next_page_token(self, response: requests.Response) -> str:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_data = response.json()
-        return response_data.get("nextRecordsUrl")
+        next_token = response_data.get("nextRecordsUrl")
+        return {"next_token": next_token} if next_token else None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
@@ -89,12 +92,20 @@ class SalesforceStream(HttpStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
-            self.schema = self.sf_api.generate_schema([self.name])
+            self.schema = self.sf_api.generate_schema(self.name)
         return self.schema
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         try:
-            yield from super().read_records(**kwargs)
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
         except exceptions.HTTPError as error:
             """
             There are several types of Salesforce sobjects that require additional processing:
@@ -119,20 +130,10 @@ class BulkSalesforceStream(SalesforceStream):
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
-    def path(self, **kwargs) -> str:
+    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
         return f"/services/data/{self.sf_api.version}/jobs/query"
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
-
-    @transformer.registerCustomTransform
-    def transform_empty_string_to_none(instance, schema):
-        """
-        BULK API returns a `csv` file, where all values are initially as string type.
-        This custom transformer replaces empty lines with `None` value.
-        """
-        if isinstance(instance, str) and not instance.strip():
-            instance = None
-        return instance
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, json: dict = None):
@@ -150,7 +151,7 @@ class BulkSalesforceStream(SalesforceStream):
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
             response = self._send_http_request("POST", url, json=json)
-            job_id = response.json()["id"]
+            job_id: str = response.json()["id"]
             return job_id
         except exceptions.HTTPError as error:
             if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
@@ -195,7 +196,7 @@ class BulkSalesforceStream(SalesforceStream):
     def wait_for_job(self, url: str) -> str:
         expiration_time: DateTime = pendulum.now().add(seconds=self.DEFAULT_WAIT_TIMEOUT_SECONDS)
         job_status = "InProgress"
-        delay_timeout = 0
+        delay_timeout = 0.0
         delay_cnt = 0
         job_info = None
         # minimal starting delay is 0.5 seconds.
@@ -211,9 +212,7 @@ class BulkSalesforceStream(SalesforceStream):
                     if not error_message:
                         # not all failed response can have "errorMessage" and we need to print full response body
                         error_message = job_info
-                    self.logger.error(
-                        f"JobStatus: {job_status}, " f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
+                    self.logger.error(f"JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
 
                 return job_status
 
@@ -224,7 +223,7 @@ class BulkSalesforceStream(SalesforceStream):
             time.sleep(delay_timeout)
             job_id = job_info["id"]
             self.logger.info(
-                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id}" f" to complete. Current state: {job_status}"
+                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}"
             )
 
         self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
@@ -258,7 +257,7 @@ class BulkSalesforceStream(SalesforceStream):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
         return res
 
-    def download_data(self, url: str) -> Tuple[int, dict]:
+    def download_data(self, url: str) -> Iterable[Tuple[int, Mapping[str, Any]]]:
         job_data = self._send_http_request("GET", f"{url}/results")
         decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
         fp = io.StringIO(decoded_content, newline="")
@@ -274,12 +273,13 @@ class BulkSalesforceStream(SalesforceStream):
     def delete_job(self, url: str):
         self._send_http_request("DELETE", url=url)
 
-    def next_page_token(self, last_record: dict) -> str:
+    def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "
+            return {"next_token": f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "}  # type: ignore[index]
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
@@ -288,7 +288,7 @@ class BulkSalesforceStream(SalesforceStream):
         selected_properties = self.get_json_schema().get("properties", {})
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if next_page_token:
-            query += next_page_token
+            query += next_page_token["next_token"]
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
@@ -321,9 +321,10 @@ class BulkSalesforceStream(SalesforceStream):
                         sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
                     )
                     return
-                raise Exception(f"Job for {self.name} stream using BULK API was failed.")
+                raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
 
             count = 0
+            record: Mapping[str, Any] = {}
             for count, record in self.download_data(url=job_full_url):
                 yield record
             self.delete_job(url=job_full_url)
@@ -347,14 +348,24 @@ class BulkSalesforceStream(SalesforceStream):
             sobject_options=self.sobject_options,
             authenticator=self.authenticator,
         )
-
+        new_cls: Type[SalesforceStream] = SalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
             stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
             new_cls = IncrementalSalesforceStream
-        else:
-            new_cls = SalesforceStream
 
         return new_cls(**stream_kwargs)
+
+
+@BulkSalesforceStream.transformer.registerCustomTransform
+def transform_empty_string_to_none(instance: Any, schema: Any):
+    """
+    BULK API returns a `csv` file, where all values are initially as string type.
+    This custom transformer replaces empty lines with `None` value.
+    """
+    if isinstance(instance, str) and not instance.strip():
+        instance = None
+
+    return instance
 
 
 class IncrementalSalesforceStream(SalesforceStream, ABC):
@@ -369,10 +380,11 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
         """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
         if start_date:
-            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")
+            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             """
@@ -408,17 +420,20 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
 
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforceStream):
-    def next_page_token(self, last_record: dict) -> str:
+    def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return last_record[self.cursor_field]
+            page_token: str = last_record[self.cursor_field]
+            return {"next_token": page_token}
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         selected_properties = self.get_json_schema().get("properties", {})
 
         stream_date = stream_state.get(self.cursor_field)
-        start_date = next_page_token or stream_date or self.start_date
+        next_token = (next_page_token or {}).get("next_token")
+        start_date = next_token or stream_date or self.start_date
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if start_date:

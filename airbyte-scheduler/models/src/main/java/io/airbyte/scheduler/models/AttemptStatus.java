@@ -13,6 +13,6 @@ public enum AttemptStatus {
   FAILED,
   SUCCEEDED;
 
-  public static Set<AttemptStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED);
+  public static final Set<AttemptStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED);
 
 }

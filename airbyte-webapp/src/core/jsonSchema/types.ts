@@ -22,9 +22,7 @@ export type AirbyteJSONSchema = {
     ? AirbyteJSONSchemaDefinition
     : JSONSchema7[Property] extends Array<JSONSchema7Definition>
     ? AirbyteJSONSchemaDefinition[]
-    : JSONSchema7[Property] extends
-        | JSONSchema7Definition
-        | JSONSchema7Definition[]
+    : JSONSchema7[Property] extends JSONSchema7Definition | JSONSchema7Definition[]
     ? AirbyteJSONSchemaDefinition | AirbyteJSONSchemaDefinition[]
     : JSONSchema7[Property];
 } &

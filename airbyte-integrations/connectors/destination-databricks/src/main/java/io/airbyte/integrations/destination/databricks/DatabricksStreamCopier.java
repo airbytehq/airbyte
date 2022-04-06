@@ -206,15 +206,10 @@ public class DatabricksStreamCopier implements StreamCopier {
    * creates an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
    */
   static S3DestinationConfig getStagingS3DestinationConfig(final S3DestinationConfig config, final String stagingFolder) {
-    return new S3DestinationConfig(
-        config.getEndpoint(),
-        config.getBucketName(),
-        String.join("/", config.getBucketPath(), stagingFolder),
-        config.getBucketRegion(),
-        config.getAccessKeyId(),
-        config.getSecretAccessKey(),
-        // use default parquet format config
-        new S3ParquetFormatConfig(MAPPER.createObjectNode()));
+    return S3DestinationConfig.create(config)
+        .withBucketPath(String.join("/", config.getBucketPath(), stagingFolder))
+        .withFormatConfig(new S3ParquetFormatConfig(MAPPER.createObjectNode()))
+        .get();
   }
 
 }

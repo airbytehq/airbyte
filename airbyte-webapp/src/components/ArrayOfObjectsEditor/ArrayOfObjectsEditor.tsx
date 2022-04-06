@@ -52,19 +52,12 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
     mainTitle,
     addButtonText,
   } = props;
-  const onAddItem = React.useCallback(() => onStartEdit(items.length), [
-    onStartEdit,
-    items,
-  ]);
+  const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
 
-  const isEditMode =
-    editableItemIndex !== null && editableItemIndex !== undefined;
+  const isEditMode = editableItemIndex !== null && editableItemIndex !== undefined;
 
   if (isEditMode) {
-    const item =
-      typeof editableItemIndex === "number"
-        ? items[editableItemIndex]
-        : undefined;
+    const item = typeof editableItemIndex === "number" ? items[editableItemIndex] : undefined;
 
     return (
       <Content>
@@ -77,11 +70,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
               </SmallButton>
             )}
             {onDone && (
-              <SmallButton
-                onClick={onDone}
-                type="button"
-                data-testid="done-button"
-              >
+              <SmallButton onClick={onDone} type="button" data-testid="done-button">
                 <FormattedMessage id="form.done" />
               </SmallButton>
             )}
@@ -102,13 +91,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
       {items.length ? (
         <ItemsList>
           {items.map((item, key) => (
-            <EditorRow
-              key={`form-item-${key}`}
-              name={item.name}
-              id={key}
-              onEdit={onStartEdit}
-              onRemove={onRemove}
-            />
+            <EditorRow key={`form-item-${key}`} name={item.name} id={key} onEdit={onStartEdit} onRemove={onRemove} />
           ))}
         </ItemsList>
       ) : null}

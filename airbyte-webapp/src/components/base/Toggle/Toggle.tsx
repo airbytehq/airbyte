@@ -41,10 +41,10 @@ const Slider = styled.span<{ small?: boolean }>`
     background: ${({ theme }) => theme.whiteColor};
     transition: 0.3s;
     border-radius: 50%;
+  }
 
-    input:checked + & {
-      transform: translateX(${({ small }) => (small ? 10 : 18)}px);
-    }
+  input:checked + &&:before {
+    transform: translateX(${({ small }) => (small ? 10 : 18)}px);
   }
 
   input:checked + & {
@@ -62,16 +62,8 @@ const Slider = styled.span<{ small?: boolean }>`
 
 const Toggle: React.FC<ToggleProps> = (props) => {
   return (
-    <Switch
-      small={props.small}
-      onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
-    >
-      <SwitchInput
-        type="checkbox"
-        {...props}
-        value={props.value}
-        checked={props.checked || !!props.value}
-      />
+    <Switch small={props.small} onClick={(event: React.SyntheticEvent) => event.stopPropagation()}>
+      <SwitchInput type="checkbox" {...props} value={props.value} checked={props.checked || !!props.value} />
       <Slider small={props.small} />
     </Switch>
   );

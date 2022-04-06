@@ -7,6 +7,7 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.error import HTTPError
 from urllib.parse import urljoin
 
 import requests
@@ -294,8 +295,11 @@ class HttpStream(Stream, ABC):
                 raise DefaultBackoffException(request=request, response=response)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
-            response.raise_for_status()
-
+            try:
+                response.raise_for_status()
+            except HTTPError as exc:
+                self.logger.error(response.text)
+                raise exc
         return response
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:

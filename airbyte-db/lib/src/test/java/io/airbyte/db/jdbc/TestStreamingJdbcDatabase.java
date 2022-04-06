@@ -93,7 +93,7 @@ public class TestStreamingJdbcDatabase {
     // invoked.
     final AtomicReference<Connection> connection1 = new AtomicReference<>();
     final AtomicReference<PreparedStatement> ps1 = new AtomicReference<>();
-    final Stream<JsonNode> actual = streamingJdbcDatabase.query(
+    final Stream<JsonNode> actual = streamingJdbcDatabase.unsafeQuery(
         connection -> {
           connection1.set(connection);
           final PreparedStatement ps = connection.prepareStatement("SELECT * FROM id_and_name;");

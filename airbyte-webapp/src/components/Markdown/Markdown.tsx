@@ -1,8 +1,10 @@
+import type { PluggableList } from "react-markdown/lib/react-markdown";
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkFrontmatter from "remark-frontmatter";
 import styled from "styled-components";
-import type { PluggableList } from "react-markdown/lib/react-markdown";
 
 type Props = {
   content?: string;
@@ -13,10 +15,13 @@ type Props = {
 const Markdown: React.FC<Props> = ({ content, className, rehypePlugins }) => {
   return (
     <ReactMarkdown
-      linkTarget="_blank"
+      // Open everything except fragment only links in a new tab
+      linkTarget={(href) => (href.startsWith("#") ? undefined : "_blank")}
       className={className}
       skipHtml
-      remarkPlugins={[remarkGfm]}
+      // @ts-expect-error remarkFrontmatter currently has type conflicts due to duplicate vfile dependencies
+      // This is not actually causing any issues, but requires to disable TS on this for now.
+      remarkPlugins={[remarkFrontmatter, remarkGfm]}
       rehypePlugins={rehypePlugins}
       children={content || ""}
     />
@@ -44,6 +49,11 @@ const StyledMarkdown = styled(Markdown)`
   }
 
   h3 {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  h4 {
     font-weight: bold;
   }
 
