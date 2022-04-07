@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 
 import { FormPageContent } from "components/ConnectorBlocks";
 import HeadTitle from "components/HeadTitle";
@@ -9,15 +10,36 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 
 import SourceForm from "./components/SourceForm";
 
 const CreateSourcePage: React.FC = () => {
+  const { location } = useRouter();
+
   const { push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 
   const { sourceDefinitions } = useSourceDefinitionList();
   const { mutateAsync: createSource } = useCreateSource();
+
+  const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
+    return (
+      typeof state === "object" &&
+      state !== null &&
+      typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId === "string"
+    );
+  };
+
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
+    hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
+  );
+
+  const {
+    data: sourceDefinitionSpecification,
+    error: sourceDefinitionError,
+    isLoading,
+  } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -37,9 +59,26 @@ const CreateSourcePage: React.FC = () => {
     <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <PageTitle withLine title={<FormattedMessage id="sources.newSourceTitle" />} />
-      <FormPageContent>
-        <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
-      </FormPageContent>
+      {/* todo: undesired behavior on screen resize */}
+      <ReflexContainer orientation="vertical" windowResizeAware={true}>
+        <ReflexElement className="left-pane">
+          <FormPageContent>
+            <SourceForm
+              onSubmit={onSubmitSourceStep}
+              sourceDefinitions={sourceDefinitions}
+              setSourceDefinitionId={setSourceDefinitionId}
+              sourceDefinitionSpecification={sourceDefinitionSpecification}
+              sourceDefinitionError={sourceDefinitionError}
+              hasSuccess={successRequest}
+              isLoading={isLoading}
+            />
+          </FormPageContent>{" "}
+        </ReflexElement>
+        <ReflexSplitter />
+        <ReflexElement className="right-pane" maxSize={800}>
+          {sourceDefinitionSpecification ? <div>DISPLAY THE DOCS FOR THAT SOURCE</div> : <div>SELECT A SOURCE</div>}
+        </ReflexElement>
+      </ReflexContainer>
     </>
   );
 };

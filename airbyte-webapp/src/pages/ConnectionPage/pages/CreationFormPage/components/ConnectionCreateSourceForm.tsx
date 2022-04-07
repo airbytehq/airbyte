@@ -7,11 +7,11 @@ import useRouter from "hooks/useRouter";
 import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
-type IProps = {
+type ConnectionCreateSourceFormProps = {
   afterSubmit: () => void;
 };
 
-const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
+const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -40,7 +40,17 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     }, 2000);
   };
 
-  return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
+  return (
+    <SourceForm
+      onSubmit={onSubmitSourceStep}
+      sourceDefinitions={sourceDefinitions}
+      hasSuccess={successRequest}
+      setSourceDefinitionId={null}
+      sourceDefinitionSpecification={undefined}
+      sourceDefinitionError={null}
+      isLoading={false}
+    />
+  );
 };
 
-export default SourceFormComponent;
+export default ConnectionCreateSourceForm;
