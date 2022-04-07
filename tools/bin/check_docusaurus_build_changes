@@ -19,8 +19,9 @@ fi
 
 
 # ------------- Start Main
-
+set +o xtrace
 echo -e "$blue_text""This test ensures no changes result from running docusaurs build""$default_text"
+set -o xtrace
 
 # Generate static files
 cd $this_file_directory  #lets us run this without relative path dep
@@ -39,6 +40,7 @@ set -o errexit
 
 # ------------- User communication on testing results
 
+set +o xtrace
 
 if test $clean -eq 0; then
   echo -e "$red_text""\n\n\nDocusaurs has no changes to commit!""$default_text"
@@ -46,5 +48,5 @@ if test $clean -eq 0; then
 
 else
   echo -e "$red_text""\n\n\ndocusaurs build resulted in changes from this commit.""$default_text"
-  echo -e "$red_text""  Run docusaurus build locally (yarn run build) and try again""$default_text"
+  echo -e "$red_text""  Run docusaurus build locally (yarn run build), commit, and try again""$default_text"
 fi

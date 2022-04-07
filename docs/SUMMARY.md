@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Introduction](../README.md)
+<!-- * [Introduction](../README.md)
 * [Airbyte Cloud QuickStart](cloud/getting-started-with-airbyte-cloud.md)
   * [Core Concepts](cloud/core-concepts.md)
   * [Managing Airbyte Cloud](cloud/managing-airbyte-cloud.md)
@@ -8,7 +8,7 @@
   * [Deploy Airbyte](quickstart/deploy-airbyte.md)
   * [Add a Source](quickstart/add-a-source.md)
   * [Add a Destination](quickstart/add-a-destination.md)
-  * [Set up a Connection](quickstart/set-up-a-connection.md)
+  * [Set up a Connection](quickstart/set-up-a-connection.md) -->
 * [Deploying Airbyte Open Source](deploying-airbyte/README.md)
   * [Local Deployment](deploying-airbyte/local-deployment.md)
   * [On AWS (EC2)](deploying-airbyte/on-aws-ec2.md)
