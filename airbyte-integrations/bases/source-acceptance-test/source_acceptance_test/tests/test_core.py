@@ -103,7 +103,7 @@ class TestSpec(BaseTest):
             for n, variant in enumerate(variants):
                 prop_obj = variant["properties"][const_common_prop]
                 assert "default" not in prop_obj, f"There should not be 'default' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}."
-                assert "enum" not in prop_obj, f"There should not be 'enum' keyword in common property {oneof_path}[{n}].{const_common_prop}. {docs_msg}"
+                assert "enum" not in prop_obj, f"There should not be 'enum' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}". "
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
