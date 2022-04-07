@@ -55,6 +55,7 @@ dependencies {
     annotationProcessor 'io.micronaut:micronaut-inject-java'
     annotationProcessor 'io.micronaut:micronaut-management'
     annotationProcessor 'io.micronaut:micronaut-validation'
+    annotationProcessor 'io.micronaut.data:micronaut-data-processor:3.3.0'
     annotationProcessor 'io.micronaut.jaxrs:micronaut-jaxrs-processor:3.2.0'
 
     implementation platform("io.micronaut:micronaut-bom:${rootProject.ext.micronaut_version}")
@@ -67,6 +68,10 @@ dependencies {
     implementation 'io.micronaut:micronaut-management'
     implementation 'io.micronaut.security:micronaut-security:3.5.0'
     implementation 'io.micronaut.jaxrs:micronaut-jaxrs-server:3.2.0'
+    implementation 'io.micronaut.data:micronaut-data-hibernate-jpa:3.3.0'
+    implementation 'io.micronaut.sql:micronaut-jdbc-hikari'
+
+    implementation 'com.vladmihalcea:hibernate-types-52:2.15.0'
 
     implementation 'javax.inject:javax.inject:1'
     implementation 'io.projectreactor:reactor-core:3.4.16'

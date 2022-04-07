@@ -114,6 +114,8 @@ import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
+import io.airbyte.server.model.Workspace;
+import io.airbyte.server.repository.WorkspaceRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.http.annotation.Controller;
@@ -121,6 +123,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,6 +190,9 @@ public class V1ApiController implements io.airbyte.api.V1Api {
 
   @Value("${airbyte.workspace.root}")
   private String workspaceRoot;
+
+  @Inject
+  private WorkspaceRepository workspaceRepository;
 
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
@@ -590,7 +597,24 @@ public class V1ApiController implements io.airbyte.api.V1Api {
 
   @Override
   public WorkspaceReadList listWorkspaces() {
-    return execute(() -> workspacesHandler.listWorkspaces());
+//    return execute(() -> workspacesHandler.listWorkspaces());
+    return execute(() -> {
+      final Iterable<Workspace> workspaces = workspaceRepository.findAll();
+      return new WorkspaceReadList().workspaces(StreamSupport.stream(workspaces.spliterator(), false).map(w -> new WorkspaceRead()
+          .workspaceId(w.getWorkspaceId())
+          .anonymousDataCollection(w.isAnonymousDataCollection())
+          .customerId(w.getCustomerId())
+          .displaySetupWizard(w.isDisplaySetupWizard())
+          .email(w.getEmail())
+          .feedbackDone(w.isFeedbackComplete())
+          .firstCompletedSync(w.isFirstSyncComplete())
+          .initialSetupComplete(w.isInitialSetupComplete())
+          .name(w.getName())
+          .news(w.isSendNewsletter())
+          .notifications(w.getNotifications())
+          .securityUpdates(w.isSendSecurityUpdates())
+          .slug(w.getSlug())).collect(Collectors.toList()));
+    });
   }
 
   @Override

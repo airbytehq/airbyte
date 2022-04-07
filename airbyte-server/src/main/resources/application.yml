@@ -34,6 +34,17 @@ airbyte:
   workspace:
     root: ${WORKSPACE_ROOT}
 
+datasources:
+  default:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    maximum-pool-size: 10
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+
 endpoints:
   all:
     enabled: true
@@ -41,6 +52,12 @@ endpoints:
 github:
   base_url: https://raw.githubusercontent.com
   timeout_ms: 30000
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        show_sql: true
 
 logger:
   levels:
