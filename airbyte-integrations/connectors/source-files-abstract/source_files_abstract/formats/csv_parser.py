@@ -4,7 +4,6 @@
 
 import csv
 import json
-import tempfile
 from typing import Any, BinaryIO, Callable, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
 import pyarrow
@@ -16,24 +15,15 @@ from source_files_abstract.utils import run_in_external_process
 from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
 
-MAX_CHUNK_SIZE = 50.0 * 1024**2  # in bytes
-TMP_FOLDER = tempfile.mkdtemp()
-
 
 class CsvParser(AbstractFileParser):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.format_model = None
-
     @property
     def is_binary(self) -> bool:
         return True
 
     @property
     def format(self) -> CsvFormat:
-        if self.format_model is None:
-            self.format_model = CsvFormat.parse_obj(self._format)
-        return self.format_model
+        return CsvFormat.parse_obj(self._format)
 
     def _read_options(self) -> Mapping[str, str]:
         """
@@ -107,9 +97,9 @@ class CsvParser(AbstractFileParser):
 
             except Exception as e:
                 # we pass the traceback up otherwise the main process won't know the exact method+line of error
-                return (None, e)
+                return None, e
             else:
-                return (schema_dict, None)
+                return schema_dict, None
 
         # boto3 objects can't be pickled (https://github.com/boto/boto3/issues/678)
         # and so we can't multiprocess with the actual fileobject on Windows systems
@@ -136,7 +126,6 @@ class CsvParser(AbstractFileParser):
             ],
         )
 
-    # TODO Rename this here and in `_get_schema_dict`
     def _get_schema_dict_without_inference(self, file: Union[TextIO, BinaryIO]) -> Mapping[str, Any]:
         self.logger.debug("infer_datatypes is False, skipping infer_schema")
         delimiter = self.format.delimiter

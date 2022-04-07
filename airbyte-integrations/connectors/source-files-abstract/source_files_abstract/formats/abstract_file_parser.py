@@ -7,7 +7,6 @@ from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import pyarrow as pa
 from airbyte_cdk.logger import AirbyteLogger
-from source_files_abstract.fileinfo import FileInfo
 
 
 class AbstractFileParser(ABC):
@@ -19,10 +18,7 @@ class AbstractFileParser(ABC):
         :param master_schema: superset schema determined from all files, might be unused for some formats, defaults to None
         """
         self._format = format
-        self._master_schema = (
-            master_schema
-            # this may need to be used differently by some formats, pyarrow allows extra columns in csv schema
-        )
+        self._master_schema = master_schema
 
     @property
     @abstractmethod
@@ -42,13 +38,12 @@ class AbstractFileParser(ABC):
         """
 
     @abstractmethod
-    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
         """
         Override this with format-specifc logic to stream each data row from the file as a mapping of {columns:values}
         Note: avoid loading the whole file into memory to avoid OOM breakages
 
         :param file: file-like object (opened via StorageFile)
-        :param file_info: file metadata
         :yield: data record as a mapping of {columns:values}
         """
 
@@ -64,7 +59,7 @@ class AbstractFileParser(ABC):
         """
         str_typ = str(typ)
         # Map of airbyte types to pyarrow types. The first list element of the pyarrow types should be the preferred type to use.
-        map = {
+        type_map = {
             "boolean": ("bool_", "bool"),
             "integer": ("int64", "int8", "int16", "int32", "uint8", "uint16", "uint32", "uint64"),
             "number": ("float64", "float16", "float32", "decimal128", "decimal256", "halffloat", "float", "double"),
@@ -76,7 +71,7 @@ class AbstractFileParser(ABC):
             "null": ("large_string",),
         }
         if not reverse:
-            for json_type, pyarrow_types in map.items():
+            for json_type, pyarrow_types in type_map.items():
                 if str_typ.lower() == json_type:
                     return str(
                         getattr(pa, pyarrow_types[0]).__call__()
@@ -84,7 +79,7 @@ class AbstractFileParser(ABC):
             logger.debug(f"JSON type '{str_typ}' is not mapped, falling back to default conversion to large_string")
             return str(pa.large_string())
         else:
-            for json_type, pyarrow_types in map.items():
+            for json_type, pyarrow_types in type_map.items():
                 if any(str_typ.startswith(pa_type) for pa_type in pyarrow_types):
                     return json_type
             logger.debug(f"PyArrow type '{str_typ}' is not mapped, falling back to default conversion to string")

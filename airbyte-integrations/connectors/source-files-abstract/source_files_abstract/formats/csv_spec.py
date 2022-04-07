@@ -57,7 +57,7 @@ class CsvFormat(BaseModel):
     )
     infer_datatypes: Optional[bool] = Field(
         default=True,
-        description="Configures whether a scheme for the source should be inferred from the current data or not."
+        description="Configures whether a schema for the source should be inferred from the data or not."
         "If set to false and a custom schema is set, then the custom_schema is used"
         "If a custom schema is not set, and this is set to false, then all fields will be read as strings",
     )
