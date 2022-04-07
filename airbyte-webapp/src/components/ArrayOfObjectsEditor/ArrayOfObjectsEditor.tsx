@@ -41,17 +41,8 @@ type ArrayOfObjectsEditorProps<T extends { name: string }> = {
 function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
   props: ArrayOfObjectsEditorProps<T>
 ): JSX.Element {
-  const {
-    onStartEdit,
-    onDone,
-    onRemove,
-    onCancelEdit,
-    items,
-    editableItemIndex,
-    children,
-    mainTitle,
-    addButtonText,
-  } = props;
+  const { onStartEdit, onDone, onRemove, onCancelEdit, items, editableItemIndex, children, mainTitle, addButtonText } =
+    props;
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
 
   const isEditMode = editableItemIndex !== null && editableItemIndex !== undefined;

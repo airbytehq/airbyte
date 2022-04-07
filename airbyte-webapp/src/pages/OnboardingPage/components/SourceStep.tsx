@@ -35,9 +35,8 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
-  const { data: sourceDefinitionSpecification, isLoading } = useGetSourceDefinitionSpecificationAsync(
-    sourceDefinitionId
-  );
+  const { data: sourceDefinitionSpecification, isLoading } =
+    useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onSubmitSourceStep = async (values: {
     name: string;

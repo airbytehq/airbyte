@@ -79,9 +79,10 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
     [selectedBatchNodes, destinationSupportedSyncModes]
   );
 
-  const primitiveFields: SyncSchemaField[] = useMemo(() => calculateSharedFields(selectedBatchNodes), [
-    selectedBatchNodes,
-  ]);
+  const primitiveFields: SyncSchemaField[] = useMemo(
+    () => calculateSharedFields(selectedBatchNodes),
+    [selectedBatchNodes]
+  );
 
   if (!isActive) {
     return null;
