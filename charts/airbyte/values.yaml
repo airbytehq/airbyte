@@ -705,6 +705,16 @@ bootloader:
   ##
   podAnnotations: {}
 
+  ## @param bootloader.nodeSelector [object] Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+  ##
+  nodeSelector: {}
+
+  ## @param bootloader.tolerations [array] Tolerations for worker pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ##
+  tolerations: []
+
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
 
