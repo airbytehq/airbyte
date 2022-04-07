@@ -1,4 +1,4 @@
-FROM fishtownanalytics/dbt:0.21.1
+FROM fishtownanalytics/dbt:1.0.0
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
 # Install SSH Tunneling dependencies
