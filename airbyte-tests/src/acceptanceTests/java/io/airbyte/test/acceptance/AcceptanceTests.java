@@ -126,6 +126,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1209,34 +1210,36 @@ public class AcceptanceTests {
 
   @Test
   @Order(23)
-  @EnabledIfEnvironmentVariable(named = "NEW_SCHEDULER", matches = "true")
   public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = createPostgresSource().getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
-        .primaryKey(List.of(List.of(COLUMN_NAME))));
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      final String connectionName = "test-connection";
+      final UUID sourceId = createPostgresSource().getSourceId();
+      final UUID destinationId = createDestination().getDestinationId();
+      final UUID operationId = createOperation().getOperationId();
+      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+      final SyncMode syncMode = SyncMode.INCREMENTAL;
+      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+      catalog.getStreams().forEach(s -> s.getConfig()
+          .syncMode(syncMode)
+          .cursorField(List.of(COLUMN_ID))
+          .destinationSyncMode(destinationSyncMode)
+          .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-    LOGGER.info("Testing connection update when temporal is in a terminal state");
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+      LOGGER.info("Testing connection update when temporal is in a terminal state");
+      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
-    terminateTemporalWorkflow(connectionId);
+      terminateTemporalWorkflow(connectionId);
 
-    // we should still be able to update the connection when the temporal workflow is in this state
-    updateConnectionSchedule(connectionId, new ConnectionSchedule().timeUnit(TimeUnitEnum.HOURS).units(1L));
+      // we should still be able to update the connection when the temporal workflow is in this state
+      updateConnectionSchedule(connectionId, new ConnectionSchedule().timeUnit(TimeUnitEnum.HOURS).units(1L));
 
-    LOGGER.info("Waiting for workflow to be recreated...");
-    Thread.sleep(500);
+      LOGGER.info("Waiting for workflow to be recreated...");
+      Thread.sleep(500);
 
-    final WorkflowState workflowState = getWorkflowState(connectionId);
-    assertTrue(workflowState.isRunning());
+      final WorkflowState workflowState = getWorkflowState(connectionId);
+      assertTrue(workflowState.isRunning());
+    }
   }
 
   private WorkflowClient getWorkflowClient() {
