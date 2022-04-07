@@ -93,6 +93,8 @@ jobs:
       - name: Install Pyenv and Tox
         # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
         run: |
+          pyenv install 3.9.11
+          pyenv global 3.9.11
           python3 -m pip install --quiet virtualenv==16.7.9 --user
           python3 -m virtualenv venv
           source venv/bin/activate
