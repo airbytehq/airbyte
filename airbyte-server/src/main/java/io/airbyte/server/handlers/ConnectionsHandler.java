@@ -4,7 +4,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -50,53 +49,42 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class ConnectionsHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionsHandler.class);
 
-  private final ConfigRepository configRepository;
-  private final Supplier<UUID> uuidGenerator;
-  private final WorkspaceHelper workspaceHelper;
-  private final TrackingClient trackingClient;
-  private final EventRunner eventRunner;
-  private final FeatureFlags featureFlags;
-  private final WorkerConfigs workerConfigs;
+  @Inject
+  private ApiPojoConverters apiPojoConverters;
 
-  @VisibleForTesting
-  ConnectionsHandler(final ConfigRepository configRepository,
-                     final Supplier<UUID> uuidGenerator,
-                     final WorkspaceHelper workspaceHelper,
-                     final TrackingClient trackingClient,
-                     final EventRunner eventRunner,
-                     final FeatureFlags featureFlags,
-                     final WorkerConfigs workerConfigs) {
-    this.configRepository = configRepository;
-    this.uuidGenerator = uuidGenerator;
-    this.workspaceHelper = workspaceHelper;
-    this.trackingClient = trackingClient;
-    this.eventRunner = eventRunner;
-    this.featureFlags = featureFlags;
-    this.workerConfigs = workerConfigs;
-  }
+  @Inject
+  private CatalogConverter catalogConverter;
 
-  public ConnectionsHandler(final ConfigRepository configRepository,
-                            final WorkspaceHelper workspaceHelper,
-                            final TrackingClient trackingClient,
-                            final EventRunner eventRunner,
-                            final FeatureFlags featureFlags,
-                            final WorkerConfigs workerConfigs) {
-    this(configRepository,
-        UUID::randomUUID,
-        workspaceHelper,
-        trackingClient,
-        eventRunner,
-        featureFlags,
-        workerConfigs);
+  @Inject
+  private ConfigRepository configRepository;
 
-  }
+  @Inject
+  private Supplier<UUID> uuidGenerator;
+
+  @Inject
+  private WorkspaceHelper workspaceHelper;
+
+  @Inject
+  private TrackingClient trackingClient;
+
+  @Inject
+  private EventRunner eventRunner;
+
+  @Inject
+  private FeatureFlags featureFlags;
+
+  @Inject
+  private WorkerConfigs workerConfigs;
 
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -125,21 +113,21 @@ public class ConnectionsHandler {
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
         .withOperationIds(connectionCreate.getOperationIds())
-        .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()));
+        .withStatus(apiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()));
     if (connectionCreate.getResourceRequirements() != null) {
-      standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
+      standardSync.withResourceRequirements(apiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
     if (connectionCreate.getSyncCatalog() != null) {
-      standardSync.withCatalog(CatalogConverter.toProtocol(connectionCreate.getSyncCatalog()));
+      standardSync.withCatalog(catalogConverter.toProtocol(connectionCreate.getSyncCatalog()));
     } else {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }
 
     if (connectionCreate.getSchedule() != null) {
       final Schedule schedule = new Schedule()
-          .withTimeUnit(ApiPojoConverters.toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
+          .withTimeUnit(apiPojoConverters.toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
           .withUnits(connectionCreate.getSchedule().getUnits());
       standardSync
           .withManual(false)
@@ -209,7 +197,7 @@ public class ConnectionsHandler {
     final StandardSync newConnection = ConnectionHelper.updateConnectionObject(
         workspaceHelper,
         persistedSync,
-        ApiPojoConverters.connectionUpdateToInternal(connectionUpdate));
+        apiPojoConverters.connectionUpdateToInternal(connectionUpdate));
     ConnectionHelper.validateWorkspace(
         workspaceHelper,
         persistedSync.getSourceId(),
@@ -244,7 +232,7 @@ public class ConnectionsHandler {
         continue;
       }
 
-      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
+      connectionReads.add(apiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);
@@ -257,7 +245,7 @@ public class ConnectionsHandler {
       if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
         continue;
       }
-      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
+      connectionReads.add(apiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);
@@ -273,7 +261,7 @@ public class ConnectionsHandler {
     final List<ConnectionRead> reads = Lists.newArrayList();
     for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
       if (standardSync.getStatus() != StandardSync.Status.DEPRECATED) {
-        final ConnectionRead connectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
+        final ConnectionRead connectionRead = apiPojoConverters.internalToConnectionRead(standardSync);
         if (matchSearch(connectionSearch, connectionRead)) {
           reads.add(connectionRead);
         }
@@ -356,7 +344,7 @@ public class ConnectionsHandler {
   private ConnectionRead buildConnectionRead(final UUID connectionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-    return ApiPojoConverters.internalToConnectionRead(standardSync);
+    return apiPojoConverters.internalToConnectionRead(standardSync);
   }
 
 }

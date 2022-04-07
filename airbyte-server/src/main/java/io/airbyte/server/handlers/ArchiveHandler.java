@@ -13,59 +13,37 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.SecretsRepositoryReader;
-import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.ConfigDumpExporter;
 import io.airbyte.server.ConfigDumpImporter;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class ArchiveHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandler.class);
 
-  private final AirbyteVersion version;
-  private final ConfigDumpExporter configDumpExporter;
-  private final ConfigDumpImporter configDumpImporter;
-  private final ConfigPersistence seed;
-  private final FileTtlManager fileTtlManager;
+  @Inject
+  private AirbyteVersion version;
 
-  public ArchiveHandler(final AirbyteVersion version,
-                        final ConfigRepository configRepository,
-                        final SecretsRepositoryReader secretsRepositoryReader,
-                        final SecretsRepositoryWriter secretsRepositoryWriter,
-                        final JobPersistence jobPersistence,
-                        final ConfigPersistence seed,
-                        final WorkspaceHelper workspaceHelper,
-                        final FileTtlManager fileTtlManager,
-                        final boolean importDefinitions) {
-    this(
-        version,
-        fileTtlManager,
-        new ConfigDumpExporter(configRepository, secretsRepositoryReader, jobPersistence, workspaceHelper),
-        new ConfigDumpImporter(configRepository, secretsRepositoryWriter, jobPersistence, workspaceHelper, importDefinitions),
-        seed);
-  }
+  @Inject
+  private ConfigDumpExporter configDumpExporter;
 
-  public ArchiveHandler(final AirbyteVersion version,
-                        final FileTtlManager fileTtlManager,
-                        final ConfigDumpExporter configDumpExporter,
-                        final ConfigDumpImporter configDumpImporter,
-                        final ConfigPersistence seed) {
-    this.version = version;
-    this.configDumpExporter = configDumpExporter;
-    this.configDumpImporter = configDumpImporter;
-    this.seed = seed;
-    this.fileTtlManager = fileTtlManager;
-  }
+  @Inject
+  private ConfigDumpImporter configDumpImporter;
+
+  @Inject
+  private ConfigPersistence seed;
+
+  @Inject
+  private FileTtlManager fileTtlManager;
 
   /**
    * Creates an archive tarball file using Gzip compression of internal Airbyte Data

@@ -9,24 +9,25 @@ import io.airbyte.api.model.DbMigrationRead;
 import io.airbyte.api.model.DbMigrationReadList;
 import io.airbyte.api.model.DbMigrationRequestBody;
 import io.airbyte.api.model.DbMigrationState;
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateOutput;
 import org.flywaydb.core.api.output.MigrateResult;
 
+@Singleton
 public class DbMigrationHandler {
 
-  private final DatabaseMigrator configDbMigrator;
-  private final DatabaseMigrator jobDbMigrator;
+  @Inject
+  @Named("configDbMigrator")
+  private DatabaseMigrator configDbMigrator;
 
-  public DbMigrationHandler(final Database configsDatabase, final Database jobsDatabase) {
-    this.configDbMigrator = new ConfigsDatabaseMigrator(configsDatabase, DbMigrationHandler.class.getSimpleName());
-    this.jobDbMigrator = new JobsDatabaseMigrator(jobsDatabase, DbMigrationHandler.class.getSimpleName());
-  }
+  @Inject
+  @Named("jobDbMigrator")
+  private DatabaseMigrator jobDbMigrator;
 
   public DbMigrationReadList list(final DbMigrationRequestBody request) {
     final DatabaseMigrator migrator = getMigrator(request.getDatabase());

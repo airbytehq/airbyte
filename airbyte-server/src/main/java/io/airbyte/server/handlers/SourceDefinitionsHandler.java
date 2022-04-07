@@ -45,35 +45,32 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class SourceDefinitionsHandler {
 
-  private final ConfigRepository configRepository;
-  private final Supplier<UUID> uuidSupplier;
-  private final AirbyteGithubStore githubStore;
-  private final SynchronousSchedulerClient schedulerSynchronousClient;
-  private final SourceHandler sourceHandler;
+  @Inject
+  private ApiPojoConverters apiPojoConverters;
 
-  public SourceDefinitionsHandler(final ConfigRepository configRepository,
-                                  final SynchronousSchedulerClient schedulerSynchronousClient,
-                                  final SourceHandler sourceHandler) {
-    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), sourceHandler);
-  }
+  @Inject
+  private ConfigRepository configRepository;
 
-  public SourceDefinitionsHandler(final ConfigRepository configRepository,
-                                  final Supplier<UUID> uuidSupplier,
-                                  final SynchronousSchedulerClient schedulerSynchronousClient,
-                                  final AirbyteGithubStore githubStore,
-                                  final SourceHandler sourceHandler) {
-    this.configRepository = configRepository;
-    this.uuidSupplier = uuidSupplier;
-    this.schedulerSynchronousClient = schedulerSynchronousClient;
-    this.githubStore = githubStore;
-    this.sourceHandler = sourceHandler;
-  }
+  @Inject
+  private Supplier<UUID> uuidSupplier;
+
+  @Inject
+  private AirbyteGithubStore githubStore;
+
+  @Inject
+  private SynchronousSchedulerClient schedulerSynchronousClient;
+
+  @Inject
+  private SourceHandler sourceHandler;
 
   @VisibleForTesting
-  static SourceDefinitionRead buildSourceDefinitionRead(final StandardSourceDefinition standardSourceDefinition) {
+  SourceDefinitionRead buildSourceDefinitionRead(final StandardSourceDefinition standardSourceDefinition) {
     try {
       return new SourceDefinitionRead()
           .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -84,7 +81,7 @@ public class SourceDefinitionsHandler {
           .icon(loadIcon(standardSourceDefinition.getIcon()))
           .releaseStage(getReleaseStage(standardSourceDefinition))
           .releaseDate(getReleaseDate(standardSourceDefinition))
-          .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardSourceDefinition.getResourceRequirements()));
+          .resourceRequirements(apiPojoConverters.actorDefResourceReqsToApi(standardSourceDefinition.getResourceRequirements()));
 
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
@@ -110,9 +107,9 @@ public class SourceDefinitionsHandler {
     return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions(false));
   }
 
-  private static SourceDefinitionReadList toSourceDefinitionReadList(final List<StandardSourceDefinition> defs) {
+  private SourceDefinitionReadList toSourceDefinitionReadList(final List<StandardSourceDefinition> defs) {
     final List<SourceDefinitionRead> reads = defs.stream()
-        .map(SourceDefinitionsHandler::buildSourceDefinitionRead)
+        .map(this::buildSourceDefinitionRead)
         .collect(Collectors.toList());
     return new SourceDefinitionReadList().sourceDefinitions(reads);
   }
@@ -143,7 +140,7 @@ public class SourceDefinitionsHandler {
     return toPrivateSourceDefinitionReadList(standardSourceDefinitionBooleanMap);
   }
 
-  private static PrivateSourceDefinitionReadList toPrivateSourceDefinitionReadList(final List<Entry<StandardSourceDefinition, Boolean>> defs) {
+  private PrivateSourceDefinitionReadList toPrivateSourceDefinitionReadList(final List<Entry<StandardSourceDefinition, Boolean>> defs) {
     final List<PrivateSourceDefinitionRead> reads = defs.stream()
         .map(entry -> new PrivateSourceDefinitionRead()
             .sourceDefinition(buildSourceDefinitionRead(entry.getKey()))
@@ -202,7 +199,7 @@ public class SourceDefinitionsHandler {
         .withSpec(spec)
         .withTombstone(false)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
-        .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
+        .withResourceRequirements(apiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
   }
 
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate)
@@ -218,7 +215,7 @@ public class SourceDefinitionsHandler {
         ? getSpecForImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag())
         : currentSourceDefinition.getSpec();
     final ActorDefinitionResourceRequirements updatedResourceReqs = sourceDefinitionUpdate.getResourceRequirements() != null
-        ? ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionUpdate.getResourceRequirements())
+        ? apiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionUpdate.getResourceRequirements())
         : currentSourceDefinition.getResourceRequirements();
 
     final StandardSourceDefinition newSource = new StandardSourceDefinition()

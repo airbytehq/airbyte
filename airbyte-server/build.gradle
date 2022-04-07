@@ -51,20 +51,31 @@ publishing {
 }
 
 dependencies {
+    annotationProcessor platform("io.micronaut:micronaut-bom:${rootProject.ext.micronaut_version}")
+    annotationProcessor 'io.micronaut:micronaut-inject-java'
+    annotationProcessor 'io.micronaut:micronaut-management'
+    annotationProcessor 'io.micronaut:micronaut-validation'
+    annotationProcessor 'io.micronaut.jaxrs:micronaut-jaxrs-processor:3.2.0'
+
+    implementation platform("io.micronaut:micronaut-bom:${rootProject.ext.micronaut_version}")
+    implementation 'io.micronaut:micronaut-inject'
+    implementation 'io.swagger.core.v3:swagger-annotations'
+    implementation 'io.micronaut:micronaut-validation'
+    implementation 'io.micronaut:micronaut-runtime'
+    implementation 'io.micronaut:micronaut-http-server-netty'
+    implementation 'io.micronaut:micronaut-http-client'
+    implementation 'io.micronaut:micronaut-management'
+    implementation 'io.micronaut.security:micronaut-security:3.5.0'
+    implementation 'io.micronaut.jaxrs:micronaut-jaxrs-server:3.2.0'
+
+    implementation 'javax.inject:javax.inject:1'
+    implementation 'io.projectreactor:reactor-core:3.4.16'
+
     implementation 'io.temporal:temporal-sdk:1.8.1'
 
     implementation 'org.apache.cxf:cxf-core:3.4.2'
-
     implementation 'commons-cli:commons-cli:1.4'
-    implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
-    implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
-    implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
-    implementation 'org.glassfish.jersey.containers:jersey-container-servlet'
-    implementation 'org.glassfish.jersey.inject:jersey-hk2'
-    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
-    implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
     implementation "org.flywaydb:flyway-core:7.14.0"
-
     implementation 'com.github.slugify:slugify:2.4'
 
     implementation project(':airbyte-analytics')
@@ -103,10 +114,9 @@ task copySeed(type: Copy, dependsOn: [project(':airbyte-config:init').processRes
 test.dependsOn(project.tasks.copySeed)
 assemble.dependsOn(project.tasks.copySeed)
 
-mainClassName = 'io.airbyte.server.ServerApp'
-
 application {
-    mainClass = mainClassName
+//    mainClass = 'io.airbyte.api.invoker.Application'
+    mainClass = 'io.airbyte.server.Application'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
@@ -115,24 +125,31 @@ rootProject.file('.env.dev').withInputStream { env.load(it) }
 
 run {
     // default for running on local machine.
-    environment "DATABASE_USER", env.DATABASE_USER
-    environment "DATABASE_PASSWORD", env.DATABASE_PASSWORD
+    environment 'DATABASE_USER', env.DATABASE_USER
+    environment 'DATABASE_PASSWORD', env.DATABASE_PASSWORD
+    environment 'DATABASE_URL', env.DATABASE_URL
+    environment 'JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION', env.JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+    environment 'JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS', env.JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS
 
-    environment "CONFIG_DATABASE_USER", env.CONFIG_DATABASE_USER
-    environment "CONFIG_DATABASE_PASSWORD", env.CONFIG_DATABASE_PASSWORD
+    environment 'CONFIG_DATABASE_USER', env.DATABASE_USER
+    environment 'CONFIG_DATABASE_PASSWORD', env.DATABASE_PASSWORD
+    environment 'CONFIG_DATABASE_URL', env.DATABASE_URL
+    environment 'CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION', env.CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+    environment 'CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS', env.CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS
 
-    // we map the docker pg db to port 5433 so it does not conflict with other pg instances.
-    environment "DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.DATABASE_DB}"
-    environment "CONFIG_DATABASE_URL", "jdbc:postgresql://localhost:5433/${env.CONFIG_DATABASE_DB}"
+    environment 'RUN_DATABASE_MIGRATION_ON_STARTUP', 'true'
 
-    environment "RUN_DATABASE_MIGRATION_ON_STARTUP", "true"
+    environment 'WORKSPACE_ROOT', env.WORKSPACE_ROOT
+    environment 'CONFIG_ROOT', '/tmp/airbyte_config'
+    environment 'TRACKING_STRATEGY', env.TRACKING_STRATEGY
+    environment 'AIRBYTE_VERSION', env.VERSION
+    environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
+    environment 'TEMPORAL_HOST', env.TEMPORAL_HOST
+    environment 'WEBAPP_URL', env.WEBAPP_URL
+    environment 'WORKSPACE_ROOT', env.WORKSPACE_ROOT
 
-    environment "WORKSPACE_ROOT", env.WORKSPACE_ROOT
-    environment "CONFIG_ROOT", "/tmp/airbyte_config"
-    environment "TRACKING_STRATEGY", env.TRACKING_STRATEGY
-    environment "AIRBYTE_VERSION", env.VERSION
-    environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
-    environment "TEMPORAL_HOST", "localhost:7233"
+    environment 'SERVICE_NAME', project.name
+    environment 'MICRONAUT_ENVIRONMENTS', 'local'
 }
 
 task copyGeneratedTar(type: Copy) {

@@ -23,10 +23,8 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -37,37 +35,37 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class JobHistoryHandler {
 
-  private final ConnectionsHandler connectionsHandler;
-  private final SourceHandler sourceHandler;
-  private final DestinationHandler destinationHandler;
-  private final SourceDefinitionsHandler sourceDefinitionsHandler;
-  private final DestinationDefinitionsHandler destinationDefinitionsHandler;
   public static final int DEFAULT_PAGE_SIZE = 200;
-  private final JobPersistence jobPersistence;
-  private final JobConverter jobConverter;
-  private final AirbyteVersion airbyteVersion;
 
-  public JobHistoryHandler(final JobPersistence jobPersistence,
-                           final WorkerEnvironment workerEnvironment,
-                           final LogConfigs logConfigs,
-                           final ConnectionsHandler connectionsHandler,
-                           final SourceHandler sourceHandler,
-                           final SourceDefinitionsHandler sourceDefinitionsHandler,
-                           final DestinationHandler destinationHandler,
-                           final DestinationDefinitionsHandler destinationDefinitionsHandler,
-                           final AirbyteVersion airbyteVersion) {
-    jobConverter = new JobConverter(workerEnvironment, logConfigs);
-    this.jobPersistence = jobPersistence;
-    this.connectionsHandler = connectionsHandler;
-    this.sourceHandler = sourceHandler;
-    this.sourceDefinitionsHandler = sourceDefinitionsHandler;
-    this.destinationHandler = destinationHandler;
-    this.destinationDefinitionsHandler = destinationDefinitionsHandler;
-    this.airbyteVersion = airbyteVersion;
-  }
+  @Inject
+  private ConnectionsHandler connectionsHandler;
+
+  @Inject
+  private SourceHandler sourceHandler;
+
+  @Inject
+  private DestinationHandler destinationHandler;
+
+  @Inject
+  private SourceDefinitionsHandler sourceDefinitionsHandler;
+
+  @Inject
+  private DestinationDefinitionsHandler destinationDefinitionsHandler;
+
+  @Inject
+  private JobPersistence jobPersistence;
+
+  @Inject
+  private JobConverter jobConverter;
+
+  @Inject
+  private AirbyteVersion airbyteVersion;
 
   @SuppressWarnings("UnstableApiUsage")
   public JobReadList listJobsFor(final JobListRequestBody request) throws IOException {

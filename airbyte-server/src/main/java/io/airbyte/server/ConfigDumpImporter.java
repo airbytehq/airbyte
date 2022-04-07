@@ -5,7 +5,6 @@
 package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.analytics.TrackingClientSingleton;
@@ -33,6 +32,7 @@ import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.micronaut.context.annotation.Value;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -54,10 +54,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class ConfigDumpImporter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigDumpImporter.class);
@@ -66,35 +69,47 @@ public class ConfigDumpImporter {
   private static final String VERSION_FILE_NAME = "VERSION";
   private static final Path TMP_AIRBYTE_STAGED_RESOURCES = Path.of("/tmp/airbyte_staged_resources");
 
-  private final ConfigRepository configRepository;
-  private final SecretsRepositoryWriter secretsRepositoryWriter;
-  private final WorkspaceHelper workspaceHelper;
-  private final JsonSchemaValidator jsonSchemaValidator;
-  private final JobPersistence jobPersistence;
-  private final boolean importDefinitions;
+  @Inject
+  private ConfigRepository configRepository;
 
-  public ConfigDumpImporter(final ConfigRepository configRepository,
-                            final SecretsRepositoryWriter secretsRepositoryWriter,
-                            final JobPersistence jobPersistence,
-                            final WorkspaceHelper workspaceHelper,
-                            final boolean importDefinitions) {
-    this(configRepository, secretsRepositoryWriter, jobPersistence, workspaceHelper, new JsonSchemaValidator(), importDefinitions);
-  }
+  @Inject
+  private SecretsRepositoryWriter secretsRepositoryWriter;
 
-  @VisibleForTesting
-  public ConfigDumpImporter(final ConfigRepository configRepository,
-                            final SecretsRepositoryWriter secretsRepositoryWriter,
-                            final JobPersistence jobPersistence,
-                            final WorkspaceHelper workspaceHelper,
-                            final JsonSchemaValidator jsonSchemaValidator,
-                            final boolean importDefinitions) {
-    this.jsonSchemaValidator = jsonSchemaValidator;
-    this.jobPersistence = jobPersistence;
-    this.configRepository = configRepository;
-    this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.workspaceHelper = workspaceHelper;
-    this.importDefinitions = importDefinitions;
-  }
+  @Inject
+  private WorkspaceHelper workspaceHelper;
+
+  @Inject
+  private JsonSchemaValidator jsonSchemaValidator;
+
+  @Inject
+  private JobPersistence jobPersistence;
+
+  @Value("${config.import.definitions:true}")
+  private boolean importDefinitions;
+
+  // public ConfigDumpImporter(final ConfigRepository configRepository,
+  // final SecretsRepositoryWriter secretsRepositoryWriter,
+  // final JobPersistence jobPersistence,
+  // final WorkspaceHelper workspaceHelper,
+  // final boolean importDefinitions) {
+  // this(configRepository, secretsRepositoryWriter, jobPersistence, workspaceHelper, new
+  // JsonSchemaValidator(), importDefinitions);
+  // }
+  //
+  // @VisibleForTesting
+  // public ConfigDumpImporter(final ConfigRepository configRepository,
+  // final SecretsRepositoryWriter secretsRepositoryWriter,
+  // final JobPersistence jobPersistence,
+  // final WorkspaceHelper workspaceHelper,
+  // final JsonSchemaValidator jsonSchemaValidator,
+  // final boolean importDefinitions) {
+  // this.jsonSchemaValidator = jsonSchemaValidator;
+  // this.jobPersistence = jobPersistence;
+  // this.configRepository = configRepository;
+  // this.secretsRepositoryWriter = secretsRepositoryWriter;
+  // this.workspaceHelper = workspaceHelper;
+  // this.importDefinitions = importDefinitions;
+  // }
 
   /**
    * Re-initialize the staged resource folder that contains uploaded artifacts when importing

@@ -4,6 +4,7 @@
 
 package io.airbyte.server.handlers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.CompleteDestinationOAuthRequest;
@@ -27,27 +28,26 @@ import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class OAuthHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthHandler.class);
 
-  private final ConfigRepository configRepository;
-  private final OAuthImplementationFactory oAuthImplementationFactory;
-  private final TrackingClient trackingClient;
+  @Inject
+  private ConfigRepository configRepository;
 
-  public OAuthHandler(final ConfigRepository configRepository,
-                      final HttpClient httpClient,
-                      final TrackingClient trackingClient) {
-    this.configRepository = configRepository;
-    this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository, httpClient);
-    this.trackingClient = trackingClient;
-  }
+  @Inject
+  private OAuthImplementationFactory oAuthImplementationFactory;
+
+  @Inject
+  private TrackingClient trackingClient;
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -62,7 +62,7 @@ public class OAuthHandler {
           sourceDefinitionIdRequestBody.getWorkspaceId(),
           sourceDefinitionIdRequestBody.getSourceDefinitionId(),
           sourceDefinitionIdRequestBody.getRedirectUrl(),
-          sourceDefinitionIdRequestBody.getoAuthInputConfiguration(),
+          (JsonNode) sourceDefinitionIdRequestBody.getoAuthInputConfiguration(),
           spec.getAdvancedAuth().getOauthConfigSpecification()));
     } else {
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getSourceConsentUrl(
@@ -91,7 +91,7 @@ public class OAuthHandler {
           destinationDefinitionIdRequestBody.getWorkspaceId(),
           destinationDefinitionIdRequestBody.getDestinationDefinitionId(),
           destinationDefinitionIdRequestBody.getRedirectUrl(),
-          destinationDefinitionIdRequestBody.getoAuthInputConfiguration(),
+          (JsonNode) destinationDefinitionIdRequestBody.getoAuthInputConfiguration(),
           spec.getAdvancedAuth().getOauthConfigSpecification()));
     } else {
       result = new OAuthConsentRead().consentUrl(oAuthFlowImplementation.getDestinationConsentUrl(
@@ -121,7 +121,7 @@ public class OAuthHandler {
           oauthSourceRequestBody.getSourceDefinitionId(),
           oauthSourceRequestBody.getQueryParams(),
           oauthSourceRequestBody.getRedirectUrl(),
-          oauthSourceRequestBody.getoAuthInputConfiguration(),
+          (JsonNode) oauthSourceRequestBody.getoAuthInputConfiguration(),
           spec.getAdvancedAuth().getOauthConfigSpecification());
     } else {
       // deprecated but this path is kept for connectors that don't define OAuth Spec yet
@@ -153,7 +153,7 @@ public class OAuthHandler {
           oauthDestinationRequestBody.getDestinationDefinitionId(),
           oauthDestinationRequestBody.getQueryParams(),
           oauthDestinationRequestBody.getRedirectUrl(),
-          oauthDestinationRequestBody.getoAuthInputConfiguration(),
+          (JsonNode) oauthDestinationRequestBody.getoAuthInputConfiguration(),
           spec.getAdvancedAuth().getOauthConfigSpecification());
     } else {
       // deprecated but this path is kept for connectors that don't define OAuth Spec yet

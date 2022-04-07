@@ -45,40 +45,36 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class DestinationDefinitionsHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
-  private final ConfigRepository configRepository;
-  private final Supplier<UUID> uuidSupplier;
-  private final SynchronousSchedulerClient schedulerSynchronousClient;
-  private final AirbyteGithubStore githubStore;
-  private final DestinationHandler destinationHandler;
+  @Inject
+  private ConfigRepository configRepository;
 
-  public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final SynchronousSchedulerClient schedulerSynchronousClient,
-                                       final DestinationHandler destinationHandler) {
-    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), destinationHandler);
-  }
+  @Inject
+  private Supplier<UUID> uuidSupplier;
 
-  @VisibleForTesting
-  public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final Supplier<UUID> uuidSupplier,
-                                       final SynchronousSchedulerClient schedulerSynchronousClient,
-                                       final AirbyteGithubStore githubStore,
-                                       final DestinationHandler destinationHandler) {
-    this.configRepository = configRepository;
-    this.uuidSupplier = uuidSupplier;
-    this.schedulerSynchronousClient = schedulerSynchronousClient;
-    this.githubStore = githubStore;
-    this.destinationHandler = destinationHandler;
-  }
+  @Inject
+  private SynchronousSchedulerClient schedulerSynchronousClient;
+
+  @Inject
+  private AirbyteGithubStore githubStore;
+
+  @Inject
+  private DestinationHandler destinationHandler;
+
+  @Inject
+  private ApiPojoConverters apiPojoConverters;
 
   @VisibleForTesting
-  static DestinationDefinitionRead buildDestinationDefinitionRead(final StandardDestinationDefinition standardDestinationDefinition) {
+  DestinationDefinitionRead buildDestinationDefinitionRead(final StandardDestinationDefinition standardDestinationDefinition) {
     try {
       return new DestinationDefinitionRead()
           .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
@@ -89,7 +85,7 @@ public class DestinationDefinitionsHandler {
           .icon(loadIcon(standardDestinationDefinition.getIcon()))
           .releaseStage(getReleaseStage(standardDestinationDefinition))
           .releaseDate(getReleaseDate(standardDestinationDefinition))
-          .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardDestinationDefinition.getResourceRequirements()));
+          .resourceRequirements(apiPojoConverters.actorDefResourceReqsToApi(standardDestinationDefinition.getResourceRequirements()));
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest destination definitions list", e);
     }
@@ -114,9 +110,9 @@ public class DestinationDefinitionsHandler {
     return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions(false));
   }
 
-  private static DestinationDefinitionReadList toDestinationDefinitionReadList(final List<StandardDestinationDefinition> defs) {
+  private DestinationDefinitionReadList toDestinationDefinitionReadList(final List<StandardDestinationDefinition> defs) {
     final List<DestinationDefinitionRead> reads = defs.stream()
-        .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
+        .map(this::buildDestinationDefinitionRead)
         .collect(Collectors.toList());
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
@@ -147,8 +143,8 @@ public class DestinationDefinitionsHandler {
     return toPrivateDestinationDefinitionReadList(standardDestinationDefinitionBooleanMap);
   }
 
-  private static PrivateDestinationDefinitionReadList toPrivateDestinationDefinitionReadList(
-                                                                                             final List<Entry<StandardDestinationDefinition, Boolean>> defs) {
+  private PrivateDestinationDefinitionReadList toPrivateDestinationDefinitionReadList(
+                                                                                      final List<Entry<StandardDestinationDefinition, Boolean>> defs) {
     final List<PrivateDestinationDefinitionRead> reads = defs.stream()
         .map(entry -> new PrivateDestinationDefinitionRead()
             .destinationDefinition(buildDestinationDefinitionRead(entry.getKey()))
@@ -211,7 +207,7 @@ public class DestinationDefinitionsHandler {
         .withSpec(spec)
         .withTombstone(false)
         .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
-        .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
+        .withResourceRequirements(apiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
     return destinationDefinition;
   }
 
@@ -228,7 +224,7 @@ public class DestinationDefinitionsHandler {
         ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
         : currentDestination.getSpec();
     final ActorDefinitionResourceRequirements updatedResourceReqs = destinationDefinitionUpdate.getResourceRequirements() != null
-        ? ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefinitionUpdate.getResourceRequirements())
+        ? apiPojoConverters.actorDefResourceReqsToInternal(destinationDefinitionUpdate.getResourceRequirements())
         : currentDestination.getResourceRequirements();
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()

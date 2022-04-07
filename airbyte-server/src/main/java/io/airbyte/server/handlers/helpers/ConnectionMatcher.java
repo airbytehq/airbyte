@@ -6,6 +6,8 @@ package io.airbyte.server.handlers.helpers;
 
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionSearch;
+import io.airbyte.api.model.ConnectionStatus;
+import java.util.UUID;
 import org.apache.logging.log4j.util.Strings;
 
 public class ConnectionMatcher implements Matchable<ConnectionRead> {
@@ -22,10 +24,19 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
       return query;
     }
 
-    final ConnectionRead fromSearch = new ConnectionRead();
-    fromSearch.connectionId(search.getConnectionId() == null ? query.getConnectionId() : search.getConnectionId());
-    fromSearch.destinationId(search.getDestinationId() == null ? query.getDestinationId() : search.getDestinationId());
-    fromSearch.name(Strings.isBlank(search.getName()) ? query.getName() : search.getName());
+    final UUID connectionId = search.getConnectionId() == null ? query.getConnectionId() : search.getConnectionId();
+    final ConnectionStatus connectionStatus = search.getStatus() == null ? query.getStatus() : search.getStatus();
+    final UUID destinationId = search.getDestinationId() == null ? query.getDestinationId() : search.getDestinationId();
+    final String name = Strings.isBlank(search.getName()) ? query.getName() : search.getName();
+    final UUID sourceId = search.getSourceId() == null ? query.getSourceId() : search.getSourceId();
+
+    final ConnectionRead fromSearch = new ConnectionRead()
+        .connectionId(connectionId)
+        .name(name)
+        .sourceId(sourceId)
+        .destinationId(destinationId)
+        .syncCatalog(query.getSyncCatalog())
+        .status(connectionStatus);
     fromSearch.namespaceFormat(Strings.isBlank(search.getNamespaceFormat()) || search.getNamespaceFormat().equals("null")
         ? query.getNamespaceFormat()
         : search.getNamespaceFormat());
@@ -33,12 +44,9 @@ public class ConnectionMatcher implements Matchable<ConnectionRead> {
         search.getNamespaceDefinition() == null ? query.getNamespaceDefinition() : search.getNamespaceDefinition());
     fromSearch.prefix(Strings.isBlank(search.getPrefix()) ? query.getPrefix() : search.getPrefix());
     fromSearch.schedule(search.getSchedule() == null ? query.getSchedule() : search.getSchedule());
-    fromSearch.sourceId(search.getSourceId() == null ? query.getSourceId() : search.getSourceId());
-    fromSearch.status(search.getStatus() == null ? query.getStatus() : search.getStatus());
 
     // these properties are not enabled in the search
     fromSearch.resourceRequirements(query.getResourceRequirements());
-    fromSearch.syncCatalog(query.getSyncCatalog());
     fromSearch.operationIds(query.getOperationIds());
 
     return fromSearch;

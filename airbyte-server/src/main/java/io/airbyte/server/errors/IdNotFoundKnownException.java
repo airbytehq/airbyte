@@ -5,6 +5,7 @@
 package io.airbyte.server.errors;
 
 import io.airbyte.api.model.NotFoundKnownExceptionInfo;
+import io.micronaut.http.HttpStatus;
 import org.apache.logging.log4j.core.util.Throwables;
 
 public class IdNotFoundKnownException extends KnownException {
@@ -27,7 +28,7 @@ public class IdNotFoundKnownException extends KnownException {
 
   @Override
   public int getHttpCode() {
-    return 404;
+    return HttpStatus.NOT_FOUND.getCode();
   }
 
   public String getId() {
@@ -37,8 +38,8 @@ public class IdNotFoundKnownException extends KnownException {
   public NotFoundKnownExceptionInfo getNotFoundKnownExceptionInfo() {
     final NotFoundKnownExceptionInfo exceptionInfo = new NotFoundKnownExceptionInfo()
         .exceptionClassName(this.getClass().getName())
-        .message(this.getMessage())
-        .exceptionStack(Throwables.toStringList(this));
+        .exceptionStack(Throwables.toStringList(this))
+        .message(this.getMessage());
     if (this.getCause() != null) {
       exceptionInfo.rootCauseExceptionClassName(this.getClass().getClass().getName());
       exceptionInfo.rootCauseExceptionStack(Throwables.toStringList(this.getCause()));

@@ -35,6 +35,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.io.FileUtils;
 
 // TODO: Write a test case which compares the output dump with the output of ArchiveHandler export
@@ -48,25 +50,34 @@ import org.apache.commons.io.FileUtils;
  * would fail. 2. Unlike ArchiveHandler, this doesn't take the dump of specific files but looks at
  * the config directory and takes the full dump of whatever is available
  */
+@Singleton
 public class ConfigDumpExporter {
 
   private static final String ARCHIVE_FILE_NAME = "airbyte_config_dump";
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
   private static final String VERSION_FILE_NAME = "VERSION";
-  private final ConfigRepository configRepository;
-  private final SecretsRepositoryReader secretsRepositoryReader;
-  private final JobPersistence jobPersistence;
-  private final WorkspaceHelper workspaceHelper;
 
-  public ConfigDumpExporter(final ConfigRepository configRepository,
-                            final SecretsRepositoryReader secretsRepositoryReader,
-                            final JobPersistence jobPersistence,
-                            final WorkspaceHelper workspaceHelper) {
-    this.configRepository = configRepository;
-    this.secretsRepositoryReader = secretsRepositoryReader;
-    this.jobPersistence = jobPersistence;
-    this.workspaceHelper = workspaceHelper;
-  }
+  @Inject
+  private ConfigRepository configRepository;
+
+  @Inject
+  private SecretsRepositoryReader secretsRepositoryReader;
+
+  @Inject
+  private JobPersistence jobPersistence;
+
+  @Inject
+  private WorkspaceHelper workspaceHelper;
+
+  // public ConfigDumpExporter(final ConfigRepository configRepository,
+  // final SecretsRepositoryReader secretsRepositoryReader,
+  // final JobPersistence jobPersistence,
+  // final WorkspaceHelper workspaceHelper) {
+  // this.configRepository = configRepository;
+  // this.secretsRepositoryReader = secretsRepositoryReader;
+  // this.jobPersistence = jobPersistence;
+  // this.workspaceHelper = workspaceHelper;
+  // }
 
   public File dump() {
     try {

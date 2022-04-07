@@ -4,6 +4,8 @@
 
 package io.airbyte.server.errors;
 
+import io.micronaut.http.HttpStatus;
+
 public class ConnectFailureKnownException extends KnownException {
 
   public ConnectFailureKnownException(final String message) {
@@ -16,7 +18,7 @@ public class ConnectFailureKnownException extends KnownException {
 
   @Override
   public int getHttpCode() {
-    return 400;
+    return HttpStatus.BAD_REQUEST.getCode();
   }
 
 }

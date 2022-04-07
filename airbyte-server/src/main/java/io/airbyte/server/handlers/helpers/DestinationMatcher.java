@@ -39,10 +39,11 @@ public class DestinationMatcher implements Matchable<DestinationRead> {
       fromSearch.connectionConfiguration(search.getConnectionConfiguration());
     } else {
       final JsonNode connectionConfiguration = search.getConnectionConfiguration();
-      query.getConnectionConfiguration().fieldNames()
+      final JsonNode queryConnectionConfiguration = query.getConnectionConfiguration();
+      queryConnectionConfiguration.fieldNames()
           .forEachRemaining(field -> {
             if (!connectionConfiguration.has(field) && connectionConfiguration instanceof ObjectNode) {
-              ((ObjectNode) connectionConfiguration).set(field, query.getConnectionConfiguration().get(field));
+              ((ObjectNode) connectionConfiguration).set(field, queryConnectionConfiguration.get(field));
             }
           });
       fromSearch.connectionConfiguration(connectionConfiguration);

@@ -4,6 +4,8 @@
 
 package io.airbyte.server.errors;
 
+import io.micronaut.http.HttpStatus;
+
 public class InternalServerKnownException extends KnownException {
 
   public InternalServerKnownException(final String message) {
@@ -16,7 +18,7 @@ public class InternalServerKnownException extends KnownException {
 
   @Override
   public int getHttpCode() {
-    return 500;
+    return HttpStatus.INTERNAL_SERVER_ERROR.getCode();
   }
 
 }

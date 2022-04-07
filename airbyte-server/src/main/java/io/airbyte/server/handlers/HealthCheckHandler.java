@@ -5,7 +5,9 @@
 package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.HealthCheckRead;
+import javax.inject.Singleton;
 
+@Singleton
 public class HealthCheckHandler {
 
   public HealthCheckRead health() {

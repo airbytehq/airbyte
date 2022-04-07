@@ -4,6 +4,8 @@
 
 package io.airbyte.server.errors;
 
+import io.micronaut.http.HttpStatus;
+
 public class ApplicationErrorKnownException extends KnownException {
 
   public ApplicationErrorKnownException(final String message) {
@@ -16,7 +18,7 @@ public class ApplicationErrorKnownException extends KnownException {
 
   @Override
   public int getHttpCode() {
-    return 422;
+    return HttpStatus.UNPROCESSABLE_ENTITY.getCode();
   }
 
 }

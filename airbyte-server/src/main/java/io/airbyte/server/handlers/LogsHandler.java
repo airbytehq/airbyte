@@ -10,11 +10,13 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import java.io.File;
 import java.nio.file.Path;
+import javax.inject.Singleton;
 
 /**
  * This handler is only responsible for server and scheduler logs. Jobs logs paths are determined by
  * the submitJob function in the JobSubmitter class in the airbyte-server module.
  */
+@Singleton
 public class LogsHandler {
 
   public File getLogs(final Path workspaceRoot,

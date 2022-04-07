@@ -4,7 +4,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.CheckOperationRead;
@@ -34,21 +33,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class OperationsHandler {
 
-  private final ConfigRepository configRepository;
-  private final Supplier<UUID> uuidGenerator;
+  @Inject
+  private ConfigRepository configRepository;
 
-  @VisibleForTesting
-  OperationsHandler(final ConfigRepository configRepository, final Supplier<UUID> uuidGenerator) {
-    this.configRepository = configRepository;
-    this.uuidGenerator = uuidGenerator;
-  }
-
-  public OperationsHandler(final ConfigRepository configRepository) {
-    this(configRepository, UUID::randomUUID);
-  }
+  @Inject
+  private Supplier<UUID> uuidGenerator;
 
   public CheckOperationRead checkOperation(final OperatorConfiguration operationCheck) {
     try {

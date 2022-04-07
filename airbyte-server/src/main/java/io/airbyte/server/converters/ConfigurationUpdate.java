@@ -18,27 +18,20 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class ConfigurationUpdate {
 
-  private final ConfigRepository configRepository;
-  private final SecretsRepositoryReader secretsRepositoryReader;
-  private final JsonSecretsProcessor secretsProcessor;
+  @Inject
+  private ConfigRepository configRepository;
 
-  public ConfigurationUpdate(final ConfigRepository configRepository, final SecretsRepositoryReader secretsRepositoryReader) {
-    this(configRepository, secretsRepositoryReader, JsonSecretsProcessor.builder()
-        .maskSecrets(true)
-        .copySecrets(true)
-        .build());
-  }
+  @Inject
+  private SecretsRepositoryReader secretsRepositoryReader;
 
-  public ConfigurationUpdate(final ConfigRepository configRepository,
-                             final SecretsRepositoryReader secretsRepositoryReader,
-                             final JsonSecretsProcessor secretsProcessor) {
-    this.configRepository = configRepository;
-    this.secretsRepositoryReader = secretsRepositoryReader;
-    this.secretsProcessor = secretsProcessor;
-  }
+  @Inject
+  private JsonSecretsProcessor secretsProcessor;
 
   public SourceConnection source(final UUID sourceId, final String sourceName, final JsonNode newConfiguration)
       throws ConfigNotFoundException, IOException, JsonValidationException {

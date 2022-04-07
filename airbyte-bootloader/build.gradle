@@ -26,6 +26,9 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
 // Publish this so Airbyte Cloud can consume and extend the classes within this jar.
 // This needs to be a shadow jar as none of the other modules are published.
 shadowJar {
@@ -68,6 +71,19 @@ publishing {
 
         mavenLocal()
     }
+}
+
+run {
+    // default for running on local machine.
+    environment 'DATABASE_USER', env.DATABASE_USER
+    environment 'DATABASE_PASSWORD', env.DATABASE_PASSWORD
+    environment 'DATABASE_URL', env.DATABASE_URL
+
+    environment 'CONFIG_DATABASE_USER', env.DATABASE_USER
+    environment 'CONFIG_DATABASE_PASSWORD', env.DATABASE_PASSWORD
+    environment 'CONFIG_DATABASE_URL', env.DATABASE_URL
+
+    environment 'AIRBYTE_VERSION', env.VERSION
 }
 
 task copyGeneratedTar(type: Copy) {

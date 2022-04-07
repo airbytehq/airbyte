@@ -4,6 +4,8 @@
 
 package io.airbyte.server.errors;
 
+import io.micronaut.http.HttpStatus;
+
 public class ValueConflictKnownException extends KnownException {
 
   public ValueConflictKnownException(final String message) {
@@ -16,7 +18,7 @@ public class ValueConflictKnownException extends KnownException {
 
   @Override
   public int getHttpCode() {
-    return 409;
+    return HttpStatus.CONFLICT.getCode();
   }
 
 }

@@ -45,6 +45,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -55,23 +56,42 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
-import lombok.AllArgsConstructor;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
 @Slf4j
+@Singleton
 public class WebBackendConnectionsHandler {
 
   private static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(JobStatus.FAILED, JobStatus.SUCCEEDED, JobStatus.CANCELLED);
 
-  private final ConnectionsHandler connectionsHandler;
-  private final SourceHandler sourceHandler;
-  private final DestinationHandler destinationHandler;
-  private final JobHistoryHandler jobHistoryHandler;
-  private final SchedulerHandler schedulerHandler;
-  private final OperationsHandler operationsHandler;
-  private final FeatureFlags featureFlags;
-  private final EventRunner eventRunner;
+  @Inject
+  private ConnectionsHandler connectionsHandler;
+
+  @Inject
+  private SourceHandler sourceHandler;
+
+  @Inject
+  private DestinationHandler destinationHandler;
+
+  @Inject
+  private JobHistoryHandler jobHistoryHandler;
+
+  @Inject
+  private SchedulerHandler schedulerHandler;
+
+  @Inject
+  private OperationsHandler operationsHandler;
+
+  @Inject
+  private FeatureFlags featureFlags;
+
+  @Inject
+  private EventRunner eventRunner;
+
+  @Inject
+  private ConfigRepository configRepository;
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {

@@ -6,5 +6,6 @@
 /_/  |_/_/_/  /_.___/\__, /\__/\___/
                     /____/
 --------------------------------------
- Now ready at http://localhost:8000/
+ UI available at http://localhost:8000/
+ API available at http://localhost:8001/api
 --------------------------------------

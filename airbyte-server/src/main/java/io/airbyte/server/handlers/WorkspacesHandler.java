@@ -35,36 +35,30 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.lang3.RandomStringUtils;
 
+@Singleton
 public class WorkspacesHandler {
 
-  private final ConfigRepository configRepository;
-  private final ConnectionsHandler connectionsHandler;
-  private final DestinationHandler destinationHandler;
-  private final SourceHandler sourceHandler;
-  private final Supplier<UUID> uuidSupplier;
-  private final Slugify slugify;
+  @Inject
+  private ConfigRepository configRepository;
 
-  public WorkspacesHandler(final ConfigRepository configRepository,
-                           final ConnectionsHandler connectionsHandler,
-                           final DestinationHandler destinationHandler,
-                           final SourceHandler sourceHandler) {
-    this(configRepository, connectionsHandler, destinationHandler, sourceHandler, UUID::randomUUID);
-  }
+  @Inject
+  private ConnectionsHandler connectionsHandler;
 
-  public WorkspacesHandler(final ConfigRepository configRepository,
-                           final ConnectionsHandler connectionsHandler,
-                           final DestinationHandler destinationHandler,
-                           final SourceHandler sourceHandler,
-                           final Supplier<UUID> uuidSupplier) {
-    this.configRepository = configRepository;
-    this.connectionsHandler = connectionsHandler;
-    this.destinationHandler = destinationHandler;
-    this.sourceHandler = sourceHandler;
-    this.uuidSupplier = uuidSupplier;
-    this.slugify = new Slugify();
-  }
+  @Inject
+  private DestinationHandler destinationHandler;
+
+  @Inject
+  private SourceHandler sourceHandler;
+
+  @Inject
+  private Supplier<UUID> uuidSupplier;
+
+  @Inject
+  private Slugify slugify;
 
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate)
       throws JsonValidationException, IOException, ValueConflictKnownException {

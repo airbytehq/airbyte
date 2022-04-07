@@ -8,12 +8,16 @@ import io.airbyte.commons.resources.MoreResources;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
 
+@Singleton
 public class OpenApiConfigHandler {
 
-  private static final File TMP_FILE;
+  private File TMP_FILE;
 
-  static {
+  @PostConstruct
+  public void initialize() {
     try {
       TMP_FILE = File.createTempFile("airbyte", "openapiconfig");
       TMP_FILE.deleteOnExit();

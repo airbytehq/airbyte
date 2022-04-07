@@ -4,6 +4,8 @@
 
 package io.airbyte.server.errors;
 
+import io.micronaut.http.HttpStatus;
+
 public class BadObjectSchemaKnownException extends KnownException {
 
   public BadObjectSchemaKnownException(final String message) {
@@ -16,7 +18,7 @@ public class BadObjectSchemaKnownException extends KnownException {
 
   @Override
   public int getHttpCode() {
-    return 422;
+    return HttpStatus.UNPROCESSABLE_ENTITY.getCode();
   }
 
 }

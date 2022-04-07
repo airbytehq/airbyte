@@ -18,10 +18,16 @@ import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class ApiPojoConverters {
 
-  public static io.airbyte.config.ActorDefinitionResourceRequirements actorDefResourceReqsToInternal(final ActorDefinitionResourceRequirements actorDefResourceReqs) {
+  @Inject
+  private CatalogConverter catalogConverter;
+
+  public io.airbyte.config.ActorDefinitionResourceRequirements actorDefResourceReqsToInternal(final ActorDefinitionResourceRequirements actorDefResourceReqs) {
     if (actorDefResourceReqs == null) {
       return null;
     }
@@ -37,7 +43,7 @@ public class ApiPojoConverters {
                 .collect(Collectors.toList()));
   }
 
-  public static ActorDefinitionResourceRequirements actorDefResourceReqsToApi(final io.airbyte.config.ActorDefinitionResourceRequirements actorDefResourceReqs) {
+  public ActorDefinitionResourceRequirements actorDefResourceReqsToApi(final io.airbyte.config.ActorDefinitionResourceRequirements actorDefResourceReqs) {
     if (actorDefResourceReqs == null) {
       return null;
     }
@@ -53,7 +59,7 @@ public class ApiPojoConverters {
                 .collect(Collectors.toList()));
   }
 
-  public static io.airbyte.config.ResourceRequirements resourceRequirementsToInternal(final ResourceRequirements resourceReqs) {
+  public io.airbyte.config.ResourceRequirements resourceRequirementsToInternal(final ResourceRequirements resourceReqs) {
     if (resourceReqs == null) {
       return null;
     }
@@ -65,7 +71,7 @@ public class ApiPojoConverters {
         .withMemoryLimit(resourceReqs.getMemoryLimit());
   }
 
-  public static ResourceRequirements resourceRequirementsToApi(final io.airbyte.config.ResourceRequirements resourceReqs) {
+  public ResourceRequirements resourceRequirementsToApi(final io.airbyte.config.ResourceRequirements resourceReqs) {
     if (resourceReqs == null) {
       return null;
     }
@@ -77,14 +83,14 @@ public class ApiPojoConverters {
         .memoryLimit(resourceReqs.getMemoryLimit());
   }
 
-  public static io.airbyte.config.StandardSync connectionUpdateToInternal(final ConnectionUpdate update) {
+  public io.airbyte.config.StandardSync connectionUpdateToInternal(final ConnectionUpdate update) {
 
     final StandardSync newConnection = new StandardSync()
         .withNamespaceDefinition(Enums.convertTo(update.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .withNamespaceFormat(update.getNamespaceFormat())
         .withPrefix(update.getPrefix())
         .withOperationIds(update.getOperationIds())
-        .withCatalog(CatalogConverter.toProtocol(update.getSyncCatalog()))
+        .withCatalog(catalogConverter.toProtocol(update.getSyncCatalog()))
         .withStatus(toPersistenceStatus(update.getStatus()));
 
     if (update.getName() != null) {
@@ -109,7 +115,7 @@ public class ApiPojoConverters {
     return newConnection;
   }
 
-  public static ConnectionRead internalToConnectionRead(final StandardSync standardSync) {
+  public ConnectionRead internalToConnectionRead(final StandardSync standardSync) {
     ConnectionSchedule apiSchedule = null;
 
     if (!standardSync.getManual()) {
@@ -129,7 +135,7 @@ public class ApiPojoConverters {
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+        .syncCatalog(catalogConverter.toApi(standardSync.getCatalog()));
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(resourceRequirementsToApi(standardSync.getResourceRequirements()));
@@ -138,27 +144,27 @@ public class ApiPojoConverters {
     return connectionRead;
   }
 
-  public static JobType toApiJobType(final io.airbyte.config.JobTypeResourceLimit.JobType jobType) {
+  public JobType toApiJobType(final io.airbyte.config.JobTypeResourceLimit.JobType jobType) {
     return Enums.convertTo(jobType, JobType.class);
   }
 
-  public static io.airbyte.config.JobTypeResourceLimit.JobType toInternalJobType(final JobType jobType) {
+  public io.airbyte.config.JobTypeResourceLimit.JobType toInternalJobType(final JobType jobType) {
     return Enums.convertTo(jobType, io.airbyte.config.JobTypeResourceLimit.JobType.class);
   }
 
-  public static ConnectionSchedule.TimeUnitEnum toApiTimeUnit(final Schedule.TimeUnit apiTimeUnit) {
+  public ConnectionSchedule.TimeUnitEnum toApiTimeUnit(final Schedule.TimeUnit apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, ConnectionSchedule.TimeUnitEnum.class);
   }
 
-  public static ConnectionStatus toApiStatus(final StandardSync.Status status) {
+  public ConnectionStatus toApiStatus(final StandardSync.Status status) {
     return Enums.convertTo(status, ConnectionStatus.class);
   }
 
-  public static StandardSync.Status toPersistenceStatus(final ConnectionStatus apiStatus) {
+  public StandardSync.Status toPersistenceStatus(final ConnectionStatus apiStatus) {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
   }
 
-  public static Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
+  public Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, Schedule.TimeUnit.class);
   }
 

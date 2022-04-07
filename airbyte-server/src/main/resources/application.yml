@@ -1,0 +1,51 @@
+micronaut:
+  application:
+    name: ${SERVICE_NAME}
+  security:
+    intercept-url-map:
+      - pattern: /**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /**
+        httpMethod: POST
+        access:
+          - isAnonymous()
+  server:
+    port: 8001
+
+airbyte:
+  database:
+    config:
+      url: ${CONFIG_DATABASE_URL}
+      user: ${CONFIG_DATABASE_USER}
+      password: ${CONFIG_DATABASE_PASSWORD}
+      initialization_timeout_ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS}
+      flyway_minimum_migration_version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+    jobs:
+      url: ${DATABASE_URL}
+      user: ${DATABASE_USER}
+      password: ${DATABASE_PASSWORD}
+      initialization_timeout_ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS}
+      flyway_minimum_migration_version: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  version: ${AIRBYTE_VERSION}
+  web_app:
+    url: ${WEBAPP_URL}
+  workspace:
+    root: ${WORKSPACE_ROOT}
+
+endpoints:
+  all:
+    enabled: true
+
+github:
+  base_url: https://raw.githubusercontent.com
+  timeout_ms: 30000
+
+logger:
+  levels:
+    io.airbyte.server: DEBUG
+#    io.micronaut.context.condition: DEBUG
+
+
+

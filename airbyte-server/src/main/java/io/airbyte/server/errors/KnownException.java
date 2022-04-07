@@ -26,8 +26,8 @@ public abstract class KnownException extends RuntimeException {
   public static KnownExceptionInfo infoFromThrowableWithMessage(final Throwable t, final String message) {
     final KnownExceptionInfo exceptionInfo = new KnownExceptionInfo()
         .exceptionClassName(t.getClass().getName())
-        .message(message)
-        .exceptionStack(Throwables.toStringList(t));
+        .exceptionStack(Throwables.toStringList(t))
+        .message(message);
     if (t.getCause() != null) {
       exceptionInfo.rootCauseExceptionClassName(t.getClass().getClass().getName());
       exceptionInfo.rootCauseExceptionStack(Throwables.toStringList(t.getCause()));

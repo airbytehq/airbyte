@@ -19,6 +19,10 @@ plugins {
     id 'com.github.spotbugs' version '5.0.5'
 }
 
+ext {
+    micronaut_version = '3.4.1'
+}
+
 repositories {
     mavenCentral()
 }

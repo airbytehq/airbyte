@@ -5,7 +5,6 @@
 package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.DestinationCreate;
@@ -32,65 +31,45 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class DestinationHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationHandler.class);
 
-  private final ConnectionsHandler connectionsHandler;
-  private final Supplier<UUID> uuidGenerator;
-  private final ConfigRepository configRepository;
-  private final SecretsRepositoryReader secretsRepositoryReader;
-  private final SecretsRepositoryWriter secretsRepositoryWriter;
-  private final JsonSchemaValidator validator;
-  private final ConfigurationUpdate configurationUpdate;
-  private final JsonSecretsProcessor secretsProcessor;
+  @Inject
+  private ConnectionsHandler connectionsHandler;
 
-  @VisibleForTesting
-  DestinationHandler(final ConfigRepository configRepository,
-                     final SecretsRepositoryReader secretsRepositoryReader,
-                     final SecretsRepositoryWriter secretsRepositoryWriter,
-                     final JsonSchemaValidator integrationSchemaValidation,
-                     final ConnectionsHandler connectionsHandler,
-                     final Supplier<UUID> uuidGenerator,
-                     final JsonSecretsProcessor secretsProcessor,
-                     final ConfigurationUpdate configurationUpdate) {
-    this.configRepository = configRepository;
-    this.secretsRepositoryReader = secretsRepositoryReader;
-    this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.validator = integrationSchemaValidation;
-    this.connectionsHandler = connectionsHandler;
-    this.uuidGenerator = uuidGenerator;
-    this.configurationUpdate = configurationUpdate;
-    this.secretsProcessor = secretsProcessor;
-  }
+  @Inject
+  private Supplier<UUID> uuidGenerator;
 
-  public DestinationHandler(final ConfigRepository configRepository,
-                            final SecretsRepositoryReader secretsRepositoryReader,
-                            final SecretsRepositoryWriter secretsRepositoryWriter,
-                            final JsonSchemaValidator integrationSchemaValidation,
-                            final ConnectionsHandler connectionsHandler) {
-    this(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        integrationSchemaValidation,
-        connectionsHandler,
-        UUID::randomUUID,
-        JsonSecretsProcessor.builder()
-            .maskSecrets(true)
-            .copySecrets(true)
-            .build(),
-        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
-  }
+  @Inject
+  private ConfigRepository configRepository;
+
+  @Inject
+  private SecretsRepositoryReader secretsRepositoryReader;
+
+  @Inject
+  private SecretsRepositoryWriter secretsRepositoryWriter;
+
+  @Inject
+  private JsonSchemaValidator validator;
+
+  @Inject
+  private ConfigurationUpdate configurationUpdate;
+
+  @Inject
+  private JsonSecretsProcessor secretsProcessor;
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
     final ConnectorSpecification spec = getSpec(destinationCreate.getDestinationDefinitionId());
-    validateDestination(spec, destinationCreate.getConnectionConfiguration());
+    validateDestination(spec, (JsonNode) destinationCreate.getConnectionConfiguration());
 
     // persist
     final UUID destinationId = uuidGenerator.get();
@@ -99,7 +78,7 @@ public class DestinationHandler {
         destinationCreate.getDestinationDefinitionId(),
         destinationCreate.getWorkspaceId(),
         destinationId,
-        destinationCreate.getConnectionConfiguration(),
+        (JsonNode) destinationCreate.getConnectionConfiguration(),
         false);
 
     // read configuration from db
@@ -143,7 +122,7 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
     final DestinationConnection updatedDestination = configurationUpdate
-        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getName(), destinationUpdate.getConnectionConfiguration());
+        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getName(), (JsonNode) destinationUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpec(updatedDestination.getDestinationDefinitionId());
 
@@ -183,7 +162,7 @@ public class DestinationHandler {
         destinationToClone.getDestinationDefinitionId(),
         destinationToClone.getWorkspaceId(),
         destinationId,
-        destinationToClone.getConnectionConfiguration(),
+        (JsonNode) destinationToClone.getConnectionConfiguration(),
         false);
 
     // read configuration from db

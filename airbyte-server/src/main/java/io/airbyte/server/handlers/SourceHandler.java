@@ -31,61 +31,42 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class SourceHandler {
 
-  private final Supplier<UUID> uuidGenerator;
-  private final ConfigRepository configRepository;
-  private final SecretsRepositoryReader secretsRepositoryReader;
-  private final SecretsRepositoryWriter secretsRepositoryWriter;
-  private final JsonSchemaValidator validator;
-  private final ConnectionsHandler connectionsHandler;
-  private final ConfigurationUpdate configurationUpdate;
-  private final JsonSecretsProcessor secretsProcessor;
+  @Inject
+  private Supplier<UUID> uuidGenerator;
 
-  SourceHandler(final ConfigRepository configRepository,
-                final SecretsRepositoryReader secretsRepositoryReader,
-                final SecretsRepositoryWriter secretsRepositoryWriter,
-                final JsonSchemaValidator integrationSchemaValidation,
-                final ConnectionsHandler connectionsHandler,
-                final Supplier<UUID> uuidGenerator,
-                final JsonSecretsProcessor secretsProcessor,
-                final ConfigurationUpdate configurationUpdate) {
-    this.configRepository = configRepository;
-    this.secretsRepositoryReader = secretsRepositoryReader;
-    this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.validator = integrationSchemaValidation;
-    this.connectionsHandler = connectionsHandler;
-    this.uuidGenerator = uuidGenerator;
-    this.configurationUpdate = configurationUpdate;
-    this.secretsProcessor = secretsProcessor;
-  }
+  @Inject
+  private ConfigRepository configRepository;
 
-  public SourceHandler(final ConfigRepository configRepository,
-                       final SecretsRepositoryReader secretsRepositoryReader,
-                       final SecretsRepositoryWriter secretsRepositoryWriter,
-                       final JsonSchemaValidator integrationSchemaValidation,
-                       final ConnectionsHandler connectionsHandler) {
-    this(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        integrationSchemaValidation,
-        connectionsHandler,
-        UUID::randomUUID,
-        JsonSecretsProcessor.builder()
-            .maskSecrets(true)
-            .copySecrets(true)
-            .build(),
-        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
-  }
+  @Inject
+  private SecretsRepositoryReader secretsRepositoryReader;
+
+  @Inject
+  private SecretsRepositoryWriter secretsRepositoryWriter;
+
+  @Inject
+  private JsonSchemaValidator validator;
+
+  @Inject
+  private ConnectionsHandler connectionsHandler;
+
+  @Inject
+  private ConfigurationUpdate configurationUpdate;
+
+  @Inject
+  private JsonSecretsProcessor secretsProcessor;
 
   public SourceRead createSource(final SourceCreate sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
     final ConnectorSpecification spec = getSpecFromSourceDefinitionId(
         sourceCreate.getSourceDefinitionId());
-    validateSource(spec, sourceCreate.getConnectionConfiguration());
+    validateSource(spec, (JsonNode) sourceCreate.getConnectionConfiguration());
 
     // persist
     final UUID sourceId = uuidGenerator.get();
@@ -95,7 +76,7 @@ public class SourceHandler {
         sourceCreate.getWorkspaceId(),
         sourceId,
         false,
-        sourceCreate.getConnectionConfiguration(),
+        (JsonNode) sourceCreate.getConnectionConfiguration(),
         spec);
 
     // read configuration from db
@@ -107,9 +88,9 @@ public class SourceHandler {
 
     final SourceConnection updatedSource = configurationUpdate
         .source(sourceUpdate.getSourceId(), sourceUpdate.getName(),
-            sourceUpdate.getConnectionConfiguration());
+            (JsonNode) sourceUpdate.getConnectionConfiguration());
     final ConnectorSpecification spec = getSpecFromSourceId(updatedSource.getSourceId());
-    validateSource(spec, sourceUpdate.getConnectionConfiguration());
+    validateSource(spec, (JsonNode) sourceUpdate.getConnectionConfiguration());
 
     // persist
     persistSourceConnection(
@@ -147,7 +128,7 @@ public class SourceHandler {
         sourceToClone.getWorkspaceId(),
         sourceId,
         false,
-        sourceToClone.getConnectionConfiguration(),
+        (JsonNode) sourceToClone.getConnectionConfiguration(),
         spec);
 
     // read configuration from db

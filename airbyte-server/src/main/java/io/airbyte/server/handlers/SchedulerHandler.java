@@ -5,7 +5,6 @@
 package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.hash.HashFunction;
@@ -52,7 +51,6 @@ import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -81,95 +79,64 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class SchedulerHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
 
-  private final ConfigRepository configRepository;
-  private final SecretsRepositoryWriter secretsRepositoryWriter;
-  private final SchedulerJobClient schedulerJobClient;
-  private final SynchronousSchedulerClient synchronousSchedulerClient;
-  private final ConfigurationUpdate configurationUpdate;
-  private final JsonSchemaValidator jsonSchemaValidator;
-  private final JobPersistence jobPersistence;
-  private final JobNotifier jobNotifier;
-  private final WorkflowServiceStubs temporalService;
-  private final OAuthConfigSupplier oAuthConfigSupplier;
-  private final JobConverter jobConverter;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
-  private final EventRunner eventRunner;
-  private final FeatureFlags featureFlags;
+  @Inject
+  private ConfigRepository configRepository;
 
-  public SchedulerHandler(final ConfigRepository configRepository,
-                          final SecretsRepositoryReader secretsRepositoryReader,
-                          final SecretsRepositoryWriter secretsRepositoryWriter,
-                          final SchedulerJobClient schedulerJobClient,
-                          final SynchronousSchedulerClient synchronousSchedulerClient,
-                          final JobPersistence jobPersistence,
-                          final JobNotifier jobNotifier,
-                          final WorkflowServiceStubs temporalService,
-                          final OAuthConfigSupplier oAuthConfigSupplier,
-                          final WorkerEnvironment workerEnvironment,
-                          final LogConfigs logConfigs,
-                          final EventRunner eventRunner,
-                          final FeatureFlags featureFlags) {
-    this(
-        configRepository,
-        secretsRepositoryWriter,
-        secretsRepositoryReader,
-        schedulerJobClient,
-        synchronousSchedulerClient,
-        new ConfigurationUpdate(configRepository, secretsRepositoryReader),
-        new JsonSchemaValidator(),
-        jobPersistence,
-        jobNotifier,
-        temporalService,
-        oAuthConfigSupplier,
-        workerEnvironment,
-        logConfigs,
-        eventRunner,
-        featureFlags,
-        new JobConverter(workerEnvironment, logConfigs));
-  }
+  @Inject
+  private SecretsRepositoryWriter secretsRepositoryWriter;
 
-  @VisibleForTesting
-  SchedulerHandler(final ConfigRepository configRepository,
-                   final SecretsRepositoryWriter secretsRepositoryWriter,
-                   final SecretsRepositoryReader secretsRepositoryReader,
-                   final SchedulerJobClient schedulerJobClient,
-                   final SynchronousSchedulerClient synchronousSchedulerClient,
-                   final ConfigurationUpdate configurationUpdate,
-                   final JsonSchemaValidator jsonSchemaValidator,
-                   final JobPersistence jobPersistence,
-                   final JobNotifier jobNotifier,
-                   final WorkflowServiceStubs temporalService,
-                   final OAuthConfigSupplier oAuthConfigSupplier,
-                   final WorkerEnvironment workerEnvironment,
-                   final LogConfigs logConfigs,
-                   final EventRunner eventRunner,
-                   final FeatureFlags featureFlags,
-                   final JobConverter jobConverter) {
-    this.configRepository = configRepository;
-    this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.schedulerJobClient = schedulerJobClient;
-    this.synchronousSchedulerClient = synchronousSchedulerClient;
-    this.configurationUpdate = configurationUpdate;
-    this.jsonSchemaValidator = jsonSchemaValidator;
-    this.jobPersistence = jobPersistence;
-    this.jobNotifier = jobNotifier;
-    this.temporalService = temporalService;
-    this.oAuthConfigSupplier = oAuthConfigSupplier;
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
-    this.eventRunner = eventRunner;
-    this.featureFlags = featureFlags;
-    this.jobConverter = jobConverter;
-  }
+  @Inject
+  private SchedulerJobClient schedulerJobClient;
+
+  @Inject
+  private SynchronousSchedulerClient synchronousSchedulerClient;
+
+  @Inject
+  private ConfigurationUpdate configurationUpdate;
+
+  @Inject
+  private JsonSchemaValidator jsonSchemaValidator;
+
+  @Inject
+  private JobPersistence jobPersistence;
+
+  @Inject
+  private JobNotifier jobNotifier;
+
+  @Inject
+  private WorkflowServiceStubs temporalService;
+
+  @Inject
+  private OAuthConfigSupplier oAuthConfigSupplier;
+
+  @Inject
+  private JobConverter jobConverter;
+
+  @Inject
+  private WorkerEnvironment workerEnvironment;
+
+  @Inject
+  private LogConfigs logConfigs;
+
+  @Inject
+  private EventRunner eventRunner;
+
+  @Inject
+  private FeatureFlags featureFlags;
+
+  @Inject
+  private CatalogConverter catalogConverter;
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -184,7 +151,7 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
     final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
-        sourceConfig.getConnectionConfiguration(),
+        (JsonNode) sourceConfig.getConnectionConfiguration(),
         sourceDef.getSpec());
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
@@ -200,7 +167,7 @@ public class SchedulerHandler {
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(final SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection updatedSource =
-        configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getName(), sourceUpdate.getConnectionConfiguration());
+        configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getName(), (JsonNode) sourceUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpecFromSourceDefinitionId(updatedSource.getSourceDefinitionId());
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedSource.getConfiguration());
@@ -224,7 +191,7 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
     final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
-        destinationConfig.getConnectionConfiguration(),
+        (JsonNode) destinationConfig.getConnectionConfiguration(),
         destDef.getSpec());
 
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
@@ -240,7 +207,7 @@ public class SchedulerHandler {
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(final DestinationUpdate destinationUpdate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection updatedDestination = configurationUpdate
-        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getName(), destinationUpdate.getConnectionConfiguration());
+        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getName(), (JsonNode) destinationUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpecFromDestinationDefinitionId(updatedDestination.getDestinationDefinitionId());
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
@@ -279,7 +246,7 @@ public class SchedulerHandler {
         .logs(new LogRead().logLines(new ArrayList<>()))
         .succeeded(true);
     return new SourceDiscoverSchemaRead()
-        .catalog(CatalogConverter.toApi(airbyteCatalog))
+        .catalog(catalogConverter.toApi(airbyteCatalog))
         .jobInfo(emptyJob);
   }
 
@@ -287,7 +254,7 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
     final var partialConfig = secretsRepositoryWriter.statefulSplitEphemeralSecrets(
-        sourceCreate.getConnectionConfiguration(),
+        (JsonNode) sourceCreate.getConnectionConfiguration(),
         sourceDef.getSpec());
 
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
@@ -305,7 +272,7 @@ public class SchedulerHandler {
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
-      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(response.getOutput()));
+      sourceDiscoverSchemaRead.catalog(catalogConverter.toApi(response.getOutput()));
     }
 
     return sourceDiscoverSchemaRead;

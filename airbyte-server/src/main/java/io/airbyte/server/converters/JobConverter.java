@@ -42,18 +42,17 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class JobConverter {
 
-  private static final int LOG_TAIL_SIZE = 1000000;
+  @Inject
+  private WorkerEnvironment workerEnvironment;
 
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
-
-  public JobConverter(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
-  }
+  @Inject
+  private LogConfigs logConfigs;
 
   public JobInfoRead getJobInfoRead(final Job job) {
     return new JobInfoRead()
