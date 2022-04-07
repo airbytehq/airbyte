@@ -389,7 +389,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  public void testDeleteStandardSync()
+  public void testDeleteStandardSyncOperation()
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID deletedOperationId = MockData.standardSyncOperations().get(0).getOperationId();
     final List<StandardSync> syncs = MockData.standardSyncs();

@@ -168,7 +168,6 @@ public class OperationsHandler {
 
   public void deleteOperationsForConnection(final StandardSync standardSync, final List<UUID> deleteOperationIds)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final List<StandardSync> allStandardSyncs = configRepository.listStandardSyncs();
     final List<UUID> operationIds = new ArrayList<>(standardSync.getOperationIds());
     for (final UUID operationId : deleteOperationIds) {
       operationIds.remove(operationId);
