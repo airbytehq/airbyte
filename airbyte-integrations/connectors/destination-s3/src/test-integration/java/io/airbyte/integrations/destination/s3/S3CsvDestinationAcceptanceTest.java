@@ -10,6 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -21,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
+import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
@@ -33,10 +38,9 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"CSV\",\n"
-        + "  \"flattening\": \"Root level flattening\"\n"
-        + "}");
+    return Jsons.jsonNode(Map.of(
+        "format_type", outputFormat,
+        "flattening", Flattening.ROOT_LEVEL.getValue()));
   }
 
   /**
@@ -93,8 +97,8 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     final List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
-      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (final Reader in = new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8)) {
+      try (final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+          final Reader in = new InputStreamReader(new GZIPInputStream(object.getObjectContent()), StandardCharsets.UTF_8)) {
         final Iterable<CSVRecord> records = CSVFormat.DEFAULT
             .withQuoteMode(QuoteMode.NON_NUMERIC)
             .withFirstRecordAsHeader()
@@ -105,6 +109,17 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected void retrieveRawRecordsAndAssertSameMessages(final AirbyteCatalog catalog,
+                                                         final List<AirbyteMessage> messages,
+                                                         final String defaultSchema)
+      throws Exception {
+    final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
+    deserializeNestedObjects(messages, actualMessages);
+
+    assertSameMessages(messages, actualMessages, false);
   }
 
 }

@@ -13,17 +13,20 @@ import yaml
 from airbyte_api_client.api import connection_api, destination_api, source_api
 from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from airbyte_api_client.model.connection_create import ConnectionCreate
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
 from airbyte_api_client.model.connection_read import ConnectionRead
 from airbyte_api_client.model.connection_read_list import ConnectionReadList
 from airbyte_api_client.model.connection_search import ConnectionSearch
 from airbyte_api_client.model.connection_status import ConnectionStatus
 from airbyte_api_client.model.connection_update import ConnectionUpdate
 from airbyte_api_client.model.destination_create import DestinationCreate
+from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
 from airbyte_api_client.model.destination_read import DestinationRead
 from airbyte_api_client.model.destination_read_list import DestinationReadList
 from airbyte_api_client.model.destination_search import DestinationSearch
 from airbyte_api_client.model.destination_update import DestinationUpdate
 from airbyte_api_client.model.source_create import SourceCreate
+from airbyte_api_client.model.source_discover_schema_request_body import SourceDiscoverSchemaRequestBody
 from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
 from airbyte_api_client.model.source_read import SourceRead
 from airbyte_api_client.model.source_read_list import SourceReadList
@@ -169,6 +172,13 @@ class BaseResource(abc.ABC):
     @property
     @abc.abstractmethod
     def resource_id_field(
+        self,
+    ):  # pragma: no cover
+        pass
+
+    @property
+    @abc.abstractmethod
+    def ResourceIdRequestBody(
         self,
     ):  # pragma: no cover
         pass
@@ -349,12 +359,27 @@ class BaseResource(abc.ABC):
         """
         return self.state.resource_id if self.state is not None else None
 
+    @property
+    def resource_id_request_body(self) -> Union[SourceIdRequestBody, DestinationIdRequestBody]:
+        """Creates SourceIdRequestBody or DestinationIdRequestBody from resource id.
+
+        Raises:
+            NonExistingResourceError: raised if the resource id is None.
+
+        Returns:
+            Union[SourceIdRequestBody, DestinationIdRequestBody]: The model instance.
+        """
+        if self.resource_id is None:
+            raise NonExistingResourceError("The resource id could not be retrieved, the remote resource is not existing.")
+        return self.ResourceIdRequestBody(self.resource_id)
+
 
 class Source(BaseResource):
 
     api = source_api.SourceApi
     create_function_name = "create_source"
     resource_id_field = "source_id"
+    ResourceIdRequestBody = SourceIdRequestBody
     search_function_name = "search_sources"
     update_function_name = "update_source"
     resource_type = "source"
@@ -383,18 +408,18 @@ class Source(BaseResource):
         return comparable_configuration.connection_configuration
 
     @property
-    def resource_id_request_body(self) -> SourceIdRequestBody:
-        """Creates SourceIdRequestBody from resource id.
+    def source_discover_schema_request_body(self) -> SourceDiscoverSchemaRequestBody:
+        """Creates SourceDiscoverSchemaRequestBody from resource id.
 
         Raises:
             NonExistingResourceError: raised if the resource id is None.
 
         Returns:
-            SourceIdRequestBody: The SourceIdRequestBody model instance.
+            SourceDiscoverSchemaRequestBody: The SourceDiscoverSchemaRequestBody model instance.
         """
         if self.resource_id is None:
             raise NonExistingResourceError("The resource id could not be retrieved, the remote resource is not existing.")
-        return SourceIdRequestBody(source_id=self.resource_id)
+        return SourceDiscoverSchemaRequestBody(self.resource_id)
 
     @property
     def catalog(self) -> AirbyteCatalog:
@@ -403,7 +428,7 @@ class Source(BaseResource):
         Returns:
             AirbyteCatalog: The catalog issued by schema discovery.
         """
-        schema = self.api_instance.discover_schema_for_source(self.resource_id_request_body, _check_return_type=False)
+        schema = self.api_instance.discover_schema_for_source(self.source_discover_schema_request_body, _check_return_type=False)
         return schema.catalog
 
 
@@ -412,6 +437,7 @@ class Destination(BaseResource):
     api = destination_api.DestinationApi
     create_function_name = "create_destination"
     resource_id_field = "destination_id"
+    ResourceIdRequestBody = DestinationIdRequestBody
     search_function_name = "search_destinations"
     update_function_name = "update_destination"
     resource_type = "destination"
@@ -461,6 +487,7 @@ class Connection(BaseResource):
     api = connection_api.ConnectionApi
     create_function_name = "create_connection"
     resource_id_field = "connection_id"
+    ResourceIdRequestBody = ConnectionIdRequestBody
     search_function_name = "search_connections"
     update_function_name = "update_connection"
     resource_type = "connection"

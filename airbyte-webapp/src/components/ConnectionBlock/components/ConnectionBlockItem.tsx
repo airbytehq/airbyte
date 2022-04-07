@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+
 import ImageBlock from "components/ImageBlock";
 
 type IProps = {

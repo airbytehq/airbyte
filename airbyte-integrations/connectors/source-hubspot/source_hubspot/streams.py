@@ -667,7 +667,7 @@ class IncrementalStream(Stream, ABC):
 
     @state.setter
     def state(self, value):
-        state_value = value[self.updated_at_field]
+        state_value = value.get(self.updated_at_field, self._state)
         self._state = (
             pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
             if isinstance(state_value, int)
@@ -824,7 +824,7 @@ class CRMSearchStream(IncrementalStream, ABC):
                 if not next_page_token:
                     pagination_complete = True
                 elif self.state and next_page_token["payload"]["after"] >= 10000:
-                    # Hubspot documentations states that the search endpoints are limited to 10,000 total results
+                    # Hubspot documentation states that the search endpoints are limited to 10,000 total results
                     # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
                     # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
                     # start a new search query with the latest state that has been collected.
@@ -1065,7 +1065,6 @@ class Engagements(IncrementalStream):
 
     url = "/engagements/v1/engagements/paged"
     more_key = "hasMore"
-    limit = 250
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
     primary_key = "id"
@@ -1085,10 +1084,59 @@ class Engagements(IncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {self.limit_field: self.limit}
+        params = {"count": 250}
+        if next_page_token:
+            params["offset"] = next_page_token["offset"]
         if self.state:
-            params["since"] = int(self._state.timestamp() * 1000)
+            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
         return params
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return [None]
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        latest_cursor = None
+        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
+            while not pagination_complete:
+                response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+
+                if self.filter_old_records:
+                    records = self._filter_old_records(records)
+
+                for record in records:
+                    cursor = self._field_to_datetime(record[self.updated_at_field])
+                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                    yield record
+
+                next_page_token = self.next_page_token(response)
+                if self.state and next_page_token and next_page_token["offset"] >= 10000:
+                    # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
+                    # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
+                    # descending order, we stop getting records if we have already reached 10,000. Attempting
+                    # to get more than 10K will result in a HTTP 400 error.
+                    # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
+                    next_page_token = None
+
+                if not next_page_token:
+                    pagination_complete = True
+
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
+
+        self._update_state(latest_cursor=latest_cursor)
 
 
 class Forms(Stream):
@@ -1271,35 +1319,35 @@ class Contacts(CRMSearchStream):
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsMeetings(CRMSearchStream):
     entity = "meetings"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 

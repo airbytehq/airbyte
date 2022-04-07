@@ -35,6 +35,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
@@ -78,9 +79,9 @@ public class ArchiveHandlerTest {
   private JobPersistence jobPersistence;
   private SecretsRepositoryReader secretsRepositoryReader;
   private SecretsRepositoryWriter secretsRepositoryWriter;
-  private DatabaseConfigPersistence configPersistence;
+  private ConfigPersistence configPersistence;
   private ConfigPersistence seedPersistence;
-
+  private JsonSecretsProcessor jsonSecretsProcessor;
   private ConfigRepository configRepository;
   private ArchiveHandler archiveHandler;
 
@@ -115,7 +116,11 @@ public class ArchiveHandlerTest {
     configDatabase = databaseProviders.createNewConfigsDatabase();
     jobPersistence = new DefaultJobPersistence(jobDatabase);
     seedPersistence = YamlSeedConfigPersistence.getDefault();
-    configPersistence = new DatabaseConfigPersistence(jobDatabase);
+    jsonSecretsProcessor = JsonSecretsProcessor.builder()
+        .maskSecrets(false)
+        .copySecrets(false)
+        .build();;
+    configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
     configPersistence.loadData(seedPersistence);
     configRepository = new ConfigRepository(configPersistence, configDatabase);

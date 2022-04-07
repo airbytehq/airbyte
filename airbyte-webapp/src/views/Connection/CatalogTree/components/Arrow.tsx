@@ -25,20 +25,10 @@ const ArrowView = styled(FontAwesomeIcon)<{ $isOpen?: boolean }>`
   cursor: pointer;
 `;
 
-const Arrow: React.FC<ArrowProps> = ({
-  isItemHasChildren,
-  isItemOpen,
-  onExpand,
-}) => {
+const Arrow: React.FC<ArrowProps> = ({ isItemHasChildren, isItemOpen, onExpand }) => {
   return (
     <ArrowContainer>
-      {(isItemHasChildren || !onExpand) && (
-        <ArrowView
-          icon={faChevronRight}
-          onClick={onExpand}
-          $isOpen={isItemOpen}
-        />
-      )}
+      {(isItemHasChildren || !onExpand) && <ArrowView icon={faChevronRight} onClick={onExpand} $isOpen={isItemOpen} />}
     </ArrowContainer>
   );
 };

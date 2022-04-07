@@ -41,7 +41,7 @@ runs:
         aws-region: us-east-2
     - name: Start EC2 runner
       id: start-ec2-runner
-      uses: machulav/ec2-github-runner@v2.3.2
+      uses: supertopher/ec2-github-runner@base64v1.0.10
       with:
         mode: start
         github-token: ${{ inputs.github-token }}

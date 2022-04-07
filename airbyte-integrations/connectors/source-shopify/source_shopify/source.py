@@ -39,6 +39,13 @@ class ShopifyStream(HttpStream, ABC):
     def url_base(self) -> str:
         return f"https://{self.config['shop']}.myshopify.com/admin/api/{self.api_version}/"
 
+    @property
+    def default_filter_field_value(self) -> Union[int, str]:
+        # certain streams are using `since_id` field as `filter_field`, which requires to use `int` type,
+        # but many other use `str` values for this, we determine what to use based on `filter_field` value
+        # by default, we use the user defined `Start Date` as initial value, or 0 for `id`-dependent streams.
+        return 0 if self.filter_field == "since_id" else self.config["start_date"]
+
     @staticmethod
     def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.links.get("next", None)
@@ -53,7 +60,7 @@ class ShopifyStream(HttpStream, ABC):
             params.update(**next_page_token)
         else:
             params["order"] = f"{self.order_field} asc"
-            params[self.filter_field] = self.config["start_date"]
+            params[self.filter_field] = self.default_filter_field_value
         return params
 
     @limiter.balance_rate_limit()
@@ -92,7 +99,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     cursor_field = "updated_at"
 
     @property
-    def default_comparison_value(self) -> Union[int, str]:
+    def default_state_comparison_value(self) -> Union[int, str]:
         # certain streams are using `id` field as `cursor_field`, which requires to use `int` type,
         # but many other use `str` values for this, we determine what to use based on `cursor_field` value
         return 0 if self.cursor_field == "id" else ""
@@ -100,8 +107,8 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
             self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.default_comparison_value),
-                current_stream_state.get(self.cursor_field, self.default_comparison_value),
+                latest_record.get(self.cursor_field, self.default_state_comparison_value),
+                current_stream_state.get(self.cursor_field, self.default_state_comparison_value),
             )
         }
 
@@ -307,7 +314,6 @@ class Collects(IncrementalShopifyStream):
     The Collect stream is the link between Products and Collections, if the Collection is created for Products,
     the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh -
     we would use the since_id specificaly for this stream.
-
     """
 
     data_field = "collects"
@@ -318,14 +324,21 @@ class Collects(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        # If there is a next page token then we should only send pagination-related parameters.
-        if not next_page_token and not stream_state:
-            params[self.filter_field] = 0
-        return params
+
+class BalanceTransactions(IncrementalShopifyStream):
+
+    """
+    PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
+    https://shopify.dev/api/admin-rest/2021-07/resources/transactions
+    """
+
+    data_field = "transactions"
+    cursor_field = "id"
+    order_field = "id"
+    filter_field = "since_id"
+
+    def path(self, **kwargs) -> str:
+        return f"shopify_payments/balance/{self.data_field}.json"
 
 
 class OrderRefunds(ShopifySubstream):
@@ -514,6 +527,7 @@ class SourceShopify(AbstractSource):
             OrderRisks(config),
             TenderTransactions(config),
             Transactions(config),
+            BalanceTransactions(config),
             Pages(config),
             PriceRules(config),
             DiscountCodes(config),

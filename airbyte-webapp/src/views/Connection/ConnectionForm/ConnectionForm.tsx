@@ -3,25 +3,16 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldProps, Form, Formik } from "formik";
 
+import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
+
 import { equal } from "utils/objects";
-
-import {
-  ControlLabels,
-  DropDown,
-  DropDownRow,
-  H5,
-  Input,
-  Label,
-} from "components";
-
-import { useDestinationDefinitionSpecificationLoadAsync } from "hooks/services/useDestinationHook";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 
-import { Connection, ScheduleProperties } from "core/resources/Connection";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import CreateControls from "./components/CreateControls";
 import SchemaField from "./components/SyncCatalogField";
@@ -101,10 +92,7 @@ type ConnectionFormProps = {
   isEditMode?: boolean;
   additionalSchemaControl?: React.ReactNode;
 
-  connection:
-    | Connection
-    | (Partial<Connection> &
-        Pick<Connection, "syncCatalog" | "source" | "destination">);
+  connection: Connection | (Partial<Connection> & Pick<Connection, "syncCatalog" | "source" | "destination">);
 };
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -120,43 +108,29 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
   connection,
 }) => {
-  const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
-    connection.destination.destinationDefinitionId
-  );
+  const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const [submitError, setSubmitError] = useState<Error | null>(null);
 
   const formatMessage = useIntl().formatMessage;
 
-  const initialValues = useInitialValues(
-    connection,
-    destDefinition,
-    isEditMode
-  );
+  const initialValues = useInitialValues(connection, destDefinition, isEditMode);
 
-  const { workspace } = useWorkspace();
-
+  const workspace = useCurrentWorkspace();
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues) => {
-      const formValues: ConnectionFormValues = (connectionValidationSchema.cast(
-        values
-      ) as unknown) as ConnectionFormValues;
+      const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
+        context: { isRequest: true },
+      }) as unknown as ConnectionFormValues;
 
-      formValues.operations = mapFormPropsToOperation(
-        values,
-        connection.operations,
-        workspace.workspaceId
-      );
+      formValues.operations = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
 
       setSubmitError(null);
       try {
         await onSubmit(formValues);
 
-        const requiresReset =
-          isEditMode &&
-          !equal(initialValues.syncCatalog, values.syncCatalog) &&
-          !editSchemeMode;
+        const requiresReset = isEditMode && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
         }
@@ -164,14 +138,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         setSubmitError(e);
       }
     },
-    [
-      editSchemeMode,
-      initialValues.syncCatalog,
-      isEditMode,
-      onSubmit,
-      connection.operations,
-      workspace.workspaceId,
-    ]
+    [editSchemeMode, initialValues.syncCatalog, isEditMode, onSubmit, connection.operations, workspace.workspaceId]
   );
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
@@ -216,10 +183,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           </Section>
           <Section title={<FormattedMessage id="connection.streams" />}>
             <FlexRow>
-              <Field
-                name="namespaceDefinition"
-                component={NamespaceDefinitionField}
-              />
+              <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
               <Field name="prefix">
                 {({ field }: FieldProps<string>) => (
                   <ControlLabels
@@ -242,19 +206,14 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 )}
               </Field>
             </FlexRow>
-            {values.namespaceDefinition ===
-              ConnectionNamespaceDefinition.CustomFormat && (
+            {values.namespaceDefinition === ConnectionNamespaceDefinition.CustomFormat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
                   <NamespaceFormatLabel
                     nextLine
                     error={!!meta.error}
-                    label={
-                      <FormattedMessage id="connectionForm.namespaceFormat.title" />
-                    }
-                    message={
-                      <FormattedMessage id="connectionForm.namespaceFormat.subtitle" />
-                    }
+                    label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
+                    message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
                   >
                     <Input
                       {...field}
@@ -269,9 +228,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             )}
             <Field
               name="syncCatalog.streams"
-              destinationSupportedSyncModes={
-                destDefinition.supportedDestinationSyncModes
-              }
+              destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
               additionalControl={additionalSchemaControl}
               component={SchemaField}
             />
@@ -287,26 +244,20 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 }}
                 successMessage={successMessage}
                 errorMessage={
-                  errorMessage || !isValid
-                    ? formatMessage({ id: "connectionForm.validation.error" })
-                    : null
+                  errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
                 }
                 editSchemeMode={editSchemeMode}
               />
             ) : (
               <>
                 <OperationsSection destDefinition={destDefinition} />
-                <EditLaterMessage
-                  message={<FormattedMessage id="form.dataSync.message" />}
-                />
+                <EditLaterMessage message={<FormattedMessage id="form.dataSync.message" />} />
                 <CreateControls
                   additionBottomControls={additionBottomControls}
                   isSubmitting={isSubmitting}
                   isValid={isValid}
                   errorMessage={
-                    errorMessage || !isValid
-                      ? formatMessage({ id: "connectionForm.validation.error" })
-                      : null
+                    errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
                   }
                 />
               </>
