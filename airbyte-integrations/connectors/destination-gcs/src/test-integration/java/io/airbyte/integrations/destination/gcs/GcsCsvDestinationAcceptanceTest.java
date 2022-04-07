@@ -112,15 +112,4 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
     return jsonRecords;
   }
 
-  @Override
-  protected void retrieveRawRecordsAndAssertSameMessages(final AirbyteCatalog catalog,
-                                                         final List<AirbyteMessage> messages,
-                                                         final String defaultSchema)
-      throws Exception {
-    final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
-    deserializeNestedObjects(messages, actualMessages);
-
-    assertSameMessages(messages, actualMessages, false);
-  }
-
 }
