@@ -9,6 +9,7 @@ const uiConfig = {
   updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
   productReleaseStages: `${BASE_DOCS_LINK}/project-overview/product-release-stages`,
   slackLink: "https://slack.airbyte.com",
+  supportTicketLink: "https://airbyte.com/contact-support",
   docsLink: BASE_DOCS_LINK,
   configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
   normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,

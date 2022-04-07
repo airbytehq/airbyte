@@ -1,4 +1,4 @@
-import { QueryObserverSuccessResult, useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import { SourceDefinition } from "core/domain/connector";
 import { useConfig } from "config";
@@ -9,6 +9,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
 import { SCOPE_WORKSPACE } from "../Scope";
+import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const sourceDefinitionKeys = {
   all: [SCOPE_WORKSPACE, "sourceDefinition"] as const,
@@ -21,10 +22,10 @@ function useGetSourceDefinitionService(): SourceDefinitionService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new SourceDefinitionService(apiUrl, requestAuthMiddleware), [
-    apiUrl,
-    requestAuthMiddleware,
-  ]);
+  return useInitService(
+    () => new SourceDefinitionService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
 }
 
 const useSourceDefinitionList = (): {
@@ -33,7 +34,7 @@ const useSourceDefinitionList = (): {
   const service = useGetSourceDefinitionService();
   const workspace = useCurrentWorkspace();
 
-  return (useQuery(sourceDefinitionKeys.lists(), async () => {
+  return useSuspenseQuery(sourceDefinitionKeys.lists(), async () => {
     const [definition, latestDefinition] = await Promise.all([
       service.list(workspace.workspaceId),
       service.listLatest(workspace.workspaceId),
@@ -51,7 +52,7 @@ const useSourceDefinitionList = (): {
     });
 
     return { sourceDefinitions };
-  }) as QueryObserverSuccessResult<{ sourceDefinitions: SourceDefinition[] }>).data;
+  });
 };
 
 const useSourceDefinition = <T extends string | undefined>(
@@ -59,9 +60,9 @@ const useSourceDefinition = <T extends string | undefined>(
 ): T extends string ? SourceDefinition : SourceDefinition | undefined => {
   const service = useGetSourceDefinitionService();
 
-  return (useQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
+  return useSuspenseQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
     enabled: isDefined(id),
-  }) as QueryObserverSuccessResult<SourceDefinition>).data;
+  });
 };
 
 const useCreateSourceDefinition = () => {

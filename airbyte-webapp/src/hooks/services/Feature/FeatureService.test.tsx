@@ -17,9 +17,9 @@ const wrapper: React.FC = ({ children }) => (
   <TestWrapper>
     <configContext.Provider
       value={
-        ({
+        {
           config: { features: predefinedFeatures },
-        } as unknown) as ConfigContext
+        } as unknown as ConfigContext
       }
     >
       <FeatureService>{children}</FeatureService>

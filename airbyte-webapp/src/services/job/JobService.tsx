@@ -1,10 +1,12 @@
-import { QueryObserverSuccessResult, UseMutateAsyncFunction, useMutation, useQuery, useQueryClient } from "react-query";
+import { UseMutateAsyncFunction, useMutation, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { JobsService, ListParams } from "core/domain/job/JobsService";
 import { JobDetails, JobListItem, JobDebugInfoDetails } from "core/domain/job/Job";
+
+import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 
 export const jobsKeys = {
   all: ["jobs"] as const,
@@ -25,25 +27,25 @@ function useGetJobService(): JobsService {
 
 export const useListJobs = (listParams: ListParams): JobListItem[] => {
   const service = useGetJobService();
-  return (useQuery(jobsKeys.list(listParams.configId), () => service.list(listParams), {
+  return useSuspenseQuery(jobsKeys.list(listParams.configId), () => service.list(listParams), {
     refetchInterval: 2500, // every 2,5 seconds,
-  }) as QueryObserverSuccessResult<{ jobs: JobListItem[] }>).data.jobs;
+  }).jobs;
 };
 
 export const useGetJob = (id: string | number): JobDetails => {
   const service = useGetJobService();
 
-  return (useQuery(jobsKeys.detail(id), () => service.get(id), {
+  return useSuspenseQuery(jobsKeys.detail(id), () => service.get(id), {
     refetchInterval: 2500, // every 2,5 seconds,
-  }) as QueryObserverSuccessResult<JobDetails>).data;
+  });
 };
 
 export const useGetDebugInfoJob = (id: string | number): JobDebugInfoDetails => {
   const service = useGetJobService();
 
-  return (useQuery(jobsKeys.getDebugInfo(id), () => service.getDebugInfo(id), {
+  return useSuspenseQuery(jobsKeys.getDebugInfo(id), () => service.getDebugInfo(id), {
     refetchInterval: false,
-  }) as QueryObserverSuccessResult<JobDebugInfoDetails>).data;
+  });
 };
 
 export const useCancelJob = (): UseMutateAsyncFunction<JobDetails, Error, string | number> => {

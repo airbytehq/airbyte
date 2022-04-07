@@ -44,9 +44,11 @@ const NotificationPage: React.FC = () => {
   const { updateWebhook, testWebhook } = useWorkspace();
   const workspace = useCurrentWorkspace();
 
-  const { call: onSubmitWebhook, errorMessage, successMessage } = useAsyncWithTimeout(async (data: WebhookPayload) =>
-    updateWebhook(data)
-  );
+  const {
+    call: onSubmitWebhook,
+    errorMessage,
+    successMessage,
+  } = useAsyncWithTimeout(async (data: WebhookPayload) => updateWebhook(data));
 
   const firstNotification = workspace.notifications?.[0];
 

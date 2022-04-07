@@ -20,9 +20,8 @@ type Props = {
 
 const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   const [destinationDefinitionId, setDestinationDefinitionId] = useState<string | null>(null);
-  const { data: destinationDefinitionSpecification, isLoading } = useGetDestinationDefinitionSpecificationAsync(
-    destinationDefinitionId
-  );
+  const { data: destinationDefinitionSpecification, isLoading } =
+    useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
   const { destinationDefinitions } = useDestinationDefinitionList();
   const [successRequest, setSuccessRequest] = useState(false);
   const [error, setError] = useState<{
