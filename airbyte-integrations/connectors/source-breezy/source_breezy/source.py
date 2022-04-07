@@ -5,10 +5,11 @@
 
 from abc import ABC
 from http import cookies
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 from datetime import datetime
 from urllib.error import HTTPError
 import pendulum
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -66,7 +67,7 @@ class BreezyStream(HttpStream, ABC):
     start_time: str
     data_field = 'data'
 
-    def __init__(self, limit=5000, page_size=5000, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
+    def __init__(self, limit=None, page_size=5000, cookie=None, company=None, start_time="2017-01-25T00:00:00Z", **kwargs):
         super().__init__(**kwargs)
         self.limit = limit
         self.page_size = page_size
@@ -81,10 +82,10 @@ class BreezyStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response = response.json()
-        max = response['total']
-        if (self.current_page * self.page_size) < (self.limit or max):
-            self.current_page += 1
-            result = {'limit': self.page_size,
+        max = self.limit or response['total']
+        self.current_page += 1
+        if (self.current_page * self.page_size) < max:
+            result = {'limit': min(self.page_size, max - self.current_page * self.page_size),
                       'skip': self.current_page * self.page_size}
             return result
         return None
@@ -97,6 +98,16 @@ class BreezyStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {'cookie': self.cookie, 'origin': self.app_base}
+
+    @staticmethod
+    def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
+        if isinstance(value, int):
+            value = pendulum.from_timestamp(value / 1000.0)
+        elif isinstance(value, str):
+            value = pendulum.parse(value)
+        else:
+            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+        return value
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -124,7 +135,7 @@ class BreezyStream(HttpStream, ABC):
 # Basic incremental stream
 
 
-class IncrementalBreezyStream(BreezyStream, ABC):
+class IncrementalBreezyStream(BreezyStream, IncrementalMixin):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
          if you do not need to implement incremental sync for any streams, remove this class.
@@ -134,6 +145,7 @@ class IncrementalBreezyStream(BreezyStream, ABC):
     state_checkpoint_interval = 1000
     state_pk = "timestamp"
     need_chunk = False
+    _start_date: Union[pendulum.Date, pendulum.Time, pendulum.DateTime, pendulum.Duration]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -162,6 +174,7 @@ class IncrementalBreezyStream(BreezyStream, ABC):
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
+        print(self._state)
         if self._state:
             return (
                 {self.cursor_field: int(self._state.timestamp() * 1000)}
@@ -171,8 +184,9 @@ class IncrementalBreezyStream(BreezyStream, ABC):
         return None
 
     @state.setter
-    def state(self, value):
+    def state(self, value: Mapping[str, Any]):
         state_value = value.get(self.cursor_field, self._state)
+
         self._state = (
             pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
             if isinstance(state_value, int)
@@ -180,18 +194,39 @@ class IncrementalBreezyStream(BreezyStream, ABC):
         )
         self._start_date = max(self._state, self._start_date)
 
+    def _update_state(self, latest_cursor):
+        if latest_cursor:
+            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
+            if new_state != self._state:
+                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+                self._state = new_state
+                self._start_date = self._state
+    
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        print('Reading records With state := ')
+        print(self._state)
+        records = super().read_records(*args, **kwargs)
+        latest_cursor = None
+        for record in records:
+            cursor = self._field_to_datetime(record[self.cursor_field])
+            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            yield record
+        self._update_state(latest_cursor=latest_cursor)
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         chunk_size = pendulum.duration(days=30)
         slices = []
 
+        print(cursor_field)
+        print(self._start_date)
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
         max_delta = now_ts - start_ts
         chunk_size = int(chunk_size.total_seconds() *
                          1000) if self.need_chunk else max_delta
-
+        print(start_ts)
         for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
             slices.append({'updated_date': {
@@ -210,7 +245,7 @@ class Candidates(IncrementalBreezyStream):
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "_id"
-    max_retries = 42
+    max_retries = 8
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
