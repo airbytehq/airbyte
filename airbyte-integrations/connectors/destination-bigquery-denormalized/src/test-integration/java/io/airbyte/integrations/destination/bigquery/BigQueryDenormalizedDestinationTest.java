@@ -93,14 +93,14 @@ class BigQueryDenormalizedDestinationTest {
   protected static final AirbyteMessage MESSAGE_USERS10 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
   protected static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
 
-  private JsonNode config;
+  protected JsonNode config;
 
-  private BigQuery bigquery;
-  private Dataset dataset;
-  private ConfiguredAirbyteCatalog catalog;
-  private String datasetId;
+  protected BigQuery bigquery;
+  protected Dataset dataset;
+  protected ConfiguredAirbyteCatalog catalog;
+  protected String datasetId;
 
-  private boolean tornDown = true;
+  protected boolean tornDown = true;
 
   @BeforeEach
   void setup(final TestInfo info) throws IOException {
@@ -248,7 +248,7 @@ class BigQueryDenormalizedDestinationTest {
 
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
-    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2021-10-11T06:36:53Z"));
+    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2021-10-11T06:36:53"));
 
     final Schema expectedSchema = Schema.of(
         Field.of("name", StandardSQLTypeName.STRING),

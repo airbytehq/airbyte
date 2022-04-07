@@ -5,36 +5,18 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryDenormalizedRecordFormatter.NESTED_ARRAY_FIELD;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithDateTime;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithFormats;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
-import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.SyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,15 +35,7 @@ class BigQueryDenormalizedGcsDestinationTest extends BigQueryDenormalizedDestina
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedGcsDestinationTest.class);
 
-  private JsonNode config;
   private AmazonS3 s3Client;
-
-  private BigQuery bigquery;
-  private Dataset dataset;
-  private ConfiguredAirbyteCatalog catalog;
-  private String datasetId;
-
-  private boolean tornDown = true;
 
   @BeforeEach
   void setup(final TestInfo info) throws IOException {
@@ -234,20 +207,20 @@ class BigQueryDenormalizedGcsDestinationTest extends BigQueryDenormalizedDestina
 //        extractJsonValues(resultJson.get("items"), "nested_datetime"));
 //  }
 
-  private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
-    final List<JsonNode> valuesNode = node.findValues(attributeName);
-    final Set<String> resultSet = new HashSet<>();
-    valuesNode.forEach(jsonNode -> {
-      if (jsonNode.isArray()) {
-        jsonNode.forEach(arrayNodeValue -> resultSet.add(arrayNodeValue.textValue()));
-      } else if (jsonNode.isObject()) {
-        resultSet.addAll(extractJsonValues(jsonNode, NESTED_ARRAY_FIELD));
-      } else {
-        resultSet.add(jsonNode.textValue());
-      }
-    });
-
-    return resultSet;
-  }
+//  private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
+//    final List<JsonNode> valuesNode = node.findValues(attributeName);
+//    final Set<String> resultSet = new HashSet<>();
+//    valuesNode.forEach(jsonNode -> {
+//      if (jsonNode.isArray()) {
+//        jsonNode.forEach(arrayNodeValue -> resultSet.add(arrayNodeValue.textValue()));
+//      } else if (jsonNode.isObject()) {
+//        resultSet.addAll(extractJsonValues(jsonNode, NESTED_ARRAY_FIELD));
+//      } else {
+//        resultSet.add(jsonNode.textValue());
+//      }
+//    });
+//
+//    return resultSet;
+//  }
 
 }
