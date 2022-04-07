@@ -18,7 +18,7 @@ import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
-import ResourcesPopup from "./components/ResourcesPopup";
+import SidebarPopout from "./components/SidebarPopout";
 import { NotificationIndicator } from "./NotificationIndicator";
 
 const Bar = styled.nav`
@@ -146,7 +146,7 @@ const SideBar: React.FC = () => {
           </MenuLinkItem>
         </li>
         <li>
-          <ResourcesPopup options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
+          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
             {({ onOpen }) => (
               <MenuItem onClick={onOpen} as="div">
                 <DocsIcon />
@@ -155,7 +155,7 @@ const SideBar: React.FC = () => {
                 </Text>
               </MenuItem>
             )}
-          </ResourcesPopup>
+          </SidebarPopout>
         </li>
 
         <li>

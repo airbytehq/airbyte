@@ -7,10 +7,10 @@ This page guides you through setting up your Airbyte Cloud account, setting up a
 To use Airbyte Cloud:
 
 1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide). 
-<br> *Note: Airbyte Cloud offers a 14-day free trial with $1000 worth of [credits](https://docs.airbyte.com/getting-started-with-airbyte-cloud/core-concepts#credits), whichever expires first. For more information, see [Pricing](https://airbyte.com/pricing).*
+<br/> *Note: Airbyte Cloud offers a 14-day free trial with $1000 worth of [credits](https://docs.airbyte.com/getting-started-with-airbyte-cloud/core-concepts#credits), whichever expires first. For more information, see [Pricing](https://airbyte.com/pricing).*
 
 2. Airbyte will send you an email with a verification link. On clicking the link, you'll be taken to your new workspace.
-<br>*A workspace lets you collaborate with team members and share resources across your team under a shared billing account.*
+<br/>*A workspace lets you collaborate with team members and share resources across your team under a shared billing account.*
 
 You will be greeted with an onboarding tutorial to help you set up your first connection. If you haven’t set up a connection on Airbyte Cloud before, we highly recommend following the tutorial. If you are familiar with the connection setup process, click **Skip onboarding** and follow this guide to set up your next connection.
 
@@ -25,7 +25,7 @@ To set up a source:
 3. On the Set up the source page, enter a name for your source.
 4. From the Source type dropdown, select the source you want to set up.
 5. The fields relevant to your source are displayed. 
-<br> Click **Setup Guide** for help with filling in the fields for your selected source.
+<br/> Click **Setup Guide** for help with filling in the fields for your selected source.
 6. Click **Set up source**. 
 
 ## Set up a destination
@@ -39,7 +39,7 @@ To set up a destination:
 3. On the Set up the destination page, enter a name for your destination.
 4. From the Destination type dropdown, select the destination you want to set up.
 5. The fields relevant to your destination are displayed. 
-<br> Click **Setup Guide** for help with filling in the fields for your selected destination.
+<br/> Click **Setup Guide** for help with filling in the fields for your selected destination.
 6. Click **Set up destination**. 
 
 ## Set up a connection
@@ -100,9 +100,9 @@ To set up a connection:
 4. Select a destination:
     - To use an existing destination, select your desired destination from the Destination dropdown. Click **Use existing destination**. 
     - To set up a new destination, enter a name for the new destination and select the destination from the Destination type dropdown. The fields relevant to your destination are displayed. Click **Setup Guide** for help with filling in the fields for your selected source. Click **Set up destination**.
-	<br> The Set up the connection page is displayed.
+	<br/> The Set up the connection page is displayed.
 5. From the **Replication frequency** dropdown, select how often you want the data to sync from the source to the destination. 
-    <br>_Note: The default replication frequency is 24 hours._
+    <br/>_Note: The default replication frequency is 24 hours._
 6. From the **Destination Namespace** dropdown, select the format in which you want the data to stored in the destination:
 	
     <table>
@@ -156,9 +156,9 @@ To set up a connection:
 
         * Select **Overwrite** to erase the old data and replace it completely
         * Select **Append** to capture changes to your table
-            <br> *Note: This creates duplicate records*
+            <br/> *Note: This creates duplicate records*
         * Select **Deduped + History** to mirror your source while keeping records unique
-            <br> *Note: Some sync modes may not yet be available for your source or destination*
+            <br/> *Note: Some sync modes may not yet be available for your source or destination*
 
     4. **Cursor field**: Used in incremental sync mode to determine which records to sync. Airbyte pre-selects the Cursor field for you (example: updated date). If you have multiple cursor fields, select the one you want.
     5. **Primary key**: Used in Deduped and History modes to determine the unique identifier.

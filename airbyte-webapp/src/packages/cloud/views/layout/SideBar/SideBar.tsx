@@ -4,6 +4,7 @@ import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
+import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 
 import { Link } from "components";
 
@@ -20,7 +21,7 @@ import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
-import ResourcesPopup, { Icon, Item } from "views/layout/SideBar/components/ResourcesPopup";
+import SidebarPopout, { Icon, Item } from "views/layout/SideBar/components/SidebarPopout";
 import { FeatureItem, WithFeature } from "hooks/services/Feature";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
@@ -157,11 +158,21 @@ const SideBar: React.FC = () => {
           </MenuItem>
         </li>
         <li>
-          <ResourcesPopup
+          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "status" }, { value: "recipes" }]}>
+            {({ onOpen }) => (
+              <MenuItem onClick={onOpen} as="div">
+                <DocsIcon />
+                <Text>
+                  <FormattedMessage id="sidebar.resources" />
+                </Text>
+              </MenuItem>
+            )}
+          </SidebarPopout>
+        </li>
+        <li>
+          <SidebarPopout
             options={[
-              { value: "docs" },
-              { value: "slack" },
-              { value: "status" },
+              { value: "ticket" },
               {
                 value: "chat",
                 label: (
@@ -173,18 +184,17 @@ const SideBar: React.FC = () => {
                   </Item>
                 ),
               },
-              { value: "recipes" },
             ]}
           >
             {({ onOpen }) => (
               <MenuItem onClick={onOpen} as="div">
-                <DocsIcon />
+                <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
                 <Text>
-                  <FormattedMessage id="sidebar.resources" />
+                  <FormattedMessage id="sidebar.support" />
                 </Text>
               </MenuItem>
             )}
-          </ResourcesPopup>
+          </SidebarPopout>
         </li>
         <li>
           <MenuItem to={RoutePaths.Settings}>

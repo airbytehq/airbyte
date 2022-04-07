@@ -1,4 +1,4 @@
-import { QueryObserverResult, QueryObserverSuccessResult, useQuery } from "react-query";
+import { QueryObserverResult, useQuery } from "react-query";
 
 import { SourceDefinitionSpecification } from "core/domain/connector";
 import { useConfig } from "config";
@@ -8,6 +8,7 @@ import { SourceDefinitionSpecificationService } from "core/domain/connector/Sour
 import { isDefined } from "utils/common";
 
 import { SCOPE_WORKSPACE } from "../Scope";
+import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const sourceDefinitionSpecificationKeys = {
   all: [SCOPE_WORKSPACE, "sourceDefinitionSpecification"] as const,
@@ -19,18 +20,16 @@ function useGetService(): SourceDefinitionSpecificationService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new SourceDefinitionSpecificationService(apiUrl, requestAuthMiddleware), [
-    apiUrl,
-    requestAuthMiddleware,
-  ]);
+  return useInitService(
+    () => new SourceDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
 }
 
 export const useGetSourceDefinitionSpecification = (id: string): SourceDefinitionSpecification => {
   const service = useGetService();
 
-  return (useQuery(sourceDefinitionSpecificationKeys.detail(id), () =>
-    service.get(id)
-  ) as QueryObserverSuccessResult<SourceDefinitionSpecification>).data;
+  return useSuspenseQuery(sourceDefinitionSpecificationKeys.detail(id), () => service.get(id));
 };
 
 export const useGetSourceDefinitionSpecificationAsync = (
@@ -40,7 +39,6 @@ export const useGetSourceDefinitionSpecificationAsync = (
 
   const escapedId = id ?? "";
   return useQuery(sourceDefinitionSpecificationKeys.detail(escapedId), () => service.get(escapedId), {
-    suspense: false,
     enabled: isDefined(id),
   });
 };
