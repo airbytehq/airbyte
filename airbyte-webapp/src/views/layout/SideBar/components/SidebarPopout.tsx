@@ -3,9 +3,11 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
+import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
+
+import { Popout } from "components";
 
 import { useConfig } from "config";
-import { Popout } from "components";
 
 import DocsIcon from "./DocsIcon";
 import RecipesIcon from "./RecipesIcon";
@@ -26,7 +28,7 @@ export const Icon = styled.div`
   font-size: 22px;
 `;
 
-const ResourcesPopup: React.FC<{
+const SidebarPopout: React.FC<{
   children: (props: { onOpen: () => void }) => React.ReactNode;
   options: { value: string; label?: React.ReactNode }[];
 }> = ({ children, options }) => {
@@ -85,6 +87,18 @@ const ResourcesPopup: React.FC<{
                 </Item>
               ),
             };
+          case "ticket":
+            return {
+              value: "ticket",
+              label: (
+                <Item href={config.ui.supportTicketLink} target="_blank">
+                  <Icon>
+                    <FontAwesomeIcon icon={faEnvelope} />
+                  </Icon>
+                  <FormattedMessage id="sidebar.supportTicket" />
+                </Item>
+              ),
+            };
           default:
             return {
               value: item.value,
@@ -97,14 +111,12 @@ const ResourcesPopup: React.FC<{
 
   return (
     <Popout
-      targetComponent={(targetProps) =>
-        children({ onOpen: targetProps.onOpen })
-      }
+      targetComponent={(targetProps) => children({ onOpen: targetProps.onOpen })}
       styles={{
         menuPortal: (base) => ({
           ...base,
           // TODO: temporary dirty hack
-          transform: "translate3D(100px, -200px, 0px)",
+          transform: "translate3D(100px, -100px, 0px)",
         }),
       }}
       isSearchable={false}
@@ -113,4 +125,4 @@ const ResourcesPopup: React.FC<{
   );
 };
 
-export default ResourcesPopup;
+export default SidebarPopout;

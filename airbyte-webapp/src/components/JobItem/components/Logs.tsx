@@ -37,9 +37,7 @@ type LogsProps = {
 };
 
 const Logs: React.FC<LogsProps> = ({ logsArray }) => {
-  const logsJoin = logsArray?.length
-    ? logsArray.join("\n")
-    : "No logs available";
+  const logsJoin = logsArray?.length ? logsArray.join("\n") : "No logs available";
 
   return (
     <LogsView isEmpty={!logsArray}>

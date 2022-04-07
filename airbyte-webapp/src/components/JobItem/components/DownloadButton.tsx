@@ -1,6 +1,5 @@
 import React from "react";
 import { useIntl } from "react-intl";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 

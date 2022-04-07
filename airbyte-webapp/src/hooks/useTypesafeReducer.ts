@@ -2,20 +2,14 @@
 import { Reducer, useReducer, useMemo } from "react";
 import { ActionType } from "typesafe-actions";
 
-function useTypesafeReducer<
-  StateShape,
-  Actions extends { [key: string]: (...args: any[]) => any }
->(
+function useTypesafeReducer<StateShape, Actions extends { [key: string]: (...args: any[]) => any }>(
   reducer: Reducer<StateShape, ActionType<Actions>>,
   initialState: StateShape,
   actions: Actions
 ): [StateShape, Actions] {
   const [state, dispatch] = useReducer(reducer, initialState);
   const boundActions = useMemo(() => {
-    function bindActionCreator(
-      actionCreator: (...args: any[]) => any,
-      dispatcher: typeof dispatch
-    ) {
+    function bindActionCreator(actionCreator: (...args: any[]) => any, dispatcher: typeof dispatch) {
       return function (this: any) {
         return dispatcher(
           // eslint-disable-next-line prefer-rest-params

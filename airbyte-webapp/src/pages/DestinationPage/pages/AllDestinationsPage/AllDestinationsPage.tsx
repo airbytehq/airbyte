@@ -3,12 +3,14 @@ import { FormattedMessage } from "react-intl";
 
 import { Button, MainPageWithScroll } from "components";
 import PageTitle from "components/PageTitle";
-import useRouter from "hooks/useRouter";
-import DestinationsTable from "./components/DestinationsTable";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import { RoutePaths } from "../../../routePaths";
+
+import useRouter from "hooks/useRouter";
 import { useDestinationList } from "hooks/services/useDestinationHook";
+
+import { RoutePaths } from "../../../routePaths";
+import DestinationsTable from "./components/DestinationsTable";
 
 const AllDestinationsPage: React.FC = () => {
   const { push } = useRouter();

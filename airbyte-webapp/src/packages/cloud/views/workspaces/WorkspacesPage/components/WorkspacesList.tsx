@@ -1,13 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 
-import WorkspaceItem from "./WorkspaceItem";
-import WorkspacesControl from "./WorkspacesControl";
 import {
   useCreateWorkspace,
   useListCloudWorkspaces,
   useWorkspaceService,
 } from "packages/cloud/services/workspaces/WorkspacesService";
+
+import WorkspaceItem from "./WorkspaceItem";
+import WorkspacesControl from "./WorkspacesControl";
 
 const Content = styled.div`
   width: 100%;
@@ -24,11 +25,7 @@ const WorkspacesList: React.FC = () => {
   return (
     <Content>
       {workspaces.map((workspace) => (
-        <WorkspaceItem
-          key={workspace.workspaceId}
-          id={workspace.workspaceId}
-          onClick={selectWorkspace}
-        >
+        <WorkspaceItem key={workspace.workspaceId} id={workspace.workspaceId} onClick={selectWorkspace}>
           {workspace.name}
         </WorkspaceItem>
       ))}

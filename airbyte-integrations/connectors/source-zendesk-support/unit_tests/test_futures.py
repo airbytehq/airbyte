@@ -14,12 +14,11 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from source_zendesk_support.source import BasicApiTokenAuthenticator
 from source_zendesk_support.streams import Macros
 
-
 STREAM_ARGS: dict = {
-        "subdomain": "fake-subdomain",
-        "start_date": "2021-01-27T00:00:00Z",
-        "authenticator": BasicApiTokenAuthenticator("test@airbyte.io", "api_token"),
-    }
+    "subdomain": "fake-subdomain",
+    "start_date": "2021-01-27T00:00:00Z",
+    "authenticator": BasicApiTokenAuthenticator("test@airbyte.io", "api_token"),
+}
 
 
 @pytest.mark.parametrize(
