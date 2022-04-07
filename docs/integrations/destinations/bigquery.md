@@ -208,6 +208,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
 | 1.1.0  | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption. |
+| 1.0.2 | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec |
 | 1.0.1 | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350) | Improve check performance |
 | 1.0.0 | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238) | Updated spec and documentation |
 | 0.6.12 | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters |
