@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.avro.Schema;
@@ -276,8 +277,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer =
         BigQueryAvroSerializedBuffer.createFunction(
             avroFormatConfig,
-            getAvroSchemaCreator(),
             recordFormatterCreator,
+            getAvroSchemaCreator(),
             () -> new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX));
 
     return new BigQueryStagingConsumerFactory().create(
@@ -293,8 +294,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         getTargetTableNameTransformer(namingResolver));
   }
 
-  protected Function<AirbyteStream, Schema> getAvroSchemaCreator() {
-    return stream -> GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true);
+  protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {
+    return (formatter, pair) -> GcsUtils.getDefaultAvroSchema(pair.getName(), pair.getNamespace(), true);
   }
 
   protected Function<JsonNode, BigQueryRecordFormatter> getRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {

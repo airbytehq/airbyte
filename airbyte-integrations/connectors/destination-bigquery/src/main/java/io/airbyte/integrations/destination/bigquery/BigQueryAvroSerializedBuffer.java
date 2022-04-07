@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.avro.Schema;
 import org.apache.avro.file.CodecFactory;
@@ -46,8 +47,8 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
   }
 
   public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3AvroFormatConfig config,
-                                                                                                                                          final Function<AirbyteStream, Schema> schemaCreator,
                                                                                                                                           final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                                                                                                                          final BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> schemaCreator,
                                                                                                                                           final Callable<BufferStorage> createStorageFunction) {
     final CodecFactory codecFactory = config.getCodecFactory();
     return (pair, catalog) -> {
@@ -57,8 +58,9 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
           .findFirst()
           .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", pair.getNamespace(), pair.getName())))
           .getStream();
-      return new BigQueryAvroSerializedBuffer(createStorageFunction.call(), codecFactory, schemaCreator.apply(stream),
-          recordFormatterCreator.apply(stream.getJsonSchema()));
+      final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
+      final Schema schema = schemaCreator.apply(recordFormatter, pair);
+      return new BigQueryAvroSerializedBuffer(createStorageFunction.call(), codecFactory, schema, recordFormatter);
     };
   }
 
