@@ -1,7 +1,6 @@
 # Files Abstract Source
 
-This is the repository for the Files Abstract source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/files-abstract).
+TODO: explain what this is
 
 ## Local development
 
@@ -35,46 +34,6 @@ From the Airbyte repository root, run:
 ./gradlew :airbyte-integrations:connectors:source-files-abstract:build
 ```
 
-#### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/files-abstract)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_files_abstract/spec.json` file.
-Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
-
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source files-abstract test creds`
-and place them into `secrets/config.json`.
-
-### Locally running the connector
-```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
-```
-
-### Locally running the connector docker image
-
-#### Build
-First, make sure you build the latest Docker image:
-```
-docker build . -t airbyte/source-files-abstract:dev
-```
-
-You can also build the connector image via Gradle:
-```
-./gradlew :airbyte-integrations:connectors:source-files-abstract:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
-
-#### Run
-Then run any of the connector commands as follows:
-```
-docker run --rm airbyte/source-files-abstract:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-files-abstract:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-files-abstract:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-files-abstract:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
-```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
@@ -88,20 +47,8 @@ python -m pytest unit_tests
 ```
 
 ### Integration Tests
-There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom integration tests (which are specific to this connector).
-#### Custom Integration tests
-Place custom tests inside `integration_tests/` folder, then, from the connector root, run
-```
-python -m pytest integration_tests
-```
-#### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
-If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-To run your integration tests with acceptance tests, from the connector root, run
-```
-python -m pytest integration_tests -p integration_tests.acceptance
-```
-To run your integration tests with docker
+TODO: explain integration tests for this
+(non-existent acceptance and abstract custom tests)
 
 ### Using gradle to run tests
 All commands should be run from airbyte project root.

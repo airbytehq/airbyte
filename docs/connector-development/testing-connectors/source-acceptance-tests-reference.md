@@ -30,8 +30,9 @@ tests:
 Build your connector image if needed.
 
 ```text
-docker build .
+docker build -t airbyte/{connector-name}:dev .
 ```
+`{connector-name}` should look like `source-shopify`
 
 Run one of the two scripts in the root of the connector:
 
