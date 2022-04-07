@@ -4,22 +4,20 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
-import { useListJobs } from "services/job/JobService";
-
 import { Button, ContentCard, LoadingButton } from "components";
-import StatusMainInfo from "./StatusMainInfo";
-import { Connection } from "core/domain/connection";
-import JobsList from "./JobsList";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
-import {
-  useResetConnection,
-  useSyncConnection,
-} from "hooks/services/useConnectionHook";
+
+import { Connection } from "core/domain/connection";
+import { useListJobs } from "services/job/JobService";
+import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+
+import JobsList from "./JobsList";
+import StatusMainInfo from "./StatusMainInfo";
 
 type IProps = {
   connection: Connection;
@@ -59,13 +57,9 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const { hasFeature } = useFeatureService();
   const allowSync = hasFeature(FeatureItem.AllowSync);
 
-  const sourceDefinition = useSourceDefinition(
-    connection?.source.sourceDefinitionId
-  );
+  const sourceDefinition = useSourceDefinition(connection?.source.sourceDefinitionId);
 
-  const destinationDefinition = useDestinationDefinition(
-    connection.destination.destinationDefinitionId
-  );
+  const destinationDefinition = useDestinationDefinition(connection.destination.destinationDefinitionId);
 
   const jobs = useListJobs({
     configId: connection.connectionId,
@@ -114,11 +108,7 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
           </Title>
         }
       >
-        {jobs.length ? (
-          <JobsList jobs={jobs} />
-        ) : (
-          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
-        )}
+        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </StyledContentCard>
       {isModalOpen && (
         <ResetDataModal

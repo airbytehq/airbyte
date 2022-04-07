@@ -24,6 +24,8 @@ import java.util.concurrent.Callable;
 
 public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
+  public static final String JSONL_GZ_SUFFIX = ".jsonl.gz";
+
   private static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   private PrintWriter printWriter;
