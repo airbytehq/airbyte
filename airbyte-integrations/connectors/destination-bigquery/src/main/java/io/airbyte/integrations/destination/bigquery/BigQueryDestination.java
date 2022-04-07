@@ -192,6 +192,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       throws IOException {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
+      LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
+          "Please use the GCS upload mode if you are syncing a large amount of data.");
       return getStandardRecordConsumer(config, catalog, outputRecordCollector);
     } else {
       return getGcsRecordConsumer(config, catalog, outputRecordCollector);
