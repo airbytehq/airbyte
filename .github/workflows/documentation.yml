@@ -30,3 +30,10 @@ jobs:
       # Install and build Docusaurus website
       - name: Check for docusaurus changes
         run: ./tools/bin/check_docusaurus_build_changes
+      - name: Deploy to Github Pages
+        uses: redkubes/docusaurus-deploy-action@master
+        with:
+          source-folder: docs
+          git-user: octavia-squidington-iii
+          git-password: ${{ secrets.OCTAVIA_PAT }}
+          deployment-branch: gh-pages
