@@ -74,25 +74,24 @@ import org.slf4j.LoggerFactory;
 
 class BigQueryDenormalizedDestinationTest {
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
-  private static final Set<String> AIRBYTE_METADATA_FIELDS = Set.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JavaBaseConstants.COLUMN_NAME_AB_ID);
-
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationTest.class);
 
-  private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
-  private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users";
-  private static final AirbyteMessage MESSAGE_USERS1 = createRecordMessage(USERS_STREAM_NAME, getData());
-  private static final AirbyteMessage MESSAGE_USERS2 = createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
-  private static final AirbyteMessage MESSAGE_USERS3 = createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
-  private static final AirbyteMessage MESSAGE_USERS4 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONDateTimeFormats());
-  private static final AirbyteMessage MESSAGE_USERS5 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
-  private static final AirbyteMessage MESSAGE_USERS6 = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
-  private static final AirbyteMessage MESSAGE_USERS7 = createRecordMessage(USERS_STREAM_NAME, getDataWithNestedDatetimeInsideNullObject());
-  private static final AirbyteMessage MESSAGE_USERS8 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormats());
-  private static final AirbyteMessage MESSAGE_USERS9 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithNull());
-  private static final AirbyteMessage MESSAGE_USERS10 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
-  private static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
+  protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Set<String> AIRBYTE_METADATA_FIELDS = Set.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JavaBaseConstants.COLUMN_NAME_AB_ID);
+  protected static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
+  protected static final Instant NOW = Instant.now();
+  protected static final String USERS_STREAM_NAME = "users";
+  protected static final AirbyteMessage MESSAGE_USERS1 = createRecordMessage(USERS_STREAM_NAME, getData());
+  protected static final AirbyteMessage MESSAGE_USERS2 = createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
+  protected static final AirbyteMessage MESSAGE_USERS3 = createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
+  protected static final AirbyteMessage MESSAGE_USERS4 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONDateTimeFormats());
+  protected static final AirbyteMessage MESSAGE_USERS5 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
+  protected static final AirbyteMessage MESSAGE_USERS6 = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
+  protected static final AirbyteMessage MESSAGE_USERS7 = createRecordMessage(USERS_STREAM_NAME, getDataWithNestedDatetimeInsideNullObject());
+  protected static final AirbyteMessage MESSAGE_USERS8 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormats());
+  protected static final AirbyteMessage MESSAGE_USERS9 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithNull());
+  protected static final AirbyteMessage MESSAGE_USERS10 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
+  protected static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
 
   private JsonNode config;
 
@@ -152,15 +151,12 @@ class BigQueryDenormalizedDestinationTest {
         .build());
 
     tornDown = false;
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  if (!tornDown) {
-                    tearDownBigQuery();
-                  }
-                }));
-
+    Runtime.getRuntime().addShutdownHook(
+        new Thread(() -> {
+          if (!tornDown) {
+            tearDownBigQuery();
+          }
+        }));
   }
 
   @AfterEach
@@ -172,7 +168,7 @@ class BigQueryDenormalizedDestinationTest {
     tearDownBigQuery();
   }
 
-  private void tearDownBigQuery() {
+  protected void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
 
@@ -196,6 +192,7 @@ class BigQueryDenormalizedDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(message);
     consumer.close();
 
@@ -238,6 +235,7 @@ class BigQueryDenormalizedDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS3);
     consumer.close();
 
@@ -250,7 +248,7 @@ class BigQueryDenormalizedDestinationTest {
 
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
-    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2021-10-11T06:36:53"));
+    assertEquals(extractJsonValues(resultJson, "updated_at"), Set.of("2021-10-11T06:36:53Z"));
 
     final Schema expectedSchema = Schema.of(
         Field.of("name", StandardSQLTypeName.STRING),
@@ -259,7 +257,8 @@ class BigQueryDenormalizedDestinationTest {
         Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
         Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
 
-    assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
+    assertEquals(expectedSchema,
+        BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema());
   }
 
   @Test
@@ -271,6 +270,7 @@ class BigQueryDenormalizedDestinationTest {
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS8);
     consumer.close();
 
@@ -323,6 +323,7 @@ class BigQueryDenormalizedDestinationTest {
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS10);
     consumer.close();
 
@@ -344,6 +345,7 @@ class BigQueryDenormalizedDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS4);
     consumer.close();
 
@@ -368,6 +370,7 @@ class BigQueryDenormalizedDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS5);
     consumer.accept(MESSAGE_USERS6);
     consumer.accept(EMPTY_MESSAGE);
@@ -401,14 +404,14 @@ class BigQueryDenormalizedDestinationTest {
     return resultSet;
   }
 
-  private JsonNode removeAirbyteMetadataFields(final JsonNode record) {
+  protected JsonNode removeAirbyteMetadataFields(final JsonNode record) {
     for (final String airbyteMetadataField : AIRBYTE_METADATA_FIELDS) {
       ((ObjectNode) record).remove(airbyteMetadataField);
     }
     return record;
   }
 
-  private List<JsonNode> retrieveRecordsAsJson(final String tableName) throws Exception {
+  protected List<JsonNode> retrieveRecordsAsJson(final String tableName) throws Exception {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
@@ -431,7 +434,7 @@ class BigQueryDenormalizedDestinationTest {
         arguments(getSchema(), MESSAGE_USERS2));
   }
 
-  private static AirbyteMessage createRecordMessage(final String stream, final JsonNode data) {
+  protected static AirbyteMessage createRecordMessage(final String stream, final JsonNode data) {
     return new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(stream)
             .withData(data)
