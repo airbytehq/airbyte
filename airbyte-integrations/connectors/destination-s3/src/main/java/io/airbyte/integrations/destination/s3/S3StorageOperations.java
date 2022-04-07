@@ -85,7 +85,7 @@ public class S3StorageOperations implements BlobStorageOperations {
   @Override
   public void createBucketObjectIfNotExists(final String objectPath) {
     final String bucket = s3Config.getBucketName();
-    if (!s3Client.doesBucketExistV2(bucket)) {
+    if (!doesBucketExist(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
       LOGGER.info("Bucket {} has been created.", bucket);
@@ -95,6 +95,10 @@ public class S3StorageOperations implements BlobStorageOperations {
       s3Client.putObject(bucket, objectPath.endsWith("/") ? objectPath : objectPath + "/", "");
       LOGGER.info("Storage Object {}/{} has been created in bucket.", bucket, objectPath);
     }
+  }
+
+  protected boolean doesBucketExist(final String bucket) {
+    return s3Client.doesBucketExistV2(bucket);
   }
 
   @Override

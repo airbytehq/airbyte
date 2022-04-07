@@ -24,6 +24,14 @@ public class GcsStorageOperations extends S3StorageOperations {
   }
 
   /**
+   * GCS only supports the legacy AmazonS3#doesBucketExist method.
+   */
+  @Override
+  protected boolean doesBucketExist(final String bucket) {
+    return s3Client.doesBucketExist(bucket);
+  }
+
+  /**
    * This method is overridden because GCS doesn't accept request to delete multiple objects. The only
    * difference is that the AmazonS3#deleteObjects method is replaced with AmazonS3#deleteObject.
    */

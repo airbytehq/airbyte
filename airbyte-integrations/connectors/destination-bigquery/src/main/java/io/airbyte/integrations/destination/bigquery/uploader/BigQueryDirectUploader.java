@@ -15,19 +15,17 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDirectUploader extends AbstractBigQueryUploader<BigQueryTableWriter> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDirectUploader.class);
-
-  public BigQueryDirectUploader(TableId table,
-                                TableId tmpTable,
-                                BigQueryTableWriter writer,
-                                JobInfo.WriteDisposition syncMode,
-                                BigQuery bigQuery,
-                                BigQueryRecordFormatter recordFormatter) {
+  public BigQueryDirectUploader(final TableId table,
+                                final TableId tmpTable,
+                                final BigQueryTableWriter writer,
+                                final JobInfo.WriteDisposition syncMode,
+                                final BigQuery bigQuery,
+                                final BigQueryRecordFormatter recordFormatter) {
     super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter);
   }
 
   @Override
-  protected void uploadData(Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) throws Exception {
+  protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
     BigQueryUtils.waitForJobFinish(writer.getWriteChannel().getJob());
     super.uploadData(outputRecordCollector, lastStateMessage);
   }

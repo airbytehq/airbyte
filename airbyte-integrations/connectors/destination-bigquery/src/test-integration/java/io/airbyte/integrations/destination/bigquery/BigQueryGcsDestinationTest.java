@@ -143,9 +143,9 @@ class BigQueryGcsDestinationTest extends BigQueryDestinationTest {
     if (keysToDelete.size() > 0) {
       LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
       // Google Cloud Storage doesn't accept request to delete multiple objects
-      for (final KeyVersion keyToDelete : keysToDelete) {
-        s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
-      }
+//      for (final KeyVersion keyToDelete : keysToDelete) {
+//        s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
+//      }
       LOGGER.info("Deleted {} file(s).", keysToDelete.size());
     }
   }
