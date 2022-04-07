@@ -130,10 +130,12 @@ class DbtIntegrationTest(object):
                 "MYSQL_INITDB_SKIP_TZINFO=yes",
                 "-e",
                 f"MYSQL_DATABASE={config['database']}",
+                "-e",
+                "MYSQL_ROOT_HOST=%",
                 "-p",
                 f"{config['port']}:3306",
                 "-d",
-                "mysql",
+                "mysql/mysql-server",
             ]
             print("Executing: ", " ".join(commands))
             subprocess.call(commands)
