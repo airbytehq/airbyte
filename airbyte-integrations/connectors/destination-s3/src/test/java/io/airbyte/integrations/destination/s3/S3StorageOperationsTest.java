@@ -99,4 +99,12 @@ public class S3StorageOperationsTest {
     assertEquals(OBJECT_TO_DELETE, deleteRequest.getValue().getKeys().get(0).getKey());
   }
 
+  @Test
+  void testGetFilename() {
+    assertEquals("filename", S3StorageOperations.getFilename("filename"));
+    assertEquals("filename", S3StorageOperations.getFilename("/filename"));
+    assertEquals("filename", S3StorageOperations.getFilename("/p1/p2/filename"));
+    assertEquals("filename.csv", S3StorageOperations.getFilename("/p1/p2/filename.csv"));
+  }
+
 }
