@@ -16,7 +16,7 @@ e.g
 python tools/bin/update_intellij_venv.py -modules source-stripe --install-venv
 ```
 
-If using Pycharm or IntelliJ, you'll also want to add the interpreter to the IDE's list of known interpreters. You can do this by adding the `--update-intellij` flag. More details can be found in the [PyCharm section](#pycharm-\(itellij-idea\))
+If using Pycharm or IntelliJ, you'll also want to add the interpreter to the IDE's list of known interpreters. You can do this by adding the `--update-intellij` flag. More details can be found [here](#ide)
 
 ```bash
 python tools/bin/update_intellij_venv.py -modules <connector directory name> --install-venv --update-intellij
