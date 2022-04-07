@@ -183,12 +183,12 @@ class Transactions(XolaStream):
             resp = {"id": data["id"]}
 
             if "amount" in data.keys(): resp["amount"] = data["amount"]
-            if "balance" in data.keys(): resp["amount"] = data["balance"]
-            if "createdAt" in data.keys(): resp["amount"] = data["createdAt"]
-            if "currency" in data.keys(): resp["amount"] = data["currency"]
-            if "method" in data.keys(): resp["amount"] = data["method"]
-            if "source" in data.keys(): resp["amount"] = data["source"]
-            if "type" in data.keys(): resp["amount"] = data["type"]
+            if "balance" in data.keys(): resp["balance"] = data["balance"]
+            if "createdAt" in data.keys(): resp["createdAt"] = data["createdAt"]
+            if "currency" in data.keys(): resp["currency"] = data["currency"]
+            if "method" in data.keys(): resp["method"] = data["method"]
+            if "source" in data.keys(): resp["source"] = data["source"]
+            if "type" in data.keys(): resp["type"] = data["type"]
 
             if "order" in data.keys():
                 if isinstance(data["order"], dict):
