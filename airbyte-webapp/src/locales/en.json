@@ -504,5 +504,6 @@
   "airbyte.datatype.object": "Object",
   "airbyte.datatype.untyped": "Untyped",
   "airbyte.datatype.union": "Union",
+  "airbyte.datatype.unknown": "Unknown",
   "airbyte.datatype.boolean": "Boolean"
 }
