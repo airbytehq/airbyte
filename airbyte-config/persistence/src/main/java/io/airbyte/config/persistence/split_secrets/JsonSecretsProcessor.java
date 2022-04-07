@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashSet;
@@ -18,6 +19,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import lombok.Builder;
 import lombok.Value;
 
@@ -40,6 +44,7 @@ public class JsonSecretsProcessor {
   static final String TYPE_FIELD = "type";
   static final String ARRAY_TYPE_FIELD = "array";
   static final String ITEMS_FIELD = "items";
+  static final String OBJECT_TYPE_FIELD = "object";
 
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
@@ -212,6 +217,52 @@ public class JsonSecretsProcessor {
     return new SecretKeys(fieldSecretKeys, arraySecretKeys);
   }
 
+  /**
+   * This method extract all the json path of all secret in a json schema.
+   * The path are not the ones that match the path in the schema but will be matching the ones of the object described by the schema.
+   *
+   * @param currentNode - The node currently being process
+   * @param currentPath - The current path of the node
+   * @return
+   */
+  protected Set<String> getAllSecretPathsRec(final JsonNode currentNode, final String currentPath) {
+
+    if (isArrayDefinition(currentNode)) {
+      final JsonNode arrayItems = currentNode.get(ITEMS_FIELD);
+      if (arrayItems.has(AIRBYTE_SECRET_FIELD) && arrayItems.get(AIRBYTE_SECRET_FIELD).asBoolean()) {
+        return Sets.newHashSet(currentPath + "[*]");
+      } else {
+        return getAllSecretPathsRec(arrayItems, currentPath + "[*]");
+      }
+    } else if (JsonSecretsProcessor.isSecret(currentNode)) {
+      return Sets.newHashSet(currentPath);
+    } else if (isObjectDefinition(currentNode)) {
+      final JsonNode prop = getProperties(currentNode);
+
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(prop.fields(), 0), false)
+              .flatMap(entry -> getAllSecretPathsRec(entry.getValue(), currentPath + "." + entry.getKey()).stream())
+                  .collect(Collectors.toSet());
+
+    } else if (currentNode.isArray()) {
+      final ArrayNode arrayNode = (ArrayNode) currentNode;
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(arrayNode.elements(), 0), false)
+          .flatMap(jsonNode -> getAllSecretPathsRec(jsonNode, currentPath).stream())
+          .collect(Collectors.toSet());
+    } else if (currentNode.isObject()) {
+      // final ObjectNode objectNode = (ObjectNode) currentNode;
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(currentNode.fields(), 0), false)
+          .flatMap(entry -> {
+            if (JsonSecretsProcessor.isSecret(entry.getValue())) {
+              return getAllSecretPathsRec(entry.getValue(), currentPath + "." + entry.getKey()).stream();
+            } else {
+              return getAllSecretPathsRec(entry.getValue(), currentPath).stream();
+            }
+          })
+          .collect(Collectors.toSet());
+    }
+    return new HashSet<>();
+  }
+
   public static Optional<String> findJsonCombinationNode(final JsonNode node) {
     for (final String combinationNode : List.of("allOf", "anyOf", "oneOf")) {
       if (node.has(combinationNode) && node.get(combinationNode).isArray()) {
@@ -230,6 +281,17 @@ public class JsonSecretsProcessor {
         && obj.has(TYPE_FIELD)
         && obj.get(TYPE_FIELD).asText().equals(ARRAY_TYPE_FIELD)
         && obj.has(ITEMS_FIELD);
+  }
+
+  public static boolean isObjectDefinition(final JsonNode obj) {
+    return obj.isObject()
+        && obj.has(TYPE_FIELD)
+        && obj.get(TYPE_FIELD).asText().equals(OBJECT_TYPE_FIELD)
+        && obj.has(PROPERTIES_FIELD) && obj.get(PROPERTIES_FIELD).isObject();
+  }
+
+  public static JsonNode getProperties(final JsonNode obj) {
+    return obj.get(PROPERTIES_FIELD);
   }
 
 }

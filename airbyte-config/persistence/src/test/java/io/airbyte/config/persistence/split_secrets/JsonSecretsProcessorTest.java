@@ -13,7 +13,11 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.val;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -333,6 +337,15 @@ public class JsonSecretsProcessorTest {
     final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
 
     assertEquals(expected, actual);
+
+    val paths = processor.getAllSecretPathsRec(specs, "$");
+    val expectedPaths = Arrays.stream(new String(getClass().getClassLoader().getResourceAsStream(folder + "/expectedPath")
+        .readAllBytes())
+            .trim()
+            .split(";"))
+        .collect(Collectors.toSet());
+
+    Assertions.assertThat(paths).containsExactlyInAnyOrderElementsOf(expectedPaths);
   }
 
   @Test

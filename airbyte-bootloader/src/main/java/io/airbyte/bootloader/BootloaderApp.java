@@ -12,7 +12,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.StandardSync;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -259,10 +259,10 @@ public class BootloaderApp {
     final SecretPersistence secretPersistence = SecretPersistence.getEphemeral(configs).orElseThrow(() -> new IllegalStateException("Migration "
         + "without setting a secret store"));
 
-    final List<StandardSync> connections = configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
+    final List<SourceConnection> sourceConnections = configPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
 
-    connections.forEach(connection -> {
-
+    sourceConnections.forEach(sourceConnection -> {
+      sourceConnection.getConfiguration();
     });
   }
 
