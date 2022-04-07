@@ -4,7 +4,7 @@ This guide contains instructions on how to setup Python with Gradle within the A
 
 ## Python Connector Development
 
-Before working with connectors written in Python, we recommend running
+Before working with connectors written in Python, we recommend running the following command from the airbyte root directory
 
 ```bash
 python3 tools/bin/update_intellij_venv.py -modules <connector directory name> --update-intellij
@@ -16,7 +16,7 @@ e.g
 python tools/bin/update_intellij_venv.py -modules source-stripe --update-intellij
 ```
 
-from the root project directory. This will create a `virtualenv` and install dependencies for the connector you want to work on as well as any internal Airbyte python packages it depends on.
+This will create a `virtualenv` and install dependencies for the connector you want to work on as well as any internal Airbyte python packages it depends on.
 
 When iterating on a single connector, you will often iterate by running
 
@@ -64,14 +64,15 @@ The following setup steps are written for PyCharm but should have similar equiva
 
 1.`python tools/bin/update_intellij_venv.py -modules <your-connector-dir> --update-intellij`
 
-2. Go to `File -> New -> Project...`
-3. Select `Pure Python`.
-4. Select a project name like `airbyte` and a directory **outside of** the `airbyte` code root.
-5. Go to `Preferences -> Project -> Python Interpreter`
-6. Find a gear ⚙️ button next to `Python interpreter` dropdown list, click and select `Add`
-7. Select `Virtual Environment -> Existing`
-8. Set the interpreter path to the one that was created by Python command, i.e. `airbyte-integrations/connectors/<your-connector-dir>/.venv/bin/python`.
-9. Wait for PyCharm to finish indexing and loading skeletons from selected virtual environment.
+2. Restart PyCharm
+3. Go to `File -> New -> Project...`
+4. Select `Pure Python`.
+5. Select a project name like `airbyte` and a directory **outside of** the `airbyte` code root.
+6. Go to `Preferences -> Project -> Python Interpreter`
+7. Find a gear ⚙️ button next to `Python interpreter` dropdown list, click and select `Add`
+8. Select `Virtual Environment -> Existing`
+9. Set the interpreter path to the one that was created by Python command, i.e. `airbyte-integrations/connectors/<your-connector-dir>/.venv/bin/python`.
+10. Wait for PyCharm to finish indexing and loading skeletons from selected virtual environment.
 
 You should now have access to code completion and proper syntax highlighting for python projects.
 
