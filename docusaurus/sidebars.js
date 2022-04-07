@@ -50,10 +50,6 @@ module.exports = {
       items: [
         {
           type: 'doc',
-          id: "deploying-airbyte/README",
-        },
-        {
-          type: 'doc',
           id: "deploying-airbyte/local-deployment",
         },
         {
