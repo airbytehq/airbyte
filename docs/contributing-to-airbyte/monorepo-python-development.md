@@ -7,13 +7,19 @@ This guide contains instructions on how to setup Python with Gradle within the A
 Before working with connectors written in Python, we recommend running the following command from the airbyte root directory
 
 ```bash
-python3 tools/bin/update_intellij_venv.py -modules <connector directory name> --update-intellij
+python3 tools/bin/update_intellij_venv.py -modules <connector directory name> --install-venv
 ```
 
 e.g
 
 ```bash
-python tools/bin/update_intellij_venv.py -modules source-stripe --update-intellij
+python tools/bin/update_intellij_venv.py -modules source-stripe --install-venv
+```
+
+If using Pycharm or IntelliJ, you'll also want to add the interpreter to the IDE's list of known interpreters. You can do this by adding the `--update-intellij` flag. More details can be found in the [PyCharm section](#pycharm-\(itellij-idea\))
+
+```bash
+python tools/bin/update_intellij_venv.py -modules <connector directory name> --install-venv --update-intellij
 ```
 
 This will create a `virtualenv` and install dependencies for the connector you want to work on as well as any internal Airbyte python packages it depends on.
