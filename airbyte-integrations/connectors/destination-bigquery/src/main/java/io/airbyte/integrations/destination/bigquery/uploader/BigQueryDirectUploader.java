@@ -10,8 +10,6 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BigQueryDirectUploader extends AbstractBigQueryUploader<BigQueryTableWriter> {
 

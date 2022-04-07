@@ -65,8 +65,8 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                      final String schemaName,
                                      final String stageName,
                                      final String stagingPath) {
-    return AirbyteSentry.queryWithTracing("UploadRecordsToStage", () ->
-        s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
+    return AirbyteSentry.queryWithTracing("UploadRecordsToStage",
+        () -> s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
         Map.of("stage", stageName, "path", stagingPath));
   }
 

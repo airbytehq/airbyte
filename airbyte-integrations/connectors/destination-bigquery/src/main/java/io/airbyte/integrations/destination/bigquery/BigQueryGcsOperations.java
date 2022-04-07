@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -106,7 +110,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   /**
-   * Reference https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
+   * Reference
+   * https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
    */
   @Override
   public void copyIntoTmpTableFromStage(final String datasetId,

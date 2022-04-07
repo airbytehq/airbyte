@@ -187,7 +187,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) throws IOException {
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
+      throws IOException {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
       return getStandardRecordConsumer(config, catalog, outputRecordCollector);
@@ -246,12 +247,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private AirbyteMessageConsumer getStandardRecordConsumer(final JsonNode config,
                                                            final ConfiguredAirbyteCatalog catalog,
-                                                           final Consumer<AirbyteMessage> outputRecordCollector) throws IOException {
+                                                           final Consumer<AirbyteMessage> outputRecordCollector)
+      throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(config, catalog);
     return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
   }
-
-
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
                                                      final ConfiguredAirbyteCatalog catalog,

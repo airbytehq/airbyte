@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,10 +23,9 @@ import org.apache.avro.file.CodecFactory;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * This class differs from {@link AvroSerializedBuffer} in that 1) the Avro schema can be
- * customized by the caller, and 2) the message is formatted by {@link BigQueryRecordFormatter}.
- * In this way, this buffer satisfies the needs of both the standard and the denormalized BigQuery
- * destinations.
+ * This class differs from {@link AvroSerializedBuffer} in that 1) the Avro schema can be customized
+ * by the caller, and 2) the message is formatted by {@link BigQueryRecordFormatter}. In this way,
+ * this buffer satisfies the needs of both the standard and the denormalized BigQuery destinations.
  */
 public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
 
@@ -31,7 +34,8 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
   public BigQueryAvroSerializedBuffer(final BufferStorage bufferStorage,
                                       final CodecFactory codecFactory,
                                       final Schema schema,
-                                      final BigQueryRecordFormatter recordFormatter) throws Exception {
+                                      final BigQueryRecordFormatter recordFormatter)
+      throws Exception {
     super(bufferStorage, codecFactory, schema);
     this.recordFormatter = recordFormatter;
   }
@@ -53,7 +57,8 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
           .findFirst()
           .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", pair.getNamespace(), pair.getName())))
           .getStream();
-      return new BigQueryAvroSerializedBuffer(createStorageFunction.call(), codecFactory, schemaCreator.apply(stream), recordFormatterCreator.apply(stream.getJsonSchema()));
+      return new BigQueryAvroSerializedBuffer(createStorageFunction.call(), codecFactory, schemaCreator.apply(stream),
+          recordFormatterCreator.apply(stream.getJsonSchema()));
     };
   }
 

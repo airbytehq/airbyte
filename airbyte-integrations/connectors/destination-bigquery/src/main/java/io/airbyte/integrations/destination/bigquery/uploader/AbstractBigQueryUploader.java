@@ -168,9 +168,9 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
   // https://cloud.google.com/bigquery/docs/managing-tables#copying_a_single_source_table
   public static void copyTable(final BigQuery bigQuery,
-                         final TableId sourceTableId,
-                         final TableId destinationTableId,
-                         final JobInfo.WriteDisposition syncMode) {
+                               final TableId sourceTableId,
+                               final TableId destinationTableId,
+                               final JobInfo.WriteDisposition syncMode) {
     final CopyJobConfiguration configuration = CopyJobConfiguration.newBuilder(destinationTableId, sourceTableId)
         .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
         .setWriteDisposition(syncMode)

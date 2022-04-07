@@ -126,6 +126,7 @@ public class S3StorageOperations implements BlobStorageOperations {
 
   /**
    * Upload the file from {@code recordsData} to S3 and simplify the filename as <partId>.<extension>.
+   *
    * @return the uploaded filename, which is different from the serialized buffer filename
    */
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {

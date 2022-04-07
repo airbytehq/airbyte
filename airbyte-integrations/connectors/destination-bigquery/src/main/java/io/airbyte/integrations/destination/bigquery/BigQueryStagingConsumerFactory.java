@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -140,7 +144,8 @@ public class BigQueryStagingConsumerFactory {
           final String stream = writeConfig.streamName();
 
           try {
-            bigQueryGcsOperations.copyIntoTmpTableFromStage(datasetId, stream, writeConfig.tmpTableId(), writeConfig.tableSchema(), writeConfig.stagedFiles());
+            bigQueryGcsOperations.copyIntoTmpTableFromStage(datasetId, stream, writeConfig.tmpTableId(), writeConfig.tableSchema(),
+                writeConfig.stagedFiles());
           } catch (final Exception e) {
             bigQueryGcsOperations.cleanUpStage(datasetId, stream, writeConfig.stagedFiles());
             final String stagingPath = bigQueryGcsOperations.getStagingFullPath(datasetId, stream);

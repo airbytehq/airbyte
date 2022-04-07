@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.Schema;
@@ -12,16 +16,15 @@ import org.slf4j.LoggerFactory;
  * @param datasetId the dataset ID is equivalent to output schema
  */
 public record BigQueryWriteConfig(
-    String streamName,
-    String namespace,
-    String datasetId,
-    String datasetLocation,
-    TableId tmpTableId,
-    TableId targetTableId,
-    Schema tableSchema,
-    DestinationSyncMode syncMode,
-    List<String> stagedFiles
-) {
+                                  String streamName,
+                                  String namespace,
+                                  String datasetId,
+                                  String datasetLocation,
+                                  TableId tmpTableId,
+                                  TableId targetTableId,
+                                  Schema tableSchema,
+                                  DestinationSyncMode syncMode,
+                                  List<String> stagedFiles) {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryWriteConfig.class);
 

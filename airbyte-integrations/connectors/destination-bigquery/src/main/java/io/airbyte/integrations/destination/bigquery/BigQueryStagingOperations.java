@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.Schema;
@@ -7,7 +11,8 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.List;
 
 /**
- * This interface is similar to {@link io.airbyte.integrations.destination.s3.BlobStorageOperations}.
+ * This interface is similar to
+ * {@link io.airbyte.integrations.destination.s3.BlobStorageOperations}.
  */
 public interface BigQueryStagingOperations {
 
@@ -25,7 +30,8 @@ public interface BigQueryStagingOperations {
                                  final String stream,
                                  final TableId tmpTableId,
                                  final Schema schema,
-                                 final List<String> stagedFiles) throws Exception;
+                                 final List<String> stagedFiles)
+      throws Exception;
 
   void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles);
 
@@ -38,4 +44,5 @@ public interface BigQueryStagingOperations {
   void dropTableIfExists(final String datasetId, final TableId tmpTableId);
 
   void dropStageIfExists(final String datasetId, final String stream);
+
 }
