@@ -38,7 +38,7 @@ When iterating on a single connector, you will often iterate by running
 
 This command will:
 
-1. Install a virtual environment at `airbyte-integrations/connectors/your-connector-dir/.venv`
+1. Install a virtual environment at `airbyte-integrations/connectors/<your-connector-dir>/.venv`
 2. Install local development dependencies specified in `airbyte-integrations/connectors/your-connector-dir/requirements.txt`
 3. Runs the following pip modules:
     1. [Black](https://pypi.org/project/black/) to lint the code
