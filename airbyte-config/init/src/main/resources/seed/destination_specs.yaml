@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.0.2"
+- dockerImage: "airbyte/destination-bigquery:1.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -314,7 +314,7 @@
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
-            \ dataset. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating\"\
+            \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
             >here</a>."
           title: "Project ID"
         dataset_id:
@@ -369,7 +369,7 @@
             \ <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\"\
             >docs</a> if you need help generating this key. Default credentials will\
             \ be used if this field is left empty."
-          title: "Credentials JSON (Optional)"
+          title: "Service Account Key JSON (Optional)"
           airbyte_secret: true
         transformation_priority:
           type: "string"
