@@ -23,23 +23,11 @@ type EditorHeaderProps = {
   onAddItem: () => void;
 };
 
-const EditorHeader: React.FC<EditorHeaderProps> = ({
-  itemsCount,
-  onAddItem,
-  mainTitle,
-  addButtonText,
-}) => {
+const EditorHeader: React.FC<EditorHeaderProps> = ({ itemsCount, onAddItem, mainTitle, addButtonText }) => {
   return (
     <Content>
-      {mainTitle || (
-        <FormattedMessage id="form.items" values={{ count: itemsCount }} />
-      )}
-      <Button
-        secondary
-        type="button"
-        onClick={onAddItem}
-        data-testid="addItemButton"
-      >
+      {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
+      <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton">
         {addButtonText || <FormattedMessage id="form.addItems" />}
       </Button>
     </Content>

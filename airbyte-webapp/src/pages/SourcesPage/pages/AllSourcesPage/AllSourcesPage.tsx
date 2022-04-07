@@ -3,12 +3,14 @@ import { FormattedMessage } from "react-intl";
 
 import { Button, MainPageWithScroll } from "components";
 import PageTitle from "components/PageTitle";
-import useRouter from "hooks/useRouter";
-import SourcesTable from "./components/SourcesTable";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import { RoutePaths } from "../../../routePaths";
+
+import useRouter from "hooks/useRouter";
 import { useSourceList } from "hooks/services/useSourceHook";
+
+import { RoutePaths } from "../../../routePaths";
+import SourcesTable from "./components/SourcesTable";
 
 const AllSourcesPage: React.FC = () => {
   const { push } = useRouter();
@@ -29,11 +31,7 @@ const AllSourcesPage: React.FC = () => {
         />
       }
     >
-      {sources.length ? (
-        <SourcesTable sources={sources} />
-      ) : (
-        <Placeholder resource={ResourceTypes.Sources} />
-      )}
+      {sources.length ? <SourcesTable sources={sources} /> : <Placeholder resource={ResourceTypes.Sources} />}
     </MainPageWithScroll>
   );
 };

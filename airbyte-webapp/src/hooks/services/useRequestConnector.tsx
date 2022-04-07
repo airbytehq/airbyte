@@ -19,8 +19,7 @@ const useRequestConnector = (): {
       // name the same after renaming the field to additional information
       connector_site: values.additionalInfo,
       connector_source: values.connectorType === "source" ? values.name : "",
-      connector_destination:
-        values.connectorType === "destination" ? values.name : "",
+      connector_destination: values.connectorType === "destination" ? values.name : "",
     });
   };
 

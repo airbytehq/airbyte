@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.53
+Remove a false positive error logging during the send process.
+
 ## 0.1.52
 Fix BaseBackoffException constructor
 
