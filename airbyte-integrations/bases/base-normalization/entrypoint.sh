@@ -116,7 +116,7 @@ function main() {
 
     # We don't run dbt 1.0.x on all destinations (because their plugins don't support it yet)
     # So we need to only pass `--event-buffer-size` if it's supported by DBT.
-    dbt --help | grep -E -- '--event-buffer-size'
+    dbt --help | grep -E -- '--event-buffer-size' > /dev/null
     if [ $? -eq 0 ]; then
       echo -e "\nDBT >=1.0.0 detected; using 10K event buffer size\n"
       dbt_additional_args="--event-buffer-size=10000"
