@@ -14,7 +14,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -44,13 +43,15 @@ public class BigQueryStagingConsumerFactory {
                                        final UUID stagingId,
                                        final DateTime syncDatetime,
                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                       final StandardNameTransformer bigQueryNameTransformer) {
+                                       final Function<String, String> tmpTableNameTransformer,
+                                       final Function<String, String> targetTableNameTransformer) {
     LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
         catalog,
         recordFormatterCreator,
-        bigQueryNameTransformer);
+        tmpTableNameTransformer,
+        targetTableNameTransformer);
 
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -67,7 +68,8 @@ public class BigQueryStagingConsumerFactory {
   private Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
                                                                                       final ConfiguredAirbyteCatalog catalog,
                                                                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                                                                      final StandardNameTransformer bigQueryNameTransformer) {
+                                                                                      final Function<String, String> tmpTableNameTransformer,
+                                                                                      final Function<String, String> targetTableNameTransformer) {
     return catalog.getStreams().stream()
         .map(configuredStream -> {
           Preconditions.checkNotNull(configuredStream.getDestinationSyncMode(), "Undefined destination sync mode");
@@ -81,8 +83,8 @@ public class BigQueryStagingConsumerFactory {
               stream.getNamespace(),
               BigQueryUtils.getSchema(config, configuredStream),
               BigQueryUtils.getDatasetLocation(config),
-              bigQueryNameTransformer.getTmpTableName(streamName),
-              bigQueryNameTransformer.getRawTableName(streamName),
+              tmpTableNameTransformer.apply(streamName),
+              targetTableNameTransformer.apply(streamName),
               recordFormatter.getBigQuerySchema(),
               configuredStream.getDestinationSyncMode());
 

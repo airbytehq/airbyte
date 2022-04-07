@@ -289,7 +289,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         stagingId,
         syncDatetime,
         recordFormatterCreator,
-        namingResolver);
+        namingResolver::getTmpTableName,
+        getTargetTableNameTransformer(namingResolver));
   }
 
   protected Function<AirbyteStream, Schema> getAvroSchemaCreator() {
@@ -298,6 +299,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected Function<JsonNode, BigQueryRecordFormatter> getRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
     return streamSchema -> new GcsAvroBigQueryRecordFormatter(streamSchema, namingResolver);
+  }
+
+  protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
+    return namingResolver::getRawTableName;
   }
 
   public static void main(final String[] args) throws Exception {

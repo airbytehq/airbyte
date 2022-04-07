@@ -57,7 +57,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   /**
-   * @return <bucket-path>/<dataset-id>_<stream-name>
+   * @return {@code <bucket-path>/<dataset-id>_<stream-name>}
    */
   private String getStagingRootPath(final String datasetId, final String stream) {
     return gcsNameTransformer.applyDefaultCase(String.format("%s/%s_%s",
@@ -67,7 +67,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   /**
-   * @return <bucket-path>/<dataset-id>_<stream-name>/<year>/<month>/<day>/<hour>/<uuid>/
+   * @return {@code <bucket-path>/<dataset-id>_<stream-name>/<year>/<month>/<day>/<hour>/<uuid>/}
    */
   @Override
   public String getStagingFullPath(final String datasetId, final String stream) {

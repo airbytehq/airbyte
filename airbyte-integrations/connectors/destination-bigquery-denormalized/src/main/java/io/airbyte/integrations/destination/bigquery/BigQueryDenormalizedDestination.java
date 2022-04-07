@@ -56,6 +56,15 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     return streamSchema -> new GcsBigQueryDenormalizedRecordFormatter(streamSchema, namingResolver);
   }
 
+  /**
+   * This BigQuery destination does not write to a staging "raw" table but directly to a normalized
+   * table.
+   */
+  @Override
+  protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
+    return namingResolver::getIdentifier;
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = new BigQueryDenormalizedDestination();
     new IntegrationRunner(destination).run(args);
