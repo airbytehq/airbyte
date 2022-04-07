@@ -22,12 +22,10 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,12 +38,9 @@ public class BigQueryStagingConsumerFactory {
                                        final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BigQueryStagingOperations bigQueryGcsOperations,
                                        final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
-                                       final UUID stagingId,
-                                       final DateTime syncDatetime,
                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                        final Function<String, String> tmpTableNameTransformer,
                                        final Function<String, String> targetTableNameTransformer) {
-    LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
         catalog,

@@ -257,9 +257,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
                                                      final ConfiguredAirbyteCatalog catalog,
                                                      final Consumer<AirbyteMessage> outputRecordCollector) {
+
+    final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final BigQuery bigQuery = getBigQuery(config);
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
-    final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final UUID stagingId = UUID.randomUUID();
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
     final boolean keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config);
@@ -281,14 +282,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             getAvroSchemaCreator(),
             () -> new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX));
 
+    LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
     return new BigQueryStagingConsumerFactory().create(
         config,
         catalog,
         outputRecordCollector,
         bigQueryGcsOperations,
         onCreateBuffer,
-        stagingId,
-        syncDatetime,
         recordFormatterCreator,
         namingResolver::getTmpTableName,
         getTargetTableNameTransformer(namingResolver));
