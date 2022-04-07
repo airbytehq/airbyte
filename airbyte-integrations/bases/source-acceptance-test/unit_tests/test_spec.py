@@ -268,18 +268,18 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                             "properties": {
                                 "option1": {"type": "string"},
                                 "option2": {"type": "string"},
-                            }
+                            },
                         },
                         {
                             "type": "object",
                             "properties": {
                                 "option3": {"type": "string"},
                                 "option4": {"type": "string"},
-                            }
-                        }
-                    ]
+                            },
+                        },
+                    ],
                 }
-            }
+            },
         },
         "should_fail": True,
     },
@@ -296,18 +296,18 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                             "properties": {
                                 "common1": {"type": "string", "const": "common1"},
                                 "common2": {"type": "string", "const": "common2"},
-                            }
+                            },
                         },
                         {
                             "type": "object",
                             "properties": {
                                 "common1": {"type": "string", "const": "common1"},
                                 "common2": {"type": "string", "const": "common2"},
-                            }
-                        }
-                    ]
+                            },
+                        },
+                    ],
                 }
-            }
+            },
         },
         "should_fail": True,
     },
@@ -324,18 +324,18 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                             "properties": {
                                 "common": {"type": "string", "const": "option1", "default": "option1"},
                                 "option1": {"type": "string"},
-                            }
+                            },
                         },
                         {
                             "type": "object",
                             "properties": {
                                 "common": {"type": "string", "const": "option2", "default": "option2"},
                                 "option2": {"type": "string"},
-                            }
-                        }
-                    ]
+                            },
+                        },
+                    ],
                 }
-            }
+            },
         },
         "should_fail": True,
     },
