@@ -227,7 +227,7 @@ jobs:
         run: |
           git add -u
           git commit -m "auto-bump connector version"
-          git push origin ${{ github.ref }}
+          git push origin ${{ github.event.inputs.gitref }}
       - name: Add Version Bump Success Comment
         if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && success()
         uses: peter-evans/create-or-update-comment@v1

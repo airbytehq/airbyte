@@ -27,6 +27,5 @@ export const useDocumentation = (documentationUrl: string): UseDocumentationResu
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     retry: false,
-    suspense: false,
   });
 };

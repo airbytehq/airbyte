@@ -41,7 +41,7 @@ STREAM_RESPONSE: dict = {
                     "type": "Comment",
                     "author_id": 10,
                     "body": "test_comment",
-                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br></div>',
+                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br/></div>',
                     "plain_body": "test_comment",
                     "public": True,
                     "attachments": [],

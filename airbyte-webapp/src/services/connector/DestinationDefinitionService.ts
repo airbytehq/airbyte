@@ -1,4 +1,4 @@
-import { QueryObserverSuccessResult, useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import { DestinationDefinition } from "core/domain/connector";
 import { useConfig } from "config";
@@ -12,6 +12,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
 import { SCOPE_WORKSPACE } from "../Scope";
+import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const destinationDefinitionKeys = {
   all: [SCOPE_WORKSPACE, "destinationDefinition"] as const,
@@ -36,32 +37,28 @@ const useDestinationDefinitionList = (): {
   const service = useGetDestinationDefinitionService();
   const workspace = useCurrentWorkspace();
 
-  return (
-    useQuery(destinationDefinitionKeys.lists(), async () => {
-      const [definition, latestDefinition] = await Promise.all([
-        service.list(workspace.workspaceId),
-        service.listLatest(workspace.workspaceId),
-      ]);
+  return useSuspenseQuery(destinationDefinitionKeys.lists(), async () => {
+    const [definition, latestDefinition] = await Promise.all([
+      service.list(workspace.workspaceId),
+      service.listLatest(workspace.workspaceId),
+    ]);
 
-      const destinationDefinitions: DestinationDefinition[] = definition.destinationDefinitions.map(
-        (destination: DestinationDefinition) => {
-          const withLatest = latestDefinition.destinationDefinitions.find(
-            (latestDestination: DestinationDefinition) =>
-              latestDestination.destinationDefinitionId === destination.destinationDefinitionId
-          );
+    const destinationDefinitions: DestinationDefinition[] = definition.destinationDefinitions.map(
+      (destination: DestinationDefinition) => {
+        const withLatest = latestDefinition.destinationDefinitions.find(
+          (latestDestination: DestinationDefinition) =>
+            latestDestination.destinationDefinitionId === destination.destinationDefinitionId
+        );
 
-          return {
-            ...destination,
-            latestDockerImageTag: withLatest?.dockerImageTag ?? "",
-          };
-        }
-      );
+        return {
+          ...destination,
+          latestDockerImageTag: withLatest?.dockerImageTag ?? "",
+        };
+      }
+    );
 
-      return { destinationDefinitions };
-    }) as QueryObserverSuccessResult<{
-      destinationDefinitions: DestinationDefinition[];
-    }>
-  ).data;
+    return { destinationDefinitions };
+  });
 };
 
 const useDestinationDefinition = <T extends string | undefined>(
@@ -69,11 +66,9 @@ const useDestinationDefinition = <T extends string | undefined>(
 ): T extends string ? DestinationDefinition : DestinationDefinition | undefined => {
   const service = useGetDestinationDefinitionService();
 
-  return (
-    useQuery(destinationDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
-      enabled: isDefined(id),
-    }) as QueryObserverSuccessResult<DestinationDefinition>
-  ).data;
+  return useSuspenseQuery(destinationDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
+    enabled: isDefined(id),
+  });
 };
 
 const useCreateDestinationDefinition = () => {
