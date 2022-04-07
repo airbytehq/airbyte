@@ -89,4 +89,3 @@ The following setup steps are written for PyCharm but should have similar equiva
 You should now have access to code completion and proper syntax highlighting for python projects.
 
 If you need to work on another connector you can quickly change the current virtual environment in the bottom toolbar.
-
