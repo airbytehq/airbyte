@@ -21,6 +21,7 @@ def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
     Add a new entry for the virtual environment to IntelliJ's list of known interpreters
     """
     path_to_lib = f"{module_full_path}/.venv/lib/"
+
     python_version = os.listdir(path_to_lib)[0]
     environment_name = f"{python_version.capitalize()} ({module})"
 
@@ -81,6 +82,12 @@ def module_has_requirements_file(module):
     return os.path.exists(path_to_requirements_file)
 
 
+def get_default_airbyte_path():
+    path_to_script = os.path.dirname(__file__)
+    relative_path_to_airbyte_root = f"{path_to_script}/../.."
+    return os.path.realpath(relative_path_to_airbyte_root)
+
+
 def create_parser():
     parser = argparse.ArgumentParser(description="Prepare Python virtual environments for Python connectors")
     actions_group = parser.add_argument_group("actions")
@@ -88,7 +95,8 @@ def create_parser():
                                help="Create virtual environment and install the module's dependencies")
     actions_group.add_argument("--update-intellij", action="store_true", help="Add interpreter to IntelliJ's list of known interpreters")
 
-    parser.add_argument("-airbyte", default=f"{os.path.dirname(__file__)}/../..", help="Path to Airbyte root directory")
+    parser.add_argument("-airbyte", default=get_default_airbyte_path(),
+                        help="Path to Airbyte root directory")
 
     modules_group = parser.add_mutually_exclusive_group(required=True)
     modules_group.add_argument("-modules", nargs="?", help="Comma separated list of modules to add (eg source-strava,source-stripe)")
