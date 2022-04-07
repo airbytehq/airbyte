@@ -120,11 +120,15 @@ public interface SqlOperations {
 
   /**
    * The method is responsible for executing some specific DB Engine logic in onStart method.
+   * We can to override this method to execute specific logic e.g. to handle any necessary migrations in the destination, etc.
+   *
+   * In next example you can see how migration from VARCHAR to SUPER column is handled for the Redshift destination:
+   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationStartOperations
    *
    * @param database - Database that the connector is interacting with
    * @param writeConfigsList - List of write configs
    */
-  default void executeSpecificLogicForDBEngine(JdbcDatabase database, List<WriteConfig> writeConfigsList) {
+  default void onDestinationStartOperations(JdbcDatabase database, List<WriteConfig> writeConfigsList) {
     // do nothing
   }
 }

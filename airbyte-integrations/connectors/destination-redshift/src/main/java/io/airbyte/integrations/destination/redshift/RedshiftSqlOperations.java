@@ -30,14 +30,23 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
+
   private static final String SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT = """
-      select tablename, schemaname
-      from pg_table_def
-      where
-      schemaname = '%s'
-      and "column" = '%s'
-      and type <> 'super'
-      and tablename like '%%raw%%'""";
+         select count(*), tablename, schemaname
+         from pg_table_def
+         where schemaname = '%1$s'
+           and tablename = (
+             select tablename as tablename
+             from pg_table_def
+             where schemaname = '%1$s'
+               and "column" = '%2$s'
+               and type <> 'super'
+               and tablename like '%%airbyte_raw%%')
+           and "column" in ('%2$s', '%3$s', '%4$s')
+         group by tablename, schemaname
+         having count(*) = 3;
+      """;
+
   private static final String ALTER_TMP_TABLES_WITH_NOT_SUPER_TYPE_TO_SUPER_TYPE = """
       ALTER TABLE %1$s ADD COLUMN %2$s_super super;
       ALTER TABLE %1$s ADD COLUMN %3$s_reserve TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
@@ -97,7 +106,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
    * @param writeConfigsList - list of write configs.
    */
   @Override
-  public void executeSpecificLogicForDBEngine(final JdbcDatabase database, final List<WriteConfig> writeConfigsList) {
+  public void onDestinationStartOperations(final JdbcDatabase database, final List<WriteConfig> writeConfigsList) {
     LOGGER.info("Executing specific logic for Redshift Destination DB engine...");
     Set<String> schemas = writeConfigsList.stream().map(WriteConfig::getOutputSchemaName).collect(toSet());
     List<String> schemaAndTableWithNotSuperType = schemas
@@ -122,7 +131,9 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
       final List<JsonNode> tablesNameWithoutSuperDatatype = database.bufferedResultSetQuery(
           conn -> conn.createStatement().executeQuery(String.format(SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT,
               schemaName,
-              JavaBaseConstants.COLUMN_NAME_DATA)),
+              JavaBaseConstants.COLUMN_NAME_DATA,
+              JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+              JavaBaseConstants.COLUMN_NAME_AB_ID)),
           getDefaultSourceOperations()::rowToJson);
       if (tablesNameWithoutSuperDatatype.isEmpty()) {
         return Collections.emptyList();
