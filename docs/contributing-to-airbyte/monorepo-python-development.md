@@ -22,6 +22,12 @@ If using Pycharm or IntelliJ, you'll also want to add the interpreter to the IDE
 python tools/bin/update_intellij_venv.py -modules <connector directory name> --install-venv --update-intellij
 ```
 
+If working with many connectors, you can use the `--all-modules` flag to install the virtual environments for all connectors
+
+```bash
+python tools/bin/update_intellij_venv.py --all-modules --install-venv
+```
+
 This will create a `virtualenv` and install dependencies for the connector you want to work on as well as any internal Airbyte python packages it depends on.
 
 When iterating on a single connector, you will often iterate by running
