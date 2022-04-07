@@ -3,7 +3,6 @@
 #
 
 import pytest
-
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from source_mailchimp.source import MailChimpAuthenticator, SourceMailchimp

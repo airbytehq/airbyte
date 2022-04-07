@@ -52,8 +52,11 @@ tests:
 #        lists: [ "date_created" ]
 #        campaigns: [ "create_time" ]
 #        Email_activity: [ "timestamp" ]
+
+  # Email activities stream has working campaigns with email newsletters.
+  # Due to this sequential_reads test could be failed.
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog_without_email_activities.json"
     - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog_without_email_activities.json"
