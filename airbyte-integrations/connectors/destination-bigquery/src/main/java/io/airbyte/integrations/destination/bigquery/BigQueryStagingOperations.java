@@ -6,6 +6,9 @@ import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.List;
 
+/**
+ * This interface is similar to {@link io.airbyte.integrations.destination.s3.BlobStorageOperations}.
+ */
 public interface BigQueryStagingOperations {
 
   String getStagingFullPath(final String datasetId, final String stream);
