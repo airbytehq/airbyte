@@ -1,11 +1,11 @@
-import React, { memo, useMemo } from "react";
+import React, { memo } from "react";
 import styled from "styled-components";
-import { useIntl } from "react-intl";
 
 import { Cell, CheckBox, RadioButton } from "components";
 
 import DataTypeCell from "./components/DataTypeCell";
 import { NameContainer } from "./styles";
+import { useTranslateDataType } from "../../../utils/useTranslateDataType";
 
 interface FieldRowProps {
   name: string;
@@ -35,27 +35,14 @@ const LastCell = styled(Cell)`
 `;
 
 const FieldRowInner: React.FC<FieldRowProps> = ({ onPrimaryKeyChange, onCursorChange, path, ...props }) => {
-  const { formatMessage } = useIntl();
-  const dataType = useMemo(() => {
-    if (props.oneOf || props.anyOf) {
-      return "union";
-    }
-    if (!props.anyOf && !props.oneOf && !props.airbyte_type && !props.format && !props.type) {
-      return "unknown";
-    }
-    return props.airbyte_type ?? props.format ?? props.type;
-  }, [props.airbyte_type, props.anyOf, props.format, props.oneOf, props.type]);
-  const dataTypeFormatted = useMemo(
-    () => formatMessage({ id: `airbyte.datatype.${dataType}` }),
-    [dataType, formatMessage]
-  );
+  const dataType = useTranslateDataType(props);
 
   return (
     <>
       <FirstCell ellipsis flex={1.5}>
         <NameContainer title={props.name}>{props.name}</NameContainer>
       </FirstCell>
-      <DataTypeCell nullable={props.nullable}>{dataTypeFormatted}</DataTypeCell>
+      <DataTypeCell nullable={props.nullable}>{dataType}</DataTypeCell>
       <Cell>
         {props.isCursorEnabled && <RadioButton checked={props.isCursor} onChange={() => onCursorChange(path)} />}
       </Cell>
