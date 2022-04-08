@@ -1,0 +1,15 @@
+name: Assign to project
+
+on:
+  issues:
+      types: [labeled]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: timroes/assign-to-project-action@0.1.0
+          with:
+            token: ${{ secrets.OCTAVIA_PAT }}
+            projects: |
+              area/frontend=7
