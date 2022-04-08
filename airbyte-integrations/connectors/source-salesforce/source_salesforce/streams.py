@@ -91,8 +91,7 @@ class SalesforceStream(HttpStream, ABC):
         return {"q": query}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json().get("records", [])
-        yield from records
+        yield from response.json()["records"]
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
