@@ -1,0 +1,129 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "standard",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "reach",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "advertiser": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "advertiser_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "date": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "insertion_order": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "insertion_order_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "line_item": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "line_item_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "partner": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "partner_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "cookie_reach_impression_reach": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "floodlight",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "unique_reach_audience",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "audience_composition",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date"]
+    }
+  ]
+}
