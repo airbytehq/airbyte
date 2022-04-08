@@ -136,7 +136,7 @@ public class JsonPaths {
   }
 
   /**
-   * Given a JSONPath, returns 1 or 0 values that match the path. Throws is more than 1 value is
+   * Given a JSONPath, returns 1 or 0 values that match the path. Throws if more than 1 value is
    * found.
    *
    * THIS SHOULD ONLY BE USED IF THE JSONPATH CAN ONLY EVER RETURN 0 OR 1 VALUES. e.g. don't do
