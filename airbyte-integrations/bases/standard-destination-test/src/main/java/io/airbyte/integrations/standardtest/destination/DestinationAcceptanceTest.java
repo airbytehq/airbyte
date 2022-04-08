@@ -7,7 +7,6 @@ package io.airbyte.integrations.standardtest.destination;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -1116,8 +1115,8 @@ public abstract class DestinationAcceptanceTest {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
       final List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
-              .stream()
-              .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data)).toList();
+          .stream()
+          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data)).toList();
       actualMessages.addAll(msgList);
     }
 
