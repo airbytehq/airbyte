@@ -3,6 +3,6 @@
 #
 
 # Initialize Streams Package
-from .core import Stream, IncrementalMixin
+from .core import IncrementalMixin, Stream
 
-__all__ = ["Stream", "IncrementalMixin"]
+__all__ = ["IncrementalMixin", "Stream"]
