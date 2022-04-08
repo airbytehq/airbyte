@@ -27,7 +27,7 @@ To upgrade to v0.32.0-alpha-patch-1, follow the steps in the following sections,
 
 2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.32.0-alpha-patch-1/{.env,docker-compose.yaml}` to pull this version and overwrite both files.
 
-If you use custom connectors, this upgrade requires your all of your connector specs to be retrievable from the node running Airbyte, or Airbyte will fail on startup. If the specs are not retrievable, you need to fix this before proceeding. Alternatively, you could delete the custom connector definitions from Airbyte upon upgrade by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to true. This will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
+If you use custom connectors, this upgrade requires all of your connector specs to be retrievable from the node running Airbyte, or Airbyte will fail on startup. If the specs are not retrievable, you need to fix this before proceeding. Alternatively, you could delete the custom connector definitions from Airbyte upon upgrade by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to true. This will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
 
 ## Upgrading on Docker
 
@@ -87,7 +87,7 @@ If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte ve
 
 1. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
 
-   _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as secret._
+   _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as a secret._
 
 2. Back to the terminal, migrate the local archive to the new version using the Migration App \(packaged in a docker container\).
 
