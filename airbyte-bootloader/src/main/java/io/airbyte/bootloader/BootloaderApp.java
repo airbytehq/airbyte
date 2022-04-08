@@ -72,9 +72,7 @@ public class BootloaderApp {
    * @param configs
    * @param postLoadExecution
    */
-  public BootloaderApp(final Configs configs,
-                       final Runnable postLoadExecution,
-                       final FeatureFlags featureFlags) {
+  public BootloaderApp(final Configs configs, final Runnable postLoadExecution, final FeatureFlags featureFlags) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;

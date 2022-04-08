@@ -129,15 +129,14 @@ class JsonPaths {
    * function would return: ["$.alpha[0]", "$.alpha[1]", "$.alpha[2]"].
    *
    * @param json - json object
-   * @param jsonPath - path into the json object. must be in the format of JSONPath. <<<<<<< HEAD
-   * @return all paths that are present that match the input query =======
+   * @param jsonPath - path into the json object. must be in the format of JSONPath.
    * @return all paths that are present that match the input query. returns a list (instead of a set),
    *         because having a deterministic ordering is valuable for all downstream consumers (i.e. in
    *         most cases if we returned a set, the downstream would then put it in a set and sort it so
    *         that if they are doing replacements using the paths, the behavior is predictable e.g. if
    *         you do replace $.alpha and $.alpha[*], the order you do those replacements in matters).
    *         specifically that said, we do expect that there will be no duplicates in the returned
-   *         list. >>>>>>> ead33566776befc41d79b2f193895328e06f807b
+   *         list.
    */
   public static List<String> getPaths(final JsonNode json, final String jsonPath) {
     return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath)
@@ -253,17 +252,13 @@ class JsonPaths {
   public static JsonNode replaceAt(final JsonNode json, final String jsonPath, final BiFunction<JsonNode, String, JsonNode> replacementFunction) {
     JsonNode clone = Jsons.clone(json);
     assertIsJsonPath(jsonPath);
-    try {
-      final List<String> foundPaths = getPaths(clone, jsonPath);
-      for (final String foundPath : foundPaths) {
-        final Optional<JsonNode> singleValue = getSingleValue(clone, foundPath);
-        if (singleValue.isPresent()) {
-          final JsonNode replacement = replacementFunction.apply(singleValue.get(), foundPath);
-          clone = replaceAtJsonNode(clone, foundPath, replacement);
-        }
+    final List<String> foundPaths = getPaths(clone, jsonPath);
+    for (final String foundPath : foundPaths) {
+      final Optional<JsonNode> singleValue = getSingleValue(clone, foundPath);
+      if (singleValue.isPresent()) {
+        final JsonNode replacement = replacementFunction.apply(singleValue.get(), foundPath);
+        clone = replaceAtJsonNode(clone, foundPath, replacement);
       }
-    } catch (final PathNotFoundException e) {
-      LOGGER.debug("Path not found", e);
     }
     return clone;
   }
