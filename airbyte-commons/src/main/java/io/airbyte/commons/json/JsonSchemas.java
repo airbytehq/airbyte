@@ -157,6 +157,7 @@ public class JsonSchemas {
 
     for (final String nodeType : nodeTypes) {
       switch (nodeType) {
+        // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after consumer.accept above.
         case ARRAY_TYPE -> {
           final String newPath = JsonPaths.appendAppendListSplat(path);
           // hit every node.
@@ -179,8 +180,6 @@ public class JsonSchemas {
                 "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf");
           }
         }
-        // if a value type do nothing
-        // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> consumer.accept(jsonNode, path);
       }
     }
   }
