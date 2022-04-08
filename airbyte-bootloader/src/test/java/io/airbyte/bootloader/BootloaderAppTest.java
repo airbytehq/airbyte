@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -58,8 +57,6 @@ public class BootloaderAppTest {
     val mockedFeatureFlags = mock(FeatureFlags.class);
     when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
-    val mConfigPersistence = mock(ConfigPersistence.class);
-
     // Although we are able to inject mocked configs into the Bootloader, a particular migration in the
     // configs database
     // requires the env var to be set. Flyway prevents injection, so we dynamically set this instead.
@@ -67,7 +64,7 @@ public class BootloaderAppTest {
     environmentVariables.set("DATABASE_PASSWORD", "docker");
     environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
-    val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, mConfigPersistence);
+    val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
     bootloader.load();
 
     val jobDatabase = new JobsDatabaseInstance(
@@ -137,9 +134,7 @@ public class BootloaderAppTest {
     val mockedFeatureFlags = mock(FeatureFlags.class);
     when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
-    val mConfigPersistence = mock(ConfigPersistence.class);
-
-    new BootloaderApp(mockedConfigs, () -> testTriggered.set(true), mockedFeatureFlags, mConfigPersistence).load();
+    new BootloaderApp(mockedConfigs, () -> testTriggered.set(true), mockedFeatureFlags).load();
 
     assertTrue(testTriggered.get());
   }

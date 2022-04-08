@@ -9,17 +9,14 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
-import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -35,7 +32,6 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -61,13 +57,11 @@ public class BootloaderApp {
   private final Configs configs;
   private Runnable postLoadExecution;
   private final FeatureFlags featureFlags;
-  private ConfigPersistence configPersistence;
 
   @VisibleForTesting
-  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags, final ConfigPersistence configPersistence) {
+  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
     this.configs = configs;
     this.featureFlags = featureFlags;
-    this.configPersistence = configPersistence;
   }
 
   /**
@@ -80,12 +74,10 @@ public class BootloaderApp {
    */
   public BootloaderApp(final Configs configs,
                        final Runnable postLoadExecution,
-                       final FeatureFlags featureFlags,
-                       final ConfigPersistence configPersistence) {
+                       final FeatureFlags featureFlags) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
-    this.configPersistence = configPersistence;
   }
 
   public BootloaderApp() {
@@ -100,7 +92,7 @@ public class BootloaderApp {
             .maskSecrets(!featureFlags.exposeSecretsInExport())
             .copySecrets(true)
             .build();
-        configPersistence =
+        final ConfigPersistence configPersistence =
             DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
         configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
         LOGGER.info("Loaded seed data..");
@@ -250,20 +242,6 @@ public class BootloaderApp {
       wfClient.newUntypedWorkflowStub("sync_" + zombieJob.getId())
           .terminate("Zombie");
     }
-  }
-
-  /**
-   * Migrate secret from plain text to a secret store.
-   */
-  private void migrateSecret() throws IOException, JsonValidationException {
-    final SecretPersistence secretPersistence = SecretPersistence.getEphemeral(configs).orElseThrow(() -> new IllegalStateException("Migration "
-        + "without setting a secret store"));
-
-    final List<SourceConnection> sourceConnections = configPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
-
-    sourceConnections.forEach(sourceConnection -> {
-      sourceConnection.getConfiguration();
-    });
   }
 
 }

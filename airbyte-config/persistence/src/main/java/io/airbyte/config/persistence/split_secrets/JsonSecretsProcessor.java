@@ -222,8 +222,8 @@ public class JsonSecretsProcessor {
    * that match the path in the schema but will be matching the ones of the object described by the
    * schema.
    *
-   * @param currentNode - The node currently being process
-   * @param currentPath - The current path of the node
+   * @param currentNode The node currently being process
+   * @param currentPath The current path of the node
    * @return
    */
   protected Set<String> getAllSecretPathsRec(final JsonNode currentNode, final String currentPath) {
