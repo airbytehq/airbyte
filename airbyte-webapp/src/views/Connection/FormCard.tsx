@@ -4,6 +4,8 @@ import { useMutation } from "react-query";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
+import FormNavigationBlocker from "components/FormNavigationBlocker";
+
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -32,6 +34,7 @@ export const FormCard: React.FC<
       {({ resetForm, isSubmitting, dirty, isValid }) => (
         <CollapsibleCard {...props}>
           <FormContainer>
+            <FormNavigationBlocker block={dirty} />
             {children}
             <div>
               <EditControls

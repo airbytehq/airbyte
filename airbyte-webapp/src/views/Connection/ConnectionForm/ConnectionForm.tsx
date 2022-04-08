@@ -6,6 +6,7 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
+import FormNavigationBlocker from "components/FormNavigationBlocker";
 
 import { equal } from "utils/objects";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
@@ -153,6 +154,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
+          <FormNavigationBlocker block={dirty} />
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
               {({ field, meta }: FieldProps<ScheduleProperties>) => (

@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
 
+import useFormNavigationBlocking from "hooks/useFormNavigationBlocking";
 import { useConfig } from "config";
 import MainView from "views/layout/MainView";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
@@ -53,6 +54,8 @@ const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
 };
 
 const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
+  useFormNavigationBlocking();
+
   return (
     <MainView>
       <TrackPageAnalytics />
