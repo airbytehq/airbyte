@@ -262,13 +262,12 @@ class SponsoredProductsReportStream(ReportStream):
 # adId is automatically added to the report by amazon and requesting adId causes an amazon error
         if RecordType.ASINS in record_type:
             body["campaignType"] = "sponsoredProducts"
-            metrics_list = copy(metrics_list)
-            metrics_list.remove("adId") 
             if profile.accountInfo.type == "vendor":
                 metrics_list = copy(metrics_list)
                 metrics_list.remove("sku")
-        elif RecordType.PRODUCTADS in record_type:
-            metrics_list = copy(metrics_list)
+
+# adId is automatically added to the report by amazon and requesting adId causes an amazon error
+        if "adId" in metrics_list:
             metrics_list.remove("adId")
 
         return {**body, "metrics": ",".join(metrics_list)}
