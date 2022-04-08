@@ -5,7 +5,7 @@ on:
       types: [labeled]
 
 jobs:
-  notify:
+  assign-to-project:
     runs-on: ubuntu-latest
     steps:
         - uses: timroes/assign-to-project-action@0.1.0
@@ -13,3 +13,4 @@ jobs:
             token: ${{ secrets.OCTAVIA_PAT }}
             projects: |
               area/frontend=7
+              project/onboarding-improvements=16
