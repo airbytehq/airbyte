@@ -216,6 +216,7 @@ public class Databases {
     connectionPool.setPassword(password);
     connectionPool.setInitialSize(0);
     connectionPool.setMaxTotal(5);
+    connectionPool.setTestOnBorrow(true);
     connectionPool.setUrl(jdbcConnectionString);
     connectionProperties.forEach(connectionPool::addConnectionProperty);
     return connectionPool;
