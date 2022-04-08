@@ -5,8 +5,8 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
-import io.airbyte.config.StandardNormalizationSummary;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -40,7 +40,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+    StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
 
@@ -48,7 +48,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
       // the state is persisted immediately after the replication succeeded, because the
       // state is a checkpoint of the raw data that has been copied to the destination;
       // normalization & dbt does not depend on it
-      persistActivity.persist(connectionId, run);
+      persistActivity.persist(connectionId, syncOutput);
     }
 
     if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
@@ -56,12 +56,12 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
           final NormalizationInput normalizationInput = new NormalizationInput()
               .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-              .withCatalog(run.getOutputCatalog())
+              .withCatalog(syncOutput.getOutputCatalog())
               .withResourceRequirements(syncInput.getDestinationResourceRequirements());
 
-          final StandardNormalizationSummary normalizationSummary =
+          final NormalizationSummary normalizationSummary =
               normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
-          persistActivity.persist(connectionId, run.withStandardNormalizationSummary(normalizationSummary));
+          syncOutput = syncOutput.withNormalizationSummary(normalizationSummary);
         } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
           final OperatorDbtInput operatorDbtInput = new OperatorDbtInput()
               .withDestinationConfiguration(syncInput.getDestinationConfiguration())
@@ -76,7 +76,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
       }
     }
 
-    return run;
+    return syncOutput;
   }
 
 }

@@ -1,8 +1,8 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardNormalizationSummary.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/NormalizationSummary.yaml
 title: StandardNormalizationSummary
-description: standard information output by ALL sources for a normalization step
+description: information output by syncs for which a normalization step was performed
 type: object
 required:
   - startTime

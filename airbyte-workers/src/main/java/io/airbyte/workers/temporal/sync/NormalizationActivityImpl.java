@@ -10,7 +10,7 @@ import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.NormalizationInput;
-import io.airbyte.config.StandardNormalizationSummary;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -66,9 +66,9 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   }
 
   @Override
-  public StandardNormalizationSummary normalize(final JobRunConfig jobRunConfig,
-                                                final IntegrationLauncherConfig destinationLauncherConfig,
-                                                final NormalizationInput input) {
+  public NormalizationSummary normalize(final JobRunConfig jobRunConfig,
+                                        final IntegrationLauncherConfig destinationLauncherConfig,
+                                        final NormalizationInput input) {
     return TemporalUtils.withBackgroundHeartbeat(() -> {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
@@ -78,7 +78,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         return fullInput;
       };
 
-      final CheckedSupplier<Worker<NormalizationInput, StandardNormalizationSummary>, Exception> workerFactory;
+      final CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> workerFactory;
 
       if (containerOrchestratorConfig.isPresent()) {
         workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
@@ -86,7 +86,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         workerFactory = getLegacyWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
       }
 
-      final TemporalAttemptExecution<NormalizationInput, StandardNormalizationSummary> temporalAttemptExecution = new TemporalAttemptExecution<>(
+      final TemporalAttemptExecution<NormalizationInput, NormalizationSummary> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot, workerEnvironment, logConfigs,
           jobRunConfig,
           workerFactory,
@@ -95,15 +95,15 @@ public class NormalizationActivityImpl implements NormalizationActivity {
           jobPersistence,
           airbyteVersion);
 
-      final StandardNormalizationSummary normalizationSummary = temporalAttemptExecution.get();
+      final NormalizationSummary normalizationSummary = temporalAttemptExecution.get();
       return normalizationSummary;
     });
   }
 
-  private CheckedSupplier<Worker<NormalizationInput, StandardNormalizationSummary>, Exception> getLegacyWorkerFactory(
-                                                                                                                      final WorkerConfigs workerConfigs,
-                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                                      final JobRunConfig jobRunConfig) {
+  private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
+                                                                                                              final WorkerConfigs workerConfigs,
+                                                                                                              final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                              final JobRunConfig jobRunConfig) {
     return () -> new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -115,10 +115,10 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         workerEnvironment);
   }
 
-  private CheckedSupplier<Worker<NormalizationInput, StandardNormalizationSummary>, Exception> getContainerLauncherWorkerFactory(
-                                                                                                                                 final WorkerConfigs workerConfigs,
-                                                                                                                                 final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                                                 final JobRunConfig jobRunConfig)
+  private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getContainerLauncherWorkerFactory(
+                                                                                                                         final WorkerConfigs workerConfigs,
+                                                                                                                         final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                                         final JobRunConfig jobRunConfig)
       throws IOException {
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
     final var connectionId = UUID.fromString(jobScope);

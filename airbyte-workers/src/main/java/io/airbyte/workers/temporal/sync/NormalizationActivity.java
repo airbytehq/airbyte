@@ -5,7 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.config.NormalizationInput;
-import io.airbyte.config.StandardNormalizationSummary;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
@@ -15,8 +15,8 @@ import io.temporal.activity.ActivityMethod;
 public interface NormalizationActivity {
 
   @ActivityMethod
-  StandardNormalizationSummary normalize(JobRunConfig jobRunConfig,
-                                         IntegrationLauncherConfig destinationLauncherConfig,
-                                         NormalizationInput input);
+  NormalizationSummary normalize(JobRunConfig jobRunConfig,
+                                 IntegrationLauncherConfig destinationLauncherConfig,
+                                 NormalizationInput input);
 
 }

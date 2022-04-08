@@ -14,9 +14,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.StandardNormalizationSummary;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -82,7 +82,7 @@ class SyncWorkflowTest {
   private OperatorDbtInput operatorDbtInput;
 
   private StandardSyncOutput replicationSuccessOutput;
-  private StandardNormalizationSummary standardNormalizationSummary;
+  private NormalizationSummary normalizationSummary;
 
   @BeforeEach
   public void setUp() {
@@ -96,7 +96,7 @@ class SyncWorkflowTest {
     sync = syncPair.getKey();
     syncInput = syncPair.getValue();
     replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog());
-    standardNormalizationSummary = new StandardNormalizationSummary();
+    normalizationSummary = new NormalizationSummary();
 
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
@@ -130,19 +130,18 @@ class SyncWorkflowTest {
         DESTINATION_LAUNCHER_CONFIG,
         syncInput);
 
-    doReturn(standardNormalizationSummary).when(normalizationActivity).normalize(
+    doReturn(normalizationSummary).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
         normalizationInput);
 
     final StandardSyncOutput actualOutput = execute();
-    assertEquals(replicationSuccessOutput.withStandardNormalizationSummary(standardNormalizationSummary), actualOutput);
 
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
-    verifyPersistState(persistStateActivity, sync, actualOutput);
-    verifyPersistState(persistStateActivity, sync, actualOutput.withStandardNormalizationSummary(standardNormalizationSummary));
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
+    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary), actualOutput);
   }
 
   @Test
