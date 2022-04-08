@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.json.Secrets;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
@@ -363,7 +362,7 @@ public class JsonSecretsProcessorTest {
     assertEquals(expected, actual);
 
     // todo (cgardens) - show that new implementation matches the old one. to be removed in next PR.
-    final JsonNode actual2 = Secrets.maskAllSecrets(input, specs);
+    final JsonNode actual2 = JsonSecretsProcessor.maskAllSecrets(input, specs);
     assertEquals(actual, actual2);
   }
 

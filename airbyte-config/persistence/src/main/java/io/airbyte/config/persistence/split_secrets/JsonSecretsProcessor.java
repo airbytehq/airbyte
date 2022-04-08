@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.json.JsonPaths;
+import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -63,6 +66,29 @@ public class JsonSecretsProcessor {
     }
 
     return obj;
+  }
+
+  /**
+   * Given a JSONSchema object and an object that conforms to that schema, obfuscate all fields in the
+   * object that are a secret.
+   *
+   * @param json - json object that conforms to the schema
+   * @param schema - jsonschema object
+   * @return json object with all secrets masked.
+   */
+  public static JsonNode maskAllSecrets(final JsonNode json, final JsonNode schema) {
+    final Set<String> pathsWithSecrets = JsonSchemas.collectJsonPathsThatMeetCondition(
+        schema,
+        node -> MoreIterators.toList(node.fields())
+            .stream()
+            .anyMatch(field -> field.getKey().equals(AIRBYTE_SECRET_FIELD)));
+
+    JsonNode copy = Jsons.clone(json);
+    for (final String path : pathsWithSecrets) {
+      copy = JsonPaths.replaceAtString(copy, path, SECRETS_MASK);
+    }
+
+    return copy;
   }
 
   /**

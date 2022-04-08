@@ -42,12 +42,8 @@ import org.slf4j.LoggerFactory;
  * returning a list for query results. In addition, we provide helper functions that will just
  * return a single value (see: {@link JsonPaths#getSingleValue(JsonNode, String)}). These should
  * only be used if it is not possible for a query to return more than one value.
- *
- * Note: Package private as most uses of JsonPaths seems like they can be hidden inside other
- * commons libraries (i.e. Jsons and JsonsSchemas). If this assumption proves incorrect, we can open
- * it up.
  */
-class JsonPaths {
+public class JsonPaths {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonPaths.class);
 

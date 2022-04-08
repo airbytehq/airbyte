@@ -131,7 +131,8 @@ public class SecretsHelpersTest {
     assertEquals(inputUpdateConfigCopy, inputUpdateConfig);
   }
 
-  // todo (cgardens) - verify the new implementation works the same as the old one. to be removed in next PR.
+  // todo (cgardens) - verify the new implementation works the same as the old one. to be removed in
+  // next PR.
   @ParameterizedTest
   @MethodSource("provideTestCases")
   void testSplitUpdate2(final SecretsTestCase testCase) {

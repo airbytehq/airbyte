@@ -9,9 +9,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.json.JsonPaths;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.json.Secrets;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -300,8 +300,8 @@ public class SecretsHelpers {
             .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)));
 
     paths.forEach(path -> {
-      Secrets.replaceSecretAt(fullConfigCopy, path, (json, pathOfNode) -> {
-        final Optional<JsonNode> persistedNode = Secrets.getSingleValue(persistedPartialConfig, pathOfNode);
+      JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
+        final Optional<JsonNode> persistedNode = JsonPaths.getSingleValue(persistedPartialConfig, pathOfNode);
         final SecretCoordinate coordinate = getOrCreateCoordinate(
             secretReader,
             workspaceId,
