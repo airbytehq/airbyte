@@ -130,6 +130,7 @@ Make sure to complete the auth flow quickly, as the initial token granted by Zoh
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject         |
-|:--------|:-----------|:---------------------------------------------------------|:----------------|
-| 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |
+| Version | Date       | Pull Request                                             | Subject                               |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------|
+| 0.1.1   | 2022-04-08 | [11841](https://github.com/airbytehq/airbyte/pull/11841) | Change the type of the start_datetime |
+| 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release                       |
