@@ -60,6 +60,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
     if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
+      LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
+                  "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
       return DestinationType.INSERT_WITH_SUPER_TMP_TYPE;
     }
 
