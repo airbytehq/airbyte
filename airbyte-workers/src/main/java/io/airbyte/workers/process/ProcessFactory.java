@@ -7,7 +7,6 @@ package io.airbyte.workers.process;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 
 public interface ProcessFactory {
@@ -25,6 +24,8 @@ public interface ProcessFactory {
    *        by this argument.
    * @param resourceRequirements CPU and RAM to assign to the created process.
    * @param labels Labels to assign to the created Kube pod, if any. Ignore for docker.
+   * @param jobMetadata Job metadata that will be passed to the created process as environment
+   *        variables.
    * @param args Arguments to pass to the docker image being run in the new process.
    * @return ProcessBuilder object to run the process.
    * @throws WorkerException
@@ -38,21 +39,9 @@ public interface ProcessFactory {
                  final String entrypoint,
                  final ResourceRequirements resourceRequirements,
                  final Map<String, String> labels,
+                 final Map<String, String> jobMetadata,
+                 final Map<Integer, Integer> portMapping,
                  final String... args)
       throws WorkerException;
-
-  default Process create(final String jobId,
-                         final int attempt,
-                         final Path jobPath,
-                         final String imageName,
-                         final boolean usesStdin,
-                         final Map<String, String> files,
-                         final String entrypoint,
-                         final ResourceRequirements resourceRequirements,
-                         final Map<String, String> labels,
-                         final List<String> args)
-      throws WorkerException {
-    return create(jobId, attempt, jobPath, imageName, usesStdin, files, entrypoint, resourceRequirements, labels, args.toArray(new String[0]));
-  }
 
 }

@@ -1,10 +1,9 @@
 import { SegmentAnalytics } from "./types";
 
 export class AnalyticsService {
-  constructor(private userId?: string, private version?: string) {}
+  constructor(private context: Record<string, unknown>, private version?: string) {}
 
-  private getSegmentAnalytics = (): SegmentAnalytics | undefined =>
-    window.analytics;
+  private getSegmentAnalytics = (): SegmentAnalytics | undefined => window.analytics;
 
   alias = (newId: string): void => this.getSegmentAnalytics()?.alias?.(newId);
 
@@ -14,8 +13,8 @@ export class AnalyticsService {
 
   track = (name: string, properties: Record<string, unknown>): void =>
     this.getSegmentAnalytics()?.track?.(name, {
-      user_id: this.userId,
       ...properties,
+      ...this.context,
       airbyte_version: this.version,
       environment: this.version === "dev" ? "dev" : "prod",
     });
@@ -24,8 +23,6 @@ export class AnalyticsService {
     this.getSegmentAnalytics()?.identify?.(userId, traits);
   };
 
-  group = (
-    organisationId: string,
-    traits: Record<string, unknown> = {}
-  ): void => this.getSegmentAnalytics()?.group?.(organisationId, traits);
+  group = (organisationId: string, traits: Record<string, unknown> = {}): void =>
+    this.getSegmentAnalytics()?.group?.(organisationId, traits);
 }

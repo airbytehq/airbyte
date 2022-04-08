@@ -13,8 +13,10 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
+import io.airbyte.integrations.destination.s3.S3Destination;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -25,7 +27,7 @@ import java.util.function.Consumer;
  * to S3, creating multiple compressed files per stream. 2) Create a manifest file to load the data
  * files in parallel. See:
  * https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-use-copy.html for more info.
- *
+ * <p>
  * Creating multiple files per stream currently has the naive approach of one file per batch on a
  * stream up to the max limit of (26 * 26 * 26) 17576 files. Each batch is randomly prefixed by 3
  * Alpha characters and on a collision the batch is appended to the existing file.
@@ -42,7 +44,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
         getDatabase(config),
         getSqlOperations(),
         getNameTransformer(),
-        getS3Config(config),
+        S3CopyConfig.getS3CopyConfig(config),
         catalog,
         new RedshiftStreamCopierFactory(),
         getConfiguredSchema(config));
@@ -50,7 +52,8 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
   public void checkPersistence(final JsonNode config) throws Exception {
-    S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
+    final S3DestinationConfig s3Config = getS3DestinationConfig(config);
+    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(getNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
   }
 
   @Override
@@ -72,8 +75,8 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     return config.get("schema").asText();
   }
 
-  private S3Config getS3Config(final JsonNode config) {
-    return S3Config.getS3Config(config);
+  private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
+    return S3DestinationConfig.getS3DestinationConfig(config);
   }
 
 }

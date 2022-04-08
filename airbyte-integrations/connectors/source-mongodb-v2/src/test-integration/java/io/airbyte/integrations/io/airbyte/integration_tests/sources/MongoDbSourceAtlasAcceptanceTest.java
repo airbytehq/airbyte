@@ -15,6 +15,8 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.bson.BsonArray;
+import org.bson.BsonString;
 import org.bson.Document;
 
 public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAcceptanceTest {
@@ -29,7 +31,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
@@ -54,9 +56,12 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
     final MongoCollection<Document> collection = database.createCollection(COLLECTION_NAME);
-    final var doc1 = new Document("id", "0001").append("name", "Test");
-    final var doc2 = new Document("id", "0002").append("name", "Mongo");
-    final var doc3 = new Document("id", "0003").append("name", "Source");
+    final var doc1 = new Document("id", "0001").append("name", "Test")
+        .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
+        .append("double_test", 100.12).append("int_test", 100);
+    final var doc2 = new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201);
+    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
+        .append("double_test", 212.11).append("int_test", 302);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
   }

@@ -33,7 +33,7 @@
       "type": ["string", "null"]
     },
     "account_tier": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "renewal_date": {
       "type": ["string", "null"]

@@ -36,6 +36,14 @@ docker build .
 Run one of the two scripts in the root of the connector:
 
 * `python -m pytest -p integration_tests.acceptance` - to run tests inside virtual environment
+  * On test completion, a log will be outputted to the terminal verifying:
+    * The connector the tests were ran for 
+    * The git hash of the code used 
+    * Whether the tests passed or failed 
+      
+    This is useful to provide in your PR as evidence of the acceptance tests passing locally.
+    
+    
 * `./acceptance-test-docker.sh` - to run tests from a docker container
 
 If the test fails you will see detail about the test and where to find its inputs and outputs to reproduce it. You can also debug failed tests by adding `—pdb —last-failed`:
@@ -115,6 +123,7 @@ Verifies when a discover operation is run on the connector using the given confi
 ## Test Basic Read
 
 Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages. Each stream should have some data, if you can't guarantee this for particular streams - add them to the `empty_streams` list.
+Set `validate_data_points=True` if possible. This validation is going to be enabled by default and won't be configurable in future releases.
 
 | Input | Type | Default | Note |
 | :--- | :--- | :--- | :--- |
@@ -122,6 +131,7 @@ Configuring all streams in the input catalog to full refresh mode verifies that 
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
 | `empty_streams` | array | \[\] | List of streams that might be empty |
 | `validate_schema` | boolean | True | Verify that structure and types of records matches the schema from discovery command |
+| `validate_data_points` | boolean | False | Validate that all fields in all streams contained at least one data point |
 | `timeout_seconds` | int | 5\*60 | Test execution timeout in seconds |
 | `expect_records` | object | None | Compare produced records with expected records, see details below |
 | `expect_records.path` | string |  | File with expected records |

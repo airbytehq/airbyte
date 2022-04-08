@@ -13,5 +13,6 @@
   "disputes": { "created": 161099630500 },
   "products": { "created": 158551134100 },
   "refunds": { "created": 161959562900 },
-  "payment_intents": { "created": 161959562900 }
+  "payment_intents": { "created": 161959562900 },
+  "promotion_codes": { "created": 163534157100 }
 }

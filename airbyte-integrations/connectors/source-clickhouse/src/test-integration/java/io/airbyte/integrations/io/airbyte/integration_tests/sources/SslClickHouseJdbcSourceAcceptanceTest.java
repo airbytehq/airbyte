@@ -14,6 +14,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import java.sql.JDBCType;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -118,7 +119,7 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new ClickHouseSource();
   }
 

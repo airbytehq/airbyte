@@ -53,7 +53,7 @@ public class AirbyteGithubStore {
   public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
     try {
       return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
-    } catch (final IOException e) {
+    } catch (final Throwable e) {
       LOGGER.warn(
           "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
           e);
@@ -64,7 +64,7 @@ public class AirbyteGithubStore {
   public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
     try {
       return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
-    } catch (final IOException e) {
+    } catch (final Throwable e) {
       LOGGER.warn(
           "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
           e);

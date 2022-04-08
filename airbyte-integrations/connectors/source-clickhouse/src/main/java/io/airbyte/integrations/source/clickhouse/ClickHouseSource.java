@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClickHouseSource extends AbstractJdbcSource implements Source {
+public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   /**
    * The default implementation relies on {@link java.sql.DatabaseMetaData#getPrimaryKeys} method to
@@ -49,8 +50,8 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
                 .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
               try {
-                return database.resultSetQuery(connection -> {
-                  final String sql = "SELECT name FROM system.columns WHERE database = ? AND  table = ? AND is_in_primary_key = 1";
+                return database.unsafeResultSetQuery(connection -> {
+                  final String sql = "SELECT name FROM system.columns WHERE database = ? AND table = ? AND is_in_primary_key = 1";
                   final PreparedStatement preparedStatement = connection.prepareStatement(sql);
                   preparedStatement.setString(1, tableInfo.getNameSpace());
                   preparedStatement.setString(2, tableInfo.getName());
@@ -77,7 +78,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
    * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
    */
   public ClickHouseSource() {
-    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override
@@ -92,11 +93,15 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
       jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
     }
 
-    return Jsons.jsonNode(ImmutableMap.builder()
+    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
-        .put("jdbc_url", jdbcUrl.toString())
-        .build());
+        .put("jdbc_url", jdbcUrl.toString());
+
+    if (config.has("password")) {
+      configBuilder.put("password", config.get("password").asText());
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
   }
 
   @Override

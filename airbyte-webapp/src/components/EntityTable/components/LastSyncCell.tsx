@@ -28,10 +28,7 @@ const LastSyncCell: React.FC<IProps> = ({ timeInSecond, enabled }) => {
   return (
     <Content enabled={enabled}>
       <CalendarIcon icon={faCalendarAlt} />
-      <FormattedRelativeTime
-        value={timeInSecond - Date.now() / 1000}
-        updateIntervalInSeconds={60}
-      />
+      <FormattedRelativeTime value={timeInSecond - Date.now() / 1000} updateIntervalInSeconds={60} />
     </Content>
   );
 };

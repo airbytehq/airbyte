@@ -29,13 +29,15 @@
       "type": ["null", "string"]
     },
     "value": {
-      "type": ["null", "integer", "object", "string"],
-      "properties": {}
+      "type": ["null", "string"]
     },
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }

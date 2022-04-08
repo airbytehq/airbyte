@@ -1,13 +1,14 @@
-import merge from "lodash.merge";
-import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
+import merge from "lodash/merge";
+
 import { isDefined } from "utils/common";
+
+import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
     segment: {
-      enabled: isDefined(window.TRACKING_STRATEGY)
-        ? window.TRACKING_STRATEGY === "segment"
-        : undefined,
+      enabled: isDefined(window.TRACKING_STRATEGY) ? window.TRACKING_STRATEGY === "segment" : undefined,
+      token: window.SEGMENT_TOKEN,
     },
     apiUrl: window.API_URL,
     version: window.AIRBYTE_VERSION,
@@ -22,16 +23,14 @@ const windowConfigProvider: ConfigProvider = async () => {
 const envConfigProvider: ConfigProvider = async () => {
   return {
     apiUrl: process.env.REACT_APP_API_URL,
+    integrationUrl: process.env.REACT_APP_INTEGRATION_DOCS_URLS,
     segment: {
       token: process.env.REACT_APP_SEGMENT_TOKEN,
     },
   };
 };
 
-async function applyProviders<T>(
-  defaultValue: T,
-  providers: ValueProvider<T>
-): Promise<T> {
+async function applyProviders<T>(defaultValue: T, providers: ValueProvider<T>): Promise<T> {
   let value: DeepPartial<T> = {};
 
   for (const provider of providers) {

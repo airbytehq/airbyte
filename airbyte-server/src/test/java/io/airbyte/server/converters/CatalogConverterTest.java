@@ -4,10 +4,12 @@
 
 package io.airbyte.server.converters;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import org.junit.jupiter.api.Test;
 

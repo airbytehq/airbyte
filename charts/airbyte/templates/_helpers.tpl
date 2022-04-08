@@ -70,24 +70,20 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-
 {{/*
-Get the Postgresql credentials secret.
+Get the Postgresql credentials secret name.
 */}}
-{{- define "airbyte.postgresql.secretName" -}}
-{{- if and (.Values.postgresql.enabled) (not .Values.postgresql.existingSecret) -}}
-    {{- printf "%s" (include "airbyte.postgresql.fullname" .) -}}
-{{- else if and (.Values.postgresql.enabled) (.Values.postgresql.existingSecret) -}}
-    {{- printf "%s" .Values.postgresql.existingSecret -}}
+{{- define "airbyte.database.secret.name" -}}
+{{- if .Values.postgresql.enabled -}}
+    {{ template "postgresql.secretName" .Subcharts.postgresql }}
 {{- else }}
     {{- if .Values.externalDatabase.existingSecret -}}
         {{- printf "%s" .Values.externalDatabase.existingSecret -}}
     {{- else -}}
-        {{ printf "%s-%s" .Release.Name "externaldb" }}
+        {{ printf "%s-%s" (include "common.names.fullname" .) "secrets" }}
     {{- end -}}
 {{- end -}}
 {{- end -}}
-
 
 {{/*
 Add environment variables to configure database values
@@ -111,9 +107,9 @@ Add environment variables to configure database values
 {{- end -}}
 
 {{/*
-Add environment variables to configure database values
+Get the Postgresql credentials secret password key
 */}}
-{{- define "airbyte.database.existingsecret.key" -}}
+{{- define "airbyte.database.secret.passwordKey" -}}
 {{- if .Values.postgresql.enabled -}}
     {{- printf "%s" "postgresql-password" -}}
 {{- else -}}
@@ -124,7 +120,7 @@ Add environment variables to configure database values
             {{- printf "%s" "postgresql-password" -}}
         {{- end -}}
     {{- else -}}
-        {{- printf "%s" "postgresql-password" -}}
+        {{- printf "%s" "DATABASE_PASSWORD" -}}
     {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -151,28 +147,36 @@ Create a default fully qualified minio name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "airbyte.minio.fullname" -}}
-{{- $name := default "minio" .Values.minio.nameOverride -}}
+{{- $name := default "minio" .Values.logs.minio.nameOverride -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 Add environment variables to configure minio
 */}}
-{{- define "airbyte.minio.host" -}}
-{{- ternary (include "airbyte.minio.fullname" .) .Values.externalMinio.host .Values.minio.enabled -}}
+{{- define "airbyte.minio.endpoint" -}}
+{{- if .Values.logs.minio.enabled -}}
+    {{- printf "http://%s:%d" (include "airbyte.minio.fullname" .) 9000 -}}
+{{- else if .Values.logs.externalMinio.enabled -}}
+    {{- printf "http://%s:%g" .Values.logs.externalMinio.host .Values.logs.externalMinio.port -}}
+{{- else -}}
+    {{- printf "" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "airbyte.s3PathStyleAccess" -}}
+{{- ternary "true" "" (or .Values.logs.minio.enabled .Values.logs.externalMinio.enabled) -}}
 {{- end -}}
 
 {{/*
-Add environment variables to configure minio
+Returns the GCP credentials path
 */}}
-{{- define "airbyte.minio.port" -}}
-{{- ternary "9000" .Values.externalMinio.port .Values.minio.enabled -}}
+{{- define "airbyte.gcpLogCredentialsPath" -}}
+{{- if .Values.logs.gcs.credentialsJson }}
+    {{- printf "%s" "/secrets/gcs-log-creds/gcp.json" -}}
+{{- else -}}
+    {{- printf "%s" .Values.logs.gcs.credentials -}}
 {{- end -}}
-
-{{- define "airbyte.minio.endpoint" -}}
-{{- $host := (include "airbyte.minio.host" .) -}}
-{{- $port := (include "airbyte.minio.port" .) -}}
-{{- printf "http://%s:%s" $host $port -}}
 {{- end -}}
 
 {{/*
@@ -208,6 +212,13 @@ Returns the Airbyte worker Image
 */}}
 {{- define "airbyte.workerImage" -}}
 {{- include "common.images.image" (dict "imageRoot" .Values.worker.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Returns the Airbyte Bootloader Image
+*/}}
+{{- define "airbyte.bootloaderImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.bootloader.image "global" .Values.global) -}}
 {{- end -}}
 
 {{/*

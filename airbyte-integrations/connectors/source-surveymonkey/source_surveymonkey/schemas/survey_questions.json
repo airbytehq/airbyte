@@ -3,79 +3,118 @@
   "type": "object",
   "properties": {
     "page_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "position": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "visible": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "family": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "subtype": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "layout": {
       "type": ["object", "null"]
     },
     "sorting": {
-      "type": ["string", "null"]
+      "type": ["object", "null"],
+      "properties": {
+        "ignore_last": {
+          "type": ["boolean", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      }
     },
     "required": {
-      "type": ["string", "null"]
+      "type": ["object", "null"],
+      "properties": {
+        "amount": {
+          "type": ["string", "null"]
+        },
+        "text": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      }
     },
     "validation": {
-      "type": ["string", "null"]
+      "type": ["object", "null"],
+      "properties": {
+        "max": {
+          "type": ["integer", "null"]
+        },
+        "min": {
+          "type": ["integer", "null"]
+        },
+        "sum": {
+          "type": ["integer", "null"]
+        },
+        "sum_text": {
+          "type": ["string", "null"]
+        },
+        "text": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      }
     },
     "forced_ranking": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "headings": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "heading": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         }
       }
     },
     "href": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "answers": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "choices": {
-          "type": "array",
+          "type": ["array", "null"],
           "items": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
               "position": {
-                "type": "integer"
+                "type": ["integer", "null"]
               },
               "visible": {
-                "type": "boolean"
+                "type": ["boolean", "null"]
               },
               "text": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "quiz_options": {
-                "type": "object",
+                "type": ["object", "null"],
                 "properties": {
                   "score": {
-                    "type": "integer"
+                    "type": ["integer", "null"]
                   }
                 }
               },
               "id": {
-                "type": "string"
+                "type": ["string", "null"]
               }
             }
           }

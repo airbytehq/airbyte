@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "a suggested saved element",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "Name": {
+      "description": "a suggested name",
+      "type": "string"
+    },
+    "Required": {
+      "description": "whether a UI might want to strongly suggest the user enter this one at some point in a transaction's lifetime",
+      "type": "boolean"
+    }
+  }
+}

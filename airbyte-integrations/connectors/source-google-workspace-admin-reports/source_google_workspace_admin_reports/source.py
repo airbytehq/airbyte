@@ -3,7 +3,7 @@
 #
 
 
-from base_python import BaseSource
+from airbyte_cdk.sources.deprecated.base_source import BaseSource
 
 from .client import Client
 

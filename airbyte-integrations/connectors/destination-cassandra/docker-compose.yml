@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+  cassandra1:
+    image: cassandra:4.0
+    ports:
+      - "9042:9042"
+    environment:
+      - "MAX_HEAP_SIZE=2048M"
+      - "HEAP_NEWSIZE=1024M"
+      - "CASSANDRA_CLUSTER_NAME=cassandra_cluster"
+
+#  Uncomment if you want to run a Cassandra cluster
+#  cassandra2:
+#    image: cassandra:4.0
+#    ports:
+#      - "9043:9042"
+#    environment:
+#      - "MAX_HEAP_SIZE=2048M"
+#      - "HEAP_NEWSIZE=1024M"
+#      - "CASSANDRA_SEEDS=cassandra1"
+#      - "CASSANDRA_CLUSTER_NAME=cassandra_cluster"
+#    depends_on:
+#      - cassandra1

@@ -3,15 +3,16 @@ import { Props } from "react-select";
 import { SelectComponentsConfig } from "react-select/src/components";
 import { CSSObject } from "styled-components";
 
+import { equal, naturalComparatorBy } from "utils/objects";
+
 import DropdownIndicator from "./components/DropdownIndicator";
 import Menu from "./components/Menu";
 import SingleValue from "./components/SingleValue";
 import Option, { IDataItem } from "./components/Option";
-
-import { equal, naturalComparatorBy } from "utils/objects";
 import { SelectContainer } from "./SelectContainer";
 import { CustomSelect } from "./CustomSelect";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OptionType = any;
 type DropdownProps = Props<OptionType> & {
   withBorder?: boolean;
@@ -19,7 +20,7 @@ type DropdownProps = Props<OptionType> & {
   error?: boolean;
 };
 
-const DropDown: React.FC<DropdownProps> = (props) => {
+const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
   const propsComponents = props.components;
 
   const components = React.useMemo<SelectComponentsConfig<OptionType, boolean>>(
@@ -34,18 +35,31 @@ const DropDown: React.FC<DropdownProps> = (props) => {
         ClearIndicator: null,
         MultiValueRemove: null,
         ...(propsComponents ?? {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any),
     [propsComponents]
   );
 
-  const currentValue = props.isMulti
-    ? props.options?.filter((op) =>
-        props.value.find((o: OptionType) => equal(o, op.value))
-      )
-    : props.options?.find((op) => equal(op.value, props.value));
+  // undefined value is assumed to mean that value was not selected
+  const currentValue =
+    props.value !== undefined
+      ? props.isMulti
+        ? props.options?.filter((op) => props.value.find((o: OptionType) => equal(o, op.value)))
+        : props.options?.find((op) => equal(op.value, props.value))
+      : null;
+
+  const styles = {
+    ...(props.styles ?? {}),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    menuPortal: (base: CSSObject, menuPortalProps: any) => ({
+      ...(props.styles?.menuPortal?.(base, menuPortalProps) ?? { ...base }),
+      zIndex: 9999,
+    }),
+  };
 
   return (
     <CustomSelect
+      ref={ref}
       data-testid={props.name}
       $error={props.error}
       className="react-select-container"
@@ -55,22 +69,15 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       isSearchable={false}
       closeMenuOnSelect={!props.isMulti}
       hideSelectedOptions={false}
-      styles={{
-        menuPortal: (base: CSSObject) => ({
-          ...base,
-          zIndex: 9999,
-        }),
-      }}
       {...props}
-      value={currentValue}
+      styles={styles}
+      value={currentValue ?? null}
       components={components}
     />
   );
-};
+});
 
-const defaultDataItemSort = naturalComparatorBy<IDataItem>(
-  (dataItem) => dataItem.label || ""
-);
+const defaultDataItemSort = naturalComparatorBy<IDataItem>((dataItem) => dataItem.label || "");
 
 export default DropDown;
 export { DropDown, defaultDataItemSort };

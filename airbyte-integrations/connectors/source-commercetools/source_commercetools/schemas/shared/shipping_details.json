@@ -1,0 +1,22 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "targets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "addressKey": {
+            "type": ["null", "string"]
+          },
+          "quantity": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+    "valid": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

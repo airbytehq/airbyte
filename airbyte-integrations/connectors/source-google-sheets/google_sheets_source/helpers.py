@@ -3,12 +3,13 @@
 #
 
 import json
+import re
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
 
-from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
-from base_python import AirbyteLogger
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
@@ -192,3 +193,13 @@ class Helpers(object):
             if len(cell_values) > idx and cell_values[idx].strip() != "":
                 return True
         return False
+
+    @staticmethod
+    def get_spreadsheet_id(id_or_url: str) -> str:
+        if re.match(r"(http://)|(https://)", id_or_url):
+            # This is a URL
+            m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
+            if m.group(2):
+                return m.group(2)
+        else:
+            return id_or_url

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-
 import { FormattedMessage } from "react-intl";
 
-import { useConfig } from "config";
 import { Link } from "components";
+
+import { useConfig } from "config";
 
 type ShowLoadingMessageProps = {
   connector?: string;
@@ -11,20 +11,14 @@ type ShowLoadingMessageProps = {
 
 const TIMEOUT_MS = 10000;
 
-const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({
-  connector,
-}) => {
+const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({ connector }) => {
   const config = useConfig();
   const [longLoading, setLongLoading] = useState(false);
 
   useEffect(() => {
     setLongLoading(false);
-    const timer = setTimeout(() => {
-      setLongLoading(true);
-    }, TIMEOUT_MS);
-    return () => {
-      clearTimeout(timer);
-    };
+    const timer = setTimeout(() => setLongLoading(true), TIMEOUT_MS);
+    return () => clearTimeout(timer);
   }, [connector]);
 
   return longLoading ? (

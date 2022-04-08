@@ -12,12 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Assign to Airbyte Github Project
     steps:
-      - name: Assign NEW issues and NEW pull requests to airbyte github project
-        uses: srggrs/assign-one-project-github-action@1.2.0
-        if: github.event.action == 'opened'
-        with:
-          project: "https://github.com/airbytehq/airbyte/projects/1"
-          column_name: "Backlog"
       - name: Assign documentation issues to the Documentation Roadmap project
         uses: srggrs/assign-one-project-github-action@1.2.0
         if: |

@@ -5,10 +5,10 @@ import styled from "styled-components";
 import { Spinner } from "components";
 
 import { FormBlock } from "core/form/types";
-import { ServiceFormValues } from "./types";
-import { useServiceForm } from "./serviceFormContext";
 
-import { FormSection } from "./components/FormSection";
+import { useServiceForm } from "./serviceFormContext";
+import { ServiceFormValues } from "./types";
+import { FormSection } from "./components/Sections/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import EditControls from "./components/EditControls";
 import CreateControls from "./components/CreateControls";
@@ -26,37 +26,30 @@ const LoadingMessage = styled.div`
   margin-top: 10px;
 `;
 
-const FormRoot: React.FC<{
+type FormRootProps = {
   formFields: FormBlock;
   hasSuccess?: boolean;
-  additionBottomControls?: React.ReactNode;
+  isTestConnectionInProgress?: boolean;
   errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error;
+  fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
-}> = ({
+  onStopTestingConnector?: () => void;
+};
+
+const FormRoot: React.FC<FormRootProps> = ({
+  isTestConnectionInProgress = false,
   onRetest,
   formFields,
   successMessage,
   errorMessage,
   fetchingConnectorError,
   hasSuccess,
-  additionBottomControls,
+  onStopTestingConnector,
 }) => {
-  const {
-    resetForm,
-    dirty,
-    isSubmitting,
-    isValid,
-  } = useFormikContext<ServiceFormValues>();
+  const { resetForm, dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
 
-  const {
-    resetUiFormProgress,
-    isLoadingSchema,
-    selectedService,
-    isEditMode,
-    formType,
-  } = useServiceForm();
+  const { resetUiFormProgress, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
     <FormContainer>
@@ -72,7 +65,9 @@ const FormRoot: React.FC<{
 
       {isEditMode ? (
         <EditControls
-          isSubmitting={isSubmitting}
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
           formType={formType}
           onRetest={onRetest}
@@ -86,12 +81,13 @@ const FormRoot: React.FC<{
         />
       ) : (
         <CreateControls
-          isSubmitting={isSubmitting}
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
+          formType={formType}
           isLoadSchema={isLoadingSchema}
           fetchingConnectorError={fetchingConnectorError}
-          formType={formType}
-          additionBottomControls={additionBottomControls}
           hasSuccess={hasSuccess}
         />
       )}

@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import StatusIcon from "components/StatusIcon";
+import { StatusIcon } from "components";
 
 const LoadingContainer = styled.div`
   font-weight: 600;
@@ -23,13 +23,11 @@ const Success = styled(StatusIcon)`
   font-size: 17px;
 `;
 
-const TestingConnectionSuccess: React.FC = () => {
-  return (
-    <LoadingContainer data-id="success-result">
-      <Success success />
-      <FormattedMessage id="form.successTests" />
-    </LoadingContainer>
-  );
-};
+const TestingConnectionSuccess: React.FC = () => (
+  <LoadingContainer data-id="success-result">
+    <Success success />
+    <FormattedMessage id="form.successTests" />
+  </LoadingContainer>
+);
 
 export default TestingConnectionSuccess;

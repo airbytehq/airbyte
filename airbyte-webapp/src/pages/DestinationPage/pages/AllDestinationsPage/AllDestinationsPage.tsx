@@ -1,26 +1,22 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
 import { Button, MainPageWithScroll } from "components";
-import { Routes } from "../../../routes";
 import PageTitle from "components/PageTitle";
-import useRouter from "hooks/useRouter";
-import DestinationsTable from "./components/DestinationsTable";
-import DestinationResource from "core/resources/Destination";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import useWorkspace from "hooks/services/useWorkspace";
+
+import useRouter from "hooks/useRouter";
+import { useDestinationList } from "hooks/services/useDestinationHook";
+
+import { RoutePaths } from "../../../routePaths";
+import DestinationsTable from "./components/DestinationsTable";
 
 const AllDestinationsPage: React.FC = () => {
   const { push } = useRouter();
-  const { workspace } = useWorkspace();
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { destinations } = useDestinationList();
 
-  const onCreateDestination = () =>
-    push(`${Routes.Destination}${Routes.DestinationNew}`);
+  const onCreateDestination = () => push(`${RoutePaths.DestinationNew}`);
 
   return (
     <MainPageWithScroll

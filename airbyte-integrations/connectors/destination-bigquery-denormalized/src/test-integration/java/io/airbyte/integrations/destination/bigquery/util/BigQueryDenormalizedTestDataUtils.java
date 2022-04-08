@@ -6,224 +6,88 @@ package io.airbyte.integrations.destination.bigquery.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class BigQueryDenormalizedTestDataUtils {
 
-  public static JsonNode getSchema() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"accepts_marketing_updated_at\": {\n"
-            + "      \"type\": [\n"
-            + "        \"null\",\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date-time\"\n"
-            + "    },\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"permissions\": {\n"
-            + "      \"type\": [\n"
-            + "        \"array\"\n"
-            + "      ],\n"
-            + "      \"items\": {\n"
-            + "        \"type\": [\n"
-            + "          \"object\"\n"
-            + "        ],\n"
-            + "        \"properties\": {\n"
-            + "          \"domain\": {\n"
-            + "            \"type\": [\n"
-            + "              \"string\"\n"
-            + "            ]\n"
-            + "          },\n"
-            + "          \"grants\": {\n"
-            + "            \"type\": [\n"
-            + "              \"array\"\n"
-            + "            ],\n"
-            + "            \"items\": {\n"
-            + "              \"type\": [\n"
-            + "                \"string\"\n"
-            + "              ]\n"
-            + "            }\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
+  private static final String JSON_FILES_BASE_LOCATION = "testdata/";
 
+  public static JsonNode getSchema() {
+    return getTestDataFromResourceJson("schema.json");
+  }
+
+  public static JsonNode getAnyOfSchema() {
+    return getTestDataFromResourceJson("schemaAnyOfAllOf.json");
   }
 
   public static JsonNode getSchemaWithFormats() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"date_of_birth\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date\"\n"
-            + "    },\n"
-            + "    \"updated_at\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date-time\"\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
+    return getTestDataFromResourceJson("schemaWithFormats.json");
   }
 
   public static JsonNode getSchemaWithDateTime() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    "
-            +
-            "\"updated_at\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ],\n"
-            + "      \"format\": \"date-time\"\n"
-            + "    },\n"
-            + "    \"items\": {\n"
-            + "      \"type\": [\n"
-            + "        \"object\"\n"
-            + "      ],\n"
-            + "      \"properties\": {\n"
-            + "        \"nested_datetime\": {\n"
-            + "          \"type\": [\n"
-            + "            \"string\"\n"
-            + "          ],\n"
-            + "          \"format\": \"date-time\"\n"
-            + "        }\n"
-            +
-            "      "
-            + "}\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
+    return getTestDataFromResourceJson("schemaWithDateTime.json");
   }
 
   public static JsonNode getSchemaWithInvalidArrayType() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"type\": [\n"
-            + "    \"object\"\n"
-            + "  ],\n"
-            + "  \"properties\": {\n"
-            + "    \"name\": {\n"
-            + "      \"type\": [\n"
-            + "        \"string\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    \"permissions\": {\n"
-            + "      \"type\": [\n"
-            + "        \"array\"\n"
-            + "      ],\n"
-            + "      \"items\": {\n"
-            + "        \"type\": [\n"
-            + "          \"object\"\n"
-            + "        ],\n"
-            + "        \"properties\": {\n"
-            + "          \"domain\": {\n"
-            + "            \"type\": [\n"
-            + "              \"string\"\n"
-            + "            ]\n"
-            + "          },\n"
-            + "          \"grants\": {\n"
-            + "            \"type\": [\n"
-            + "              \"array\"\n" // missed "items" element
-            + "            ]\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }\n"
-            + "    }\n"
-            + "  }\n"
-            + "}");
-
+    return getTestDataFromResourceJson("schemaWithInvalidArrayType.json");
   }
 
   public static JsonNode getData() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"accepts_marketing_updated_at\": \"2021-10-11T06:36:53-07:00\",\n"
-            + "  \"permissions\": [\n"
-            + "    {\n"
-            + "      \"domain\": \"abs\",\n"
-            + "      \"grants\": [\n"
-            + "        \"admin\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    {\n"
-            + "      \"domain\": \"tools\",\n"
-            + "      \"grants\": [\n"
-            + "        \"read\", \"write\"\n"
-            + "      ]\n"
-            + "    }\n"
-            + "  ]\n"
-            + "}");
+    return getTestDataFromResourceJson("data.json");
   }
 
   public static JsonNode getDataWithFormats() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"date_of_birth\": \"1996-01-25\",\n"
-            + "  \"updated_at\": \"2021-10-11T06:36:53\"\n"
-            + "}");
+    return getTestDataFromResourceJson("dataWithFormats.json");
+  }
+
+  public static JsonNode getAnyOfFormats() {
+    return getTestDataFromResourceJson("dataAnyOfFormats.json");
+  }
+
+  public static JsonNode getAnyOfFormatsWithNull() {
+    return getTestDataFromResourceJson("dataAnyOfFormatsWithNull.json");
+  }
+
+  public static JsonNode getAnyOfFormatsWithEmptyList() {
+    return getTestDataFromResourceJson("dataAnyOfFormatsWithEmptyList.json");
   }
 
   public static JsonNode getDataWithJSONDateTimeFormats() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"updated_at\": \"2021-10-11T06:36:53+00:00\",\n"
-            + "  \"items\": {\n"
-            + "    \"nested_datetime\": \"2021-11-11T06:36:53+00:00\"\n"
-            + "  }\n"
-            + "}");
+    return getTestDataFromResourceJson("dataWithJSONDateTimeFormats.json");
+  }
+
+  public static JsonNode getDataWithJSONWithReference() {
+    return getTestDataFromResourceJson("dataWithJSONWithReference.json");
+  }
+
+  public static JsonNode getSchemaWithReferenceDefinition() {
+    return getTestDataFromResourceJson("schemaWithReferenceDefinition.json");
+  }
+
+  public static JsonNode getSchemaWithNestedDatetimeInsideNullObject() {
+    return getTestDataFromResourceJson("schemaWithNestedDatetimeInsideNullObject.json");
   }
 
   public static JsonNode getDataWithEmptyObjectAndArray() {
-    return Jsons.deserialize(
-        "{\n"
-            + "  \"name\": \"Andrii\",\n"
-            + "  \"permissions\": [\n"
-            + "    {\n"
-            + "      \"domain\": \"abs\",\n"
-            + "      \"items\": {},\n" // empty object
-            + "      \"grants\": [\n"
-            + "        \"admin\"\n"
-            + "      ]\n"
-            + "    },\n"
-            + "    {\n"
-            + "      \"domain\": \"tools\",\n"
-            + "      \"grants\": [],\n" // empty array
-            + "      \"items\": {\n" // object with empty array and object
-            + "        \"object\": {},\n"
-            + "        \"array\": []\n"
-            + "      }\n"
-            + "    }\n"
-            + "  ]\n"
-            + "}");
+    return getTestDataFromResourceJson("dataWithEmptyObjectAndArray.json");
+  }
+
+  public static JsonNode getDataWithNestedDatetimeInsideNullObject() {
+    return getTestDataFromResourceJson("dataWithNestedDatetimeInsideNullObject.json");
+
+  }
+
+  private static JsonNode getTestDataFromResourceJson(final String fileName) {
+    final String fileContent;
+    try {
+      fileContent = Files.readString(Path.of(BigQueryDenormalizedTestDataUtils.class.getClassLoader()
+          .getResource(JSON_FILES_BASE_LOCATION + fileName).getPath()));
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+    return Jsons.deserialize(fileContent);
   }
 
 }

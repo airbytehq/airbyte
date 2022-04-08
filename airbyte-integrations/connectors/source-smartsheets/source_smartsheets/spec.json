@@ -5,18 +5,52 @@
     "title": "Smartsheets Source Spec",
     "type": "object",
     "required": ["access_token", "spreadsheet_id"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "access_token": {
-        "title": "API Access token",
-        "description": "Found in Profile > Apps & Integrations > API Access within Smartsheet app",
+        "title": "Access Token",
+        "description": "The Access Token for making authenticated requests. Find in the main menu: Account > Apps & Integrations > API Access",
         "type": "string",
         "airbyte_secret": true
       },
       "spreadsheet_id": {
-        "title": "Smartsheet ID",
-        "description": "Found in File > Properties",
+        "title": "Sheet ID",
+        "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties",
         "type": "string"
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": [],
+    "predicate_value": "",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
       }
     }
   }

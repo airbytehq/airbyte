@@ -24,7 +24,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -61,7 +61,7 @@ public abstract class JdbcStressTest {
 
   private BitSet bitSet;
   private JsonNode config;
-  private AbstractJdbcSource source;
+  private AbstractJdbcSource<?> source;
 
   /**
    * These tests write records without specifying a namespace (schema name). They will be written into
@@ -93,7 +93,7 @@ public abstract class JdbcStressTest {
    *
    * @return source
    */
-  public abstract AbstractJdbcSource getSource();
+  public abstract AbstractJdbcSource<?> getSource();
 
   protected String createTableQuery(final String tableName, final String columnClause) {
     return String.format("CREATE TABLE %s(%s)",
@@ -204,8 +204,8 @@ public abstract class JdbcStressTest {
   private static AirbyteCatalog getCatalog() {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
         streamName,
-        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_NAME, JsonSchemaPrimitive.STRING))
+        Field.of(COL_ID, JsonSchemaType.NUMBER),
+        Field.of(COL_NAME, JsonSchemaType.STRING))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))));
   }
 

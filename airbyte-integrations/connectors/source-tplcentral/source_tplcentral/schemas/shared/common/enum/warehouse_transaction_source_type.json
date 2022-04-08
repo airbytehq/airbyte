@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "integer",
+  "enum": [0, 1, 2, 3, 4, 5, 6, 7],
+  "description": "0: unknown; 1: ui_manual; 2: ui_import; 3: automated_import; 4: external_soap_api; 5: quick_books_soap_api; 6: automated_system_charge; 7: rest_api"
+}

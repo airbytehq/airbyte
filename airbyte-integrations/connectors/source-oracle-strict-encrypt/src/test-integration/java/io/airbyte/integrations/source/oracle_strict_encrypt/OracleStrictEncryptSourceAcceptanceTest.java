@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -19,12 +20,10 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -36,7 +35,10 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    container = new OracleContainer()
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid();;
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -59,8 +61,8 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             config.get("port").asText(),
             config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
-        "oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( 3DES168 )");
+        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
+            "oracle.net.encryption_types_client=( 3DES168 )"));
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
@@ -105,23 +107,18 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             .withCursorField(Lists.newArrayList("ID"))
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING),
-                Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING),
+                Field.of("POWER", JsonSchemaType.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("ID"))
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

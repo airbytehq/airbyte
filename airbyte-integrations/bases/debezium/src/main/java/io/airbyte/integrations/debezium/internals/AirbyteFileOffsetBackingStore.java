@@ -28,10 +28,10 @@ import org.slf4j.LoggerFactory;
 /**
  * This class handles reading and writing a debezium offset file. In many cases it is duplicating
  * logic in debezium because that logic is not exposed in the public API. We mostly treat the
- * contents of this state file like a black box. We know it is a Map<ByteBuffer, Bytebuffer>. We
- * deserialize it to a Map<String, String> so that the state file can be human readable. If we ever
- * discover that any of the contents of these offset files is not string serializable we will likely
- * have to drop the human readability support and just base64 encode it.
+ * contents of this state file like a black box. We know it is a Map&lt;ByteBuffer, Bytebuffer&gt;.
+ * We deserialize it to a Map&lt;String, String&gt; so that the state file can be human readable. If
+ * we ever discover that any of the contents of these offset files is not string serializable we
+ * will likely have to drop the human readability support and just base64 encode it.
  */
 public class AirbyteFileOffsetBackingStore {
 
@@ -84,6 +84,10 @@ public class AirbyteFileOffsetBackingStore {
   @SuppressWarnings("unchecked")
   private Map<ByteBuffer, ByteBuffer> load() {
     try (final SafeObjectInputStream is = new SafeObjectInputStream(Files.newInputStream(offsetFilePath))) {
+      // todo (cgardens) - we currently suppress a security warning for this line. use of readObject from
+      // untrusted sources is considered unsafe. Since the source is controlled by us in this case it
+      // should be safe. That said, changing this implementation to not use readObject would remove some
+      // headache.
       final Object obj = is.readObject();
       if (!(obj instanceof HashMap))
         throw new ConnectException("Expected HashMap but found " + obj.getClass());

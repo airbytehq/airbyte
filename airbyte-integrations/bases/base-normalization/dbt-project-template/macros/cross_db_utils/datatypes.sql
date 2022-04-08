@@ -32,6 +32,10 @@
     VARCHAR(max)
 {%- endmacro -%}
 
+{% macro clickhouse__type_json() %}
+    String
+{% endmacro %}
+
 
 {# string ------------------------------------------------- #}
 
@@ -47,6 +51,10 @@
     VARCHAR(max)
 {%- endmacro -%}
 
+{%- macro clickhouse__type_string() -%}
+    String
+{%- endmacro -%}
+
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
@@ -55,6 +63,10 @@
 
 {% macro oracle__type_float() %}
     float
+{% endmacro %}
+
+{% macro clickhouse__type_float() %}
+    Float64
 {% endmacro %}
 
 
@@ -67,6 +79,11 @@
     int
 {% endmacro %}
 
+{% macro clickhouse__type_int() %}
+    INT
+{% endmacro %}
+
+
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
     signed
@@ -76,10 +93,18 @@
     numeric
 {% endmacro %}
 
+{% macro clickhouse__type_bigint() %}
+    BIGINT
+{% endmacro %}
+
 
 {# numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
     float
+{% endmacro %}
+
+{% macro clickhouse__type_numeric() %}
+    Float64
 {% endmacro %}
 
 
@@ -93,6 +118,10 @@
     {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
     datetime
 {%- endmacro -%}
+
+{% macro clickhouse__type_timestamp() %}
+    DateTime64
+{% endmacro %}
 
 
 {# timestamp with time zone  -------------------------------------------------     #}
@@ -124,6 +153,10 @@
     datetime
 {%- endmacro -%}
 
+{% macro clickhouse__type_timestamp_with_timezone() %}
+    DateTime64
+{% endmacro %}
+
 
 {# date  -------------------------------------------------     #}
 
@@ -142,3 +175,7 @@
 {%- macro sqlserver__type_date() -%}
     date
 {%- endmacro -%}
+
+{% macro clickhouse__type_date() %}
+    Date
+{% endmacro %}

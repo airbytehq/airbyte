@@ -88,6 +88,8 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.6 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
+| 0.1.5 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications |
 | 0.1.4 | 2021-09-30 | [\#6524](https://github.com/airbytehq/airbyte/pull/6524) | Allow `dataset_id` null in spec |
 | 0.1.3 | 2021-09-16 | [\#6051](https://github.com/airbytehq/airbyte/pull/6051) | Handle NPE `dataset_id` is not provided |
 | 0.1.2 | 2021-09-16 | [\#6135](https://github.com/airbytehq/airbyte/pull/6135) | 🐛 BigQuery source: Fix nested structs |

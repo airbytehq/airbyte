@@ -14,11 +14,12 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.ConfigDumpExporter;
 import io.airbyte.server.ConfigDumpImporter;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
@@ -39,17 +40,18 @@ public class ArchiveHandler {
 
   public ArchiveHandler(final AirbyteVersion version,
                         final ConfigRepository configRepository,
+                        final SecretsRepositoryReader secretsRepositoryReader,
+                        final SecretsRepositoryWriter secretsRepositoryWriter,
                         final JobPersistence jobPersistence,
                         final ConfigPersistence seed,
                         final WorkspaceHelper workspaceHelper,
                         final FileTtlManager fileTtlManager,
-                        final SpecFetcher specFetcher,
                         final boolean importDefinitions) {
     this(
         version,
         fileTtlManager,
-        new ConfigDumpExporter(configRepository, jobPersistence, workspaceHelper),
-        new ConfigDumpImporter(configRepository, jobPersistence, workspaceHelper, specFetcher, importDefinitions),
+        new ConfigDumpExporter(configRepository, secretsRepositoryReader, jobPersistence, workspaceHelper),
+        new ConfigDumpImporter(configRepository, secretsRepositoryWriter, jobPersistence, workspaceHelper, importDefinitions),
         seed);
   }
 

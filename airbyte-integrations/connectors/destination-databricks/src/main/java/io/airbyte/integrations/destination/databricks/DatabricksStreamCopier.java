@@ -23,18 +23,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to
- * {@link io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier}. The difference is that
- * this implementation creates Parquet staging files, instead of CSV ones.
- * <p/>
+ * This implementation is similar to {@link StreamCopier}. The difference is that this
+ * implementation creates Parquet staging files, instead of CSV ones.
+ * <p>
+ * </p>
  * It does the following operations:
+ * <ul>
  * <li>1. Parquet writer writes data stream into staging parquet file in
- * s3://<bucket-name>/<bucket-path>/<staging-folder>.</li>
+ * s3://bucket-name/bucket-path/staging-folder.</li>
  * <li>2. Create a tmp delta table based on the staging parquet file.</li>
  * <li>3. Create the destination delta table based on the tmp delta table schema in
- * s3://<bucket>/<stream-name>.</li>
+ * s3://bucket/stream-name.</li>
  * <li>4. Copy the staging parquet file into the destination delta table.</li>
  * <li>5. Delete the tmp delta table, and the staging parquet file.</li>
+ * </ul>
  */
 public class DatabricksStreamCopier implements StreamCopier {
 
@@ -189,20 +191,25 @@ public class DatabricksStreamCopier implements StreamCopier {
     }
   }
 
+  @Override
+  public void closeNonCurrentStagingFileWriters() throws Exception {
+    parquetWriter.close(false);
+  }
+
+  @Override
+  public String getCurrentFile() {
+    return "";
+  }
+
   /**
    * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method
    * creates an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
    */
   static S3DestinationConfig getStagingS3DestinationConfig(final S3DestinationConfig config, final String stagingFolder) {
-    return new S3DestinationConfig(
-        config.getEndpoint(),
-        config.getBucketName(),
-        String.join("/", config.getBucketPath(), stagingFolder),
-        config.getBucketRegion(),
-        config.getAccessKeyId(),
-        config.getSecretAccessKey(),
-        // use default parquet format config
-        new S3ParquetFormatConfig(MAPPER.createObjectNode()));
+    return S3DestinationConfig.create(config)
+        .withBucketPath(String.join("/", config.getBucketPath(), stagingFolder))
+        .withFormatConfig(new S3ParquetFormatConfig(MAPPER.createObjectNode()))
+        .get();
   }
 
 }

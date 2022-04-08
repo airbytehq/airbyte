@@ -21,6 +21,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -43,6 +45,7 @@ public class TrelloOAuthFlowIntegrationTest {
   private TrelloOAuthFlow trelloOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
+  private HttpClient httpClient;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -51,7 +54,8 @@ public class TrelloOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    trelloOAuthFlow = new TrelloOAuthFlow(configRepository);
+    httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    trelloOAuthFlow = new TrelloOAuthFlow(configRepository, httpClient);
 
     server = HttpServer.create(new InetSocketAddress(8000), 0);
     server.setExecutor(null); // creates a default executor
@@ -70,7 +74,7 @@ public class TrelloOAuthFlowIntegrationTest {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     final String clientId = credentialsJson.get("client_id").asText();
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
@@ -81,7 +85,7 @@ public class TrelloOAuthFlowIntegrationTest {
             .put("client_id", clientId)
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -144,7 +148,7 @@ public class TrelloOAuthFlowIntegrationTest {
           t.sendResponseHeaders(500, response.length());
         }
         final OutputStream os = t.getResponseBody();
-        os.write(response.getBytes());
+        os.write(response.getBytes(StandardCharsets.UTF_8));
         os.close();
       } catch (final RuntimeException | IOException e) {
         LOGGER.error("Failed to parse from body {}", query, e);

@@ -71,7 +71,7 @@ Each connector should have a CHANGELOG.md section in its public facing docs in t
 ```text
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.2.0   | 20XX-05-XX | [PR2#](https://github.com/airbytehq/airbyte/pull/PR2#) | Fixed bug with schema generation <br><br> Added a better description for the `password` input parameter |
+| 0.2.0   | 20XX-05-XX | [PR2#](https://github.com/airbytehq/airbyte/pull/PR2#) | Fixed bug with schema generation <br/><br/> Added a better description for the `password` input parameter |
 | 0.1.0   | 20XX-04-XX | [PR#](https://github.com/airbytehq/airbyte/pull/PR#) | Added incremental sync |
 ```
 
@@ -134,3 +134,5 @@ _good context_:
 When creating or updating connectors, we spend a lot of time manually transcribing JSON Schema files based on OpenAPI docs. This is ncessary because OpenAPI and JSON schema are very similar but not perfectly compatible. This process is automatable. Therefore we should create a program which converts from OpenAPI to JSONSchema format.
 ```
 
+### How docs are synced with Gitbook
+Gitbook tracks the [`gitbook/v1` branch](https://github.com/airbytehq/airbyte/tree/gitbook/v1) from the [Airbyte repository](github.com/airbytehq/airbyte). This branch is synced with master on every push via this [Github action](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-branches.yml). 

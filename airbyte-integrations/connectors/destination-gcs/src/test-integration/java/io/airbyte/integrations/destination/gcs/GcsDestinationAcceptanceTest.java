@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -13,10 +15,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -25,6 +28,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,18 +50,21 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected static final Logger LOGGER = LoggerFactory.getLogger(GcsDestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
-  protected final String secretFilePath = "secrets/config.json";
+  protected static final String SECRET_FILE_PATH = "secrets/config.json";
+  protected static final String SECRET_FILE_PATH_INSUFFICIENT_ROLES = "secrets/insufficient_roles_config.json";
   protected final S3Format outputFormat;
   protected JsonNode configJson;
   protected GcsDestinationConfig config;
   protected AmazonS3 s3Client;
+  protected NamingConventionTransformer nameTransformer;
+  protected S3StorageOperations s3StorageOperations;
 
   protected GcsDestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
   }
 
   protected JsonNode getBaseConfigJson() {
-    return Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)));
+    return Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
   }
 
   @Override
@@ -66,6 +75,14 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   @Override
   protected JsonNode getConfig() {
     return configJson;
+  }
+
+  @Override
+  protected String getDefaultSchema(final JsonNode config) {
+    if (config.has("gcs_bucket_path")) {
+      return config.get("gcs_bucket_path").asText();
+    }
+    return null;
   }
 
   @Override
@@ -82,13 +99,20 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
   protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
-    final String outputPrefix = S3OutputPathHelper
-        .getOutputPrefix(config.getBucketPath(), namespace, streamName);
+    final String namespaceStr = nameTransformer.getNamespace(namespace);
+    final String streamNameStr = nameTransformer.getIdentifier(streamName);
+    final String outputPrefix = s3StorageOperations.getBucketObjectPath(
+        namespaceStr,
+        streamNameStr,
+        DateTime.now(DateTimeZone.UTC),
+        config.getPathFormat());
+    // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
+    final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
     final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), outputPrefix)
+        .listObjects(config.getBucketName(), parentFolder)
         .getObjectSummaries()
         .stream()
-        .filter(o -> o.getKey().contains(S3DestinationConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+        .filter(o -> o.getKey().contains(streamNameStr + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(
@@ -120,7 +144,9 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
     this.config = GcsDestinationConfig.getGcsDestinationConfig(configJson);
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
-    this.s3Client = GcsS3Helper.getGcsS3Client(config);
+    this.s3Client = config.getS3Client();
+    this.nameTransformer = new GcsNameTransformer();
+    this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, config);
   }
 
   /**
@@ -145,6 +171,29 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
       }
       LOGGER.info("Deleted {} file(s).", keysToDelete.size());
     }
+  }
+
+  /**
+   * Verify that when given user with no Multipart Upload Roles, that check connection returns a
+   * failed response. Assume that the #getInsufficientRolesFailCheckConfig() returns the service
+   * account has storage.objects.create permission but not storage.multipartUploads.create.
+   */
+  @Test
+  public void testCheckConnectionInsufficientRoles() throws Exception {
+    final JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(
+        SECRET_FILE_PATH_INSUFFICIENT_ROLES)));
+
+    // Set a random GCS bucket path for each integration test
+    final JsonNode configJson = Jsons.clone(baseConfigJson);
+    final String testBucketPath = String.format(
+        "%s_test_%s",
+        outputFormat.name().toLowerCase(Locale.ROOT),
+        RandomStringUtils.randomAlphanumeric(5));
+    ((ObjectNode) configJson)
+        .put("gcs_bucket_path", testBucketPath)
+        .set("format", getFormatConfig());
+
+    assertEquals(Status.FAILED, runCheck(configJson).getStatus());
   }
 
 }

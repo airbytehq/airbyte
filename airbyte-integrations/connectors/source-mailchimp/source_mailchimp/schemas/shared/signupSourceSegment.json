@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "Signup Source Segment",
+  "description": "Segment by signup source.",
+  "required": ["field", "condition_type", "op"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "enum": ["SignupSource"],
+      "x-value": "SignupSource",
+      "title": "Type"
+    },
+    "field": {
+      "type": "string",
+      "enum": ["source"],
+      "title": "Segment Field",
+      "example": "source"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["source_is", "source_not"],
+      "title": "Segment Operator",
+      "description": "Whether the member's signup source was/was not a particular value.",
+      "example": "source_is"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Data",
+      "description": "The signup source.",
+      "example": "List Import"
+    }
+  }
+}

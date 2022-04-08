@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -47,7 +48,7 @@ class DefaultGetSpecWorkerTest {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
     when(integrationLauncher.spec(jobRoot)).thenReturn(process);
 
-    worker = new DefaultGetSpecWorker(integrationLauncher);
+    worker = new DefaultGetSpecWorker(new WorkerConfigs(new EnvConfigs()), integrationLauncher);
   }
 
   @Test
@@ -71,7 +72,7 @@ class DefaultGetSpecWorkerTest {
   @Test
   public void testFailureOnInvalidSpec() throws InterruptedException {
     final String expectedSpecString = "{\"key\":\"value\"}";
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes()));
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes(Charsets.UTF_8)));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 

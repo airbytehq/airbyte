@@ -10,7 +10,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.protocols.Mapper;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -22,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * destination namespace where data will be stored and how to mirror (or not) the namespace used in
  * the source (if any). This is configured in the UI through the syncInput.
  */
-public class NamespacingMapper implements Mapper<AirbyteMessage> {
+public class NamespacingMapper implements AirbyteMapper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NamespacingMapper.class);
 

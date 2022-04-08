@@ -66,7 +66,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
    */
   protected List<Item> getAllSyncedObjects(final String streamName, final String namespace) {
     final var dynamodb = new DynamoDB(this.client);
-    final var tableName = DynamodbOutputTableHelper.getOutputTableName(this.config.getTableName(), streamName, namespace);
+    final var tableName = DynamodbOutputTableHelper.getOutputTableName(this.config.getTableNamePrefix(), streamName, namespace);
     final var table = dynamodb.getTable(tableName);
     final List<Item> items = new ArrayList<Item>();
     final List<Item> resultItems = new ArrayList<Item>();
@@ -148,7 +148,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
     final var dynamodb = new DynamoDB(this.client);
     final List<String> tables = new ArrayList<String>();
     dynamodb.listTables().forEach(o -> {
-      if (o.getTableName().startsWith(this.config.getTableName()))
+      if (o.getTableName().startsWith(this.config.getTableNamePrefix()))
         tables.add(o.getTableName());
     });
 

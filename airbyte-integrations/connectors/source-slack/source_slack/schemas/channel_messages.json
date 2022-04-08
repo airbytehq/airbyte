@@ -38,8 +38,7 @@
           "type": ["null", "string"]
         },
         "updated": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]

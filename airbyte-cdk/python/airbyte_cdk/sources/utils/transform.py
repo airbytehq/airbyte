@@ -4,7 +4,7 @@
 
 from distutils.util import strtobool
 from enum import Flag, auto
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Mapping, Optional
 
 from airbyte_cdk.logger import AirbyteLogger
 from jsonschema import Draft7Validator, validators
@@ -36,7 +36,7 @@ class TypeTransformer:
     Class for transforming object before output.
     """
 
-    _custom_normalizer: Callable[[Any, Dict[str, Any]], Any] = None
+    _custom_normalizer: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
 
     def __init__(self, config: TransformConfig):
         """
@@ -90,7 +90,7 @@ class TypeTransformer:
         :param subschema part of the jsonschema containing field type/format data.
         :return transformed field value.
         """
-        target_type = subschema.get("type")
+        target_type = subschema.get("type", [])
         if original_item is None and "null" in target_type:
             return None
         if isinstance(target_type, list):
@@ -125,7 +125,7 @@ class TypeTransformer:
         :original_validator: native jsonschema validator callback.
         """
 
-        def normalizator(validator_instance: Callable, val: Any, instance: Any, schema: Dict[str, Any]):
+        def normalizator(validator_instance: Callable, property_value: Any, instance: Any, schema: Dict[str, Any]):
             """
             Jsonschema validator callable it uses for validating instance. We
             override default Draft7Validator to perform value transformation
@@ -144,27 +144,27 @@ class TypeTransformer:
                     return resolved
                 return subschema
 
-            if schema_key == "type" and instance is not None:
-                if "object" in val and isinstance(instance, dict):
-                    for k, subschema in schema.get("properties", {}).items():
-                        if k in instance:
-                            subschema = resolve(subschema)
-                            instance[k] = self.__normalize(instance[k], subschema)
-                elif "array" in val and isinstance(instance, list):
-                    subschema = schema.get("items", {})
-                    subschema = resolve(subschema)
-                    for index, item in enumerate(instance):
-                        instance[index] = self.__normalize(item, subschema)
+            # Transform object and array values before running json schema type checking for each element.
+            if schema_key == "properties":
+                for k, subschema in property_value.items():
+                    if k in (instance or {}):
+                        subschema = resolve(subschema)
+                        instance[k] = self.__normalize(instance[k], subschema)
+            elif schema_key == "items":
+                subschema = resolve(property_value)
+                for index, item in enumerate((instance or [])):
+                    instance[index] = self.__normalize(item, subschema)
+
             # Running native jsonschema traverse algorithm after field normalization is done.
-            yield from original_validator(validator_instance, val, instance, schema)
+            yield from original_validator(validator_instance, property_value, instance, schema)
 
         return normalizator
 
-    def transform(self, record: Dict[str, Any], schema: Dict[str, Any]):
+    def transform(self, record: Dict[str, Any], schema: Mapping[str, Any]):
         """
         Normalize and validate according to config.
-        :param record record instance for normalization/transformation. All modification are done by modifing existent object.
-        :schema object's jsonschema for normalization.
+        :param record: record instance for normalization/transformation. All modification are done by modifying existent object.
+        :param schema: object's jsonschema for normalization.
         """
         if TransformConfig.NoTransform in self._config:
             return

@@ -7,10 +7,12 @@ import json
 from datetime import date, timedelta
 from typing import Dict
 
-from airbyte_protocol import AirbyteConnectionStatus
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.models.airbyte_protocol import AirbyteConnectionStatus
+from airbyte_cdk.sources.singer.singer_helpers import SyncModeInfo
+from airbyte_cdk.sources.singer.source import SingerSource
 from appstoreconnect import Api
-from base_python import AirbyteLogger
-from base_singer import SingerSource, Status, SyncMode, SyncModeInfo
 
 
 class SourceAppstoreSinger(SingerSource):

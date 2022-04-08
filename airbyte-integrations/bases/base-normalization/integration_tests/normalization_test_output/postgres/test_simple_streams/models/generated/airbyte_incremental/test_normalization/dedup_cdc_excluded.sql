@@ -1,10 +1,11 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_unique_key','_airbyte_emitted_at'],'type': 'btree'}],
+    indexes = [{'columns':['_airbyte_unique_key'],'unique':True}],
     unique_key = "_airbyte_unique_key",
     schema = "test_normalization",
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('dedup_cdc_excluded_scd') }}
 select
     _airbyte_unique_key,
     {{ adapter.quote('id') }},

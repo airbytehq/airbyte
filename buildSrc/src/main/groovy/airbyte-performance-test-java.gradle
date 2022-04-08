@@ -1,0 +1,55 @@
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
+
+class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.sourceSets {
+            performanceTestJava {
+                java {
+                    srcDir 'src/test-performance/java'
+                }
+                resources {
+                    srcDir 'src/test-performance/resources'
+                }
+            }
+        }
+        project.test.dependsOn('compilePerformanceTestJavaJava')
+
+        project.configurations {
+            performanceTestJavaImplementation.extendsFrom testImplementation
+            performanceTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
+        }
+
+        project.task('performanceTestJava', type: Test) {
+            testClassesDirs += project.sourceSets.performanceTestJava.output.classesDirs
+            classpath += project.sourceSets.performanceTestJava.runtimeClasspath
+
+            systemProperty "cpuLimit", System.getProperty("cpuLimit")
+            systemProperty "memoryLimit", System.getProperty("memoryLimit")
+            useJUnitPlatform()
+            testLogging() {
+                events "passed", "failed"
+                exceptionFormat "full"
+                showStandardStreams = true
+            }
+
+            outputs.upToDateWhen { false }
+
+            if(project.hasProperty('airbyteDocker')) {
+                dependsOn project.airbyteDocker
+            }
+
+            maxHeapSize = '3g'
+
+            mustRunAfter project.test
+        }
+
+        // make sure we create the performanceTest task once in case a standard source test was already initialized
+        if(!project.hasProperty('performanceTest')) {
+            project.task('performanceTest')
+        }
+
+        project.performanceTest.dependsOn(project.performanceTestJava)
+    }
+}

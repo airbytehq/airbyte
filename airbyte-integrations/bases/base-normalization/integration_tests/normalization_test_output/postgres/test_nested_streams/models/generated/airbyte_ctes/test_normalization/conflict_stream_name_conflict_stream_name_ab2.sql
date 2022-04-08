@@ -1,10 +1,10 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    indexes = [{'columns':['_airbyte_emitted_at'],'type':'btree'}],
     schema = "_airbyte_test_normalization",
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('conflict_stream_name_conflict_stream_name_ab1') }}
 select
     _airbyte_conflict_stream_name_hashid,
     cast(conflict_stream_name as {{ type_json() }}) as conflict_stream_name,

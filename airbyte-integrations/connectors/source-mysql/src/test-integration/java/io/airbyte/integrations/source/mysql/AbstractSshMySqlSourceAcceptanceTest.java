@@ -17,12 +17,10 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -67,8 +65,8 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -76,14 +74,9 @@ public abstract class AbstractSshMySqlSourceAcceptanceTest extends SourceAccepta
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

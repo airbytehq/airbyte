@@ -1,0 +1,8 @@
+{
+  "region": "region",
+  "start_date": "2020-01-01",
+  "project_key": "project_key",
+  "host": "gcp",
+  "client_id": "client_id",
+  "client_secret": "client_secret"
+}

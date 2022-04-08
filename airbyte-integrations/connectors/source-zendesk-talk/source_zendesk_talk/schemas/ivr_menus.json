@@ -16,35 +16,6 @@
     },
     "name": {
       "type": ["null", "string"]
-    },
-    "routes": {
-      "type": ["array", "null"],
-      "items": {
-        "type": "object",
-        "properties": {
-          "action": {
-            "type": ["null", "string"]
-          },
-          "greeting": {
-            "type": ["null", "string"]
-          },
-          "id": {
-            "type": ["null", "integer"]
-          },
-          "keypress": {
-            "type": ["null", "string"]
-          },
-          "option_text": {
-            "type": ["null", "string"]
-          },
-          "options": {
-            "type": ["null", "object"]
-          },
-          "overflow_options": {
-            "type": ["null", "object"]
-          }
-        }
-      }
     }
   }
 }

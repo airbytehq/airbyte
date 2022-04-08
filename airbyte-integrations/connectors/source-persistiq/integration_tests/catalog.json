@@ -1,0 +1,195 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "leads",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "bounced": {
+              "type": ["null", "boolean"]
+            },
+            "owner_id": {
+              "type": ["null", "string"]
+            },
+            "optedout": {
+              "type": ["null", "boolean"]
+            },
+            "sent_count": {
+              "type": ["null", "integer"]
+            },
+            "replied_count": {
+              "type": ["null", "integer"]
+            },
+            "last_sent_at": {
+              "type": ["null", "string"]
+            },
+            "status": {
+              "type": ["null", "string"]
+            },
+            "data": {
+              "company_name": {
+                "type": ["null", "string"]
+              },
+              "email": {
+                "type": ["null", "string"],
+                "format": "email"
+              },
+              "first_name": {
+                "type": ["null", "string"]
+              },
+              "last_name": {
+                "type": ["null", "string"]
+              },
+              "address": {
+                "type": ["null", "string"]
+              },
+              "city": {
+                "type": ["null", "string"]
+              },
+              "state": {
+                "type": ["null", "string"]
+              },
+              "phone": {
+                "type": ["null", "string"]
+              },
+              "title": {
+                "type": ["null", "string"]
+              },
+              "industry": {
+                "type": ["null", "string"]
+              },
+              "snippet": {
+                "type": ["null", "string"]
+              },
+              "snippet1": {
+                "type": ["null", "string"]
+              },
+              "snippet2": {
+                "type": ["null", "string"]
+              },
+              "snippet3": {
+                "type": ["null", "string"]
+              },
+              "snippet4": {
+                "type": ["null", "string"]
+              },
+              "twitch_name": {
+                "type": ["null", "string"]
+              },
+              "linkedin": {
+                "type": ["null", "string"]
+              },
+              "twitter": {
+                "type": ["null", "string"]
+              },
+              "facebook": {
+                "type": ["null", "string"]
+              },
+              "salesforce_id": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "campaigns",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "creator": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "email": {
+                "type": ["null", "string"]
+              }
+            },
+            "stats": {
+              "prospects_contacted": {
+                "type": ["null", "integer"]
+              },
+              "prospects_reached": {
+                "type": ["null", "integer"]
+              },
+              "prospects_opened": {
+                "type": ["null", "integer"]
+              },
+              "prospects_replied": {
+                "type": ["null", "integer"]
+              },
+              "prospects_bounced": {
+                "type": ["null", "integer"]
+              },
+              "prospects_optedout": {
+                "type": ["null", "integer"]
+              },
+              "total_contacted": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "email": {
+              "type": ["null", "string"],
+              "format": "email"
+            },
+            "activated": {
+              "type": ["null", "boolean"]
+            },
+            "default_mailbox_id": {
+              "type": ["null", "string"]
+            },
+            "salesforce_id": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "source_defined_primary_key": [["id"]]
+    }
+  ]
+}

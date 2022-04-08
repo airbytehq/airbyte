@@ -3,17 +3,14 @@ import { Field, FieldProps, Formik } from "formik";
 import * as yup from "yup";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
-
 import { LabeledInput, Link, LoadingButton } from "components";
-import {
-  BottomBlock,
-  FieldItem,
-  Form,
-} from "packages/cloud/views/auth/components/FormComponents";
+
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { Routes } from "packages/cloud/routes";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import useRouter from "hooks/useRouter";
 
 const LoginPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -23,6 +20,7 @@ const LoginPageValidationSchema = yup.object().shape({
 const LoginPage: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
   const { login } = useAuthService();
+  const { location, replace } = useRouter();
 
   return (
     <div>
@@ -36,15 +34,20 @@ const LoginPage: React.FC = () => {
           password: "",
         }}
         validationSchema={LoginPageValidationSchema}
-        onSubmit={async (values, { setFieldError, setStatus }) =>
-          login(values).catch((err) => {
-            if (err instanceof FieldError) {
-              setFieldError(err.field, err.message);
-            } else {
-              setStatus(err.message);
-            }
-          })
-        }
+        onSubmit={async (values, { setFieldError }) => {
+          return (
+            login(values)
+              // @ts-expect-error state is now unkown, needs proper typing
+              .then((_) => replace(location.state?.from ?? "/"))
+              .catch((err) => {
+                if (err instanceof FieldError) {
+                  setFieldError(err.field, err.message);
+                } else {
+                  setFieldError("password", err.message);
+                }
+              })
+          );
+        }}
         validateOnBlur
         validateOnChange={false}
       >
@@ -61,11 +64,7 @@ const LoginPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -81,18 +80,14 @@ const LoginPage: React.FC = () => {
                     })}
                     type="password"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
             </FieldItem>
             <BottomBlock>
               <>
-                <Link to={Routes.ResetPassword} $light>
+                <Link to={CloudRoutes.ResetPassword} $light data-testid="reset-password-link">
                   <FormattedMessage id="login.forgotPassword" />
                 </Link>
                 <LoadingButton type="submit" isLoading={isSubmitting}>

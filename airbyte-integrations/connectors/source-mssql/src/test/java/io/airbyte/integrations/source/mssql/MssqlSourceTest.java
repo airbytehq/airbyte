@@ -17,7 +17,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.util.List;
@@ -34,9 +34,9 @@ class MssqlSourceTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
       STREAM_NAME,
       DB_NAME,
-      Field.of("id", JsonSchemaPrimitive.NUMBER),
-      Field.of("name", JsonSchemaPrimitive.STRING),
-      Field.of("born", JsonSchemaPrimitive.STRING))
+      Field.of("id", JsonSchemaType.NUMBER),
+      Field.of("name", JsonSchemaType.STRING),
+      Field.of("born", JsonSchemaType.STRING))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
       .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
 

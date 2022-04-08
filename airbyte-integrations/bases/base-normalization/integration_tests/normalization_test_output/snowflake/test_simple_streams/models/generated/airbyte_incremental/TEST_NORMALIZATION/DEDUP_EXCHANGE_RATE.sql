@@ -5,6 +5,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('DEDUP_EXCHANGE_RATE_SCD') }}
 select
     _AIRBYTE_UNIQUE_KEY,
     ID,

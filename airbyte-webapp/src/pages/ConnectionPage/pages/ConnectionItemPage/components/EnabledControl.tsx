@@ -3,10 +3,11 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Toggle } from "components";
-import { Connection } from "core/resources/Connection";
-import useConnection from "hooks/services/useConnectionHook";
 import { Status } from "components/EntityTable/types";
-import { useAnalytics } from "hooks/useAnalytics";
+
+import { Connection } from "core/domain/connection";
+import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -31,13 +32,9 @@ type IProps = {
   frequencyText?: string;
 };
 
-const EnabledControl: React.FC<IProps> = ({
-  connection,
-  disabled,
-  frequencyText,
-}) => {
-  const { updateConnection } = useConnection();
-  const analyticsService = useAnalytics();
+const EnabledControl: React.FC<IProps> = ({ connection, disabled, frequencyText }) => {
+  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const analyticsService = useAnalyticsService();
 
   const onChangeStatus = async () => {
     await updateConnection({
@@ -48,20 +45,15 @@ const EnabledControl: React.FC<IProps> = ({
       namespaceFormat: connection.namespaceFormat,
       prefix: connection.prefix,
       operations: connection.operations,
-      status:
-        connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
+      status: connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
     });
 
     analyticsService.track("Source - Action", {
-      action:
-        connection.status === Status.ACTIVE
-          ? "Disable connection"
-          : "Reenable connection",
+      action: connection.status === Status.ACTIVE ? "Disable connection" : "Reenable connection",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,
-      connector_destination_definition_id:
-        connection.destination?.destinationDefinitionId,
+      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequencyText,
     });
   };
@@ -69,13 +61,7 @@ const EnabledControl: React.FC<IProps> = ({
   return (
     <Content>
       <ToggleLabel htmlFor="toggle-enabled-source">
-        <FormattedMessage
-          id={
-            connection.status === Status.ACTIVE
-              ? "tables.enabled"
-              : "tables.disabled"
-          }
-        />
+        <FormattedMessage id={connection.status === Status.ACTIVE ? "tables.enabled" : "tables.disabled"} />
       </ToggleLabel>
       <Toggle
         disabled={disabled}

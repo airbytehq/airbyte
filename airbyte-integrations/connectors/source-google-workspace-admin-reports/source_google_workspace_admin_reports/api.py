@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Sequence
 import backoff
 import pendulum
 import pytz
-from base_python.entrypoint import logger
+from airbyte_cdk.entrypoint import logger
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
@@ -176,6 +176,11 @@ class DriveAPI(ActivitiesAPI):
 class LoginsAPI(ActivitiesAPI):
     name = "Logins"
     application_name = "login"
+
+
+class MeetAPI(ActivitiesAPI):
+    name = "Meet"
+    application_name = "meet"
 
 
 class MobileAPI(ActivitiesAPI):

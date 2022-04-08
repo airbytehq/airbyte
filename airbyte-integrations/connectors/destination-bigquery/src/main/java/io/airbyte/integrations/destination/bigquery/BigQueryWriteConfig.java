@@ -4,65 +4,57 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-class BigQueryWriteConfig {
+/**
+ * @param datasetId the dataset ID is equivalent to output schema
+ */
+public record BigQueryWriteConfig(
+                                  String streamName,
+                                  String namespace,
+                                  String datasetId,
+                                  String datasetLocation,
+                                  TableId tmpTableId,
+                                  TableId targetTableId,
+                                  Schema tableSchema,
+                                  DestinationSyncMode syncMode,
+                                  List<String> stagedFiles) {
 
-  private final TableId table;
-  private final TableId tmpTable;
-  private final TableDataWriteChannel writer;
-  private final WriteDisposition syncMode;
-  private final Schema schema;
-  private final GcsCsvWriter gcsCsvWriter;
-  private final GcsDestinationConfig gcsDestinationConfig;
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryWriteConfig.class);
 
-  BigQueryWriteConfig(final TableId table,
-                      final TableId tmpTable,
-                      final TableDataWriteChannel writer,
-                      final WriteDisposition syncMode,
-                      final Schema schema,
-                      final GcsCsvWriter gcsCsvWriter,
-                      final GcsDestinationConfig gcsDestinationConfig) {
-    this.table = table;
-    this.tmpTable = tmpTable;
-    this.writer = writer;
-    this.syncMode = syncMode;
-    this.schema = schema;
-    this.gcsCsvWriter = gcsCsvWriter;
-    this.gcsDestinationConfig = gcsDestinationConfig;
+  public BigQueryWriteConfig(final String streamName,
+                             final String namespace,
+                             final String datasetId,
+                             final String datasetLocation,
+                             final String tmpTableName,
+                             final String targetTableName,
+                             final Schema tableSchema,
+                             final DestinationSyncMode syncMode) {
+    this(
+        streamName,
+        namespace,
+        datasetId,
+        datasetLocation,
+        TableId.of(datasetId, tmpTableName),
+        TableId.of(datasetId, targetTableName),
+        tableSchema,
+        syncMode,
+        new ArrayList<>());
   }
 
-  public TableId getTable() {
-    return table;
+  public void addStagedFile(final String file) {
+    this.stagedFiles.add(file);
+    LOGGER.info("Added staged file: {}", file);
   }
 
-  public TableId getTmpTable() {
-    return tmpTable;
-  }
-
-  public TableDataWriteChannel getWriter() {
-    return writer;
-  }
-
-  public WriteDisposition getSyncMode() {
-    return syncMode;
-  }
-
-  public Schema getSchema() {
-    return schema;
-  }
-
-  public GcsCsvWriter getGcsCsvWriter() {
-    return gcsCsvWriter;
-  }
-
-  public GcsDestinationConfig getGcsDestinationConfig() {
-    return gcsDestinationConfig;
+  public void clearStagedFiles() {
+    this.stagedFiles.clear();
   }
 
 }

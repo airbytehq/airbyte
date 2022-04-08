@@ -1,21 +1,19 @@
 import styled from "styled-components";
-import Select from "react-select";
+import Select, { Props } from "react-select";
 
-export const CustomSelect = styled(Select)<{
-  $withBorder?: boolean;
-  $error?: boolean;
-}>`
+export const CustomSelect = styled(Select)<
+  {
+    $withBorder?: boolean;
+    $error?: boolean;
+  } & Props
+>`
   & > .react-select__control {
     height: ${({ $withBorder }) => ($withBorder ? 31 : 36)}px;
 
     box-shadow: none;
     border: 1px solid
       ${({ theme, $withBorder, $error }) =>
-        $error
-          ? theme.dangerColor
-          : $withBorder
-          ? theme.greyColor30
-          : theme.greyColor0};
+        $error ? theme.dangerColor : $withBorder ? theme.greyColor30 : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
     font-size: 14px;
@@ -23,8 +21,7 @@ export const CustomSelect = styled(Select)<{
     min-height: 36px;
 
     &:hover {
-      border-color: ${({ theme, $error }) =>
-        $error ? theme.dangerColor : theme.greyColor20};
+      border-color: ${({ theme, $error }) => ($error ? theme.dangerColor : theme.greyColor20)};
       background: ${({ theme }) => theme.greyColor20};
     }
 

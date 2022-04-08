@@ -1,28 +1,36 @@
 import React, { Suspense } from "react";
 import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
-import { CacheProvider } from "rest-hooks";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { BrowserRouter as Router } from "react-router-dom";
+import GlobalStyle from "global-styles";
+
+import LoadingPage from "components/LoadingPage";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 import en from "locales/en.json";
 import cloudLocales from "packages/cloud/locales/en.json";
-import GlobalStyle from "global-styles";
 import { theme } from "packages/cloud/theme";
-
-import { Routing } from "packages/cloud/routes";
-import LoadingPage from "components/LoadingPage";
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { Routing } from "packages/cloud/cloudRoutes";
 import NotificationServiceProvider from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import { FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
+import { StoreProvider } from "views/common/StoreProvider";
+
 import { AppServicesProvider } from "./services/AppServicesProvider";
-import { IntercomProvider } from "./services/IntercomProvider";
+import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
+import { ConfigProvider } from "./services/ConfigProvider";
 
 const messages = Object.assign({}, en, cloudLocales);
 
 const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider locale="en" messages={messages}>
+  <IntlProvider
+    locale="en"
+    messages={messages}
+    defaultRichTextElements={{
+      b: (chunk) => <strong>{chunk}</strong>,
+    }}
+  >
     {children}
   </IntlProvider>
 );
@@ -34,19 +42,21 @@ const StyleProvider: React.FC = ({ children }) => (
   </ThemeProvider>
 );
 
-const queryClient = new QueryClient();
-
-const StoreProvider: React.FC = ({ children }) => (
-  <CacheProvider>
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  </CacheProvider>
+const Services: React.FC = ({ children }) => (
+  <AnalyticsProvider>
+    <ApiErrorBoundary>
+      <NotificationServiceProvider>
+        <FeatureService>
+          <AppServicesProvider>
+            <AuthenticationProvider>
+              <IntercomProvider>{children}</IntercomProvider>
+            </AuthenticationProvider>
+          </AppServicesProvider>
+        </FeatureService>
+      </NotificationServiceProvider>
+    </ApiErrorBoundary>
+  </AnalyticsProvider>
 );
-
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowOAuthConnector,
-  },
-];
 
 const App: React.FC = () => {
   return (
@@ -55,21 +65,13 @@ const App: React.FC = () => {
         <I18NProvider>
           <StoreProvider>
             <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <NotificationServiceProvider>
-                  <FeatureService features={Features}>
-                    <AppServicesProvider>
-                      <AuthenticationProvider>
-                        <IntercomProvider>
-                          <AnalyticsInitializer>
-                            <Routing />
-                          </AnalyticsInitializer>
-                        </IntercomProvider>
-                      </AuthenticationProvider>
-                    </AppServicesProvider>
-                  </FeatureService>
-                </NotificationServiceProvider>
-              </ApiErrorBoundary>
+              <ConfigProvider>
+                <Router>
+                  <Services>
+                    <Routing />
+                  </Services>
+                </Router>
+              </ConfigProvider>
             </Suspense>
           </StoreProvider>
         </I18NProvider>

@@ -105,6 +105,14 @@ class CadenceMemberships(IncrementalSalesloftStream):
         return "cadence_memberships"
 
 
+class Emails(IncrementalSalesloftStream):
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "activities/emails"
+
+
 # Source
 class SourceSalesloft(AbstractSource):
     def _create_authenticator(self, config):
@@ -131,4 +139,5 @@ class SourceSalesloft(AbstractSource):
             CadenceMemberships(authenticator=auth, **config),
             People(authenticator=auth, **config),
             Users(authenticator=auth, **config),
+            Emails(authenticator=auth, **config),
         ]

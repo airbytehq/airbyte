@@ -14,10 +14,12 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/catalog.json"
-      empty_streams: ['email_send_skip', 'email_complaint']
+      empty_streams: ["email_send_skip", "email_complaint"]
+      timeout_seconds: 3600
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/catalog.json"
+      timeout_seconds: 3600
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

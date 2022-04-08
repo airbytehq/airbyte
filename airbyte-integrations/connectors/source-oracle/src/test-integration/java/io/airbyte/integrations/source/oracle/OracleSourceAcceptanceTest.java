@@ -18,12 +18,10 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -35,7 +33,10 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    container = new OracleContainer()
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid();
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -101,23 +102,18 @@ public class OracleSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("ID"))
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING),
-                Field.of("POWER", JsonSchemaPrimitive.NUMBER))
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING),
+                Field.of("POWER", JsonSchemaType.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("ID"))
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
-                Field.of("ID", JsonSchemaPrimitive.NUMBER),
-                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                Field.of("ID", JsonSchemaType.NUMBER),
+                Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

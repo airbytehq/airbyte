@@ -21,6 +21,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -28,15 +29,15 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 public class BufferedStreamConsumerTest {
 
@@ -47,13 +48,13 @@ public class BufferedStreamConsumerTest {
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING)),
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING)),
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME2,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING))));
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING))));
 
   private static final AirbyteMessage STATE_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
@@ -64,7 +65,7 @@ public class BufferedStreamConsumerTest {
 
   private BufferedStreamConsumer consumer;
   private VoidCallable onStart;
-  private RecordWriter recordWriter;
+  private RecordWriter<AirbyteRecordMessage> recordWriter;
   private CheckedConsumer<Boolean, Exception> onClose;
   private CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
   private Consumer<AirbyteMessage> outputRecordCollector;
@@ -80,18 +81,17 @@ public class BufferedStreamConsumerTest {
     consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
-        recordWriter,
+        new InMemoryRecordBufferingStrategy(recordWriter, 1_000),
         onClose,
         CATALOG,
-        isValidRecord,
-        10);
+        isValidRecord);
 
     when(isValidRecord.apply(any())).thenReturn(true);
   }
 
   @Test
   void test1StreamWith1State() throws Exception {
-    final List<AirbyteMessage> expectedRecords = getNRecords(10);
+    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -107,7 +107,7 @@ public class BufferedStreamConsumerTest {
 
   @Test
   void test1StreamWith2State() throws Exception {
-    final List<AirbyteMessage> expectedRecords = getNRecords(10);
+    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -124,7 +124,7 @@ public class BufferedStreamConsumerTest {
 
   @Test
   void test1StreamWith0State() throws Exception {
-    final List<AirbyteMessage> expectedRecords = getNRecords(10);
+    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -137,8 +137,8 @@ public class BufferedStreamConsumerTest {
 
   @Test
   void test1StreamWithStateAndThenMoreRecordsBiggerThanBuffer() throws Exception {
-    final List<AirbyteMessage> expectedRecordsBatch1 = getNRecords(10);
-    final List<AirbyteMessage> expectedRecordsBatch2 = getNRecords(10, 20);
+    final List<AirbyteMessage> expectedRecordsBatch1 = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecordsBatch2 = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);
@@ -156,18 +156,17 @@ public class BufferedStreamConsumerTest {
 
   @Test
   void test1StreamWithStateAndThenMoreRecordsSmallerThanBuffer() throws Exception {
-    final List<AirbyteMessage> expectedRecordsBatch1 = getNRecords(10);
-    final List<AirbyteMessage> expectedRecordsBatch2 = getNRecords(10, 20);
+    final List<AirbyteMessage> expectedRecordsBatch1 = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecordsBatch2 = generateRecords(1_000);
 
     // consumer with big enough buffered that we see both batches are flushed in one go.
     final BufferedStreamConsumer consumer = new BufferedStreamConsumer(
         outputRecordCollector,
         onStart,
-        recordWriter,
+        new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
         onClose,
         CATALOG,
-        isValidRecord,
-        20);
+        isValidRecord);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);
@@ -188,9 +187,9 @@ public class BufferedStreamConsumerTest {
 
   @Test
   void testExceptionAfterOneStateMessage() throws Exception {
-    final List<AirbyteMessage> expectedRecordsBatch1 = getNRecords(10);
-    final List<AirbyteMessage> expectedRecordsBatch2 = getNRecords(10, 20);
-    final List<AirbyteMessage> expectedRecordsBatch3 = getNRecords(20, 21);
+    final List<AirbyteMessage> expectedRecordsBatch1 = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecordsBatch2 = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecordsBatch3 = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);
@@ -209,9 +208,9 @@ public class BufferedStreamConsumerTest {
 
   @Test
   void testExceptionAfterNoStateMessages() throws Exception {
-    final List<AirbyteMessage> expectedRecordsBatch1 = getNRecords(10);
-    final List<AirbyteMessage> expectedRecordsBatch2 = getNRecords(10, 20);
-    final List<AirbyteMessage> expectedRecordsBatch3 = getNRecords(20, 21);
+    final List<AirbyteMessage> expectedRecordsBatch1 = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecordsBatch2 = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecordsBatch3 = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);
@@ -232,14 +231,14 @@ public class BufferedStreamConsumerTest {
   void testExceptionDuringOnClose() throws Exception {
     doThrow(new IllegalStateException("induced exception")).when(onClose).accept(false);
 
-    final List<AirbyteMessage> expectedRecordsBatch1 = getNRecords(10);
-    final List<AirbyteMessage> expectedRecordsBatch2 = getNRecords(10, 20);
+    final List<AirbyteMessage> expectedRecordsBatch1 = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecordsBatch2 = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);
     consumer.accept(STATE_MESSAGE1);
     consumeRecords(consumer, expectedRecordsBatch2);
-    assertThrows(IllegalStateException.class, () -> consumer.close());
+    assertThrows(IllegalStateException.class, () -> consumer.close(), "Expected an error to be thrown on close");
 
     verifyStartAndClose();
 
@@ -250,7 +249,7 @@ public class BufferedStreamConsumerTest {
 
   @Test
   void test2StreamWith1State() throws Exception {
-    final List<AirbyteMessage> expectedRecordsStream1 = getNRecords(10);
+    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(1_000);
     final List<AirbyteMessage> expectedRecordsStream2 = expectedRecordsStream1
         .stream()
         .map(Jsons::clone)
@@ -273,7 +272,7 @@ public class BufferedStreamConsumerTest {
 
   @Test
   void test2StreamWith2State() throws Exception {
-    final List<AirbyteMessage> expectedRecordsStream1 = getNRecords(10);
+    final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(1_000);
     final List<AirbyteMessage> expectedRecordsStream2 = expectedRecordsStream1
         .stream()
         .map(Jsons::clone)
@@ -310,21 +309,28 @@ public class BufferedStreamConsumerTest {
     });
   }
 
-  private static List<AirbyteMessage> getNRecords(final int endExclusive) {
-    return getNRecords(0, endExclusive);
-  }
-
-  private static List<AirbyteMessage> getNRecords(final int startInclusive, final int endExclusive) {
-    return IntStream.range(startInclusive, endExclusive)
-        .boxed()
-        .map(i -> new AirbyteMessage()
-            .withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream(STREAM_NAME)
-                .withNamespace(SCHEMA_NAME)
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
-        .collect(Collectors.toList());
+  private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
+    final List<AirbyteMessage> output = Lists.newArrayList();
+    long bytesCounter = 0;
+    for (int i = 0;; i++) {
+      final JsonNode payload =
+          Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
+      final long sizeInBytes = RecordSizeEstimator.getStringByteSize(payload);
+      bytesCounter += sizeInBytes;
+      final AirbyteMessage airbyteMessage = new AirbyteMessage()
+          .withType(Type.RECORD)
+          .withRecord(new AirbyteRecordMessage()
+              .withStream(STREAM_NAME)
+              .withNamespace(SCHEMA_NAME)
+              .withEmittedAt(Instant.now().toEpochMilli())
+              .withData(payload));
+      if (bytesCounter > targetSizeInBytes) {
+        break;
+      } else {
+        output.add(airbyteMessage);
+      }
+    }
+    return output;
   }
 
   private void verifyRecords(final String streamName, final String namespace, final Collection<AirbyteMessage> expectedRecords) throws Exception {

@@ -1,6 +1,8 @@
 .gradle
 .idea
+.vscode
 *.iml
+*.swp
 build
 out
 .DS_Store
@@ -9,6 +11,9 @@ data
 .classpath
 .project
 .settings
+**/gmon.out
+static_checker_reports/
+.vscode
 
 # Logs
 acceptance_tests_logs/
@@ -60,5 +65,3 @@ resources/examples/airflow/logs/*
 
 # Cloud Demo
 !airbyte-webapp/src/packages/cloud/data
-/bin/
-/**/bin/

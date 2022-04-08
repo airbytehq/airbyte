@@ -4,8 +4,9 @@
 
 
 from datetime import datetime
-from typing import Any, List, MutableMapping, Optional
+from typing import Any, Dict, List, MutableMapping, Optional
 
+from jsonschema import RefResolver
 from pydantic import BaseModel, Extra
 
 
@@ -28,6 +29,36 @@ class BaseSchemaModel(BaseModel):
                     elif "$ref" in prop:
                         ref = prop.pop("$ref")
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
+
+    @classmethod
+    def _expand_refs(cls, schema: Any, ref_resolver: Optional[RefResolver] = None) -> None:
+        """Iterate over schema and replace all occurrences of $ref with their definitions. Recursive.
+
+        :param schema: schema that will be patched
+        :param ref_resolver: resolver to get definition from $ref, if None pass it will be instantiated
+        """
+        ref_resolver = ref_resolver or RefResolver.from_schema(schema)
+
+        if isinstance(schema, MutableMapping):
+            if "$ref" in schema:
+                ref_url = schema.pop("$ref")
+                _, definition = ref_resolver.resolve(ref_url)
+                cls._expand_refs(definition, ref_resolver=ref_resolver)  # expand refs in definitions as well
+                schema.update(definition)
+            else:
+                for key, value in schema.items():
+                    cls._expand_refs(value, ref_resolver=ref_resolver)
+        elif isinstance(schema, List):
+            for value in schema:
+                cls._expand_refs(value, ref_resolver=ref_resolver)
+
+    @classmethod
+    def schema(cls, **kwargs) -> Dict[str, Any]:
+        """We're overriding the schema classmethod to enable some post-processing"""
+        schema = super().schema(**kwargs)
+        cls._expand_refs(schema)  # UI and destination doesn't support $ref's
+        schema.pop("definitions", None)  # remove definitions created by $ref
+        return schema
 
     object: str
 

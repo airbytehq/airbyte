@@ -6,6 +6,7 @@ The [connector specification](../understanding-airbyte/airbyte-specification.md#
 
 While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
 
+
 ### Secret obfuscation
 
 By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API \(for example when working with a password\), add the `airbyte_secret` annotation to your connector's `spec.json` e.g:
@@ -19,6 +20,35 @@ By default, any fields in a connector's specification are visible can be read in
 ```
 
 Here is an example of what the password field would look like: ![Screen Shot 2021-08-04 at 11 15 04 PM](https://user-images.githubusercontent.com/6246757/128300633-7f379b05-5f4a-46e8-ad88-88155e7f4260.png)
+
+
+### Ordering fields in the UI
+
+Use the `order` property inside a definition to determine the order in which it will appear relative to other objects on the same level of nesting in the UI. 
+
+For example, using the following spec: 
+
+```
+{
+  "username": {"type": "string", "order": 1},
+  "password": {"type": "string", "order": 2},
+  "cloud_provider": {
+    "order": 0,
+    "type": "object",
+    "properties" : {
+      "name": {"type": "string", "order": 0},
+      "region": {"type": "string", "order": 1}
+    }
+  }
+}
+```
+
+will result in the following configuration on the UI: 
+
+![Screen Shot 2021-11-18 at 7 14 04 PM](https://user-images.githubusercontent.com/6246757/142558797-135f6c73-f05d-479f-9d88-e20cae85870c.png)
+
+
+
 
 ### Multi-line String inputs
 
@@ -63,7 +93,7 @@ In order for the Airbyte UI to correctly render a specification, however, a few 
 
 Let's look at the [source-file](../integrations/sources/file.md) implementation as an example. In this example, we have `provider` as a dropdown list option, which allows the user to select what provider their file is being hosted on. We note that the `oneOf` keyword lives under the `provider` object as follows:
 
-In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const`, `default` and `enum` value unique to that item. There is a [Github issue](https://github.com/airbytehq/airbyte/issues/6384) to improve it and use only `const` in the specification. This helps the UI and the connector distinguish between the option that was chosen by the user. This can be displayed with adapting the file source spec to this example:
+In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. This can be displayed with adapting the file source spec to this example:
 
 ```javascript
 {
@@ -97,8 +127,6 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
               "option_title": {
                 "type": "string",
                 "const": "HTTPS: Public Web",
-                "enum": ["HTTPS: Public Web"],
-                "default": "HTTPS: Public Web",
                 "order": 0
               }
             }
@@ -111,8 +139,6 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
               "option_title": {
                 "type": "string",
                 "const": "GCS: Google Cloud Storage",
-                "enum": ["GCS: Google Cloud Storage"],
-                "default": "GCS: Google Cloud Storage",
                 "order": 0
               },
               "service_account_json": {

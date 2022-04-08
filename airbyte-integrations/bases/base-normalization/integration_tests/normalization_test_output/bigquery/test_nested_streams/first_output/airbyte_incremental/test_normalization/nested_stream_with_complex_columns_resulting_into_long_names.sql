@@ -7,6 +7,7 @@
   as (
     
 -- Final base SQL model
+-- depends_on: `dataline-integration-testing`.test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names_scd`
 select
     _airbyte_unique_key,
     id,

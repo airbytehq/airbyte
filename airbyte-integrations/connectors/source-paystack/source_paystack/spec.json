@@ -9,12 +9,14 @@
     "properties": {
       "secret_key": {
         "type": "string",
+        "title": "Secret Key",
         "pattern": "^(s|r)k_(live|test)_[a-zA-Z0-9]+$",
-        "description": "Paystack API key (usually starts with 'sk_live_'; find yours <a href=\"https://dashboard.paystack.com/#/settings/developer\">here</a>).",
+        "description": "The Paystack API key (usually starts with 'sk_live_'; find yours <a href=\"https://dashboard.paystack.com/#/settings/developer\">here</a>).",
         "airbyte_secret": true
       },
       "start_date": {
         "type": "string",
+        "title": "Start Date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2017-01-25T00:00:00Z"]

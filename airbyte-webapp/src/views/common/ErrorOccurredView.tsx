@@ -1,9 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
 import BaseClearView from "components/BaseClearView";
-import { H4 } from "components";
+import { H4, ContentCard } from "components";
 
 const Content = styled(ContentCard)`
   width: 100%;
@@ -11,13 +10,12 @@ const Content = styled(ContentCard)`
   padding: 50px 15px;
 `;
 
-const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({
-  message,
-}) => {
+const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({ message, children }) => {
   return (
     <BaseClearView>
       <Content>
         <H4 center>{message}</H4>
+        {children}
       </Content>
     </BaseClearView>
   );

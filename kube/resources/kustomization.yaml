@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - airbyte-minio.yaml
+  - bootloader.yaml
   - db.yaml
   - pod-sweeper.yaml
   - scheduler.yaml

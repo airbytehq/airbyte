@@ -5,9 +5,11 @@
 package io.airbyte.scheduler.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
+import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.io.IOException;
@@ -73,19 +75,19 @@ public interface JobPersistence {
   //
 
   /**
-   * Create a new attempt for a job. Throws {@link IllegalStateException} if the job is already in a
-   * terminal state.
+   * Create a new attempt for a job and return its attempt number. Throws
+   * {@link IllegalStateException} if the job is already in a terminal state.
    *
    * @param jobId job for which an attempt will be created
    * @param logPath path where logs should be written for the attempt
-   * @return id of the attempt
+   * @return The attempt number of the created attempt (see {@link DefaultJobPersistence})
    * @throws IOException exception due to interaction with persistence
    */
   int createAttempt(long jobId, Path logPath) throws IOException;
 
   /**
-   * Sets an attempt to FAILED. Also attempts the parent job to FAILED. The job's status will not be
-   * changed if it is already in a terminal state.
+   * Sets an attempt to FAILED. Also attempts to set the parent job to INCOMPLETE. The job's status
+   * will not be changed if it is already in a terminal state.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -94,8 +96,8 @@ public interface JobPersistence {
   void failAttempt(long jobId, int attemptNumber) throws IOException;
 
   /**
-   * Sets an attempt to SUCCEEDED. Also attempts the parent job to SUCCEEDED. The job's status is
-   * changed regardless of what state it is in.
+   * Sets an attempt to SUCCEEDED. Also attempts to set the parent job to SUCCEEDED. The job's status
+   * is changed regardless of what state it is in.
    *
    * @param jobId job id
    * @param attemptNumber attempt id
@@ -125,6 +127,16 @@ public interface JobPersistence {
   <T> void writeOutput(long jobId, int attemptNumber, T output) throws IOException;
 
   /**
+   * Writes a summary of all failures that occurred during the attempt.
+   *
+   * @param jobId job id
+   * @param attemptNumber attempt number
+   * @param failureSummary summary containing failure metadata and ordered list of failures
+   * @throws IOException exception due to interaction with persistence
+   */
+  void writeAttemptFailureSummary(long jobId, int attemptNumber, AttemptFailureSummary failureSummary) throws IOException;
+
+  /**
    * @param configTypes - type of config, e.g. sync
    * @param configId - id of that config
    * @return lists job in descending order by created_at
@@ -133,7 +145,6 @@ public interface JobPersistence {
   List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
 
   /**
-   *
    * @param configType The type of job
    * @param attemptEndedAtTimestamp The timestamp after which you want the jobs
    * @return List of jobs that have attempts after the provided timestamp
@@ -149,9 +160,31 @@ public interface JobPersistence {
 
   List<Job> listJobsWithStatus(JobConfig.ConfigType configType, JobStatus status) throws IOException;
 
+  /**
+   * @param connectionId The ID of the connection
+   * @param configTypes The types of jobs
+   * @param jobCreatedAtTimestamp The timestamp after which you want the jobs
+   * @return List of job statuses from a specific connection that have attempts after the provided
+   *         timestamp, sorted by jobs' createAt in descending order
+   * @throws IOException
+   */
+  List<JobStatus> listJobStatusWithConnection(UUID connectionId, Set<JobConfig.ConfigType> configTypes, Instant jobCreatedAtTimestamp)
+      throws IOException;
+
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
 
+  Optional<Job> getFirstReplicationJob(UUID connectionId) throws IOException;
+
   Optional<Job> getNextJob() throws IOException;
+
+  /**
+   * @param configType The type of job
+   * @param attemptEndedAtTimestamp The timestamp after which you want the attempts
+   * @return List of attempts (with job attached) that ended after the provided timestamp, sorted by
+   *         attempts' endedAt in ascending order
+   * @throws IOException
+   */
+  List<AttemptWithJobInfo> listAttemptsWithJobInfo(ConfigType configType, Instant attemptEndedAtTimestamp) throws IOException;
 
   /// ARCHIVE
 

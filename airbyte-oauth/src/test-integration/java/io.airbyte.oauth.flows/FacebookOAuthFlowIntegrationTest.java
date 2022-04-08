@@ -17,6 +17,7 @@ import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.oauth.flows.OAuthFlowIntegrationTest;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,15 +32,16 @@ public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   protected static final String REDIRECT_URL = "http://localhost:9000/auth_flow";
 
   @Override
-  protected Path get_credentials_path() {
+  protected Path getCredentialsPath() {
     return CREDENTIALS_PATH;
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowObject(ConfigRepository configRepository) {
-    return new FacebookMarketingOAuthFlow(configRepository);
+  protected OAuthFlowImplementation getFlowImplementation(final ConfigRepository configRepository, final HttpClient httpClient) {
+    return new FacebookMarketingOAuthFlow(configRepository, httpClient);
   }
 
+  @Override
   @BeforeEach
   public void setup() throws IOException {
     super.setup();
@@ -54,7 +56,7 @@ public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   public void testFullFacebookOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
@@ -64,7 +66,7 @@ public class FacebookOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = flow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     waitForResponse(20);
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");

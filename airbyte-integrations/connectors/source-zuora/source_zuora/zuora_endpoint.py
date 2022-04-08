@@ -22,5 +22,5 @@ ZUORA_TENANT_ENDPOINT_MAP: Dict = {
 
 
 def get_url_base(tenant_endpoint: str) -> str:
-    """ Define the URL Base from user's input with respect to the ZUORA_TENANT_ENDPOINT_MAP """
+    """Define the URL Base from user's input with respect to the ZUORA_TENANT_ENDPOINT_MAP"""
     return ZUORA_TENANT_ENDPOINT_MAP.get(tenant_endpoint)

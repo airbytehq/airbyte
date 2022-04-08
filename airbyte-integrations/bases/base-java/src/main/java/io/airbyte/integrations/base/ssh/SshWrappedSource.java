@@ -14,9 +14,12 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SshWrappedSource implements Source {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(SshWrappedSource.class);
   private final Source delegate;
   private final List<String> hostKey;
   private final List<String> portKey;
@@ -46,7 +49,15 @@ public class SshWrappedSource implements Source {
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final SshTunnel tunnel = SshTunnel.getInstance(config, hostKey, portKey);
-    return AutoCloseableIterators.appendOnClose(delegate.read(tunnel.getConfigInTunnel(), catalog, state), tunnel::close);
+    final AutoCloseableIterator<AirbyteMessage> delegateRead;
+    try {
+      delegateRead = delegate.read(tunnel.getConfigInTunnel(), catalog, state);
+    } catch (final Exception e) {
+      LOGGER.error("Exception occurred while getting the delegate read iterator, closing SSH tunnel", e);
+      tunnel.close();
+      throw e;
+    }
+    return AutoCloseableIterators.appendOnClose(delegateRead, tunnel::close);
   }
 
 }

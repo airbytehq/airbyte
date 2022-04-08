@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -19,7 +20,11 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
+import io.airbyte.db.instance.development.DevDatabaseMigrator;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.util.Collections;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -43,8 +48,12 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
   @BeforeAll
   public static void setup() throws Exception {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-    configPersistence = spy(new DatabaseConfigPersistence(database));
-    database.query(ctx -> ctx.execute("TRUNCATE TABLE airbyte_configs"));
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
+    final ConfigsDatabaseMigrator configsDatabaseMigrator =
+        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
+    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+    truncateAllTables();
   }
 
   @AfterAll
@@ -70,7 +79,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     configPersistence.loadData(seedPersistence);
 
     // the new destination is added
-    assertRecordCount(3);
+    assertRecordCount(3, ACTOR_DEFINITION);
     assertHasDestination(DESTINATION_SNOWFLAKE);
 
     verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
@@ -91,10 +100,20 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     // create connections to mark the source and destination as in use
     final DestinationConnection s3Connection = new DestinationConnection()
         .withDestinationId(UUID.randomUUID())
+        .withWorkspaceId(UUID.randomUUID())
+        .withName("s3Connection")
         .withDestinationDefinitionId(destinationS3V2.getDestinationDefinitionId());
+    final StandardWorkspace standardWorkspace = new StandardWorkspace()
+        .withWorkspaceId(s3Connection.getWorkspaceId())
+        .withName("workspace")
+        .withSlug("slug")
+        .withInitialSetupComplete(true);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString(), standardWorkspace);
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, s3Connection.getDestinationId().toString(), s3Connection);
     final SourceConnection githubConnection = new SourceConnection()
         .withSourceId(UUID.randomUUID())
+        .withWorkspaceId(standardWorkspace.getWorkspaceId())
+        .withName("githubConnection")
         .withSourceDefinitionId(sourceGithubV2.getSourceDefinitionId());
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, githubConnection.getSourceId().toString(), githubConnection);
 

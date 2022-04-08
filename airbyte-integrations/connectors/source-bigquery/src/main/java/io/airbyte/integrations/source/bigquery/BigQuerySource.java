@@ -22,7 +22,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -87,8 +87,8 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(final StandardSQLTypeName columnType) {
-    return sourceOperations.getType(columnType);
+  protected JsonSchemaType getType(final StandardSQLTypeName columnType) {
+    return sourceOperations.getJsonType(columnType);
   }
 
   @Override

@@ -6,9 +6,17 @@
 import json
 from typing import Dict, Generator
 
-from airbyte_protocol import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
+from airbyte_cdk.sources.source import Source
 from apiclient import errors
-from base_python import AirbyteLogger, Source
 from requests.status_codes import codes as status_codes
 
 from .client import GoogleSheetsClient
@@ -34,7 +42,7 @@ class GoogleSheetsSource(Source):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Please use valid credentials json file. Error: {e}")
 
-        spreadsheet_id = config["spreadsheet_id"]
+        spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
         try:
             # Attempt to get first row of sheet
@@ -86,7 +94,7 @@ class GoogleSheetsSource(Source):
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         client = GoogleSheetsClient(self.get_credentials(config))
-        spreadsheet_id = config["spreadsheet_id"]
+        spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
             spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
@@ -116,7 +124,7 @@ class GoogleSheetsSource(Source):
         client = GoogleSheetsClient(self.get_credentials(config))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
-        spreadsheet_id = config["spreadsheet_id"]
+        spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been

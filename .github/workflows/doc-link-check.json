@@ -46,10 +46,14 @@
       "pattern": "destinations/scaffold-"
     },
     {
+      "reason": "Returns a 403 for many valid pages",
+      "pattern": "https://mvnrepository.com/artifact/"
+    },
+    {
       "reason": "Archived articles aren't actively maintained.",
       "pattern": "archive/"
     }
   ],
   "retryOn429": false,
-  "aliveStatusCodes": [200, 206, 401, 403, 429, 503]
+  "aliveStatusCodes": [200, 206, 429, 503, 0]
 }

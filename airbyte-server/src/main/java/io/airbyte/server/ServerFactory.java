@@ -5,18 +5,24 @@
 package io.airbyte.server;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
+import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SchedulerJobClient;
-import io.airbyte.scheduler.client.SpecCachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.airbyte.workers.WorkerConfigs;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -25,9 +31,11 @@ import org.slf4j.MDC;
 public interface ServerFactory {
 
   ServerRunnable create(SchedulerJobClient schedulerJobClient,
-                        SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                        SynchronousSchedulerClient cachingSchedulerClient,
                         WorkflowServiceStubs temporalService,
                         ConfigRepository configRepository,
+                        SecretsRepositoryReader secretsRepositoryReader,
+                        SecretsRepositoryWriter secretsRepositoryWriter,
                         JobPersistence jobPersistence,
                         ConfigPersistence seed,
                         Database configsDatabase,
@@ -35,17 +43,23 @@ public interface ServerFactory {
                         TrackingClient trackingClient,
                         WorkerEnvironment workerEnvironment,
                         LogConfigs logConfigs,
+                        WorkerConfigs workerConfigs,
                         String webappUrl,
                         AirbyteVersion airbyteVersion,
-                        Path workspaceRoot);
+                        Path workspaceRoot,
+                        HttpClient httpClient,
+                        FeatureFlags featureFlags,
+                        EventRunner eventRunner);
 
   class Api implements ServerFactory {
 
     @Override
     public ServerRunnable create(final SchedulerJobClient schedulerJobClient,
-                                 final SpecCachingSynchronousSchedulerClient cachingSchedulerClient,
+                                 final SynchronousSchedulerClient synchronousSchedulerClient,
                                  final WorkflowServiceStubs temporalService,
                                  final ConfigRepository configRepository,
+                                 final SecretsRepositoryReader secretsRepositoryReader,
+                                 final SecretsRepositoryWriter secretsRepositoryWriter,
                                  final JobPersistence jobPersistence,
                                  final ConfigPersistence seed,
                                  final Database configsDatabase,
@@ -53,17 +67,23 @@ public interface ServerFactory {
                                  final TrackingClient trackingClient,
                                  final WorkerEnvironment workerEnvironment,
                                  final LogConfigs logConfigs,
+                                 final WorkerConfigs workerConfigs,
                                  final String webappUrl,
                                  final AirbyteVersion airbyteVersion,
-                                 final Path workspaceRoot) {
+                                 final Path workspaceRoot,
+                                 final HttpClient httpClient,
+                                 final FeatureFlags featureFlags,
+                                 final EventRunner eventRunner) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           temporalService,
           configRepository,
+          secretsRepositoryReader,
+          secretsRepositoryWriter,
           jobPersistence,
           seed,
           schedulerJobClient,
-          cachingSchedulerClient,
+          synchronousSchedulerClient,
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
           MDC.getCopyOfContextMap(),
           configsDatabase,
@@ -71,9 +91,13 @@ public interface ServerFactory {
           trackingClient,
           workerEnvironment,
           logConfigs,
+          workerConfigs,
           webappUrl,
           airbyteVersion,
-          workspaceRoot);
+          workspaceRoot,
+          httpClient,
+          featureFlags,
+          eventRunner);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);
