@@ -7,6 +7,7 @@ ENV APPLICATION airbyte-server
 
 WORKDIR /app
 
+# This is automatically unzipped by Docker
 ADD bin/${APPLICATION}-0.35.65-alpha.tar /app
 
 # wait for upstream dependencies to become available before starting server
