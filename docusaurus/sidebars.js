@@ -2,7 +2,7 @@ module.exports = {
   mySidebar: [
     {
       type: 'doc',
-      id: "README",
+      id: "readme",
     },
     {
       type: 'category',
