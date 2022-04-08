@@ -206,7 +206,7 @@ public class JobNotifier {
     final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
     final String durationString = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
 
-    return String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, reason);
+    return String.format("sync started on %s, running for %s%s.", formatter.format(jobStartedDate), durationString, reason);
   }
 
   public void failJob(final String reason, final Job job) {
