@@ -201,7 +201,7 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
                     for num, s in enumerate(subschema.get("oneOf") or subschema.get("anyOf"))
                 ]
             return [_scan_schema({"type": "object", **s}, path) for s in subschema.get("oneOf") or subschema.get("anyOf")]
-        schema_type = subschema.get("type", ["null"])
+        schema_type = subschema.get("type", ["object", "null"])
         if not isinstance(schema_type, list):
             schema_type = [schema_type]
         if "object" in schema_type:
