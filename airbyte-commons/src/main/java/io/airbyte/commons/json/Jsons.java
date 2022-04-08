@@ -20,9 +20,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.stream.MoreStreams;
-import io.airbyte.commons.util.MoreLists;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -209,80 +207,6 @@ public class Jsons {
     final Optional<JsonNode> optional = getOptional(json, keys);
     return optional.map(JsonNode::asInt).orElse(0);
   }
-
-//  // todo - what happens if there is a key that equals "[]"
-//  // todo - link to jsonpath rules
-//  /**
-//   *
-//   * @param obj
-//   * @param jsonPath
-//   * @return
-//   */
-//  public static List<JsonNode> selectWithJsonPath(final JsonNode obj, final List<String> jsonPath) {
-//    if (obj == null) {
-//      return Collections.emptyList();
-//    }
-//
-//    if (jsonPath.isEmpty()) {
-//      return List.of(obj);
-//    }
-//
-//    final String nextKey = jsonPath.get(0);
-//    final List<String> nextPath = MoreLists.sublistToEnd(jsonPath, 1);
-//
-//    if (nextKey.equals("[]")) {
-//      final List<JsonNode> collector = new ArrayList<>();
-//      for (final JsonNode listItem : obj) {
-//        collector.addAll(selectWithJsonPath(listItem, nextPath));
-//      }
-//      return collector;
-//    } else if (obj.has(nextKey)) {
-//      return selectWithJsonPath(obj.get(nextKey), nextPath);
-//    } else {
-//      return Collections.emptyList();
-//    }
-//  }
-
-  // // https://www.baeldung.com/jackson-json-node-tree-model
-  // public static void processNode(final JsonNode jsonNode, final Consumer<JsonNode> consumer) {
-  // consumer.accept(jsonNode);
-  //
-  // if (jsonNode.isValueNode()) {
-  // return;
-  // } else if (jsonNode.isArray() || jsonNode.isObject()) {
-  // for (final JsonNode arrayItem : jsonNode) {
-  // processNode(arrayItem, consumer);
-  // }
-  // }
-  // }
-
-  // // root
-  // public static void processNodeWithPath(final JsonNode jsonNode, final BiConsumer<JsonNode,
-  // List<String>> consumer) {
-  // processNodeWithPath(jsonNode, new ArrayList<>(), consumer);
-  // }
-  //
-  // public static void processNodeWithPath(final JsonNode jsonNode, final List<String> path, final
-  // BiConsumer<JsonNode, List<String>> consumer) {
-  // consumer.accept(jsonNode, path);
-  //
-  // if (jsonNode.isValueNode()) {
-  // return;
-  // } else if (jsonNode.isArray()) {
-  // final List<String> newPath = new ArrayList(path);
-  // newPath.add("[]");
-  // for (final JsonNode arrayItem : jsonNode) {
-  // processNodeWithPath(arrayItem, newPath, consumer);
-  // }
-  // } else if (jsonNode.isObject()) {
-  // for (final Iterator<Entry<String, JsonNode>> it = jsonNode.fields(); it.hasNext();) {
-  // final Entry<String, JsonNode> child = it.next();
-  // final List<String> newPath = new ArrayList<>(path);
-  // newPath.add(child.getKey());
-  // processNodeWithPath(child.getValue(), newPath, consumer);
-  // }
-  // }
-  // }
 
   /**
    * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
