@@ -218,8 +218,9 @@ public class JsonSecretsProcessor {
   }
 
   /**
-   * This method extract all the json path of all secret in a json schema.
-   * The path are not the ones that match the path in the schema but will be matching the ones of the object described by the schema.
+   * This method extract all the json path of all secret in a json schema. The path are not the ones
+   * that match the path in the schema but will be matching the ones of the object described by the
+   * schema.
    *
    * @param currentNode - The node currently being process
    * @param currentPath - The current path of the node
@@ -240,8 +241,8 @@ public class JsonSecretsProcessor {
       final JsonNode prop = getProperties(currentNode);
 
       return StreamSupport.stream(Spliterators.spliteratorUnknownSize(prop.fields(), 0), false)
-              .flatMap(entry -> getAllSecretPathsRec(entry.getValue(), currentPath + "." + entry.getKey()).stream())
-                  .collect(Collectors.toSet());
+          .flatMap(entry -> getAllSecretPathsRec(entry.getValue(), currentPath + "." + entry.getKey()).stream())
+          .collect(Collectors.toSet());
 
     } else if (currentNode.isArray()) {
       final ArrayNode arrayNode = (ArrayNode) currentNode;
