@@ -8,9 +8,6 @@
         "title": "Auth Type",
         "const": "oauth2.0",
         "order": 0,
-        "enum": [
-          "oauth2.0"
-        ],
         "type": "string"
       },
       "client_id": {

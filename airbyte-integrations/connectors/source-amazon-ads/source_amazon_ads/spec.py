@@ -13,7 +13,7 @@ class AmazonAdsConfig(BaseModel):
     class Config:
         title = "Amazon Ads Spec"
 
-    auth_type: str = Field(default="oauth2.0", const=True, order=0, enum=["oauth2.0"])
+    auth_type: str = Field(default="oauth2.0", const=True, order=0)
 
     client_id: str = Field(
         name="Client ID",
