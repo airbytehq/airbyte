@@ -19,6 +19,6 @@ task copyScripts(type: Copy) {
     into 'build/docker/bin/scripts'
 }
 
-Task dockerBuildTask = getDockerBuildTask("init",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("init", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyScripts)
 assemble.dependsOn(dockerBuildTask)
