@@ -4,17 +4,20 @@
 
 import csv
 import ctypes
-import io
 import math
+import os
 import time
 from abc import ABC
+from contextlib import closing
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
+import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 
@@ -88,7 +91,8 @@ class SalesforceStream(HttpStream, ABC):
         return {"q": query}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()["records"]
+        records = response.json().get("records", [])
+        yield from records
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
@@ -136,9 +140,9 @@ class BulkSalesforceStream(SalesforceStream):
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
     @default_backoff_handler(max_tries=5, factor=15)
-    def _send_http_request(self, method: str, url: str, json: dict = None):
+    def _send_http_request(self, method: str, url: str, json: dict = None, stream: bool = False):
         headers = self.authenticator.get_auth_header()
-        response = self._session.request(method, url=url, headers=headers, json=json)
+        response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
             self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
         response.raise_for_status()
@@ -146,7 +150,7 @@ class BulkSalesforceStream(SalesforceStream):
 
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
-        docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.htm
+        docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
         """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
@@ -210,7 +214,7 @@ class BulkSalesforceStream(SalesforceStream):
                     # this is only job metadata without payload
                     error_message = job_info.get("errorMessage")
                     if not error_message:
-                        # not all failed response can have "errorMessage" and we need to print full response body
+                        # not all failed response can have "errorMessage" and we need to show full response body
                         error_message = job_info
                     self.logger.error(f"JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
 
@@ -252,18 +256,56 @@ class BulkSalesforceStream(SalesforceStream):
         """
         https://github.com/airbytehq/airbyte/issues/8300
         """
-        res = s.replace("\x00", "")
+        replace_list = ['"', "\x00", "\0", "\00"]
+        for rep in replace_list:
+            res = s.replace(rep, "")
         if len(res) < len(s):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
         return res
 
-    def convert_response_to_csv(self, response: requests.Response):
-        decoded_content = self.filter_null_bytes(response.content.decode("utf-8"))
-        yield from csv.DictReader(io.StringIO(decoded_content, newline=""), dialect="unix")
+    def download_data(self, url: str, chunk_size: float = 1024) -> Iterable[Tuple[int, Mapping[str, Any]]]:
+        """
+        Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitaions.
+        @ url: string - the url of the `executed_job`
+        @ chunk_size: float - the buffer size for each chunk to fetch from stream, in bytes, default: 1024 bytes
 
-    def download_data(self, url: str) -> Iterable[Tuple[int, Mapping[str, Any]]]:
-        for n, row in enumerate(self.convert_response_to_csv(self._send_http_request("GET", f"{url}/results")), 1):
-            yield n, row
+        Returns the string with file path of downloaded binary data. Saved temporarily.
+        """
+        # set filepath for binary data from response
+        tmp_file = os.path.realpath(os.path.basename(url))
+
+        with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response:
+            with open(tmp_file, "w") as data_file:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    data_file.writelines(self.filter_null_bytes(chunk.decode("utf-8")))
+        # check the file exists
+        if os.path.isfile(tmp_file):
+            return tmp_file
+        else:
+            self.logger.error(f"Could not verify binary data for stream `{self.name}`!")
+
+    def read_with_chunks(self, path: str = None, chunk_size: int = 100):
+        """
+        Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
+        @ path: string - the path to the downloaded temporarily binary data.
+        @ chunk_size: int - the number of lines to read at a time, default: 1000 lines / time.
+        """
+        with open(path, "r", encoding="utf-8") as data:
+            try:
+                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
+                for chunk in chunks:
+                    chunk = chunk.replace({nan: None}).to_dict(orient="records")
+                    for n, row in enumerate(chunk, 1):
+                        yield n, row
+            except pd.errors.EmptyDataError as e:
+                self.logger.warn(f"Empty data received. {e}")
+                yield from []
+
+        # clean temporarily binary file, after data is read
+        if os.path.isfile(path):
+            os.remove(path)
+        else:
+            self.logger.error(f"Could not remove binary data for stream `{self.name}`, {path} file is not found.")
 
     def abort_job(self, url: str):
         data = {"state": "Aborted"}
@@ -292,7 +334,6 @@ class BulkSalesforceStream(SalesforceStream):
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
-
         return {"q": query}
 
     def read_records(
@@ -325,7 +366,7 @@ class BulkSalesforceStream(SalesforceStream):
 
             count = 0
             record: Mapping[str, Any] = {}
-            for count, record in self.download_data(url=job_full_url):
+            for count, record in self.read_with_chunks(self.download_data(url=job_full_url)):
                 yield record
             self.delete_job(url=job_full_url)
 
