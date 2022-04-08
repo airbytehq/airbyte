@@ -9441,9 +9441,7 @@
           - "Sandbox"
         start_datetime:
           title: "Start Date"
-          type:
-          - "null"
-          - "string"
+          type: "string"
           examples:
           - "2000-01-01"
           - "2000-01-01 13:00"
