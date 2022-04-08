@@ -1,8 +1,4 @@
-import {
-  getUtmFromStorage,
-  storeUtmFromQuery,
-  clearUtmStorage,
-} from "./utmStorage";
+import { getUtmFromStorage, storeUtmFromQuery, clearUtmStorage } from "./utmStorage";
 
 describe("utmStorage", () => {
   beforeEach(() => {
@@ -10,17 +6,13 @@ describe("utmStorage", () => {
   });
 
   it("correctly parses UTM parameters into sessionStorage", () => {
-    storeUtmFromQuery(
-      "?utm_source=twitter&utm_medium=social&utm_campaign=spring2022"
-    );
+    storeUtmFromQuery("?utm_source=twitter&utm_medium=social&utm_campaign=spring2022");
     const expected = {
       utm_source: "twitter",
       utm_medium: "social",
       utm_campaign: "spring2022",
     };
-    expect(JSON.parse(sessionStorage.getItem("utmParams") ?? "")).toEqual(
-      expected
-    );
+    expect(JSON.parse(sessionStorage.getItem("utmParams") ?? "")).toEqual(expected);
     expect(getUtmFromStorage()).toEqual(expected);
   });
 

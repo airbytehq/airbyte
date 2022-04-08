@@ -2,6 +2,7 @@ import React, { memo } from "react";
 import styled from "styled-components";
 
 import { Cell, CheckBox, RadioButton } from "components";
+
 import DataTypeCell from "./components/DataTypeCell";
 import { NameContainer } from "./styles";
 
@@ -28,12 +29,7 @@ const LastCell = styled(Cell)`
   margin-right: -10px;
 `;
 
-const FieldRowInner: React.FC<FieldRowProps> = ({
-  onPrimaryKeyChange,
-  onCursorChange,
-  path,
-  ...props
-}) => {
+const FieldRowInner: React.FC<FieldRowProps> = ({ onPrimaryKeyChange, onCursorChange, path, ...props }) => {
   return (
     <>
       <FirstCell ellipsis flex={1.5}>
@@ -41,19 +37,11 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
       </FirstCell>
       <DataTypeCell nullable={props.nullable}>{props.type}</DataTypeCell>
       <Cell>
-        {props.isCursorEnabled && (
-          <RadioButton
-            checked={props.isCursor}
-            onChange={() => onCursorChange(path)}
-          />
-        )}
+        {props.isCursorEnabled && <RadioButton checked={props.isCursor} onChange={() => onCursorChange(path)} />}
       </Cell>
       <Cell>
         {props.isPrimaryKeyEnabled && (
-          <CheckBox
-            checked={props.isPrimaryKey}
-            onChange={() => onPrimaryKeyChange(path)}
-          />
+          <CheckBox checked={props.isPrimaryKey} onChange={() => onPrimaryKeyChange(path)} />
         )}
       </Cell>
       <LastCell ellipsis title={props.destinationName} flex={1.5}>

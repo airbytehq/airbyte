@@ -1,4 +1,5 @@
 import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
+
 import { RoutePaths } from "../../../pages/routePaths";
 
 const getPageName = (pathname: string): string => {

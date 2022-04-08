@@ -4,11 +4,12 @@ import styled from "styled-components";
 
 import { ContentCard, ImageBlock } from "components";
 import { Header, Row, Cell } from "components/SimpleTableComponents";
-import EnabledControl from "./EnabledControl";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
-
-import { Connection } from "core/resources/Connection";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { Connection } from "core/domain/connection";
+
+import EnabledControl from "./EnabledControl";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -36,6 +37,7 @@ type IProps = {
   frequencyText?: string;
   destinationDefinition?: DestinationDefinition;
   sourceDefinition?: SourceDefinition;
+  allowSync?: boolean;
 };
 
 const StatusMainInfo: React.FC<IProps> = ({
@@ -43,6 +45,7 @@ const StatusMainInfo: React.FC<IProps> = ({
   frequencyText,
   destinationDefinition,
   sourceDefinition,
+  allowSync,
 }) => {
   return (
     <MainInfo>
@@ -71,10 +74,7 @@ const StatusMainInfo: React.FC<IProps> = ({
         </SourceCell>
         <Cell>{frequencyText}</Cell>
         <EnabledCell flex={1.1}>
-          <EnabledControl
-            connection={connection}
-            frequencyText={frequencyText}
-          />
+          <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
         </EnabledCell>
       </Row>
     </MainInfo>

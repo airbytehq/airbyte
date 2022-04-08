@@ -4,10 +4,14 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
@@ -20,9 +24,12 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
@@ -30,9 +37,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -162,6 +173,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     database = SnowflakeDatabase.getDatabase(config);
     database.execute(createSchemaQuery);
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
   }
 
   @Override
@@ -199,6 +211,57 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);
+  }
+
+  @Override
+  public boolean requiresDateTimeConversionForNormalizedSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    if (dateTimeFieldNames.keySet().isEmpty()) {
+      return;
+    }
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var key = path.replace("/", StringUtils.EMPTY);
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToSnowflakeFormat(data.at(path).asText()));
+          case DATE -> data.put(key.toLowerCase(),
+              DateTimeUtils.convertToDateFormatWithZeroTime(data.at(path).asText()));
+        }
+      }
+    }
+  }
+
+  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
+    HashSet<String> nestedFieldNames = new HashSet<>();
+    for (AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        var iterator = message.getRecord().getData().fieldNames();
+        if (iterator.hasNext()) {
+          var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            nestedFieldNames.add(fieldName.toUpperCase());
+          }
+        }
+      }
+    }
+    if (actualMessages != null) {
+      for (AirbyteRecordMessage message : actualMessages) {
+        nestedFieldNames.stream().filter(name -> message.getData().has(name)).forEach(name -> {
+          var data = message.getData().get(name).asText();
+          try {
+            ((ObjectNode) message.getData()).put(name,
+                new ObjectMapper().readTree(data));
+          } catch (JsonProcessingException e) {
+            e.printStackTrace();
+          }
+        });
+      }
+    }
   }
 
 }

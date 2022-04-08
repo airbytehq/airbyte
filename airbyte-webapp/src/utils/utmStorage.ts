@@ -7,10 +7,7 @@ export const storeUtmFromQuery = (queryString?: string): void => {
     const utmParams = queryParams.filter(([key]) => key.startsWith("utm_"));
 
     if (utmParams.length) {
-      sessionStorage.setItem(
-        UTM_STORAGE_KEY,
-        JSON.stringify(Object.fromEntries(utmParams))
-      );
+      sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(Object.fromEntries(utmParams)));
     }
   }
 };

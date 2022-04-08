@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.databricks;
 
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
+import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.field;
 
@@ -25,14 +27,23 @@ import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
+import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,6 +158,78 @@ public class DatabricksDestinationAcceptanceTest extends DestinationAcceptanceTe
         DatabricksDestination.getDatabricksConnectionString(databricksConfig),
         DatabricksConstants.DATABRICKS_DRIVER_CLASS,
         SQLDialect.DEFAULT);
+  }
+
+  @Override
+  public boolean requiresDateTimeConversionForSync() {
+    return true;
+  }
+
+  @Override
+  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
+    for (String path : dateTimeFieldNames.keySet()) {
+      if (!data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
+        var pathFields = new ArrayList<>(Arrays.asList(path.split("/")));
+        pathFields.remove(0); // first element always empty string
+        // if pathFields.size() == 1 -> /field else /field/nestedField..
+        var pathWithoutLastField = pathFields.size() == 1 ? "/" + pathFields.get(0)
+            : "/" + String.join("/", pathFields.subList(0, pathFields.size() - 1));
+        switch (dateTimeFieldNames.get(path)) {
+          case DATE_TIME -> {
+            if (pathFields.size() == 1) {
+              data.put(pathFields.get(0).toLowerCase(), DateTimeUtils.convertToDatabricksFormat(data.get(pathFields.get(0)).asText()));
+            } else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(pathFields.get(pathFields.size() - 1).toLowerCase(),
+                  DateTimeUtils.convertToDatabricksFormat(data.at(path).asText()));
+            }
+          }
+          case DATE -> {
+            if (pathFields.size() == 1) {
+              data.put(pathFields.get(0).toLowerCase(),
+                  String.format("{\"member0\":%s,\"member1\":null}",
+                      DateTimeUtils.convertToDateFormat(data.get(pathFields.get(0)).asText())));
+            } else {
+              ((ObjectNode) data.at(pathWithoutLastField)).put(
+                  pathFields.get(pathFields.size() - 1).toLowerCase(),
+                  String.format("{\"member0\":%s,\"member1\":null}",
+                      DateTimeUtils.convertToDateFormat(data.at(path).asText())));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  protected void assertSameValue(String key,
+                                 JsonNode expectedValue,
+                                 JsonNode actualValue) {
+    var format = dateTimeFieldNames.getOrDefault(key, StringUtils.EMPTY);
+    if (DATE_TIME.equals(format) || DATE.equals(format)) {
+      Assertions.assertEquals(expectedValue.asText(), expectedValue.asText());
+    } else {
+      super.assertSameValue(key, expectedValue, actualValue);
+    }
+  }
+
+  @Override
+  protected void deserializeNestedObjects(List<AirbyteMessage> messages, List<AirbyteRecordMessage> actualMessages) {
+    for (AirbyteMessage message : messages) {
+      if (message.getType() == Type.RECORD) {
+        var iterator = message.getRecord().getData().fieldNames();
+        while (iterator.hasNext()) {
+          var fieldName = iterator.next();
+          if (message.getRecord().getData().get(fieldName).isContainerNode()) {
+            message.getRecord().getData().get(fieldName).fieldNames().forEachRemaining(f -> {
+              var data = message.getRecord().getData().get(fieldName).get(f);
+              var wrappedData = String.format("{\"%s\":%s,\"_airbyte_additional_properties\":null}", f,
+                  data.asText());
+              ((ObjectNode) message.getRecord().getData()).put(fieldName, wrappedData);
+            });
+          }
+        }
+      }
+    }
   }
 
 }
