@@ -300,18 +300,21 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                  Unnest(COALESCE(relacl::text[], Format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl,
                         Regexp_split_to_array(acl, '=|/') s
                  WHERE  r.rolname = ?
-                 AND    nspname = 'public'
+                 AND    (
+                               nspname = 'public'
+                          OR   nspname = ?)
                         -- 'm' means Materialized View
                  AND    c.relkind = 'm'
                  AND    (
                                -- all grants
                                c.relacl IS NULL
                                -- read grant
-                        OR     s[2] = 'r');
+                          OR     s[2] = 'r');
           """);
       final String username = database.getDatabaseConfig().get("username").asText();
       ps.setString(1, username);
       ps.setString(2, username);
+      ps.setString(3, username);
       return ps;
     }, sourceOperations::rowToJson)
         .collect(toSet())
