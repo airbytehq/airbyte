@@ -42,8 +42,12 @@ import org.slf4j.LoggerFactory;
  * returning a list for query results. In addition, we provide helper functions that will just
  * return a single value (see: {@link JsonPaths#getSingleValue(JsonNode, String)}). These should
  * only be used if it is not possible for a query to return more than one value.
+ *
+ * Note: Package private as most uses of JsonPaths seems like they can be hidden inside other
+ * commons libraries (i.e. Jsons and JsonsSchemas). If this assumption proves incorrect, we can open
+ * it up.
  */
-public class JsonPaths {
+class JsonPaths {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonPaths.class);
 
@@ -125,8 +129,15 @@ public class JsonPaths {
    * function would return: ["$.alpha[0]", "$.alpha[1]", "$.alpha[2]"].
    *
    * @param json - json object
-   * @param jsonPath - path into the json object. must be in the format of JSONPath.
-   * @return all paths that are present that match the input query
+   * @param jsonPath - path into the json object. must be in the format of JSONPath. <<<<<<< HEAD
+   * @return all paths that are present that match the input query =======
+   * @return all paths that are present that match the input query. returns a list (instead of a set),
+   *         because having a deterministic ordering is valuable for all downstream consumers (i.e. in
+   *         most cases if we returned a set, the downstream would then put it in a set and sort it so
+   *         that if they are doing replacements using the paths, the behavior is predictable e.g. if
+   *         you do replace $.alpha and $.alpha[*], the order you do those replacements in matters).
+   *         specifically that said, we do expect that there will be no duplicates in the returned
+   *         list. >>>>>>> ead33566776befc41d79b2f193895328e06f807b
    */
   public static List<String> getPaths(final JsonNode json, final String jsonPath) {
     return getInternal(GET_PATHS_CONFIGURATION, json, jsonPath)
