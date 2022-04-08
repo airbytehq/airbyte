@@ -41,7 +41,7 @@ Available options for namespace configurations are:
 
 ### - Mirror source structure
 
-Some sources \(such as databases based on JDBC for example\) are providing namespace informations from which a stream has been extracted from. Whenever a source is able to fill this field in the catalog.json file, the destination will try to reproduce exactly the same namespace when this configuraton is set. For sources or streams where the source namespace is not known, the behavior will fall back to the "Destination Connector settings".
+Some sources \(such as databases based on JDBC for example\) are providing namespace information from which a stream has been extracted. Whenever a source is able to fill this field in the catalog.json file, the destination will try to reproduce exactly the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will fall back to the "Destination Connector settings".
 
 ### - Destination connector settings
 
