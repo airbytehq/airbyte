@@ -53,71 +53,40 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         final int maxDaysOfOnlyFailedJobsBeforeWarning = maxDaysOfOnlyFailedJobs / 2;
         final int maxFailedJobsInARowBeforeConnectionDisableWarning = configs.getMaxFailedJobsInARowBeforeConnectionDisable() / 2;
 
-        final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), REPLICATION_TYPES,
-            input.getCurrTimestamp().minus(maxDaysOfOnlyFailedJobs, ChronoUnit.DAYS));
-
-        // list of job statuses to be used in deciding if a warning should be sent; subset of `jobStatuses`
-        final List<JobStatus> jobStatusesForWarning = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), REPLICATION_TYPES,
-            input.getCurrTimestamp().minus(maxDaysOfOnlyFailedJobsBeforeWarning, ChronoUnit.DAYS));
-
-        final Job lastJob;
         final Optional<Job> optionalJob = jobPersistence.getLastReplicationJob(input.getConnectionId());
-        if (optionalJob.isPresent()) {
-          lastJob = optionalJob.get();
-        } else {
-          throw new Exception("Auto-Disable Connection should not have been attempted if can't get latest replication job.");
-        }
+        final Job lastJob = optionalJob
+            .orElseThrow(() -> new Exception("Auto-Disable Connection should not have been attempted if can't get latest replication job."));
 
-        boolean hitDaysFailingWarningLimit = false;
-        boolean successFound = false;
-        int numFailures = 0;
-
-        // jobs are sorted from most recent to least recent
-        for (int i = 0; i < jobStatuses.size(); i++) {
-          final JobStatus jobStatus = jobStatuses.get(i);
-          if (jobStatus == JobStatus.FAILED) {
-            numFailures++;
-            if (numFailures == configs.getMaxFailedJobsInARowBeforeConnectionDisable()) {
-              disableConnection(input.getConnectionId(), lastJob);
-              return new AutoDisableConnectionOutput(true);
-            }
-          } else if (jobStatus == JobStatus.SUCCEEDED) {
-            successFound = true;
-            break;
-          }
-
-          // enters this if statement if only failures found in the past maxDaysOfOnlyFailedJobsBeforeWarning
-          // days
-          if (i == jobStatusesForWarning.size() - 1 && numFailures > 0) {
-            hitDaysFailingWarningLimit = true;
-          }
-        }
-
+        final int numFailuresForDisable = getNumOfFailuresBeforeSuccess(input, maxDaysOfOnlyFailedJobs);
         // if the jobs in the last maxDaysOfOnlyFailedJobs days don't include any succeeded or failed jobs
         // (e.g. only cancelled jobs), do not auto-disable and do not send any warnings
-        if (numFailures == 0) {
+        if (numFailuresForDisable == 0) {
           return new AutoDisableConnectionOutput(false);
+        } else if (Math.abs(numFailuresForDisable) == configs.getMaxFailedJobsInARowBeforeConnectionDisable()) {
+          disableConnection(input.getConnectionId(), lastJob);
+          return new AutoDisableConnectionOutput(true);
         }
 
         // calculate the number of days this connection first tried a replication job, used to ensure not to
         // disable or warn for `maxDaysOfOnlyFailedJobs` if the first job is younger than
         // `maxDaysOfOnlyFailedJobs` days, This avoids cases such as "the very first job run was a failure"
-        int numDaysSinceFirstReplicationJob = 0;
-        final Optional<Job> optionalFirstJob =
-            jobPersistence.getFirstReplicationJob(input.getConnectionId());
-        if (optionalFirstJob.isPresent()) {
-          final long timeBetweenCurrTimestampAndFirstJob =
-              input.getCurrTimestamp().getEpochSecond() - optionalFirstJob.get().getCreatedAtInSecond();
-          numDaysSinceFirstReplicationJob = Math.toIntExact(TimeUnit.SECONDS.toDays(timeBetweenCurrTimestampAndFirstJob));
-        }
+        final int numDaysSinceFirstReplicationJob = getNumDaysSinceFirstReplicationJob(input);
+        final boolean successFound = numFailuresForDisable < 0;
 
         if (numDaysSinceFirstReplicationJob >= maxDaysOfOnlyFailedJobs && !successFound) {
           disableConnection(input.getConnectionId(), lastJob);
           return new AutoDisableConnectionOutput(true);
-        } else if (numFailures == maxFailedJobsInARowBeforeConnectionDisableWarning
-            || (hitDaysFailingWarningLimit && numDaysSinceFirstReplicationJob >= maxDaysOfOnlyFailedJobsBeforeWarning)) {
+        }
+
+        // warn if number of failures hits maxFailedJobsInARowBeforeConnectionDisableWarning
+        if (Math.abs(numFailuresForDisable) == maxFailedJobsInARowBeforeConnectionDisableWarning) {
           jobNotifier.autoDisableConnectionAlertWithoutCustomerioConfig(CONNECTION_DISABLED_WARNING_NOTIFICATION, lastJob);
-          return new AutoDisableConnectionOutput(false);
+        }
+
+        // warn if only failures in the past maxDaysOfOnlyFailedJobsBeforeWarning days
+        final int numFailuresForWarning = getNumOfFailuresBeforeSuccess(input, maxDaysOfOnlyFailedJobsBeforeWarning);
+        if ((numFailuresForWarning > 0 && numDaysSinceFirstReplicationJob >= maxDaysOfOnlyFailedJobsBeforeWarning)) {
+          jobNotifier.autoDisableConnectionAlertWithoutCustomerioConfig(CONNECTION_DISABLED_WARNING_NOTIFICATION, lastJob);
         }
 
       } catch (final Exception e) {
@@ -125,6 +94,37 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
       }
     }
     return new AutoDisableConnectionOutput(false);
+  }
+
+  // The absolute value of the return int will be the number of consecutive failures before a success
+  // if found. The input list of JobStatuses is expected to be ordered from most recent to least
+  // recent. If a success is found, the return value will be a negative int, while if there are no
+  // successes found, the return value will be a positive int.
+  private int getNumOfFailuresBeforeSuccess(final AutoDisableConnectionActivityInput input, final int lookBackInDays) throws IOException {
+    final List<JobStatus> jobStatuses = jobPersistence.listJobStatusWithConnection(input.getConnectionId(), REPLICATION_TYPES,
+        input.getCurrTimestamp().minus(lookBackInDays, ChronoUnit.DAYS));
+
+    int numFailures = 0;
+    for (final JobStatus jobStatus : jobStatuses) {
+      if (jobStatus == JobStatus.FAILED) {
+        numFailures++;
+      } else if (jobStatus == JobStatus.SUCCEEDED) {
+        numFailures = numFailures * -1;
+        break;
+      }
+    }
+
+    return numFailures;
+  }
+
+  private int getNumDaysSinceFirstReplicationJob(final AutoDisableConnectionActivityInput input) throws Exception {
+    final Optional<Job> optionalFirstJob = jobPersistence.getFirstReplicationJob(input.getConnectionId());
+    final Job firstJob = optionalFirstJob
+        .orElseThrow(() -> new Exception("Auto-Disable Connection should not have been attempted if no replication job has been run."));
+
+    final long timeBetweenCurrTimestampAndFirstJob =
+        input.getCurrTimestamp().getEpochSecond() - firstJob.getCreatedAtInSecond();
+    return Math.toIntExact(TimeUnit.SECONDS.toDays(timeBetweenCurrTimestampAndFirstJob));
   }
 
   private void disableConnection(final UUID connectionId, final Job lastJob) throws JsonValidationException, IOException, ConfigNotFoundException {
