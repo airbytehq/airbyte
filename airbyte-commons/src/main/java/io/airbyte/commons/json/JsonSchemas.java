@@ -27,8 +27,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// todo handle capitalization
-// todo we don't hande not. fail explicitly if we enoucnter it
+// todo (cgardens) - we need the ability to identify jsonschemas that Airbyte considers invalid for
+// a connector (e.g. "not" keyword).
 public class JsonSchemas {
 
   private static final String JSON_SCHEMA_TYPE_KEY = "type";
@@ -96,8 +96,6 @@ public class JsonSchemas {
     traverseJsonSchemaInternal(jsonSchemaNode, JsonPaths.empty(), consumer);
   }
 
-  // todo handle type as array e.g. [number, string], what combos of types are allowed?
-  // todo block not keyword
   /**
    * Traverse a JsonSchema object. At each node, optionally map a value.
    *

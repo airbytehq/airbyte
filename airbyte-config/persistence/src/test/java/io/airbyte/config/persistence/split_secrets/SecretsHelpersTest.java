@@ -131,6 +131,7 @@ public class SecretsHelpersTest {
     assertEquals(inputUpdateConfigCopy, inputUpdateConfig);
   }
 
+  // todo (cgardens) - verify the new implementation works the same as the old one. to be removed in next PR.
   @ParameterizedTest
   @MethodSource("provideTestCases")
   void testSplitUpdate2(final SecretsTestCase testCase) {
@@ -144,14 +145,6 @@ public class SecretsHelpersTest {
     for (final Map.Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
       secretPersistence.write(entry.getKey(), entry.getValue());
     }
-
-    // final var updatedSplit = SecretsHelpers.splitAndUpdateConfig(
-    // uuidIterator::next,
-    // WORKSPACE_ID,
-    // inputPartialConfig,
-    // inputUpdateConfig,
-    // testCase.getSpec(),
-    // secretPersistence::read);
 
     final var updatedSplit = SecretsHelpers.internalSplitAndUpdateConfig2(
         uuidIterator::next,

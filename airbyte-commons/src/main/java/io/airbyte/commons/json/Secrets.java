@@ -38,7 +38,9 @@ public class Secrets {
     return copy;
   }
 
-  public static JsonNode replaceAt(final JsonNode json, final String jsonPath, final BiFunction<JsonNode, String, JsonNode> replacementFunction) {
+  public static JsonNode replaceSecretAt(final JsonNode json,
+                                         final String jsonPath,
+                                         final BiFunction<JsonNode, String, JsonNode> replacementFunction) {
     return JsonPaths.replaceAt(json, jsonPath, replacementFunction);
   }
 

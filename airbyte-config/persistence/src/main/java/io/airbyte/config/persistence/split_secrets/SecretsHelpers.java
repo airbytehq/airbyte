@@ -211,11 +211,7 @@ public class SecretsHelpers {
         if (JsonSecretsProcessor.isSecret(spec)) {
           final var oldFullSecretCoordinate = oldPartialConfig.has(COORDINATE_FIELD) ? oldPartialConfig.get(COORDINATE_FIELD).asText() : null;
           final var secretCoordinate = getCoordinate(fullConfig.asText(), secretReader, workspaceId, uuidSupplier, oldFullSecretCoordinate);
-          // todo (cgardens) -- got lost here. on update do we always persist a new secret or only if the
-          // secret changed?
-          // answer, we don't resend secrets and line ~216 means we don't re process.
-          final var newPartialConfig = Jsons.jsonNode(Map.of(
-              COORDINATE_FIELD, secretCoordinate.getFullCoordinate()));
+          final var newPartialConfig = Jsons.jsonNode(Map.of(COORDINATE_FIELD, secretCoordinate.getFullCoordinate()));
 
           final var coordinateToPayload = Map.of(
               secretCoordinate,
@@ -282,8 +278,6 @@ public class SecretsHelpers {
                                                         final JsonNode newJson,
                                                         final JsonNode persistedJson) {
 
-    // if it doesn't have a coordinate then it was unset.
-    // final JsonNode jsonNodes = JsonPaths.getSingle(persistedJson, path);
     final Optional<String> existingCoordinateOptional = getExistingCoordinateIfExists(persistedJson);
     return getCoordinate(newJson.asText(), secretReader, workspaceId, uuidSupplier, existingCoordinateOptional.orElse(null));
   }
@@ -306,8 +300,7 @@ public class SecretsHelpers {
             .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)));
 
     paths.forEach(path -> {
-      Secrets.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
-        System.out.println("pathOfNode = " + pathOfNode);
+      Secrets.replaceSecretAt(fullConfigCopy, path, (json, pathOfNode) -> {
         final Optional<JsonNode> persistedNode = Secrets.getSingleValue(persistedPartialConfig, pathOfNode);
         final SecretCoordinate coordinate = getOrCreateCoordinate(
             secretReader,
