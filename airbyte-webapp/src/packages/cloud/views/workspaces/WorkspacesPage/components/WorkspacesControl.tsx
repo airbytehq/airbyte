@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { useToggle } from "react-use";
 
 import { Button, ContentCard } from "components";
+
 import CreateWorkspaceForm from "./CreateWorkspaceForm";
 
 const CreateButton = styled(Button)`

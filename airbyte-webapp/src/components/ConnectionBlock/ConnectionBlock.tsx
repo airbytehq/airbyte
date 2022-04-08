@@ -33,11 +33,7 @@ const ExtraBlock = styled(Content)`
 
 const ConnectionBlock: React.FC<IProps> = (props) => (
   <LightContentCard className={props.className}>
-    {props.itemFrom ? (
-      <ConnectionBlockItem {...props.itemFrom} />
-    ) : (
-      <ExtraBlock />
-    )}
+    {props.itemFrom ? <ConnectionBlockItem {...props.itemFrom} /> : <ExtraBlock />}
     <Arrow icon={faChevronRight} />
     {props.itemTo ? <ConnectionBlockItem {...props.itemTo} /> : <ExtraBlock />}
   </LightContentCard>

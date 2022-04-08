@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.0.2"
+- dockerImage: "airbyte/destination-bigquery:1.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -314,7 +314,7 @@
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
-            \ dataset. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating\"\
+            \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
             >here</a>."
           title: "Project ID"
         dataset_id:
@@ -369,7 +369,7 @@
             \ <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\"\
             >docs</a> if you need help generating this key. Default credentials will\
             \ be used if this field is left empty."
-          title: "Credentials JSON (Optional)"
+          title: "Service Account Key JSON (Optional)"
           airbyte_secret: true
         transformation_priority:
           type: "string"
@@ -390,10 +390,10 @@
           type: "object"
           title: "Loading Method"
           description: "Loading method used to send select the way data will be uploaded\
-            \ to BigQuery. <br><b>Standard Inserts</b> - Direct uploading using SQL\
+            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
             \ INSERT statements. This method is extremely inefficient and provided\
             \ only for quick testing. In almost all cases, you should use staging.\
-            \ <br><b>GCS Staging</b> - Writes large batches of records to a file,\
+            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
             \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
             \ the file. Recommended for most workloads for better speed and scalability.\
             \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
@@ -495,7 +495,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.14"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -508,14 +508,13 @@
       additionalProperties: true
       properties:
         big_query_client_buffer_size_mb:
-          title: "Google BigQuery client chunk size"
-          description: "Google BigQuery client's chunk (buffer) size (MIN = 1, MAX\
-            \ = 15) for each table. The size that will be written by a single RPC.\
-            \ Written data will be buffered and only flushed upon reaching this size\
-            \ or closing the channel. It defaults to 15MiB. Smaller chunk size means\
-            \ less memory consumption, and is recommended for big data sets. For more\
-            \ details refer to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
-            >here</a>"
+          title: "Google BigQuery Client Chunk Size (Optional)"
+          description: "Google BigQuery client's chunk (buffer) size (MIN=1, MAX =\
+            \ 15) for each table. The size that will be written by a single RPC. Written\
+            \ data will be buffered and only flushed upon reaching this size or closing\
+            \ the channel. The default 15MB value is used if not set explicitly. Read\
+            \ more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
+            >here</a>."
           type: "integer"
           minimum: 1
           maximum: 15
@@ -525,18 +524,22 @@
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
-            \ dataset."
+            \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
+            >here</a>."
           title: "Project ID"
         dataset_id:
           type: "string"
-          description: "Default BigQuery Dataset ID tables are replicated to if the\
-            \ source does not specify a namespace."
+          description: "The default BigQuery Dataset ID that tables are replicated\
+            \ to if the source does not specify a namespace. Read more <a href=\"\
+            https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
           title: "Default Dataset ID"
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
-            \ will not be applied."
-          title: "Dataset Location"
+            \ will not be applied. The default \"US\" value is used if not set explicitly.\
+            \ Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\"\
+            >here</a>."
+          title: "Dataset Location (Optional)"
           default: "US"
           enum:
           - "US"
@@ -573,19 +576,26 @@
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\"\
+            \ <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\"\
             >docs</a> if you need help generating this key. Default credentials will\
             \ be used if this field is left empty."
-          title: "Credentials JSON"
+          title: "Service Account Key JSON (Optional)"
           airbyte_secret: true
         loading_method:
           type: "object"
-          title: "Loading Method"
-          description: "Select the way that data will be uploaded to BigQuery."
+          title: "Loading Method *"
+          description: "Loading method used to send select the way data will be uploaded\
+            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
+            \ INSERT statements. This method is extremely inefficient and provided\
+            \ only for quick testing. In almost all cases, you should use staging.\
+            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
+            \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
+            \ the file. Recommended for most workloads for better speed and scalability.\
+            \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
+            >here</a>."
           oneOf:
           - title: "Standard Inserts"
             additionalProperties: false
-            description: "Direct uploading using streams."
             required:
             - "method"
             properties:
@@ -594,9 +604,6 @@
                 const: "Standard"
           - title: "GCS Staging"
             additionalProperties: false
-            description: "Writes large batches of records to a file, uploads the file\
-              \ to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended\
-              \ for large production workloads for better speed and scalability."
             required:
             - "method"
             - "gcs_bucket_name"
@@ -609,16 +616,18 @@
               gcs_bucket_name:
                 title: "GCS Bucket Name"
                 type: "string"
-                description: "The name of the GCS bucket."
+                description: "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\"\
+                  >here</a>."
                 examples:
                 - "airbyte_sync"
               gcs_bucket_path:
+                title: "GCS Bucket Path"
                 description: "Directory under the GCS bucket where data will be written."
                 type: "string"
                 examples:
                 - "data_sync/test"
               part_size_mb:
-                title: "Block Size (MB) for GCS multipart upload"
+                title: "Block Size (MB) for GCS Multipart Upload (Optional)"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
                   \ to upload a bigger files and improve the speed, but consumes more\
@@ -633,14 +642,19 @@
                 type: "string"
                 description: "This upload method is supposed to temporary store records\
                   \ in GCS bucket. What do you want to do with data in GCS bucket\
-                  \ when migration has finished?"
-                title: "GCS tmp files afterward processing"
+                  \ when migration has finished? The default \"Delete all tmp files\
+                  \ from GCS\" value is used if not set explicitly."
+                title: "GCS Tmp Files Afterward Processing (Optional)"
                 default: "Delete all tmp files from GCS"
                 enum:
                 - "Delete all tmp files from GCS"
                 - "Keep all tmp files in GCS"
               credential:
                 title: "Credential"
+                description: "An HMAC key is a type of credential and can be associated\
+                  \ with a service account or a user account in Cloud Storage. Read\
+                  \ more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\"\
+                  >here</a>."
                 type: "object"
                 oneOf:
                 - title: "HMAC key"
@@ -2985,7 +2999,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.15"
+- dockerImage: "airbyte/destination-postgres:0.3.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
@@ -3400,7 +3414,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.28"
+- dockerImage: "airbyte/destination-redshift:0.3.29"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
