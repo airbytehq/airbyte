@@ -120,7 +120,7 @@ public interface SqlOperations {
 
   /**
    * The method is responsible for executing some specific DB Engine logic in onStart method.
-   * We can to override this method to execute specific logic e.g. to handle any necessary migrations in the destination, etc.
+   * We can override this method to execute specific logic e.g. to handle any necessary migrations in the destination, etc.
    *
    * In next example you can see how migration from VARCHAR to SUPER column is handled for the Redshift destination:
    * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationStartOperations
