@@ -7,29 +7,9 @@
     "required": [],
     "additionalProperties": false,
     "properties": {
-      "cases_in_days": {
-        "type": "integer",
-        "description": "Number of cases days in the past from today."
-      },
-      "incidence_in_days": {
-        "type": "integer",
-        "description": "Number of incidence days in the past from today."
-      },
-      "deaths_in_days": {
-        "type": "integer",
-        "description": "Number of deaths days in the past from today."
-      },
-      "recovered_in_days": {
-        "type": "integer",
-        "description": "Number of recovered days in the past from today."
-      },
-      "frozen_incidence_in_days": {
-        "type": "integer",
-        "description": "Number of frozen-incidence days in the past from today."
-      },
-      "hospitalization_in_days": {
-        "type": "integer",
-        "description": "Number of hospitalization days in the past from today."
+      "start_date": {
+        "type": "string",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated."
       }
     }
   }

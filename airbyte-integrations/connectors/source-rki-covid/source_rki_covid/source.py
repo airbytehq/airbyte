@@ -58,6 +58,9 @@ class GermanyAgeGroups(RkiCovidStream):
 
     primary_key = None
 
+    # def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    #     return response.json().get("data")
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -96,8 +99,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
-        self.config = config
-        self._cursor_value = None
+        self.start_date = config.get("start_date")
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -107,23 +109,25 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
     def cursor_field(self) -> str:
         return "date"
 
-    @property
-    def state(self) -> Mapping[str, Any]:
-        return {self.cursor_field: str(self._cursor_value)}
+    def date_to_int(self, start_date) -> int:
+        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        return diff.days
 
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(*args, **kwargs):
-            current_stream_state = record.get(self.cursor_field)
-            if self._cursor_value:
-                latest_state = record.get(self.cursor_field)
-                self._cursor_value = max(self._cursor_value, latest_state)
-            yield record
-            self._cursor_value = current_stream_state
-            assert self._cursor_value == current_stream_state
+    def read_records(
+            self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+        records = super().read_records(stream_state=stream_state, **kwargs)
+        if stream_state:
+            for record in records:
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json().get("data")
@@ -131,8 +135,8 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        if self.config.get('cases_in_days'):
-            return "germany/history/cases/"+str(self.config.get('cases_in_days'))
+        if self.start_date:
+            return "germany/history/cases/"+str(self.date_to_int(self.start_date))
         return "germany/history/cases/"
 
 
@@ -144,7 +148,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
-        self.config = config
+        self.start_date = config.get("start_date")
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -154,11 +158,25 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
     def cursor_field(self) -> str:
         return "date"
 
+    def date_to_int(self, start_date) -> int:
+        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        return diff.days
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
     Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        return {self.cursor_field: max(latest_state, current_state)}
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+        records = super().read_records(stream_state=stream_state, **kwargs)
+        if stream_state:
+            for record in records:
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.json().get("data"):
@@ -168,8 +186,8 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        if self.config.get('incidence_in_days'):
-            return "germany/history/incidence/"+str(self.config.get('incidence_in_days'))
+        if self.start_date:
+            return "germany/history/incidence/"+str(self.date_to_int(self.start_date))
         return "germany/history/incidence/"
 
 
@@ -181,7 +199,7 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
-        self.config = config
+        self.start_date = config.get("start_date")
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -191,11 +209,25 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
     def cursor_field(self) -> str:
         return "date"
 
+    def date_to_int(self, start_date) -> int:
+        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        return diff.days
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
     Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        return {self.cursor_field: max(latest_state, current_state)}
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+        records = super().read_records(stream_state=stream_state, **kwargs)
+        if stream_state:
+            for record in records:
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json().get("data")
@@ -203,8 +235,8 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        if self.config.get('deaths_in_days'):
-            return "germany/history/deaths/"+str(self.config.get('deaths_in_days'))
+        if self.start_date:
+            return "germany/history/deaths/"+str(self.date_to_int(self.start_date))
         return "germany/history/deaths/"
 
 
@@ -216,7 +248,7 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
-        self.config = config
+        self.start_date = config.get("start_date")
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -226,11 +258,25 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
     def cursor_field(self) -> str:
         return "date"
 
+    def date_to_int(self, start_date) -> int:
+        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        return diff.days
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
     Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        return {self.cursor_field: max(latest_state, current_state)}
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+        records = super().read_records(stream_state=stream_state, **kwargs)
+        if stream_state:
+            for record in records:
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json().get("data")
@@ -238,8 +284,8 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        if self.config.get('recovered_in_days'):
-            return "germany/history/recovered/"+str(self.config.get('recovered_in_days'))
+        if self.start_date:
+            return "germany/history/recovered/"+str(self.date_to_int(self.start_date))
         return "germany/history/recovered/"
 
 
@@ -251,7 +297,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
-        self.config = config
+        self.start_date = config.get("start_date")
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -261,11 +307,25 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
     def cursor_field(self) -> str:
         return "date"
 
+    def date_to_int(self, start_date) -> int:
+        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        return diff.days
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
     Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        return {self.cursor_field: max(latest_state, current_state)}
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+        records = super().read_records(stream_state=stream_state, **kwargs)
+        if stream_state:
+            for record in records:
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json().get("data").get("history")
@@ -273,8 +333,8 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        if self.config.get('frozen_incidence_in_days'):
-            return "germany/history/frozen-incidence/"+str(self.config.get('frozen_incidence_in_days'))
+        if self.start_date:
+            return "germany/history/frozen-incidence/"+str(self.date_to_int(self.start_date))
         return "germany/history/frozen-incidence/"
 
 
@@ -286,7 +346,7 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
 
     def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
-        self.config = config
+        self.start_date = config.get("start_date")
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -296,21 +356,34 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
     def cursor_field(self) -> str:
         return "date"
 
+    def date_to_int(self, start_date) -> int:
+        diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        return diff.days
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
     Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        return {self.cursor_field: max(latest_state, current_state)}
+        if not current_stream_state:
+            current_stream_state = {self.cursor_field: self.start_date}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+        records = super().read_records(stream_state=stream_state, **kwargs)
+        if stream_state:
+            for record in records:
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.logger.info(f"Cursor Field is = {self.cursor_field}")
         return response.json().get("data")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        if self.config.get('hospitalization_in_days'):
-            return "germany/history/hospitalization/"+str(self.config.get('hospitalization_in_days'))
+        if self.start_date:
+            return "germany/history/hospitalization/"+str(self.date_to_int(self.start_date))
         return "germany/history/hospitalization/"
 
 
