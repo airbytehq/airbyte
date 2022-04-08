@@ -27,6 +27,7 @@ import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,25 +106,31 @@ public class JobNotifier {
               workspaceId,
               action,
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
-          if (FAILURE_NOTIFICATION.equals(action)) {
-            if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-              LOGGER.warn("Failed to successfully notify failure: {}", notification);
-            }
-          } else if (SUCCESS_NOTIFICATION.equals(action)) {
-            if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-              LOGGER.warn("Failed to successfully notify success: {}", notification);
-            }
-            // alert message currently only supported by email through customer.io
-          } else if (CONNECTION_DISABLED_NOTIFICATION.equals(action) && notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
-            if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
-              LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
-            }
-          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION.equals(action)
-              && notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
-            if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                logUrl)) {
-              LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
-            }
+
+          switch (action) {
+            case FAILURE_NOTIFICATION:
+              if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+                LOGGER.warn("Failed to successfully notify failure: {}", notification);
+              }
+              break;
+            case SUCCESS_NOTIFICATION:
+              if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+                LOGGER.warn("Failed to successfully notify success: {}", notification);
+              }
+              break;
+            case CONNECTION_DISABLED_NOTIFICATION:
+              if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)
+                  && !notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                      logUrl)) {
+                LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
+              }
+              break;
+            case CONNECTION_DISABLED_WARNING_NOTIFICATION:
+              if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)
+                  && !notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                      logUrl)) {
+                LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
+              }
           }
         } catch (final Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
@@ -170,17 +177,21 @@ public class JobNotifier {
       final String logUrl = connectionPageUrl + connectionId;
       final String jobDescription = getJobDescription(job, "");
 
-      if (CONNECTION_DISABLED_NOTIFICATION.equals(action)) {
-        if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
-          LOGGER.warn("Failed to successfully notify auto-disable connection: {}", customerioNotification);
-        }
-      } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION.equals(action)) {
-        if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
-          LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", customerioNotification);
-        }
-      } else {
-        LOGGER.error(
-            "Incorrect action supplied, this method only supports Connection Disabled Notification and Connection Disabled Warning Notification.");
+      switch (action) {
+        case CONNECTION_DISABLED_NOTIFICATION:
+          if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
+            LOGGER.warn("Failed to successfully notify auto-disable connection: {}", customerioNotification);
+          }
+          break;
+        case CONNECTION_DISABLED_WARNING_NOTIFICATION:
+          if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+              logUrl)) {
+            LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", customerioNotification);
+          }
+          break;
+        default:
+          LOGGER.error(
+              "Incorrect action supplied, this method only supports Connection Disabled Notification and Connection Disabled Warning Notification.");
       }
     } catch (final Exception e) {
       LOGGER.error("Unable to send auto disable alert:", e);
@@ -193,10 +204,8 @@ public class JobNotifier {
     final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
     final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
     final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
-    final String durationString = formatDurationPart(duration.toDaysPart(), "day")
-        + formatDurationPart(duration.toHoursPart(), "hour")
-        + formatDurationPart(duration.toMinutesPart(), "minute")
-        + formatDurationPart(duration.toSecondsPart(), "second");
+    final String durationString = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
+
     return String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, reason);
   }
 
