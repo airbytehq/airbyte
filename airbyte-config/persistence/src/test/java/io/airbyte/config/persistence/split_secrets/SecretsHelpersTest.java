@@ -55,8 +55,7 @@ public class SecretsHelpersTest {
         new ArrayTestCase(),
         new ArrayOneOfTestCase(),
         new NestedOneOfTestCase(),
-        new PostgresSshKeyTestCase()
-    ).map(Arguments::of);
+        new PostgresSshKeyTestCase()).map(Arguments::of);
   }
 
   @ParameterizedTest

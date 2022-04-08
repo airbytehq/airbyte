@@ -10,10 +10,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.json.Secrets;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -80,6 +77,7 @@ public class JsonSecretsProcessor {
    * @param schema
    * @return
    */
+  // todo (cgardens) - figure out how to reused JsonSchemas and JsonPaths for this traversal as well.
   public JsonNode copySecrets(final JsonNode src, final JsonNode dst, final JsonNode schema) {
     if (copySecrets) {
       if (!canBeProcessed(schema)) {
@@ -174,10 +172,6 @@ public class JsonSecretsProcessor {
     return copiedObj;
   }
 
-  public JsonNode maskAllSecrets2(final JsonNode obj, final JsonNode schema) {
-    return Secrets.maskAllSecrets(obj, schema);
-  };
-
   @Value
   protected class SecretKeys {
 
@@ -219,7 +213,7 @@ public class JsonSecretsProcessor {
     return new SecretKeys(fieldSecretKeys, arraySecretKeys);
   }
 
-  public static Optional<String> findJsonCombinationNode(final JsonNode node) {
+  private static Optional<String> findJsonCombinationNode(final JsonNode node) {
     for (final String combinationNode : List.of("allOf", "anyOf", "oneOf")) {
       if (node.has(combinationNode) && node.get(combinationNode).isArray()) {
         return Optional.of(combinationNode);
@@ -228,11 +222,11 @@ public class JsonSecretsProcessor {
     return Optional.empty();
   }
 
-  public static boolean canBeProcessed(final JsonNode schema) {
+  private static boolean canBeProcessed(final JsonNode schema) {
     return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
   }
 
-  public static boolean isArrayDefinition(final JsonNode obj) {
+  private static boolean isArrayDefinition(final JsonNode obj) {
     return obj.isObject()
         && obj.has(TYPE_FIELD)
         && obj.get(TYPE_FIELD).asText().equals(ARRAY_TYPE_FIELD)

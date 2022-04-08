@@ -283,7 +283,7 @@ public class SecretsHelpers {
                                                         final JsonNode persistedJson) {
 
     // if it doesn't have a coordinate then it was unset.
-//    final JsonNode jsonNodes = JsonPaths.getSingle(persistedJson, path);
+    // final JsonNode jsonNodes = JsonPaths.getSingle(persistedJson, path);
     final Optional<String> existingCoordinateOptional = getExistingCoordinateIfExists(persistedJson);
     return getCoordinate(newJson.asText(), secretReader, workspaceId, uuidSupplier, existingCoordinateOptional.orElse(null));
   }

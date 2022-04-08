@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor.SecretKeys;
+import io.airbyte.commons.json.Secrets;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
@@ -341,8 +341,6 @@ public class JsonSecretsProcessorTest {
     return Stream.of(
         Arguments.of("array", true),
         Arguments.of("array", false),
-        // Arguments.of("array2", false),
-        // Arguments.of("array2", false),
         Arguments.of("array_of_oneof", true),
         Arguments.of("array_of_oneof", false),
         Arguments.of("nested_object", true),
@@ -376,64 +374,38 @@ public class JsonSecretsProcessorTest {
     final JsonNode expected = objectMapper.readTree(expectedIs);
 
     final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
-//    final SecretKeys actualKeys1 = processor.getAllSecretKeys(specs);
-//    final Set<JsonPath> actualKeys2 = processor.getAllSecretKeys2(specs);
-//    System.out.println("actualKeys1 = " + actualKeys1);
-//    System.out.println("actualKeys2 = " + actualKeys2);
-
-//    final JsonNode actual1 = processor.maskAllSecrets(input, specs);
     assertEquals(expected, actual);
 
-    final JsonNode actual2 = processor.maskAllSecrets2(input, specs);
+    // todo (cgardens) - show that new implementation matches the old one. to be removed in next PR.
+    final JsonNode actual2 = Secrets.maskAllSecrets(input, specs);
     assertEquals(actual, actual2);
   }
 
-//  private static Stream<Arguments> scenarioProvider2() {
-//    return Stream.of(
-//        Arguments.of("array", true),
-//        Arguments.of("array", false),
-//        Arguments.of("array2", false),
-//        Arguments.of("array2", false),
-//        Arguments.of("array_of_oneof", true),
-//        Arguments.of("array_of_oneof", false),
-//        Arguments.of("nested_object", true),
-//        Arguments.of("nested_object", false),
-//        Arguments.of("nested_oneof", true),
-//        Arguments.of("nested_oneof", false),
-//        Arguments.of("oneof", true),
-//        Arguments.of("oneof", false),
-//        Arguments.of("optional_password", true),
-//        Arguments.of("optional_password", false),
-//        Arguments.of("postgres_ssh_key", true),
-//        Arguments.of("postgres_ssh_key", false),
-//        Arguments.of("simple", true),
-//        Arguments.of("simple", false));
-//  }
-//
-//  @ParameterizedTest
-//  @MethodSource("scenarioProvider2")
-//  void testSecretScenario2(final String folder, final boolean partial) throws IOException {
-//    final ObjectMapper objectMapper = new ObjectMapper();
-//
-//    final InputStream specIs = getClass().getClassLoader().getResourceAsStream(folder + "/spec.json");
-//    final JsonNode specs = objectMapper.readTree(specIs);
-//
-//    final String inputFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
-//    final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
-//    final JsonNode input = objectMapper.readTree(inputIs);
-//
-//    final String expectedFilePath = folder + "/expected.json";
-//    final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
-//    final JsonNode expected = objectMapper.readTree(expectedIs);
-//
-//    final SecretKeys actualKeys1 = processor.getAllSecretKeys(specs);
-//    final Set<JsonPath> actualKeys2 = processor.getAllSecretKeys2(specs);
-//    System.out.println("actualKeys1 = " + actualKeys1);
-//    System.out.println("actualKeys2 = " + actualKeys2);
-//
-//    final JsonNode actual = processor.maskAllSecrets2(input, specs);
-//    assertEquals(expected, actual);
-//  }
+  private static Stream<Arguments> scenarioProvider2() {
+    return Stream.of(
+        Arguments.of("array2", true),
+        Arguments.of("array2", false));
+  }
+
+  @ParameterizedTest
+  @MethodSource("scenarioProvider2")
+  void testSecretScenario2(final String folder, final boolean partial) throws IOException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+
+    final InputStream specIs = getClass().getClassLoader().getResourceAsStream(folder + "/spec.json");
+    final JsonNode specs = objectMapper.readTree(specIs);
+
+    final String inputFilePath = folder + (partial ? "/partial_config.json" : "/full_config.json");
+    final InputStream inputIs = getClass().getClassLoader().getResourceAsStream(inputFilePath);
+    final JsonNode input = objectMapper.readTree(inputIs);
+
+    final String expectedFilePath = folder + "/expected.json";
+    final InputStream expectedIs = getClass().getClassLoader().getResourceAsStream(expectedFilePath);
+    final JsonNode expected = objectMapper.readTree(expectedIs);
+
+    final JsonNode actual = Secrets.maskAllSecrets(input, specs);
+    assertEquals(expected, actual);
+  }
 
   @Test
   public void copiesSecrets_inNestedNonCombinationNode() throws JsonProcessingException {

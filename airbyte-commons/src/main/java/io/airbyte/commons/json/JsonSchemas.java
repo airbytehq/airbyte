@@ -65,9 +65,9 @@ public class JsonSchemas {
   }
 
   /*
-   * JsonReferenceProcessor relies on all of the json in consumes being in a file system (not in a
-   * jar). This method copies all of the json configs out of the jar into a temporary directory so
-   * that JsonReferenceProcessor can find them.
+   * JsonReferenceProcessor relies on all the json in consumes being in a file system (not in a jar).
+   * This method copies all the json configs out of the jar into a temporary directory so that
+   * JsonReferenceProcessor can find them.
    */
   public static <T> Path prepareSchemas(final String resourceDir, final Class<T> klass) {
     try {
@@ -92,6 +92,10 @@ public class JsonSchemas {
     }
   }
 
+  public static void traverseJsonSchema(final JsonNode jsonSchemaNode, final BiConsumer<JsonNode, String> consumer) {
+    traverseJsonSchemaInternal(jsonSchemaNode, JsonPaths.empty(), consumer);
+  }
+
   // todo handle type as array e.g. [number, string], what combos of types are allowed?
   // todo block not keyword
   /**
@@ -108,7 +112,7 @@ public class JsonSchemas {
    */
   public static <T> Collection<T> traverseJsonSchemaWithCollector(final JsonNode jsonSchema, final BiFunction<JsonNode, String, Optional<T>> mapper) {
     final List<T> collectors = new ArrayList<>();
-    traverseJsonSchemaInternal(jsonSchema, JsonPaths.empty(), (node, path) -> mapper.apply(node, path).ifPresent(collectors::add));
+    traverseJsonSchema(jsonSchema, (node, path) -> mapper.apply(node, path).ifPresent(collectors::add));
     return collectors;
   }
 
@@ -137,13 +141,13 @@ public class JsonSchemas {
    *
    * @param jsonSchemaNode - jsonschema object to traverse.
    * @param path - path from the first call of traverseJsonSchema to the current node.
-   * @param consumer - consumer to be called at each node. it accepts the current node and the path to the node from the
-   *        root of the object passed at the root level invocation
+   * @param consumer - consumer to be called at each node. it accepts the current node and the path to
+   *        the node from the root of the object passed at the root level invocation
    */
   // todo (cgardens) - replace with easier to understand traversal logic from SecretsHelper.
   private static void traverseJsonSchemaInternal(final JsonNode jsonSchemaNode,
-                                         final String path,
-                                         final BiConsumer<JsonNode, String> consumer) {
+                                                 final String path,
+                                                 final BiConsumer<JsonNode, String> consumer) {
     if (!jsonSchemaNode.isObject()) {
       throw new IllegalArgumentException(String.format("json schema nodes should always be object nodes. path: %s actual: %s", path, jsonSchemaNode));
     }
@@ -156,19 +160,16 @@ public class JsonSchemas {
     for (final String nodeType : nodeTypes) {
       switch (nodeType) {
         case ARRAY_TYPE -> {
-          // todo (cgardens) - remove magic string.
-          final String newPath = path + "[*]";
+          final String newPath = JsonPaths.appendAppendListSplat(path);
           // hit every node.
           traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
-//          jsonNode.forEach(node -> traverseJsonSchema(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), node, newPath, consumer));
         }
         case OBJECT_TYPE -> {
           final Optional<String> comboKeyWordOptional = getKeywordIfComposite(jsonSchemaNode);
           if (jsonSchemaNode.has(JSON_SCHEMA_PROPERTIES_KEY)) {
             for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {
               final Entry<String, JsonNode> child = it.next();
-              // todo (cgardens) - remove magic string.
-              final String newPath = path + "." + child.getKey();
+              final String newPath = JsonPaths.appendField(path, child.getKey());
               traverseJsonSchemaInternal(child.getValue(), newPath, consumer);
             }
           } else if (comboKeyWordOptional.isPresent()) {

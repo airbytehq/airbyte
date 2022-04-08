@@ -51,6 +51,10 @@ class JsonPaths {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonPaths.class);
 
+  static final String JSON_PATH_START_CHARACTER = "$";
+  static final String JSON_PATH_LIST_SPLAT = "[*]";
+  static final String JSON_PATH_FIELD_SEPARATOR = ".";
+
   // set default configurations at start up to match our JSON setup.
   static {
     Configuration.setDefaults(new Configuration.Defaults() {
@@ -83,7 +87,15 @@ class JsonPaths {
   }
 
   public static String empty() {
-    return "$";
+    return JSON_PATH_START_CHARACTER;
+  }
+
+  public static String appendField(final String jsonPath, final String field) {
+    return jsonPath + JSON_PATH_FIELD_SEPARATOR + field;
+  }
+
+  public static String appendAppendListSplat(final String jsonPath) {
+    return jsonPath + JSON_PATH_LIST_SPLAT;
   }
 
   /*
