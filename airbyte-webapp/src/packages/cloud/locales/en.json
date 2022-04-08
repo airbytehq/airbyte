@@ -25,7 +25,7 @@
   "login.fullName.placeholder": "Christopher Smith",
   "login.companyName": "Company name*",
   "login.companyName.placeholder": "Acme Inc.",
-  "login.subscribe": "Receive community and feature updates. You can unsubcribe any time. ",
+  "login.subscribe": "Receive community and feature updates. You can unsubscribe any time. ",
   "login.security": "By using the service, you agree to to our <terms>Terms of Service</terms> and <privacy>Privacy\u00a0Policy</privacy>.",
 
   "confirmResetPassword.newPassword": "Enter a new password",
@@ -112,7 +112,7 @@
   "firebase.auth.error.tooManyRequests": "Too many retries. Please wait 10 minutes before trying again.",
   "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later.",
 
-  "signup.password.minLength": "Password should be at least 6 characters",
+  "signup.password.minLength": "Password should be at least 12 characters",
   "email.duplicate": "Email already exists",
   "email.notfound": "Email not found",
   "email.disabled": "Your account is disabled",

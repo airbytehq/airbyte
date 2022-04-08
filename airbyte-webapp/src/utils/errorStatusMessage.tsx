@@ -1,9 +1,6 @@
 import { FormattedMessage } from "react-intl";
 
-export const createFormErrorMessage = (error: {
-  status?: number;
-  message?: string;
-}): JSX.Element | string | null => {
+export const createFormErrorMessage = (error: { status?: number; message?: string }): JSX.Element | string | null => {
   if (error.message) {
     return error.message;
   }

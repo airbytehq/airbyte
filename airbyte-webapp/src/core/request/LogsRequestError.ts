@@ -21,8 +21,6 @@ export class LogsRequestError extends CommonRequestError {
   }
 }
 
-export function isLogsRequestError(error: {
-  __type?: string;
-}): error is LogsRequestError {
+export function isLogsRequestError(error: { __type?: string }): error is LogsRequestError {
   return error.__type === "common.errorWithLogs";
 }

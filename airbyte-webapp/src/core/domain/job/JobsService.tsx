@@ -34,15 +34,10 @@ class JobsService extends AirbyteRequestService {
     return job;
   }
 
-  public async getDebugInfo(
-    jobId: string | number
-  ): Promise<JobDebugInfoDetails> {
-    const jobDebugInfo = await this.fetch<JobDebugInfoDetails>(
-      `${this.url}/get_debug_info`,
-      {
-        id: jobId,
-      }
-    );
+  public async getDebugInfo(jobId: string | number): Promise<JobDebugInfoDetails> {
+    const jobDebugInfo = await this.fetch<JobDebugInfoDetails>(`${this.url}/get_debug_info`, {
+      id: jobId,
+    });
 
     return jobDebugInfo;
   }

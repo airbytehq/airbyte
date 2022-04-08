@@ -1,6 +1,7 @@
 import { SegmentAnalytics } from "core/analytics/types";
-import { UiConfig } from "./uiConfig";
 import { Feature } from "hooks/services/Feature";
+
+import { UiConfig } from "./uiConfig";
 
 declare global {
   interface Window {
@@ -39,6 +40,4 @@ export type Provider<T> = () => T;
 
 export type ValueProvider<T> = ProviderAsync<DeepPartial<T>>[];
 
-export type ConfigProvider<T extends Config = Config> = ProviderAsync<
-  DeepPartial<T>
->;
+export type ConfigProvider<T extends Config = Config> = ProviderAsync<DeepPartial<T>>;

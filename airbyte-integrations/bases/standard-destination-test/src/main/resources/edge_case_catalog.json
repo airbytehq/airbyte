@@ -1,6 +1,21 @@
 {
   "streams": [
     {
+      "name": "stream_with_nested_objects",
+      "json_schema": {
+        "properties": {
+          "nested_object": {
+            "type": "object",
+            "properties": {
+              "nested_field": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "name": "streamWithCamelCase",
       "json_schema": {
         "properties": {
@@ -10,7 +25,6 @@
         }
       }
     },
-
     {
       "name": "stream_with_underscores",
       "json_schema": {
@@ -136,6 +150,60 @@
           "binary_field_name": {
             "type": "string",
             "contentEncoding": "base64"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_dates",
+      "json_schema": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "datetime": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_nested_dates",
+      "json_schema": {
+        "properties": {
+          "nested_object": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "integer"
+              }
+            }
+          },
+          "datetime_nested": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    {
+      "name": "stream_with_same_names_different_datatype",
+      "json_schema": {
+        "properties": {
+          "object": {
+            "type": "object",
+            "properties": {
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date"
           }
         }
       }
