@@ -3,6 +3,7 @@ import React from "react";
 import { ImplementationTable } from "components/EntityTable";
 import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
+
 import useRouter from "hooks/useRouter";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { Destination } from "core/domain/connector";
@@ -17,23 +18,11 @@ const DestinationsTable: React.FC<IProps> = ({ destinations }) => {
   const { connections } = useConnectionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const data = getEntityTableData(
-    destinations,
-    connections,
-    destinationDefinitions,
-    "destination"
-  );
+  const data = getEntityTableData(destinations, connections, destinationDefinitions, "destination");
 
-  const clickRow = (destination: EntityTableDataItem) =>
-    push(`${destination.entityId}`);
+  const clickRow = (destination: EntityTableDataItem) => push(`${destination.entityId}`);
 
-  return (
-    <ImplementationTable
-      data={data}
-      onClickRow={clickRow}
-      entity="destination"
-    />
-  );
+  return <ImplementationTable data={data} onClickRow={clickRow} entity="destination" />;
 };
 
 export default DestinationsTable;

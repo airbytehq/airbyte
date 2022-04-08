@@ -3,6 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useField } from "formik";
 
 import { Input, ControlLabels } from "components";
+
 import { FormBaseItem } from "core/form/types";
 
 const ConnectorNameControl: React.FC<{

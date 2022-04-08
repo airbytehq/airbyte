@@ -44,13 +44,7 @@ export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
       title={
         <CardHeader>
           {title}
-          {collapsible && (
-            <ArrowView
-              onClick={toggle}
-              $isOpen={!isCollapsed}
-              icon={faChevronRight}
-            />
-          )}
+          {collapsible && <ArrowView onClick={toggle} $isOpen={!isCollapsed} icon={faChevronRight} />}
         </CardHeader>
       }
     >

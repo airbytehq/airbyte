@@ -12,6 +12,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSP
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
 
@@ -82,6 +83,23 @@ public class ConfigRepository {
   public ConfigRepository(final ConfigPersistence persistence, final Database database) {
     this.persistence = persistence;
     this.database = new ExceptionWrappingDatabase(database);;
+  }
+
+  /**
+   * Conduct a health check by attempting to read from the database. Since there isn't an
+   * out-of-the-box call for this, mimic doing so by reading the ID column from the Workspace table's
+   * first row. This query needs to be fast as this call can be made multiple times a second.
+   *
+   * @return true if read succeeds, even if the table is empty, and false if any error happens.
+   */
+  public boolean healthCheck() {
+    try {
+      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+    } catch (Exception e) {
+      LOGGER.error("Health check error: ", e);
+      return false;
+    }
+    return true;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
@@ -585,11 +603,25 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
   }
 
+  public List<StandardSync> listStandardSyncsUsingOperation(final UUID operationId)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+        .from(CONNECTION)
+        .join(CONNECTION_OPERATION)
+        .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+        .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))).fetch();
+    return getStandardSyncsFromResult(result);
+  }
+
   public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
+    return getStandardSyncsFromResult(result);
+  }
+
+  private List<StandardSync> getStandardSyncsFromResult(final Result<Record> result) throws IOException {
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
       final UUID connectionId = record.get(CONNECTION.ID);
@@ -651,6 +683,17 @@ public class ConfigRepository {
           .values(UUID.randomUUID(), connectionId, operationId)
           .execute());
 
+      return null;
+    });
+  }
+
+  public void deleteStandardSyncOperation(final UUID standardSyncOperationId) throws IOException {
+    database.transaction(ctx -> {
+      ctx.deleteFrom(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.OPERATION_ID.eq(standardSyncOperationId)).execute();
+      ctx.update(OPERATION)
+          .set(OPERATION.TOMBSTONE, true)
+          .where(OPERATION.ID.eq(standardSyncOperationId)).execute();
       return null;
     });
   }
