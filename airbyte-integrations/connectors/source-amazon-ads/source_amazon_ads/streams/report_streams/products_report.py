@@ -258,8 +258,6 @@ class SponsoredProductsReportStream(ReportStream):
         body = {
             "reportDate": report_date,
         }
-
-# adId is automatically added to the report by amazon and requesting adId causes an amazon error
         if RecordType.ASINS in record_type:
             body["campaignType"] = "sponsoredProducts"
             if profile.accountInfo.type == "vendor":
