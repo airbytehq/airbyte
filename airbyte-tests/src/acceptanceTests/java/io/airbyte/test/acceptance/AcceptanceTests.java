@@ -1210,6 +1210,11 @@ public class AcceptanceTests {
   @Test
   @Order(23)
   public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an underlying temporal workflow.
+    // This case only occurs with the new scheduler, so the entire test is inside the feature flag conditional.
+    // Also, this test doesn't verify correctness of the schedule update applied, as adding the ability to query a workflow for its current
+    // schedule is out of scope for the issue (https://github.com/airbytehq/airbyte/issues/11215). This test just ensures that the underlying workflow
+    // is running after the update method is called.
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     if (featureFlags.usesNewScheduler()) {
       final String connectionName = "test-connection";
