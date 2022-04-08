@@ -33,33 +33,29 @@ public class BigQueryUploaderFactory {
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    final String schemaName = BigQueryUtils.getSchema(
-        uploaderConfig.getConfig(),
-        uploaderConfig.getConfigStream());
+    final String schemaName = BigQueryUtils.getSchema(uploaderConfig.getConfig(), uploaderConfig.getConfigStream());
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingSchemas = new HashSet<>();
 
-    final boolean isGcsUploadingMode =
-        UploadingMethod.GCS.equals(BigQueryUtils.getLoadingMethod(uploaderConfig.getConfig()));
-    final BigQueryRecordFormatter recordFormatter =
-        (isGcsUploadingMode
-            ? uploaderConfig.getFormatterMap().get(UploaderType.AVRO)
-            : uploaderConfig.getFormatterMap().get(UploaderType.STANDARD));
+    final boolean isGcsUploadingMode = BigQueryUtils.getLoadingMethod(uploaderConfig.getConfig()) == UploadingMethod.GCS;
+    final BigQueryRecordFormatter recordFormatter = isGcsUploadingMode
+        ? uploaderConfig.getFormatterMap().get(UploaderType.AVRO)
+        : uploaderConfig.getFormatterMap().get(UploaderType.STANDARD);
     final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
+
+    final TableId targetTable = TableId.of(schemaName, uploaderConfig.getTargetTableName());
+    final TableId tmpTable = TableId.of(schemaName, uploaderConfig.getTmpTableName());
 
     BigQueryUtils.createSchemaAndTableIfNeeded(
         uploaderConfig.getBigQuery(),
         existingSchemas,
         schemaName,
-        uploaderConfig.getTmpTableName(),
+        tmpTable,
         datasetLocation,
         bigQuerySchema);
 
-    final TableId targetTable = TableId.of(schemaName, uploaderConfig.getTargetTableName());
-    final TableId tmpTable = TableId.of(schemaName, uploaderConfig.getTmpTableName());
-    final JobInfo.WriteDisposition syncMode =
-        BigQueryUtils.getWriteDisposition(
-            uploaderConfig.getConfigStream().getDestinationSyncMode());
+    final JobInfo.WriteDisposition syncMode = BigQueryUtils.getWriteDisposition(
+        uploaderConfig.getConfigStream().getDestinationSyncMode());
 
     return (isGcsUploadingMode
         ? getGcsBigQueryUploader(
@@ -92,9 +88,7 @@ public class BigQueryUploaderFactory {
                                                                        final boolean isDefaultAirbyteTmpSchema)
       throws IOException {
 
-    final GcsDestinationConfig gcsDestinationConfig =
-        GcsDestinationConfig.getGcsDestinationConfig(
-            BigQueryUtils.getGcsAvroJsonNodeConfig(config));
+    final GcsDestinationConfig gcsDestinationConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
     final JsonNode tmpTableSchema =
         (isDefaultAirbyteTmpSchema ? null : formatter.getJsonSchema());
     final GcsAvroWriter gcsCsvWriter =
@@ -145,12 +139,11 @@ public class BigQueryUploaderFactory {
             .setFormatOptions(FormatOptions.json())
             .build(); // new-line delimited json.
 
-    final JobId job =
-        JobId.newBuilder()
-            .setRandomJob()
-            .setLocation(datasetLocation)
-            .setProject(bigQuery.getOptions().getProjectId())
-            .build();
+    final JobId job = JobId.newBuilder()
+        .setRandomJob()
+        .setLocation(datasetLocation)
+        .setProject(bigQuery.getOptions().getProjectId())
+        .build();
 
     final TableDataWriteChannel writer = bigQuery.writer(job, writeChannelConfiguration);
 
