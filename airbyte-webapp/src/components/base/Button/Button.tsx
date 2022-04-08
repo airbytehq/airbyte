@@ -68,11 +68,7 @@ const getDisabledOpacity = (props: IStyleProps) => {
 };
 
 const getShadowOnHover = (props: IStyleProps) => {
-  if (
-    props.secondary ||
-    props.iconOnly ||
-    (props.wasActive && !props.clickable)
-  ) {
+  if (props.secondary || props.iconOnly || (props.wasActive && !props.clickable)) {
     return "none";
   }
 
@@ -114,8 +110,7 @@ const Button = styled.button<IProps>`
   text-align: center;
   letter-spacing: 0.03em;
   cursor: pointer;
-  pointer-events: ${(props) =>
-    props.wasActive && !props.clickable ? "none" : "all"};
+  pointer-events: ${(props) => (props.wasActive && !props.clickable ? "none" : "all")};
   color: ${(props) => getTextColor(props)};
   background: ${(props) => getBackgroundColor(props)};
   text-decoration: none;
@@ -131,10 +126,8 @@ const Button = styled.button<IProps>`
   &:hover {
     box-shadow: ${(props) => getShadowOnHover(props)};
     border-color: ${(props) =>
-      (props.secondary && props.theme.greyColor40) ||
-      (props.iconOnly && props.theme.greyColor20)};
-    color: ${(props) =>
-      (props.secondary || props.iconOnly) && props.theme.textColor};
+      (props.secondary && props.theme.greyColor40) || (props.iconOnly && props.theme.greyColor20)};
+    color: ${(props) => (props.secondary || props.iconOnly) && props.theme.textColor};
   }
 `;
 

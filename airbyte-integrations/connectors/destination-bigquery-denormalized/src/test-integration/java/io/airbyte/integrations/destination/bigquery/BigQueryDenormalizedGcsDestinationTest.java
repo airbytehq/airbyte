@@ -236,6 +236,7 @@ class BigQueryDenormalizedGcsDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(message);
     consumer.close();
 
@@ -257,6 +258,7 @@ class BigQueryDenormalizedGcsDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS3);
     consumer.close();
 
@@ -293,6 +295,7 @@ class BigQueryDenormalizedGcsDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS4);
     consumer.close();
 
@@ -317,6 +320,7 @@ class BigQueryDenormalizedGcsDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS5);
     consumer.accept(MESSAGE_USERS6);
     consumer.accept(EMPTY_MESSAGE);

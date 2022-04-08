@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import ConnectorForm from "./components/ConnectorForm";
-
 import { Modal } from "components";
+
 import useRequestConnector from "hooks/services/useRequestConnector";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
+import ConnectorForm from "./components/ConnectorForm";
 import { Values } from "./types";
 
 type RequestConnectorModalProps = {
@@ -19,11 +20,7 @@ const Content = styled.div`
   padding: 22px 34px 36px 32px;
 `;
 
-const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
-  onClose,
-  connectorType,
-  initialName,
-}) => {
+const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({ onClose, connectorType, initialName }) => {
   const [hasFeedback, setHasFeedback] = useState(false);
   const { requestConnector } = useRequestConnector();
   const workspace = useCurrentWorkspace();
@@ -38,10 +35,7 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
   };
 
   return (
-    <Modal
-      title={<FormattedMessage id="connector.requestConnector" />}
-      onClose={onClose}
-    >
+    <Modal title={<FormattedMessage id="connector.requestConnector" />} onClose={onClose}>
       <Content>
         <ConnectorForm
           onSubmit={onSubmit}
