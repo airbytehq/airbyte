@@ -16,6 +16,7 @@ import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { FeatureService } from "hooks/services/Feature";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
 import { StoreProvider } from "views/common/StoreProvider";
+import ConfirmationModalServiceProvider from "hooks/services/ConfirmationModal";
 
 import { AppServicesProvider } from "./services/AppServicesProvider";
 import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
@@ -46,13 +47,15 @@ const Services: React.FC = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <NotificationServiceProvider>
-        <FeatureService>
-          <AppServicesProvider>
-            <AuthenticationProvider>
-              <IntercomProvider>{children}</IntercomProvider>
-            </AuthenticationProvider>
-          </AppServicesProvider>
-        </FeatureService>
+        <ConfirmationModalServiceProvider>
+          <FeatureService>
+            <AppServicesProvider>
+              <AuthenticationProvider>
+                <IntercomProvider>{children}</IntercomProvider>
+              </AuthenticationProvider>
+            </AppServicesProvider>
+          </FeatureService>
+        </ConfirmationModalServiceProvider>
       </NotificationServiceProvider>
     </ApiErrorBoundary>
   </AnalyticsProvider>

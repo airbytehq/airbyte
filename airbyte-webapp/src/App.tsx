@@ -9,6 +9,7 @@ import { FeatureService } from "hooks/services/Feature";
 import { ServicesProvider } from "core/servicesProvider";
 import { ApiServices } from "core/ApiServices";
 import { StoreProvider } from "views/common/StoreProvider";
+import ConfirmationModalServiceProvider from "hooks/services/ConfirmationModal";
 
 import en from "./locales/en.json";
 import GlobalStyle from "./global-styles";
@@ -53,7 +54,9 @@ const Services: React.FC = ({ children }) => (
       <WorkspaceServiceProvider>
         <FeatureService>
           <NotificationService>
-            <ApiServices>{children}</ApiServices>
+            <ConfirmationModalServiceProvider>
+              <ApiServices>{children}</ApiServices>
+            </ConfirmationModalServiceProvider>
           </NotificationService>
         </FeatureService>
       </WorkspaceServiceProvider>
