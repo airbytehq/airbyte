@@ -80,13 +80,14 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
 
   /**
    * This class will receive events for ALL pods in ALL namespaces; filter down to the one pod that we
-   * care about.
+   * care about. If it's still running, then we obviously can't fetch its exit code.
    * <p>
    * Also, if we've already found the exit code, or the pod has been deleted, then stop doing anything
    * at all.
    */
   private boolean shouldCheckPod(final Pod pod) {
-    return active && podNamespace.equals(pod.getMetadata().getNamespace()) && podName.equals(pod.getMetadata().getName());
+    return active && podNamespace.equals(pod.getMetadata().getNamespace()) && podName.equals(pod.getMetadata().getName())
+        && KubePodResourceHelper.isTerminal(pod);
   }
 
   private Optional<Integer> getExitCode(final Pod pod) {
