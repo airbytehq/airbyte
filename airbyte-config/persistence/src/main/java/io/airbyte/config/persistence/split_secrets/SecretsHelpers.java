@@ -290,7 +290,7 @@ public class SecretsHelpers {
                                                          final JsonNode persistedPartialConfig,
                                                          final JsonNode newFullConfig,
                                                          final JsonNode spec) {
-    final var fullConfigCopy = newFullConfig.deepCopy();
+    var fullConfigCopy = newFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
     final Set<String> paths = JsonSchemas.collectJsonPathsThatMeetCondition(
@@ -299,8 +299,8 @@ public class SecretsHelpers {
             .stream()
             .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)));
 
-    paths.forEach(path -> {
-      JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
+    for (final String path : paths) {
+      fullConfigCopy = JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
         final Optional<JsonNode> persistedNode = JsonPaths.getSingleValue(persistedPartialConfig, pathOfNode);
         final SecretCoordinate coordinate = getOrCreateCoordinate(
             secretReader,
@@ -313,7 +313,7 @@ public class SecretsHelpers {
 
         return Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinate.getFullCoordinate()));
       });
-    });
+    }
 
     return new SplitSecretConfig(fullConfigCopy, secretMap);
   }
