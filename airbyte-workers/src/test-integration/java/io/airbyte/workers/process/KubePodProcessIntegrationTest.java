@@ -303,8 +303,8 @@ public class KubePodProcessIntegrationTest {
     final SharedInformerFactory sharedInformerFactory = fabricClient.informers();
     final SharedIndexInformer<Pod> podInformer = sharedInformerFactory.sharedIndexInformerFor(Pod.class, 30 * 1000L);
     podInformer.addEventHandler(new ExitCodeWatcher(
-        "",
-        "",
+        pod.getMetadata().getName(),
+        pod.getMetadata().getNamespace(),
         exitCode -> {
           fabricClient.pods().delete(pod);
         },
