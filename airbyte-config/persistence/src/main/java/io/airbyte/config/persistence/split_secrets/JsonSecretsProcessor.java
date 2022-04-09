@@ -12,11 +12,11 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.JsonPaths;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.json.Secrets;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.Builder;
 
 @Builder
@@ -51,12 +51,13 @@ public class JsonSecretsProcessor {
    */
   public JsonNode prepareSecretsForOutput(final JsonNode obj, final JsonNode schema) {
     if (maskSecrets) {
+      // todo (cgardens) this is not safe. should throw.
       // if schema is an object and has a properties field
       if (!isValidJsonSchema(schema)) {
-        throw new IllegalArgumentException("invalid schema");
+        return obj;
       }
 
-      return Secrets.maskAllSecrets(obj, schema);
+      return maskAllSecrets(obj, schema);
     }
 
     return obj;
@@ -100,8 +101,9 @@ public class JsonSecretsProcessor {
   // todo (cgardens) - figure out how to reused JsonSchemas and JsonPaths for this traversal as well.
   public JsonNode copySecrets(final JsonNode src, final JsonNode dst, final JsonNode schema) {
     if (copySecrets) {
+      // todo (cgardens) this is not safe. should throw.
       if (!isValidJsonSchema(schema)) {
-        throw new IllegalArgumentException("invalid schema");
+        return dst;
       }
       Preconditions.checkArgument(dst.isObject());
       Preconditions.checkArgument(src.isObject());
