@@ -225,9 +225,7 @@ class StreamProcessor(object):
         if not self.parent:
             return self.from_table.source_name + "." + self.from_table.table_name
         cur = self.parent
-        while True:
-            if not cur.parent:
-                break
+        while cur.parent:
             cur = cur.parent
         return cur.from_table.source_name + "." + cur.from_table.table_name
 
