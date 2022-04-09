@@ -8,6 +8,7 @@ import com.google.common.collect.MoreCollectors;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -86,8 +87,10 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
    * at all.
    */
   private boolean shouldCheckPod(final Pod pod) {
-    return active && podNamespace.equals(pod.getMetadata().getNamespace()) && podName.equals(pod.getMetadata().getName())
-        && KubePodResourceHelper.isTerminal(pod);
+    // Use Objects.equals in case the namespace is null
+    final boolean correctName = Objects.equals(podNamespace, pod.getMetadata().getNamespace());
+    final boolean correctNamespace = Objects.equals(podName, pod.getMetadata().getName());
+    return active && correctName && correctNamespace && KubePodResourceHelper.isTerminal(pod);
   }
 
   private Optional<Integer> getExitCode(final Pod pod) {
