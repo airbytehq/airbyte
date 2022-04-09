@@ -15,6 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -166,12 +167,13 @@ public class SecretsHelpers {
   }
 
   private static Optional<String> getExistingCoordinateIfExists(final JsonNode json) {
-    if (json.has(COORDINATE_FIELD)) {
+    if (json != null && json.has(COORDINATE_FIELD)) {
       return Optional.ofNullable(json.get(COORDINATE_FIELD).asText());
     } else {
       return Optional.empty();
     }
   }
+
 
   private static SecretCoordinate getOrCreateCoordinate(final ReadOnlySecretPersistence secretReader,
                                                         final UUID workspaceId,
@@ -215,11 +217,14 @@ public class SecretsHelpers {
     var fullConfigCopy = newFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    final Set<String> paths = JsonSchemas.collectJsonPathsThatMeetCondition(
+    final List<String> paths = JsonSchemas.collectJsonPathsThatMeetCondition(
         spec,
         node -> MoreIterators.toList(node.fields())
             .stream()
-            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)));
+            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)))
+        .stream()
+        .sorted()
+        .toList();
 
     for (final String path : paths) {
       fullConfigCopy = JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
