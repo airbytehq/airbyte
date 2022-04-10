@@ -1,3 +1,4 @@
+import pytest
 from airbyte_cdk import AirbyteLogger
 
 from source_mixpanel.source import SourceMixpanel
@@ -42,3 +43,22 @@ def test_streams(config):
     streams = SourceMixpanel().streams(config)
 
     assert len(streams) == 7
+
+
+@pytest.fixture
+def empty_response_ok():
+    return setup_response(200, {})
+
+
+@pytest.fixture
+def empty_response_bad():
+    return setup_response(400, {})
+
+
+def setup_response(status, body):
+    return [
+        {
+            "json": body,
+            "status_code": status
+        }
+    ]
