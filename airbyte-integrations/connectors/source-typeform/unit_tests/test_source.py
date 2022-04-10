@@ -1,3 +1,5 @@
+import re
+
 from airbyte_cdk import AirbyteLogger
 
 from source_typeform import SourceTypeform
@@ -8,7 +10,7 @@ logger = AirbyteLogger()
 TYPEFORM_BASE_URL = TypeformStream.url_base
 
 
-def test_check_connection(requests_mock, config, empty_response_ok):
+def test_check_connection_success(requests_mock, config, empty_response_ok):
     requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "me", empty_response_ok)
     requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms/u6nXL7", empty_response_ok)
     requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms/k9xNV4", empty_response_ok)
@@ -23,7 +25,7 @@ def test_check_connection_bad_request_me(requests_mock, config, empty_response_b
 
     ok, error = SourceTypeform().check_connection(logger, config)
 
-    assert not ok and error
+    assert not ok and error and re.match("Cannot authenticate, please verify token.", error)
 
 
 def test_check_connection_bad_request_forms(requests_mock, config, empty_response_ok, empty_response_bad):
@@ -32,7 +34,7 @@ def test_check_connection_bad_request_forms(requests_mock, config, empty_respons
 
     ok, error = SourceTypeform().check_connection(logger, config)
 
-    assert not ok and error
+    assert not ok and error and re.match("Cannot find forms with ID: u6nXL7", error)
 
 
 def test_check_connection_empty():

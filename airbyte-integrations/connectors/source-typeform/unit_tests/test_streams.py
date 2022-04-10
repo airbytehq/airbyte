@@ -10,6 +10,15 @@ logger = AirbyteLogger()
 
 TYPEFORM_BASE_URL = TypeformStream.url_base
 
+def merge_records(stream: TypeformStream, sync_mode: SyncMode) -> List[Mapping[str, Any]]:
+    merged_records = []
+    for stream_slice in stream.stream_slices(sync_mode=sync_mode):
+        records = stream.read_records(sync_mode=sync_mode, stream_slice=stream_slice)
+        for record in records:
+            merged_records.append(record)
+
+    return merged_records
+
 
 def test_stream_forms_configured(requests_mock, config, form_response):
     requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms/u6nXL7", form_response)
@@ -55,13 +64,3 @@ def test_stream_responses_unconfigured(requests_mock, config_without_forms, form
     merged_records = merge_records(stream, SyncMode.incremental)
 
     assert len(merged_records) == 8
-
-
-def merge_records(stream: TypeformStream, sync_mode: SyncMode) -> List[Mapping[str, Any]]:
-    merged_records = []
-    for stream_slice in stream.stream_slices(sync_mode=sync_mode):
-        records = stream.read_records(sync_mode=sync_mode, stream_slice=stream_slice)
-        for record in records:
-            merged_records.append(record)
-
-    return merged_records
