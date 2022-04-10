@@ -37,7 +37,7 @@ jobs:
             ${{ secrets.DAVINCHIA_PAT }}
   start-test-runner:
     name: Start Build EC2 Runner
-    need: find_valid_pat
+    needs: find_valid_pat
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -89,7 +89,7 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "17"
       - name: Install Pyenv and Tox
         # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
         run: |
@@ -184,7 +184,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}

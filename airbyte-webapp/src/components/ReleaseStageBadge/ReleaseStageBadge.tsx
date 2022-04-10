@@ -1,8 +1,9 @@
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { ReleaseStage } from "core/domain/connector";
 import ToolTip from "components/ToolTip";
+
+import { ReleaseStage } from "core/domain/connector";
 
 const Stage = styled.div<{ $small: boolean }>`
   display: inline-block;
@@ -24,16 +25,8 @@ interface Props {
   tooltip?: boolean;
 }
 
-export const ReleaseStageBadge: React.FC<Props> = ({
-  stage,
-  small,
-  tooltip = true,
-}) => {
-  if (
-    !stage ||
-    stage === ReleaseStage.GENERALLY_AVAILABLE ||
-    stage === ReleaseStage.CUSTOM
-  ) {
+export const ReleaseStageBadge: React.FC<Props> = ({ stage, small, tooltip = true }) => {
+  if (!stage || stage === ReleaseStage.GENERALLY_AVAILABLE || stage === ReleaseStage.CUSTOM) {
     return null;
   }
 

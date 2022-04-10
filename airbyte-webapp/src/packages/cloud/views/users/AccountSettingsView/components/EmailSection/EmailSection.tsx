@@ -4,16 +4,13 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import styled from "styled-components";
 
 import { Button } from "components";
-
-import {
-  Content,
-  SettingsCard,
-} from "pages/SettingsPage/pages/SettingsComponents";
-import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import { LabeledInput } from "components/LabeledInput";
+
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
+import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import NotificationsForm from "pages/SettingsPage/pages/NotificationPage/components/NotificationsForm";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 
 import { FormValues } from "./typings";
@@ -37,18 +34,10 @@ const EmailSection: React.FC = () => {
 
   const emailService = useEmail();
 
-  const { workspace } = useWorkspace();
-  const {
-    errorMessage,
-    successMessage,
-    loading,
-    updateData,
-  } = useWorkspaceEditor();
+  const workspace = useCurrentWorkspace();
+  const { errorMessage, successMessage, loading, updateData } = useWorkspaceEditor();
 
-  const onChange = async (data: {
-    news: boolean;
-    securityUpdates: boolean;
-  }) => {
+  const onChange = async (data: { news: boolean; securityUpdates: boolean }) => {
     await updateData({ ...workspace, ...data });
   };
 
@@ -71,19 +60,13 @@ const EmailSection: React.FC = () => {
                       <LabeledInput
                         {...field}
                         disabled
-                        label={
-                          <FormattedMessage id="settings.accountSettings.email" />
-                        }
+                        label={<FormattedMessage id="settings.accountSettings.email" />}
                         placeholder={formatMessage({
                           id: "login.yourEmail.placeholder",
                         })}
                         type="text"
                         error={!!meta.error && meta.touched}
-                        message={
-                          meta.touched &&
-                          meta.error &&
-                          formatMessage({ id: meta.error })
-                        }
+                        message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                       />
                     )}
                   </Field>
@@ -93,17 +76,11 @@ const EmailSection: React.FC = () => {
                       {({ field, meta }: FieldProps<string>) => (
                         <LabeledInput
                           {...field}
-                          label={
-                            <FormattedMessage id="settings.accountSettings.enterPassword" />
-                          }
+                          label={<FormattedMessage id="settings.accountSettings.enterPassword" />}
                           placeholder=""
                           type="password"
                           error={!!meta.error && meta.touched}
-                          message={
-                            meta.touched &&
-                            meta.error &&
-                            formatMessage({ id: meta.error })
-                          }
+                          message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                         />
                       )}
                     </Field>

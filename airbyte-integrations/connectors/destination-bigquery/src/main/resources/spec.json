@@ -22,7 +22,7 @@
       },
       "project_id": {
         "type": "string",
-        "description": "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating\">here</a>.",
+        "description": "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
         "title": "Project ID"
       },
       "dataset_id": {
@@ -72,7 +72,7 @@
       "credentials_json": {
         "type": "string",
         "description": "The contents of the JSON service account key. Check out the <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\">docs</a> if you need help generating this key. Default credentials will be used if this field is left empty.",
-        "title": "Credentials JSON (Optional)",
+        "title": "Service Account Key JSON (Optional)",
         "airbyte_secret": true
       },
       "transformation_priority": {
@@ -85,7 +85,7 @@
       "loading_method": {
         "type": "object",
         "title": "Loading Method",
-        "description": "Loading method used to send select the way data will be uploaded to BigQuery. <br><b>Standard Inserts</b> - Direct uploading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In almost all cases, you should use staging. <br><b>GCS Staging</b> - Writes large batches of records to a file, uploads the file to GCS, then uses <b>COPY INTO table</b> to upload the file. Recommended for most workloads for better speed and scalability. Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\">here</a>.",
+        "description": "Loading method used to send select the way data will be uploaded to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In almost all cases, you should use staging. <br/><b>GCS Staging</b> - Writes large batches of records to a file, uploads the file to GCS, then uses <b>COPY INTO table</b> to upload the file. Recommended for most workloads for better speed and scalability. Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\">here</a>.",
         "oneOf": [
           {
             "title": "Standard Inserts",

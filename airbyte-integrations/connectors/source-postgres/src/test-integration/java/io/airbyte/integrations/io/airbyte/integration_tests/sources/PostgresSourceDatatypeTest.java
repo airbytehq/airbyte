@@ -63,7 +63,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       ctx.execute("SET lc_monetary TO 'en_US.utf8';");
       // Set up a fixed timezone here so that timetz and timestamptz always have the same time zone
       // wherever the tests are running on.
-      ctx.execute("SET TIMEZONE TO 'America/Los_Angeles'");
+      ctx.execute("SET TIMEZONE TO 'MST'");
       return null;
     });
 
@@ -458,9 +458,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
-              // A time value without time zone will use the time zone set on the database, which is Z-8,
-              // so 13:00:01 is returned as 13:00:01-08.
-              .addExpectedValues(null, "13:00:01-08", "13:00:02+08", "13:00:03-08", "13:00:04+00", "13:00:05-08", "13:00:06+08")
+              // A time value without time zone will use the time zone set on the database, which is Z-7,
+              // so 13:00:01 is returned as 13:00:01-07.
+              .addExpectedValues(null, "13:00:01-07", "13:00:02+08", "13:00:03-08", "13:00:04+00", "13:00:05-08", "13:00:06+08")
               .build());
     }
 

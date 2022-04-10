@@ -1,0 +1,34 @@
+# Defines the minimum set of images needed to run Cloud.
+# Used to push OSS images that Cloud depends on.
+
+version: "3.7"
+
+services:
+  scheduler:
+    image: airbyte/scheduler:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-scheduler/app
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  worker:
+    image: airbyte/worker:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-workers
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  webapp:
+    image: airbyte/webapp:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-webapp
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  metric-reporter:
+    image: airbyte/metrics-reporter:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-metrics/reporter
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

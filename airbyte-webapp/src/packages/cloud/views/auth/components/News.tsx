@@ -4,10 +4,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 
+import { H2, H4, H5 } from "components";
+
 import { useConfig } from "config";
 import { news } from "packages/cloud/data/news";
 
-import { H2, H4, H5 } from "components";
 import NewsItem from "./NewsItem";
 
 const Icon = styled.img`

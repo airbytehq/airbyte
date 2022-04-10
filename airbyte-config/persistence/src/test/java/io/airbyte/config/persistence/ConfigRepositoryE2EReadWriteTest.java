@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
@@ -60,7 +59,6 @@ public class ConfigRepositoryE2EReadWriteTest {
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
   private JsonSecretsProcessor jsonSecretsProcessor;
-  private FeatureFlags featureFlags;
 
   @BeforeAll
   public static void dbSetup() {
@@ -75,8 +73,7 @@ public class ConfigRepositoryE2EReadWriteTest {
   void setup() throws IOException, JsonValidationException, SQLException {
     database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
     jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    featureFlags = mock(FeatureFlags.class);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor, featureFlags));
+    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
     configRepository = spy(new ConfigRepository(configPersistence, database));
     final ConfigsDatabaseMigrator configsDatabaseMigrator =
         new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
@@ -378,6 +375,36 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     result = configRepository.getSourceOAuthParamByDefinitionIdOptional(missingId, sourceOAuthParameter.getSourceDefinitionId());
     assertFalse(result.isPresent());
+  }
+
+  @Test
+  public void testGetStandardSyncUsingOperation() throws IOException {
+    final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+
+    final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
+
+    assertThat(syncs).hasSameElementsAs(expectedSyncs);
+
+  }
+
+  @Test
+  public void testDeleteStandardSyncOperation()
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID deletedOperationId = MockData.standardSyncOperations().get(0).getOperationId();
+    final List<StandardSync> syncs = MockData.standardSyncs();
+    configRepository.deleteStandardSyncOperation(deletedOperationId);
+
+    for (final StandardSync sync : syncs) {
+      final StandardSync retrievedSync = configRepository.getStandardSync(sync.getConnectionId());
+      for (final UUID operationId : sync.getOperationIds()) {
+        if (operationId.equals(deletedOperationId)) {
+          assertThat(retrievedSync.getOperationIds()).doesNotContain(deletedOperationId);
+        } else {
+          assertThat(retrievedSync.getOperationIds()).contains(operationId);
+        }
+      }
+    }
   }
 
 }

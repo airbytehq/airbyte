@@ -18,8 +18,7 @@ const CheckBoxContainer = styled.label<{
   height: 18px;
   min-width: 18px;
   border: 1px solid
-    ${({ theme, checked, indeterminate }) =>
-      checked || indeterminate ? theme.primaryColor : theme.greyColor20};
+    ${({ theme, checked, indeterminate }) => (checked || indeterminate ? theme.primaryColor : theme.greyColor20)};
   background: ${({ theme, checked, indeterminate }) =>
     checked || indeterminate ? theme.primaryColor : theme.whiteColor};
   color: ${({ theme }) => theme.whiteColor};
@@ -34,9 +33,10 @@ const CheckBoxContainer = styled.label<{
   position: relative;
 `;
 
-const CheckBox: React.FC<
-  React.InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }
-> = ({ indeterminate, ...props }) => (
+const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }> = ({
+  indeterminate,
+  ...props
+}) => (
   <CheckBoxContainer
     onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
     className={props.className}
@@ -44,11 +44,7 @@ const CheckBox: React.FC<
     indeterminate={indeterminate}
   >
     <CheckBoxInput {...props} type="checkbox" />
-    {indeterminate ? (
-      <FontAwesomeIcon icon={faMinus} />
-    ) : (
-      props.checked && <FontAwesomeIcon icon={faCheck} />
-    )}
+    {indeterminate ? <FontAwesomeIcon icon={faMinus} /> : props.checked && <FontAwesomeIcon icon={faCheck} />}
   </CheckBoxContainer>
 );
 

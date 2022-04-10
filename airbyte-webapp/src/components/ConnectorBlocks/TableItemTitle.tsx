@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Button, DropDownRow, H3, H5 } from "components";
 import { Popout } from "components/base/Popout/Popout";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+
 import { ReleaseStage } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 

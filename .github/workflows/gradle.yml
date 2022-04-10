@@ -291,7 +291,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
@@ -426,7 +426,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
@@ -571,7 +571,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
@@ -698,7 +698,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
           label: ${{ needs.start-platform-new-scheduler-acceptance-runner.outputs.label }}
@@ -837,7 +837,7 @@ jobs:
           df -h
           docker system df
 
-      - name: Run GCP End-to-End Acceptance Tests
+      - name: Run AWS/GCP Cloud Integration Tests
         env:
           USER: root
           HOME: /home/runner
@@ -846,7 +846,7 @@ jobs:
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         run: |
-          CI=true ./tools/bin/gcp_acceptance_tests.sh
+          CI=true ./tools/bin/cloud_integration_tests.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: "Platform: Stop Kube Acceptance Test EC2 Runner"
@@ -867,7 +867,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
@@ -1003,7 +1003,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.5
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}

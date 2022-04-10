@@ -1,5 +1,6 @@
-import { Config } from "config";
 import * as Fullstory from "@fullstory/browser";
+
+import { Config } from "config";
 
 declare global {
   interface Window {
