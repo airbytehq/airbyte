@@ -141,6 +141,7 @@ class Organizations(PipedriveStream):
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
 
+
 class OrganizationFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields"""
 
@@ -153,10 +154,12 @@ class Persons(PipedriveStream):
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
 
+
 class PersonFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields"""
 
     primary_key = None
+
 
 class Pipelines(PipedriveStream):
     """
