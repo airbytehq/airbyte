@@ -4,9 +4,7 @@
     {
       "domain": "abs",
       "items": {},
-      "grants": [
-        "admin"
-      ]
+      "grants": ["admin"]
     },
     {
       "domain": "tools",

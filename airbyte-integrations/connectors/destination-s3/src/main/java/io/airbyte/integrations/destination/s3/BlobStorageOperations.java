@@ -14,10 +14,9 @@ public interface BlobStorageOperations {
   String getBucketObjectPath(String namespace, String streamName, DateTime writeDatetime, String customFormat);
 
   /**
-   * Create a storage object where to store data in the destination for a @param streamName using
-   * location of @param objectPath
+   * Create a storage object where to store data in the destination for a @param objectPath
    */
-  void createBucketObjectIfNotExists(String streamName) throws Exception;
+  void createBucketObjectIfNotExists(String objectPath) throws Exception;
 
   /**
    * Upload the data files into the storage area.
@@ -29,9 +28,11 @@ public interface BlobStorageOperations {
   /**
    * Remove files that were just stored in the bucket
    */
-  void cleanUpBucketObject(String streamName, List<String> stagedFiles) throws Exception;
+  void cleanUpBucketObject(String objectPath, List<String> stagedFiles) throws Exception;
 
-  void dropBucketObject(String streamName);
+  void cleanUpBucketObject(String namespace, String StreamName, String objectPath, String pathFormat);
+
+  void dropBucketObject(String objectPath);
 
   boolean isValidData(JsonNode jsonNode);
 

@@ -1996,6 +1996,28 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/workspace/state:
+    post:
+      tags:
+        - web_backend
+      summary: Returns the current state of a workspace
+      operationId: webBackendGetWorkspaceState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendWorkspaceState"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendWorkspaceStateResult"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/list:
     post:
       tags:
@@ -2418,6 +2440,26 @@ components:
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+    WebBackendWorkspaceState:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+    WebBackendWorkspaceStateResult:
+      type: object
+      required:
+        - hasConnections
+        - hasSources
+        - hasDestinations
+      properties:
+        hasConnections:
+          type: boolean
+        hasSources:
+          type: boolean
+        hasDestinations:
+          type: boolean
     # SLUG
     SlugRequestBody:
       type: object
@@ -3934,11 +3976,11 @@ components:
       additionalProperties: false
       properties:
         default:
-          "$ref": "#/definitions/ResourceRequirements"
+          "$ref": "#/components/schemas/ResourceRequirements"
         jobSpecific:
           type: array
           items:
-            "$ref": "#/definitions/JobTypeResourceLimit"
+            "$ref": "#/components/schemas/JobTypeResourceLimit"
     JobTypeResourceLimit:
       description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
       type: object
@@ -3948,9 +3990,9 @@ components:
         - resourceRequirements
       properties:
         jobType:
-          "$ref": "#/definitions/JobType"
+          "$ref": "#/components/schemas/JobType"
         resourceRequirements:
-          "$ref": "#/definitions/ResourceRequirements"
+          "$ref": "#/components/schemas/ResourceRequirements"
     JobType:
       description: enum that describes the different types of jobs that the platform runs.
       type: string

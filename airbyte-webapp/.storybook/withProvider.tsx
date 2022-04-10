@@ -1,6 +1,9 @@
+import React from "react";
+
 import { MemoryRouter } from "react-router-dom";
 import { IntlProvider } from "react-intl";
 import { ThemeProvider } from "styled-components";
+import { QueryClientProvider, QueryClient } from "react-query";
 
 // TODO: theme was not working correctly so imported directly
 import { theme } from "../src/theme";
@@ -24,21 +27,37 @@ const AnalyticsContextMock: AnalyticsServiceProviderValue = ({
   },
 } as unknown) as AnalyticsServiceProviderValue;
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      suspense: true,
+    },
+  },
+});
+
 export const withProviders = (getStory) => (
-  <analyticsServiceContext.Provider value={AnalyticsContextMock}>
-    <ServicesProvider>
-      <MemoryRouter>
-        <IntlProvider messages={messages} locale={"en"}>
-          <ThemeProvider theme={theme}>
-            <ConfigServiceProvider defaultConfig={defaultConfig} providers={[]}>
-              <FeatureService>
-                <GlobalStyle />
-                {getStory()}
-              </FeatureService>
-            </ConfigServiceProvider>
-          </ThemeProvider>
-        </IntlProvider>
-      </MemoryRouter>
-    </ServicesProvider>
-  </analyticsServiceContext.Provider>
+  <React.Suspense fallback={null}>
+    <analyticsServiceContext.Provider value={AnalyticsContextMock}>
+      <QueryClientProvider client={queryClient}>
+        <ServicesProvider>
+          <MemoryRouter>
+            <IntlProvider messages={messages} locale={"en"}>
+              <ThemeProvider theme={theme}>
+                <ConfigServiceProvider
+                  defaultConfig={defaultConfig}
+                  providers={[]}
+                >
+                  <FeatureService>
+                    <GlobalStyle />
+                    {getStory()}
+                  </FeatureService>
+                </ConfigServiceProvider>
+              </ThemeProvider>
+            </IntlProvider>
+          </MemoryRouter>
+        </ServicesProvider>
+      </QueryClientProvider>
+    </analyticsServiceContext.Provider>
+  </React.Suspense>
 );

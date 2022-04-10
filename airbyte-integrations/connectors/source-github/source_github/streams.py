@@ -661,6 +661,7 @@ class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
         parent_stream_slices = super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=parent_state)
         for parent_stream_slice in parent_stream_slices:
             yield {
+                "pull_request_updated_at": parent_stream_slice["parent"]["updated_at"],
                 "pull_request_number": parent_stream_slice["parent"]["number"],
                 "repository": parent_stream_slice["parent"]["repository"],
             }
@@ -708,7 +709,7 @@ class Reviews(PullRequestSubstream):
     API docs: https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request
     """
 
-    cursor_field = "submitted_at"
+    cursor_field = "pull_request_updated_at"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -722,6 +723,11 @@ class Reviews(PullRequestSubstream):
             if repository in parent_state and self.cursor_field in parent_state[repository]:
                 parent_state[repository][self.parent.cursor_field] = parent_state[repository][self.cursor_field]
         yield from super().stream_slices(stream_state=parent_state, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record[self.cursor_field] = stream_slice[self.cursor_field]
+        return record
 
 
 class PullRequestCommits(GithubStream):

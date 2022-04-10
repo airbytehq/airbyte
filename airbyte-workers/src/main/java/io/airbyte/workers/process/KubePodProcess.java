@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -367,8 +366,9 @@ public class KubePodProcess extends Process implements KubePod {
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
                         final List<TolerationPOJO> tolerations,
-                        final Optional<Map<String, String>> nodeSelectors,
+                        final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
+                        final Map<String, String> annotations,
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
@@ -483,6 +483,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withNewMetadata()
         .withName(podName)
         .withLabels(labels)
+        .withAnnotations(annotations)
         .endMetadata()
         .withNewSpec();
 
@@ -492,7 +493,7 @@ public class KubePodProcess extends Process implements KubePod {
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
-        .withNodeSelector(nodeSelectors.orElse(null))
+        .withNodeSelector(nodeSelectors)
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)
@@ -500,7 +501,7 @@ public class KubePodProcess extends Process implements KubePod {
         .endSpec()
         .build();
 
-    LOGGER.info("Creating pod...");
+    LOGGER.info("Creating pod {}...", pod.getMetadata().getName());
     val start = System.currentTimeMillis();
 
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
