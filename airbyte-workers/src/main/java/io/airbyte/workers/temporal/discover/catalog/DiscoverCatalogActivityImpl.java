@@ -24,6 +24,8 @@ import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
@@ -66,7 +68,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
         .withConnectionConfiguration(fullConfig);
 
-    final Supplier<StandardDiscoverCatalogInput> inputSupplier = () -> input;
+    final ActivityExecutionContext context = Activity.getExecutionContext();
 
     final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
@@ -74,10 +76,11 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
         logConfigs,
         jobRunConfig,
         getWorkerFactory(launcherConfig),
-        inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(),
+        () -> input,
+        new CancellationHandler.TemporalCancellationHandler(context),
         jobPersistence,
-        airbyteVersion);
+        airbyteVersion,
+        () -> context);
 
     return temporalAttemptExecution.get();
   }

@@ -5,7 +5,8 @@
 package io.airbyte.workers.temporal;
 
 import static io.airbyte.workers.temporal.TemporalUtils.getTemporalClientWhenConnected;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.workers.WorkerException;
+import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -44,7 +46,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TemporalUtilsTest {
+class TemporalUtilsTest {
 
   private static final String TASK_QUEUE = "default";
 
@@ -291,20 +293,23 @@ public class TemporalUtilsTest {
 
       public void activity(String arg) {
         LOGGER.info("before: {}", ACTIVITY1);
-        TemporalUtils.withBackgroundHeartbeat(new AtomicReference<>(null), () -> {
-          if (timesReachedEnd.get() == 0) {
-            if (arg.equals("runtime")) {
-              throw new RuntimeException("failed");
-            } else if (arg.equals("timeout")) {
-              Thread.sleep(10000);
-              return null;
-            } else {
-              throw new WorkerException("failed");
-            }
-          } else {
-            return null;
-          }
-        });
+        TemporalUtils.withBackgroundHeartbeat(
+            new AtomicReference<>(null),
+            () -> {
+              if (timesReachedEnd.get() == 0) {
+                if (arg.equals("runtime")) {
+                  throw new RuntimeException("failed");
+                } else if (arg.equals("timeout")) {
+                  Thread.sleep(10000);
+                  return null;
+                } else {
+                  throw new WorkerException("failed");
+                }
+              } else {
+                return null;
+              }
+            },
+            Activity::getExecutionContext);
         timesReachedEnd.incrementAndGet();
         LOGGER.info("before: {}", ACTIVITY1);
       }

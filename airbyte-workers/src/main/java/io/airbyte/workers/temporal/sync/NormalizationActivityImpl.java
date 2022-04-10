@@ -24,6 +24,8 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -68,34 +70,41 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   public Void normalize(final JobRunConfig jobRunConfig,
                         final IntegrationLauncherConfig destinationLauncherConfig,
                         final NormalizationInput input) {
-    return TemporalUtils.withBackgroundHeartbeat(() -> {
-      final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
-      final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+      final ActivityExecutionContext context = Activity.getExecutionContext();
+      return TemporalUtils.withBackgroundHeartbeat(
+        () -> {
+          final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
+          final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
-      final Supplier<NormalizationInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
-        return fullInput;
-      };
+          final Supplier<NormalizationInput> inputSupplier = () -> {
+            validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
+            return fullInput;
+          };
 
-      final CheckedSupplier<Worker<NormalizationInput, Void>, Exception> workerFactory;
+          final CheckedSupplier<Worker<NormalizationInput, Void>, Exception> workerFactory;
 
-      if (containerOrchestratorConfig.isPresent()) {
-        workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
-      } else {
-        workerFactory = getLegacyWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
-      }
+            if (containerOrchestratorConfig.isPresent()) {
+                workerFactory =
+                    getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig,
+                        () -> context);
+            } else {
+                workerFactory = getLegacyWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
+            }
 
-      final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
-          workspaceRoot, workerEnvironment, logConfigs,
-          jobRunConfig,
-          workerFactory,
-          inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler(),
-          jobPersistence,
-          airbyteVersion);
+          final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution =
+              new TemporalAttemptExecution<>(
+                  workspaceRoot, workerEnvironment, logConfigs,
+                  jobRunConfig,
+                  workerFactory,
+                  inputSupplier,
+                  new CancellationHandler.TemporalCancellationHandler(context),
+                  jobPersistence,
+                  airbyteVersion,
+                  () -> context);
 
-      return temporalAttemptExecution.get();
-    });
+          return temporalAttemptExecution.get();
+        },
+        () -> context);
   }
 
   private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getLegacyWorkerFactory(
@@ -113,10 +122,11 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         workerEnvironment);
   }
 
-  private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getContainerLauncherWorkerFactory(
-                                                                                                         final WorkerConfigs workerConfigs,
-                                                                                                         final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                         final JobRunConfig jobRunConfig)
+    private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getContainerLauncherWorkerFactory(
+        final WorkerConfigs workerConfigs,
+        final IntegrationLauncherConfig destinationLauncherConfig,
+        final JobRunConfig jobRunConfig,
+        final Supplier<ActivityExecutionContext> activityContext)
       throws IOException {
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
     final var connectionId = UUID.fromString(jobScope);
@@ -126,7 +136,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,
-        containerOrchestratorConfig.get());
+        containerOrchestratorConfig.get(),
+        activityContext);
   }
 
 }

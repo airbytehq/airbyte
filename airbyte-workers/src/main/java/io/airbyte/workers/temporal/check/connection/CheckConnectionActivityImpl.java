@@ -22,6 +22,8 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
@@ -63,17 +65,18 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
         .withConnectionConfiguration(fullConfig);
 
-    final Supplier<StandardCheckConnectionInput> inputSupplier = () -> input;
+    final ActivityExecutionContext context = Activity.getExecutionContext();
 
     final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
             workspaceRoot, workerEnvironment, logConfigs,
             jobRunConfig,
             getWorkerFactory(launcherConfig),
-            inputSupplier,
-            new CancellationHandler.TemporalCancellationHandler(),
+            () -> input,
+            new CancellationHandler.TemporalCancellationHandler(context),
             jobPersistence,
-            airbyteVersion);
+            airbyteVersion,
+            () -> context);
 
     return temporalAttemptExecution.get();
   }

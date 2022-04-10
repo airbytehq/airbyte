@@ -10,8 +10,10 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
+import io.temporal.activity.ActivityExecutionContext;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInput, Void> {
 
@@ -23,7 +25,8 @@ public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInp
                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                      final JobRunConfig jobRunConfig,
                                      final WorkerConfigs workerConfigs,
-                                     final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig) {
+                                     final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
+                                     final Supplier<ActivityExecutionContext> activityContext) {
     super(
         connectionId,
         NORMALIZATION,
@@ -33,7 +36,8 @@ public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInp
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
         workerConfigs.getResourceRequirements(),
-        Void.class);
+        Void.class,
+        activityContext);
   }
 
 }
