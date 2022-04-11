@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.apache.avro.generic.GenericData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroReadSupport;
@@ -32,10 +33,9 @@ public class GcsParquetDestinationAcceptanceTest extends GcsDestinationAcceptanc
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"Parquet\",\n"
-        + "  \"compression_codec\": \"GZIP\"\n"
-        + "}");
+    return Jsons.jsonNode(Map.of(
+        "format_type", "Parquet",
+        "compression_codec", "GZIP"));
   }
 
   @Override

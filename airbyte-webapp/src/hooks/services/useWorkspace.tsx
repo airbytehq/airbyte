@@ -1,10 +1,7 @@
-import { useFetcher } from "rest-hooks";
 import { useMutation } from "react-query";
 
-import WorkspaceResource from "core/resources/Workspace";
-
 import { useAnalyticsService } from "hooks/services/Analytics";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 import { Destination, Source } from "core/domain/connector";
 import { Workspace } from "core/domain/workspace/Workspace";
 import { NotificationStatus } from "core/domain/notification/types";
@@ -24,14 +21,10 @@ function useGetNotificationService(): NotificationService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new NotificationService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new NotificationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
 const useWorkspace = (): {
-  workspace: Workspace;
   updatePreferences: (data: {
     email?: string;
     anonymousDataCollection: boolean;
@@ -58,8 +51,7 @@ const useWorkspace = (): {
   }) => Promise<void>;
 } => {
   const notificationService = useGetNotificationService();
-  const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
-
+  const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
   const workspace = useCurrentWorkspace();
 
   const analyticsService = useAnalyticsService();
@@ -71,17 +63,14 @@ const useWorkspace = (): {
       });
     }
 
-    await updateWorkspace(
-      {},
-      {
-        workspaceId: workspace.workspaceId,
-        initialSetupComplete: workspace.initialSetupComplete,
-        anonymousDataCollection: workspace.anonymousDataCollection,
-        news: workspace.news,
-        securityUpdates: workspace.securityUpdates,
-        displaySetupWizard: false,
-      }
-    );
+    await updateWorkspace({
+      workspaceId: workspace.workspaceId,
+      initialSetupComplete: workspace.initialSetupComplete,
+      anonymousDataCollection: workspace.anonymousDataCollection,
+      news: workspace.news,
+      securityUpdates: workspace.securityUpdates,
+      displaySetupWizard: false,
+    });
   };
 
   const sendFeedback = async ({
@@ -108,15 +97,12 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) => {
-    const result = await updateWorkspace(
-      {},
-      {
-        workspaceId: workspace.workspaceId,
-        initialSetupComplete: true,
-        displaySetupWizard: true,
-        ...data,
-      }
-    );
+    const result = await updateWorkspace({
+      workspaceId: workspace.workspaceId,
+      initialSetupComplete: true,
+      displaySetupWizard: true,
+      ...data,
+    });
 
     analyticsService.track("Specified Preferences", {
       email: data.email,
@@ -134,39 +120,33 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) =>
-    await updateWorkspace(
-      {},
-      {
-        workspaceId: workspace.workspaceId,
-        initialSetupComplete: workspace.initialSetupComplete,
-        displaySetupWizard: workspace.displaySetupWizard,
-        notifications: workspace.notifications,
-        ...data,
-      }
-    );
+    await updateWorkspace({
+      workspaceId: workspace.workspaceId,
+      initialSetupComplete: workspace.initialSetupComplete,
+      displaySetupWizard: workspace.displaySetupWizard,
+      notifications: workspace.notifications,
+      ...data,
+    });
 
   const updateWebhook = async (data: WebhookPayload) =>
-    await updateWorkspace(
-      {},
-      {
-        workspaceId: workspace.workspaceId,
-        initialSetupComplete: workspace.initialSetupComplete,
-        displaySetupWizard: workspace.displaySetupWizard,
-        anonymousDataCollection: workspace.anonymousDataCollection,
-        news: workspace.news,
-        securityUpdates: workspace.securityUpdates,
-        notifications: [
-          {
-            notificationType: "slack",
-            sendOnSuccess: data.sendOnSuccess,
-            sendOnFailure: data.sendOnFailure,
-            slackConfiguration: {
-              webhook: data.webhook,
-            },
+    await updateWorkspace({
+      workspaceId: workspace.workspaceId,
+      initialSetupComplete: workspace.initialSetupComplete,
+      displaySetupWizard: workspace.displaySetupWizard,
+      anonymousDataCollection: workspace.anonymousDataCollection,
+      news: workspace.news,
+      securityUpdates: workspace.securityUpdates,
+      notifications: [
+        {
+          notificationType: "slack",
+          sendOnSuccess: data.sendOnSuccess,
+          sendOnFailure: data.sendOnFailure,
+          slackConfiguration: {
+            webhook: data.webhook,
           },
-        ],
-      }
-    );
+        },
+      ],
+    });
 
   const tryWebhookUrl = useMutation((data: WebhookPayload) =>
     notificationService.try({
@@ -180,7 +160,6 @@ const useWorkspace = (): {
   );
 
   return {
-    workspace,
     finishOnboarding,
     setInitialSetupConfig,
     updatePreferences,

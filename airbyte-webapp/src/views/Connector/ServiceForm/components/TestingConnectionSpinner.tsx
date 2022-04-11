@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
+import { FormattedMessage } from "react-intl";
 
 import { Button, ProgressBar } from "components";
-import { FormattedMessage } from "react-intl";
 
 const LoadingContainer = styled.div`
   margin: 34px 0 9px;
@@ -23,18 +23,12 @@ type TestingConnectionSpinnerProps = {
   onCancelTesting?: () => void;
 };
 
-const TestingConnectionSpinner: React.FC<TestingConnectionSpinnerProps> = (
-  props
-) => {
+const TestingConnectionSpinner: React.FC<TestingConnectionSpinnerProps> = (props) => {
   return (
     <LoadingContainer>
       <ProgressBar runTime={PROGRESS_BAR_TIME} />
       {props.isCancellable && (
-        <StyledButton
-          secondary
-          type="button"
-          onClick={() => props.onCancelTesting?.()}
-        >
+        <StyledButton secondary type="button" onClick={() => props.onCancelTesting?.()}>
           <FormattedMessage id="form.cancel" />
         </StyledButton>
       )}
