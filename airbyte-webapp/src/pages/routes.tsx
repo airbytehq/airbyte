@@ -3,7 +3,6 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
 
-import useDiscardFormChangesConfirmation from "hooks/useDiscardFormChangesConfirmation";
 import { useConfig } from "config";
 import MainView from "views/layout/MainView";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
@@ -54,8 +53,6 @@ const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
 };
 
 const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
-  useDiscardFormChangesConfirmation();
-
   return (
     <MainView>
       <TrackPageAnalytics />

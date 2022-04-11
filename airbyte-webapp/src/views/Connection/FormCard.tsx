@@ -4,7 +4,7 @@ import { useMutation } from "react-query";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import FormChangesTracker from "components/FormChangesTracker";
+import FormChangeTracker from "components/FormChangeTracker";
 
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
@@ -34,7 +34,7 @@ export const FormCard: React.FC<
       {({ resetForm, isSubmitting, dirty, isValid }) => (
         <CollapsibleCard {...props}>
           <FormContainer>
-            <FormChangesTracker changed={dirty} />
+            <FormChangeTracker changed={dirty} />
             {children}
             <div>
               <EditControls

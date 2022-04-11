@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useAsyncFn } from "react-use";
+import { FormikHelpers } from "formik";
 
 import { Button, Card } from "components";
 import ResetDataModal from "components/ResetDataModal";
@@ -73,7 +74,7 @@ const ReplicationView: React.FC<IProps> = ({ onAfterSaveSchema, connectionId }) 
 
   const connection = activeUpdatingSchemaMode ? connectionWithRefreshCatalog : initialConnection;
 
-  const onSubmit = async (values: ValuesProps) => {
+  const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
     const initialSyncSchema = connection?.syncCatalog;
 
     await updateConnection({
@@ -90,6 +91,10 @@ const ReplicationView: React.FC<IProps> = ({ onAfterSaveSchema, connectionId }) 
 
     if (activeUpdatingSchemaMode) {
       setActiveUpdatingSchemaMode(false);
+    }
+
+    if (formikHelpers) {
+      formikHelpers.resetForm({ values });
     }
   };
 
