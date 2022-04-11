@@ -9,6 +9,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -88,7 +89,9 @@ public class JobCreationAndStatusUpdateActivityTest {
   private static final StandardSyncOutput standardSyncOutput = new StandardSyncOutput()
       .withStandardSyncSummary(
           new StandardSyncSummary()
-              .withStatus(ReplicationStatus.COMPLETED));
+              .withStatus(ReplicationStatus.COMPLETED))
+      .withNormalizationSummary(
+          new NormalizationSummary());
 
   private static final JobOutput jobOutput = new JobOutput().withSync(standardSyncOutput);
 
