@@ -168,14 +168,13 @@ public class OperationsHandler {
 
   public void deleteOperationsForConnection(final StandardSync standardSync, final List<UUID> deleteOperationIds)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final List<StandardSync> allStandardSyncs = configRepository.listStandardSyncs();
     final List<UUID> operationIds = new ArrayList<>(standardSync.getOperationIds());
     for (final UUID operationId : deleteOperationIds) {
       operationIds.remove(operationId);
       boolean sharedOperation = false;
-      for (final StandardSync sync : allStandardSyncs) {
+      for (final StandardSync sync : configRepository.listStandardSyncsUsingOperation(operationId)) {
         // Check if other connections are using the same operation
-        if (sync.getConnectionId() != standardSync.getConnectionId() && sync.getOperationIds().contains(operationId)) {
+        if (sync.getConnectionId() != standardSync.getConnectionId()) {
           sharedOperation = true;
           break;
         }
@@ -189,15 +188,9 @@ public class OperationsHandler {
   }
 
   public void deleteOperation(final OperationIdRequestBody operationIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws IOException {
     final UUID operationId = operationIdRequestBody.getOperationId();
-    // Remove operation from all connections using it
-    for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
-      if (standardSync.getOperationIds().removeAll(List.of(operationId))) {
-        configRepository.writeStandardSync(standardSync);
-      }
-    }
-    removeOperation(operationId);
+    configRepository.deleteStandardSyncOperation(operationId);
   }
 
   private void removeOperation(final UUID operationId) throws JsonValidationException, ConfigNotFoundException, IOException {
