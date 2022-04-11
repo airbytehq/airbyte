@@ -8,7 +8,6 @@ import com.google.common.collect.MoreCollectors;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -80,16 +79,15 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   }
 
   /**
-   * This class will receive events for ALL pods in ALL namespaces; filter down to the one pod that we
-   * care about. If it's still running, then we obviously can't fetch its exit code.
+   * Informers without an OperationContext will monitor ALL pods in ALL namespaces; filter down to the
+   * one pod that we care about. If it's still running, then we obviously can't fetch its exit code.
    * <p>
    * Also, if we've already found the exit code, or the pod has been deleted, then stop doing anything
    * at all.
    */
   private boolean shouldCheckPod(final Pod pod) {
-    // Use Objects.equals in case the namespace is null
-    final boolean correctName = Objects.equals(podNamespace, pod.getMetadata().getNamespace());
-    final boolean correctNamespace = Objects.equals(podName, pod.getMetadata().getName());
+    final boolean correctName = podName.equals(pod.getMetadata().getName());
+    final boolean correctNamespace = podNamespace.equals(pod.getMetadata().getNamespace());
     return active && correctName && correctNamespace && KubePodResourceHelper.isTerminal(pod);
   }
 

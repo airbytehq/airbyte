@@ -31,6 +31,7 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.PodResource;
+import io.fabric8.kubernetes.client.dsl.internal.PodOperationContext;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.informers.SharedInformerFactory;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
@@ -530,10 +531,15 @@ public class KubePodProcess extends Process implements KubePod {
     // See the ExitCodeWatcher comments for more info.
     exitCodeFuture = new CompletableFuture<>();
     sharedInformerFactory = fabricClient.informers();
-    final SharedIndexInformer<Pod> podInformer = sharedInformerFactory.sharedIndexInformerFor(Pod.class, 30 * 1000L);
+    final SharedIndexInformer<Pod> podInformer = sharedInformerFactory.sharedIndexInformerFor(
+        Pod.class,
+        new PodOperationContext()
+            .withName(pod.getMetadata().getName())
+            .withNamespace(namespace),
+        30 * 1000L);
     podInformer.addEventHandler(new ExitCodeWatcher(
         pod.getMetadata().getName(),
-        pod.getMetadata().getNamespace(),
+        namespace,
         exitCodeFuture::complete,
         () -> {
           LOGGER.info(prependPodInfo(
