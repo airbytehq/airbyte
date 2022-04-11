@@ -281,9 +281,15 @@ public class TemporalClient {
   }
 
   public void update(final UUID connectionId) {
-    final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+    final boolean workflowReachable = isWorkflowReachable(getConnectionManagerName(connectionId));
 
-    connectionManagerWorkflow.connectionUpdated();
+    if (!workflowReachable) {
+      // if a workflow is not reachable for update, create a new workflow
+      submitConnectionUpdaterAsync(connectionId);
+    } else {
+      final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionUpdateWorkflow(connectionId);
+      connectionManagerWorkflow.connectionUpdated();
+    }
   }
 
   @Value

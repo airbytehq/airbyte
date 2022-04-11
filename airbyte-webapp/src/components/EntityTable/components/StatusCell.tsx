@@ -23,22 +23,11 @@ const ProgressMessage = styled.div`
   padding: 7px 0;
 `;
 
-const StatusCell: React.FC<IProps> = ({
-  enabled,
-  isManual,
-  id,
-  onChangeStatus,
-  isSyncing,
-  onSync,
-  allowSync,
-}) => {
-  const [{ loading }, OnLaunch] = useAsyncFn(
-    async (event: React.SyntheticEvent) => {
-      event.stopPropagation();
-      await onSync(id);
-    },
-    []
-  );
+const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, isSyncing, onSync, allowSync }) => {
+  const [{ loading }, OnLaunch] = useAsyncFn(async (event: React.SyntheticEvent) => {
+    event.stopPropagation();
+    await onSync(id);
+  }, []);
 
   const OnToggleClick = (event: React.SyntheticEvent) => {
     event.stopPropagation();
@@ -46,13 +35,7 @@ const StatusCell: React.FC<IProps> = ({
   };
 
   if (!isManual) {
-    return (
-      <Toggle
-        checked={enabled}
-        onChange={OnToggleClick}
-        disabled={!allowSync}
-      />
-    );
+    return <Toggle checked={enabled} onChange={OnToggleClick} disabled={!allowSync} />;
   }
 
   if (isSyncing) {

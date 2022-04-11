@@ -1,10 +1,7 @@
 import { useMutation } from "react-query";
 
 import { useAnalyticsService } from "hooks/services/Analytics";
-import {
-  useCurrentWorkspace,
-  useUpdateWorkspace,
-} from "services/workspaces/WorkspacesService";
+import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 import { Destination, Source } from "core/domain/connector";
 import { Workspace } from "core/domain/workspace/Workspace";
 import { NotificationStatus } from "core/domain/notification/types";
@@ -24,10 +21,7 @@ function useGetNotificationService(): NotificationService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new NotificationService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new NotificationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
 const useWorkspace = (): {

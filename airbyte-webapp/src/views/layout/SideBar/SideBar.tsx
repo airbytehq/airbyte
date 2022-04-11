@@ -5,21 +5,21 @@ import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
-import { useConfig } from "config";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-
 import { Link } from "components";
 import Version from "components/Version";
 
+import { useConfig } from "config";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+
+import { RoutePaths } from "../../../pages/routePaths";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
 import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
-import ResourcesPopup from "./components/ResourcesPopup";
+import SidebarPopout from "./components/SidebarPopout";
 import { NotificationIndicator } from "./NotificationIndicator";
-import { RoutePaths } from "../../../pages/routePaths";
 
 const Bar = styled.nav`
   width: 100px;
@@ -96,13 +96,7 @@ const SideBar: React.FC = () => {
   return (
     <Bar>
       <div>
-        <Link
-          to={
-            workspace.displaySetupWizard
-              ? RoutePaths.Onboarding
-              : RoutePaths.Connections
-          }
-        >
+        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <Menu>
@@ -152,13 +146,7 @@ const SideBar: React.FC = () => {
           </MenuLinkItem>
         </li>
         <li>
-          <ResourcesPopup
-            options={[
-              { value: "docs" },
-              { value: "slack" },
-              { value: "recipes" },
-            ]}
-          >
+          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
             {({ onOpen }) => (
               <MenuItem onClick={onOpen} as="div">
                 <DocsIcon />
@@ -167,7 +155,7 @@ const SideBar: React.FC = () => {
                 </Text>
               </MenuItem>
             )}
-          </ResourcesPopup>
+          </SidebarPopout>
         </li>
 
         <li>
