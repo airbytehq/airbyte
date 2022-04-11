@@ -43,6 +43,7 @@ from .streams import (
     Reviews,
     Stargazers,
     Tags,
+    TeamMembers,
     Teams,
     Users,
     WorkflowRuns,
@@ -184,6 +185,7 @@ class SourceGithub(AbstractSource):
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
         projects_stream = Projects(**repository_args_with_start_date)
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
+        teams_stream = Teams(**organization_args)
 
         return [
             Assignees(**repository_args),
@@ -215,8 +217,9 @@ class SourceGithub(AbstractSource):
             Reviews(parent=pull_requests_stream, **repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
             Tags(**repository_args),
-            Teams(**organization_args),
+            teams_stream,
             Users(**organization_args),
             Workflows(**repository_args),
             WorkflowRuns(**repository_args),
+            TeamMembers(parent=teams_stream, **repository_args),
         ]

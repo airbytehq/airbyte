@@ -1003,3 +1003,34 @@ class WorkflowRuns(GithubStream):
         response = response.json().get("workflow_runs")
         for record in response:
             yield record
+
+
+class TeamMembers(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/teams#list-team-members
+    """
+
+    def __init__(self, parent: HttpStream, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['slug']}/members"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"organization": record["organization"], "slug": record["slug"]}
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["organization"] = stream_slice["organization"]
+        record["slug"] = stream_slice["slug"]
+        return record
