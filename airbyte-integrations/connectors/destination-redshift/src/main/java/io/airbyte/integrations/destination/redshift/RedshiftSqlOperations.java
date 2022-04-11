@@ -32,19 +32,13 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   private static final String SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT = """
-         select count(*), tablename, schemaname
+         select tablename, schemaname
          from pg_table_def
          where schemaname = '%1$s'
-           and tablename = (
-             select tablename as tablename
-             from pg_table_def
-             where schemaname = '%1$s'
-               and "column" = '%2$s'
-               and type <> 'super'
-               and tablename like '%%airbyte_raw%%')
+           and "column" = '%2$s'
            and "column" in ('%2$s', '%3$s', '%4$s')
-         group by tablename, schemaname
-         having count(*) = 3;
+           and tablename like '%%airbyte_raw%%'
+           and type <> 'super'
       """;
 
   private static final String ALTER_TMP_TABLES_WITH_NOT_SUPER_TYPE_TO_SUPER_TYPE = """
