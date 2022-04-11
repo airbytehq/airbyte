@@ -206,6 +206,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);
+
+    // For larger tables the Debezium engine can fail to shut down cleanly. In this case extra threads are left running
+    // in the background which can cause this process to never exit. When this happens the entire AirByte pipeline will
+    // hang. This isn't the most ideal fix, but explicitly exiting will force any hung threads to close and allow the
+    // pipeline to complete.
+    System.exit(0);
   }
 
   public enum ReplicationMethod {
