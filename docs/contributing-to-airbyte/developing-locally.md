@@ -41,6 +41,12 @@ This will build all the code and run all the unit tests.
 `SUB_BUILD=PLATFORM ./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
 
 {% hint style="info" %}
+Optionally, you may pass a `VERSION` environment variable to the gradle build command. If present, gradle will use this value as a tag for all created artifacts (both Jars and Docker images).
+
+If unset, gradle will default to using the current VERSION in `.env` for Jars, and `dev` as the Docker image tag.
+{% endhint %}
+
+{% hint style="info" %}
 Gradle will use all CPU cores by default. If Gradle uses too much/too little CPU, tuning the number of CPU cores it uses to better suit a dev's need can help.
 
 Adjust this by either, 1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`. 2. Setting a cli option: `SUB_BUILD=PLATFORM ./gradlew build --max-workers 3` 3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.

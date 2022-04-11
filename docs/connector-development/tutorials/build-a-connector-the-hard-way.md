@@ -8,7 +8,7 @@ This tutorial walks you through building a simple Airbyte source without using a
 
 * [The Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
-* [Packaging your connector](https://docs.airbyte.io/connector-development#1-implement-and-package-the-connector)
+* [Packaging your connector](https://docs.airbyte.io/connector-development#1.-implement-and-package-the-connector)
 * [Testing your connector](../testing-connectors/source-acceptance-tests-reference.md)
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
@@ -113,13 +113,13 @@ To contact the stock ticker API, we need two things:
 1. Which stock ticker we're interested in
 2. The API key to use when contacting the API \(you can obtain a free API token from [Polygon.io](https://polygon.io/dashboard/signup) free plan\)
 
-For reference, the API docs we'll be using [can be found here](https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date).
+For reference, the API docs we'll be using [can be found here](https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).
 
 Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding these two requirements:
 
 ```javascript
 {
-  "documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date",
+  "documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
@@ -232,7 +232,7 @@ Now if we run `python source.py spec` we should see the specification printed ou
 
 ```bash
 python source.py spec
-{"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
+{"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
 ```
 
 We've implemented the first command! Three more and we'll have a working connector.
@@ -556,7 +556,7 @@ def read(config, catalog):
         log("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Stock prices are returned sorted by by date in ascending order
+        # Stock prices are returned sorted by date in ascending order
         # We want to output them one by one as AirbyteMessages
         results = response.json()["results"]
         for result in results:
@@ -719,7 +719,7 @@ def read(config, catalog):
         log("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Stock prices are returned sorted by by date in ascending order
+        # Stock prices are returned sorted by date in ascending order
         # We want to output them one by one as AirbyteMessages
         results = response.json()["results"]
         for result in results:
@@ -917,7 +917,7 @@ to run any of our commands, we'll need to mount all the inputs into the Docker c
 
 ```bash
 $ docker run airbyte/source-stock-ticker-api:dev spec
-{"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_grouped_locale_us_market_stocks__date", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
+{"type": "SPEC", "spec": {"documentationUrl": "https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "required": ["stock_ticker", "api_key"], "additionalProperties": false, "properties": {"stock_ticker": {"type": "string", "title": "Stock Ticker", "description": "The stock ticker to track", "examples": ["AAPL", "TSLA", "AMZN"]}, "api_key": {"type": "string", "description": "The Polygon.io Stocks API key to use to hit the API.", "airbyte_secret": true}}}}}
 
 $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json airbyte/source-stock-ticker-api:dev check --config /data/config.json
 {'type': 'CONNECTION_STATUS', 'connectionStatus': {'status': 'SUCCEEDED'}}

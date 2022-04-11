@@ -34,12 +34,12 @@ public abstract class BigQueryRecordFormatter {
   protected final Set<String> invalidKeys = new HashSet<>();
   protected final Set<String> fieldsContainRefDefinitionValue = new HashSet<>();
 
-  public BigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+  public BigQueryRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     this.namingResolver = namingResolver;
     this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
   }
 
-  protected JsonNode formatJsonSchema(JsonNode jsonSchema) {
+  protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
     // Do nothing by default
     return jsonSchema;
   };
@@ -59,7 +59,7 @@ public abstract class BigQueryRecordFormatter {
 
   protected abstract Schema getBigQuerySchema(JsonNode jsonSchema);
 
-  protected void logFieldFail(String error, String fieldName) {
+  protected void logFieldFail(final String error, final String fieldName) {
     mapOfFailedFields.putIfAbsent(error, new HashSet<>());
     mapOfFailedFields.get(error).add(fieldName);
   }
@@ -72,8 +72,6 @@ public abstract class BigQueryRecordFormatter {
               error,
               String.join(", ", fieldNames)));
       mapOfFailedFields.clear();
-    } else {
-      LOGGER.info("No field fails during record format.");
     }
   }
 
