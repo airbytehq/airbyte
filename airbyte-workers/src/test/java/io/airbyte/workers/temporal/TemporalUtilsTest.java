@@ -168,9 +168,7 @@ class TemporalUtilsTest {
         client.newWorkflowStub(TestFailingWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
 
     // throws workerexception wrapped in a WorkflowFailedException
-    assertThrows(WorkflowFailedException.class, () -> {
-      workflowStub.run("worker");
-    });
+    assertThrows(WorkflowFailedException.class, () -> workflowStub.run("worker"));
 
     // we should never retry enough to reach the end
     assertEquals(0, timesReachedEnd.get());
@@ -193,7 +191,7 @@ class TemporalUtilsTest {
       TemporalUtils.withBackgroundHeartbeat(
           //TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           () -> {
-            Thread.sleep(Duration.ofSeconds(15).toMillis());
+            latch.await();
             return new Object();
           },
           () -> {
@@ -234,10 +232,9 @@ class TemporalUtilsTest {
       ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           //TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
-          new AtomicReference<>(() -> {
-          }),
+          new AtomicReference<>(() -> {}),
           () -> {
-            Thread.sleep(Duration.ofSeconds(15).toMillis());
+            latch.await();
             return new Object();
           },
           () -> {
