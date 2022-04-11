@@ -177,7 +177,6 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           throw new WorkerException("Running the launcher " + application + " failed", e);
         }
       }
-      //TODO (itaseski) set activity context
     }, activityContext);
   }
 

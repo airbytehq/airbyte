@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal;
 import static io.airbyte.workers.temporal.TemporalUtils.getTemporalClientWhenConnected;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -16,6 +17,7 @@ import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.workers.WorkerException;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityCancellationType;
+import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
@@ -93,7 +95,7 @@ class TemporalUtilsTest {
   }
 
   @Test
-  public void testWaitForTemporalServerAndLogThrowsException() {
+  void testWaitForTemporalServerAndLogThrowsException() {
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
@@ -111,7 +113,7 @@ class TemporalUtilsTest {
   }
 
   @Test
-  public void testWaitThatTimesOut() {
+  void testWaitThatTimesOut() {
     final WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
@@ -131,7 +133,7 @@ class TemporalUtilsTest {
   }
 
   @Test
-  public void testRuntimeExceptionOnHeartbeatWrapper() {
+  void testRuntimeExceptionOnHeartbeatWrapper() {
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
     final Worker worker = testEnv.newWorker(TASK_QUEUE);
     worker.registerWorkflowImplementationTypes(TestFailingWorkflow.WorkflowImpl.class);
@@ -153,7 +155,7 @@ class TemporalUtilsTest {
   }
 
   @Test
-  public void testWorkerExceptionOnHeartbeatWrapper() {
+  void testWorkerExceptionOnHeartbeatWrapper() {
     final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
     final Worker worker = testEnv.newWorker(TASK_QUEUE);
     worker.registerWorkflowImplementationTypes(TestFailingWorkflow.WorkflowImpl.class);
@@ -172,6 +174,92 @@ class TemporalUtilsTest {
 
     // we should never retry enough to reach the end
     assertEquals(0, timesReachedEnd.get());
+  }
+
+  @Test
+  void testHeartbeatWithContext() throws InterruptedException {
+
+    final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
+
+    final Worker worker = testEnv.newWorker(TASK_QUEUE);
+
+    worker.registerWorkflowImplementationTypes(HeartbeatWorkflow.HeartbeatWorkflowImpl.class);
+    final WorkflowClient client = testEnv.getWorkflowClient();
+
+    final CountDownLatch latch = new CountDownLatch(2);
+
+    worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
+      ActivityExecutionContext context = Activity.getExecutionContext();
+      TemporalUtils.withBackgroundHeartbeat(
+          //TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
+          () -> {
+            Thread.sleep(Duration.ofSeconds(15).toMillis());
+            return new Object();
+          },
+          () -> {
+            latch.countDown();
+            return context;
+          }
+      );
+    }));
+
+    testEnv.start();
+
+    final HeartbeatWorkflow heartbeatWorkflow = client.newWorkflowStub(
+        HeartbeatWorkflow.class,
+        WorkflowOptions.newBuilder()
+            .setTaskQueue(TASK_QUEUE)
+            .build());
+
+    // use async execution to avoid blocking the test thread
+    WorkflowClient.start(heartbeatWorkflow::execute);
+
+    assertTrue(latch.await(15, TimeUnit.SECONDS));
+
+  }
+
+  @Test
+  void testHeartbeatWithContextAndCallbackRef() throws InterruptedException {
+
+    final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
+
+    final Worker worker = testEnv.newWorker(TASK_QUEUE);
+
+    worker.registerWorkflowImplementationTypes(HeartbeatWorkflow.HeartbeatWorkflowImpl.class);
+    final WorkflowClient client = testEnv.getWorkflowClient();
+
+    final CountDownLatch latch = new CountDownLatch(2);
+
+    worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
+      ActivityExecutionContext context = Activity.getExecutionContext();
+      TemporalUtils.withBackgroundHeartbeat(
+          //TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
+          new AtomicReference<>(() -> {
+          }),
+          () -> {
+            Thread.sleep(Duration.ofSeconds(15).toMillis());
+            return new Object();
+          },
+          () -> {
+            latch.countDown();
+            return context;
+          }
+      );
+    }));
+
+    testEnv.start();
+
+    final HeartbeatWorkflow heartbeatWorkflow = client.newWorkflowStub(
+        HeartbeatWorkflow.class,
+        WorkflowOptions.newBuilder()
+            .setTaskQueue(TASK_QUEUE)
+            .build());
+
+    // use async execution to avoid blocking the test thread
+    WorkflowClient.start(heartbeatWorkflow::execute);
+
+    assertTrue(latch.await(15, TimeUnit.SECONDS));
+
   }
 
   @WorkflowInterface
@@ -293,6 +381,7 @@ class TemporalUtilsTest {
 
       public void activity(String arg) {
         LOGGER.info("before: {}", ACTIVITY1);
+        ActivityExecutionContext context = Activity.getExecutionContext();
         TemporalUtils.withBackgroundHeartbeat(
             new AtomicReference<>(null),
             () -> {
@@ -309,7 +398,7 @@ class TemporalUtilsTest {
                 return null;
               }
             },
-            Activity::getExecutionContext);
+            () -> context);
         timesReachedEnd.incrementAndGet();
         LOGGER.info("before: {}", ACTIVITY1);
       }
