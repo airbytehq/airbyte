@@ -37,8 +37,7 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
 
   public AzureBlobStorageJsonlWriter(final AzureBlobStorageDestinationConfig config,
                                      final AppendBlobClient appendBlobClient,
-                                     final ConfiguredAirbyteStream configuredStream,
-                                     final boolean isNewlyCreatedBlob) {
+                                     final ConfiguredAirbyteStream configuredStream) {
     super(config, appendBlobClient, configuredStream);
     // at this moment we already receive appendBlobClient initialized
     this.blobOutputStream = new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), config.getOutputStreamBufferSize());

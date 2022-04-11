@@ -29,12 +29,12 @@
               "client_id": {
                 "title": "Client ID",
                 "type": "string",
-                "description": "The Client ID of your application"
+                "description": "The Client ID of your Lever Hiring developer application."
               },
               "client_secret": {
                 "title": "Client Secret",
                 "type": "string",
-                "description": "The client secret of your application",
+                "description": "The Client Secret of your Lever Hiring developer application.",
                 "airbyte_secret": true
               },
               "option_title": {
@@ -46,7 +46,7 @@
               "refresh_token": {
                 "type": "string",
                 "title": "Refresh Token",
-                "description": "OAuth access token",
+                "description": "The token for obtaining new access token.",
                 "airbyte_secret": true
               }
             }
@@ -57,7 +57,7 @@
         "order": 0,
         "type": "string",
         "title": "Start Date",
-        "description": "The date from which you'd like to replicate data for Lever in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. Note that it will be used only in the following incremental streams: comments, commits and issues.",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. Note that it will be used only in the following incremental streams: comments, commits, and issues.",
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },

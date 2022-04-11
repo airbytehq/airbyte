@@ -1,5 +1,5 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "note_attributes": {
       "type": ["null", "array"],
@@ -250,6 +250,9 @@
       "type": ["null", "array"]
     },
     "source_url": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
       "type": ["null", "string"]
     },
     "total_discounts": {
@@ -601,7 +604,10 @@
           "type": ["null", "string"]
         },
         "tax_exemptions": {
-          "type": ["null", "boolean"]
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
         },
         "id": {
           "type": ["null", "integer"]

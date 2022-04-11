@@ -8,7 +8,7 @@ import {
   SourcesPage as SettingsSourcesPage,
 } from "pages/SettingsPage/pages/ConnectorsPage";
 import SettingsPage from "pages/SettingsPage";
-import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
+// import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
 import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
@@ -63,11 +63,11 @@ export const CloudSettingsPage: React.FC = () => {
               // indicatorCount: countNewDestinationVersion,
               component: SettingsDestinationPage,
             },
-            {
-              path: CloudSettingsRoutes.Configuration,
-              name: <FormattedMessage id="admin.configuration" />,
-              component: ConfigurationsPage,
-            },
+            // {
+            //   path: CloudSettingsRoutes.Configuration,
+            //   name: <FormattedMessage id="admin.configuration" />,
+            //   component: ConfigurationsPage,
+            // },
             {
               path: CloudSettingsRoutes.AccessManagement,
               name: <FormattedMessage id="settings.accessManagementSettings" />,

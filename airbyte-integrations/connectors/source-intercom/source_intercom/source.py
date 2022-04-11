@@ -6,7 +6,7 @@ from abc import ABC
 from datetime import datetime
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qsl, urlparse
+from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -92,6 +92,10 @@ class IntercomStream(HttpStream, ABC):
 class IncrementalIntercomStream(IntercomStream, ABC):
     cursor_field = "updated_at"
 
+    def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
+        super().__init__(authenticator, start_date, **kwargs)
+        self.has_old_records = False
+
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
         """
         Endpoint does not provide query filtering params, but they provide us
@@ -101,6 +105,8 @@ class IncrementalIntercomStream(IntercomStream, ABC):
 
         if not stream_state or record[self.cursor_field] > stream_state.get(self.cursor_field):
             yield record
+        else:
+            self.has_old_records = True
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         record = super().parse_response(response, stream_state, **kwargs)
@@ -171,6 +177,7 @@ class Companies(IncrementalIntercomStream):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._backoff_count = 0
+        self._use_standard = False
         self._endpoint_type = self.EndpointType.scroll
         self._total_count = None  # uses for saving of a total_count value once
 
@@ -193,6 +200,9 @@ class Companies(IncrementalIntercomStream):
             return super().next_page_token(response)
         return None
 
+    def need_use_standard(self):
+        return not self.can_use_scroll() or self._use_standard
+
     def can_use_scroll(self):
         """Check backoff count"""
         return self._backoff_count <= 3
@@ -202,38 +212,46 @@ class Companies(IncrementalIntercomStream):
 
     @classmethod
     def check_exists_scroll(cls, response: requests.Response) -> bool:
-        if response.status_code == 400:
+        if response.status_code in [400, 404]:
             # example response:
             # {..., "errors": [{'code': 'scroll_exists', 'message': 'scroll already exists for this workspace'}]}
+            # {..., "errors": [{'code': 'not_found', 'message':'scroll parameter not found'}]}
             err_body = response.json()["errors"][0]
-            if err_body["code"] == "scroll_exists":
+            if err_body["code"] in ["scroll_exists", "not_found"]:
                 return True
 
         return False
 
     @property
     def raise_on_http_errors(self) -> bool:
-        if not self.can_use_scroll() and self._endpoint_type == self.EndpointType.scroll:
+        if self.need_use_standard() and self._endpoint_type == self.EndpointType.scroll:
             return False
         return True
 
     def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         yield None
-        if not self.can_use_scroll():
+        if self.need_use_standard():
             self._endpoint_type = self.EndpointType.standard
             yield None
 
     def should_retry(self, response: requests.Response) -> bool:
         if self.check_exists_scroll(response):
             self._backoff_count += 1
-            if not self.can_use_scroll():
-                self.logger.error("Can't create a new scroll request within an minute. " "Let's try to use a standard non-scroll endpoint.")
+            if self.need_use_standard():
+                self.logger.error(
+                    "Can't create a new scroll request within an minute or scroll param was expired. "
+                    "Let's try to use a standard non-scroll endpoint."
+                )
                 return False
 
             return True
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if response.status_code == 404:
+            self._use_standard = True
+            # Need return value greater than zero to use UserDefinedBackoffException class
+            return 0.01
         if self.check_exists_scroll(response):
             self.logger.warning("A previous scroll request is exists. " "It must be deleted within an minute automatically")
             # try to check 3 times
@@ -270,8 +288,15 @@ class Conversations(IncrementalIntercomStream):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token, **kwargs)
-        params.update({"order": "asc", "sort": self.cursor_field})
+        params.update({"order": "desc", "sort": self.cursor_field})
         return params
+
+    # We're sorting by desc. Once we hit the first page with an out-of-date result we can stop.
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.has_old_records:
+            return None
+
+        return super().next_page_token(response)
 
     def path(self, **kwargs) -> str:
         return "conversations"
@@ -288,6 +313,13 @@ class ConversationParts(ChildStreamMixin, IncrementalIntercomStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/conversations/{stream_slice['id']}"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        records = super().parse_response(response, stream_state, **kwargs)
+        conversation_id = response.json().get("id")
+        for conversation_part in records:
+            conversation_part.setdefault("conversation_id", conversation_id)
+            yield conversation_part
 
 
 class Segments(IncrementalIntercomStream):
@@ -401,7 +433,7 @@ class SourceIntercom(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         authenticator = VersionApiAuthenticator(token=config["access_token"])
         try:
-            url = f"{IntercomStream.url_base}/tags"
+            url = urljoin(IntercomStream.url_base, "/tags")
             auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
             session = requests.get(url, headers=auth_headers)
             session.raise_for_status()

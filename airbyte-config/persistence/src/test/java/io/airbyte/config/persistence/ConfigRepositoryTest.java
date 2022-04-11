@@ -5,7 +5,9 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -25,14 +27,15 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
-import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
-import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
+import io.airbyte.db.Database;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,13 +50,13 @@ class ConfigRepositoryTest {
 
   private ConfigPersistence configPersistence;
   private ConfigRepository configRepository;
+  private Database database;
 
   @BeforeEach
   void setup() {
     configPersistence = mock(ConfigPersistence.class);
-    final var secretPersistence = new MemorySecretPersistence();
-    configRepository =
-        spy(new ConfigRepository(configPersistence, new NoOpSecretsHydrator(), Optional.of(secretPersistence), Optional.of(secretPersistence)));
+    database = mock(Database.class);
+    configRepository = spy(new ConfigRepository(configPersistence, database));
   }
 
   @AfterEach
@@ -427,6 +430,23 @@ class ConfigRepositoryTest {
 
     assertTrue(workspace.getFeedbackDone());
     verify(configPersistence).writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
+  }
+
+  @Test
+  public void testHealthCheckSuccess() throws SQLException {
+    final var mResult = mock(Result.class);
+    when(database.query(any())).thenReturn(mResult);
+
+    final var check = configRepository.healthCheck();
+    assertTrue(check);
+  }
+
+  @Test
+  public void testHealthCheckFailure() throws SQLException {
+    when(database.query(any())).thenThrow(RuntimeException.class);
+
+    final var check = configRepository.healthCheck();
+    assertFalse(check);
   }
 
 }

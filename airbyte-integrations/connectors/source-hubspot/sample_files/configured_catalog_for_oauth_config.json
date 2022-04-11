@@ -86,6 +86,15 @@
     },
     {
       "stream": {
+        "name": "form_submissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "forms",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -138,6 +147,17 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["timestamp"]
+      },
+      "default_cursor_field": ["timestamp"],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },

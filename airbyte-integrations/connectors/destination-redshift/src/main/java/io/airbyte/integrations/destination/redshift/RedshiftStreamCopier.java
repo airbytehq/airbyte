@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -110,11 +111,6 @@ public class RedshiftStreamCopier extends S3StreamCopier {
     }
   }
 
-  @VisibleForTesting
-  String getTmpTableName() {
-    return tmpTableName;
-  }
-
   /**
    * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one
    * entry in a manifest file otherwise it is not considered valid for the COPY command.
@@ -122,11 +118,11 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    * @return null if no stagingFiles exist otherwise the manifest body String
    */
   private String createManifest() {
-    if (stagingWritersByFile.isEmpty()) {
+    if (getStagingFiles().isEmpty()) {
       return null;
     }
 
-    final var s3FileEntries = stagingWritersByFile.keySet().stream()
+    final var s3FileEntries = getStagingFiles().stream()
         .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
         .collect(Collectors.toList());
     final var manifest = new Manifest(s3FileEntries);
@@ -155,6 +151,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
    * @param manifestPath the path in S3 to the manifest file
    */
   private void executeCopy(final String manifestPath) {
+    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
     final var copyQuery = String.format(
         "COPY %s.%s FROM '%s'\n"
             + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
@@ -164,8 +161,8 @@ public class RedshiftStreamCopier extends S3StreamCopier {
         schemaName,
         tmpTableName,
         getFullS3Path(s3Config.getBucketName(), manifestPath),
-        s3Config.getAccessKeyId(),
-        s3Config.getSecretAccessKey(),
+        credentialConfig.getAccessKeyId(),
+        credentialConfig.getSecretAccessKey(),
         s3Config.getBucketRegion());
 
     Exceptions.toRuntime(() -> db.execute(copyQuery));

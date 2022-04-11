@@ -8,12 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DataAdapter {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DataAdapter.class);
 
   private final Predicate<JsonNode> filterValueNode;
   private final Function<JsonNode, JsonNode> valueNodeAdapter;

@@ -53,6 +53,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
   private static final String HIERARCHYID = "hierarchyid";
@@ -94,7 +95,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.query(
+        final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
 
@@ -188,11 +189,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       jdbcUrl.append(String.join(";", additionalParameters));
     }
 
-    return Jsons.jsonNode(ImmutableMap.builder()
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", mssqlConfig.get("username").asText())
         .put("password", mssqlConfig.get("password").asText())
-        .put("jdbc_url", jdbcUrl.toString())
-        .build());
+        .put("jdbc_url", jdbcUrl.toString());
+
+    if (mssqlConfig.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put("connection_properties", mssqlConfig.get(JDBC_URL_PARAMS_KEY));
+    }
+
+    return Jsons.jsonNode(configBuilder.build());
   }
 
   @Override
@@ -244,7 +250,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertCdcEnabledInDb(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
+    final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
       final String sql = "SELECT name, is_cdc_enabled FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
       ps.setString(1, config.get("database").asText());
@@ -267,7 +273,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
+    final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
       final String sql =
           "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
       final PreparedStatement ps = connection.prepareStatement(sql);
@@ -286,8 +292,9 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   // todo: ensure this works for Azure managed SQL (since it uses different sql server agent)
   protected void assertSqlServerAgentRunning(final JdbcDatabase database) throws SQLException {
     try {
-      final List<JsonNode> queryResponse = database.query(connection -> {
-        final String sql = "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%'";
+      final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
+        final String sql =
+            "SELECT status_desc FROM sys.dm_server_services WHERE [servicename] LIKE 'SQL Server Agent%' OR [servicename] LIKE 'SQL Server 代理%' ";
         final PreparedStatement ps = connection.prepareStatement(sql);
         LOGGER.info(String
             .format("Checking that the SQL Server Agent is running using the query: '%s'", sql));
@@ -312,7 +319,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
-    final List<JsonNode> queryResponse = database.query(connection -> {
+    final List<JsonNode> queryResponse = database.unsafeQuery(connection -> {
       final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
       ps.setString(1, config.get("database").asText());

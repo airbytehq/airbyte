@@ -1,7 +1,8 @@
 import { SyncSchema } from "core/domain/catalog";
-import { Operation } from "./operation";
 import { AirbyteJSONSchema } from "core/jsonSchema";
+
 import { Destination, Source } from "../connector";
+import { Operation } from "./operation";
 
 type ConnectionConfiguration = unknown;
 
@@ -15,9 +16,17 @@ export enum ConnectionNamespaceDefinition {
   CustomFormat = "customformat",
 }
 
+export enum ConnectionSchedule {
+  Minutes = "minutes",
+  Hours = "hours",
+  Days = "days",
+  Weeks = "weeks",
+  Months = "months",
+}
+
 export type ScheduleProperties = {
   units: number;
-  timeUnit: string;
+  timeUnit: ConnectionSchedule;
 };
 
 export interface Connection {

@@ -2,13 +2,13 @@
 
 ## Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| Replicate Incremental Deletes | No |
-| SSL connection | Yes |
-| Custom Reports | Yes |
+| Feature                       | Supported? |
+|:------------------------------|:-----------|
+| Full Refresh Sync             | Yes        |
+| Incremental Sync              | Yes        |
+| Replicate Incremental Deletes | No         |
+| SSL connection                | Yes        |
+| Custom Reports                | Yes        |
 
 ### Supported Tables
 
@@ -128,21 +128,34 @@ Incremental sync supports only if you add `ga:date` dimension to your custom rep
 
 The Google Analytics connector should not run into Google Analytics API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## Sampling in reports 
+
+Google Analytics API may, under certain circumstances, limit the returned data based on sampling. This is done to reduce the amount of data that is returned as described in https://developers.google.com/analytics/devguides/reporting/core/v4/basics#sampling
+The window_in_day parameter is used to specify the number of days to look back and can be used to avoid sampling.
+When sampling occurs, a warning is logged to the sync log.
+
+## IsDataGolden
+
+Google Analytics API may return provisional or incomplete data. When this occurs, the returned data will set the fleg isDataGolden to false, and the connector will log a warning to the sync log.
+
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.14 | 2021-12-09 | [8656](https://github.com/airbytehq/airbyte/pull/8656) | Fix date-format in schemas |
-| 0.1.13 | 2021-12-09 | [8676](https://github.com/airbytehq/airbyte/pull/8676) | Fix `window_in_days` validation issue |
-| 0.1.12 | 2021-12-03 | [8175](https://github.com/airbytehq/airbyte/pull/8175) | Fix validation of unknown metric(s) or dimension(s) error |
-| 0.1.11 | 2021-11-30 | [8264](https://github.com/airbytehq/airbyte/pull/8264) | Corrected date range |
-| 0.1.10 | 2021-11-19 | [8087](https://github.com/airbytehq/airbyte/pull/8087) | Support `start_date` before the account has any data |
-| 0.1.9 | 2021-10-27 | [7410](https://github.com/airbytehq/airbyte/pull/7410) | Add check for correct permission for requested `view_id` |
-| 0.1.8 | 2021-10-13 | [7020](https://github.com/airbytehq/airbyte/pull/7020) | Add intermediary auth config support |
-| 0.1.7 | 2021-10-07 | [6414](https://github.com/airbytehq/airbyte/pull/6414) | Declare oauth parameters in google sources |
-| 0.1.6 | 2021-09-27 | [6459](https://github.com/airbytehq/airbyte/pull/6459) | Update OAuth Spec File |
-| 0.1.3 | 2021-09-21 | [6357](https://github.com/airbytehq/airbyte/pull/6357) | Fix oauth workflow parameters |
-| 0.1.2 | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306) | Support of airbyte OAuth initialization flow |
-| 0.1.1 | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655) | Corrected validation of empty custom report |
-| 0.1.0 | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290) | Initial Release |
+| Version | Date       | Pull Request                                                                                          | Subject                                                                                    |
+|:--------|:-----------|:------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 0.1.17  | 2022-03-31 | [11512](https://github.com/airbytehq/airbyte/pull/11512)                                              | Improved Unit and Acceptance tests coverage, fix `read` with abnormally large state values |
+| 0.1.16  | 2022-01-26 | [9480](https://github.com/airbytehq/airbyte/pull/9480)                                                | Reintroduce `window_in_days` and log warning when sampling occurs                          |
+| 0.1.15  | 2021-12-28 | [9165](https://github.com/airbytehq/airbyte/pull/9165)                                                | Update titles and descriptions                                                             |
+| 0.1.14  | 2021-12-09 | [8656](https://github.com/airbytehq/airbyte/pull/8656)                                                | Fix date-format in schemas                                                                 |
+| 0.1.13  | 2021-12-09 | [8676](https://github.com/airbytehq/airbyte/pull/8676)                                                | Fix `window_in_days` validation issue                                                      |
+| 0.1.12  | 2021-12-03 | [8175](https://github.com/airbytehq/airbyte/pull/8175)                                                | Fix validation of unknown metric(s) or dimension(s) error                                  |
+| 0.1.11  | 2021-11-30 | [8264](https://github.com/airbytehq/airbyte/pull/8264)                                                | Corrected date range                                                                       |
+| 0.1.10  | 2021-11-19 | [8087](https://github.com/airbytehq/airbyte/pull/8087)                                                | Support `start_date` before the account has any data                                       |
+| 0.1.9   | 2021-10-27 | [7410](https://github.com/airbytehq/airbyte/pull/7410)                                                | Add check for correct permission for requested `view_id`                                   |
+| 0.1.8   | 2021-10-13 | [7020](https://github.com/airbytehq/airbyte/pull/7020)                                                | Add intermediary auth config support                                                       |
+| 0.1.7   | 2021-10-07 | [6414](https://github.com/airbytehq/airbyte/pull/6414)                                                | Declare oauth parameters in google sources                                                 |
+| 0.1.6   | 2021-09-27 | [6459](https://github.com/airbytehq/airbyte/pull/6459)                                                | Update OAuth Spec File                                                                     |
+| 0.1.3   | 2021-09-21 | [6357](https://github.com/airbytehq/airbyte/pull/6357)                                                | Fix oauth workflow parameters                                                              |
+| 0.1.2   | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306)                                                | Support of airbyte OAuth initialization flow                                               |
+| 0.1.1   | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655)                                                | Corrected validation of empty custom report                                                |
+| 0.1.0   | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290)                                                | Initial Release                                                                            |
 

@@ -5,9 +5,13 @@
 package io.airbyte.config.storage;
 
 import com.google.api.client.util.Preconditions;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Supplier;
 
 /**
@@ -16,8 +20,11 @@ import java.util.function.Supplier;
  */
 public class DefaultGcsClientFactory implements Supplier<Storage> {
 
+  private final GcsConfig config;
+
   public DefaultGcsClientFactory(final GcsConfig config) {
     validate(config);
+    this.config = config;
   }
 
   private static void validate(final GcsConfig config) {
@@ -27,7 +34,13 @@ public class DefaultGcsClientFactory implements Supplier<Storage> {
 
   @Override
   public Storage get() {
-    return StorageOptions.getDefaultInstance().getService();
+    try {
+      final var credentialsByteStream = new ByteArrayInputStream(Files.readAllBytes(Path.of(config.getGoogleApplicationCredentials())));
+      final var credentials = ServiceAccountCredentials.fromStream(credentialsByteStream);
+      return StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

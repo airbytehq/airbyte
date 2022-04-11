@@ -29,7 +29,6 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     config = getStaticConfig();
-
     super.setup();
   }
 

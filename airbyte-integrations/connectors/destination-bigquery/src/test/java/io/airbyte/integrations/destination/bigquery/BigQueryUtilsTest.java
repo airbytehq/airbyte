@@ -26,7 +26,7 @@ public class BigQueryUtilsTest {
         .put(BigQueryConsts.CONFIG_CREDS, "test_secret")
         .put(BigQueryConsts.CONFIG_DATASET_LOCATION, "US");
   }
-  
+
   @ParameterizedTest
   @MethodSource("validBigQueryIdProvider")
   public void testGetDatasetIdSuccess(String projectId, String datasetId, String expected) throws Exception {
@@ -66,4 +66,5 @@ public class BigQueryUtilsTest {
         Arguments.arguments("my-project", "your-project:my_dataset",
             "Project ID included in Dataset ID must match Project ID field's value: Project ID is `my-project`, but you specified `your-project` in Dataset ID"));
   }
+
 }

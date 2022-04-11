@@ -20,7 +20,7 @@ class CatalogHelpersTest {
   @Test
   void testFieldToJsonSchema() {
     final String expected = "{ \"type\": \"object\", \"properties\": { \"name\": { \"type\": \"string\" } } } ";
-    final JsonNode actual = CatalogHelpers.fieldsToJsonSchema(Field.of("name", JsonSchemaPrimitive.STRING));
+    final JsonNode actual = CatalogHelpers.fieldsToJsonSchema(Field.of("name", JsonSchemaType.STRING));
 
     assertEquals(Jsons.deserialize(expected), actual);
   }
