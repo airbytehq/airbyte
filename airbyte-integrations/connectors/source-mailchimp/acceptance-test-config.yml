@@ -35,8 +35,10 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 1800
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 1800
 #  THIS TEST IS COMMENTED OUT. Tests are supposed to accept
 #  `state = {cursor_field: value}`. When we have dependent endpoint path
 #  `path_begin/{some_id}/path_end` we need a complex state like below:
@@ -58,5 +60,7 @@ tests:
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_email_activities.json"
+      timeout_seconds: 1800
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog_without_email_activities.json"
+      timeout_seconds: 1800
