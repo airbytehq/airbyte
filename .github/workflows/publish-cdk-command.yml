@@ -14,11 +14,10 @@ on:
         description: 'By default dry-run publishes to Test PyPi. Use "false" to publish to actual PyPi servers.'
         required: false
       comment-id:
-        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
 
 jobs:
-
   build-cdk:
     runs-on: ubuntu-latest
     strategy:
@@ -31,7 +30,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "17"
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
@@ -57,6 +56,13 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
+            > :warning: This command is now deprecated in favour of publish-pypi, see the docs [TODO: link]
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       # Make use of env vars to dynamically set the PyPi url. Since the default is set to publish to production PyPi, only set the url if during
       # a dry-run publish to the Test PyPi servers.
@@ -74,9 +80,9 @@ jobs:
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
           # specify the same version as in ~/.python-version
-          python_version: '3.7.9'
-          pip_version: '21.1'
-          subdir: 'airbyte-cdk/python/'
+          python_version: "3.7.9"
+          pip_version: "21.1"
+          subdir: "airbyte-cdk/python/"
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
