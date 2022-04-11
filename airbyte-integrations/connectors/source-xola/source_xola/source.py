@@ -1,3 +1,4 @@
+import datetime
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
@@ -80,12 +81,16 @@ class XolaStream(HttpStream, ABC):
 
 class Orders(XolaStream):
     primary_key = "order_id"
+    cursor_field = None
+    cursor_field_value = None
     seller_id = None
-    state_checkpoint_interval = None
 
-    def __init__(self, seller_id: str, x_api_key: str, **kwargs):
+    def __init__(self, seller_id: str, x_api_key: str, cursor_field: str, cursor_field_value: str, **kwargs):
         super().__init__(x_api_key, **kwargs)
         self.seller_id = seller_id
+        if cursor_field:
+            self.cursor_field = cursor_field
+            self.cursor_field_value = cursor_field_value
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
@@ -109,16 +114,6 @@ class Orders(XolaStream):
                 params[key] = next_page_token[key]
         params['seller'] = self.seller_id
         return params
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-        :return str: The name of the cursor field.
-        """
-        return ["updatedAt"]
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -146,11 +141,24 @@ class Orders(XolaStream):
                 if "event" in data.keys(): resp["event"] = data["event"]
                 if "amount" in data.keys(): resp["amount"] = data["amount"]
                 if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
+                if "type" in data.keys(): resp["type"] = data["type"]
                 modified_response.append(resp)
             except:
                 pass
         return modified_response
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+        if current_stream_state is not None and self.cursor_field in current_stream_state:
+            current_parsed_date = current_stream_state[self.cursor_field]
+            latest_record_date = latest_record[self.cursor_field]
+            return {self.cursor_field: max(current_parsed_date, latest_record_date)}
+        else:
+            return {self.cursor_field: self.cursor_field_value}
 
 class Transactions(XolaStream):
     primary_key = "id"
@@ -197,8 +205,8 @@ class Transactions(XolaStream):
             if "amount" in data.keys(): resp["amount"] = data["amount"]
             if "balance" in data.keys(): resp["balance"] = data["balance"]
             if "createdAt" in data.keys(): resp["createdAt"] = data["createdAt"]
-            if "currency" in data.keys(): resp["amount"] = data["currency"]
-            if "method" in data.keys(): resp["currency"] = data["method"]
+            if "currency" in data.keys(): resp["currency"] = data["currency"]
+            if "method" in data.keys(): resp["method"] = data["method"]
             if "source" in data.keys(): resp["source"] = data["source"]
             if "type" in data.keys(): resp["type"] = data["type"]
 
@@ -251,7 +259,7 @@ class IncrementalXolaStream(XolaStream, ABC):
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
         :return str: The name of the cursor field.
         """
-        return []
+        return [""]
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
             Mapping[str, Any]:
@@ -259,7 +267,7 @@ class IncrementalXolaStream(XolaStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        return {}
+        return None
 
 
 # Source
@@ -296,8 +304,15 @@ class SourceXola(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-
+        cursor_field = None
+        cursor_field_value = None
+        if "cursor_field" in config.keys():
+            cursor_field = config['cursor_field']
+            cursor_field_value = config['cursor_field_value']
         return [
-            Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
-            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            Orders(x_api_key=config['x-api-key'],
+                   seller_id=config['seller-id'],
+                   cursor_field=cursor_field,
+                   cursor_field_value=cursor_field_value)
+            # Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]

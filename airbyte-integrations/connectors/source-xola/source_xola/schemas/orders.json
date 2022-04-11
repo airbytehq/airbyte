@@ -47,6 +47,9 @@
          "source":{
             "type":["null","string"]
          },
+          "type":{
+             "type":["null","string"]
+          },
          "createdBy":{
             "type":["null","string"]
          },
@@ -55,6 +58,9 @@
          },
          "createdAt": {
           "type":["null","string"]
+        },
+        "updatedAt": {
+            "type": ["null", "string"]
         },
          "event":{
             "type":["null","string"]
