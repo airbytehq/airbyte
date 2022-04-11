@@ -114,11 +114,9 @@ class IncrementalKyribaStream(KyribaStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = { "sort": self.cursor_field }
-        latest_cursor = stream_state.get(self.cursor_field) or self.start_date + " 00:00:00"
+        latest_cursor = stream_state.get(self.cursor_field) or self.start_date + "T00:00:00Z"
         if latest_cursor:
-            # the Kyriba atetime output contains T and Z, but the input has a space and no time zone
-            fmt_cursor = latest_cursor.replace("T", " ").replace("Z", "")
-            filter = f"{self.cursor_field}=gt='{fmt_cursor}'"
+            filter = f"{self.cursor_field}=gt='{latest_cursor}'"
             params["filter"] = filter
         if next_page_token:
             params = {**params, **next_page_token}
@@ -130,9 +128,9 @@ class Accounts(KyribaStream):
         return "accounts"
 
 
-class AccountSubStream(HttpSubStream):
+class AccountSubStream(HttpSubStream, KyribaStream):
     def __init__(self, **kwargs):
-        super().__init__(Accounts, **kwargs)
+        super().__init__(parent = Accounts, **kwargs)
         self.parent = Accounts(**kwargs)
 
     def get_account_uuids(self) -> Iterable[Optional[Mapping[str, str]]]:
@@ -145,7 +143,7 @@ class AccountSubStream(HttpSubStream):
         return iter([response.json()])
 
 
-class CashBalancesStream(AccountSubStream, KyribaStream):
+class CashBalancesStream(AccountSubStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
@@ -191,7 +189,7 @@ class CashBalancesIntraday(CashBalancesStream):
     intraday = True
 
 
-class BankBalancesStream(AccountSubStream, KyribaStream):
+class BankBalancesStream(AccountSubStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()

@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_kyriba.source import KyribaStream, KyribaClient, IncrementalKyribaStream
+from source_kyriba.source import KyribaStream, KyribaClient
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
