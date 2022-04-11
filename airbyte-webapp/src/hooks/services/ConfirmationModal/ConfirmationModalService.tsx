@@ -1,22 +1,22 @@
 import React, { useContext, useEffect, useMemo } from "react";
 
-import ConfirmationModalComponent from "components/ConfirmationModal";
+import { ConfirmationModal } from "components/ConfirmationModal";
 
 import useTypesafeReducer from "hooks/useTypesafeReducer";
 
-import { ConfirmationModal, ConfirmationModalServiceApi, ConfirmationModalState } from "./types";
+import { ConfirmationModalOptions, ConfirmationModalServiceApi, ConfirmationModalState } from "./types";
 import { actions, initialState, confirmationModalServiceReducer } from "./reducer";
 
-const confirmationModalServiceContext = React.createContext<ConfirmationModalServiceApi | undefined>(undefined);
+const ConfirmationModalServiceContext = React.createContext<ConfirmationModalServiceApi | undefined>(undefined);
 
 export const useConfirmationModalService: (
-  confirmationModal?: ConfirmationModal,
+  confirmationModal?: ConfirmationModalOptions,
   dependencies?: []
 ) => {
-  openConfirmationModal: (confirmationModal: ConfirmationModal) => void;
+  openConfirmationModal: (confirmationModal: ConfirmationModalOptions) => void;
   closeConfirmationModal: () => void;
 } = (confirmationModal, dependencies) => {
-  const confirmationModalService = useContext(confirmationModalServiceContext);
+  const confirmationModalService = useContext(ConfirmationModalServiceContext);
   if (!confirmationModalService) {
     throw new Error("useConfirmationModalService must be used within a ConfirmationModalService.");
   }
@@ -39,7 +39,7 @@ export const useConfirmationModalService: (
   };
 };
 
-const ConfirmationModalService = ({ children }: { children: React.ReactNode }) => {
+export const ConfirmationModalService = React.memo(({ children }: { children: React.ReactNode }) => {
   const [state, { openConfirmationModal, closeConfirmationModal }] = useTypesafeReducer<
     ConfirmationModalState,
     typeof actions
@@ -55,11 +55,11 @@ const ConfirmationModalService = ({ children }: { children: React.ReactNode }) =
 
   return (
     <>
-      <confirmationModalServiceContext.Provider value={confirmationModalService}>
+      <ConfirmationModalServiceContext.Provider value={confirmationModalService}>
         {children}
-      </confirmationModalServiceContext.Provider>
+      </ConfirmationModalServiceContext.Provider>
       {state.isOpen && state.confirmationModal ? (
-        <ConfirmationModalComponent
+        <ConfirmationModal
           onClose={closeConfirmationModal}
           title={state.confirmationModal.title}
           text={state.confirmationModal.text}
@@ -69,6 +69,4 @@ const ConfirmationModalService = ({ children }: { children: React.ReactNode }) =
       ) : null}
     </>
   );
-};
-
-export default React.memo(ConfirmationModalService);
+});

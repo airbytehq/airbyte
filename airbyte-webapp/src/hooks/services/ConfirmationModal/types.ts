@@ -1,6 +1,6 @@
 import React from "react";
 
-export interface ConfirmationModal {
+export interface ConfirmationModalOptions {
   submitButtonText: React.ReactNode;
   title: React.ReactNode;
   text: React.ReactNode;
@@ -8,11 +8,11 @@ export interface ConfirmationModal {
 }
 
 export interface ConfirmationModalServiceApi {
-  openConfirmationModal: (confirmationModal: ConfirmationModal) => void;
+  openConfirmationModal: (confirmationModal: ConfirmationModalOptions) => void;
   closeConfirmationModal: () => void;
 }
 
 export interface ConfirmationModalState {
   isOpen: boolean;
-  confirmationModal: ConfirmationModal | null;
+  confirmationModal: ConfirmationModalOptions | null;
 }

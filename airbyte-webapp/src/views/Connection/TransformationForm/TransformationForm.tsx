@@ -7,7 +7,7 @@ import * as yup from "yup";
 import { getIn, useFormik, useFormikContext } from "formik";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
-import FormNavigationBlocker from "components/FormNavigationBlocker";
+import FormChangesTracker from "components/FormChangesTracker";
 
 import { equal } from "utils/objects";
 import { Transformation } from "core/domain/connection/operation";
@@ -100,7 +100,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
 
   return (
     <>
-      <FormNavigationBlocker block={isNewTransformation || dirty} />
+      <FormChangesTracker changed={isNewTransformation || dirty} />
       <Content>
         <Column>
           <Label

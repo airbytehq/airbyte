@@ -31,7 +31,7 @@ interface Props {
   onSubmit: () => void;
 }
 
-const ConfirmationModal: React.FC<Props> = ({ onClose, title, text, onSubmit, submitButtonText }) => (
+export const ConfirmationModal: React.FC<Props> = ({ onClose, title, text, onSubmit, submitButtonText }) => (
   <Modal onClose={onClose} title={title}>
     <Content>
       {text}
@@ -46,5 +46,3 @@ const ConfirmationModal: React.FC<Props> = ({ onClose, title, text, onSubmit, su
     </Content>
   </Modal>
 );
-
-export default ConfirmationModal;

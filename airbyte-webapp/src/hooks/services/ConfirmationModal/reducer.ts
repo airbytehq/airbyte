@@ -1,9 +1,9 @@
 import { ActionType, createAction, createReducer } from "typesafe-actions";
 
-import { ConfirmationModal, ConfirmationModalState } from "./types";
+import { ConfirmationModalOptions, ConfirmationModalState } from "./types";
 
 export const actions = {
-  openConfirmationModal: createAction("OPEN_CONFIRMATION_MODAL")<ConfirmationModal>(),
+  openConfirmationModal: createAction("OPEN_CONFIRMATION_MODAL")<ConfirmationModalOptions>(),
   closeConfirmationModal: createAction("CLOSE_CONFIRMATION_MODAL")(),
 };
 
