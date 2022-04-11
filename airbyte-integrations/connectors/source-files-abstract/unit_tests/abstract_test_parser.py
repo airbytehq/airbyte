@@ -2,73 +2,19 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import bz2
-import gzip
-import linecache
 import os
 import random
-import shutil
 import string
 import sys
-import tracemalloc
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from functools import lru_cache, wraps
-from typing import Any, Callable, List, Mapping
+from functools import lru_cache
+from typing import Any, List, Mapping
 
 import pytest
 from airbyte_cdk import AirbyteLogger
 from smart_open import open as smart_open
-
-
-def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callable:
-    """Runs a test function by a separate process with restricted memory"""
-
-    def decorator(func: Callable) -> Callable:
-        @wraps(func)
-        def wrapper(*args: List[Any], **kwargs: Any) -> Any:
-            tracemalloc.start()
-            result = func(*args, **kwargs)
-
-            # get memory usage immediately after function call, we interested in "first_size" value
-            first_size, first_peak = tracemalloc.get_traced_memory()
-            # get snapshot immediately just in case we will use it
-            snapshot = tracemalloc.take_snapshot()
-
-            # only if we exceeded the quota, build log_messages with traces
-            first_size_in_megabytes = first_size / 1024**2
-            if first_size_in_megabytes > max_memory_in_megabytes:
-                log_messages: List[str] = []
-                top_stats = snapshot.statistics("lineno")
-                for index, stat in enumerate(top_stats[:print_limit], 1):
-                    frame = stat.traceback[0]
-                    filename = os.sep.join(frame.filename.split(os.sep)[-2:])
-                    log_messages.append("#%s: %s:%s: %.1f KiB" % (index, filename, frame.lineno, stat.size / 1024))
-                    line = linecache.getline(frame.filename, frame.lineno).strip()
-                    if line:
-                        log_messages.append(f"    {line}")
-                traceback_log = "\n".join(log_messages)
-                assert False, f"Overuse of memory, used: {first_size_in_megabytes}Mb, limit: {max_memory_in_megabytes}Mb!!\n{traceback_log}"
-
-            return result
-
-        return wrapper
-
-    return decorator
-
-
-def compress(archive_name: str, filename: str) -> str:
-    compress_filename = f"{filename}.{archive_name}"
-    with open(filename, "rb") as f_in:
-        if archive_name == "gz":
-            with gzip.open(compress_filename, "wb") as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        elif archive_name == "bz2":
-            with bz2.open(compress_filename, "wb") as f_out:  # type: ignore[assignment]
-                shutil.copyfileobj(f_in, f_out)
-        else:
-            raise NotImplementedError(f"archive type {archive_name} currently unsupported")
-    return compress_filename
+from source_files_abstract.utils import memory_limit
 
 
 class AbstractTestParser(ABC):

@@ -11,8 +11,9 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from source_files_abstract.formats.parquet_parser import PARQUET_TYPES, ParquetParser
+from source_files_abstract.utils import compress
 
-from .abstract_test_parser import AbstractTestParser, compress
+from .abstract_test_parser import AbstractTestParser
 from .conftest import TMP_FOLDER
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")

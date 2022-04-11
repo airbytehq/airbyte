@@ -6,9 +6,9 @@
 from typing import Any, Mapping, Optional
 
 from pydantic import BaseModel, Field
+from source_files_abstract.source import SourceFilesAbstract
+from source_files_abstract.spec import SourceFilesAbstractSpec
 
-from .source_files_abstract.source import SourceFilesAbstract
-from .source_files_abstract.spec import SourceFilesAbstractSpec
 from .stream import IncrementalFileStreamS3
 
 

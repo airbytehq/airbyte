@@ -11,9 +11,9 @@ from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.client import Config as ClientConfig
 from botocore.config import Config
-from source_s3.s3_utils import make_s3_client, make_s3_resource
+from source_files_abstract.storagefile import StorageFile
 
-from .source_files_abstract.storagefile import StorageFile
+from .s3_utils import make_s3_client, make_s3_resource
 
 
 class S3File(StorageFile):

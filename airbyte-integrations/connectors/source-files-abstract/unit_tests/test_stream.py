@@ -11,8 +11,7 @@ import pytest
 from airbyte_cdk import AirbyteLogger
 from source_files_abstract.fileinfo import FileInfo
 from source_files_abstract.stream import FileStream
-
-from .abstract_test_parser import memory_limit
+from source_files_abstract.utils import memory_limit
 
 LOGGER = AirbyteLogger()
 

@@ -12,8 +12,9 @@ from typing import Any, Mapping, Tuple
 import pytest
 from smart_open import open as smart_open
 from source_files_abstract.formats.csv_parser import CsvParser
+from source_files_abstract.utils import memory_limit
 
-from .abstract_test_parser import AbstractTestParser, memory_limit
+from .abstract_test_parser import AbstractTestParser
 from .conftest import TMP_FOLDER
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
