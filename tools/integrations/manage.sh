@@ -12,6 +12,7 @@ Available commands:
   scaffold
   build  <integration_root_path> [<run_tests>]
   publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
+  publish_external  <image_name> <image_version>
 "
 
 _check_tag_exists() {
@@ -37,6 +38,7 @@ cmd_build() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   local run_tests=$1; shift || run_tests=true
+
   echo "Building $path"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
@@ -115,6 +117,15 @@ cmd_publish() {
     docker push "$versioned_image"
     docker push "$latest_image"
   fi
+  
+  # Checking if the image was successfully registered on DockerHub
+  # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
+  sleep 5
+  TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${image_version}"
+  DOCKERHUB_RESPONSE_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" ${TAG_URL})
+  if [[ "${DOCKERHUB_RESPONSE_CODE}" == "404" ]]; then
+    echo "Tag ${image_version} was not registered on DockerHub for image ${image_name}, please try to bump the version again." && exit 1
+  fi
 
   if [[ "true" == "${publish_spec_to_cache}" ]]; then
     echo "Publishing and writing to spec cache."
@@ -142,6 +153,30 @@ cmd_publish() {
   else
     echo "Publishing without writing to spec cache."
   fi
+}
+
+cmd_publish_external() {
+  local image_name=$1; shift || error "Missing target (image name) $USAGE"
+  # Get version from the command
+  local image_version=$1; shift || error "Missing target (image version) $USAGE"
+
+  echo "image $image_name:$image_version"
+
+  echo "Publishing and writing to spec cache."
+  # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
+  local tmp_spec_file; tmp_spec_file=$(mktemp)
+  docker run --rm "$image_name:$image_version" spec | \
+    # 1. filter out any lines that are not valid json.
+    jq -R "fromjson? | ." | \
+    # 2. grab any json that has a spec in it.
+    # 3. if there are more than one, take the first one.
+    # 4. if there are none, throw an error.
+    jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
+    > "$tmp_spec_file"
+
+  echo "Using environment gcloud"
+
+  gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
 }
 
 main() {

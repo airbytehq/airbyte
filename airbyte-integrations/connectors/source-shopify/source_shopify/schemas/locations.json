@@ -50,6 +50,9 @@
     },
     "localized_province_name": {
       "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

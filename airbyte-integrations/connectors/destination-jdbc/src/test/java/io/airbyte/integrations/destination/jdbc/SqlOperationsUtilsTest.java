@@ -93,13 +93,13 @@ class SqlOperationsUtilsTest {
             .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD1_UUID)
             .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(0).getData())
             .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
-                .toISO8601String(records.get(0).getEmittedAt()))
+                .toISO8601StringWithMicroseconds(Instant.ofEpochMilli(records.get(0).getEmittedAt())))
             .build()),
         Jsons.jsonNode(ImmutableMap.builder()
             .put(JavaBaseConstants.COLUMN_NAME_AB_ID, RECORD2_UUID)
             .put(JavaBaseConstants.COLUMN_NAME_DATA, records.get(1).getData())
             .put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, DataTypeUtils
-                .toISO8601String(records.get(1).getEmittedAt()))
+                .toISO8601StringWithMicroseconds(Instant.ofEpochMilli(records.get(1).getEmittedAt())))
             .build()));
 
     actualRecords.forEach(

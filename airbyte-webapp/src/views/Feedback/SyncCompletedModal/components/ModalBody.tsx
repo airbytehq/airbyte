@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
 import { H3, Button } from "components/base";
+
 import FeedbackButton from "./FeedbackButton";
 
 const Body = styled.div`
@@ -38,7 +39,7 @@ const ModalBody: React.FC<ModalBodyProps> = ({ onClose, onPassFeedback }) => {
         <FeedbackButton onClick={() => onPassFeedback("like")} />
       </FeedbackButtons>
       <Button secondary onClick={onClose}>
-        <FormattedMessage id="onboarding.skipNow" />
+        <FormattedMessage id="onboarding.skipFeedback" />
       </Button>
     </Body>
   );

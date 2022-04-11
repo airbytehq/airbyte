@@ -46,7 +46,7 @@
               },
               "delimiter": {
                 "title": "Delimiter",
-                "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string.",
+                "description": "The character delimiting individual cells in the CSV data. This may only be a 1-character string. For tab-delimited data enter '\\t'.",
                 "default": ",",
                 "minLength": 1,
                 "type": "string"
@@ -110,7 +110,6 @@
               }
             }
           },
-
           {
             "title": "parquet",
             "description": "This connector utilises <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html\" target=\"_blank\">PyArrow (Apache Arrow)</a> for Parquet parsing.",
@@ -131,11 +130,13 @@
                 "title": "Columns",
                 "description": "If you only want to sync a subset of the columns from the file(s), add the columns you want here. Leave it empty to sync all columns.",
                 "type": "array",
-                "items": { "type": "string" }
+                "items": {
+                  "type": "string"
+                }
               },
               "batch_size": {
                 "title": "Batch Size",
-                "description": "Maximum number of records per batch. Batches may be smaller if there aren\u2019t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
+                "description": "Maximum number of records per batch. Batches may be smaller if there aren’t enough rows in the file. This option can help to optimize a work with memory if your data is particularly wide or failing during detection of OOM errors.",
                 "default": 65536,
                 "type": "integer"
               }

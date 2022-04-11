@@ -14,7 +14,7 @@ class TestSurveymonkeySource:
         config = {"start_date": "2021-01-01T00:00:00", "access_token": "something"}
         authenticator = TokenAuthenticator(token=config["access_token"])
         start_date = pendulum.parse(config["start_date"])
-        stream = Surveys(authenticator=authenticator, start_date=start_date)
+        stream = Surveys(authenticator=authenticator, start_date=start_date, survey_ids=[])
         return stream
 
     @pytest.mark.parametrize(

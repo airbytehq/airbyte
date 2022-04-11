@@ -4,11 +4,15 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import lombok.AllArgsConstructor;
@@ -19,11 +23,26 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   private JobPersistence jobPersistence;
 
   @Override
-  public SyncOutput getSyncWorkflowInput(final SyncInput input) {
+  public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
     try {
       final long jobId = input.getJobId();
       final int attempt = input.getAttemptId();
-      final JobSyncConfig config = jobPersistence.getJob(jobId).getConfig().getSync();
+      final Job job = jobPersistence.getJob(jobId);
+      JobSyncConfig config = job.getConfig().getSync();
+      if (input.isReset()) {
+        final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
+        config = new JobSyncConfig()
+            .withNamespaceDefinition(resetConnection.getNamespaceDefinition())
+            .withNamespaceFormat(resetConnection.getNamespaceFormat())
+            .withPrefix(resetConnection.getPrefix())
+            .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
+            .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
+            .withSourceConfiguration(Jsons.emptyObject())
+            .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
+            .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
+            .withOperationSequence(resetConnection.getOperationSequence())
+            .withResourceRequirements(resetConnection.getResourceRequirements());
+      }
 
       final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
 
@@ -46,12 +65,23 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withOperationSequence(config.getOperationSequence())
           .withCatalog(config.getConfiguredAirbyteCatalog())
           .withState(config.getState())
-          .withResourceRequirements(config.getResourceRequirements());
+          .withResourceRequirements(config.getResourceRequirements())
+          .withSourceResourceRequirements(config.getSourceResourceRequirements())
+          .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
 
-      return new SyncOutput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+      return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+
     } catch (final Exception e) {
       throw new RetryableException(e);
     }
+  }
+
+  @Override
+  public GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(final SyncInputWithAttemptNumber input) {
+    return getSyncWorkflowInput(new SyncInput(
+        input.getAttemptNumber(),
+        input.getJobId(),
+        input.isReset()));
   }
 
 }

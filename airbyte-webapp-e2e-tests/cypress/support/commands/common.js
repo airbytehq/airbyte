@@ -9,12 +9,12 @@ Cypress.Commands.add("fillEmail", (email) => {
 Cypress.Commands.add("fillTestLocalJsonForm", (name) => {
   cy.intercept("/api/v1/destination_definition_specifications/get").as("getDestinationSpecifications");
 
-  cy.get("input[name=name]").type(name);
   cy.get("div[data-testid='serviceType']").click();
   cy.get("div").contains("Local JSON").click();
-
+  
   cy.wait("@getDestinationSpecifications");
-
+  
+  cy.get("input[name=name]").type(name);
   cy.get("input[name='connectionConfiguration.destination_path']").type("/local");
 })
 
@@ -55,3 +55,9 @@ Cypress.Commands.add("deleteEntity", () => {
   cy.get("button[data-id='open-delete-modal']").click();
   cy.get("button[data-id='delete']").click();
 })
+
+Cypress.Commands.add("clearApp", () => {
+  indexedDB.deleteDatabase("firebaseLocalStorageDb");
+  cy.clearLocalStorage();
+  cy.clearCookies();
+});

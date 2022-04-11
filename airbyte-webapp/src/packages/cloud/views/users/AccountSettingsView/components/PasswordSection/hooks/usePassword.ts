@@ -3,20 +3,14 @@ import { useState } from "react";
 import { AuthErrorCodes } from "firebase/auth";
 import { useIntl } from "react-intl";
 
-import {
-  useAuthService,
-  useCurrentUser,
-} from "packages/cloud/services/auth/AuthService";
+import { useAuthService, useCurrentUser } from "packages/cloud/services/auth/AuthService";
 
 import { FormValues } from "../typings";
 
 type UsePasswordHook = () => {
   successMessage: string;
   errorMessage: string;
-  changePassword: (
-    values: FormValues,
-    { setSubmitting, setFieldValue }: FormikHelpers<FormValues>
-  ) => void;
+  changePassword: (values: FormValues, { setSubmitting, setFieldValue }: FormikHelpers<FormValues>) => void;
 };
 
 const usePassword: UsePasswordHook = () => {
@@ -26,10 +20,7 @@ const usePassword: UsePasswordHook = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const changePassword = async (
-    values: FormValues,
-    { setSubmitting, setFieldValue }: FormikHelpers<FormValues>
-  ) => {
+  const changePassword = async (values: FormValues, { setSubmitting, setFieldValue }: FormikHelpers<FormValues>) => {
     setSubmitting(true);
 
     setSuccessMessage("");

@@ -6,6 +6,7 @@ package io.airbyte.integrations.debezium.internals;
 
 import io.airbyte.db.DataTypeUtils;
 import io.debezium.spi.converter.RelationalColumn;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -38,10 +39,12 @@ public final class DebeziumConverterUtils {
     } else if (input instanceof Duration) {
       return DataTypeUtils.toISO8601String((Duration) input);
     } else if (input instanceof Timestamp) {
-      return DataTypeUtils.toISO8601String(((Timestamp) input).toLocalDateTime());
+      return DataTypeUtils.toISO8601StringWithMicroseconds((((Timestamp) input).toInstant()));
     } else if (input instanceof Number) {
       return DataTypeUtils.toISO8601String(
           new Timestamp(((Number) input).longValue()).toLocalDateTime());
+    } else if (input instanceof Date) {
+      return DataTypeUtils.toISO8601String((Date) input);
     } else if (input instanceof String) {
       try {
         return LocalDateTime.parse((String) input).toString();

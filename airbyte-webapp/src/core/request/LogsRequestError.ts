@@ -1,23 +1,26 @@
+import { JobInfo } from "core/domain/job/Job";
+
 import { CommonRequestError } from "./CommonRequestError";
 
 export class LogsRequestError extends CommonRequestError {
   __type = "common.errorWithLogs";
-  jobInfo: any;
+  jobInfo: JobInfo;
 
-  constructor(jobInfo: any, response: Response, msg?: string) {
+  constructor(jobInfo: JobInfo, response: Response, msg?: string) {
     super(response, msg);
     this.jobInfo = jobInfo;
     this._status = 400;
   }
 
-  static extractJobInfo(error: any): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static extractJobInfo(error: any): JobInfo | null {
     if (!error) {
-      return false;
+      return null;
     }
     return isLogsRequestError(error) ? error.jobInfo : null;
   }
 }
 
-export function isLogsRequestError(error: any): error is LogsRequestError {
+export function isLogsRequestError(error: { __type?: string }): error is LogsRequestError {
   return error.__type === "common.errorWithLogs";
 }

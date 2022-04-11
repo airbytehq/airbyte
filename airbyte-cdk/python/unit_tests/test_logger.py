@@ -54,7 +54,7 @@ def test_level_transform(logger, caplog):
 
 
 def test_trace(logger, caplog):
-    logger.trace("Test trace 1")
+    logger.log(logging.getLevelName("TRACE"), "Test trace 1")
     record = caplog.records[0]
     assert record.levelname == "TRACE"
     assert record.message == "Test trace 1"

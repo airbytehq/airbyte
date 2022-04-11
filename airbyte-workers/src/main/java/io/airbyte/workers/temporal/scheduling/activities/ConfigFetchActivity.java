@@ -34,7 +34,9 @@ public interface ConfigFetchActivity {
   }
 
   /**
-   * Return how much time to wait before running the next sync
+   * Return how much time to wait before running the next sync. It will query the DB to get the last
+   * starting time of the latest terminal job (Failed, canceled or successful) and return the amount
+   * of second the Workflow needs to await.
    */
   @ActivityMethod
   ScheduleRetrieverOutput getTimeToWait(ScheduleRetrieverInput input);

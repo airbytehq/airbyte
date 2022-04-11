@@ -43,7 +43,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.net.URI;
 import java.time.Instant;
@@ -397,9 +397,9 @@ public class SetupForNormalizedTablesTest {
         CatalogHelpers.createAirbyteStream(
             "models",
             "models_schema",
-            io.airbyte.protocol.models.Field.of("id", JsonSchemaPrimitive.NUMBER),
-            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaPrimitive.NUMBER),
-            io.airbyte.protocol.models.Field.of("model", JsonSchemaPrimitive.STRING))
+            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.NUMBER),
+            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaType.NUMBER),
+            io.airbyte.protocol.models.Field.of("model", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
     return CatalogHelpers.toDefaultConfiguredCatalog(catalog);

@@ -4,15 +4,18 @@
 
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import requests
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from requests.auth import AuthBase
 from source_square.utils import separate_items_by_count
 
 
@@ -35,8 +38,16 @@ def parse_square_error_response(error: requests.exceptions.HTTPError) -> SquareE
 
 
 class SquareStream(HttpStream, ABC):
-    def __init__(self, is_sandbox: bool, api_version: str, start_date: str, include_deleted_objects: bool, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        is_sandbox: bool,
+        api_version: str,
+        start_date: str,
+        include_deleted_objects: bool,
+        authenticator: Union[AuthBase, HttpAuthenticator],
+    ):
+        super().__init__(authenticator)
+        self._authenticator = authenticator
         self.is_sandbox = is_sandbox
         self.api_version = api_version
         # Converting users ISO 8601 format (YYYY-MM-DD) to RFC 3339 (2021-06-14T13:47:56.799Z)
@@ -358,16 +369,75 @@ class Orders(SquareStreamPageJson):
             yield {"location_ids": location}
 
 
-class SourceSquare(AbstractSource):
-    api_version = "2021-06-16"  # Latest Stable Release
+class Oauth2AuthenticatorSquare(Oauth2Authenticator):
+    def refresh_access_token(self) -> Tuple[str, int]:
+        """Handle differences in expiration attr:
+        from API: "expires_at": "2021-11-05T14:26:57Z"
+        expected: "expires_in": number of seconds
+        """
+        token, expires_at = super().refresh_access_token()
+        expires_in = pendulum.parse(expires_at) - pendulum.now()
+        return token, expires_in.seconds
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+
+class SourceSquare(AbstractSource):
+    api_version = "2021-09-15"  # Latest Stable Release
+
+    @staticmethod
+    def get_auth(config: Mapping[str, Any]) -> AuthBase:
+
+        credential = config.get("credentials", {})
+        auth_type = credential.get("auth_type")
+        if auth_type == "Oauth":
+            # scopes needed for all currently supported streams:
+            scopes = [
+                "CUSTOMERS_READ",
+                "EMPLOYEES_READ",
+                "ITEMS_READ",
+                "MERCHANT_PROFILE_READ",
+                "ORDERS_READ",
+                "PAYMENTS_READ",
+                "TIMECARDS_READ",
+                # OAuth Permissions:
+                # https://developer.squareup.com/docs/oauth-api/square-permissions
+                # https://developer.squareup.com/reference/square/enums/OAuthPermission
+                # "DISPUTES_READ",
+                # "GIFTCARDS_READ",
+                # "INVENTORY_READ",
+                # "INVOICES_READ",
+                # "TIMECARDS_SETTINGS_READ",
+                # "LOYALTY_READ",
+                # "ONLINE_STORE_SITE_READ",
+                # "ONLINE_STORE_SNIPPETS_READ",
+                # "SUBSCRIPTIONS_READ",
+            ]
+
+            auth = Oauth2AuthenticatorSquare(
+                token_refresh_endpoint="https://connect.squareup.com/oauth2/token",
+                client_secret=credential.get("client_secret"),
+                client_id=credential.get("client_id"),
+                refresh_token=credential.get("refresh_token"),
+                scopes=scopes,
+                expires_in_name="expires_at",
+            )
+        elif auth_type == "Apikey":
+            auth = TokenAuthenticator(token=credential.get("api_key"))
+        elif not auth_type and config.get("api_key"):
+            auth = TokenAuthenticator(token=config.get("api_key"))
+        else:
+            raise Exception(f"Invalid auth type: {auth_type}")
+
+        return auth
+
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
         headers = {
             "Square-Version": self.api_version,
-            "Authorization": "Bearer {}".format(config["api_key"]),
             "Content-Type": "application/json",
         }
+        auth = self.get_auth(config)
+        headers.update(auth.get_auth_header())
+
         url = "https://connect.squareup{}.com/v2/catalog/info".format("sandbox" if config["is_sandbox"] else "")
 
         try:
@@ -383,9 +453,8 @@ class SourceSquare(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        auth = TokenAuthenticator(token=config["api_key"])
         args = {
-            "authenticator": auth,
+            "authenticator": self.get_auth(config),
             "is_sandbox": config["is_sandbox"],
             "api_version": self.api_version,
             "start_date": config["start_date"],

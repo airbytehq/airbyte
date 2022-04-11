@@ -8,3 +8,5 @@
 !dbt-project-template-mssql
 !dbt-project-template-mysql
 !dbt-project-template-oracle
+!dbt-project-template-clickhouse
+!dbt-project-template-snowflake

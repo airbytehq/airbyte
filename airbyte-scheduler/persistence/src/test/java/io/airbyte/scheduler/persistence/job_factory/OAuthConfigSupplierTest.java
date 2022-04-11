@@ -141,6 +141,7 @@ public class OAuthConfigSupplierTest {
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(sourceDefinitionId)
             .withName("test")
+            .withDockerRepository("test/test")
             .withDockerImageTag("dev")
             .withSpec(null));
     setupOAuthParamMocks(oauthParameters);
@@ -222,6 +223,7 @@ public class OAuthConfigSupplierTest {
     when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
         .withSourceDefinitionId(sourceDefinitionId)
         .withName("test")
+        .withDockerRepository("test/test")
         .withDockerImageTag("dev")
         .withSpec(new ConnectorSpecification().withAdvancedAuth(advancedAuth)));
   }
@@ -277,6 +279,7 @@ public class OAuthConfigSupplierTest {
     verify(trackingClient, times(1)).track(workspaceId, "OAuth Injection - Backend", Map.of(
         "connector_source", "test",
         "connector_source_definition_id", sourceDefinitionId,
+        "connector_source_docker_repository", "test/test",
         "connector_source_version", "dev"));
   }
 

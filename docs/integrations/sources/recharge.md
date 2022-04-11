@@ -50,6 +50,7 @@ Please read [How to generate your API token](https://support.rechargepayments.co
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.5 | 2022-01-26 | [9808](https://github.com/airbytehq/airbyte/pull/9808) | Update connector fields title/description |
 | 0.1.4 | 2021-11-05 | [7626](https://github.com/airbytehq/airbyte/pull/7626) | Improve 'backoff' for HTTP requests |
 | 0.1.3 | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149) | Update `discount` and `order` schema |
 | 0.1.2 | 2021-09-17 | [6149](https://github.com/airbytehq/airbyte/pull/6149) | Change `cursor_field` for Incremental streams |
