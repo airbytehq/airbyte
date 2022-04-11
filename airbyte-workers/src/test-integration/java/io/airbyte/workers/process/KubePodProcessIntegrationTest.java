@@ -45,14 +45,26 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junitpioneer.jupiter.RetryingTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// requires kube running locally to run. If using Minikube it requires MINIKUBE=true
-// Must have a timeout on this class because it tests child processes that may misbehave; otherwise
-// this can hang forever during failures.
+/**
+ * requires kube running locally to run. If using Minikube it requires MINIKUBE=true
+ * <p>
+ * Must have a timeout on this class because it tests child processes that may misbehave; otherwise
+ * this can hang forever during failures.
+ * <p>
+ * Many of the tests here use the {@link RetryingTest} annotation instead of the more common
+ * {@link Test} to allow multiple tries for a test to pass. This is because these tests sometimes
+ * fail transiently, and we haven't been able to fix that yet.
+ * <p>
+ * However, in general we should prefer using {@code @Test} instead and only resort to using
+ * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
+ * to using {@code @Test} if possible.
+ */
 @Timeout(value = 6,
          unit = TimeUnit.MINUTES)
 public class KubePodProcessIntegrationTest {

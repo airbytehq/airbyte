@@ -120,6 +120,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
@@ -131,15 +132,25 @@ import org.slf4j.MDC;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+/**
+ * We order tests such that earlier tests test more basic behavior that is relied upon in later
+ * tests. e.g. We test that we can create a destination before we test whether we can sync data to
+ * it.
+ * <p>
+ * Many of the tests here are disabled for Kubernetes. This is because they are already run as part
+ * of the Docker acceptance tests and there is little value re-running on Kubernetes, especially
+ * operations take much longer due to Kubernetes pod spin up times. We run a subset to sanity check
+ * basic Airbyte Kubernetes Sync features.
+ * <p>
+ * Many of the tests here use the {@link RetryingTest} annotation instead of the more common
+ * {@link Test} to allow multiple tries for a test to pass. This is because these tests sometimes
+ * fail transiently, and we haven't been able to fix that yet.
+ * <p>
+ * However, in general we should prefer using {@code @Test} instead and only resort to using
+ * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
+ * to using {@code @Test} if possible.
+ */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
-// We order tests such that earlier tests test more basic behavior that is relied upon in later
-// tests.
-// e.g. We test that we can create a destination before we test whether we can sync data to it.
-//
-// Many of the tests here are disabled for Kubernetes. This is because they are already run
-// as part of the Docker acceptance tests and there is little value re-running on Kubernetes,
-// especially operations take much longer due to Kubernetes pod spin up times.
-// We run a subset to sanity check basic Airbyte Kubernetes Sync features.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
