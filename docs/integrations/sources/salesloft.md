@@ -43,12 +43,23 @@ List of available streams:
 * Actions
 * Calls
 * Emails Templates
+* Emails Template Attachements
 * Imports
 * Notes
 * Person Stages
 * Phone Number Assignments
 * Steps
 * Team Templates
+* Team Template Attachements
+* CRM Activities
+* CRM Users
+* Groups
+* Successes
+
+
+
+
+
 
 ## Changelog
 

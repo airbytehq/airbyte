@@ -30,8 +30,9 @@ class SalesloftStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
-            next_page = response.json()["metadata"]["paging"].get("next_page")
-            return None if not next_page else {"page": next_page}
+            if "paging" in response.json()["metadata"].keys():
+                next_page = response.json()["metadata"]["paging"].get("next_page")
+                return None if not next_page else {"page": next_page}
         except Exception as e:
             raise KeyError(f"error parsing next_page token: {e}")
 
@@ -201,6 +202,50 @@ class TeamTemplates(SalesloftStream):
         return "team_templates"
 
 
+class TeamTemplateAttachments(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "team_template_attachments"
+
+
+class EmailTemplateAttachments(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "email_template_attachments"
+
+
+class CrmActivities(IncrementalSalesloftStream):
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "crm_activities"
+
+
+class Successes(IncrementalSalesloftStream):
+    primary_key = "id"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "successes"
+
+
+class CrmUsers(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "crm_users"
+
+
+class Groups(SalesloftStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "groups"
+
+
 # Source
 class SourceSalesloft(AbstractSource):
     def _create_authenticator(self, config):
@@ -240,4 +285,10 @@ class SourceSalesloft(AbstractSource):
             PhoneNumberAssignments(authenticator=auth, **config),
             Steps(authenticator=auth, **config),
             TeamTemplates(authenticator=auth, **config),
+            TeamTemplateAttachments(authenticator=auth, **config),
+            CrmActivities(authenticator=auth, **config),
+            CrmUsers(authenticator=auth, **config),
+            Groups(authenticator=auth, **config),
+            Successes(authenticator=auth, **config),
+            EmailTemplateAttachments(authenticator=auth, **config),
         ]
