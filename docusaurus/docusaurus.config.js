@@ -32,7 +32,7 @@ const config = {
                 docs: {
                     routeBasePath: '/',
                     sidebarPath: require.resolve('./sidebars.js'),
-                    editUrl: 'https://github.com/airbytehq/airbyte/docs',
+                    editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs'
                 },
                 blog: false,
