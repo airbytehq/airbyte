@@ -64,12 +64,10 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                      final SerializableBuffer recordsData,
                                      final String schemaName,
                                      final String stageName,
-                                     final String stagingPath)
-      throws Exception {
-    AirbyteSentry.executeWithTracing("UploadRecordsToStage",
+                                     final String stagingPath) {
+    return AirbyteSentry.queryWithTracing("UploadRecordsToStage",
         () -> s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
         Map.of("stage", stageName, "path", stagingPath));
-    return recordsData.getFilename();
   }
 
   @Override
