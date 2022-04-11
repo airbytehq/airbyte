@@ -23,24 +23,30 @@ const ButtonWithMargin = styled(Button)`
   margin-right: 12px;
 `;
 
-interface Props {
+export interface ConfirmationModalProps {
   onClose: () => void;
-  title: React.ReactNode;
-  text: React.ReactNode;
-  submitButtonText: React.ReactNode;
+  title: string;
+  text: string;
+  submitButtonText: string;
   onSubmit: () => void;
 }
 
-export const ConfirmationModal: React.FC<Props> = ({ onClose, title, text, onSubmit, submitButtonText }) => (
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+  onClose,
+  title,
+  text,
+  onSubmit,
+  submitButtonText,
+}) => (
   <Modal onClose={onClose} title={title}>
     <Content>
-      {text}
+      <FormattedMessage id={text} />
       <ButtonContent>
         <ButtonWithMargin onClick={onClose} type="button" secondary>
           <FormattedMessage id="form.cancel" />
         </ButtonWithMargin>
         <Button type="button" danger onClick={onSubmit} data-id="delete">
-          {submitButtonText}
+          <FormattedMessage id={submitButtonText} />
         </Button>
       </ButtonContent>
     </Content>

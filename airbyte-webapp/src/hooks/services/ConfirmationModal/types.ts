@@ -1,11 +1,6 @@
-import React from "react";
+import { ConfirmationModalProps } from "components/ConfirmationModal/ConfirmationModal";
 
-export interface ConfirmationModalOptions {
-  submitButtonText: React.ReactNode;
-  title: React.ReactNode;
-  text: React.ReactNode;
-  onSubmit: () => Promise<void>;
-}
+export type ConfirmationModalOptions = Omit<ConfirmationModalProps, "onClose">;
 
 export interface ConfirmationModalServiceApi {
   openConfirmationModal: (confirmationModal: ConfirmationModalOptions) => void;
