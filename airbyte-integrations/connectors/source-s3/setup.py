@@ -6,7 +6,9 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
+    "airbyte-cdk~=0.1",
     "smart-open[s3]==5.2.1",
+    "boto3==1.21.37",
 ]
 
 TEST_REQUIREMENTS = [
