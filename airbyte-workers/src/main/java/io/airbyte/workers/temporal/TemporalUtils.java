@@ -10,7 +10,6 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
@@ -223,12 +222,11 @@ public class TemporalUtils {
     final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     try {
-      //TODO(itaseski) Handle activity context heartbeat exception otherwise the thread will fail silently without notifying.
-      scheduledExecutor.scheduleAtFixedRate(() ->
-          activityContext.get().heartbeat(null), 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+      scheduledExecutor.scheduleAtFixedRate(
+          () -> new CancellationHandler.TemporalCancellationHandler(activityContext.get()).checkAndHandleCancellation(() -> {}),
+          0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       return callable.call();
-      //TODO(itaseski) Remove handling of activity completion exception since heartbeat is performed in a background thread
     } catch (final ActivityCompletionException e) {
       LOGGER.warn("Job either timed out or was cancelled.");
       throw new RuntimeException(e);
