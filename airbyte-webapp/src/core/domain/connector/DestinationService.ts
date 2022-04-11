@@ -1,9 +1,9 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-
 import Status from "core/statuses";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { Destination, Scheduler } from "./types";
 import { ConnectionConfiguration } from "core/domain/connection";
+
+import { Destination, Scheduler } from "./types";
 
 class DestinationService extends AirbyteRequestService {
   get url(): string {

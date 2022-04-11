@@ -342,16 +342,18 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
             self.prev_start_time = start_time
             return {self.cursor_field: int(start_time)}
 
+    def check_stream_state(self, stream_state: Mapping[str, Any] = None):
+        """
+        Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
+        """
+        state = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
+        return calendar.timegm(pendulum.parse(state).utctimetuple())
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
-        if stream_state:
-            # use the state value if exists
-            parsed_state = calendar.timegm(pendulum.parse(stream_state.get(self.cursor_field)).utctimetuple())
-        else:
-            # for full-refresh use start_date
-            parsed_state = calendar.timegm(pendulum.parse(self._start_date).utctimetuple())
+        parsed_state = self.check_stream_state(stream_state)
         if self.cursor_field:
             params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         else:

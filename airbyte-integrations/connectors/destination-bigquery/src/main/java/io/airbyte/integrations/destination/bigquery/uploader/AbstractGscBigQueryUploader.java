@@ -45,7 +45,7 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
   }
 
   @Override
-  public void postProcessAction(final boolean hasFailed) throws Exception {
+  public void postProcessAction(final boolean hasFailed) {
     if (!isKeepFilesInGcs) {
       deleteGcsFiles();
     }
@@ -58,7 +58,7 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
     super.uploadData(outputRecordCollector, lastStateMessage);
   }
 
-  protected void uploadDataFromFileToTmpTable() throws Exception {
+  protected void uploadDataFromFileToTmpTable() {
     try {
       final String fileLocation = this.writer.getFileLocation();
 
@@ -79,9 +79,9 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
       // Blocks until this load table job completes its execution, either failing or succeeding.
       BigQueryUtils.waitForJobFinish(loadJob);
 
-      LOGGER.info("Table is successfully overwritten by " + getFileTypeName() + " file loaded from GCS");
+      LOGGER.info("Table is successfully overwritten by file loaded from GCS: {}", getFileTypeName());
     } catch (final BigQueryException | InterruptedException e) {
-      LOGGER.error("Column not added during load append \n" + e.toString());
+      LOGGER.error("Column not added during load append", e);
       throw new RuntimeException("Column not added during load append \n" + e.toString());
     }
   }

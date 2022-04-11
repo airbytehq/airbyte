@@ -16,7 +16,7 @@ To add a user to your workspace:
 2. In the Workspace Settings sidebar, click **Access Management**.
 3. In the top right-hand corner, click **+ New User**.
 4. On the Add new users window, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
-<br> *Note: The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.*
+<br/> *Note: The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.*
 
 ### Switch between multiple workspaces
 

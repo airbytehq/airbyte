@@ -8,7 +8,7 @@ This tutorial will assume that you already have a working source. If you do not,
 
 First we need to identify a given stream in the Source as supporting incremental. This information is declared in the catalog that the `discover` method returns. You will notice in the stream object contains a field called `supported_sync_modes`. If we are adding incremental to an existing stream, we just need to add `"incremental"` to that array. This tells Airbyte that this stream can either be synced in an incremental fashion. In practice, this will mean that in the UI, a user will have the ability to configure this type of sync.
 
-In the example we used in the Toy Connector tutorial, the `discover` method would not look like this. Note: that "incremental" has been added to the `support_sync_modes` array. We also set `source_defined_cursor` to `True` to declare that the Source knows what field to use for the cursor, in this case the date field, and does not require user input. Nothing else has changed.
+In the example we used in the Toy Connector tutorial, the `discover` method would not look like this. Note: that "incremental" has been added to the `supported_sync_modes` array. We also set `source_defined_cursor` to `True` to declare that the Source knows what field to use for the cursor, in this case the date field, and does not require user input. Nothing else has changed.
 
 ```python
 def discover():
@@ -40,7 +40,7 @@ def discover():
 
 Next we will adapt the `read` method that we wrote previously. We need to change three things.
 
-First, we need to pass it information about what data was replicated in the previous sync. In Airbyte this is called a `state` object. The structure of the state object is determined by Source. This means that each Source can construct a state object that makes sense to it and does not need to worry about adhering to any other convention. That being said, a pretty typical structure for a state object is a map of stream name to the last value in the cursor field for that stream.
+First, we need to pass it information about what data was replicated in the previous sync. In Airbyte this is called a `state` object. The structure of the state object is determined by the Source. This means that each Source can construct a state object that makes sense to it and does not need to worry about adhering to any other convention. That being said, a pretty typical structure for a state object is a map of stream name to the last value in the cursor field for that stream.
 
 In this case we might choose something like this:
 
@@ -93,7 +93,7 @@ def read(config, catalog, state):
             log("Failure occurred when calling Polygon.io API")
             sys.exit(1)
         else:
-            # Stock prices are returned sorted by by date in ascending order
+            # Stock prices are returned sorted by date in ascending order
             # We want to output them one by one as AirbyteMessages
             response_json = response.json()
             if response_json["resultsCount"] > 0:
