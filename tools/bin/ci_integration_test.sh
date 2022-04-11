@@ -19,7 +19,7 @@ else
     export SUB_BUILD="CONNECTORS_BASE"
     # avoid schema conflicts when multiple tests for normalization are run concurrently
     export RANDOM_TEST_SCHEMA="true"
-    ./gradlew --no-daemon --scan airbyteDocker
+    ./gradlew --max-workers=1 --no-daemon --scan airbyteDocker
   elif [[ "$connector" == *"bases"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_integration_test=$(echo "$all_integration_tests" | grep "^$connector_name$" || echo "")
