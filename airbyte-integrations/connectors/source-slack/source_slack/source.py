@@ -25,7 +25,7 @@ class SlackStream(HttpStream, ABC):
     @property
     def max_retries(self) -> int:
         # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
-        return 50
+        return 20
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
