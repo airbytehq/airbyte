@@ -48,7 +48,7 @@ public class PostgresSpecTest {
           "username", "user",
           "database", "db");
 
-private static final Map<String, String> CONFIG_JDBC_URL_PARAMS = MoreMaps.merge(
+  private static final Map<String, String> CONFIG_JDBC_URL_PARAMS = MoreMaps.merge(
         CONFIG_PLAIN,
         ImmutableMap.of(
                 "jdbc_url_params", "foo=bar"));
