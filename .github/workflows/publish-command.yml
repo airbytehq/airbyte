@@ -104,8 +104,11 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
       - name: Install Pyenv and Tox
-        # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
           python3 -m virtualenv venv

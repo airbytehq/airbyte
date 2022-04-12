@@ -34,6 +34,7 @@ import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.ConnectionRead;
 import io.airbyte.api.client.model.ConnectionSchedule;
+import io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.client.model.ConnectionState;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.ConnectionUpdate;
@@ -82,6 +83,7 @@ import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;
@@ -1205,14 +1207,69 @@ public class AcceptanceTests {
     }
   }
 
-  private void terminateTemporalWorkflow(final UUID connectionId) {
+  @Test
+  @Order(23)
+  public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an
+    // underlying temporal workflow.
+    // This case only occurs with the new scheduler, so the entire test is inside the feature flag
+    // conditional.
+    // Also, this test doesn't verify correctness of the schedule update applied, as adding the ability
+    // to query a workflow for its current
+    // schedule is out of scope for the issue (https://github.com/airbytehq/airbyte/issues/11215). This
+    // test just ensures that the underlying workflow
+    // is running after the update method is called.
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      final String connectionName = "test-connection";
+      final UUID sourceId = createPostgresSource().getSourceId();
+      final UUID destinationId = createDestination().getDestinationId();
+      final UUID operationId = createOperation().getOperationId();
+      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+      final SyncMode syncMode = SyncMode.INCREMENTAL;
+      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+      catalog.getStreams().forEach(s -> s.getConfig()
+          .syncMode(syncMode)
+          .cursorField(List.of(COLUMN_ID))
+          .destinationSyncMode(destinationSyncMode)
+          .primaryKey(List.of(List.of(COLUMN_NAME))));
+
+      LOGGER.info("Testing connection update when temporal is in a terminal state");
+      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+      terminateTemporalWorkflow(connectionId);
+
+      // we should still be able to update the connection when the temporal workflow is in this state
+      updateConnectionSchedule(connectionId, new ConnectionSchedule().timeUnit(TimeUnitEnum.HOURS).units(1L));
+
+      LOGGER.info("Waiting for workflow to be recreated...");
+      Thread.sleep(500);
+
+      final WorkflowState workflowState = getWorkflowState(connectionId);
+      assertTrue(workflowState.isRunning());
+    }
+  }
+
+  private WorkflowClient getWorkflowClient() {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
-    final WorkflowClient workflowCLient = WorkflowClient.newInstance(temporalService);
+    return WorkflowClient.newInstance(temporalService);
+  }
+
+  private WorkflowState getWorkflowState(final UUID connectionId) {
+    final WorkflowClient workflowCLient = getWorkflowClient();
 
     // check if temporal workflow is reachable
     final ConnectionManagerWorkflow connectionManagerWorkflow =
         workflowCLient.newWorkflowStub(ConnectionManagerWorkflow.class, "connection_manager_" + connectionId);
-    connectionManagerWorkflow.getState();
+
+    return connectionManagerWorkflow.getState();
+  }
+
+  private void terminateTemporalWorkflow(final UUID connectionId) {
+    final WorkflowClient workflowCLient = getWorkflowClient();
+
+    // check if temporal workflow is reachable
+    getWorkflowState(connectionId);
 
     // Terminate workflow
     LOGGER.info("Terminating temporal workflow...");
@@ -1346,6 +1403,24 @@ public class AcceptanceTests {
             .prefix(OUTPUT_STREAM_PREFIX));
     connectionIds.add(connection.getConnectionId());
     return connection;
+  }
+
+  private ConnectionRead updateConnectionSchedule(final UUID connectionId, final ConnectionSchedule newSchedule) throws ApiException {
+    final ConnectionRead connectionRead = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    return apiClient.getConnectionApi().updateConnection(
+        new ConnectionUpdate()
+            .namespaceDefinition(connectionRead.getNamespaceDefinition())
+            .namespaceFormat(connectionRead.getNamespaceFormat())
+            .prefix(connectionRead.getPrefix())
+            .connectionId(connectionId)
+            .operationIds(connectionRead.getOperationIds())
+            .status(connectionRead.getStatus())
+            .syncCatalog(connectionRead.getSyncCatalog())
+            .name(connectionRead.getName())
+            .resourceRequirements(connectionRead.getResourceRequirements())
+            .schedule(newSchedule) // only field being updated
+    );
   }
 
   private DestinationRead createDestination() throws ApiException {

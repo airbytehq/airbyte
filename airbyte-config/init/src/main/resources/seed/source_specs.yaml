@@ -4453,7 +4453,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.2.12"
+- dockerImage: "airbyte/source-mailchimp:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mailchimp"
     connectionSpecification:
@@ -4476,9 +4476,6 @@
               auth_type:
                 type: "string"
                 const: "oauth2.0"
-                enum:
-                - "oauth2.0"
-                default: "oauth2.0"
                 order: 0
               client_id:
                 title: "Client ID"
@@ -4505,9 +4502,6 @@
               auth_type:
                 type: "string"
                 const: "apikey"
-                enum:
-                - "apikey"
-                default: "apikey"
                 order: 1
               apikey:
                 type: "string"
@@ -6449,7 +6443,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.9"
+- dockerImage: "airbyte/source-postgres:0.4.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7706,7 +7700,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.14"
+- dockerImage: "airbyte/source-slack:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/slack"
     connectionSpecification:
@@ -7741,6 +7735,15 @@
           description: "Whether to join all channels or to sync data only from channels\
             \ the bot is already in.  If false, you'll need to manually add the bot\
             \ to all the channels from which you'd like to sync messages. "
+        channel_filter:
+          type: "array"
+          default: []
+          title: "Channel name filter"
+          description: "A channel name list (without leading '#' char) which limit\
+            \ the channels from which you'd like to sync. Empty list means no filter."
+          examples:
+          - "channel_one"
+          - "channel_two"
         credentials:
           title: "Authentication mechanism"
           description: "Choose how to authenticate into Slack"
