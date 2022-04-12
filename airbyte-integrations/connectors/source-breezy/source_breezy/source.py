@@ -23,7 +23,7 @@ from airbyte_cdk.models import (
 )
 import requests
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream, IncrementalMixin
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
@@ -60,9 +60,9 @@ class BreezyStream(HttpStream, ABC):
     company_id: str
 
     # TODO: Fill in the url base. Required.
-    # url_base = "https://api.breezy.hr/"
     app_base = "https://app.breezy.hr"
-    current_page = 0
+    _current_rows = 0
+    total_rows_read = 0
     limit: int
     start_time: str
     data_field = 'data'
@@ -82,11 +82,13 @@ class BreezyStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response = response.json()
-        max = self.limit or response['total']
-        self.current_page += 1
-        if (self.current_page * self.page_size) < max:
-            result = {'limit': min(self.page_size, max - self.current_page * self.page_size),
-                      'skip': self.current_page * self.page_size}
+        max = response['total']
+        rows_read = len(response[self.data_field])
+        self.total_rows_read += rows_read
+        self._current_rows += rows_read
+        if self._current_rows < max or (self.limit and self.total_rows_read < self.limit):
+            result = {'limit': min(self.page_size, max - self.total_rows_read),
+                      'skip': self._current_rows }
             return result
         return None
 
@@ -135,7 +137,7 @@ class BreezyStream(HttpStream, ABC):
 # Basic incremental stream
 
 
-class IncrementalBreezyStream(BreezyStream, IncrementalMixin):
+class IncrementalBreezyStream(BreezyStream, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
          if you do not need to implement incremental sync for any streams, remove this class.
@@ -144,7 +146,7 @@ class IncrementalBreezyStream(BreezyStream, IncrementalMixin):
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = 1000
     state_pk = "timestamp"
-    need_chunk = False
+    need_chunk = True
     _start_date: Union[pendulum.Date, pendulum.Time, pendulum.DateTime, pendulum.Duration]
 
     def __init__(self, *args, **kwargs):
@@ -174,7 +176,6 @@ class IncrementalBreezyStream(BreezyStream, IncrementalMixin):
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
         """Current state, if wasn't set return None"""
-        print(self._state)
         if self._state:
             return (
                 {self.cursor_field: int(self._state.timestamp() * 1000)}
@@ -195,16 +196,16 @@ class IncrementalBreezyStream(BreezyStream, IncrementalMixin):
         self._start_date = max(self._state, self._start_date)
 
     def _update_state(self, latest_cursor):
+        self._current_rows = 0
         if latest_cursor:
             new_state = max(latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
                 logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
                 self._state = new_state
                 self._start_date = self._state
+        
     
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        print('Reading records With state := ')
-        print(self._state)
         records = super().read_records(*args, **kwargs)
         latest_cursor = None
         for record in records:
@@ -219,14 +220,11 @@ class IncrementalBreezyStream(BreezyStream, IncrementalMixin):
         chunk_size = pendulum.duration(days=30)
         slices = []
 
-        print(cursor_field)
-        print(self._start_date)
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
         max_delta = now_ts - start_ts
         chunk_size = int(chunk_size.total_seconds() *
                          1000) if self.need_chunk else max_delta
-        print(start_ts)
         for ts in range(start_ts, now_ts, chunk_size):
             end_ts = ts + chunk_size
             slices.append({'updated_date': {
@@ -266,8 +264,8 @@ class Candidates(IncrementalBreezyStream):
             common.update(next_page_token)
         else:
             common.update({'limit': self.page_size,
-                           'skip': self.current_page * self.page_size})
-        print(f'Requesting with headers : {common}')
+                           'skip': 0})
+        #print(f'Requesting with headers : {common}')
         return common
 
 # Source

@@ -8,6 +8,20 @@
         "null"
       ]
     },
+    "last_message_to_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "entered_stage": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
     "meta_id": {
       "type": [
         "string",
@@ -39,6 +53,63 @@
       ],
       "format": "date-time"
     },
+    "position_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "position": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "friendly_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "org_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "department": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+
     "education": {
       "type": [
         "array"
@@ -203,153 +274,45 @@
     },
     "questionnaire": {
       "type": [
-        "object",
+        "array",
         "null"
       ],
-      "properties": {
-        "_id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "name": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "questions": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "_id": {
             "type": [
-              "object",
+              "string",
               "null"
-            ],
-            "properties": {
-              "text": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "type": {
-                "type": [
-                  "object",
-                  "null"
-                ],
-                "properties": {
-                  "id": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "name": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                }
-              },
-              "required": {
-                "type": [
-                  "boolean",
-                  "null"
-                ]
-              },
-              "_id": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              }
-            }
-          }
-        },
-        "message_template": {
-          "type": [
-            "object",
-            "null"
-          ],
-          "properties": {
-            "type": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "body": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          }
-        },
-        "options": {
-          "move_to": {
+            ]
+          },
+          "text": {
             "type": [
-              "object",
+              "string",
+              "null"
+            ]
+          },
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "response": {
+            "type": [
+              "string",
               "null"
             ]
           }
-        }
-      }
-    },
-    "recruited_by": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "properties": {
-        "_id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "email_address": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "name": {
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      }
-    },
-    "referred_by": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "properties": {
-        "_id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "email_address": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "name": {
-          "type": [
-            "string",
-            "null"
-          ]
         }
       }
     },
@@ -465,6 +428,12 @@
             "string",
             "null"
           ]
+        },
+        "logo_url": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -558,82 +527,22 @@
             "type": [
               "object",
               "null"
-            ],
-            "properties": {
-              "month": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
-              },
-              "year": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
-              }
-            }
+            ]
           },
           "end_date": {
             "type": [
               "object",
               "null"
-            ],
-            "properties": {
-              "month": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
-              },
-              "year": {
-                "type": [
-                  "integer",
-                  "null"
-                ]
-              }
-            }
+            ]
           }
         }
       }
     },
-    "custom_attributes": {
+    "location": {
       "type": [
-        "array",
+        "object",
         "null"
-      ],
-      "items": {
-        "type": [
-          "object",
-          "null"
-        ],
-        "properties": {
-          "name": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "id": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "secure": {
-            "type": [
-              "boolean",
-              "null"
-            ]
-          },
-          "value": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        }
-      }
+      ]
     },
     "disposition_date": {
       "type": [
@@ -641,26 +550,6 @@
         "null"
       ],
       "format": "date-time"
-    },
-    "disposition_reason": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "properties": {
-        "_id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "name": {
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      }
     }
   }
 }
