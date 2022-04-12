@@ -34,11 +34,17 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   private static final String SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT = """
          select tablename, schemaname
          from pg_table_def
-         where schemaname = '%1$s'
-           and "column" = '%2$s'
-           and "column" in ('%2$s', '%3$s', '%4$s')
-           and tablename like '%%airbyte_raw%%'
+         where tablename in (
+             select tablename as tablename
+             from pg_table_def
+             where schemaname = '%1$s'
+               and tablename like '%%airbyte_raw%%'
+               and "column" in ('%2$s', '%3$s', '%4$s')
+             group by tablename
+             having count(*) = 3)
+           and schemaname = '%1$s'
            and type <> 'super'
+         and "column" = '_airbyte_data';
       """;
 
   private static final String ALTER_TMP_TABLES_WITH_NOT_SUPER_TYPE_TO_SUPER_TYPE = """
