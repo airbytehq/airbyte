@@ -25,18 +25,6 @@
       "sync_mode": "incremental",
       "cursor_field": ["date_created"],
       "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "email_activity",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["timestamp"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["timestamp"],
-      "destination_sync_mode": "append"
     }
   ]
 }
