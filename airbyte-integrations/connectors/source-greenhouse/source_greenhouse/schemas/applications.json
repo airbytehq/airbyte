@@ -122,7 +122,7 @@
           "type": "string"
         },
         "employee_id": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         }
       }
     },
