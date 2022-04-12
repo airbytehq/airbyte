@@ -12,6 +12,7 @@ WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization
 COPY setup.py .
 COPY dbt-project-template/ ./dbt-template/
+COPY dbt-project-template-redshift/* ./dbt-template/
 
 # Install python dependencies
 WORKDIR /airbyte/base_python_structs
@@ -28,5 +29,4 @@ WORKDIR /airbyte
 ENV AIRBYTE_ENTRYPOINT "/airbyte/entrypoint.sh"
 ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.76
-LABEL io.airbyte.name=airbyte/normalization
+LABEL io.airbyte.name=airbyte/normalization-redshift
