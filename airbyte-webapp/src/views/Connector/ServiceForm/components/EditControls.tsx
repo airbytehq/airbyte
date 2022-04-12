@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
+
 import { useServiceForm } from "../serviceFormContext";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
@@ -47,12 +48,7 @@ const EditControls: React.FC<IProps> = ({
   const { unfinishedFlows } = useServiceForm();
 
   if (isSubmitting) {
-    return (
-      <TestingConnectionSpinner
-        isCancellable={isTestConnectionInProgress}
-        onCancelTesting={onCancelTesting}
-      />
-    );
+    return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
   }
 
   const showStatusMessage = () => {
@@ -72,22 +68,12 @@ const EditControls: React.FC<IProps> = ({
         <div>
           <Button
             type="submit"
-            disabled={
-              isSubmitting ||
-              !isValid ||
-              !dirty ||
-              Object.keys(unfinishedFlows).length > 0
-            }
+            disabled={isSubmitting || !isValid || !dirty || Object.keys(unfinishedFlows).length > 0}
           >
             <FormattedMessage id="form.saveChangesAndTest" />
           </Button>
           <ButtonContainer>
-            <Button
-              type="button"
-              secondary
-              disabled={isSubmitting || !isValid || !dirty}
-              onClick={resetForm}
-            >
+            <Button type="button" secondary disabled={isSubmitting || !isValid || !dirty} onClick={resetForm}>
               <FormattedMessage id="form.cancel" />
             </Button>
           </ButtonContainer>

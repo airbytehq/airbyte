@@ -3,9 +3,11 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
 
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { Link } from "components";
+
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { ConnectionSettingsRoutes } from "pages/ConnectionPage/pages/ConnectionItemPage/ConnectionSettingsRoutes";
+
 import { RoutePaths } from "../../../pages/routePaths";
 
 type IProps = {

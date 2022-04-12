@@ -9,6 +9,7 @@ const uiConfig = {
   updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
   productReleaseStages: `${BASE_DOCS_LINK}/project-overview/product-release-stages`,
   slackLink: "https://slack.airbyte.com",
+  supportTicketLink: "https://airbyte.com/contact-support",
   docsLink: BASE_DOCS_LINK,
   configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
   normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
@@ -16,9 +17,9 @@ const uiConfig = {
   tutorialLink: "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
   statusLink: "https://status.airbyte.io/",
   recipesLink: "https://airbyte.com/recipes",
-  syncModeLink:
-    "https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history",
+  syncModeLink: "https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history",
   demoLink: "https://demo.airbyte.io",
+  contactSales: "https://airbyte.com/talk-to-sales",
   webpageLink: "https://airbyte.com",
 } as const;
 

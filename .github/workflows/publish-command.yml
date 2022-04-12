@@ -20,6 +20,10 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      auto-bump-version:
+        description: "after publishing, the workflow will automatically bump the connector version in definitions and generate seed spec"
+        required: true
+        default: "true"
 
 jobs:
   find_valid_pat:
@@ -95,17 +99,28 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+          token: ${{ secrets.OCTAVIA_PAT }}
       - name: Install Java
         uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
       - name: Install Pyenv and Tox
-        # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559/
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
           python3 -m virtualenv venv
           source venv/bin/activate
           pip install --quiet tox==3.24.4
+      - name: Install yq
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
+          sudo add-apt-repository ppa:rmescandon/yq
+          sudo apt update
+          sudo apt install yq -y
       - name: Test and install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
@@ -118,14 +133,17 @@ jobs:
           ci_credentials ${{ github.event.inputs.connector }}
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      - name: Prepare Sentry Release
+      - name: Set Name and Version Environment Vars
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
-          curl -sL https://sentry.io/get-cli/ | bash
           source tools/lib/lib.sh
           DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
           echo "IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
+      - name: Prepare Sentry
+        if: startsWith(github.event.inputs.connector, 'connectors')
+        run: |
+          curl -sL https://sentry.io/get-cli/ | bash
       - name: Create Sentry Release
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
@@ -153,20 +171,20 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j
           SENTRY_PROJECT: airbyte-connectors
-      - name: Add Success Comment
+      - name: Add Published Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Add Failure Comment
+            > :rocket: Successfully published ${{github.event.inputs.connector}}
+      - name: Add Published Failure Comment
         if: github.event.inputs.comment-id && !success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+            > :x: Failed to publish ${{github.event.inputs.connector}}
       - name: Slack Notification - Failure
         if: failure()
         uses: rtCamp/action-slack-notify@master
@@ -177,6 +195,63 @@ jobs:
           SLACK_COLOR: DC143C
           SLACK_TITLE: "Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}"
           SLACK_FOOTER: ""
+      - name: Check if connector in definitions yaml
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          connector="airbyte/${{ env.IMAGE_NAME }}"
+          definitionpath=./airbyte-config/init/src/main/resources/seed/
+          sourcecheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"source_definitions.yaml)
+          destcheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"destination_definitions.yaml)
+          if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
+          then exit 1
+          fi
+      - name: Bump version in definitions yaml
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          connector="airbyte/${{ env.IMAGE_NAME }}"
+          definitionpath=./airbyte-config/init/src/main/resources/seed/
+          sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
+          destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
+          if [ -z "$sourcename" ]
+          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"destination_definitions.yaml
+          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
+          fi
+      - name: Run gradle process changes
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          ./gradlew :airbyte-config:init:processResources
+      - name: git config
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          git config user.name 'Octavia Squidington III'
+          git config user.email 'octavia-squidington-iii@users.noreply.github.com'
+      - name: git commit and push
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          git add -u
+          git commit -m "auto-bump connector version"
+          git push origin ${{ github.event.inputs.gitref }}
+      - name: Add Version Bump Success Comment
+        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :rocket: Auto-bumped version for ${{github.event.inputs.connector}}
+      - name: Add Version Bump Failure Comment
+        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && !success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :x: Couldn't auto-bump version for ${{github.event.inputs.connector}}
+      - name: Add Final Success Comment
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
   # In case of self-hosted EC2 errors, remove this block.
   stop-publish-image-runner:
     name: Stop Build EC2 Runner

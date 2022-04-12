@@ -1,9 +1,12 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
+import withMock from "storybook-addon-mock";
 
-import { ServiceForm } from "./ServiceForm";
 import { ContentCard } from "components";
+
 import { ConnectorSpecification } from "core/domain/connector";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
+
+import { ServiceForm } from "./ServiceForm";
 
 const TempConnector = {
   name: "Service",
@@ -18,7 +21,19 @@ const TempConnector = {
 export default {
   title: "Views/ServiceForm",
   component: ServiceForm,
-  parameters: { actions: { argTypesRegex: "^on.*" } },
+  parameters: {
+    actions: { argTypesRegex: "^on.*" },
+    mockData: [
+      {
+        url: "http://localhost:8001/api/v1/workspaces/get",
+        method: "POST",
+        status: 200,
+        response: {
+          workspaceId: "",
+        },
+      },
+    ],
+  },
   args: {
     formType: "source",
     formValues: {
@@ -27,6 +42,7 @@ export default {
     onSubmit: (v) => console.log(v),
     availableServices: [TempConnector],
   },
+  decorators: [withMock],
 } as ComponentMeta<typeof ServiceForm>;
 
 const Template: ComponentStory<typeof ServiceForm> = (args) => {
@@ -35,13 +51,8 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
     args.selectedConnectorDefinitionSpecification &&
     !ConnectorSpecification.id(args.selectedConnectorDefinitionSpecification)
   ) {
-    if (
-      isSourceDefinitionSpecification(
-        args.selectedConnectorDefinitionSpecification
-      )
-    ) {
-      args.selectedConnectorDefinitionSpecification.sourceDefinitionId =
-        TempConnector.sourceDefinitionId;
+    if (isSourceDefinitionSpecification(args.selectedConnectorDefinitionSpecification)) {
+      args.selectedConnectorDefinitionSpecification.sourceDefinitionId = TempConnector.sourceDefinitionId;
     }
   }
 

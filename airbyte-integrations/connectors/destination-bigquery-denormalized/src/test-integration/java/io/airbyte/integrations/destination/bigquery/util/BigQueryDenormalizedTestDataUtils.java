@@ -14,20 +14,23 @@ public class BigQueryDenormalizedTestDataUtils {
 
   private static final String JSON_FILES_BASE_LOCATION = "testdata/";
 
-
   public static JsonNode getSchema() {
     return getTestDataFromResourceJson("schema.json");
+  }
+
+  public static JsonNode getAnyOfSchema() {
+    return getTestDataFromResourceJson("schemaAnyOfAllOf.json");
   }
 
   public static JsonNode getSchemaWithFormats() {
     return getTestDataFromResourceJson("schemaWithFormats.json");
   }
 
-  public static JsonNode getSchemaWithDateTime()  {
+  public static JsonNode getSchemaWithDateTime() {
     return getTestDataFromResourceJson("schemaWithDateTime.json");
   }
 
-  public static JsonNode getSchemaWithInvalidArrayType()  {
+  public static JsonNode getSchemaWithInvalidArrayType() {
     return getTestDataFromResourceJson("schemaWithInvalidArrayType.json");
   }
 
@@ -37,6 +40,18 @@ public class BigQueryDenormalizedTestDataUtils {
 
   public static JsonNode getDataWithFormats() {
     return getTestDataFromResourceJson("dataWithFormats.json");
+  }
+
+  public static JsonNode getAnyOfFormats() {
+    return getTestDataFromResourceJson("dataAnyOfFormats.json");
+  }
+
+  public static JsonNode getAnyOfFormatsWithNull() {
+    return getTestDataFromResourceJson("dataAnyOfFormatsWithNull.json");
+  }
+
+  public static JsonNode getAnyOfFormatsWithEmptyList() {
+    return getTestDataFromResourceJson("dataAnyOfFormatsWithEmptyList.json");
   }
 
   public static JsonNode getDataWithJSONDateTimeFormats() {

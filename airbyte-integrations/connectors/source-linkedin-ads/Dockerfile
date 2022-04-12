@@ -1,4 +1,4 @@
-FROM python:3.7.11-alpine3.14 as base
+FROM python:3.9.11-alpine3.15 as base
 
 # build and load all requirements 
 FROM base as builder
@@ -33,5 +33,5 @@ COPY source_linkedin_ads ./source_linkedin_ads
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.5
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/source-linkedin-ads

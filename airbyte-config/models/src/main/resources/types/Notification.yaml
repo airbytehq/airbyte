@@ -20,3 +20,5 @@ properties:
     default: true
   slackConfiguration:
     "$ref": SlackNotificationConfiguration.yaml
+  customerioConfiguration:
+    "$ref": CustomerioNotificationConfiguration.yaml

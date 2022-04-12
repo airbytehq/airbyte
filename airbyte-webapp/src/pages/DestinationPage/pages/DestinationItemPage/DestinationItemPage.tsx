@@ -1,63 +1,38 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
-import PageTitle from "components/PageTitle";
-import useRouter from "hooks/useRouter";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import ConnectionResource from "core/resources/Connection";
 import Breadcrumbs from "components/Breadcrumbs";
-import DestinationConnectionTable from "./components/DestinationConnectionTable";
-import DestinationResource from "core/resources/Destination";
-import {
-  ItemTabs,
-  StepsTypes,
-  TableItemTitle,
-} from "components/ConnectorBlocks";
-import DestinationSettings from "./components/DestinationSettings";
-import LoadingPage from "components/LoadingPage";
-import SourceResource from "core/resources/Source";
-import MainPageWithScroll from "components/MainPageWithScroll";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { getIcon } from "utils/imageUtils";
-import ImageBlock from "components/ImageBlock";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
+import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import HeadTitle from "components/HeadTitle";
-import useWorkspace from "hooks/services/useWorkspace";
-import { DropDownRow } from "components";
-import { RoutePaths } from "../../../routePaths";
+import { DropDownRow, ImageBlock, LoadingPage, MainPageWithScroll, PageTitle } from "components";
+
+import { getIcon } from "utils/imageUtils";
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
+import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useSourceList } from "hooks/services/useSourceHook";
+
+import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
+import DestinationSettings from "./components/DestinationSettings";
+import DestinationConnectionTable from "./components/DestinationConnectionTable";
 
 const DestinationItemPage: React.FC = () => {
   const { params, push } = useRouter<unknown, { id: string }>();
-  const { workspace } = useWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
 
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { sources } = useSourceList();
 
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { sourceDefinitions } = useSourceDefinitionList();
 
-  const destination = useResource(DestinationResource.detailShape(), {
-    destinationId: params.id,
-  });
+  const destination = useGetDestination(params.id);
 
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    {
-      destinationDefinitionId: destination.destinationDefinitionId,
-    }
-  );
+  const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { connections } = useConnectionList();
 
   const onClickBack = () => push("..");
 
@@ -70,16 +45,13 @@ const DestinationItemPage: React.FC = () => {
   ];
 
   const connectionsWithDestination = connections.filter(
-    (connectionItem) =>
-      connectionItem.destinationId === destination.destinationId
+    (connectionItem) => connectionItem.destinationId === destination.destinationId
   );
 
   const sourcesDropDownData = useMemo(
     () =>
       sources.map((item) => {
-        const sourceDef = sourceDefinitions.find(
-          (sd) => sd.sourceDefinitionId === item.sourceDefinitionId
-        );
+        const sourceDef = sourceDefinitions.find((sd) => sd.sourceDefinitionId === item.sourceDefinitionId);
         return {
           label: item.name,
           value: item.sourceId,
@@ -105,10 +77,7 @@ const DestinationItemPage: React.FC = () => {
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
       return (
-        <DestinationSettings
-          currentDestination={destination}
-          connectionsWithDestination={connectionsWithDestination}
-        />
+        <DestinationSettings currentDestination={destination} connectionsWithDestination={connectionsWithDestination} />
       );
     }
 
@@ -120,17 +89,11 @@ const DestinationItemPage: React.FC = () => {
           onSelect={onSelect}
           entityName={destination.name}
           entity={destination.destinationName}
-          entityIcon={
-            destinationDefinition.icon
-              ? getIcon(destinationDefinition.icon)
-              : null
-          }
+          entityIcon={destinationDefinition.icon ? getIcon(destinationDefinition.icon) : null}
           releaseStage={destinationDefinition.releaseStage}
         />
         {connectionsWithDestination.length ? (
-          <DestinationConnectionTable
-            connections={connectionsWithDestination}
-          />
+          <DestinationConnectionTable connections={connectionsWithDestination} />
         ) : (
           <Placeholder resource={ResourceTypes.Sources} />
         )}
@@ -140,18 +103,12 @@ const DestinationItemPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      headTitle={
-        <HeadTitle
-          titles={[{ id: "admin.destinations" }, { title: destination.name }]}
-        />
-      }
+      headTitle={<HeadTitle titles={[{ id: "admin.destinations" }, { title: destination.name }]} />}
       pageTitle={
         <PageTitle
           title={<Breadcrumbs data={breadcrumbsData} />}
           withLine
-          middleComponent={
-            <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
-          }
+          middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
         />
       }
     >

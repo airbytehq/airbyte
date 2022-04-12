@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+
 import { StepType } from "./types";
 
 const useStepsConfig = (
@@ -29,9 +30,7 @@ const useStepsConfig = (
   const updateStep = useCallback(
     (step: StepType) => {
       setCurrentStep(step);
-      if (afterUpdateStep) {
-        afterUpdateStep();
-      }
+      afterUpdateStep?.();
     },
     [setCurrentStep, afterUpdateStep]
   );
