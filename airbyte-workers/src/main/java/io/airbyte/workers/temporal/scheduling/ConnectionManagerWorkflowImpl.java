@@ -13,6 +13,7 @@ import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
@@ -50,6 +51,7 @@ import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -82,6 +84,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final AutoDisableConnectionActivity autoDisableConnectionActivity =
       Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+
+  private Optional<Instant> lastAutoDisableWarningTimestamp = Optional.empty();
 
   private CancellationScope cancellableSyncWorkflow;
 
@@ -265,8 +269,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       if (autoDisableConnectionVersion != Workflow.DEFAULT_VERSION) {
         final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
-            new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
-        runMandatoryActivity(autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
+            new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()), lastAutoDisableWarningTimestamp);
+        final AutoDisableConnectionOutput output = runMandatoryActivityWithOutput(
+            autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
+        lastAutoDisableWarningTimestamp = output.getLastWarningTimestamp();
       }
 
       resetNewConnectionInput(connectionUpdaterInput);

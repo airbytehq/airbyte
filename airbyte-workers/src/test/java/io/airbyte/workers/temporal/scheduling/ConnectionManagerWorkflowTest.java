@@ -49,6 +49,7 @@ import io.temporal.worker.Worker;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -756,7 +757,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce()).attemptFailureWithAttemptNumber(Mockito.any());
       Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce()).jobFailure(Mockito.any());
       Mockito.verify(mAutoDisableConnectionActivity)
-          .autoDisableFailingConnection(new AutoDisableConnectionActivityInput(connectionId, Mockito.any()));
+          .autoDisableFailingConnection(new AutoDisableConnectionActivityInput(connectionId, Mockito.any(), Optional.empty()));
     }
 
     @Test
