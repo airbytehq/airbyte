@@ -4,14 +4,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Stripe Source Spec",
     "type": "object",
-    "required": ["spreadsheet_id","credentials"],
+    "required": ["spreadsheet_id", "credentials"],
     "additionalProperties": true,
     "properties": {
       "spreadsheet_id": {
         "type": "string",
         "title": "Spreadsheet Link",
         "description": "The link to your spreadsheet. See <a href='https://docs.airbyte.com/integrations/sources/google-sheets#sheetlink'>this guide</a> for more details.",
-        "examples": ["https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit"]
+        "examples": [
+          "https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit"
+        ]
       },
       "credentials": {
         "type": "object",

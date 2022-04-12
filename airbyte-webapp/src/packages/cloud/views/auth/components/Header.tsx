@@ -6,8 +6,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
-import { CloudRoutes } from "../../../cloudRoutes";
+
 import { useConfig } from "config";
+
+import { CloudRoutes } from "../../../cloudRoutes";
 
 const Links = styled.div`
   width: 100%;
@@ -53,15 +55,9 @@ const Header: React.FC<HeaderProps> = ({ toLogin }) => {
       </BackLink>
       <FormLink>
         <TextBlock>
-          <FormattedMessage
-            id={toLogin ? "login.haveAccount" : "login.DontHaveAccount"}
-          />
+          <FormattedMessage id={toLogin ? "login.haveAccount" : "login.DontHaveAccount"} />
         </TextBlock>
-        <Button
-          secondary
-          as={Link}
-          to={toLogin ? CloudRoutes.Login : CloudRoutes.Signup}
-        >
+        <Button secondary as={Link} to={toLogin ? CloudRoutes.Login : CloudRoutes.Signup}>
           <FormattedMessage id={toLogin ? "login.login" : "login.signup"} />
         </Button>
       </FormLink>

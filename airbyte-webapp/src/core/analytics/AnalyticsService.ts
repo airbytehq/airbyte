@@ -1,13 +1,9 @@
 import { SegmentAnalytics } from "./types";
 
 export class AnalyticsService {
-  constructor(
-    private context: Record<string, unknown>,
-    private version?: string
-  ) {}
+  constructor(private context: Record<string, unknown>, private version?: string) {}
 
-  private getSegmentAnalytics = (): SegmentAnalytics | undefined =>
-    window.analytics;
+  private getSegmentAnalytics = (): SegmentAnalytics | undefined => window.analytics;
 
   alias = (newId: string): void => this.getSegmentAnalytics()?.alias?.(newId);
 
@@ -27,8 +23,6 @@ export class AnalyticsService {
     this.getSegmentAnalytics()?.identify?.(userId, traits);
   };
 
-  group = (
-    organisationId: string,
-    traits: Record<string, unknown> = {}
-  ): void => this.getSegmentAnalytics()?.group?.(organisationId, traits);
+  group = (organisationId: string, traits: Record<string, unknown> = {}): void =>
+    this.getSegmentAnalytics()?.group?.(organisationId, traits);
 }

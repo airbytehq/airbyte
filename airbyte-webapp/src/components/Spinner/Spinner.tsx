@@ -28,8 +28,7 @@ const SpinnerWheel = styled.div<{ small?: boolean }>`
 const BreakRec = styled.div<IProps>`
   width: 13px;
   height: 7px;
-  background: ${({ theme, backgroundColor }) =>
-    backgroundColor ? backgroundColor : theme.whiteColor};
+  background: ${({ theme, backgroundColor }) => (backgroundColor ? backgroundColor : theme.whiteColor)};
   top: -4px;
   position: relative;
   margin: 0 auto;

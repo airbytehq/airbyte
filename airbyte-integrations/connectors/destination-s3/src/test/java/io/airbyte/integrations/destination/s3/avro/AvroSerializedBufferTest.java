@@ -54,7 +54,7 @@ public class AvroSerializedBufferTest {
   public void testSnappyAvroWriter() throws Exception {
     final S3AvroFormatConfig config = new S3AvroFormatConfig(Jsons.jsonNode(Map.of("compression_codec", Map.of(
         "codec", "snappy"))));
-    runTest(new InMemoryBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 965L, 980L, config, getExpectedString());
+    runTest(new InMemoryBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 965L, 985L, config, getExpectedString());
   }
 
   @Test
@@ -63,7 +63,7 @@ public class AvroSerializedBufferTest {
         "codec", "zstandard",
         "compression_level", 20,
         "include_checksum", true))));
-    runTest(new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 970L, 980L, config, getExpectedString());
+    runTest(new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 970L, 985L, config, getExpectedString());
   }
 
   @Test

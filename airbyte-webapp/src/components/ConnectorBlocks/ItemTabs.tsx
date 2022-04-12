@@ -25,14 +25,7 @@ const steps = [
 ];
 
 const ItemTabs: React.FC<IProps> = ({ currentStep, setCurrentStep }) => {
-  return (
-    <StepsMenu
-      lightMode
-      data={steps}
-      activeStep={currentStep}
-      onSelect={setCurrentStep}
-    />
-  );
+  return <StepsMenu lightMode data={steps} activeStep={currentStep} onSelect={setCurrentStep} />;
 };
 
 export default ItemTabs;

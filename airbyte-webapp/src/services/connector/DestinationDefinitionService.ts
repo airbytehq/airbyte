@@ -1,9 +1,4 @@
-import {
-  QueryObserverSuccessResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import { DestinationDefinition } from "core/domain/connector";
 import { useConfig } from "config";
@@ -15,13 +10,14 @@ import {
 } from "core/domain/connector/DestinationDefinitionService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
+
 import { SCOPE_WORKSPACE } from "../Scope";
+import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const destinationDefinitionKeys = {
   all: [SCOPE_WORKSPACE, "destinationDefinition"] as const,
   lists: () => [...destinationDefinitionKeys.all, "list"] as const,
-  detail: (id: string) =>
-    [...destinationDefinitionKeys.all, "details", id] as const,
+  detail: (id: string) => [...destinationDefinitionKeys.all, "details", id] as const,
 };
 
 function useGetDestinationDefinitionService(): DestinationDefinitionService {
@@ -41,7 +37,7 @@ const useDestinationDefinitionList = (): {
   const service = useGetDestinationDefinitionService();
   const workspace = useCurrentWorkspace();
 
-  return (useQuery(destinationDefinitionKeys.lists(), async () => {
+  return useSuspenseQuery(destinationDefinitionKeys.lists(), async () => {
     const [definition, latestDefinition] = await Promise.all([
       service.list(workspace.workspaceId),
       service.listLatest(workspace.workspaceId),
@@ -51,8 +47,7 @@ const useDestinationDefinitionList = (): {
       (destination: DestinationDefinition) => {
         const withLatest = latestDefinition.destinationDefinitions.find(
           (latestDestination: DestinationDefinition) =>
-            latestDestination.destinationDefinitionId ===
-            destination.destinationDefinitionId
+            latestDestination.destinationDefinitionId === destination.destinationDefinitionId
         );
 
         return {
@@ -63,52 +58,36 @@ const useDestinationDefinitionList = (): {
     );
 
     return { destinationDefinitions };
-  }) as QueryObserverSuccessResult<{
-    destinationDefinitions: DestinationDefinition[];
-  }>).data;
+  });
 };
 
 const useDestinationDefinition = <T extends string | undefined>(
   id: T
-): T extends string
-  ? DestinationDefinition
-  : DestinationDefinition | undefined => {
+): T extends string ? DestinationDefinition : DestinationDefinition | undefined => {
   const service = useGetDestinationDefinitionService();
 
-  return (useQuery(
-    destinationDefinitionKeys.detail(id || ""),
-    () => service.get(id || ""),
-    {
-      enabled: isDefined(id),
-    }
-  ) as QueryObserverSuccessResult<DestinationDefinition>).data;
+  return useSuspenseQuery(destinationDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
+    enabled: isDefined(id),
+  });
 };
 
 const useCreateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
 
-  return useMutation<
-    DestinationDefinition,
-    Error,
-    CreateDestinationDefinitionPayload
-  >((destinationDefinition) => service.create(destinationDefinition), {
-    onSuccess: (data) => {
-      queryClient.setQueryData(
-        destinationDefinitionKeys.lists(),
-        (
-          oldData:
-            | { destinationDefinitions: DestinationDefinition[] }
-            | undefined
-        ) => ({
-          destinationDefinitions: [
-            data,
-            ...(oldData?.destinationDefinitions ?? []),
-          ],
-        })
-      );
-    },
-  });
+  return useMutation<DestinationDefinition, Error, CreateDestinationDefinitionPayload>(
+    (destinationDefinition) => service.create(destinationDefinition),
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(
+          destinationDefinitionKeys.lists(),
+          (oldData: { destinationDefinitions: DestinationDefinition[] } | undefined) => ({
+            destinationDefinitions: [data, ...(oldData?.destinationDefinitions ?? [])],
+          })
+        );
+      },
+    }
+  );
 };
 
 const useUpdateDestinationDefinition = () => {
@@ -124,23 +103,14 @@ const useUpdateDestinationDefinition = () => {
     }
   >((destinationDefinition) => service.update(destinationDefinition), {
     onSuccess: (data) => {
-      queryClient.setQueryData(
-        destinationDefinitionKeys.detail(data.destinationDefinitionId),
-        data
-      );
+      queryClient.setQueryData(destinationDefinitionKeys.detail(data.destinationDefinitionId), data);
 
       queryClient.setQueryData(
         destinationDefinitionKeys.lists(),
-        (
-          oldData:
-            | { destinationDefinitions: DestinationDefinition[] }
-            | undefined
-        ) => ({
+        (oldData: { destinationDefinitions: DestinationDefinition[] } | undefined) => ({
           destinationDefinitions:
             oldData?.destinationDefinitions.map((sd) =>
-              sd.destinationDefinitionId === data.destinationDefinitionId
-                ? data
-                : sd
+              sd.destinationDefinitionId === data.destinationDefinitionId ? data : sd
             ) ?? [],
         })
       );
