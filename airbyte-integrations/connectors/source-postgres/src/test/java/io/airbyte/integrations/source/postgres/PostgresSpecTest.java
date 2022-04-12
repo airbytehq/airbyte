@@ -42,12 +42,16 @@ public class PostgresSpecTest {
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
 
-  private static final Map<String, String> CONFIG_JDBC_URL_PARAMS = ImmutableMap.of(
+  private static final Map<String, String> CONFIG_PLAIN = ImmutableMap.of(
           "host", "localhost",
           "port", "1337",
           "username", "user",
-          "database", "db",
-          "jdbc_url_params", "foo=bar");
+          "database", "db");
+
+private static final Map<String, String> CONFIG_JDBC_URL_PARAMS = MoreMaps.merge(
+        CONFIG_PLAIN,
+        ImmutableMap.of(
+                "jdbc_url_params", "foo=bar"));
 
   @BeforeAll
   static void init() throws IOException {
@@ -123,7 +127,16 @@ public class PostgresSpecTest {
   }
 
   @Test
-  void testJdbcUrlParamsPassThrough() {
+  void testJdbcUrlGeneration() {
+    final String expectedJdbcUrl = "jdbc:postgresql://localhost:1337/db?ssl=true&sslmode=require&";
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfigStatic(
+            Jsons.jsonNode(CONFIG_PLAIN));
+
+    assertEquals(expectedJdbcUrl, jdbcConfig.get("jdbc_url").asText());
+  }
+
+  @Test
+  void testJdbcUrlGenerationJdbcUrlParams() {
     final String expectedJdbcUrl = "jdbc:postgresql://localhost:1337/db?ssl=true&sslmode=require&foo=bar";
     final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfigStatic(
             Jsons.jsonNode(CONFIG_JDBC_URL_PARAMS));
