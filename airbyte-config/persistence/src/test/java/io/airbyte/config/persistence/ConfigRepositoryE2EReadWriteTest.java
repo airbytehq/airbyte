@@ -120,9 +120,9 @@ public class ConfigRepositoryE2EReadWriteTest {
   void testWorkspaceCountConnections() throws IOException {
 
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    assertEquals(MockData.standardSyncs().size() - 1, configRepository.countConnectionsForWorkspace(workspaceId));
-    assertEquals(MockData.destinationConnections().size() - 1, configRepository.countDestinationsForWorkspace(workspaceId));
-    assertEquals(MockData.sourceConnections().size() - 1, configRepository.countSourcesForWorkspace(workspaceId));
+    assertEquals(4, configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(2, configRepository.countDestinationsForWorkspace(workspaceId));
+    assertEquals(2, configRepository.countSourcesForWorkspace(workspaceId));
   }
 
   @Test
