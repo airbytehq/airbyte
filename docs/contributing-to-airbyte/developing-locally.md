@@ -4,7 +4,7 @@ The following technologies are required to build Airbyte locally.
 
 1. [`Java 17`](https://jdk.java.net/archive/)
 2. `Node 16`
-3. `Python 3.7`
+3. `Python 3.9`
 4. `Docker`
 5. `Jq`
 

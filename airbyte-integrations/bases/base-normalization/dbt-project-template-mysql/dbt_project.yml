@@ -24,7 +24,7 @@ macro-paths: ["macros"]
 
 target-path: "../build" # directory which will store compiled SQL files
 log-path: "../logs" # directory which will store DBT logs
-packages-install-path: "/tmp/dbt_modules" # directory which will store external DBT dependencies
+packages-install-path: "/dbt" # directory which will store external DBT dependencies
 
 clean-targets: # directories to be removed by `dbt clean`
   - "build"

@@ -420,7 +420,7 @@ class DbtIntegrationTest(object):
                 "-v",
                 f"{cwd}/logs:/logs",
                 "-v",
-                "/tmp:/tmp",
+                f"{cwd}/build/dbt_packages:/dbt",
                 "--network",
                 "host",
                 "--entrypoint",
