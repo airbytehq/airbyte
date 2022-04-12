@@ -1034,3 +1034,39 @@ class TeamMembers(GithubStream):
         record["organization"] = stream_slice["organization"]
         record["slug"] = stream_slice["slug"]
         return record
+
+
+class TeamMemberships(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user
+    """
+
+    def __init__(self, parent: HttpStream, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['slug']}/memberships/{stream_slice['username']}"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"organization": record["organization"], "slug": record["slug"], "username": record["login"]}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        stream_slice = kwargs["stream_slice"]
+        yield self.transform(response.json(), stream_slice=stream_slice)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["organization"] = stream_slice["organization"]
+        record["slug"] = stream_slice["slug"]
+        record["username"] = stream_slice["username"]
+        return record
