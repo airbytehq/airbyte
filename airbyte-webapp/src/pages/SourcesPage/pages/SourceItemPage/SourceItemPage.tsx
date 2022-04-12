@@ -1,62 +1,40 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 
 import { DropDownRow, ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
-import useRouter from "hooks/useRouter";
 import Breadcrumbs from "components/Breadcrumbs";
-import {
-  ItemTabs,
-  StepsTypes,
-  TableItemTitle,
-} from "components/ConnectorBlocks";
+import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-
-import SourceConnectionTable from "./components/SourceConnectionTable";
-import SourceSettings from "./components/SourceSettings";
-
-import ConnectionResource from "core/resources/Connection";
-import SourceResource from "core/resources/Source";
-
-import DestinationResource from "core/resources/Destination";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationsDefinitionResource from "core/resources/DestinationDefinition";
-import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import useWorkspace from "hooks/services/useWorkspace";
+
+import { getIcon } from "utils/imageUtils";
+import useRouter from "hooks/useRouter";
+import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useGetSource } from "hooks/services/useSourceHook";
+
 import { RoutePaths } from "../../../routePaths";
+import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
+import SourceSettings from "./components/SourceSettings";
+import SourceConnectionTable from "./components/SourceConnectionTable";
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
-  const { workspace } = useWorkspace();
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
   const onSelectStep = (id: string) => setCurrentStep(id);
 
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { destinations } = useDestinationList();
 
-  const { destinationDefinitions } = useResource(
-    DestinationsDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const source = useResource(SourceResource.detailShape(), {
-    sourceId: query.id,
-  });
+  const source = useGetSource(query.id);
+  const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
-  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: source.sourceDefinitionId,
-  });
-
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  const { connections } = useConnectionList();
 
   const breadcrumbsData = [
     {
@@ -66,9 +44,7 @@ const SourceItemPage: React.FC = () => {
     { name: source.name },
   ];
 
-  const connectionsWithSource = connections.filter(
-    (connectionItem) => connectionItem.sourceId === source.sourceId
-  );
+  const connectionsWithSource = connections.filter((connectionItem) => connectionItem.sourceId === source.sourceId);
 
   const destinationsDropDownData = useMemo(
     () =>
@@ -100,12 +76,7 @@ const SourceItemPage: React.FC = () => {
 
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
-      return (
-        <SourceSettings
-          currentSource={source}
-          connectionsWithSource={connectionsWithSource}
-        />
-      );
+      return <SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />;
     }
 
     return (
@@ -130,15 +101,11 @@ const SourceItemPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      headTitle={
-        <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
-      }
+      headTitle={<HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />}
       pageTitle={
         <PageTitle
           title={<Breadcrumbs data={breadcrumbsData} />}
-          middleComponent={
-            <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
-          }
+          middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
           withLine
         />
       }

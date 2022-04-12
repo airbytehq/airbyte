@@ -4,17 +4,14 @@ import { FormattedMessage } from "react-intl";
 import { ContentCard } from "components";
 import JobItem from "components/JobItem";
 
-import {
-  ServiceForm,
-  ServiceFormProps,
-  ServiceFormValues,
-} from "views/Connector/ServiceForm";
+import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 import { JobInfo } from "core/domain/job/Job";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useTestConnector } from "./useTestConnector";
 import { useAnalytics } from "hooks/services/Analytics";
+
+import { useTestConnector } from "./useTestConnector";
 
 export type ConnectorCardProvidedProps = {
   isTestConnectionInProgress: boolean;
@@ -38,25 +35,16 @@ const ConnectorCard: React.FC<
     )
 > = ({ title, full, jobInfo, onSubmit, ...props }) => {
   const [saved, setSaved] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(
-    null
-  );
+  const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
 
-  const {
-    testConnector,
-    isTestConnectionInProgress,
-    onStopTesting,
-    error,
-  } = useTestConnector(props);
+  const { testConnector, isTestConnectionInProgress, onStopTesting, error } = useTestConnector(props);
 
   const analyticsService = useAnalytics().service;
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
 
-    const connector = props.availableServices.find(
-      (item) => Connector.id(item) === values.serviceType
-    );
+    const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
 
     try {
       if (connector) {
@@ -84,25 +72,19 @@ const ConnectorCard: React.FC<
     }
   };
 
-  const jobInfoMapped =
-    jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
+  const jobInfoMapped = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   return (
     <ContentCard title={title} full={full}>
       <ServiceForm
         {...props}
-        errorMessage={
-          props.errorMessage || (error && createFormErrorMessage(error))
-        }
+        errorMessage={props.errorMessage || (error && createFormErrorMessage(error))}
         isTestConnectionInProgress={isTestConnectionInProgress}
         onStopTesting={onStopTesting}
         testConnector={testConnector}
         onSubmit={onHandleSubmit}
         successMessage={
-          props.successMessage ||
-          (saved && props.isEditMode && (
-            <FormattedMessage id="form.changesSaved" />
-          ))
+          props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
         }
       />
       {jobInfoMapped && <JobItem jobInfo={jobInfoMapped} />}

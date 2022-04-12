@@ -1,5 +1,6 @@
-import { Attempt } from "core/domain/job";
 import { useLocation } from "react-router-dom";
+
+import { Attempt } from "core/domain/job";
 
 const PARSE_REGEXP = /^#(?<jobId>\w*)::(?<attemptId>\w*)$/;
 
@@ -7,10 +8,7 @@ const PARSE_REGEXP = /^#(?<jobId>\w*)::(?<attemptId>\w*)$/;
  * Create and returns a link for a specific job and (optionally) attempt.
  * The returned string is the hash part of a URL.
  */
-export const buildAttemptLink = (
-  jobId: number | string,
-  attemptId?: Attempt["id"]
-): string => {
+export const buildAttemptLink = (jobId: number | string, attemptId?: Attempt["id"]): string => {
   return `#${jobId}::${attemptId ?? ""}`;
 };
 
@@ -18,9 +16,7 @@ export const buildAttemptLink = (
  * Parses a hash part of the URL into a jobId and attemptId.
  * This is the reverse function of {@link buildAttemptLink}.
  */
-export const parseAttemptLink = (
-  link: string
-): { jobId?: string; attemptId?: string } => {
+export const parseAttemptLink = (link: string): { jobId?: string; attemptId?: string } => {
   const match = link.match(PARSE_REGEXP);
   if (!match) {
     return {};

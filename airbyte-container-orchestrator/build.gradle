@@ -45,6 +45,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("container-orchestrator",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("container-orchestrator", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)

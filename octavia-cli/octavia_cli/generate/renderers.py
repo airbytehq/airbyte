@@ -90,6 +90,8 @@ class FieldToRender:
         return "REQUIRED" if self.required else "OPTIONAL"
 
     def _get_type_comment(self) -> str:
+        if isinstance(self.type, list):
+            return ", ".join(self.type)
         return self.type if self.type else None
 
     def _get_secret_comment(self) -> str:

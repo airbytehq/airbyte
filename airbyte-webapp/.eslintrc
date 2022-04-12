@@ -20,6 +20,22 @@
   },
   "rules": {
     "prettier/prettier": "error",
+    "import/order": ["error", {
+      "newlines-between": "always",
+      "groups": ["type", "builtin", "external", "internal", ["parent", "sibling"], "index"],
+      "pathGroupsExcludedImportTypes": ["builtin"],
+      "pathGroups": [
+        {
+          "pattern": "components{/**,}",
+          "group": "internal"
+        },
+        {
+          "pattern": "+(config|core|hooks|locales|packages|pages|services|utils|views){/**,}",
+          "group": "internal",
+          "position": "after"
+        }
+      ]
+    }],
     "@typescript-eslint/ban-ts-comment": [
       "warn",
       {

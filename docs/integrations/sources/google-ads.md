@@ -106,6 +106,7 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version  | Date       | Pull Request | Subject                                                                                      |
 |:---------|:-----------| :--- |:---------------------------------------------------------------------------------------------|
+| `0.1.34` | 2022-03-29 | [11602](https://github.com/airbytehq/airbyte/pull/11602) | Add budget amount to campaigns stream.                                                       |
 | `0.1.33` | 2022-03-29 | [11513](https://github.com/airbytehq/airbyte/pull/11513) | When `end_date` is configured in the future, use today's date instead.                       |
 | `0.1.32` | 2022-03-24 | [11371](https://github.com/airbytehq/airbyte/pull/11371) | Improve how connection check returns error messages                                          |
 | `0.1.31` | 2022-03-23 | [11301](https://github.com/airbytehq/airbyte/pull/11301) | Update docs and spec to clarify usage                                                        |
