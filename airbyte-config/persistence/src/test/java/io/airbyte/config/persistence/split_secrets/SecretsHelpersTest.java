@@ -9,16 +9,24 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.persistence.split_secrets.test_cases.ArrayOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
+import io.airbyte.config.persistence.split_secrets.test_cases.NestedOneOfTestCase;
+import io.airbyte.config.persistence.split_secrets.test_cases.OneOfTestCase;
+import io.airbyte.config.persistence.split_secrets.test_cases.OptionalPasswordTestCase;
+import io.airbyte.config.persistence.split_secrets.test_cases.PostgresSshKeyTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.SimpleTestCase;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -46,13 +54,14 @@ public class SecretsHelpersTest {
    */
   private static Stream<Arguments> provideTestCases() {
     return Stream.of(
-        /*
-         * new OptionalPasswordTestCase(), new SimpleTestCase(), new NestedObjectTestCase(), new
-         * OneOfTestCase(),
-         */
-        new ArrayTestCase()/*
-                            * , new ArrayOneOfTestCase(), new NestedOneOfTestCase(), new PostgresSshKeyTestCase()
-                            */).map(Arguments::of);
+        new OptionalPasswordTestCase(),
+        new SimpleTestCase(),
+        new NestedObjectTestCase(),
+        new OneOfTestCase(),
+        new ArrayTestCase(),
+        new ArrayOneOfTestCase(),
+        new NestedOneOfTestCase(),
+        new PostgresSshKeyTestCase()).map(Arguments::of);
   }
 
   @ParameterizedTest
@@ -199,6 +208,16 @@ public class SecretsHelpersTest {
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideTestCases")
+  void testSecretPath(final SecretsTestCase testCase) throws IOException {
+    final JsonNode spec = testCase.getSpec().getConnectionSpecification();
+
+    final List<String> secretsPaths = SecretsHelpers.getSortedSecretPaths(spec);
+
+    Assertions.assertThat(secretsPaths).containsExactlyElementsOf(testCase.getExpectedSecretsPaths());
   }
 
 }

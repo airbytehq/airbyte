@@ -165,6 +165,21 @@ public class SecretsHelpers {
     return internalSplitAndUpdateConfig(uuidSupplier, workspaceId, secretReader, oldPartialConfig, newFullConfig, spec.getConnectionSpecification());
   }
 
+  /**
+   * This returns all the path to the airbyte secrets based on a schema spec. The path will be return
+   * in an ascending alphabetical order.
+   */
+  public static List<String> getSortedSecretPaths(final JsonNode spec) {
+    return JsonSchemas.collectJsonPathsThatMeetCondition(
+        spec,
+        node -> MoreIterators.toList(node.fields())
+            .stream()
+            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)))
+        .stream()
+        .sorted()
+        .toList();
+  }
+
   private static Optional<String> getExistingCoordinateIfExists(final JsonNode json) {
     if (json != null && json.has(COORDINATE_FIELD)) {
       return Optional.ofNullable(json.get(COORDINATE_FIELD).asText());
@@ -215,14 +230,7 @@ public class SecretsHelpers {
     var fullConfigCopy = newFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    final List<String> paths = JsonSchemas.collectJsonPathsThatMeetCondition(
-        spec,
-        node -> MoreIterators.toList(node.fields())
-            .stream()
-            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)))
-        .stream()
-        .sorted()
-        .toList();
+    final List<String> paths = getSortedSecretPaths(spec);
 
     for (final String path : paths) {
       fullConfigCopy = JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
