@@ -116,7 +116,7 @@ public class SecretsHelpers {
     if (config.has(COORDINATE_FIELD)) {
       final var coordinateNode = config.get(COORDINATE_FIELD);
       final var coordinate = getCoordinateFromTextNode(coordinateNode);
-      return getOrThrowSecretValueNode(secretPersistence, coordinate);
+      return getOrThrowSecretValueNode(secretPersistence, coordinate, true);
     }
 
     // otherwise iterate through all object fields
@@ -336,16 +336,18 @@ public class SecretsHelpers {
    * @param secretPersistence storage layer for secrets
    * @param coordinate reference to a secret in the persistence
    * @throws RuntimeException when a secret at that coordinate is not available in the persistence
-   * @return a json text node containing the secret value
+   * @return a json text node containing the secret value or a JSON
    */
-  private static TextNode getOrThrowSecretValueNode(final ReadOnlySecretPersistence secretPersistence, final SecretCoordinate coordinate) {
+  private static JsonNode getOrThrowSecretValueNode(final ReadOnlySecretPersistence secretPersistence,
+                                                    final SecretCoordinate coordinate,
+                                                    final boolean asTextNode) {
     final var secretValue = secretPersistence.read(coordinate);
 
     if (secretValue.isEmpty()) {
       throw new RuntimeException(String.format("That secret was not found in the store! Coordinate: %s", coordinate.getFullCoordinate()));
     }
 
-    return new TextNode(secretValue.get());
+    return asTextNode ? new TextNode(secretValue.get()) : Jsons.deserialize(secretValue.get());
   }
 
   private static SecretCoordinate getCoordinateFromTextNode(final JsonNode node) {
@@ -379,6 +381,15 @@ public class SecretsHelpers {
                                                   final UUID workspaceId,
                                                   final Supplier<UUID> uuidSupplier,
                                                   final @Nullable String oldSecretFullCoordinate) {
+    return getSecretCoordinate("airbyte_workspace_", newSecret, secretReader, workspaceId, uuidSupplier, oldSecretFullCoordinate);
+  }
+
+  private static SecretCoordinate getSecretCoordinate(final String secretBasePrefix,
+                                                      final String newSecret,
+                                                      final ReadOnlySecretPersistence secretReader,
+                                                      final UUID secretBaseId,
+                                                      final Supplier<UUID> uuidSupplier,
+                                                      final @Nullable String oldSecretFullCoordinate) {
     String coordinateBase = null;
     Long version = null;
 
@@ -398,7 +409,7 @@ public class SecretsHelpers {
     if (coordinateBase == null) {
       // IMPORTANT: format of this cannot be changed without introducing migrations for secrets
       // persistences
-      coordinateBase = "airbyte_workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
+      coordinateBase = secretBasePrefix + secretBaseId + "_secret_" + uuidSupplier.get();
     }
 
     if (version == null) {
@@ -406,6 +417,31 @@ public class SecretsHelpers {
     }
 
     return new SecretCoordinate(coordinateBase, version);
+  }
+
+  public static SecretCoordinateToPayload convertServiceAccountCredsToSecret(final String newSecret,
+                                                                             final ReadOnlySecretPersistence secretReader,
+                                                                             final UUID workspaceId,
+                                                                             final Supplier<UUID> uuidSupplier,
+                                                                             final @Nullable JsonNode oldSecretCoordinate,
+                                                                             final String keyType) {
+    final String oldSecretFullCoordinate =
+        (oldSecretCoordinate != null && oldSecretCoordinate.has(COORDINATE_FIELD)) ? oldSecretCoordinate.get(COORDINATE_FIELD).asText()
+            : null;
+    final SecretCoordinate coordinateForStagingConfig = getSecretCoordinate("service_account_" + keyType + "_",
+        newSecret,
+        secretReader,
+        workspaceId,
+        uuidSupplier,
+        oldSecretFullCoordinate);
+    return new SecretCoordinateToPayload(coordinateForStagingConfig, newSecret,
+        Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinateForStagingConfig.getFullCoordinate())));
+  }
+
+  public static JsonNode simpleHydrate(final JsonNode secretCoordinateAsJson,
+                                       final ReadOnlySecretPersistence readOnlySecretPersistence) {
+    final var secretCoordinate = getCoordinateFromTextNode(secretCoordinateAsJson.deepCopy().get(COORDINATE_FIELD));
+    return getOrThrowSecretValueNode(readOnlySecretPersistence, secretCoordinate, false);
   }
 
 }

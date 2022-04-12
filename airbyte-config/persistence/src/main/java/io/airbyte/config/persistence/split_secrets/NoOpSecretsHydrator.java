@@ -16,4 +16,9 @@ public class NoOpSecretsHydrator implements SecretsHydrator {
     return partialConfig;
   }
 
+  @Override
+  public JsonNode simpleHydrate(JsonNode secretCoordinate) {
+    return secretCoordinate;
+  }
+
 }

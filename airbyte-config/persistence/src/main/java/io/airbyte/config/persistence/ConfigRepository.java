@@ -38,6 +38,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
@@ -1028,6 +1029,17 @@ public class ConfigRepository {
     } else {
       return tombstoneField.eq(false);
     }
+  }
+
+  public WorkspaceServiceAccount getWorkspaceServiceAccountNoSecrets(final UUID workspaceId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceId.toString(), WorkspaceServiceAccount.class);
+  }
+
+  public void writeWorkspaceServiceAccountNoSecrets(final WorkspaceServiceAccount workspaceServiceAccount)
+      throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceServiceAccount.getWorkspaceId().toString(),
+        workspaceServiceAccount);
   }
 
 }

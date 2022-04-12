@@ -22,4 +22,9 @@ public class RealSecretsHydrator implements SecretsHydrator {
     return SecretsHelpers.combineConfig(partialConfig, readOnlySecretPersistence);
   }
 
+  @Override
+  public JsonNode simpleHydrate(final JsonNode secretCoordinate) {
+    return SecretsHelpers.simpleHydrate(secretCoordinate, readOnlySecretPersistence);
+  }
+
 }

@@ -13,6 +13,8 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.config.persistence.split_secrets.SecretCoordinateToPayload;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.config.persistence.split_secrets.SplitSecretConfig;
@@ -261,6 +263,55 @@ public class SecretsRepositoryWriter {
       configRepository.replaceAllConfigsNoSecrets(augmentedMap, dryRun);
     } else {
       configRepository.replaceAllConfigsNoSecrets(configs, dryRun);
+    }
+  }
+
+  public void writeServiceAccountJsonCredentials(final WorkspaceServiceAccount workspaceServiceAccount)
+      throws JsonValidationException, IOException {
+    final WorkspaceServiceAccount workspaceServiceAccountForDB = getWorkspaceServiceAccountWithSecretCoordinate(workspaceServiceAccount);
+    configRepository.writeWorkspaceServiceAccountNoSecrets(workspaceServiceAccountForDB);
+  }
+
+  private WorkspaceServiceAccount getWorkspaceServiceAccountWithSecretCoordinate(final WorkspaceServiceAccount workspaceServiceAccount)
+      throws JsonValidationException, IOException {
+    if (longLivedSecretPersistence.isPresent()) {
+      final WorkspaceServiceAccount clonedWorkspaceServiceAccount = Jsons.clone(workspaceServiceAccount);
+      final Optional<WorkspaceServiceAccount> optionalWorkspaceServiceAccount = getOptionalWorkspaceServiceAccount(
+          workspaceServiceAccount.getWorkspaceId());
+      if (workspaceServiceAccount.getJsonCredential() != null) {
+        final SecretCoordinateToPayload jsonCredSecretCoordinateToPayload =
+            SecretsHelpers.convertServiceAccountCredsToSecret(workspaceServiceAccount.getJsonCredential().toPrettyString(),
+                longLivedSecretPersistence.get(),
+                workspaceServiceAccount.getWorkspaceId(),
+                UUID::randomUUID,
+                optionalWorkspaceServiceAccount.map(WorkspaceServiceAccount::getJsonCredential).orElse(null),
+                "json");
+        longLivedSecretPersistence.get().write(jsonCredSecretCoordinateToPayload.secretCoordinate(), jsonCredSecretCoordinateToPayload.payload());
+        clonedWorkspaceServiceAccount.setJsonCredential(jsonCredSecretCoordinateToPayload.secretCoordinateForDB());
+      }
+
+      if (workspaceServiceAccount.getHmacKey() != null) {
+        final SecretCoordinateToPayload hmackKeySecretCoordinateToPayload =
+            SecretsHelpers.convertServiceAccountCredsToSecret(workspaceServiceAccount.getHmacKey().toString(),
+                longLivedSecretPersistence.get(),
+                workspaceServiceAccount.getWorkspaceId(),
+                UUID::randomUUID,
+                optionalWorkspaceServiceAccount.map(WorkspaceServiceAccount::getHmacKey).orElse(null),
+                "hmac");
+        longLivedSecretPersistence.get().write(hmackKeySecretCoordinateToPayload.secretCoordinate(), hmackKeySecretCoordinateToPayload.payload());
+        clonedWorkspaceServiceAccount.setHmacKey(hmackKeySecretCoordinateToPayload.secretCoordinateForDB());
+      }
+      return clonedWorkspaceServiceAccount;
+    }
+    return workspaceServiceAccount;
+  }
+
+  public Optional<WorkspaceServiceAccount> getOptionalWorkspaceServiceAccount(final UUID workspaceId)
+      throws JsonValidationException, IOException {
+    try {
+      return Optional.of(configRepository.getWorkspaceServiceAccountNoSecrets(workspaceId));
+    } catch (ConfigNotFoundException e) {
+      return Optional.empty();
     }
   }
 
