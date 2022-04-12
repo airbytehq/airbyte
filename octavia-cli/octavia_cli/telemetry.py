@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import os
 import uuid
 from typing import Optional
