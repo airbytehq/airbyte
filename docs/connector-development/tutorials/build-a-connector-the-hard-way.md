@@ -88,7 +88,7 @@ Head to the connector directory and we should see the following files have been 
 ```bash
 $ cd ../../connectors/source-stock-ticker-api
 $ ls
-Dockerfile    README.md    acceptance-test-config.yml    build.gradle
+Dockerfile                 README.md                  acceptance-test-config.yml acceptance-test-docker.sh  build.gradle
 ```
 
 We'll use each of these files later. But first, let's write some code!
@@ -155,6 +155,7 @@ $ ls -1
 Dockerfile
 README.md
 acceptance-test-config.yml
+acceptance-test-docker.sh
 build.gradle
 spec.json
 ```
@@ -494,31 +495,33 @@ First, let's create a configured catalog `fullrefresh_configured_catalog.json` t
 
 ```javascript
 {
-  "streams": [
-    {
-      "stream": {
-        "name": "stock_prices",
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "json_schema": {
-          "properties": {
-            "date": {
-              "type": "string"
+    "streams": [
+        {
+            "stream": {
+                "name": "stock_prices",
+                "supported_sync_modes": [
+                    "full_refresh"
+                ],
+                "json_schema": {
+                    "properties": {
+                        "date": {
+                            "type": "string"
+                        },
+                        "price": {
+                            "type": "number"
+                        },
+                        "stock_ticker": {
+                            "type": "string"
+                        }
+                    }
+                }
             },
-            "price": {
-              "type": "number"
-            },
-            "stock_ticker": {
-              "type": "string"
-            }
-          }
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
         }
-      },
-      "sync_mode": "full_refresh"
-    }
-  ]
+    ]
 }
+
 ```
 
 Then we'll define the `read` method in `source.py`:
@@ -933,56 +936,61 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
 ```
 
-and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Standard Test suite](../testing-connectors/source-acceptance-tests-reference.md).
+and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Source Acceptance Test suite](../testing-connectors/source-acceptance-tests-reference.md).
 
 ### 4. Test the connector
 
 The minimum requirement for testing your connector is to pass the [Source Acceptance Test (SAT)](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) suite. SAT is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's SATs suite.
 
-To integrate with the standard test suite, modify the generated `acceptance-test-config.yaml` file as follows:
+The code generator should have already generated a YAML file which configures the test suite. In order to run it, modify the `acceptance-test-config.yaml` file to look like this: 
 
-```groovy
-plugins {
-    // Makes building the docker image a dependency of Gradle's "build" command. This way you could run your entire build inside a docker image
-    // via ./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:build
-    id 'airbyte-docker'
-    id 'airbyte-standard-source-test-file'
-}
 
-airbyteStandardSourceTestFile {
-    // All these input paths must live inside this connector's directory (or subdirectories)
-    configPath = "secrets/valid_config.json"
-    configuredCatalogPath = "fullrefresh_configured_catalog.json"
-    specPath = "spec.json"
-}
-
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
-}
+```yaml
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-stock-ticker-api:dev
+tests:
+  spec:
+    - spec_path: "spec.json"
+      config_path: "secrets/valid_config.json"
+  connection:
+    - config_path: "secrets/valid_config.json"
+      status: "succeed"
+    - config_path: "secrets/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/valid_config.json"
+  basic_read:
+    - config_path: "secrets/valid_config.json"
+      configured_catalog_path: "fullrefresh_configured_catalog.json"
+      empty_streams: []
+  full_refresh:
+    - config_path: "secrets/valid_config.json"
+      configured_catalog_path: "fullrefresh_configured_catalog.json"
+#  incremental: # TODO uncomment this once you implement incremental sync in part 2 of the tutorial
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog.json"
+#      future_state_path: "integration_tests/abnormal_state.json"
 ```
 
-Then **from the Airbyte repository root**, run:
+Then from the connector module directory run
 
 ```bash
-./gradlew clean :airbyte-integrations:connectors:source-stock-ticker-api:integrationTest
+./acceptance-test-docker.sh
 ```
 
 After tests have run, you should see a test summary like:
 
 ```text
-Test run finished after 5049 ms
-[         2 containers found      ]
-[         0 containers skipped    ]
-[         2 containers started    ]
-[         0 containers aborted    ]
-[         2 containers successful ]
-[         0 containers failed     ]
-[         7 tests found           ]
-[         0 tests skipped         ]
-[         7 tests started         ]
-[         0 tests aborted         ]
-[         7 tests successful      ]
-[         0 tests failed          ]
+collecting ...
+ test_core.py ✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓                                                                                                                                                                                                                                                                                                                           95% █████████▌
+ test_full_refresh.py ✓                                                                                                                                                                                                                                                                                                                                    100% ██████████
+
+================== short test summary info ================== 
+SKIPPED [1] source_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
+
+Results (8.91s):
+      20 passed
 ```
 
 That's it! We've created a fully functioning connector. Now let's get to the exciting part: using it from the Airbyte UI.
@@ -1033,12 +1041,6 @@ If the Airbyte server isn't already running, start it by running **from the Airb
 ```bash
 docker-compose up
 ```
-
->**_NOTE:_** if you are on an M1 Mac, you have to build Airbyte first and then run it in `dev` mode:
->```bash
->SUB_BUILD=PLATFORM ./gradlew build
->VERSION=dev docker-compose up
->```
 
 When Airbyte server is done starting up, it prints the following banner in the log output \(it can take 10-20 seconds for the server to start\):
 

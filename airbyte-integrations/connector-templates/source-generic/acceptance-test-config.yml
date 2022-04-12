@@ -4,21 +4,21 @@ connector_image: airbyte/source-{{dashCase name}}:dev
 tests:
   spec:
     - spec_path: "spec.json"
-      config_path: "secrets/valid_config.json"
+      config_path: "secrets/valid_config.json" # TODO add this file
   connection:
-    - config_path: "secrets/valid_config.json"
+    - config_path: "secrets/valid_config.json" # TODO add this file
       status: "succeed"
-    - config_path: "secrets/invalid_config.json"
+    - config_path: "secrets/invalid_config.json" # TODO add this file
       status: "failed"
   discovery:
     - config_path: "secrets/valid_config.json"
   basic_read:
     - config_path: "secrets/valid_config.json"
-      configured_catalog_path: "fullrefresh_configured_catalog.json"
+      configured_catalog_path: "fullrefresh_configured_catalog.json" # TODO add or change this file
       empty_streams: []
   full_refresh:
     - config_path: "secrets/valid_config.json"
-      configured_catalog_path: "fullrefresh_configured_catalog.json
+      configured_catalog_path: "fullrefresh_configured_catalog.json" # TODO add or change this file
 #  incremental: # TODO uncomment this once you implement incremental sync
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog.json"
