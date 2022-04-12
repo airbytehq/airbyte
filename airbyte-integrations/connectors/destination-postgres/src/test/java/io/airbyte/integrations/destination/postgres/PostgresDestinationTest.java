@@ -97,7 +97,16 @@ public class PostgresDestinationTest {
   }
 
   @Test
-  void testJdbcUrlParamsPassThrough() {
+  void testJdbcUrlGeneration() {
+    final String expectedJdbcUrl = "jdbc:postgresql://localhost:1337/db?";
+    final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(
+            Jsons.jsonNode(CONFIG_NO_SSL));
+
+    assertEquals(expectedJdbcUrl, jdbcConfig.get("jdbc_url").asText());
+  }
+
+  @Test
+  void testJdbcUrlGenerationJdbcUrlParams() {
     final String expectedJdbcUrl = "jdbc:postgresql://localhost:1337/db?foo=bar";
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(
             Jsons.jsonNode(CONFIG_JDBC_URL_PARAMS));
