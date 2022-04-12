@@ -6,7 +6,6 @@ import csv
 import ctypes
 import math
 import os
-import sys
 import time
 from abc import ABC
 from contextlib import closing
@@ -260,7 +259,7 @@ class BulkSalesforceStream(SalesforceStream):
         if len(res) < len(s):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
         return res
-    
+
     def download_data(self, url: str, chunk_size: float = 1024) -> os.PathLike:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitaions.
