@@ -13,8 +13,8 @@ def test_source_lifecycle(source):
     source.state = source._get_state_from_file()
     assert source.was_created
     assert not source.get_diff_with_remote_resource()
-    source.local_configuration["configuration"]["pokemon_name"] = "snorlex"
-    assert 'changed from "ditto" to "snorlex"' in source.get_diff_with_remote_resource()
+    source.local_configuration["configuration"]["pokemon_name"] = "snorlax"
+    assert 'changed from "ditto" to "snorlax"' in source.get_diff_with_remote_resource()
     source.update()
     assert not source.get_diff_with_remote_resource()
     assert source.catalog["streams"][0]["config"]["aliasName"] == "pokemon"
