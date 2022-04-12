@@ -9,6 +9,8 @@
     "title": "S3 Destination Spec",
     "type": "object",
     "required": [
+      "access_key_id",
+      "secret_access_key",
       "s3_bucket_name",
       "s3_bucket_path",
       "s3_bucket_region",
@@ -16,19 +18,35 @@
     ],
     "additionalProperties": false,
     "properties": {
+      "access_key_id": {
+        "type": "string",
+        "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket.",
+        "title": "S3 Key Id *",
+        "airbyte_secret": true,
+        "examples": ["A012345678910EXAMPLE"],
+        "order": 0
+      },
+      "secret_access_key": {
+        "type": "string",
+        "description": "The corresponding secret to the access key id",
+        "title": "S3 Access Key *",
+        "airbyte_secret": true,
+        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
+        "order": 1
+      },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",
         "type": "string",
         "description": "The name of the S3 bucket.",
         "examples": ["airbyte_sync"],
-        "order": 0
+        "order": 2
       },
       "s3_bucket_path": {
         "title": "S3 Bucket Path",
         "description": "Directory under the S3 bucket where data will be written.",
         "type": "string",
         "examples": ["data_sync/test"],
-        "order": 1
+        "order": 3
       },
       "s3_bucket_region": {
         "title": "S3 Bucket Region",
@@ -63,7 +81,7 @@
           "us-gov-east-1",
           "us-gov-west-1"
         ],
-        "order": 2
+        "order": 4
       },
       "format": {
         "title": "Output Format *",
@@ -302,7 +320,7 @@
             }
           }
         ],
-        "order": 3
+        "order": 5
       },
       "s3_endpoint": {
         "title": "Endpoint (Optional)",
@@ -310,22 +328,6 @@
         "default": "",
         "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
         "examples": ["http://localhost:9000"],
-        "order": 4
-      },
-      "access_key_id": {
-        "type": "string",
-        "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket, if not set, Airbyte will rely on Instance Profile.",
-        "title": "S3 Key Id (Optional)",
-        "airbyte_secret": true,
-        "examples": ["A012345678910EXAMPLE"],
-        "order": 5
-      },
-      "secret_access_key": {
-        "type": "string",
-        "description": "The corresponding secret to the access key id, if S3 Key Id is set, then S3 Access Key must also be provided",
-        "title": "S3 Access Key (Optional)",
-        "airbyte_secret": true,
-        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
         "order": 6
       },
       "s3_path_format": {
