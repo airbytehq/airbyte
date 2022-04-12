@@ -4,7 +4,9 @@
 
 package io.airbyte.config.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
@@ -33,6 +35,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AuthSpecification;
 import io.airbyte.protocol.models.AuthSpecification.AuthType;
@@ -42,12 +45,17 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class MockData {
 
@@ -527,6 +535,31 @@ public class MockData {
         .withConfigHash("1394")
         .withConnectorVersion("1.2.0");
     return Arrays.asList(actorCatalogFetchEvent1);
+  }
+
+  public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {
+    try {
+      final String jsonSecretPayload = Resources.toString(Resources.getResource("mock_service_key.json"), StandardCharsets.UTF_8);
+      final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
+          Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret",
+              "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
+
+      final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount()
+          .withWorkspaceId(WORKSPACE_ID_1)
+          .withHmacKey(hmacSecretPayload)
+          .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
+          .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
+          .withJsonCredential(Jsons.deserialize(jsonSecretPayload));
+
+      return Arrays.asList(workspaceServiceAccount);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static Map<String, String> sortMap(Map<String, String> originalMap) {
+    return originalMap.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> newValue, TreeMap::new));
   }
 
   public static Instant now() {
