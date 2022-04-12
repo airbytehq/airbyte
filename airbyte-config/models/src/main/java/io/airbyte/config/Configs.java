@@ -516,6 +516,8 @@ public interface Configs {
    */
   int getActivityNumberOfAttempt();
 
+  long getKubePodWatcherResyncPeriodMillis();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

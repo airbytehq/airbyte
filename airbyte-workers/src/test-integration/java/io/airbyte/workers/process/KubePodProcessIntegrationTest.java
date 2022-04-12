@@ -112,6 +112,7 @@ public class KubePodProcessIntegrationTest {
             fabricClient,
             heartbeatUrl,
             getHost(),
+            1000,
             false);
   }
 
