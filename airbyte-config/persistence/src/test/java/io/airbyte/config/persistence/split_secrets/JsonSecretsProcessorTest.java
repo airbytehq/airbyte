@@ -360,10 +360,6 @@ public class JsonSecretsProcessorTest {
 
     final JsonNode actual = processor.prepareSecretsForOutput(input, specs);
     assertEquals(expected, actual);
-
-    // todo (cgardens) - show that new implementation matches the old one. to be removed in next PR.
-    final JsonNode actual2 = JsonSecretsProcessor.maskAllSecrets(input, specs);
-    assertEquals(actual, actual2);
   }
 
   // todo (cgardens) - example of a case that is not properly handled. we should explicitly call out

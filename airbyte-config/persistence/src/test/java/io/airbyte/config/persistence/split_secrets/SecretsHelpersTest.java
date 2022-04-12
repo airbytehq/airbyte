@@ -131,38 +131,6 @@ public class SecretsHelpersTest {
     assertEquals(inputUpdateConfigCopy, inputUpdateConfig);
   }
 
-  // todo (cgardens) - verify the new implementation works the same as the old one. to be removed in
-  // next PR.
-  @ParameterizedTest
-  @MethodSource("provideTestCases")
-  void testSplitUpdate2(final SecretsTestCase testCase) {
-    final var uuidIterator = UUIDS.iterator();
-    final var inputPartialConfig = testCase.getPartialConfig();
-    final var inputUpdateConfig = testCase.getUpdateConfig();
-    final var inputPartialConfigCopy = inputPartialConfig.deepCopy();
-    final var inputUpdateConfigCopy = inputUpdateConfig.deepCopy();
-    final var secretPersistence = new MemorySecretPersistence();
-
-    for (final Map.Entry<SecretCoordinate, String> entry : testCase.getFirstSecretMap().entrySet()) {
-      secretPersistence.write(entry.getKey(), entry.getValue());
-    }
-
-    final var updatedSplit = SecretsHelpers.internalSplitAndUpdateConfig2(
-        uuidIterator::next,
-        WORKSPACE_ID,
-        secretPersistence,
-        inputPartialConfig,
-        inputUpdateConfig,
-        testCase.getSpec().getConnectionSpecification());
-
-    assertEquals(testCase.getUpdatedPartialConfig(), updatedSplit.getPartialConfig());
-    assertEquals(testCase.getSecondSecretMap(), updatedSplit.getCoordinateToPayload());
-
-    // check that we didn't mutate the input configs
-    assertEquals(inputPartialConfigCopy, inputPartialConfig);
-    assertEquals(inputUpdateConfigCopy, inputUpdateConfig);
-  }
-
   @ParameterizedTest
   @MethodSource("provideTestCases")
   void testCombine(final SecretsTestCase testCase) {

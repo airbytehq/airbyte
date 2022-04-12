@@ -14,14 +14,13 @@ import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -167,6 +166,25 @@ public class SecretsHelpers {
     return internalSplitAndUpdateConfig(uuidSupplier, workspaceId, secretReader, oldPartialConfig, newFullConfig, spec.getConnectionSpecification());
   }
 
+  private static Optional<String> getExistingCoordinateIfExists(final JsonNode json) {
+    if (json != null && json.has(COORDINATE_FIELD)) {
+      return Optional.ofNullable(json.get(COORDINATE_FIELD).asText());
+    } else {
+      return Optional.empty();
+    }
+  }
+
+
+  private static SecretCoordinate getOrCreateCoordinate(final ReadOnlySecretPersistence secretReader,
+                                                        final UUID workspaceId,
+                                                        final Supplier<UUID> uuidSupplier,
+                                                        final JsonNode newJson,
+                                                        final JsonNode persistedJson) {
+
+    final Optional<String> existingCoordinateOptional = getExistingCoordinateIfExists(persistedJson);
+    return getCoordinate(newJson.asText(), secretReader, workspaceId, uuidSupplier, existingCoordinateOptional.orElse(null));
+  }
+
   /**
    * Internal method used to support both "split config" and "split and update config" operations.
    *
@@ -183,121 +201,30 @@ public class SecretsHelpers {
    *        stored for
    * @param secretReader provides a way to determine if a secret is the same or updated at a specific
    *        location in a config
-   * @param oldPartialConfig previous partial config for this specific connector configuration
-   * @param originalFullConfig new config containing secrets that will be used to update the partial
-   *        config for this connector
+   * @param persistedPartialConfig previous partial config for this specific connector configuration
+   * @param newFullConfig new config containing secrets that will be used to update the partial config
+   *        for this connector
    * @param spec connector specification
    * @return a partial config + a map of coordinates to secret payloads
    */
-  private static SplitSecretConfig internalSplitAndUpdateConfig(final Supplier<UUID> uuidSupplier,
-                                                                final UUID workspaceId,
-                                                                final ReadOnlySecretPersistence secretReader,
-                                                                final JsonNode oldPartialConfig,
-                                                                final JsonNode originalFullConfig,
-                                                                final JsonNode spec) {
-    final var fullConfig = originalFullConfig.deepCopy();
-    final var secretMap = new HashMap<SecretCoordinate, String>();
-
-    // provide a lambda for hiding repeated arguments to improve readability
-    final InternalSplitter splitter =
-        (final JsonNode partialConfig, final JsonNode newFullConfig, final JsonNode newFullConfigSpec) -> internalSplitAndUpdateConfig(uuidSupplier,
-            workspaceId,
-            secretReader, partialConfig, newFullConfig, newFullConfigSpec);
-
-    final var specTypeToHandle = getSpecTypeToHandle(spec);
-
-    switch (specTypeToHandle) {
-      case STRING -> {
-        if (JsonSecretsProcessor.isSecret(spec)) {
-          final var oldFullSecretCoordinate = oldPartialConfig.has(COORDINATE_FIELD) ? oldPartialConfig.get(COORDINATE_FIELD).asText() : null;
-          final var secretCoordinate = getCoordinate(fullConfig.asText(), secretReader, workspaceId, uuidSupplier, oldFullSecretCoordinate);
-          final var newPartialConfig = Jsons.jsonNode(Map.of(COORDINATE_FIELD, secretCoordinate.getFullCoordinate()));
-
-          final var coordinateToPayload = Map.of(
-              secretCoordinate,
-              fullConfig.asText());
-
-          return new SplitSecretConfig(newPartialConfig, coordinateToPayload);
-        }
-      }
-      case OBJECT -> {
-        final var specPropertiesObject = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
-        final var specProperties = Jsons.keys(specPropertiesObject).stream()
-            .filter(fullConfig::has)
-            .collect(Collectors.toList());
-
-        // if the input config is specified as an object, we go through and handle each type of property
-        for (final String specProperty : specProperties) {
-          final var nextOldPartialConfig = getFieldOrEmptyNode(oldPartialConfig, specProperty);
-
-          final var nestedSplitConfig =
-              splitter.splitAndUpdateConfig(nextOldPartialConfig, fullConfig.get(specProperty), spec.get("properties").get(specProperty));
-          ((ObjectNode) fullConfig).replace(specProperty, nestedSplitConfig.getPartialConfig());
-          secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
-        }
-      }
-      case ARRAY -> {
-        for (int i = 0; i < fullConfig.size(); i++) {
-          final var partialConfigElement = getFieldOrEmptyNode(oldPartialConfig, i);
-          final var fullConfigElement = fullConfig.get(i);
-          final var splitConfig = splitter.splitAndUpdateConfig(partialConfigElement, fullConfigElement, spec.get("items"));
-          secretMap.putAll(splitConfig.getCoordinateToPayload());
-          ((ArrayNode) fullConfig).set(i, splitConfig.getPartialConfig());
-        }
-      }
-      case ONE_OF -> {
-        final var possibleSchemas = (ArrayNode) spec.get("oneOf");
-
-        for (int i = 0; i < possibleSchemas.size(); i++) {
-          final var possibleSchema = possibleSchemas.get(i);
-          final var set = new JsonSchemaValidator().validate(possibleSchema, fullConfig);
-          if (set.isEmpty()) {
-            final var splitConfig = splitter.splitAndUpdateConfig(oldPartialConfig, fullConfig, possibleSchema);
-            if (!splitConfig.getPartialConfig().equals(fullConfig)) {
-              return splitConfig;
-            }
-          }
-        }
-      }
-    }
-
-    return new SplitSecretConfig(fullConfig, secretMap);
-  }
-
-  private static Optional<String> getExistingCoordinateIfExists(final JsonNode json) {
-    if (json.has(COORDINATE_FIELD)) {
-      return Optional.ofNullable(json.get(COORDINATE_FIELD).asText());
-    } else {
-      return Optional.empty();
-    }
-  }
-
-  private static SecretCoordinate getOrCreateCoordinate(final ReadOnlySecretPersistence secretReader,
-                                                        final UUID workspaceId,
-                                                        final Supplier<UUID> uuidSupplier,
-                                                        final JsonNode newJson,
-                                                        final JsonNode persistedJson) {
-
-    final Optional<String> existingCoordinateOptional = getExistingCoordinateIfExists(persistedJson);
-    return getCoordinate(newJson.asText(), secretReader, workspaceId, uuidSupplier, existingCoordinateOptional.orElse(null));
-  }
-
-  // todo need to make sure our traversal get down to string types! very replaceable.
   @VisibleForTesting
-  static SplitSecretConfig internalSplitAndUpdateConfig2(final Supplier<UUID> uuidSupplier,
-                                                         final UUID workspaceId,
-                                                         final ReadOnlySecretPersistence secretReader,
-                                                         final JsonNode persistedPartialConfig,
-                                                         final JsonNode newFullConfig,
-                                                         final JsonNode spec) {
+  static SplitSecretConfig internalSplitAndUpdateConfig(final Supplier<UUID> uuidSupplier,
+                                                        final UUID workspaceId,
+                                                        final ReadOnlySecretPersistence secretReader,
+                                                        final JsonNode persistedPartialConfig,
+                                                        final JsonNode newFullConfig,
+                                                        final JsonNode spec) {
     var fullConfigCopy = newFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    final Set<String> paths = JsonSchemas.collectJsonPathsThatMeetCondition(
+    final List<String> paths = JsonSchemas.collectJsonPathsThatMeetCondition(
         spec,
         node -> MoreIterators.toList(node.fields())
             .stream()
-            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)));
+            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)))
+        .stream()
+        .sorted()
+        .toList();
 
     for (final String path : paths) {
       fullConfigCopy = JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
@@ -316,73 +243,6 @@ public class SecretsHelpers {
     }
 
     return new SplitSecretConfig(fullConfigCopy, secretMap);
-  }
-
-  /**
-   * Enum that allows us to switch on different types seen in a config / spec.
-   *
-   * Unrecognized types refers to values that cannot contain string airbyte_secret secrets such as
-   * numbers, binary fields, etc. They also may contain allOf or other mechanisms that aren't fully
-   * supported in Airbyte connector configurations.
-   */
-  private enum JsonSchemaSpecType {
-    OBJECT,
-    ARRAY,
-    STRING,
-    ONE_OF,
-    UNRECOGNIZED_TYPE
-  }
-
-  /**
-   * Determines what the spec is referring to.
-   *
-   * @param spec connector specification or a sub-node of the specification
-   * @return a type used to process a config or sub-node of a config
-   */
-  private static JsonSchemaSpecType getSpecTypeToHandle(final JsonNode spec) {
-    if (isObjectSchema(spec)) {
-      return JsonSchemaSpecType.OBJECT;
-    } else if (isArraySchema(spec)) {
-      return JsonSchemaSpecType.ARRAY;
-    } else if (isStringSchema(spec)) {
-      return JsonSchemaSpecType.STRING;
-    } else if (spec.has("oneOf") && spec.get("oneOf").isArray()) {
-      return JsonSchemaSpecType.ONE_OF;
-    } else {
-      return JsonSchemaSpecType.UNRECOGNIZED_TYPE;
-    }
-  }
-
-  /**
-   * Interface used to make calls to
-   * {@link SecretsHelpers#internalSplitAndUpdateConfig(Supplier, UUID, ReadOnlySecretPersistence, JsonNode, JsonNode, JsonNode)}
-   * more readable by arguments that are the same across the entire method.
-   */
-  @FunctionalInterface
-  public interface InternalSplitter {
-
-    SplitSecretConfig splitAndUpdateConfig(JsonNode oldPartialConfig, JsonNode fullConfig, JsonNode spec);
-
-  }
-
-  private static boolean isStringSchema(final JsonNode schema) {
-    return schema.has("type") && schema.get("type").asText().equals("string");
-  }
-
-  private static boolean isObjectSchema(final JsonNode schema) {
-    return schema.has("properties") && schema.get("properties").isObject();
-  }
-
-  private static boolean isArraySchema(final JsonNode schema) {
-    return schema.has("items") && schema.get("items").isObject();
-  }
-
-  private static JsonNode getFieldOrEmptyNode(final JsonNode node, final String field) {
-    return node.has(field) ? node.get(field) : Jsons.emptyObject();
-  }
-
-  private static JsonNode getFieldOrEmptyNode(final JsonNode node, final int field) {
-    return node.has(field) ? node.get(field) : Jsons.emptyObject();
   }
 
   /**
