@@ -6283,7 +6283,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: [ ]
-- dockerImage: "blotout/source-xola:0.1.20"
+- dockerImage: "blotout/source-xola:0.1.21"
   spec:
     "documentationUrl": "https://github.com/blotoutio/source-xola/README.md"
     "connectionSpecification":

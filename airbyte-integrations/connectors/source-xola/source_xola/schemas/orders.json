@@ -47,6 +47,9 @@
          "source":{
             "type":["null","string"]
          },
+         "type":{
+            "type":["null","string"]
+         },
          "createdBy":{
             "type":["null","string"]
          },
