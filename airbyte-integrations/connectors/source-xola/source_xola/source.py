@@ -90,6 +90,8 @@ class Orders(XolaStream):
         self.seller_id = seller_id
         if cursor_field:
             self.cursor_field = cursor_field
+            
+        if cursor_field_value:
             self.cursor_field_value = cursor_field_value
 
     def path(
@@ -99,7 +101,11 @@ class Orders(XolaStream):
         """
         should return "orders". Required.
         """
-        return "orders"
+        path = "orders"
+        if stream_state is not None and self.cursor_field in stream_state:
+            path += "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
+            
+        return path
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
@@ -155,8 +161,17 @@ class Orders(XolaStream):
         """
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             current_parsed_date = current_stream_state[self.cursor_field]
+
+            print("current parsed date ", current_stream_state)
+            print("latest record ", latest_record)
             latest_record_date = latest_record[self.cursor_field]
-            return {self.cursor_field: max(current_parsed_date, latest_record_date)}
+            
+            if current_parsed_date is not None:
+                return {self.cursor_field: max(current_parsed_date, latest_record_date)}
+            elif latest_record_date is not None:
+                return {self.cursor_field: latest_record_date}
+            else:
+                return {self.cursor_field: 0}
         else:
             return {self.cursor_field: self.cursor_field_value}
 
@@ -306,9 +321,14 @@ class SourceXola(AbstractSource):
         # TODO remove the authenticator if not required.
         cursor_field = None
         cursor_field_value = None
+        
         if "cursor_field" in config.keys():
             cursor_field = config['cursor_field']
+            
+        if "cursor_field_value" in config.keys():
             cursor_field_value = config['cursor_field_value']
+
+
         return [
             Orders(x_api_key=config['x-api-key'],
                    seller_id=config['seller-id'],
