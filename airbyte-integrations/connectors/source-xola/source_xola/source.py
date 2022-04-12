@@ -134,6 +134,7 @@ class Orders(XolaStream):
                 if "quantity" in data.keys(): resp["quantity"] = data["quantity"]
                 if "event" in data.keys(): resp["event"] = data["event"]
                 if "amount" in data.keys(): resp["amount"] = data["amount"]
+                if "type" in data.keys(): resp["type"] = data["type"]
                 modified_response.append(resp)
             except:
                 pass
