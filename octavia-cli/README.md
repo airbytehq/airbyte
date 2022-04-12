@@ -356,7 +356,7 @@ We use this data to measure the tool's adoption and detect common errors users e
 The telemetry sends data about:
 * Which command was run (not the arguments or options used).
 * Success or failure of the command run and the error type.
-* The workspace id. It is unique to each Airbyte instance, but we can't match it to a username or email address.
+* The workspace id. It is unique to each Airbyte instance.
 
 You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment to `false` or using the `--disable-telemetry` flag.
 
