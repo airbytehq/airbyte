@@ -20,7 +20,6 @@ const Container = styled.div`
 `;
 const CreditsLink = styled(Link)`
   color: ${({ theme }) => theme.blackColor};
-  margin-left: 8px;
 `;
 
 type CreditsProblemBannerProps = {
@@ -29,10 +28,10 @@ type CreditsProblemBannerProps = {
 
 const CreditsProblemBanner: React.FC<CreditsProblemBannerProps> = ({ status }) => (
   <Container>
-    <FormattedMessage id={`credits.creditsProblem.${status}`} />
-    <CreditsLink to={CloudRoutes.Credits}>
-      <FormattedMessage id="credits.creditsProblem.link" />
-    </CreditsLink>
+    <FormattedMessage
+      id={`credits.creditsProblem.${status}`}
+      values={{ lnk: (content: React.ReactNode) => <CreditsLink to={CloudRoutes.Credits}>{content}</CreditsLink> }}
+    />
   </Container>
 );
 
