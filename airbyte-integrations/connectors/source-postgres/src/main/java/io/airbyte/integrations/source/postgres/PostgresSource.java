@@ -95,6 +95,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
+    if (config.has("jdbc_url_params")) {
+      jdbcUrl.append(config.get("jdbc_url_params").asText());
+    }
+
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
