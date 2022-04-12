@@ -24,7 +24,7 @@ To run this tutorial, you'll need:
 * Docker, Python, and Java with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md).
 * The `requests` Python package installed via `pip install requests` \(or `pip3` if `pip` is linked to a Python2 installation on your system\)
 
-**A note on running Python**: all the commands below assume that `python` points to a version of Python 3.7. Verify this by running
+**A note on running Python**: all the commands below assume that `python` points to a version of Python 3.7 or greater. Verify this by running
 
 ```bash
 $ python --version
@@ -88,7 +88,7 @@ Head to the connector directory and we should see the following files have been 
 ```bash
 $ cd ../../connectors/source-stock-ticker-api
 $ ls
-Dockerfile              NEW_SOURCE_CHECKLIST.md              build.gradle
+Dockerfile    README.md    acceptance-test-config.yml    build.gradle
 ```
 
 We'll use each of these files later. But first, let's write some code!
@@ -153,9 +153,9 @@ We'll save this file in the root directory of our connector. Now we have the fol
 ```bash
 $ ls -1
 Dockerfile
-NEW_SOURCE_CHECKLIST.md
+README.md
+acceptance-test-config.yml
 build.gradle
-source.py
 spec.json
 ```
 
@@ -937,9 +937,9 @@ and with that, we've packaged our connector in a functioning Docker image. The l
 
 ### 4. Test the connector
 
-The minimum requirement for testing our connector is to pass the Airbyte Standard Test suite. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's Standard Test suite.
+The minimum requirement for testing your connector is to pass the [Source Acceptance Test (SAT)](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) suite. SAT is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's SATs suite.
 
-To integrate with the standard test suite, modify the generated `build.gradle` file as follows:
+To integrate with the standard test suite, modify the generated `acceptance-test-config.yaml` file as follows:
 
 ```groovy
 plugins {

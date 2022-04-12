@@ -240,8 +240,8 @@ class TestBasicRead(BaseTest):
         just running schema validation is not enough case schema could have
         additionalProperties parameter set to true and no required fields
         therefore any arbitrary object would pass schema validation.
-        This method is here to catch those cases by extracting all the pathes
-        from the object and compare it to pathes expected from jsonschema. If
+        This method is here to catch those cases by extracting all the paths
+        from the object and compare it to paths expected from jsonschema. If
         there no common pathes then raise an alert.
 
         :param records: List of airbyte record messages gathered from connector instances.
