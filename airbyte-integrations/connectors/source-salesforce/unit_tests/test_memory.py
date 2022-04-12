@@ -17,13 +17,13 @@ from source_salesforce.streams import BulkIncrementalSalesforceStream
         (1000, 0.4, 1),
         (10000, 1, 2),
         (100000, 4, 7),
-        # (200000, 6, 12), # takes a long time
+        (200000, 7, 12),
     ),
     ids=[
         "1k recods",
         "10k records",
         "100k records",
-        # "200k records",
+        "200k records",
     ],
 )
 def test_memory_download_data(stream_config, stream_api, n_records, first_size, first_peak):
@@ -41,6 +41,5 @@ def test_memory_download_data(stream_config, stream_api, n_records, first_size, 
         fs, fp = tracemalloc.get_traced_memory()
         first_size_in_mb, first_peak_in_mb = fs / 1024**2, fp / 1024**2
 
-        assert True if first_size_in_mb < first_size else False
-        assert True if first_peak_in_mb < first_peak else False
-        # print(f"first_size = {first_size_in_mb} Mb, first_peak = {first_peak_in_mb} Mb")
+        assert first_size_in_mb < first_size
+        assert first_peak_in_mb < first_peak

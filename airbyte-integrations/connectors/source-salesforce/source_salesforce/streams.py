@@ -6,6 +6,7 @@ import csv
 import ctypes
 import math
 import os
+import sys
 import time
 from abc import ABC
 from contextlib import closing
@@ -22,7 +23,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .exceptions import SalesforceException
+from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
@@ -255,14 +256,12 @@ class BulkSalesforceStream(SalesforceStream):
         """
         https://github.com/airbytehq/airbyte/issues/8300
         """
-        replace_list = ['"', "\x00", "\0", "\00"]
-        for rep in replace_list:
-            res = s.replace(rep, "")
+        res = s.replace("\x00", "")
         if len(res) < len(s):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
         return res
-
-    def download_data(self, url: str, chunk_size: float = 1024) -> Iterable[Tuple[int, Mapping[str, Any]]]:
+    
+    def download_data(self, url: str, chunk_size: float = 1024) -> os.PathLike:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitaions.
         @ url: string - the url of the `executed_job`
@@ -272,7 +271,6 @@ class BulkSalesforceStream(SalesforceStream):
         """
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
-
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response:
             with open(tmp_file, "w") as data_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
@@ -281,30 +279,29 @@ class BulkSalesforceStream(SalesforceStream):
         if os.path.isfile(tmp_file):
             return tmp_file
         else:
-            self.logger.error(f"Could not verify binary data for stream `{self.name}`!")
+            raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: `{self.name}`, file {tmp_file} doesn't exist.")
 
-    def read_with_chunks(self, path: str = None, chunk_size: int = 100):
+    def read_with_chunks(self, path: str = None, chunk_size: int = 100) -> Iterable[Tuple[int, Mapping[str, Any]]]:
         """
         Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
         @ path: string - the path to the downloaded temporarily binary data.
-        @ chunk_size: int - the number of lines to read at a time, default: 1000 lines / time.
+        @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
         """
-        with open(path, "r", encoding="utf-8") as data:
-            try:
+        try:
+            with open(path, "r", encoding="utf-8") as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
                     for n, row in enumerate(chunk, 1):
                         yield n, row
-            except pd.errors.EmptyDataError as e:
-                self.logger.warn(f"Empty data received. {e}")
-                yield from []
-
-        # clean temporarily binary file, after data is read
-        if os.path.isfile(path):
+        except pd.errors.EmptyDataError as e:
+            self.logger.info(f"Empty data received. {e}")
+            yield from []
+        except IOError as ioe:
+            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Path: {path}. Stream: `{self.name}`", ioe)
+        finally:
+            # remove binary tmp file, after data is read
             os.remove(path)
-        else:
-            self.logger.error(f"Could not remove binary data for stream `{self.name}`, {path} file is not found.")
 
     def abort_job(self, url: str):
         data = {"state": "Aborted"}
