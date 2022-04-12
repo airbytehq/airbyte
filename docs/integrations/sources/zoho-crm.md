@@ -130,6 +130,7 @@ Make sure to complete the auth flow quickly, as the initial token granted by Zoh
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject         |
-|:--------|:-----------|:---------------------------------------------------------|:----------------|
-| 0.1.0   | 2022-03-30 | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release |
+| Version | Date        | Pull Request                                             | Subject                   |
+|:--------|:------------|:---------------------------------------------------------|:--------------------------|
+| 0.1.1   | 2022-04-12  | [11929](https://github.com/airbytehq/airbyte/pull/11929) | Fix json files formatting |
+| 0.1.0   | 2022-03-30  | [11193](https://github.com/airbytehq/airbyte/pull/11193) | Initial release           |
