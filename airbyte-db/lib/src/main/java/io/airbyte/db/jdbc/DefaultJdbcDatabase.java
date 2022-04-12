@@ -8,6 +8,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
+import io.airbyte.db.exception.CustomExceptionWrapper;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -74,10 +75,15 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
 
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
-    final Connection conn = dataSource.getConnection();
-    final DatabaseMetaData metaData = conn.getMetaData();
-    conn.close();
-    return metaData;
+    try {
+      final Connection conn = dataSource.getConnection();
+      final DatabaseMetaData metaData = conn.getMetaData();
+      conn.close();
+      return metaData;
+    } catch (SQLException e) {
+      SQLException sqlException = (SQLException) e.getCause();
+      throw new CustomExceptionWrapper(sqlException.getSQLState(), e.getMessage());
+    }
   }
 
   /**

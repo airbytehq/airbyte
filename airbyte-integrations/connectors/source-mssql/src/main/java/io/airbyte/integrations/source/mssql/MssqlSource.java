@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.db.exception.CustomExceptionUtils.MS_SQL_CONNECTOR;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -454,6 +455,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public enum ReplicationMethod {
     STANDARD,
     CDC
+  }
+
+  @Override
+  public String getConnectorType() {
+    return MS_SQL_CONNECTOR;
   }
 
 }

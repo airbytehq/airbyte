@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.db.exception.CustomExceptionUtils.MY_SQL_CONNECTOR;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.checkBinlog;
@@ -213,4 +214,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     CDC
   }
 
+  @Override
+  public String getConnectorType() {
+    return MY_SQL_CONNECTOR;
+  }
 }

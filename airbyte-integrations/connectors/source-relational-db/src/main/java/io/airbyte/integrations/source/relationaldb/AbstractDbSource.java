@@ -15,10 +15,12 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
+import io.airbyte.db.exception.CustomExceptionWrapper;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.relationaldb.errors.ErrorMessageFactory;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -69,6 +71,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (final CustomExceptionWrapper ex) {
+      LOGGER.info("Exception while checking connection: ", ex);
+      var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
+              .getErrorMessage(ex.getCustomErrorCode(), ex);
+      return new AirbyteConnectionStatus()
+              .withStatus(Status.FAILED)
+              .withMessage(messages);
     } catch (final Exception e) {
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

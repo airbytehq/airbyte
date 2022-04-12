@@ -36,4 +36,8 @@ public interface Source extends Integration {
    */
   AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
 
+  default String getConnectorType() {
+    return "NO_IMPLEMENTED_YET";
+  }
+
 }
