@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
+import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
@@ -34,6 +35,12 @@ import java.util.function.Consumer;
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
 
+  private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
+
+  public RedshiftCopyS3Destination(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+    this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -42,7 +49,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     return CopyConsumerFactory.create(
         outputRecordCollector,
         getDatabase(config),
-        getSqlOperations(),
+        getSqlOperations(redshiftDataTmpTableMode),
         getNameTransformer(),
         S3CopyConfig.getS3CopyConfig(config),
         catalog,
@@ -68,7 +75,11 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
   public SqlOperations getSqlOperations() {
-    return new RedshiftSqlOperations();
+    throw new UnsupportedOperationException("RedshiftCopyS3Destination.getSqlOperations() without arguments not supported in Redshift destination connector.");
+  }
+
+  public SqlOperations getSqlOperations(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+    return new RedshiftSqlOperations(redshiftDataTmpTableMode);
   }
 
   private String getConfiguredSchema(final JsonNode config) {
