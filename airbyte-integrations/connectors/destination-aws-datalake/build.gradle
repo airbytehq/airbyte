@@ -1,7 +1,12 @@
 plugins {
     id 'application'
+    id 'airbyte-python'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+}
+
+airbytePython {
+    moduleDirectory 'destination_aws_datalake'
 }
 
 dependencies {
