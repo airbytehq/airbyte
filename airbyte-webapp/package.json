@@ -20,7 +20,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.1.17",
-    "@fullstory/browser": "^1.5.0",
+    "@fullstory/browser": "^1.5.1",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
     "dayjs": "^1.11.0",
@@ -96,7 +96,7 @@
     "storybook-addon-mock": "^2.3.1",
     "tar": "^6.1.11",
     "tmpl": "^1.0.5",
-    "typescript": "^4.5.0"
+    "typescript": "^4.6.3"
   },
   "husky": {
     "hooks": {
