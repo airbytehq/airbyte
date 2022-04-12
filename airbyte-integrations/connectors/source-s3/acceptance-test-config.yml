@@ -12,9 +12,9 @@ tests:
     - config_path: "secrets/parquet_config.json"
       status: "succeed"
     # for custom server
-    - config_path: "integration_tests/config_minio.json"
+    - config_path: "secrets/config_minio.json"
       status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
+    - config_path: "secrets/invalid_config.json"
       status: "failed"
   discovery:
     # for CSV format
@@ -22,7 +22,7 @@ tests:
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
     # for custom server
-    - config_path: "integration_tests/config_minio.json"
+    - config_path: "secrets/config_minio.json"
   basic_read:
     # for CSV format
     - config_path: "secrets/config.json"
@@ -37,7 +37,7 @@ tests:
       expect_records:
         path: "integration_tests/parquet_expected_records.txt"
     # for custom server
-    - config_path: "integration_tests/config_minio.json"
+    - config_path: "secrets/config_minio.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
       # expected records contains _ab_source_file_last_modified property which
@@ -62,7 +62,7 @@ tests:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
     # for custom server
-    - config_path: "integration_tests/config_minio.json"
+    - config_path: "secrets/config_minio.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
       cursor_paths:
@@ -79,6 +79,6 @@ tests:
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
     # for custom server
-    - config_path: "integration_tests/config_minio.json"
+    - config_path: "secrets/config_minio.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"

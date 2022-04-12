@@ -11,8 +11,8 @@ from botocore.config import Config
 from source_files_abstract.fileinfo import FileInfo
 from source_files_abstract.stream import IncrementalFileStream
 
-from .s3_utils import make_s3_client
 from .s3file import S3File
+from .utils import make_s3_client
 
 
 class IncrementalFileStreamS3(IncrementalFileStream):

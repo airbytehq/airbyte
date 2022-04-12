@@ -13,7 +13,7 @@ from botocore.client import Config as ClientConfig
 from botocore.config import Config
 from source_files_abstract.storagefile import StorageFile
 
-from .s3_utils import make_s3_client, make_s3_resource
+from .utils import make_s3_client, make_s3_resource
 
 
 class S3File(StorageFile):

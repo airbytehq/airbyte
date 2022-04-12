@@ -1,2 +1,3 @@
 -e ../../bases/source-acceptance-test
+-e ../source-files-abstract
 -e .
