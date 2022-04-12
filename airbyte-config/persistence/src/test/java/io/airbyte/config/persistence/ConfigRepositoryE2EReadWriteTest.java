@@ -126,6 +126,12 @@ public class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
+  void testWorkspaceCountConnectionsDeprecated() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    assertEquals(1, configRepository.countConnectionsForWorkspace(workspaceId));
+  }
+
+  @Test
   void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
 
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
