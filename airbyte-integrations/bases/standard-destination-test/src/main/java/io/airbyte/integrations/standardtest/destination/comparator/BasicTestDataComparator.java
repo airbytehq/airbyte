@@ -12,12 +12,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BasicTestDataComparator implements TestDataComparator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicTestDataComparator.class);
+
+  private final Function<String, List<String>> nameResolver;
+
+  public BasicTestDataComparator(Function<String, List<String>> nameResolver) {
+    this.nameResolver = nameResolver;
+  }
 
   @Override
   public void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
@@ -36,17 +44,9 @@ public class BasicTestDataComparator implements TestDataComparator {
       while (expectedDataIterator.hasNext()) {
         final Map.Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
         final JsonNode expectedValue = expectedEntry.getValue();
-        JsonNode actualValue = null;
         String key = expectedEntry.getKey();
-        for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
-          actualValue = actualData.get(tmpKey);
-          if (actualValue != null) {
-            key = tmpKey;
-            break;
-          }
-        }
+        JsonNode actualValue = ComparatorUtils.getActualValueByExpectedKey(key, actualData, nameResolver);
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
-        assertTrue(actualData.has(key));
         assertSameValue(expectedValue, actualValue);
       }
     }
@@ -55,12 +55,6 @@ public class BasicTestDataComparator implements TestDataComparator {
   // Allows subclasses to implement custom comparison asserts
   protected void assertSameValue(final JsonNode expectedValue, final JsonNode actualValue) {
     assertEquals(expectedValue, actualValue);
-  }
-
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    result.add(identifier);
-    return result;
   }
 
 }

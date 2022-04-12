@@ -19,7 +19,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AdvancedTestDataComparator extends BasicTestDataComparator {
+public class AdvancedTestDataComparator implements TestDataComparator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedTestDataComparator.class);
 
@@ -39,37 +39,33 @@ public class AdvancedTestDataComparator extends BasicTestDataComparator {
     }
   }
 
+  protected List<String> resolveIdentifier(final String identifier) {
+    final List<String> result = new ArrayList<>();
+    result.add(identifier);
+    return result;
+  }
+
   protected void compareObjects(final JsonNode expectedObject, final JsonNode actualObject) {
-    LOGGER.info("Expected Object : {}", expectedObject);
-    LOGGER.info("Actual Object   : {}", actualObject);
-    if (areBothEmpty(expectedObject, actualObject)) {
-      LOGGER.info("Both rows are empty.");
-    } else {
+    if (!areBothEmpty(expectedObject, actualObject)) {
+      LOGGER.info("Expected Object : {}", expectedObject);
+      LOGGER.info("Actual Object   : {}", actualObject);
       final Iterator<Map.Entry<String, JsonNode>> expectedDataIterator = expectedObject.fields();
       assertEquals(expectedObject.size(), actualObject.size(), "Unequal row size");
       while (expectedDataIterator.hasNext()) {
         final Map.Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
         final JsonNode expectedValue = expectedEntry.getValue();
-        JsonNode actualValue = null;
         String key = expectedEntry.getKey();
-        for (final String tmpKey : resolveIdentifier(expectedEntry.getKey())) {
-          actualValue = actualObject.get(tmpKey);
-          if (actualValue != null) {
-            key = tmpKey;
-            break;
-          }
-        }
+        JsonNode actualValue = ComparatorUtils.getActualValueByExpectedKey(key, actualObject, this::resolveIdentifier);
         LOGGER.info("For {} Expected {} vs Actual {}", key, expectedValue, actualValue);
-        assertTrue(actualObject.has(key));
         assertSameValue(expectedValue, actualValue);
       }
+    } else {
+      LOGGER.info("Both rows are empty.");
     }
   }
 
   private boolean areBothEmpty(final JsonNode expectedData, final JsonNode actualData) {
-    if (expectedData.size() == 0 && actualData.size() == 0) {
-      return true;
-    } else if (expectedData.size() <= 1 && actualData.size() <= 1) {
+    if (expectedData.size() <= 1 && actualData.size() <= 1) {
       boolean isExpectedEmpty = (expectedData.size() == 0 || expectedData.iterator().next().asText().isEmpty());
       return isExpectedEmpty && (actualData.size() == 0 || actualData.iterator().next().asText().isEmpty());
     } else {
@@ -85,25 +81,27 @@ public class AdvancedTestDataComparator extends BasicTestDataComparator {
   }
 
   protected boolean compareJsonNodes(final JsonNode expectedValue, final JsonNode actualValue) {
-    if (expectedValue == null || actualValue == null)
+    Boolean t = true;
+    if (expectedValue == null || actualValue == null) {
       return expectedValue == null && actualValue == null;
-    else if (expectedValue.isNumber() || expectedValue.isDouble() || expectedValue.isFloat())
+    } else if (expectedValue.isNumber() || expectedValue.isDouble() || expectedValue.isFloat()) {
       return compareNumericValues(expectedValue.asText(), actualValue.asText());
-    else if (expectedValue.isBoolean())
+    } else if (expectedValue.isBoolean()) {
       return compareBooleanValues(expectedValue.asText(), actualValue.asText());
-    else if (isDateTimeWithTzValue(expectedValue.asText()))
+    } else if (isDateTimeWithTzValue(expectedValue.asText())) {
       return compareDateTimeWithTzValues(expectedValue.asText(), actualValue.asText());
-    else if (isDateTimeValue(expectedValue.asText()))
+    } else if (isDateTimeValue(expectedValue.asText())) {
       return compareDateTimeValues(expectedValue.asText(), actualValue.asText());
-    else if (isDateValue(expectedValue.asText()))
+    } else if (isDateValue(expectedValue.asText())) {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
-    else if (expectedValue.isArray() && actualValue.isArray())
+    } else if (expectedValue.isArray() && actualValue.isArray()) {
       return compareArrays(expectedValue, actualValue);
-    else if (expectedValue.isObject() && actualValue.isObject()) {
+    } else if (expectedValue.isObject() && actualValue.isObject()) {
       compareObjects(expectedValue, actualValue);
       return true;
-    } else
+    } else {
       return compareString(expectedValue, actualValue);
+    }
   }
 
   protected boolean compareString(final JsonNode expectedValue, final JsonNode actualValue) {
@@ -123,18 +121,20 @@ public class AdvancedTestDataComparator extends BasicTestDataComparator {
     if (expectedList.size() != actualList.size()) {
       return false;
     } else {
-      boolean result = false;
       for (JsonNode expectedNode : expectedList) {
-        for (JsonNode actualNode : actualList) {
-          result = compareJsonNodes(expectedNode, actualNode) || result;
+        var sameActualNode = actualList.stream().filter(actualNode -> compareJsonNodes(expectedNode, actualNode)).findFirst();
+        if (sameActualNode.isPresent()) {
+          actualList.remove(sameActualNode.get());
+        } else {
+          return false;
         }
       }
-      return result;
+      return true;
     }
   }
 
-  protected boolean compareBooleanValues(final String firstNumericValue, final String secondNumericValue) {
-    return Boolean.valueOf(firstNumericValue) == Boolean.valueOf(secondNumericValue);
+  protected boolean compareBooleanValues(final String firstBooleanValue, final String secondBooleanValue) {
+    return Boolean.valueOf(firstBooleanValue) == Boolean.valueOf(secondBooleanValue);
   }
 
   protected boolean compareNumericValues(final String firstNumericValue, final String secondNumericValue) {
