@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from source_heron_data.streams import Customers, Employees
+from source_heron_data.streams import Customers, Employees, Transactions
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -52,10 +52,7 @@ class SourceHeronData(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        auth = HTTPBasicAuth(config['username'], config['password'])
+        return [Transactions(authenticator=auth)]

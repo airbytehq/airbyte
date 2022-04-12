@@ -1,0 +1,53 @@
+{
+  "streams": [
+    {
+      "destination_sync_mode": "append",
+      "sync_mode": "incremental",
+      "stream": {
+        "name": "transactions",
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+
+        "source_defined_cursor": true,
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "heron_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "reference_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "amount": {
+              "type": [
+                "float"
+              ]
+            },
+            "balance": {
+              "type": [
+                "float"
+              ]
+            },
+            "last_updated": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

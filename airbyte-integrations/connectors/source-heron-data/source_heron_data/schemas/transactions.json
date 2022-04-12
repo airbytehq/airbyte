@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "heron_id": {
+      "type": ["string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "reference_id": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["float"]
+    },
+    "balance": {
+      "type": ["float"]
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

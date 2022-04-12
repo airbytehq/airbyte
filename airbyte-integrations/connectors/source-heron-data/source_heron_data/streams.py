@@ -1,7 +1,10 @@
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from datetime import datetime
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+
 
 # Basic full refresh stream
 class HeronDataStream(HttpStream, ABC):
@@ -31,8 +34,7 @@ class HeronDataStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = "https://app.herondata.io"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -52,7 +54,7 @@ class HeronDataStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
@@ -77,7 +79,7 @@ class Customers(HeronDataStream):
     primary_key = "customer_id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
@@ -113,6 +115,69 @@ class IncrementalHeronDataStream(HeronDataStream, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         return {}
+
+
+class Transactions(IncrementalHeronDataStream):
+    primary_key = 'heron_id'
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.records_num = 0
+
+    def _parse_datetime(self, date_str):
+        return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+    def _stringify_datetime(self, datetime_obj):
+        return datetime_obj.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        meta = response.json()['_meta']
+        num_pages = meta['pages']
+        current_page_number = meta['page']
+        if current_page_number < num_pages:
+            return {'next_page_num': current_page_number + 1}
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {'limit': 10}
+
+        if next_page_token:
+            params.update({'page': next_page_token['next_page_num']})
+        return params
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        :return str: The name of the cursor field.
+        """
+        return 'last_updated'
+
+    def path(
+            self,
+            **kwargs
+    ) -> str:
+        return '/api/transactions'
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        last_updated_max = current_stream_state.get('last_updated_max')
+        latest_record_datetime = self._parse_datetime(latest_record[self.cursor_field])
+
+        if last_updated_max:
+            if latest_record_datetime > last_updated_max:
+                current_stream_state['last_updated_max'] = latest_record_datetime
+                return current_stream_state
+        else:
+            return {
+                'last_updated_max': latest_record_datetime
+            }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+
+        return response.json()['transactions']
 
 
 class Employees(IncrementalHeronDataStream):
