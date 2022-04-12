@@ -52,10 +52,14 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
-    final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText());
+        config.get("database").asText()));
+
+    if (config.has("jdbc_url_params")) {
+      jdbcUrl.append(config.get("jdbc_url_params").asText());
+    }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())

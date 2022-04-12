@@ -4,21 +4,24 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests that the postgres spec passes JsonSchema validation. While this may seem like overkill, we
@@ -38,6 +41,13 @@ public class PostgresSpecTest {
       + "}";
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
+
+  private static final Map<String, String> CONFIG_JDBC_URL_PARAMS = ImmutableMap.of(
+          "host", "localhost",
+          "port", "1337",
+          "username", "user",
+          "database", "db",
+          "jdbc_url_params", "foo=bar");
 
   @BeforeAll
   static void init() throws IOException {
@@ -112,4 +122,12 @@ public class PostgresSpecTest {
     assertFalse(validator.test(schema, config));
   }
 
+  @Test
+  void testJdbcUrlParamsPassThrough() {
+    final String expectedJdbcUrl = "jdbc:postgresql://localhost:1337/db?ssl=true&sslmode=require&foo=bar";
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfigStatic(
+            Jsons.jsonNode(CONFIG_JDBC_URL_PARAMS));
+
+    assertEquals(expectedJdbcUrl, jdbcConfig.get("jdbc_url").asText());
+  }
 }

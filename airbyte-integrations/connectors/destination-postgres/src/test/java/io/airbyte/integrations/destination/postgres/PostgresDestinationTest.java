@@ -61,6 +61,11 @@ public class PostgresDestinationTest {
       ImmutableMap.of(
           "ssl", "false"));
 
+  private static final Map<String, String> CONFIG_JDBC_URL_PARAMS = MoreMaps.merge(
+          CONFIG_WITH_SSL,
+          ImmutableMap.of(
+                  "jdbc_url_params", "foo=bar"));
+
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
@@ -89,6 +94,15 @@ public class PostgresDestinationTest {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
         Jsons.jsonNode(CONFIG_WITH_SSL));
     assertEquals(PostgresDestination.SSL_JDBC_PARAMETERS, defaultProperties);
+  }
+
+  @Test
+  void testJdbcUrlParamsPassThrough() {
+    final String expectedJdbcUrl = "jdbc:postgresql://localhost:1337/db?foo=bar";
+    final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(
+            Jsons.jsonNode(CONFIG_JDBC_URL_PARAMS));
+
+    assertEquals(expectedJdbcUrl, jdbcConfig.get("jdbc_url").asText());
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the
