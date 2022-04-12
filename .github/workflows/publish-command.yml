@@ -147,9 +147,7 @@ jobs:
       - name: Create Sentry Release
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
-          # The --ignore-empty flag is not ideal but necessary, because we need to run this command from forked repos,
-          # which do not have Sentry integration, and thus Sentry cannot find the proper commit history.
-          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}" --auto --ignore-missing
+          sentry-cli releases set-commits --auto --ignore-missing "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j
