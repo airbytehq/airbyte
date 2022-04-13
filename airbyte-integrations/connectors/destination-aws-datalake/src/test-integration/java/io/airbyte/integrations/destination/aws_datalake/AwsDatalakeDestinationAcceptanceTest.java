@@ -150,10 +150,12 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
 
     this.config = AwsDatalakeDestinationConfig.getAwsDatalakeDestinationConfig(configJson);
 
+    Region region = Region.of(config.getRegion());
+
     AwsBasicCredentials awsCreds = AwsBasicCredentials.create(config.getAccessKeyId(), config.getSecretAccessKey());
-    athenaHelper = new AthenaHelper(awsCreds, Region.US_EAST_1, String.format("s3://%s/airbyte_athena/", config.getBucketName()),
-        "AmazonAthenaLakeFormationPreview");
-    glueHelper = new GlueHelper(awsCreds, Region.US_EAST_1);
+    athenaHelper = new AthenaHelper(awsCreds, region, String.format("s3://%s/airbyte_athena/", config.getBucketName()),
+        "AmazonAthenaLakeFormation");
+    glueHelper = new GlueHelper(awsCreds, region);
     glueHelper.purgeDatabase(config.getDatabaseName());
   }
 
