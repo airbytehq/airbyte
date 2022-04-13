@@ -1010,12 +1010,14 @@ class TeamMembers(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/teams#list-team-members
     """
 
+    primary_key = ["id", "team_slug"]
+
     def __init__(self, parent: HttpStream, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['slug']}/members"
+        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['team_slug']}/members"
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -1028,11 +1030,11 @@ class TeamMembers(GithubStream):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
             for record in parent_records:
-                yield {"organization": record["organization"], "slug": record["slug"]}
+                yield {"organization": record["organization"], "team_slug": record["slug"]}
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
-        record["slug"] = stream_slice["slug"]
+        record["team_slug"] = stream_slice["team_slug"]
         return record
 
 
@@ -1041,12 +1043,14 @@ class TeamMemberships(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user
     """
 
+    primary_key = ["url"]
+
     def __init__(self, parent: HttpStream, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['slug']}/memberships/{stream_slice['username']}"
+        return f"orgs/{stream_slice['organization']}/teams/{stream_slice['team_slug']}/memberships/{stream_slice['username']}"
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -1059,7 +1063,7 @@ class TeamMemberships(GithubStream):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
             for record in parent_records:
-                yield {"organization": record["organization"], "slug": record["slug"], "username": record["login"]}
+                yield {"organization": record["organization"], "team_slug": record["team_slug"], "username": record["login"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         stream_slice = kwargs["stream_slice"]
@@ -1067,6 +1071,6 @@ class TeamMemberships(GithubStream):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
-        record["slug"] = stream_slice["slug"]
+        record["team_slug"] = stream_slice["team_slug"]
         record["username"] = stream_slice["username"]
         return record
