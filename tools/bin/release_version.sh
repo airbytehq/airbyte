@@ -25,6 +25,6 @@ source ./tools/bin/bump_version.sh
 
 echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
 VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
-SUB_BUILD=PLATFORM ./gradlew publish
+VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish
 VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION docker-compose -f docker-compose.build.yaml push
 echo "Completed building and publishing PLATFORM..."

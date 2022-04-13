@@ -1,8 +1,10 @@
 # Google Ads
 
-{% hint style="warning" %}
+:::caution
+
 If you don't already have a developer token from Google Ads, make sure you follow the [instructions](google-ads.md#how-to-apply-for-the-developer-token) so your request doesn't get denied.
-{% endhint %}
+
+:::
 
 ## Features
 
