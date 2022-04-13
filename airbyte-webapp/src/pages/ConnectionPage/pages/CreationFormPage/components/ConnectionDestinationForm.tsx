@@ -49,6 +49,10 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
       onSubmit={onSubmitDestinationForm}
       destinationDefinitions={destinationDefinitions}
       hasSuccess={successRequest}
+      setDestinationDefinitionId={null}
+      destinationDefinitionSpecification={undefined}
+      destinationDefinitionError={null}
+      isLoading={false}
     />
   );
 };

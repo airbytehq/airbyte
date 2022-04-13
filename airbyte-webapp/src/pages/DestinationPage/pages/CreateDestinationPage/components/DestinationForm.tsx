@@ -1,57 +1,45 @@
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition } from "core/domain/connector";
+import { DestinationDefinition, DestinationDefinitionSpecification } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import useRouter from "hooks/useRouter";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
-import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 
-type IProps = {
+type DestinationFormProps = {
   onSubmit: (values: {
     name: string;
     serviceType: string;
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
+  afterSelectConnector?: () => void;
   destinationDefinitions: DestinationDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-  afterSelectConnector?: () => void;
+  setDestinationDefinitionId: React.Dispatch<React.SetStateAction<string | null>> | null;
+  destinationDefinitionSpecification: DestinationDefinitionSpecification | undefined;
+  destinationDefinitionError: Error | null;
+  isLoading: boolean;
 };
 
-const hasDestinationDefinitionId = (state: unknown): state is { destinationDefinitionId: string } => {
-  return (
-    typeof state === "object" &&
-    state !== null &&
-    typeof (state as { destinationDefinitionId?: string }).destinationDefinitionId === "string"
-  );
-};
-
-const DestinationForm: React.FC<IProps> = ({
+const DestinationForm: React.FC<DestinationFormProps> = ({
   onSubmit,
   destinationDefinitions,
   error,
   hasSuccess,
   afterSelectConnector,
+  setDestinationDefinitionId,
+  destinationDefinitionSpecification,
+  destinationDefinitionError,
+  isLoading,
 }) => {
-  const { location } = useRouter();
   const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
 
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState(
-    hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
-  );
-  const {
-    data: destinationDefinitionSpecification,
-    isLoading,
-    error: destinationDefinitionError,
-  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
-
   const onDropDownSelect = (destinationDefinitionId: string) => {
-    setDestinationDefinitionId(destinationDefinitionId);
+    setDestinationDefinitionId && setDestinationDefinitionId(destinationDefinitionId);
     const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
 
     if (afterSelectConnector) {
@@ -84,7 +72,11 @@ const DestinationForm: React.FC<IProps> = ({
       hasSuccess={hasSuccess}
       errorMessage={errorMessage}
       isLoading={isLoading}
-      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
+      formValues={
+        destinationDefinitionSpecification
+          ? { serviceType: destinationDefinitionSpecification.destinationDefinitionId }
+          : undefined
+      }
       title={<FormattedMessage id="onboarding.destinationSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />

@@ -1,17 +1,17 @@
 import type { Url } from "url";
 
-import urls from "rehype-urls";
+import { FormattedMessage } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
 import rehypeSlug from "rehype-slug";
-import { FormattedMessage } from "react-intl";
+import urls from "rehype-urls";
 
 import { LoadingPage } from "components";
 import Markdown from "components/Markdown/Markdown";
 import { Body } from "components/SideView/styled";
 
-import { useDocumentation } from "hooks/services/useDocumentation";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { useConfig } from "config";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { useDocumentation } from "hooks/services/useDocumentation";
 
 type DocsPanelProps = {
   selectedService: SourceDefinition | DestinationDefinition | undefined;

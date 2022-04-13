@@ -18,8 +18,8 @@ import useRouter from "hooks/useRouter";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
-import ConnectionCreateSourceForm from "./components/ConnectionCreateSourceForm";
-import DestinationForm from "./components/DestinationForm";
+import DestinationForm from "./components/ConnectionDestinationForm";
+import ConnectionCreateSourceForm from "./components/ConnectionSourceForm";
 import ExistingEntityForm from "./components/ExistingEntityForm";
 
 export enum StepsTypes {
