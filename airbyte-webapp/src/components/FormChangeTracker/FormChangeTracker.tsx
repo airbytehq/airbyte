@@ -1,17 +1,15 @@
-import { useLayoutEffect, useMemo } from "react";
-import { uniqueId } from "lodash";
-import { useLocation } from "react-router-dom";
+import { useLayoutEffect } from "react";
 import { usePrevious } from "react-use";
 
-import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 
 interface Props {
   changed: boolean;
+  formId?: string;
 }
 
-const FormChangeTracker: React.FC<Props> = ({ changed }) => {
-  const location = useLocation();
-  const id = useMemo(() => `${location.pathname}__${uniqueId("form_")}`, [location.pathname]);
+const FormChangeTracker: React.FC<Props> = ({ changed, formId }) => {
+  const id = useUniqueFormId(formId);
   const prevChanged = usePrevious(changed);
 
   const { trackFormChange } = useFormChangeTrackerService();

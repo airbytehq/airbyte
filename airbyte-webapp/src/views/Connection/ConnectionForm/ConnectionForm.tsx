@@ -13,7 +13,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
-import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import CreateControls from "./components/CreateControls";
@@ -115,7 +115,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   connection,
 }) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const { clearAllFormChanges } = useFormChangeTrackerService();
+  const { clearFormChange } = useFormChangeTrackerService();
+  const formId = useUniqueFormId();
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const [submitError, setSubmitError] = useState<Error | null>(null);
@@ -138,7 +139,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         const result = await onSubmit(formValues);
 
         formikHelpers.resetForm({ values });
-        clearAllFormChanges();
+        clearFormChange(formId);
 
         const requiresReset = isEditMode && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
         if (requiresReset) {
@@ -154,10 +155,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       connection.operations,
       workspace.workspaceId,
       onSubmit,
+      clearFormChange,
+      formId,
       isEditMode,
       initialValues.syncCatalog,
       editSchemeMode,
-      clearAllFormChanges,
     ]
   );
 
@@ -173,7 +175,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
-          <FormChangeTracker changed={dirty} />
+          <FormChangeTracker changed={dirty} formId={formId} />
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
               {({ field, meta }: FieldProps<ScheduleProperties>) => (
