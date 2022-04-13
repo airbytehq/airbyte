@@ -6,7 +6,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "node_id": {
       "type": ["null", "string"]
@@ -59,7 +59,7 @@
     "organization": {
       "type": "string"
     },
-    "slug": {
+    "team_slug": {
       "type": "string"
     }
   }
