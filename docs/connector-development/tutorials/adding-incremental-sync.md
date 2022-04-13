@@ -8,7 +8,7 @@ This tutorial will assume that you already have a working source. If you do not,
 
 First we need to identify a given stream in the Source as supporting incremental. This information is declared in the catalog that the `discover` method returns. You will notice in the stream object contains a field called `supported_sync_modes`. If we are adding incremental to an existing stream, we just need to add `"incremental"` to that array. This tells Airbyte that this stream can either be synced in an incremental fashion. In practice, this will mean that in the UI, a user will have the ability to configure this type of sync.
 
-In the example we used in the Toy Connector tutorial, the `discover` method would not look like this. Note: that "incremental" has been added to the `supported_sync_modes` array. We also set `source_defined_cursor` to `True` to declare that the Source knows what field to use for the cursor, in this case the date field, and does not require user input. Nothing else has changed.
+In the example we used in the Toy Connector tutorial, the `discover` method would not look like this. Note: that "incremental" has been added to the `supported_sync_modes` array. We also set `source_defined_cursor` to `True` and `default_cursor_field` to `["date"]` to declare that the Source knows what field to use for the cursor, in this case the date field, and does not require user input. Nothing else has changed.
 
 ```python
 def discover():
@@ -17,6 +17,7 @@ def discover():
             "name": "stock_prices",
             "supported_sync_modes": ["full_refresh", "incremental"],
             "source_defined_cursor": True,
+            "default_cursor_field": ["date"],
             "json_schema": {
                 "properties": {
                     "date": {
@@ -46,7 +47,9 @@ In this case we might choose something like this:
 
 ```javascript
 {
-  "stock_prices": "2020-02-01"
+  "stock_prices": {
+    "date": "2020-02-01"
+  }
 }
 ```
 
@@ -80,8 +83,8 @@ def read(config, catalog, state):
 
     # In case of incremental sync, state should contain the last date when we fetched stock prices
     if stock_prices_stream["sync_mode"] == "incremental":
-        if state and state.get("stock_prices"):
-            from_date = datetime.strptime(state.get("stock_prices"), "%Y-%m-%d")
+        if state and "stock_prices" in state and state["stock_prices"].get("date"):
+            from_date = datetime.strptime(state["stock_prices"].get("date"), "%Y-%m-%d")
             from_day = (from_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
     # If the state indicates that we have already ran the sync up to cursor_value, we can skip the sync
@@ -110,7 +113,7 @@ def read(config, catalog, state):
 
     # Emit new state message.
     if stock_prices_stream["sync_mode"] == "incremental":
-        output_message = {"type": "STATE", "state": {"data": {"stock_prices": cursor_value}}}
+        output_message = {"type": "STATE", "state": {"data": {"stock_prices": {"date": cursor_value}}}}
         print(json.dumps(output_message))
 ```
 
@@ -145,12 +148,12 @@ The output will look like following:
 {"type": "RECORD", "record": {"stream": "stock_prices", "data": {"date": "2022-03-09", "stock_ticker": "TSLA", "price": 858.97}, "emitted_at": 1647294277000}}
 {"type": "RECORD", "record": {"stream": "stock_prices", "data": {"date": "2022-03-10", "stock_ticker": "TSLA", "price": 838.3}, "emitted_at": 1647294277000}}
 {"type": "RECORD", "record": {"stream": "stock_prices", "data": {"date": "2022-03-11", "stock_ticker": "TSLA", "price": 795.35}, "emitted_at": 1647294277000}}
-{"type": "STATE", "state": {"data": {"stock_prices": "2022-03-11"}}}
+{"type": "STATE", "state": {"data": {"stock_prices": {"date": "2022-03-11"}}}}
 ```
 
 Notice that the last line of output is the state object. Copy the state object:
 ```json
-{"stock_prices": "2022-03-11"}
+{"stock_prices": {"date": "2022-03-11"}}
 ```
 and paste it into a new file (i.e. `state.json`). Now you can run an incremental sync:
 ```bash
