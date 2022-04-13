@@ -88,7 +88,7 @@ def read(config, catalog, state):
             from_day = (from_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
     # If the state indicates that we have already ran the sync up to cursor_value, we can skip the sync
-    if cursor_value != from_day:
+    if cursor_value > from_day:
         # If we've made it this far, all the configuration is good and we can pull the market data
         response = _call_api(ticker=config["stock_ticker"], token = config["api_key"], from_day=from_day, to_day=cursor_value)
         if response.status_code != 200:
@@ -162,12 +162,15 @@ python source.py read --config secrets/valid_config.json --catalog incremental_c
 
 ## Run the incremental tests
 
-The [Source Acceptance Test (SAT) suite](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) also includes test cases to ensure that incremental mode is working correctly. To enable them, modify the existing `acceptance-test-config.yml` by adding the following:
+The [Source Acceptance Test (SAT) suite](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) also includes test cases to ensure that incremental mode is working correctly. 
+
+To enable these tests, modify the existing `acceptance-test-config.yml` by adding the following:
 
 ```yaml
   incremental:
     - config_path: "secrets/valid_config.json"
       configured_catalog_path: "incremental_configured_catalog.json"
+      future_state_path: "abnormal_state.json"
 ```
 
 Your full `acceptance-test-config.yml` should look something like this:
@@ -197,27 +200,32 @@ tests:
   incremental:
     - config_path: "secrets/valid_config.json"
       configured_catalog_path: "incremental_configured_catalog.json"
+      future_state_path: "abnormal_state.json"
 ```
 
-You can now run the tests once again:
+You will also need to create an `abnormal_state.json` file with a date in the future, which should not produce any records:
+
+```
+{"stock_prices": {"date": "2121-01-01"}}
+```
+
+Run the tests once again:
 
 ```bash
 ./acceptance-test-docker.sh
 ```
 
-Finally, you should see a successful test summary:
+And finally, you should see a successful test summary:
 
 ```
 collecting ... 
  test_core.py ✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓                                                                                                                                                                                         86% ████████▋ 
  test_full_refresh.py ✓                                                                                                                                                                                                   91% █████████▏
- test_incremental.py ✓s                                                                                                                                                                                                  100% ██████████
+ test_incremental.py ✓✓                                                                                                                                                                                                  100% ██████████
 
-======================================================================================================= short test summary info ========================================================================================================
-SKIPPED [1] source_acceptance_test/tests/test_incremental.py:21: `future_state_path` not specified, skipping
 
-Results (8.87s):
-      21 passed
+Results (8.90s):
+      22 passed
 ```
 
 That's all you need to do to add incremental functionality to the stock ticker Source.
