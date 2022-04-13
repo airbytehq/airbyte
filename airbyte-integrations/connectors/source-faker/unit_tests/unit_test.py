@@ -80,11 +80,6 @@ def test_read_with_seed():
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
-    # TODO: In JS, I could find the record with a map... what's the pythonic way to do this?  How can I set record's type ahead of time?
-    record = None
-    for row in iterator:
-        if row.type is Type.RECORD:
-            record = row
-
-    assert record.record.data["company"] == "Gibson-Townsend"
-    assert record.record.data["mail"] == "zamoradenise@yahoo.com"
+    records = [row for row in iterator if row.type is Type.RECORD]
+    assert records[0].record.data["company"] == "Gibson-Townsend"
+    assert records[0].record.data["mail"] == "zamoradenise@yahoo.com"
