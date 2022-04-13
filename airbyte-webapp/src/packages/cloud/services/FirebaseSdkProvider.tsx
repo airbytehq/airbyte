@@ -1,5 +1,6 @@
 import React from "react";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
+
 import { useConfig } from "packages/cloud/services/config";
 import { FirebaseAppProvider, useFirebaseApp, AuthProvider } from "packages/firebaseReact";
 
