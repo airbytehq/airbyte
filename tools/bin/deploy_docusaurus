@@ -56,8 +56,8 @@ cd ..
 pwd
 
 # We should be here but we are playing with fire
-git checkout gh-pages
-git pull
+git fetch
+git switch gh-pages
 
 set +o xtrace
 echo -e "$blue_text""Writing CNAME file!\n\n""$default_text"
