@@ -3,19 +3,10 @@
 #
 
 import jsonschema
-from airbyte_cdk.models import AirbyteMessage, Type
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_faker import SourceFaker
 
-
 # TODO: airbyte/airbyte-integrations/connectors/source-faker/.venv/lib/python3.9/site-packages/airbyte_cdk/sources/utils/transform.py:12: DeprecationWarning: Call to deprecated class AirbyteLogger. (Use logging.getLogger('airbyte') instead) -- Deprecated since version 0.1.47.
-# TODO: We don't have dict-with-indifferent-access in Python, so we need to make a better catalog object.  This is probably a bad idea.
-class LazyConfigDict(dict):
-    def __getattr__(self, attr):
-        return self[attr]
-
-    def __setattr__(self, attr, value):
-        self[attr] = value
-
 
 def test_source_streams():
     source = SourceFaker()
@@ -52,7 +43,7 @@ def test_read_random_data():
     source = SourceFaker()
     logger = None
     config = {"count": 10}
-    catalog = LazyConfigDict({"streams": [LazyConfigDict({"sync_mode": "incremental", "stream": LazyConfigDict({"name": "Users"})})]})
+    catalog = ConfiguredAirbyteCatalog(streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": 'full_refresh', "destination_sync_mode": 'overwrite'}])
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -76,7 +67,7 @@ def test_read_with_seed():
     source = SourceFaker()
     logger = None
     config = {"count": 1, "seed": 100}
-    catalog = LazyConfigDict({"streams": [LazyConfigDict({"sync_mode": "incremental", "stream": LazyConfigDict({"name": "Users"})})]})
+    catalog = ConfiguredAirbyteCatalog(streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": 'full_refresh', "destination_sync_mode": 'overwrite'}])
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
