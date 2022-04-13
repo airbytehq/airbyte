@@ -18,8 +18,8 @@ from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     Status,
-    Type,
     SyncMode,
+    Type,
 )
 from airbyte_cdk.sources import Source
 from faker import Faker
@@ -93,7 +93,7 @@ class SourceFaker(Source):
         """
 
         count = config["count"] if "count" in config else 0
-        seed = config["seed"] if "seed" in config else state['seed'] if seed in state else -1
+        seed = config["seed"] if "seed" in config else state["seed"] if "seed" in state else -1
         Faker.seed(seed) if seed >= 0 else None
         fake = Faker()
 
@@ -109,9 +109,7 @@ class SourceFaker(Source):
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(
-                            stream=stream.stream.name,
-                            data=emit_user(fake, i),
-                            emitted_at=int(datetime.now().timestamp()) * 1000
+                            stream=stream.stream.name, data=emit_user(fake, i), emitted_at=int(datetime.now().timestamp()) * 1000
                         ),
                     )
                     total_records = total_records + 1
@@ -146,4 +144,3 @@ def emit_user(fake: Faker, idx: int):
 def read_json(filepath):
     with open(filepath, "r") as f:
         return json.loads(f.read())
-

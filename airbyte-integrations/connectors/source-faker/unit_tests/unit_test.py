@@ -53,7 +53,7 @@ def test_read_random_data():
     source = SourceFaker()
     logger = None
     config = {"count": 10}
-    catalog = LazyConfigDict({"streams": [LazyConfigDict({"stream": LazyConfigDict({"name": "Users"})})]})
+    catalog = LazyConfigDict({"streams": [LazyConfigDict({"sync_mode": "incremental", "stream": LazyConfigDict({"name": "Users"})})]})
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -77,7 +77,7 @@ def test_read_with_seed():
     source = SourceFaker()
     logger = None
     config = {"count": 1, "seed": 100}
-    catalog = LazyConfigDict({"streams": [LazyConfigDict({"stream": LazyConfigDict({"name": "Users"})})]})
+    catalog = LazyConfigDict({"streams": [LazyConfigDict({"sync_mode": "incremental", "stream": LazyConfigDict({"name": "Users"})})]})
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
