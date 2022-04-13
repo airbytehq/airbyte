@@ -3,10 +3,10 @@
   "type": "object",
   "properties": {
     "state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "role": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "url": {
       "type": "string"
