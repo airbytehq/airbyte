@@ -168,7 +168,7 @@ def get_object_structure(obj: dict) -> List[str]:
 
 def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -> List[str]:
     """
-    Travers through json schema and compose list of property keys that object expected to have.
+    Traverse through json schema and compose list of property keys that object expected to have.
     :param annotate_one_of: Generate one_of index in path
     :param schema: jsonschema to get expected paths
     :returns list of object property keys paths

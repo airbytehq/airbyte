@@ -69,7 +69,7 @@ You can find a complete tutorial for implementing an HTTP source connector in [t
 
 ### First time setup
 
-We assume `python` points to python &gt;=3.7.
+We assume `python` points to python &gt;=3.9.
 
 Setup a virtual env:
 

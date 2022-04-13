@@ -5,6 +5,9 @@
 
 from setuptools import find_packages, setup
 
+TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "responses~=0.19.0", "requests-mock~=1.9.3"]
+
+
 setup(
     name="source_mailchimp",
     description="Source implementation for Mailchimp.",
@@ -16,5 +19,5 @@ setup(
         "pytest~=6.1",
     ],
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    extras_require={"tests": ["pytest~=6.1"]},
+    extras_require={"tests": TEST_REQUIREMENTS},
 )
