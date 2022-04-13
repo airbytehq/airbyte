@@ -48,7 +48,6 @@ public class AdvancedTestDataComparator implements TestDataComparator {
       LOGGER.info("Expected Object : {}", expectedObject);
       LOGGER.info("Actual Object   : {}", actualObject);
       final Iterator<Map.Entry<String, JsonNode>> expectedDataIterator = expectedObject.fields();
-      assertEquals(expectedObject.size(), actualObject.size(), "Unequal row size");
       while (expectedDataIterator.hasNext()) {
         final Map.Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
         final JsonNode expectedValue = expectedEntry.getValue();
