@@ -42,6 +42,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.enums.StatusType;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
@@ -95,7 +96,7 @@ public class ConfigRepository {
   public boolean healthCheck() {
     try {
       database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Health check error: ", e);
       return false;
     }
@@ -950,6 +951,7 @@ public class ConfigRepository {
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .and(CONNECTION.STATUS.notEqual(StatusType.deprecated))
         .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 
