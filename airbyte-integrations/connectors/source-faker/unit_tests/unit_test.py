@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-# import jsonschema
+import jsonschema
 from airbyte_cdk.models import AirbyteMessage, Type
 from source_faker import SourceFaker
 
@@ -33,9 +33,9 @@ def test_source_streams():
         "company": {"type": "string"},
         "ssn": {"type": "string"},
         "residence": {"type": "string"},
-        "current_location": {"type": "array", "items": "number"},
+        "current_location": {"type": "array" },
         "blood_group": {"type": "string"},
-        "website": {"type": "array", "items": "string"},
+        "website": {"type": "array"},
         "username": {"type": "string"},
         "name": {"type": "string"},
         "sex": {"type": "string"},
@@ -44,9 +44,8 @@ def test_source_streams():
         "birthdate": {"type": "string", "format": "date"},
     }
 
-    # TODO: `jsonschema.exceptions.SchemaError: 'string' is not valid under any of the given schemas`... But, I think this is valid?
-    # for schema in schemas:
-    #     jsonschema.Draft7Validator.check_schema(schema)
+    for schema in schemas:
+        jsonschema.Draft7Validator.check_schema(schema)
 
 
 def test_read_random_data():
