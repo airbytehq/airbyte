@@ -59,6 +59,8 @@ pwd
 git fetch
 git switch gh-pages
 
+revision=$(git rev-parse --short HEAD)
+
 set +o xtrace
 echo -e "$blue_text""Writing CNAME file!\n\n""$default_text"
 set -o xtrace
@@ -68,13 +70,13 @@ echo "docs.airbyte.com" > CNAME
 
 git add CNAME
 
-git commit --message "Adds CNAME to deploy"
+git commit --message "Adds CNAME to deploy for $revision"
 
 # non functional. for debugging
 git branch
 
 # note that this is NOT airbyte repo
-git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git gh_pages
+git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
 
 # Want to push from your own computer? uncomment this line and comment out the push above
 # git push --force https://git@github.com/airbytehq/airbytehq.github.io.git
