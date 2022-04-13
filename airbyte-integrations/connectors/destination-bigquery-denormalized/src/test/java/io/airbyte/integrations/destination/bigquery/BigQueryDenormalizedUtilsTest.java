@@ -9,13 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsBigQueryDenormalizedRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.util.TestBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.util.TestGcsBigQueryDenormalizedRecordFormatter;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -204,6 +209,24 @@ public class BigQueryDenormalizedUtilsTest {
     assertEquals(LegacySQLTypeName.TIMESTAMP, appointment.getSubFields().get("expTime").getType());
     assertEquals(Mode.NULLABLE, appointment.getSubFields().get("expTime").getMode());
 
+  }
+
+  @Test
+  public void testEmittedAtTimeConversion() {
+    // in this test we don't care about json schema and naming resolver, so leave it as a null
+    final JsonNode jsonNodeSchema = getSchema();
+    final TestBigQueryDenormalizedRecordFormatter rf = new TestBigQueryDenormalizedRecordFormatter(
+        jsonNodeSchema, new BigQuerySQLNameTransformer());
+
+    final ObjectMapper mapper = new ObjectMapper();
+    final ObjectNode objectNode = mapper.createObjectNode();
+
+    final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage();
+    airbyteRecordMessage.setEmittedAt(1602637589000L);
+    rf.addAirbyteColumns(objectNode, airbyteRecordMessage);
+
+    assertEquals("2020-10-14 01:06:29.000000+00:00",
+        objectNode.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).textValue());
   }
 
   private static Stream<Arguments> actualAndExpectedSchemasProvider() {
