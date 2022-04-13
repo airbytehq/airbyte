@@ -94,7 +94,9 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   public static void setupJobDatabase() throws Exception {
     jobDatabase = new JobsDatabaseInstance(
         Databases.createDslContext(
-          Databases.dataSourceBuilder().withUsername(container.getUsername()).withPassword(container.getPassword()).withJdbcUrl(container.getJdbcUrl()).build(), SQLDialect.POSTGRES)).getAndInitialize();
+            Databases.dataSourceBuilder().withUsername(container.getUsername()).withPassword(container.getPassword())
+                .withJdbcUrl(container.getJdbcUrl()).build(),
+            SQLDialect.POSTGRES)).getAndInitialize();
   }
 
   @Test
@@ -116,8 +118,8 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
                     .withPassword(configs.getDatabasePassword())
                     .withJdbcUrl(configs.getDatabaseUrl())
                     .build(),
-                SQLDialect.POSTGRES
-            )).isPresent());
+                SQLDialect.POSTGRES))
+        .isPresent());
   }
 
   @Test
@@ -204,8 +206,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
                 .withPassword(container.getPassword())
                 .withUsername(container.getUsername())
                 .build(),
-            SQLDialect.POSTGRES
-        ));
+            SQLDialect.POSTGRES));
     // this context is a flyway class; only the getConnection method is needed to run the migration
     final Context context = new Context() {
 

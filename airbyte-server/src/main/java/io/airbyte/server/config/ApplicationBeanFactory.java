@@ -59,7 +59,6 @@ import java.util.function.Supplier;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
-import jdk.jfr.Name;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 
@@ -114,7 +113,8 @@ public class ApplicationBeanFactory {
 
   @Singleton
   @Named("ephemeralSecretPersistence")
-  public Optional<SecretPersistence> ephemeralSecretPersistence(final Configs configs, @Named("config") final DSLContext dslContext) throws IOException {
+  public Optional<SecretPersistence> ephemeralSecretPersistence(final Configs configs, @Named("config") final DSLContext dslContext)
+      throws IOException {
     return SecretPersistence.getEphemeral(configs, dslContext);
   }
 
@@ -252,7 +252,7 @@ public class ApplicationBeanFactory {
   @Singleton
   @Named("configFlyway")
   public Flyway configFlyway(@Named("config") final DataSource configDataSource,
-      @Named("config") final FlywayConfigurationProperties configsFlywayConfigurationProperties) {
+                             @Named("config") final FlywayConfigurationProperties configsFlywayConfigurationProperties) {
     return configsFlywayConfigurationProperties.getFluentConfiguration()
         .dataSource(configDataSource)
         .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
@@ -266,7 +266,7 @@ public class ApplicationBeanFactory {
   @Singleton
   @Named("jobsFlyway")
   public Flyway jobsFlyway(@Named("jobs") final DataSource jobsDataSource,
-      @Named("jobs") final FlywayConfigurationProperties jobsFlywayConfigurationProperties) {
+                           @Named("jobs") final FlywayConfigurationProperties jobsFlywayConfigurationProperties) {
     return jobsFlywayConfigurationProperties.getFluentConfiguration()
         .dataSource(jobsDataSource)
         .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)

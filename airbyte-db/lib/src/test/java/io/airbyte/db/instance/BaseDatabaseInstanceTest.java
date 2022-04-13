@@ -47,10 +47,10 @@ class BaseDatabaseInstanceTest {
   void createDatabase() {
     database = Databases.createDatabaseWithRetry(
         Databases.createDslContext(
-        Databases.dataSourceBuilder()
-            .withUsername(container.getUsername())
-            .withPassword(container.getPassword())
-            .withJdbcUrl(container.getJdbcUrl()).build(),
+            Databases.dataSourceBuilder()
+                .withUsername(container.getUsername())
+                .withPassword(container.getPassword())
+                .withJdbcUrl(container.getJdbcUrl()).build(),
             SQLDialect.POSTGRES),
         BaseDatabaseInstance.isDatabaseConnected(DATABASE_NAME));
   }

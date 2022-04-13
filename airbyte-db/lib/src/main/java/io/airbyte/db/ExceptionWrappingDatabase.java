@@ -10,7 +10,7 @@ import java.sql.SQLException;
 /**
  * Wraps a {@link Database} object and throwing IOExceptions instead of SQLExceptions.
  */
-public class ExceptionWrappingDatabase { 
+public class ExceptionWrappingDatabase {
 
   private final Database database;
 

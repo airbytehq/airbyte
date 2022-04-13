@@ -139,7 +139,6 @@ rootProject.file('.env.dev').withInputStream { env.load(it) }
 run {
     // default for running on local machine.
     env.each { entry ->
-        println "${entry.getKey()} -> ${entry.getValue()}"
         environment entry.getKey(), entry.getValue()
     }
 

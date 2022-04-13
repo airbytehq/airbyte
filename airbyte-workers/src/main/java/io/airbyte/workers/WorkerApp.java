@@ -358,7 +358,8 @@ public class WorkerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
-    final DataSource dataSource = Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword()).build();
+    final DataSource dataSource = Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser())
+        .withPassword(configs.getDatabasePassword()).build();
     final DSLContext dslContext = Databases.createDslContext(dataSource, SQLDialect.POSTGRES);
 
     final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs, dslContext);

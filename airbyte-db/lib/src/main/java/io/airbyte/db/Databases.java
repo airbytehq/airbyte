@@ -47,8 +47,8 @@ public class Databases {
   }
 
   public static Database createDatabaseWithRetryTimeout(final DSLContext dslContext,
-                                                                final Function<Database, Boolean> isDbReady,
-                                                                final long timeoutMs)
+                                                        final Function<Database, Boolean> isDbReady,
+                                                        final long timeoutMs)
       throws IOException {
     if (dslContext == null) {
       throw new IllegalArgumentException("DSLContext required.");
@@ -115,20 +115,23 @@ public class Databases {
     return new MongoDatabase(connectionString, databaseName);
   }
 
-  public static DSLContext createDslContext(final DataSource dataSource, final SQLDialect dialect) { return DSL.using(dataSource, dialect); }
+  public static DSLContext createDslContext(final DataSource dataSource, final SQLDialect dialect) {
+    return DSL.using(dataSource, dialect);
+  }
 
-  public static DataSourceBuilder dataSourceBuilder() { return new DataSourceBuilder(); };
+  public static DataSourceBuilder dataSourceBuilder() {
+    return new DataSourceBuilder();
+  };
 
   public static class DataSourceBuilder {
 
-    private static final Map<String,String> JDBC_URL_FORMATS = Map.of("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s",
+    private static final Map<String, String> JDBC_URL_FORMATS = Map.of("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s",
         "com.amazon.redshift.jdbc.Driver", "jdbc:redshift://%s:%d/%s",
         "com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s",
         "com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d/%s",
         "oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%d:%s",
         "ru.yandex.clickhouse.ClickHouseDriver", "jdbc:ch://%s:%d/%s",
-        "org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s"
-        );
+        "org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s");
 
     private String database;
     private String driverClassName = "org.postgresql.Driver";
@@ -140,7 +143,7 @@ public class Databases {
     private Integer port = 5432;
     private String username;
 
-    private DataSourceBuilder () {}
+    private DataSourceBuilder() {}
 
     public DataSourceBuilder withDatabase(final String database) {
       this.database = database;
@@ -163,14 +166,14 @@ public class Databases {
     }
 
     public DataSourceBuilder withMaximumPoolSize(final Integer maximumPoolSize) {
-      if(maximumPoolSize != null) {
+      if (maximumPoolSize != null) {
         this.maximumPoolSize = maximumPoolSize;
       }
       return this;
     }
 
     public DataSourceBuilder withMinimumPoolSize(final Integer minimumPoolSize) {
-      if(minimumPoolSize != null) {
+      if (minimumPoolSize != null) {
         this.minimumPoolSize = minimumPoolSize;
       }
       return this;
@@ -182,7 +185,7 @@ public class Databases {
     }
 
     public DataSourceBuilder withPort(final Integer port) {
-      if(port != null) {
+      if (port != null) {
         this.port = port;
       }
       return this;
@@ -206,5 +209,7 @@ public class Databases {
       dataSource.validate();
       return dataSource;
     }
+
   }
+
 }

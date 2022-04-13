@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.sql.DataSource;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
@@ -61,8 +60,9 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
     final EnvConfigs configs = new EnvConfigs();
     this.dslContext =
         Databases.createDslContext(
-          Databases.dataSourceBuilder().withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword()).withJdbcUrl(configs.getDatabaseUrl()).build(),
-          SQLDialect.POSTGRES);
+            Databases.dataSourceBuilder().withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword())
+                .withJdbcUrl(configs.getDatabaseUrl()).build(),
+            SQLDialect.POSTGRES);
   }
 
   @VisibleForTesting

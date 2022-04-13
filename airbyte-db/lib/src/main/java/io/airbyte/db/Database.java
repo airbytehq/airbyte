@@ -31,4 +31,5 @@ public class Database {
   public DataSource getDataSource() {
     return dslContext.diagnosticsDataSource();
   }
+
 }

@@ -18,7 +18,6 @@ import io.micronaut.context.annotation.Factory;
 import java.io.IOException;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.sql.DataSource;
 import org.jooq.DSLContext;
 
 @Factory

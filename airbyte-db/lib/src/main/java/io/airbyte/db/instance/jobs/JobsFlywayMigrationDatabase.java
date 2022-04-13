@@ -8,7 +8,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.FlywayMigrationDatabase;
-import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import org.jooq.SQLDialect;
 
@@ -25,7 +24,8 @@ public class JobsFlywayMigrationDatabase extends FlywayMigrationDatabase {
                 .withJdbcUrl(connectionString)
                 .withPassword(password)
                 .withUsername(username)
-                .build(), SQLDialect.POSTGRES)).getAndInitialize();
+                .build(),
+            SQLDialect.POSTGRES)).getAndInitialize();
   }
 
   @Override

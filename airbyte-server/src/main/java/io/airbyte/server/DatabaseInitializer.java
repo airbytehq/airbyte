@@ -5,13 +5,11 @@
 package io.airbyte.server;
 
 import io.airbyte.db.instance.DatabaseInstance;
-import io.airbyte.db.instance.FlywayConfigurationConstants;
 import io.airbyte.db.instance.MinimumFlywayMigrationVersionCheck;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.context.event.StartupEvent;
-import io.micronaut.flyway.FlywayConfigurationProperties;
 import io.micronaut.runtime.event.annotation.EventListener;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -26,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * Performs database initialization logic on application context start.
  */
 @Singleton
-@Requires(notEnv = { Environment.TEST })
+@Requires(notEnv = {Environment.TEST})
 public class DatabaseInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseInitializer.class);
@@ -69,8 +67,8 @@ public class DatabaseInitializer {
 
   @EventListener
   public void onStartup(final StartupEvent startupEvent) throws InterruptedException {
-      initializeConfigDatabase();
-      initializeJobsDatabase();
+    initializeConfigDatabase();
+    initializeJobsDatabase();
   }
 
   @Transactional

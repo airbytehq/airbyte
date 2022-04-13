@@ -242,13 +242,17 @@ public class SchedulerApp {
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
         Databases.createDslContext(
-        Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword()).build(), SQLDialect.POSTGRES))
-            .getInitialized();
+            Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser())
+                .withPassword(configs.getDatabasePassword()).build(),
+            SQLDialect.POSTGRES))
+                .getInitialized();
 
     final Database configDatabase = new ConfigsDatabaseInstance(
         Databases.createDslContext(
-            Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword()).build(), SQLDialect.POSTGRES))
-        .getInitialized();
+            Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser())
+                .withPassword(configs.getDatabasePassword()).build(),
+            SQLDialect.POSTGRES))
+                .getInitialized();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())

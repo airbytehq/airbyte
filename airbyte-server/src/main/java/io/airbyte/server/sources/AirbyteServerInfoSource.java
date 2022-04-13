@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.sources;
 
 import io.micronaut.context.env.KubernetesEnvironmentPropertySource;
@@ -14,4 +18,5 @@ public class AirbyteServerInfoSource implements InfoSource {
   public Publisher<PropertySource> getSource() {
     return Flux.just(new KubernetesEnvironmentPropertySource());
   }
+
 }

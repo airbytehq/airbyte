@@ -102,7 +102,7 @@ public class Bootloader {
     LOGGER.info("Setting up config database and default workspace...");
     assertNonBreakingMigration(jobPersistence, currentAirbyteVersion);
 
-    runFlywayMigration(); //configs, configDatabase, jobDatabase);
+    runFlywayMigration(); // configs, configDatabase, jobDatabase);
     LOGGER.info("Ran Flyway migrations.");
 
     createWorkspaceIfNoneExists(configRepository);
@@ -218,4 +218,5 @@ public class Bootloader {
       LOGGER.info("Auto database migration is skipped");
     }
   }
+
 }

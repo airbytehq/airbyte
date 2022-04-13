@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.bootloader.config;
 
 import io.airbyte.config.persistence.ConfigPersistence;
@@ -25,7 +29,8 @@ public class DatabaseBeanFactory {
   }
 
   @Singleton
-  public ConfigPersistence configPersistence(@Named("configDatabase") final Database configDatabase, final JsonSecretsProcessor jsonSecretsProcessor) {
+  public ConfigPersistence configPersistence(@Named("configDatabase") final Database configDatabase,
+                                             final JsonSecretsProcessor jsonSecretsProcessor) {
     return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
   }
 
@@ -36,21 +41,22 @@ public class DatabaseBeanFactory {
   }
 
   @Singleton
-  public JobPersistence jobPersistence(@Named("jobsDatabase") final Database jobsDatabase)  {
+  public JobPersistence jobPersistence(@Named("jobsDatabase") final Database jobsDatabase) {
     return new DefaultJobPersistence(jobsDatabase);
   }
 
-//  @Singleton
-//  @Named("configsDbMigrator")
-//  public DatabaseMigrator configsDbMigrator(@Named("configDatabase") final Database configDatabase) {
-//    return new ConfigsDatabaseMigrator(configDatabase, Bootloader.class.getSimpleName());
-//  }
-//
-//  @Singleton
-//  @Named("jobsDbMigrator")
-//  public DatabaseMigrator jobsDbMigrator(@Named("jobsDatabase") final Database jobsDatabase) {
-//    return new JobsDatabaseMigrator(jobsDatabase, Bootloader.class.getSimpleName());
-//  }
+  // @Singleton
+  // @Named("configsDbMigrator")
+  // public DatabaseMigrator configsDbMigrator(@Named("configDatabase") final Database configDatabase)
+  // {
+  // return new ConfigsDatabaseMigrator(configDatabase, Bootloader.class.getSimpleName());
+  // }
+  //
+  // @Singleton
+  // @Named("jobsDbMigrator")
+  // public DatabaseMigrator jobsDbMigrator(@Named("jobsDatabase") final Database jobsDatabase) {
+  // return new JobsDatabaseMigrator(jobsDatabase, Bootloader.class.getSimpleName());
+  // }
 
   @Singleton
   public ConfigRepository configRepository(final ConfigPersistence configPersistence, @Named("configDatabase") final Database configDatabase) {

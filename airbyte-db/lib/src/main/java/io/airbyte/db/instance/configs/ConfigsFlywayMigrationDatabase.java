@@ -24,7 +24,8 @@ public class ConfigsFlywayMigrationDatabase extends FlywayMigrationDatabase {
                 .withJdbcUrl(connectionString)
                 .withPassword(password)
                 .withUsername(username)
-                .build(), SQLDialect.POSTGRES)).getAndInitialize();
+                .build(),
+            SQLDialect.POSTGRES)).getAndInitialize();
   }
 
   @Override

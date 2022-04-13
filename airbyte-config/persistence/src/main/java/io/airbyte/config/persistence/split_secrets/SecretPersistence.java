@@ -6,7 +6,6 @@ package io.airbyte.config.persistence.split_secrets;
 
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import java.io.IOException;
 import java.util.Optional;
@@ -53,7 +52,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new ConfigsDatabaseInstance(dslContext)
-                .getAndInitialize();
+            .getAndInitialize();
 
         return Optional.of(new LocalTestingSecretPersistence(configDatabase));
       }

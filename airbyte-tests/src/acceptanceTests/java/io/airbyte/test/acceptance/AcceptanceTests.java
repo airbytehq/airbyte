@@ -1530,8 +1530,8 @@ public class AcceptanceTests {
   }
 
   private void close(final DataSource dataSource) throws IOException {
-    if(dataSource instanceof Closeable) {
-      ((Closeable)dataSource).close();
+    if (dataSource instanceof Closeable) {
+      ((Closeable) dataSource).close();
     }
   }
 
