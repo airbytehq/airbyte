@@ -6,7 +6,12 @@
     {%- set schemaname, _, tablename = var("models_to_source")[this.identifier].partition(".") -%}
 
     {%- call statement("get_column_type", fetch_result=True) -%}
-        set search_path to '$user', public, {{ schemaname }};
+        {%- set public_schema_query -%}
+            SELECT 1 FROM pg_namespace WHERE nspname = 'public'
+        {%- endset -%}
+        {%- set public_schema_list = run_query(public_schema_query) -%}
+
+        set search_path to '$user', {%- if len(public_schema_list.rows) > 0} -%} public, {%- endif -%} {{ schemaname }};
         select type from pg_table_def where tablename = '{{ tablename }}' and "column" = '{{ var("json_column") }}' and schemaname = '{{ schemaname }}';
     {%- endcall -%}
 
