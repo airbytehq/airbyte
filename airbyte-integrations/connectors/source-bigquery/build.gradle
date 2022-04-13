@@ -10,7 +10,7 @@ application {
 }
 
 dependencies {
-    implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
+    implementation 'com.google.cloud:google-cloud-bigquery:2.10.1'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-integrations:bases:base-java')
