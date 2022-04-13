@@ -65,8 +65,7 @@ class SourceFaker(Source):
         dirname = os.path.dirname(os.path.realpath(__file__))
         spec_path = os.path.join(dirname, "catalog.json")
         catalog = read_json(spec_path)
-        streams.append(AirbyteStream(name="Users", json_schema=catalog))
-
+        streams.append(AirbyteStream(name="Users", json_schema=catalog, supported_sync_modes=["full_refresh", "incremental"]))
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -92,8 +91,8 @@ class SourceFaker(Source):
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
 
-        count:int = config["count"] if "count" in config else 0
-        seed:int = config["seed"] if "seed" in config else state["seed"] if "seed" in state else None
+        count: int = config["count"] if "count" in config else 0
+        seed: int = config["seed"] if "seed" in config else state["seed"] if "seed" in state else None
         Faker.seed(seed)
         fake = Faker()
 
@@ -130,12 +129,13 @@ def emit_state(stream: str, value: int, seed: int):
 
 
 def emit_user(fake: Faker, idx: int):
-    now = datetime.now()
     profile = fake.profile()
+    time_a = fake.date_time()
+    time_b = fake.date_time()
     metadata = {
         "id": idx,
-        "created_at": now,
-        "updated_at": now,
+        "created_at": time_a if time_a <= time_b else time_b,
+        "updated_at": time_a if time_a > time_b else time_b,
     }
     profile.update(metadata)
     return profile

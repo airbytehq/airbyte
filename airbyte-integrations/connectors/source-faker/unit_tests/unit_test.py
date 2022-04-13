@@ -43,7 +43,9 @@ def test_read_random_data():
     source = SourceFaker()
     logger = None
     config = {"count": 10}
-    catalog = ConfiguredAirbyteCatalog(streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": 'full_refresh', "destination_sync_mode": 'overwrite'}])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"}]
+    )
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -67,7 +69,9 @@ def test_read_with_seed():
     source = SourceFaker()
     logger = None
     config = {"count": 1, "seed": 100}
-    catalog = ConfiguredAirbyteCatalog(streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": 'full_refresh', "destination_sync_mode": 'overwrite'}])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[{"stream": {"name": "Users", "json_schema": {}}, "sync_mode": "full_refresh", "destination_sync_mode": "overwrite"}]
+    )
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
