@@ -57,4 +57,6 @@ create unique index "job_attempt_idx" on "public"."attempts"(
   "job_id" asc, 
   "attempt_number" asc
 );
+create index "jobs_config_type_idx" on "public"."jobs"("config_type" asc);
 create unique index "jobs_pkey" on "public"."jobs"("id" asc);
+create index "jobs_scope_idx" on "public"."jobs"("scope" asc);

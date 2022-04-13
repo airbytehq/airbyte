@@ -53,16 +53,19 @@ Log into Gitlab and then generate a [personal access token](https://docs.gitlab.
 
 Your token should have the `read_api` scope, that Grants read access to the API, including all groups and projects, the container registry, and the package registry.
 
+**Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector will retrieve a list of all the groups that are accessible to the configured token and ingest as normal.
+
 ## Additional information
 
 GitLab source is working with GitLab API v4. It can also work with self-hosted GitLab API v4.
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.3 | 2021-12-21 | [8991](https://github.com/airbytehq/airbyte/pull/8991) | Update connector fields title/description |
-| 0.1.2 | 2021-10-18 | [7108](https://github.com/airbytehq/airbyte/pull/7108) | Allow all domains to be used as `api_url` |
-| 0.1.1 | 2021-10-12 | [6932](https://github.com/airbytehq/airbyte/pull/6932) | Fix pattern field in spec file, remove unused fields from config files, use cache from CDK |
-| 0.1.0 | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174) | Initial Release |
+| Version | Date       | Pull Request                                             | Subject |
+|:--------|:-----------|:---------------------------------------------------------| :--- |
+| 0.1.4   | 2022-03-23 | [11140](https://github.com/airbytehq/airbyte/pull/11140) | Ingest All Accessible Groups if not Specified in Config |
+| 0.1.3   | 2021-12-21 | [8991](https://github.com/airbytehq/airbyte/pull/8991)   | Update connector fields title/description |
+| 0.1.2   | 2021-10-18 | [7108](https://github.com/airbytehq/airbyte/pull/7108)   | Allow all domains to be used as `api_url` |
+| 0.1.1   | 2021-10-12 | [6932](https://github.com/airbytehq/airbyte/pull/6932)   | Fix pattern field in spec file, remove unused fields from config files, use cache from CDK |
+| 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)   | Initial Release |
 

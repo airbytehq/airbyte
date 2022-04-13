@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,6 +17,8 @@ public class SnowflakeDestinationResolver {
       return DestinationType.COPY_S3;
     } else if (isGcsCopy(config)) {
       return DestinationType.COPY_GCS;
+    } else if (isAzureBlobCopy(config)) {
+      return DestinationType.COPY_AZURE_BLOB;
     } else {
       return DestinationType.INTERNAL_STAGING;
     }
@@ -26,14 +32,22 @@ public class SnowflakeDestinationResolver {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
 
+  public static boolean isAzureBlobCopy(final JsonNode config) {
+    return config.has("loading_method") && config.get("loading_method").isObject()
+        && config.get("loading_method").has("azure_blob_storage_account_name");
+  }
+
   public static Map<DestinationType, Destination> getTypeToDestination() {
-    final SnowflakeCopyS3Destination copyS3Destination = new SnowflakeCopyS3Destination();
+    final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination();
     final SnowflakeCopyGcsDestination copyGcsDestination = new SnowflakeCopyGcsDestination();
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination();
+    final SnowflakeCopyAzureBlobStorageDestination azureBlobStorageDestination = new SnowflakeCopyAzureBlobStorageDestination();
 
     return ImmutableMap.of(
-        DestinationType.COPY_S3, copyS3Destination,
+        DestinationType.COPY_S3, s3StagingDestination,
         DestinationType.COPY_GCS, copyGcsDestination,
+        DestinationType.COPY_AZURE_BLOB, azureBlobStorageDestination,
         DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
+
 }

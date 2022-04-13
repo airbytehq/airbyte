@@ -11,6 +11,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
@@ -95,10 +96,12 @@ public abstract class S3StreamCopier implements StreamCopier {
       LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
 
       try {
+        // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
+        // pass in null.
+        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, (long) s3Config.getPartSize());
+        final S3DestinationConfig writerS3Config = S3DestinationConfig.create(s3Config).withFormatConfig(csvFormatConfig).get();
         final S3CsvWriter writer = new S3CsvWriter.Builder(
-            // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
-            // pass in null.
-            s3Config.cloneWithFormatConfig(new S3CsvFormatConfig(null, (long) s3Config.getPartSize())),
+            writerS3Config,
             s3Client,
             configuredAirbyteStream,
             uploadTime)
@@ -129,8 +132,8 @@ public abstract class S3StreamCopier implements StreamCopier {
 
   @Override
   public void closeNonCurrentStagingFileWriters() throws Exception {
-    Set<String> removedKeys = new HashSet<>();
-    for (String key : activeStagingWriterFileNames) {
+    final Set<String> removedKeys = new HashSet<>();
+    for (final String key : activeStagingWriterFileNames) {
       if (!key.equals(currentFile)) {
         stagingWritersByFile.get(key).close(false);
         stagingWritersByFile.remove(key);
@@ -221,6 +224,11 @@ public abstract class S3StreamCopier implements StreamCopier {
   @VisibleForTesting
   public Map<String, DestinationFileWriter> getStagingWritersByFile() {
     return stagingWritersByFile;
+  }
+
+  @VisibleForTesting
+  public Set<String> getStagingFiles() {
+    return stagingFileNames;
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,

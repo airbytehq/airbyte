@@ -14,9 +14,10 @@ import sys
 import threading
 import time
 from copy import copy
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 from normalization.destination_type import DestinationType
+from normalization.transform_catalog.transform import read_yaml_config, write_yaml_config
 from normalization.transform_config.transform import TransformConfig
 
 NORMALIZATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
@@ -376,6 +377,8 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-clickhouse:dev"
         elif DestinationType.SNOWFLAKE.value == destination_type.value:
             return "airbyte/normalization-snowflake:dev"
+        elif DestinationType.REDSHIFT.value == destination_type.value:
+            return "airbyte/normalization-redshift:dev"
         else:
             return "airbyte/normalization:dev"
 
@@ -401,30 +404,40 @@ class DbtIntegrationTest(object):
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
+        if normalization_image.startswith("airbyte/normalization-oracle") or normalization_image.startswith("airbyte/normalization-mysql"):
+            dbtAdditionalArgs = []
+        else:
+            dbtAdditionalArgs = ["--event-buffer-size=10000"]
+
         error_count = 0
-        commands = [
-            "docker",
-            "run",
-            "--rm",
-            "--init",
-            "-v",
-            f"{cwd}:/workspace",
-            "-v",
-            f"{cwd}/build:/build",
-            "-v",
-            f"{cwd}/logs:/logs",
-            "-v",
-            "/tmp:/tmp",
-            "--network",
-            "host",
-            "--entrypoint",
-            "/usr/local/bin/dbt",
-            "-i",
-            normalization_image,
-            command,
-            "--profiles-dir=/workspace",
-            "--project-dir=/workspace",
-        ]
+        commands = (
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--init",
+                "-v",
+                f"{cwd}:/workspace",
+                "-v",
+                f"{cwd}/build:/build",
+                "-v",
+                f"{cwd}/logs:/logs",
+                "-v",
+                f"{cwd}/build/dbt_packages:/dbt",
+                "--network",
+                "host",
+                "--entrypoint",
+                "/usr/local/bin/dbt",
+                "-i",
+                normalization_image,
+            ]
+            + dbtAdditionalArgs
+            + [
+                command,
+                "--profiles-dir=/workspace",
+                "--project-dir=/workspace",
+            ]
+        )
         if force_full_refresh:
             commands.append("--full-refresh")
             command = f"{command} --full-refresh"
@@ -517,3 +530,10 @@ class DbtIntegrationTest(object):
             return [d.value for d in {DestinationType.from_string(s.strip()) for s in target_str.split(",")}]
         else:
             return [d.value for d in DestinationType]
+
+    @staticmethod
+    def update_yaml_file(filename: str, callback: Callable):
+        config = read_yaml_config(filename)
+        updated, config = callback(config)
+        if updated:
+            write_yaml_config(config, filename)

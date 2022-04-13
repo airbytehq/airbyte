@@ -190,7 +190,6 @@ public class IntegrationRunner {
     watchForOrphanThreads(
         () -> consumeWriteStream(consumer),
         () -> System.exit(FORCED_EXIT_CODE),
-        true,
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
@@ -211,7 +210,6 @@ public class IntegrationRunner {
   @VisibleForTesting
   static void watchForOrphanThreads(final Procedure runMethod,
                                     final Runnable exitHook,
-                                    final boolean sentryEnabled,
                                     final int interruptTimeDelay,
                                     final TimeUnit interruptTimeUnit,
                                     final int exitTimeDelay,
@@ -249,9 +247,7 @@ public class IntegrationRunner {
           // So, we schedule an interrupt hook after a fixed time delay instead...
           scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
         }
-        if (!sentryEnabled) {
-          Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
-        }
+        Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
         scheduledExecutorService.schedule(() -> {
           if (ThreadUtils.getAllThreads().stream()
               .anyMatch(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(currentThread.getName()))) {
@@ -301,8 +297,8 @@ public class IntegrationRunner {
     final String version = parseConnectorVersion(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
     final String airbyteVersion = env.getOrDefault(EnvConfigs.AIRBYTE_VERSION, "");
     final String airbyteRole = env.getOrDefault(EnvConfigs.AIRBYTE_ROLE, "");
-    final boolean isDev = version.equals(AirbyteVersion.DEV_VERSION)
-        || airbyteVersion.equals(AirbyteVersion.DEV_VERSION)
+    final boolean isDev = version.startsWith(AirbyteVersion.DEV_VERSION_PREFIX)
+        || airbyteVersion.startsWith(AirbyteVersion.DEV_VERSION_PREFIX)
         || airbyteRole.equals("airbyter");
     if (isDev) {
       LOGGER.debug("Skip Sentry transaction for dev environment");

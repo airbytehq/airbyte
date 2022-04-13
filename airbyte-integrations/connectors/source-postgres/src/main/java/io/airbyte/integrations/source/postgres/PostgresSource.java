@@ -155,7 +155,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (isCdc(config)) {
       checkOperations.add(database -> {
-        final List<JsonNode> matchingSlots = database.query(connection -> {
+        final List<JsonNode> matchingSlots = database.unsafeQuery(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
           final PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("replication_method").get("replication_slot").asText());
@@ -177,7 +177,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       });
 
       checkOperations.add(database -> {
-        final List<JsonNode> matchingPublications = database.query(connection -> {
+        final List<JsonNode> matchingPublications = database.unsafeQuery(connection -> {
           final PreparedStatement ps = connection
               .prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
           ps.setString(1, config.get("replication_method").get("publication").asText());
@@ -274,7 +274,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
                                                                 final String schema)
       throws SQLException {
-    return database.query(connection -> {
+    return database.unsafeQuery(connection -> {
       final PreparedStatement ps = connection.prepareStatement(
           """
                  SELECT DISTINCT table_catalog,
@@ -300,18 +300,21 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                  Unnest(COALESCE(relacl::text[], Format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl,
                         Regexp_split_to_array(acl, '=|/') s
                  WHERE  r.rolname = ?
-                 AND    nspname = 'public'
+                 AND    (
+                               nspname = 'public'
+                          OR   nspname = ?)
                         -- 'm' means Materialized View
                  AND    c.relkind = 'm'
                  AND    (
                                -- all grants
                                c.relacl IS NULL
                                -- read grant
-                        OR     s[2] = 'r');
+                          OR     s[2] = 'r');
           """);
       final String username = database.getDatabaseConfig().get("username").asText();
       ps.setString(1, username);
       ps.setString(2, username);
+      ps.setString(3, username);
       return ps;
     }, sourceOperations::rowToJson)
         .collect(toSet())

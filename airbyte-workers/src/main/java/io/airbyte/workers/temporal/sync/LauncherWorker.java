@@ -15,7 +15,7 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AsyncKubePodStatus;
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
 import io.airbyte.workers.process.KubePodInfo;
-import io.airbyte.workers.process.KubePodProcess;
+import io.airbyte.workers.process.KubePodResourceHelper;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -219,7 +219,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         .list()
         .getItems()
         .stream()
-        .filter(kubePod -> !KubePodProcess.isTerminal(kubePod))
+        .filter(kubePod -> !KubePodResourceHelper.isTerminal(kubePod))
         .collect(Collectors.toList());
   }
 

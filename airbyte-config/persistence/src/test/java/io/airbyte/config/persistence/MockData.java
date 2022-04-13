@@ -53,11 +53,16 @@ public class MockData {
 
   private static final UUID WORKSPACE_ID_1 = UUID.randomUUID();
   private static final UUID WORKSPACE_ID_2 = UUID.randomUUID();
+  private static final UUID WORKSPACE_ID_3 = UUID.randomUUID();
   private static final UUID WORKSPACE_CUSTOMER_ID = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID_1 = UUID.randomUUID();
   private static final UUID SOURCE_DEFINITION_ID_2 = UUID.randomUUID();
+  private static final UUID SOURCE_DEFINITION_ID_3 = UUID.randomUUID();
+  private static final UUID SOURCE_DEFINITION_ID_4 = UUID.randomUUID();
   private static final UUID DESTINATION_DEFINITION_ID_1 = UUID.randomUUID();
   private static final UUID DESTINATION_DEFINITION_ID_2 = UUID.randomUUID();
+  private static final UUID DESTINATION_DEFINITION_ID_3 = UUID.randomUUID();
+  private static final UUID DESTINATION_DEFINITION_ID_4 = UUID.randomUUID();
   private static final UUID SOURCE_ID_1 = UUID.randomUUID();
   private static final UUID SOURCE_ID_2 = UUID.randomUUID();
   private static final UUID SOURCE_ID_3 = UUID.randomUUID();
@@ -72,6 +77,7 @@ public class MockData {
   private static final UUID CONNECTION_ID_3 = UUID.randomUUID();
   private static final UUID CONNECTION_ID_4 = UUID.randomUUID();
   private static final UUID CONNECTION_ID_5 = UUID.randomUUID();
+  private static final UUID CONNECTION_ID_6 = UUID.randomUUID();
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
@@ -114,12 +120,18 @@ public class MockData {
         .withInitialSetupComplete(true)
         .withTombstone(false);
 
-    return Arrays.asList(workspace1, workspace2);
+    final StandardWorkspace workspace3 = new StandardWorkspace()
+        .withWorkspaceId(WORKSPACE_ID_3)
+        .withName("Tombstoned")
+        .withSlug("tombstoned")
+        .withInitialSetupComplete(true)
+        .withTombstone(true);
+
+    return Arrays.asList(workspace1, workspace2, workspace3);
   }
 
-  public static List<StandardSourceDefinition> standardSourceDefinitions() {
-    final ConnectorSpecification connectorSpecification = connectorSpecification();
-    final StandardSourceDefinition standardSourceDefinition1 = new StandardSourceDefinition()
+  public static StandardSourceDefinition publicSourceDefinition() {
+    return new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withSourceType(SourceType.API)
         .withName("random-source-1")
@@ -127,10 +139,15 @@ public class MockData {
         .withDockerRepository("repository-1")
         .withDocumentationUrl("documentation-url-1")
         .withIcon("icon-1")
-        .withSpec(connectorSpecification)
+        .withSpec(connectorSpecification())
         .withTombstone(false)
+        .withPublic(true)
+        .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
-    final StandardSourceDefinition standardSourceDefinition2 = new StandardSourceDefinition()
+  }
+
+  public static StandardSourceDefinition grantableSourceDefinition1() {
+    return new StandardSourceDefinition()
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withSourceType(SourceType.DATABASE)
         .withName("random-source-2")
@@ -138,8 +155,45 @@ public class MockData {
         .withDockerRepository("repository-2")
         .withDocumentationUrl("documentation-url-2")
         .withIcon("icon-2")
-        .withTombstone(false);
-    return Arrays.asList(standardSourceDefinition1, standardSourceDefinition2);
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(false);
+  }
+
+  public static StandardSourceDefinition grantableSourceDefinition2() {
+    return new StandardSourceDefinition()
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID_3)
+        .withSourceType(SourceType.DATABASE)
+        .withName("random-source-3")
+        .withDockerImageTag("tag-3")
+        .withDockerRepository("repository-3")
+        .withDocumentationUrl("documentation-url-3")
+        .withIcon("icon-3")
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(false);
+  }
+
+  public static StandardSourceDefinition customSourceDefinition() {
+    return new StandardSourceDefinition()
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID_4)
+        .withSourceType(SourceType.DATABASE)
+        .withName("random-source-4")
+        .withDockerImageTag("tag-4")
+        .withDockerRepository("repository-4")
+        .withDocumentationUrl("documentation-url-4")
+        .withIcon("icon-4")
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(true);
+  }
+
+  public static List<StandardSourceDefinition> standardSourceDefinitions() {
+    return Arrays.asList(
+        publicSourceDefinition(),
+        grantableSourceDefinition1(),
+        grantableSourceDefinition2(),
+        customSourceDefinition());
   }
 
   private static ConnectorSpecification connectorSpecification() {
@@ -155,28 +209,69 @@ public class MockData {
         .withSupportsNormalization(true);
   }
 
-  public static List<StandardDestinationDefinition> standardDestinationDefinitions() {
-    final ConnectorSpecification connectorSpecification = connectorSpecification();
-    final StandardDestinationDefinition standardDestinationDefinition1 = new StandardDestinationDefinition()
+  public static StandardDestinationDefinition publicDestinationDefinition() {
+    return new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withName("random-destination-1")
         .withDockerImageTag("tag-3")
         .withDockerRepository("repository-3")
         .withDocumentationUrl("documentation-url-3")
         .withIcon("icon-3")
-        .withSpec(connectorSpecification)
+        .withSpec(connectorSpecification())
         .withTombstone(false)
+        .withPublic(true)
+        .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
-    final StandardDestinationDefinition standardDestinationDefinition2 = new StandardDestinationDefinition()
+  }
+
+  public static StandardDestinationDefinition grantableDestinationDefinition1() {
+    return new StandardDestinationDefinition()
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withName("random-destination-2")
         .withDockerImageTag("tag-4")
         .withDockerRepository("repository-4")
         .withDocumentationUrl("documentation-url-4")
         .withIcon("icon-4")
-        .withSpec(connectorSpecification)
-        .withTombstone(false);
-    return Arrays.asList(standardDestinationDefinition1, standardDestinationDefinition2);
+        .withSpec(connectorSpecification())
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(false);
+  }
+
+  public static StandardDestinationDefinition grantableDestinationDefinition2() {
+    return new StandardDestinationDefinition()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_3)
+        .withName("random-destination-3")
+        .withDockerImageTag("tag-33")
+        .withDockerRepository("repository-33")
+        .withDocumentationUrl("documentation-url-33")
+        .withIcon("icon-3")
+        .withSpec(connectorSpecification())
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(false);
+  }
+
+  public static StandardDestinationDefinition cusstomDestinationDefinition() {
+    return new StandardDestinationDefinition()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_4)
+        .withName("random-destination-4")
+        .withDockerImageTag("tag-44")
+        .withDockerRepository("repository-44")
+        .withDocumentationUrl("documentation-url-44")
+        .withIcon("icon-4")
+        .withSpec(connectorSpecification())
+        .withTombstone(false)
+        .withPublic(false)
+        .withCustom(true);
+  }
+
+  public static List<StandardDestinationDefinition> standardDestinationDefinitions() {
+    return Arrays.asList(
+        publicDestinationDefinition(),
+        grantableDestinationDefinition1(),
+        grantableDestinationDefinition2(),
+        cusstomDestinationDefinition());
   }
 
   public static List<SourceConnection> sourceConnections() {
@@ -371,7 +466,23 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule);
-    return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5);
+
+    final StandardSync standardSync6 = new StandardSync()
+        .withOperationIds(Arrays.asList())
+        .withConnectionId(CONNECTION_ID_6)
+        .withSourceId(SOURCE_ID_3)
+        .withDestinationId(DESTINATION_ID_3)
+        .withCatalog(getConfiguredCatalog())
+        .withName("standard-sync-6")
+        .withManual(true)
+        .withNamespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
+        .withNamespaceFormat("")
+        .withPrefix("")
+        .withResourceRequirements(resourceRequirements)
+        .withStatus(Status.DEPRECATED)
+        .withSchedule(schedule);
+
+    return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5, standardSync6);
   }
 
   private static ConfiguredAirbyteCatalog getConfiguredCatalog() {

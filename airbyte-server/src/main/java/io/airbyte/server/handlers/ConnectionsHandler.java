@@ -36,12 +36,12 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.helper.CatalogConverter;
 import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
 import java.util.Collections;
@@ -100,9 +100,14 @@ public class ConnectionsHandler {
 
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
+
     // Validate source and destination
-    configRepository.getSourceConnection(connectionCreate.getSourceId());
-    configRepository.getDestinationConnection(connectionCreate.getDestinationId());
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(connectionCreate.getSourceId());
+    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(connectionCreate.getDestinationId());
+
+    // Set this as default name if connectionCreate doesn't have it
+    final String defaultName = sourceConnection.getName() + " <> " + destinationConnection.getName();
+
     ConnectionHelper.validateWorkspace(workspaceHelper,
         connectionCreate.getSourceId(),
         connectionCreate.getDestinationId(),
@@ -113,7 +118,7 @@ public class ConnectionsHandler {
     // persist sync
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
-        .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
+        .withName(connectionCreate.getName() != null ? connectionCreate.getName() : defaultName)
         .withNamespaceDefinition(Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .withNamespaceFormat(connectionCreate.getNamespaceFormat())
         .withPrefix(connectionCreate.getPrefix())
@@ -239,7 +244,7 @@ public class ConnectionsHandler {
         continue;
       }
 
-      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);
@@ -252,7 +257,7 @@ public class ConnectionsHandler {
       if (standardSync.getStatus() == StandardSync.Status.DEPRECATED) {
         continue;
       }
-      connectionReads.add(buildConnectionRead(standardSync.getConnectionId()));
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);
@@ -268,7 +273,7 @@ public class ConnectionsHandler {
     final List<ConnectionRead> reads = Lists.newArrayList();
     for (final StandardSync standardSync : configRepository.listStandardSyncs()) {
       if (standardSync.getStatus() != StandardSync.Status.DEPRECATED) {
-        final ConnectionRead connectionRead = buildConnectionRead(standardSync.getConnectionId());
+        final ConnectionRead connectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
         if (matchSearch(connectionSearch, connectionRead)) {
           reads.add(connectionRead);
         }
