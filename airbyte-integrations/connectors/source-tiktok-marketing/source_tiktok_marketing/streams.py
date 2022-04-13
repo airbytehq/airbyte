@@ -466,10 +466,13 @@ class BasicReports(IncrementalTiktokStream, ABC):
             ReportLevel.ADGROUP: "adgroup_id",
             ReportLevel.AD: "ad_id",
         }
-        spec_time_dimensions = {ReportGranularity.DAY: "stat_time_day", ReportGranularity.HOUR: "stat_time_hour"}
         if self.report_level and self.report_level in spec_id_dimensions:
             result.append(spec_id_dimensions[self.report_level])
 
+        spec_time_dimensions = {
+            ReportGranularity.DAY: "stat_time_day",
+            ReportGranularity.HOUR: "stat_time_hour",
+        }
         if self.report_granularity and self.report_granularity in spec_time_dimensions:
             result.append(spec_time_dimensions[self.report_granularity])
 
@@ -528,10 +531,13 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_start = self.select_cursor_field_value(stream_state) or self._start_time
 
-        for slice in super().stream_slices(**kwargs):
+        for slice_adv_id in super().stream_slices(**kwargs):
             for start_date, end_date in self._get_time_interval(stream_start, self.report_granularity):
-                slice["start_date"] = start_date.strftime("%Y-%m-%d")
-                slice["end_date"] = end_date.strftime("%Y-%m-%d")
+                slice = {
+                    "advertiser_id": slice_adv_id["advertiser_id"],
+                    "start_date": start_date.strftime("%Y-%m-%d"),
+                    "end_date": end_date.strftime("%Y-%m-%d"),
+                }
                 self.logger.debug(
                     f'name: {self.name}, advertiser_id: {slice["advertiser_id"]}, slice: {slice["start_date"]} - {slice["end_date"]}'
                 )
