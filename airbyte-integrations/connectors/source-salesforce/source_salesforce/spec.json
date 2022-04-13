@@ -8,7 +8,7 @@
     "additionalProperties": true,
     "properties": {
       "is_sandbox": {
-        "title": "Sandbox",
+        "title": "Sandbox?????",
         "description": "Whether the app is in a Salesforce sandbox or not. If you do not know what this is, assume it as false. We provide more info on this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#sandbox-accounts\">docs</a>.",
         "type": "boolean",
         "default": false,
