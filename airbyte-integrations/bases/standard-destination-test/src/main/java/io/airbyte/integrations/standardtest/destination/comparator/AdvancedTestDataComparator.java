@@ -62,13 +62,12 @@ public class AdvancedTestDataComparator implements TestDataComparator {
     }
   }
 
+  private boolean isJsonNodeEmpty(final JsonNode jsonNode) {
+    return jsonNode.isEmpty() || (jsonNode.size() == 1 && jsonNode.iterator().next().asText().isEmpty());
+  }
+
   private boolean areBothEmpty(final JsonNode expectedData, final JsonNode actualData) {
-    if (expectedData.size() <= 1 && actualData.size() <= 1) {
-      boolean isExpectedEmpty = (expectedData.size() == 0 || expectedData.iterator().next().asText().isEmpty());
-      return isExpectedEmpty && (actualData.size() == 0 || actualData.iterator().next().asText().isEmpty());
-    } else {
-      return false;
-    }
+    return isJsonNodeEmpty(expectedData) && isJsonNodeEmpty(actualData);
   }
 
   // Allows subclasses to implement custom comparison asserts
@@ -79,7 +78,6 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected boolean compareJsonNodes(final JsonNode expectedValue, final JsonNode actualValue) {
-    Boolean t = true;
     if (expectedValue == null || actualValue == null) {
       return expectedValue == null && actualValue == null;
     } else if (expectedValue.isNumber() || expectedValue.isDouble() || expectedValue.isFloat()) {
