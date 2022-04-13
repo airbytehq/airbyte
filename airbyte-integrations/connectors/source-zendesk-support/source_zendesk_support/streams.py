@@ -594,3 +594,17 @@ class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
         raise SourceZendeskException("not found settings")
+
+
+class Articles(SourceZendeskSupportFullRefreshStream):
+    """Articles stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "help_center/articles.json"
+
+
+class Sections(SourceZendeskSupportFullRefreshStream):
+    """Sections stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/#list-sections"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "help_center/sections.json"

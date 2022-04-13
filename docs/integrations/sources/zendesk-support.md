@@ -10,6 +10,7 @@ This source can sync data for the [Zendesk Support API](https://developer.zendes
 
 This Source is capable of syncing the following core Streams:
 
+* [Articles](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles)
 * [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 * [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
 * [Groups](https://developer.zendesk.com/rest_api/docs/support/groups)
@@ -18,6 +19,7 @@ This Source is capable of syncing the following core Streams:
 * [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations)
 * [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings)
 * [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
+* [Sections](https://developer.zendesk.com/api-reference/help_center/help-center-api/sections)
 * [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
 * [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
 * [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based)
@@ -74,6 +76,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version  | Date       | Pull Request | Subject                                                |
 |:---------|:-----------| :-----       |:-------------------------------------------------------|
+| `0.2.6`  | 2022-04-13 | [TBC](https://github.com/airbytehq/airbyte/pull/TBC) | Added Articles and Sections                              |
 | `0.2.5`  | 2022-04-05 | [11727](https://github.com/airbytehq/airbyte/pull/11727) | Fixed the bug when state was not parsed correctly
 | `0.2.4`  | 2022-04-04 | [11688](https://github.com/airbytehq/airbyte/pull/11688) | Small documentation corrections
 | `0.2.3`  | 2022-03-23 | [11349](https://github.com/airbytehq/airbyte/pull/11349) | Fixed the bug when Tickets stream didn't return deleted records

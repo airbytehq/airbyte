@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from source_zendesk_support.streams import SourceZendeskException
 
 from .streams import (
+    Articles,
     Brands,
     CustomRoles,
     GroupMemberships,
@@ -20,6 +21,7 @@ from .streams import (
     Organizations,
     SatisfactionRatings,
     Schedules,
+    Sections,
     SlaPolicies,
     Tags,
     TicketAudits,
@@ -124,4 +126,6 @@ class SourceZendeskSupport(AbstractSource):
             Brands(**args),
             CustomRoles(**args),
             Schedules(**args),
+            Articles(**args),
+            Sections(**args),
         ]
