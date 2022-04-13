@@ -59,9 +59,18 @@ pwd
 git checkout gh-pages
 git pull
 
-# adding another remote seems less gross then double cloning to force push
-git remote add org_level_gh_pages_repo git@github.com:airbytehq/airbytehq.github.io.git
+# github expects this CNAME file for pages
+echo "docs.airbyte.com" > CNAME
 
-exit 0
-git push org_level_gh_pages_repo/gh_pages
+git add CNAME
 
+git commit --message "Adds CNAME to deploy"
+
+
+git branch
+
+# note that this is NOT airbyte repo
+git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
+
+
+echo -e "$blue_text""Script exiting 0 GREAT SUCCESS!!!?""$default_text"

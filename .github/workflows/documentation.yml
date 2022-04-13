@@ -4,7 +4,6 @@ on:
   push:
     branches: [master]
 
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -27,10 +26,11 @@ jobs:
           node-version: '16.13.0'
           cache: 'yarn'
           cache-dependency-path: docusaurus
-      # Install and build Docusaurus website
+      # Build Docusaurus website
       - name: Check for docusaurus changes
         run: ./tools/bin/check_docusaurus_build_changes
       # Install and build Docusaurus website
-      - name: Do some crazy deployment workflow
+      - name: Deploy docs to production (it's weird)
         run: ./tools/bin/deploy_docusaurus
+        env: GITHUB_TOKEN: ${{ secrets.OCTAVIA_PAT }}
 
