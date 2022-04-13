@@ -45,9 +45,11 @@ You will need to choose an existing database or create a new database that will 
 2. Allow connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
 3. A staging S3 bucket with credentials \(for the COPY strategy\).
 
-{% hint style="info" %}
+:::info
+
 Even if your Airbyte instance is running on a server in the same VPC as your Redshift cluster, you may need to place them in the **same security group** to allow connections between the two.
-{% endhint %}
+
+:::
 
 ### Setup guide
 
@@ -124,6 +126,7 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request | Subject |
 |:--------| :--------  | :-----       | :------ |
+| 0.3.30  | 2022-02-17 | [\#9407](https://github.com/airbytehq/airbyte/pull/9407) | Added option to support SUPER datatype in _airbyte_raw_** table |
 | 0.3.29  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name |                                                                   |
 | 0.3.28  | 2022-03-18 | [\#11254](https://github.com/airbytehq/airbyte/pull/11254) | Fixed missing records during S3 staging |
 | 0.3.27  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |

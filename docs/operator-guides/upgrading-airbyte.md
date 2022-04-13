@@ -53,9 +53,11 @@ If you use custom connectors, this upgrade requires your all of your connector s
 
 If you did not start Airbyte from the root of the Airbyte monorepo, you may run into issues where existing orphaned Airbyte configurations will prevent you from upgrading with the automatic process. To fix this, we will need to globally remove these lost Airbyte configurations. You can do this with `docker volume rm $(docker volume ls -q | grep airbyte)`.
 
-{% hint style="danger" %}
+:::danger
+
 This will completely reset your Airbyte deployment back to scratch and you will lose all data.
-{% endhint %}
+
+:::
 
 ## Upgrading on K8s \(0.27.0-alpha and above\)
 
@@ -101,7 +103,7 @@ If you are upgrading from \(i.e. your current version of Airbyte is\) Airbyte ve
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.35.65-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.35.67-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
