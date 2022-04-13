@@ -29,6 +29,7 @@ public class AthenaHelper {
   private static final Logger LOGGER = LoggerFactory.getLogger(AthenaHelper.class);
 
   public AthenaHelper(AwsCredentials credentials, Region region, String outputBucket, String workGroup) {
+    LOGGER.debug(String.format("region = %s, outputBucket = %s, workGroup = %s", region, outputBucket, workGroup));
     var credProvider = StaticCredentialsProvider.create(credentials);
     this.athenaClient = AthenaClient.builder().region(region).credentialsProvider(credProvider).build();
     this.outputBucket = outputBucket;
@@ -115,6 +116,7 @@ public class AthenaHelper {
       try {
         waitForQueryToComplete(execId);
       } catch (RuntimeException e) {
+        e.printStackTrace();
         LOGGER.info("Athena query failed once. Retrying.");
         retryCount++;
         continue;

@@ -115,6 +115,23 @@ class AwsHandler:
         else:
             return property_type
 
+    def cast_to_athena(self, str_type):
+        preprocessed_type = self.preprocess_type(str_type)
+        return self.COLUMNS_MAPPING.get(preprocessed_type, preprocessed_type)
+
+
+    def generate_athena_schema(self, schema):
+        columns = []
+        for (k, v) in schema.items():
+            athena_type = self.cast_to_athena(v["type"])
+            if athena_type == "object":
+                properties = v["properties"]
+                type_str = ",".join([ f"{k1}:{self.cast_to_athena(v1['type'])}" for (k1, v1) in properties.items() ])
+                columns.append({"Name": k, "Type": f"struct<{type_str}>"})
+            else:
+                columns.append({"Name": k, "Type": athena_type})
+        return columns
+
     def update_table_schema(self, txid, database, table, schema):
         table_info = table["Table"]
         table_info_keys = list(table_info.keys())
@@ -139,7 +156,7 @@ class AwsHandler:
 
         self.logger.info("Schema = " + repr(schema))
 
-        columns = [{"Name": k, "Type": self.COLUMNS_MAPPING.get(self.preprocess_type(v["type"]), v["type"])} for (k, v) in schema.items()]
+        columns = self.generate_athena_schema(schema)
         if "StorageDescriptor" in table_info:
             table_info["StorageDescriptor"]["Columns"] = columns
         else:

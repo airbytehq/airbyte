@@ -108,7 +108,7 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
           ColumnInfo colInfo = colInfoIterator.next();
           Datum value = datum.next();
           LOGGER.info(String.format("key = %s, value = %s, type = %s", colInfo.name(), value.varCharValue(), colInfo.type()));
-          Object typedFieldValue = getTypedFieldValue(colInfo.type(), value.varCharValue());
+          Object typedFieldValue = getTypedFieldValue(colInfo, value);
           if (typedFieldValue != null) {
             jsonMap.put(colInfo.name(), typedFieldValue);
           }
@@ -119,16 +119,24 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
     return processedResults;
   }
 
-  private static Object getTypedFieldValue(String typeName, String varCharValue) {
+  private static Object getTypedFieldValue(ColumnInfo colInfo, Datum value) {
+    var typeName = colInfo.type();
+    var varCharValue = value.varCharValue();
+    
     if (varCharValue == null)
       return null;
-    return switch (typeName) {
+    var returnType = switch (typeName) {
       case "real", "double", "float" -> Double.parseDouble(varCharValue);
       case "varchar" -> varCharValue;
       case "boolean" -> Boolean.parseBoolean(varCharValue);
       case "integer" -> Integer.parseInt(varCharValue);
+      case "row"     -> varCharValue;
       default -> null;
     };
+    if (returnType == null) {
+        LOGGER.warn(String.format("Unsupported type = %s", typeName));
+    }
+    return returnType;
   }
 
   @Override
