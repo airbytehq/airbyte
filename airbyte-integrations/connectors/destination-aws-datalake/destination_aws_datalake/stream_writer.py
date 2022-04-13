@@ -23,9 +23,9 @@ class StreamWriter:
         self._messages = []
         self._logger = aws_handler.logger
 
-        self._logger.info(f"Creating StreamWriter for {self._db}:{self._table}")
+        self._logger.debug(f"Creating StreamWriter for {self._db}:{self._table}")
         if sync_mode == DestinationSyncMode.overwrite:
-            self._logger.info(f"StreamWriter mode is OVERWRITE, need to purge {self._db}:{self._table}")
+            self._logger.debug(f"StreamWriter mode is OVERWRITE, need to purge {self._db}:{self._table}")
             with LakeformationTransaction(self._aws_handler) as tx:
                 self._aws_handler.purge_table(tx.txid, self._db, self._table)
 
@@ -42,7 +42,7 @@ class StreamWriter:
 
         return path
 
-    @retry(stop_max_attempt_number=10, wait_random_min=5000, wait_random_max=7000)
+    @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def add_to_datalake(self):
         with LakeformationTransaction(self._aws_handler) as tx:
             self._logger.debug(f"Flushing messages to table {self._table}")
@@ -53,13 +53,19 @@ class StreamWriter:
             self._aws_handler.update_table_schema(tx.txid, self._db, table, self._schema)
 
             if len(self._messages) > 0:
-                object_key = self.generate_object_key(object_prefix)
-                self._aws_handler.put_object(object_key, self._messages)
-                res = self._aws_handler.head_object(object_key)
-
-                self._aws_handler.update_governed_table(
-                    tx.txid, self._db, self._table, self._bucket, object_key, res["ETag"], res["ContentLength"]
-                )
-                self._messages = []
+                try:
+                    self._logger.debug(f"There are {len(self._messages)} messages to flush for {self._table}")
+                    self._logger.debug(f"10 first messages >>> {repr(self._messages[0:10])} <<<")
+                    object_key = self.generate_object_key(object_prefix)
+                    self._aws_handler.put_object(object_key, self._messages)
+                    res = self._aws_handler.head_object(object_key)
+                    self._aws_handler.update_governed_table(
+                        tx.txid, self._db, self._table, self._bucket, object_key, res["ETag"], res["ContentLength"]
+                    )
+                    self._logger.debug(f"Table {self._table} was updated")
+                except Exception as e:
+                    self._logger.error(f"An exception was raised:\n{repr(e)}")
+                    raise(e)
             else:
-                self._logger.debug(f">>>>>> There was no message to flush for {self._table}")
+                self._logger.debug(f"There was no message to flush for {self._table}")
+        self._messages = []

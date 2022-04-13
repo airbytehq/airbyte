@@ -54,7 +54,6 @@ class AwsHandler:
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def head_bucket(self):
-        print(self._bucket_name)
         self.s3_client.head_bucket(Bucket=self._bucket_name)
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
@@ -101,7 +100,6 @@ class AwsHandler:
         else:
             return None
 
-    @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def update_table(self, database, table_info, transaction_id):
         self.glue_client.update_table(DatabaseName=database, TableInput=table_info, TransactionId=transaction_id)
 
@@ -154,7 +152,7 @@ class AwsHandler:
             ]:
                 table_info.pop(k)
 
-        self.logger.info("Schema = " + repr(schema))
+        self.logger.debug("Schema = " + repr(schema))
 
         columns = self.generate_athena_schema(schema)
         if "StorageDescriptor" in table_info:
@@ -164,7 +162,6 @@ class AwsHandler:
         self.update_table(database, table_info, txid)
         self.glue_client.update_table(DatabaseName=database, TableInput=table_info, TransactionId=txid)
 
-    @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def get_all_table_objects(self, txid, database, table):
         table_objects = []
 
@@ -194,7 +191,6 @@ class AwsHandler:
         flat_list = [item for sublist in table_objects for item in sublist]
         return flat_list
 
-    @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def purge_table(self, txid, database, table):
         self.logger.debug(f"Going to purge table {table}")
         write_ops = []
@@ -285,5 +281,7 @@ class LakeformationTransaction:
                 self.commit_transaction()
                 self._transaction = None
             except Exception as e:
-                self._logger.error(f"Could not commit the transaction id = {self.txid}")
+                self.cancel_transaction()
+                self._logger.error(f"Could not commit the transaction id = {self.txid} because of :\n{repr(e)}")
+                self._transaction = None
                 raise(e)
