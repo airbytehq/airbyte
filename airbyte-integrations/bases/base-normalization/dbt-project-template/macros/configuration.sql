@@ -7,11 +7,11 @@
 
     {%- call statement("get_column_type", fetch_result=True) -%}
         {%- set public_schema_query -%}
-            SELECT 1 FROM pg_namespace WHERE nspname = 'public'
+            SELECT COUNT(1) AS count FROM pg_namespace WHERE nspname = 'public'
         {%- endset -%}
-        {%- set public_schema_list = run_query(public_schema_query) -%}
+        {%- set public_schema_count = run_query(public_schema_query).rows[0]['count'] -%}
 
-        set search_path to '$user', {%- if len(public_schema_list.rows) > 0} -%} public, {%- endif -%} {{ schemaname }};
+        set search_path to '$user', {%- if public_schema_count > 0} -%} public, {%- endif -%} {{ schemaname }};
         select type from pg_table_def where tablename = '{{ tablename }}' and "column" = '{{ var("json_column") }}' and schemaname = '{{ schemaname }}';
     {%- endcall -%}
 
