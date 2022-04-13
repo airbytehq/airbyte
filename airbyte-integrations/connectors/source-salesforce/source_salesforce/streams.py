@@ -287,7 +287,7 @@ class BulkSalesforceStream(SalesforceStream):
         @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
         """
         try:
-            with open(path+"s", "r", encoding="utf-8") as data:
+            with open(path, "r", encoding="utf-8") as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
