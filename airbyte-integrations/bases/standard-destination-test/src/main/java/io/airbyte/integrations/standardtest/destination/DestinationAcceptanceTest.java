@@ -301,6 +301,11 @@ public abstract class DestinationAcceptanceTest {
    */
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
+  /**
+   * @deprecated This method is moved to the AdvancedTestDataComparator. Please move your destination
+   *             implementation of the method to your comparator implementation.
+   */
+  @Deprecated
   protected List<String> resolveIdentifier(final String identifier) {
     return List.of(identifier);
   }
