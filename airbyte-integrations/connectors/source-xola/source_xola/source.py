@@ -82,17 +82,13 @@ class XolaStream(HttpStream, ABC):
 class Orders(XolaStream):
     primary_key = "order_id"
     cursor_field = None
-    cursor_field_value = None
     seller_id = None
 
-    def __init__(self, seller_id: str, x_api_key: str, cursor_field: str, cursor_field_value: str, **kwargs):
+    def __init__(self, seller_id: str, x_api_key: str, cursor_field: str, **kwargs):
         super().__init__(x_api_key, **kwargs)
         self.seller_id = seller_id
         if cursor_field:
             self.cursor_field = cursor_field
-            
-        if cursor_field_value:
-            self.cursor_field_value = cursor_field_value
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
@@ -173,7 +169,7 @@ class Orders(XolaStream):
             else:
                 return {self.cursor_field: 0}
         else:
-            return {self.cursor_field: self.cursor_field_value}
+            return {self.cursor_field: 0}
 
 class Transactions(XolaStream):
     primary_key = "id"
@@ -320,19 +316,13 @@ class SourceXola(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         cursor_field = None
-        cursor_field_value = None
         
         if "cursor_field" in config.keys():
             cursor_field = config['cursor_field']
             
-        if "cursor_field_value" in config.keys():
-            cursor_field_value = config['cursor_field_value']
-
-
         return [
             Orders(x_api_key=config['x-api-key'],
                    seller_id=config['seller-id'],
-                   cursor_field=cursor_field,
-                   cursor_field_value=cursor_field_value)
+                   cursor_field=cursor_field)
             # Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]

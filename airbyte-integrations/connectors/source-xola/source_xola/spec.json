@@ -15,14 +15,6 @@
       "seller-id": {
         "type": "string",
         "description": "This is the seller id for which api fetches all data from Xola"
-      },
-      "cursor_field": {
-         "type": "string",
-         "description": "This is the cursor_field for incremental stream"
-      },
-      "cursor_field_value": {
-         "type": "string",
-         "description": "This is the cursor_field_value for incremental stream"
       }
     }
   }
