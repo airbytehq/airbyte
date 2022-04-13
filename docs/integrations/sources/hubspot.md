@@ -67,9 +67,11 @@ Depending on the type of engagement, different properties will be set for that o
 2. Fill out a start date
 3. You're done.
 
-{% hint style="info" %}
+:::info
+
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-{% endhint %}
+
+:::
 
 ### Requirements \(Airbyte Open-Source\)
 
@@ -91,9 +93,11 @@ To obtain the API Key for the account, go to settings -&gt; integrations \(under
 
 See HubSpot [docs](https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart) if you need help finding these fields
 
-{% hint style="info" %}
+:::info
+
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-{% endhint %}
+
+:::
 
 ## Rate Limiting & Performance
 

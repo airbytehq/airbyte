@@ -43,9 +43,11 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 In order to pull data out of your Okta instance, you need to create an [API Token](https://developer.okta.com/docs/guides/create-an-api-token/overview/).
 
-{% hint style="info" %}
+:::info
+
 Different Okta APIs require different admin privilege levels. API tokens inherit the privilege level of the admin account used to create them
-{% endhint %}
+
+:::
 
 1. Sign in to your Okta organization as a user with [administrator privileges](https://help.okta.com/en/prod/okta_help_CSH.htm#ext_Security_Administrators)
 2. Access the API page: In the Admin Console, select API from the Security menu and then select the Tokens tab.

@@ -11,9 +11,11 @@
 
 ## Output Schema
 
-{% hint style="warning" %}
+:::caution
+
 Tables in MSSQL destinations will be prefixed by `_airbyte_raw` due to the fact that MSSQL does not currently support basic normalization. This prefix cannot be removed and this is normal behavior.
-{% endhint %}
+
+:::
 
 Each stream will be output into its own table in SQL Server. Each table will contain 3 columns:
 

@@ -62,15 +62,19 @@ You can get more detailed information about this type of authentication by readi
 
 ### Setup guide
 
-{% hint style="info" %}
+:::info
+
 If you are using an "legacy" Slack API, skip to the Legacy API Key section below.
-{% endhint %}
+
+:::
 
 In order to pull data out of your Slack instance, you need to create a Slack App. This may sound daunting, but it is actually pretty straight forward. Slack supplies [documentation](https://api.slack.com/start) on how to build apps. Feel free to follow that if you want to do something fancy. We'll describe the steps we followed to creat the Slack App for this tutorial.
 
-{% hint style="info" %}
+:::info
+
 This tutorial assumes that you are an administrator on your slack instance. If you are not, you will need to coordinate with your administrator on the steps that require setting permissions for your app.
-{% endhint %}
+
+:::
 
 1. Go to the [apps page](https://api.slack.com/apps)
 2. Click "Create New App"

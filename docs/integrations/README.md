@@ -1,8 +1,10 @@
 # Connector Catalog
 
-{% hint style="info" %}
+:::info
+
 Some connectors on the following list are not yet available on Airbyte Cloud.
-{% endhint %}
+
+:::
 
 ## Connector Release Stages
 

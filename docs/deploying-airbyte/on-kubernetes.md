@@ -1,4 +1,4 @@
-# On Kubernetes \(Beta\)
+# On Kubernetes (Beta)
 
 ## Overview
 

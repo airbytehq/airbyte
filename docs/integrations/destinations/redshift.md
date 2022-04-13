@@ -45,9 +45,11 @@ You will need to choose an existing database or create a new database that will 
 2. Allow connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
 3. A staging S3 bucket with credentials \(for the COPY strategy\).
 
-{% hint style="info" %}
+:::info
+
 Even if your Airbyte instance is running on a server in the same VPC as your Redshift cluster, you may need to place them in the **same security group** to allow connections between the two.
-{% endhint %}
+
+:::
 
 ### Setup guide
 
