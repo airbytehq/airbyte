@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -83,6 +85,26 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
       return config.get("gcs_bucket_path").asText();
     }
     return null;
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new GcsTestDataComparator();
   }
 
   @Override

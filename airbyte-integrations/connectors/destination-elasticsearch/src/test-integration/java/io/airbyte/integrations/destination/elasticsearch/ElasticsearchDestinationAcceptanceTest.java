@@ -10,6 +10,9 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
@@ -61,6 +64,26 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
   @Override
   protected boolean supportsNormalization() {
     return false;
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
   }
 
   @Override
