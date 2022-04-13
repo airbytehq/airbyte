@@ -2068,7 +2068,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-file:0.2.9"
+- dockerImage: "airbyte/source-file:0.2.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -2125,9 +2125,6 @@
             properties:
               storage:
                 type: "string"
-                enum:
-                - "HTTPS"
-                default: "HTTPS"
                 const: "HTTPS"
           - title: "GCS: Google Cloud Storage"
             required:
@@ -2136,9 +2133,6 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "GCS"
-                default: "GCS"
                 const: "GCS"
               service_account_json:
                 type: "string"
@@ -2157,9 +2151,6 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "S3"
-                default: "S3"
                 const: "S3"
               aws_access_key_id:
                 type: "string"
@@ -2182,9 +2173,6 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "AzBlob"
-                default: "AzBlob"
                 const: "AzBlob"
               storage_account:
                 type: "string"
@@ -2217,24 +2205,25 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "SSH"
-                default: "SSH"
                 const: "SSH"
               user:
                 type: "string"
                 title: "User"
+                description: ""
               password:
                 type: "string"
                 title: "Password"
+                description: ""
                 airbyte_secret: true
               host:
                 type: "string"
                 title: "Host"
+                description: ""
               port:
                 type: "string"
                 title: "Port"
                 default: "22"
+                description: ""
           - title: "SCP: Secure copy protocol"
             required:
             - "storage"
@@ -2244,24 +2233,25 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "SCP"
-                default: "SCP"
                 const: "SCP"
               user:
                 type: "string"
                 title: "User"
+                description: ""
               password:
                 type: "string"
                 title: "Password"
+                description: ""
                 airbyte_secret: true
               host:
                 type: "string"
                 title: "Host"
+                description: ""
               port:
                 type: "string"
                 title: "Port"
                 default: "22"
+                description: ""
           - title: "SFTP: Secure File Transfer Protocol"
             required:
             - "storage"
@@ -2271,24 +2261,25 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "SFTP"
-                default: "SFTP"
                 const: "SFTP"
               user:
                 type: "string"
                 title: "User"
+                description: ""
               password:
                 type: "string"
                 title: "Password"
+                description: ""
                 airbyte_secret: true
               host:
                 type: "string"
                 title: "Host"
+                description: ""
               port:
                 type: "string"
                 title: "Port"
                 default: "22"
+                description: ""
           - title: "Local Filesystem (limited)"
             required:
             - "storage"
@@ -2299,9 +2290,6 @@
                 description: "WARNING: Note that the local storage URL available for\
                   \ reading must start with the local mount \"/local/\" at the moment\
                   \ until we implement more advanced docker mounting options."
-                enum:
-                - "local"
-                default: "local"
                 const: "local"
     supportsNormalization: false
     supportsDBT: false
