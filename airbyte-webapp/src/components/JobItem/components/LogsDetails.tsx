@@ -1,9 +1,9 @@
 import React from "react";
-
-import { Attempt, Logs, JobDebugInfoMeta } from "core/domain/job";
-import DownloadButton from "./DownloadButton";
 import styled from "styled-components";
 
+import { Attempt, Logs, JobDebugInfoMeta } from "core/domain/job";
+
+import DownloadButton from "./DownloadButton";
 import DebugInfoButton from "./DebugInfoButton";
 import LogsTable from "./Logs";
 import AttemptDetails from "./AttemptDetails";
@@ -44,9 +44,7 @@ const LogsDetails: React.FC<{
     <LogHeader>
       <LogPath>{path}</LogPath>
       <LinkToAttemptButton jobId={id} attemptId={currentAttempt?.id} />
-      {logs?.logLines && (
-        <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />
-      )}
+      {logs?.logLines && <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />}
       {jobDebugInfo && <DebugInfoButton jobDebugInfo={jobDebugInfo} />}
     </LogHeader>
     <LogsTable logsArray={logs?.logLines} />

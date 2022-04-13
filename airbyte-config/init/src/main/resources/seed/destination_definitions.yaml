@@ -4,24 +4,47 @@
   dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: "1Gi"
+          memory_request: "1Gi"
 - name: Amazon SQS
   destinationDefinitionId: 0eeee7fb-518f-4045-bacc-9619e31c43ea
   dockerRepository: airbyte/destination-amazon-sqs
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/amazonsqs
   icon: amazonsqs.svg
+- name: AWS Datalake
+  destinationDefinitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
+  dockerRepository: airbyte/destination-aws-datalake
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/aws-datalake
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 0.6.11
+  dockerImageTag: 1.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: "1Gi"
+          memory_request: "1Gi"
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
   icon: bigquery.svg
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: "1Gi"
+          memory_request: "1Gi"
 - name: Cassandra
   destinationDefinitionId: 707456df-6f4f-4ced-b5c6-03f73bcad1c5
   dockerRepository: airbyte/destination-cassandra
@@ -60,9 +83,15 @@
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
-  dockerImageTag: 0.1.24
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/gcs
   icon: googlecloudstorage.svg
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: "1Gi"
+          memory_request: "1Gi"
 - name: Google Firestore
   destinationDefinitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
   dockerRepository: airbyte/destination-firestore
@@ -72,7 +101,7 @@
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
   icon: googlepubsub.svg
 - name: Kafka
@@ -108,7 +137,7 @@
 - name: MS SQL Server
   destinationDefinitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
   dockerRepository: airbyte/destination-mssql
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
   icon: mssql.svg
 - name: MeiliSearch
@@ -138,7 +167,7 @@
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.3.15
+  dockerImageTag: 0.3.17
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
 - name: Pulsar
@@ -162,9 +191,15 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.27
+  dockerImageTag: 0.3.30
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: "1Gi"
+          memory_request: "1Gi"
 - name: Rockset
   destinationDefinitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
   dockerRepository: airbyte/destination-rockset
@@ -173,9 +208,15 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
   icon: s3.svg
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: "1Gi"
+          memory_request: "1Gi"
 - name: SFTP-JSON
   destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
   dockerRepository: airbyte/destination-sftp-json
@@ -185,25 +226,15 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.17
+  dockerImageTag: 0.4.24
   documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
   icon: snowflake.svg
   resourceRequirements:
-    # this is our first example of setting these requirements. they are guesses, not data driven.
-    # setting default cpu higher, because we have found that check and discover can be cpu constrained for dbs.
-    default:
-      cpu_limit: "1.0"
-      cpu_request: "1.0"
-      memory_limit: "300Mi"
-      memory_request: "300Mi"
     jobSpecific:
-      # sync jobs are generally IO and memory bound and not cpu.
       - jobType: sync
         resourceRequirements:
-          cpu_limit: "0.5"
-          cpu_request: "0.5"
-          memory_limit: "600Mi"
-          memory_request: "600Mi"
+          memory_limit: "1Gi"
+          memory_request: "1Gi"
 - name: MariaDB ColumnStore
   destinationDefinitionId: 294a4790-429b-40ae-9516-49826b9702e1
   dockerRepository: airbyte/destination-mariadb-columnstore

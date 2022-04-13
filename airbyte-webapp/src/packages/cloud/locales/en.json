@@ -20,12 +20,12 @@
   "login.resetPassword": "Reset your password",
   "login.resetPassword.emailSent": "A password reset email has been sent to you",
   "login.activateAccess": "Activate your 14-day free trial",
-  "login.activateAccess.subtitle": "Get our <special>Special launch offer</special> of <sum>$400</sum>  worth of <free>free usage</free>. No credit card required.",
+  "login.activateAccess.subtitle": "Get our <special>Special launch offer</special> of <sum>$1,000</sum>  worth of <free>free usage</free>. No credit card required.",
   "login.fullName": "Full name*",
   "login.fullName.placeholder": "Christopher Smith",
   "login.companyName": "Company name*",
   "login.companyName.placeholder": "Acme Inc.",
-  "login.subscribe": "Receive community and feature updates. You can unsubcribe any time. ",
+  "login.subscribe": "Receive community and feature updates. You can unsubscribe any time. ",
   "login.security": "By using the service, you agree to to our <terms>Terms of Service</terms> and <privacy>Privacy\u00a0Policy</privacy>.",
 
   "confirmResetPassword.newPassword": "Enter a new password",
@@ -102,9 +102,8 @@
   "credits.usage": "Usage",
   "credits.noData": "Data is empty",
   "credits.creditsProblem.negative_within_grace_period": "Your workspace is out of credits! Please add more credits to make sure your syncs keep running!",
-  "credits.creditsProblem.negative_beyond_grace_period": "No syncs can run because this workspace is out of credits! Add more credits to resume syncing.",
-  "credits.creditsProblem.negative_max_threshold": "No syncs can run because this workspace is out of credits! Add more credits to resume syncing.",
-  "credits.creditsProblem.link": "Visit credits page",
+  "credits.creditsProblem.negative_beyond_grace_period": "You’re out of credits! To set up connections and run syncs, <lnk>add credits</lnk>.",
+  "credits.creditsProblem.negative_max_threshold": "You’re out of credits! To set up connections and run syncs, <lnk>add credits</lnk>.",
 
   "firebase.auth.success": "A new confirmation email has been sent to you",
   "firebase.auth.error.invalidPassword": "Incorrect password",
@@ -112,8 +111,10 @@
   "firebase.auth.error.tooManyRequests": "Too many retries. Please wait 10 minutes before trying again.",
   "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later.",
 
-  "signup.password.minLength": "Password should be at least 6 characters",
+  "signup.password.minLength": "Password should be at least 12 characters",
   "email.duplicate": "Email already exists",
+  "email.notfound": "Email not found",
+  "email.disabled": "Your account is disabled",
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password"
 }

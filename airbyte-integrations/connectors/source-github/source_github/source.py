@@ -29,6 +29,7 @@ from .streams import (
     IssueReactions,
     Issues,
     Organizations,
+    ProjectCards,
     ProjectColumns,
     Projects,
     PullRequestCommentReactions,
@@ -44,6 +45,8 @@ from .streams import (
     Tags,
     Teams,
     Users,
+    WorkflowRuns,
+    Workflows,
 )
 
 TOKEN_SEPARATOR = ","
@@ -180,6 +183,7 @@ class SourceGithub(AbstractSource):
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
         projects_stream = Projects(**repository_args_with_start_date)
+        project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
 
         return [
             Assignees(**repository_args),
@@ -198,7 +202,8 @@ class SourceGithub(AbstractSource):
             IssueReactions(**repository_args_with_start_date),
             Issues(**repository_args_with_start_date),
             Organizations(**organization_args),
-            ProjectColumns(projects_stream, **repository_args_with_start_date),
+            ProjectCards(project_columns_stream, **repository_args_with_start_date),
+            project_columns_stream,
             projects_stream,
             PullRequestCommentReactions(**repository_args_with_start_date),
             PullRequestCommits(parent=pull_requests_stream, **repository_args),
@@ -212,4 +217,6 @@ class SourceGithub(AbstractSource):
             Tags(**repository_args),
             Teams(**organization_args),
             Users(**organization_args),
+            Workflows(**repository_args),
+            WorkflowRuns(**repository_args),
         ]

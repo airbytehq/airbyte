@@ -21,6 +21,8 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
@@ -40,18 +42,24 @@ public class DestinationHandler {
   private final ConnectionsHandler connectionsHandler;
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryReader secretsRepositoryReader;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final JsonSchemaValidator validator;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
 
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
+                     final SecretsRepositoryReader secretsRepositoryReader,
+                     final SecretsRepositoryWriter secretsRepositoryWriter,
                      final JsonSchemaValidator integrationSchemaValidation,
                      final ConnectionsHandler connectionsHandler,
                      final Supplier<UUID> uuidGenerator,
                      final JsonSecretsProcessor secretsProcessor,
                      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
+    this.secretsRepositoryReader = secretsRepositoryReader;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.validator = integrationSchemaValidation;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
@@ -60,15 +68,22 @@ public class DestinationHandler {
   }
 
   public DestinationHandler(final ConfigRepository configRepository,
+                            final SecretsRepositoryReader secretsRepositoryReader,
+                            final SecretsRepositoryWriter secretsRepositoryWriter,
                             final JsonSchemaValidator integrationSchemaValidation,
                             final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         integrationSchemaValidation,
         connectionsHandler,
         UUID::randomUUID,
-        new JsonSecretsProcessor(),
-        new ConfigurationUpdate(configRepository));
+        JsonSecretsProcessor.builder()
+            .maskSecrets(true)
+            .copySecrets(true)
+            .build(),
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
@@ -112,7 +127,7 @@ public class DestinationHandler {
       connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
-    final var fullConfig = configRepository.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();
+    final var fullConfig = secretsRepositoryReader.getDestinationConnectionWithSecrets(destination.getDestinationId()).getConfiguration();
 
     // persist
     persistDestinationConnection(
@@ -251,7 +266,7 @@ public class DestinationHandler {
         .withDestinationId(destinationId)
         .withConfiguration(configurationJson)
         .withTombstone(tombstone);
-    configRepository.writeDestinationConnection(destinationConnection, getSpec(destinationDefinitionId));
+    secretsRepositoryWriter.writeDestinationConnection(destinationConnection, getSpec(destinationDefinitionId));
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -264,7 +279,7 @@ public class DestinationHandler {
 
     // remove secrets from config before returning the read
     final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnection(destinationId));
-    dci.setConfiguration(secretsProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
+    dci.setConfiguration(secretsProcessor.prepareSecretsForOutput(dci.getConfiguration(), spec.getConnectionSpecification()));
 
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
@@ -275,7 +290,7 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     // remove secrets from config before returning the read
-    final DestinationConnection dci = Jsons.clone(configRepository.getDestinationConnectionWithSecrets(destinationId));
+    final DestinationConnection dci = Jsons.clone(secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationId));
     final StandardDestinationDefinition standardDestinationDefinition =
         configRepository.getStandardDestinationDefinition(dci.getDestinationDefinitionId());
     return toDestinationRead(dci, standardDestinationDefinition);

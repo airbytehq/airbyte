@@ -59,6 +59,8 @@ Select the correct region \(EU or US\) for your Mixpanel project. See detail [he
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.11` | 2022-04-04 | [11318](https://github.com/airbytehq/airbyte/pull/11318) | Change Response Reading |
+| `0.1.10` | 2022-03-31 | [11227](https://github.com/airbytehq/airbyte/pull/11227) | Fix cohort id always null in the cohort_members stream |
 | `0.1.9` | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8578) | Updated titles and descriptions |
 | `0.1.7` | 2021-12-01 | [8381](https://github.com/airbytehq/airbyte/pull/8381) | Increased performance for `discovery` stage during connector setup |
 | `0.1.6` | 2021-11-25 | [8256](https://github.com/airbytehq/airbyte/issues/8256) | Deleted `date_window_size` and fix schemas date type issue |

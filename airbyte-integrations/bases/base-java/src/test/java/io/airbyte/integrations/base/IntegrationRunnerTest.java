@@ -37,6 +37,7 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -260,7 +261,7 @@ class IntegrationRunnerTest {
             .withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n"
         + Jsons.serialize(message2) + "\n"
-        + Jsons.serialize(stateMessage)).getBytes()));
+        + Jsons.serialize(stateMessage)).getBytes(StandardCharsets.UTF_8)));
 
     try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
       IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
@@ -285,7 +286,7 @@ class IntegrationRunnerTest {
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes()));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes(StandardCharsets.UTF_8)));
 
     try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
       doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
@@ -306,12 +307,11 @@ class IntegrationRunnerTest {
           throw new IOException("random error");
         },
         Assertions::fail,
-        false,
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {
-      TimeUnit.SECONDS.sleep(10);
-    } catch (Exception e) {
+      TimeUnit.SECONDS.sleep(15);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
@@ -333,12 +333,11 @@ class IntegrationRunnerTest {
           throw new IOException("random error");
         },
         () -> exitCalled.set(true),
-        false,
         3, TimeUnit.SECONDS,
         10, TimeUnit.SECONDS));
     try {
-      TimeUnit.SECONDS.sleep(10);
-    } catch (Exception e) {
+      TimeUnit.SECONDS.sleep(15);
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
@@ -356,7 +355,7 @@ class IntegrationRunnerTest {
       for (int tries = 0; tries < 3; tries++) {
         try {
           TimeUnit.MINUTES.sleep(5);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           LOGGER.info("Caught Exception", e);
           caughtExceptions.add(e);
           if (!ignoreInterrupt) {
@@ -366,6 +365,16 @@ class IntegrationRunnerTest {
         }
       }
     });
+  }
+
+  @Test
+  void testParseConnectorImage() {
+    assertEquals("unknown", IntegrationRunner.parseConnectorVersion(null));
+    assertEquals("unknown", IntegrationRunner.parseConnectorVersion(""));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:1.0.1-alpha"));
+    assertEquals("dev", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:dev"));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha"));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion(":1.0.1-alpha"));
   }
 
 }

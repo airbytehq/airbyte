@@ -138,9 +138,10 @@ test("should build schema for conditional case with inner schema and selected ui
         },
       },
     },
-    { "key.credentials": { selectedItem: "oauth" } },
+    { "topKey.subKey.credentials": { selectedItem: "oauth" } },
     undefined,
-    "key"
+    "topKey",
+    "topKey.subKey"
   );
 
   const expectedSchema = yup.object().shape({

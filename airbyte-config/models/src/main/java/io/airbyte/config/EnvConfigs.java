@@ -7,6 +7,8 @@ package io.airbyte.config;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
@@ -15,11 +17,11 @@ import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -59,6 +61,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
+  public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
@@ -118,21 +121,21 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
 
+  private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
+  private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
+
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
   public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
   public static final String DISCOVER_JOB_KUBE_NODE_SELECTORS = "DISCOVER_JOB_KUBE_NODE_SELECTORS";
+  public static final String SPEC_JOB_KUBE_ANNOTATIONS = "SPEC_JOB_KUBE_ANNOTATIONS";
+  public static final String CHECK_JOB_KUBE_ANNOTATIONS = "CHECK_JOB_KUBE_ANNOTATIONS";
+  public static final String DISCOVER_JOB_KUBE_ANNOTATIONS = "DISCOVER_JOB_KUBE_ANNOTATIONS";
 
   private static final String REPLICATION_ORCHESTRATOR_CPU_REQUEST = "REPLICATION_ORCHESTRATOR_CPU_REQUEST";
   private static final String REPLICATION_ORCHESTRATOR_CPU_LIMIT = "REPLICATION_ORCHESTRATOR_CPU_LIMIT";
   private static final String REPLICATION_ORCHESTRATOR_MEMORY_REQUEST = "REPLICATION_ORCHESTRATOR_MEMORY_REQUEST";
   private static final String REPLICATION_ORCHESTRATOR_MEMORY_LIMIT = "REPLICATION_ORCHESTRATOR_MEMORY_LIMIT";
-
-  private static final String DEFAULT_WORKER_STATUS_CHECK_INTERVAL = "DEFAULT_WORKER_STATUS_CHECK_INTERVAL";
-  private static final String SPEC_WORKER_STATUS_CHECK_INTERVAL = "SPEC_WORKER_STATUS_CHECK_INTERVAL";
-  private static final String CHECK_WORKER_STATUS_CHECK_INTERVAL = "CHECK_WORKER_STATUS_CHECK_INTERVAL";
-  private static final String DISCOVER_WORKER_STATUS_CHECK_INTERVAL = "DISCOVER_WORKER_STATUS_CHECK_INTERVAL";
-  private static final String REPLICATION_WORKER_STATUS_CHECK_INTERVAL = "REPLICATION_WORKER_STATUS_CHECK_INTERVAL";
 
   static final String CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST = "CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST";
   static final String CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT = "CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT";
@@ -155,12 +158,6 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
 
-  private static final Duration DEFAULT_DEFAULT_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
-  private static final Duration DEFAULT_SPEC_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
-  private static final Duration DEFAULT_CHECK_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
-  private static final Duration DEFAULT_DISCOVER_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(1);
-  private static final Duration DEFAULT_REPLICATION_WORKER_STATUS_CHECK_INTERVAL = Duration.ofSeconds(30);
-
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
   public static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
@@ -168,7 +165,15 @@ public class EnvConfigs implements Configs {
 
   public static final String DEFAULT_NETWORK = "host";
 
+  public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
+      AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
+      AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
+      WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());
+
   public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
+
+  public static final int DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = 100;
+  public static final int DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = 14;
 
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
@@ -483,8 +488,8 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getJobKubeNodeSelectors() {
-    return getNodeSelectorsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
+  public Map<String, String> getJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
   }
 
   /**
@@ -493,8 +498,8 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getSpecJobKubeNodeSelectors() {
-    return getNodeSelectorsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_NODE_SELECTORS, ""));
+  public Map<String, String> getSpecJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
   /**
@@ -503,8 +508,8 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getCheckJobKubeNodeSelectors() {
-    return getNodeSelectorsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_NODE_SELECTORS, ""));
+  public Map<String, String> getCheckJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
   /**
@@ -513,28 +518,76 @@ public class EnvConfigs implements Configs {
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
   @Override
-  public Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors() {
-    return getNodeSelectorsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_NODE_SELECTORS, ""));
+  public Map<String, String> getDiscoverJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_NODE_SELECTORS, ""));
   }
 
   /**
-   * Parse string containing node selectors into a map. Each kv-pair is separated by a `,`
+   * Returns a map of annotations from its own environment variable. The value of the env is a string
+   * that represents one or more annotations. Each kv-pair is separated by a `,`
    * <p>
-   * For example:- The following represents two node selectors
+   * For example:- The following represents two annotations
    * <p>
    * airbyte=server,type=preemptive
    *
-   * @param envString string that represents one or more node selector labels.
+   * @return map containing kv pairs of annotations
+   */
+  @Override
+  public Map<String, String> getJobKubeAnnotations() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Spec job pods specifically.
+   *
    * @return map containing kv pairs of node selectors, or empty optional if none present.
    */
-  private Optional<Map<String, String>> getNodeSelectorsFromEnvString(final String envString) {
-    final Map<String, String> selectors = Splitter.on(",")
-        .splitToStream(envString)
+  @Override
+  public Map<String, String> getSpecJobKubeAnnotations() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(SPEC_JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Check job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Map<String, String> getCheckJobKubeAnnotations() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(CHECK_JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Returns a map of node selectors for Discover job pods specifically.
+   *
+   * @return map containing kv pairs of node selectors, or empty optional if none present.
+   */
+  @Override
+  public Map<String, String> getDiscoverJobKubeAnnotations() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(DISCOVER_JOB_KUBE_ANNOTATIONS, ""));
+  }
+
+  /**
+   * Splits key value pairs from the input string into a map. Each kv-pair is separated by a ','. The
+   * key and the value are separated by '='.
+   * <p>
+   * For example:- The following represents two map entries
+   * </p>
+   * key1=value1,key2=value2
+   *
+   * @param input string
+   * @return map containing kv pairs
+   */
+  public Map<String, String> splitKVPairsFromEnvString(String input) {
+    if (input == null) {
+      input = "";
+    }
+    final Map<String, String> map = Splitter.on(",")
+        .splitToStream(input)
         .filter(s -> !Strings.isNullOrEmpty(s) && s.contains("="))
         .map(s -> s.split("="))
-        .collect(Collectors.toMap(s -> s[0], s -> s[1]));
-
-    return selectors.isEmpty() ? Optional.empty() : Optional.of(selectors);
+        .collect(Collectors.toMap(s -> s[0].trim(), s -> s[1].trim()));
+    return map.isEmpty() ? null : map;
   }
 
   @Override
@@ -573,46 +626,6 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public Duration getDefaultWorkerStatusCheckInterval() {
-    return getEnvOrDefault(
-        DEFAULT_WORKER_STATUS_CHECK_INTERVAL,
-        DEFAULT_DEFAULT_WORKER_STATUS_CHECK_INTERVAL,
-        value -> Duration.ofSeconds(Integer.parseInt(value)));
-  }
-
-  @Override
-  public Duration getSpecWorkerStatusCheckInterval() {
-    return getEnvOrDefault(
-        SPEC_WORKER_STATUS_CHECK_INTERVAL,
-        DEFAULT_SPEC_WORKER_STATUS_CHECK_INTERVAL,
-        value -> Duration.ofSeconds(Integer.parseInt(value)));
-  }
-
-  @Override
-  public Duration getCheckWorkerStatusCheckInterval() {
-    return getEnvOrDefault(
-        CHECK_WORKER_STATUS_CHECK_INTERVAL,
-        DEFAULT_CHECK_WORKER_STATUS_CHECK_INTERVAL,
-        value -> Duration.ofSeconds(Integer.parseInt(value)));
-  }
-
-  @Override
-  public Duration getDiscoverWorkerStatusCheckInterval() {
-    return getEnvOrDefault(
-        DISCOVER_WORKER_STATUS_CHECK_INTERVAL,
-        DEFAULT_DISCOVER_WORKER_STATUS_CHECK_INTERVAL,
-        value -> Duration.ofSeconds(Integer.parseInt(value)));
-  }
-
-  @Override
-  public Duration getReplicationWorkerStatusCheckInterval() {
-    return getEnvOrDefault(
-        REPLICATION_WORKER_STATUS_CHECK_INTERVAL,
-        DEFAULT_REPLICATION_WORKER_STATUS_CHECK_INTERVAL,
-        value -> Duration.ofSeconds(Integer.parseInt(value)));
-  }
-
-  @Override
   public String getJobMainContainerCpuRequest() {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_CPU_REQUEST, DEFAULT_JOB_CPU_REQUIREMENT);
   }
@@ -632,11 +645,35 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(JOB_MAIN_CONTAINER_MEMORY_LIMIT, DEFAULT_JOB_MEMORY_REQUIREMENT);
   }
 
+  /**
+   * There are two types of environment variables available to the job container:
+   * <ul>
+   * <li>Exclusive variables prefixed with JOB_DEFAULT_ENV_PREFIX</li>
+   * <li>Shared variables defined in JOB_SHARED_ENVS</li>
+   * </ul>
+   */
   @Override
   public Map<String, String> getJobDefaultEnvMap() {
-    return getAllEnvKeys.get().stream()
+    final Map<String, String> jobPrefixedEnvMap = getAllEnvKeys.get().stream()
         .filter(key -> key.startsWith(JOB_DEFAULT_ENV_PREFIX))
         .collect(Collectors.toMap(key -> key.replace(JOB_DEFAULT_ENV_PREFIX, ""), getEnv));
+    // This method assumes that these shared env variables are not critical to the execution
+    // of the jobs, and only serve as metadata. So any exception is swallowed and default to
+    // an empty string. Change this logic if this assumption no longer holds.
+    final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream().collect(Collectors.toMap(
+        Entry::getKey,
+        entry -> Exceptions.swallowWithDefault(() -> Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
+    return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
+  }
+
+  @Override
+  public int getMaxFailedJobsInARowBeforeConnectionDisable() {
+    return getEnvOrDefault(MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE, DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE);
+  }
+
+  @Override
+  public int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable() {
+    return getEnvOrDefault(MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE, DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE);
   }
 
   @Override
