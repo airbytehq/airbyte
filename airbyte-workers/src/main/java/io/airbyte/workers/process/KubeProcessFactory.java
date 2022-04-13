@@ -128,6 +128,7 @@ public class KubeProcessFactory implements ProcessFactory {
           namespace,
           imageName,
           workerConfigs.getJobImagePullPolicy(),
+          workerConfigs.getSidecarImagePullPolicy(),
           stdoutLocalPort,
           stderrLocalPort,
           kubeHeartbeatUrl,

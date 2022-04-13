@@ -59,6 +59,7 @@ public class EnvConfigs implements Configs {
   public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
   public static final String WEBAPP_URL = "WEBAPP_URL";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY";
+  public static final String JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
   public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
@@ -148,6 +149,7 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_CPU_REQUIREMENT = null;
   private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
+  private static final String DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
   private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.1-r1";
@@ -593,6 +595,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getJobKubeMainContainerImagePullPolicy() {
     return getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY, DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY);
+  }
+
+  @Override
+  public String getJobKubeSidecarContainerImagePullPolicy() {
+    return getEnvOrDefault(JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY, DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY);
   }
 
   /**
