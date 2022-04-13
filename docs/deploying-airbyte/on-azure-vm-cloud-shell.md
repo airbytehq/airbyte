@@ -1,4 +1,4 @@
-# On Azure\(VM\)
+# On Azure (VM)
 
 {% hint style="info" %}
 The instructions have been tested on `Azure VM Linux (ubuntu 18.04)`

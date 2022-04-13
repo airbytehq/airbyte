@@ -1,4 +1,4 @@
-# On AWS \(EC2\)
+# On AWS (EC2)
 
 {% hint style="info" %}
 The instructions have been tested on `Amazon Linux 2 AMI (HVM)`

@@ -1,4 +1,4 @@
-# On AWS ECS \(Coming Soon\)
+# On AWS ECS (Coming Soon)
 
 {% hint style="info" %}
 We do not currently support deployment on ECS.
