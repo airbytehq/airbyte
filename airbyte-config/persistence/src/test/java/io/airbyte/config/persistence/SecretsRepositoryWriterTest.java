@@ -4,6 +4,8 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.config.persistence.MockData.MOCK_SERVICE_ACCOUNT_1;
+import static io.airbyte.config.persistence.MockData.MOCK_SERVICE_ACCOUNT_2;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,7 +23,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.io.Resources;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
@@ -37,7 +38,6 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -225,7 +225,7 @@ class SecretsRepositoryWriterTest {
   public void testWriteWorkspaceServiceAccount() throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID workspaceId = UUID.randomUUID();
 
-    final String jsonSecretPayload = Resources.toString(Resources.getResource("mock_service_key.json"), StandardCharsets.UTF_8);
+    final String jsonSecretPayload = MOCK_SERVICE_ACCOUNT_1;
     final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
         Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
 
@@ -281,7 +281,7 @@ class SecretsRepositoryWriterTest {
 
     final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
 
-    final String jsonSecretPayload = Resources.toString(Resources.getResource("mock_service_key.json"), StandardCharsets.UTF_8);
+    final String jsonSecretPayload = MOCK_SERVICE_ACCOUNT_1;
     final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
         Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
 
@@ -332,8 +332,8 @@ class SecretsRepositoryWriterTest {
 
     final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
 
-    final String jsonSecretOldPayload = Resources.toString(Resources.getResource("mock_service_key.json"), StandardCharsets.UTF_8);
-    final String jsonSecretNewPayload = Resources.toString(Resources.getResource("mock_service_key_2.json"), StandardCharsets.UTF_8);
+    final String jsonSecretOldPayload = MOCK_SERVICE_ACCOUNT_1;
+    final String jsonSecretNewPayload = MOCK_SERVICE_ACCOUNT_2;
 
     final JsonNode hmacSecretOldPayload = Jsons.jsonNode(sortMap(
         Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));

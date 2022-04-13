@@ -11,7 +11,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.io.Resources;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -25,7 +24,6 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +132,7 @@ class SecretsRepositoryReaderTest {
 
     final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
 
-    final String jsonSecretPayload = Resources.toString(Resources.getResource("mock_service_key.json"), StandardCharsets.UTF_8);
+    final String jsonSecretPayload = MockData.MOCK_SERVICE_ACCOUNT_1;
 
     final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
         Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
@@ -205,7 +203,7 @@ class SecretsRepositoryReaderTest {
 
     final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
 
-    final String jsonSecretPayload = Resources.toString(Resources.getResource("mock_service_key.json"), StandardCharsets.UTF_8);
+    final String jsonSecretPayload = MockData.MOCK_SERVICE_ACCOUNT_1;
 
     final SecretCoordinate secretCoordinateJson = new SecretCoordinate(
         "service_account_json_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_6b894c2b-71dc-4481-bd9f-572402643cf9", 1);
