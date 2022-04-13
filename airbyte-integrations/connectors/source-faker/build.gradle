@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_faker_singer'
+    moduleDirectory 'source_faker'
 }

@@ -33,7 +33,7 @@ def test_source_streams():
         "company": {"type": "string"},
         "ssn": {"type": "string"},
         "residence": {"type": "string"},
-        "current_location": {"type": "array" },
+        "current_location": {"type": "array"},
         "blood_group": {"type": "string"},
         "website": {"type": "array"},
         "username": {"type": "string"},
