@@ -9,8 +9,6 @@
     "title": "S3 Destination Spec",
     "type": "object",
     "required": [
-      "access_key_id",
-      "secret_access_key",
       "s3_bucket_name",
       "s3_bucket_path",
       "s3_bucket_region",
