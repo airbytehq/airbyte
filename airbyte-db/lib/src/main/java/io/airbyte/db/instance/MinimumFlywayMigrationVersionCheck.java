@@ -6,6 +6,7 @@ package io.airbyte.db.instance;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
+import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,17 +63,17 @@ public class MinimumFlywayMigrationVersionCheck {
   /**
    * Assert the given database contains the minimum flyway migrations needed to run the application.
    *
-   * @param migrator
+   * @param flyway
    * @param minimumFlywayVersion
    * @param timeoutMs
    * @throws InterruptedException
    */
-  public static void assertMigrations(final DatabaseMigrator migrator, final String minimumFlywayVersion, final long timeoutMs)
+  public static void assertMigrations(final Flyway flyway, final String minimumFlywayVersion, final long timeoutMs)
       throws InterruptedException {
     final var startTime = System.currentTimeMillis();
     final var sleepTime = timeoutMs / NUM_POLL_TIMES;
 
-    var currDatabaseMigrationVersion = migrator.getLatestMigration().getVersion().getVersion();
+    var currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
     LOGGER.info("Current database migration version " + currDatabaseMigrationVersion);
     LOGGER.info("Minimum Flyway version required " + minimumFlywayVersion);
 
@@ -82,7 +83,7 @@ public class MinimumFlywayMigrationVersionCheck {
       }
 
       Thread.sleep(sleepTime);
-      currDatabaseMigrationVersion = migrator.getLatestMigration().getVersion().getVersion();
+      currDatabaseMigrationVersion = flyway.info().current().getVersion().getVersion();
     }
   }
 

@@ -61,7 +61,7 @@ public class SourceDefinitionsHandler {
   private Supplier<UUID> uuidSupplier;
 
   @Inject
-  private AirbyteGithubStore githubStore;
+  private AirbyteGithubStore airbyteGithubStore;
 
   @Inject
   private SynchronousSchedulerClient schedulerSynchronousClient;
@@ -120,7 +120,7 @@ public class SourceDefinitionsHandler {
 
   private List<StandardSourceDefinition> getLatestSources() {
     try {
-      return githubStore.getLatestSources();
+      return airbyteGithubStore.getLatestSources();
     } catch (final InterruptedException e) {
       throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }

@@ -5,15 +5,20 @@
 package io.airbyte.server;
 
 import io.airbyte.db.instance.DatabaseInstance;
+import io.airbyte.db.instance.FlywayConfigurationConstants;
 import io.airbyte.db.instance.MinimumFlywayMigrationVersionCheck;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
 import io.micronaut.context.event.StartupEvent;
+import io.micronaut.flyway.FlywayConfigurationProperties;
 import io.micronaut.runtime.event.annotation.EventListener;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +26,7 @@ import org.slf4j.LoggerFactory;
  * Performs database initialization logic on application context start.
  */
 @Singleton
+@Requires(notEnv = { Environment.TEST })
 public class DatabaseInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseInitializer.class);
@@ -45,27 +51,42 @@ public class DatabaseInitializer {
   @Named("jobsDatabaseInstance")
   private DatabaseInstance jobsDatabaseInstance;
 
+  @Inject
+  @Named("config")
+  private DataSource configDataSource;
+
+  @Inject
+  @Named("jobs")
+  private DataSource jobsDataSource;
+
+  @Inject
+  @Named("configFlyway")
+  private Flyway configFlyway;
+
+  @Inject
+  @Named("jobsFlyway")
+  private Flyway jobsFlyway;
+
   @EventListener
   public void onStartup(final StartupEvent startupEvent) throws InterruptedException {
-    initializeConfigDatabase();
-    initializeJobsDatabase();
+      initializeConfigDatabase();
+      initializeJobsDatabase();
   }
 
+  @Transactional
   public void initializeConfigDatabase() throws InterruptedException {
     LOGGER.info("Checking configs database flyway migration version...");
     MinimumFlywayMigrationVersionCheck.assertDatabase(configDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
     LOGGER.info("Checking configs database flyway migrations...");
-    final ConfigsDatabaseMigrator configsMigrator =
-        new ConfigsDatabaseMigrator(configDatabaseInstance.getInitialized(), DatabaseInitializer.class.getName());
-    MinimumFlywayMigrationVersionCheck.assertMigrations(configsMigrator, configDatabaseMinimumFlywayVersion, configDatabaseInitializationTimeoutMs);
+    MinimumFlywayMigrationVersionCheck.assertMigrations(configFlyway, configDatabaseMinimumFlywayVersion, configDatabaseInitializationTimeoutMs);
   }
 
-  private void initializeJobsDatabase() throws InterruptedException {
+  @Transactional
+  public void initializeJobsDatabase() throws InterruptedException {
     LOGGER.info("Checking jobs database flyway migration version..");
     MinimumFlywayMigrationVersionCheck.assertDatabase(jobsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
     LOGGER.info("Checking jobs database flyway migrations...");
-    final JobsDatabaseMigrator jobsMigrator = new JobsDatabaseMigrator(jobsDatabaseInstance.getInitialized(), DatabaseInitializer.class.getName());
-    MinimumFlywayMigrationVersionCheck.assertMigrations(jobsMigrator, jobsDatabaseMinimumFlywayVersion, jobsDatabaseInitializationTimeoutMs);
+    MinimumFlywayMigrationVersionCheck.assertMigrations(jobsFlyway, jobsDatabaseMinimumFlywayVersion, jobsDatabaseInitializationTimeoutMs);
   }
 
 }

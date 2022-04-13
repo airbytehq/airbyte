@@ -19,13 +19,19 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.inject.Singleton;
 
 // todo (cgardens) - we are not getting any value out of instantiating this class. we should just
 // use it as statics. not doing it now, because already in the middle of another refactor.
 @AllArgsConstructor
+@Singleton
 public class ConnectionHelper {
 
-  private final ConfigRepository configRepository;
+  @Inject
+  private ConfigRepository configRepository;
+
+  @Inject
   private final WorkspaceHelper workspaceHelper;
 
   public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {

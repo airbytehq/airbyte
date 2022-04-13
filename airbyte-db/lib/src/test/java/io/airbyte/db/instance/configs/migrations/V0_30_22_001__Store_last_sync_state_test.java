@@ -30,6 +30,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.sql.Connection;
@@ -45,6 +46,7 @@ import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.BeforeAll;
@@ -91,16 +93,14 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
            unit = TimeUnit.MINUTES)
   public static void setupJobDatabase() throws Exception {
     jobDatabase = new JobsDatabaseInstance(
-        container.getUsername(),
-        container.getPassword(),
-        container.getJdbcUrl())
-            .getAndInitialize();
+        Databases.createDslContext(
+          Databases.dataSourceBuilder().withUsername(container.getUsername()).withPassword(container.getPassword()).withJdbcUrl(container.getJdbcUrl()).build(), SQLDialect.POSTGRES)).getAndInitialize();
   }
 
   @Test
   @Order(10)
   public void testGetJobsDatabase() {
-    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase("", "", "").isEmpty());
+    assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase(null).isEmpty());
 
     // when there is database environment variable, return the database
     final Configs configs = mock(Configs.class);
@@ -109,7 +109,15 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
     when(configs.getDatabaseUrl()).thenReturn(container.getJdbcUrl());
 
     assertTrue(V0_30_22_001__Store_last_sync_state
-        .getJobsDatabase(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).isPresent());
+        .getJobsDatabase(
+            Databases.createDslContext(
+                Databases.dataSourceBuilder()
+                    .withUsername(configs.getDatabaseUser())
+                    .withPassword(configs.getDatabasePassword())
+                    .withJdbcUrl(configs.getDatabaseUrl())
+                    .build(),
+                SQLDialect.POSTGRES
+            )).isPresent());
   }
 
   @Test
@@ -189,7 +197,15 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
         .where(COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
         .execute());
 
-    final var migration = new V0_30_22_001__Store_last_sync_state(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    final var migration = new V0_30_22_001__Store_last_sync_state(
+        Databases.createDslContext(
+            Databases.dataSourceBuilder()
+                .withJdbcUrl(container.getJdbcUrl())
+                .withPassword(container.getPassword())
+                .withUsername(container.getUsername())
+                .build(),
+            SQLDialect.POSTGRES
+        ));
     // this context is a flyway class; only the getConnection method is needed to run the migration
     final Context context = new Context() {
 

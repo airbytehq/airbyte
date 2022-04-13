@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.AbstractDatabaseTest;
-import io.airbyte.db.instance.DatabaseMigrator;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 

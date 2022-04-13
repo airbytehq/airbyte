@@ -5,7 +5,6 @@
 package io.airbyte.db.instance.toys;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.FlywayDatabaseMigrator;
 
 /**
  * A database migrator for testing purposes only.

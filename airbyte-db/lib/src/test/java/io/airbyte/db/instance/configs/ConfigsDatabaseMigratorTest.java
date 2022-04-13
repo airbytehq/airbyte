@@ -4,8 +4,6 @@
 
 package io.airbyte.db.instance.configs;
 
-import io.airbyte.db.instance.DatabaseMigrator;
-import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 

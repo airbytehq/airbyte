@@ -109,11 +109,12 @@ public abstract class SshPostgresDestinationAcceptanceTest extends DestinationAc
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createPostgresDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s", config.get("host").asText(), config.get("port").asText(),
-            config.get("database").asText()));
+    return Databases.createDatabase(Databases.dataSourceBuilder()
+            .withUsername(config.get("username").asText())
+            .withPassword(config.get("password").asText())
+            .withJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s", config.get("host").asText(), config.get("port").asText(),
+                config.get("database").asText()))
+            .build());
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {

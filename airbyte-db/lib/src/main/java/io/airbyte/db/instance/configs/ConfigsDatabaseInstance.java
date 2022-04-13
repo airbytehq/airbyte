@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Function;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,18 +40,16 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
 
   private Database database;
 
-  public ConfigsDatabaseInstance(final String username, final String password, final String connectionString) throws IOException {
-    super(username, password, connectionString, MoreResources.readResource(SCHEMA_PATH), DATABASE_LOGGING_NAME, INITIAL_EXPECTED_TABLES,
+  public ConfigsDatabaseInstance(final DSLContext dslContext) throws IOException {
+    super(dslContext, MoreResources.readResource(SCHEMA_PATH), DATABASE_LOGGING_NAME, INITIAL_EXPECTED_TABLES,
         IS_CONFIGS_DATABASE_READY);
   }
 
   @Override
   public boolean isInitialized() throws IOException {
     if (database == null) {
-      database = Databases.createPostgresDatabaseWithRetry(
-          username,
-          password,
-          connectionString,
+      database = Databases.createDatabaseWithRetry(
+          dslContext,
           isDatabaseConnected(databaseName));
     }
 
@@ -73,10 +73,8 @@ public class ConfigsDatabaseInstance extends BaseDatabaseInstance implements Dat
     // we connect to the database. So the database itself is considered ready as long as
     // the connection is alive.
     if (database == null) {
-      database = Databases.createPostgresDatabaseWithRetry(
-          username,
-          password,
-          connectionString,
+      database = Databases.createDatabaseWithRetry(
+          dslContext,
           isDatabaseConnected(databaseName));
     }
 

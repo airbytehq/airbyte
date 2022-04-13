@@ -17,7 +17,9 @@ import io.airbyte.commons.lang.Exceptions;
 import java.io.IOException;
 import java.util.Date;
 import lombok.val;
+import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
+import org.flywaydb.core.api.MigrationInfoService;
 import org.flywaydb.core.api.MigrationState;
 import org.flywaydb.core.api.MigrationType;
 import org.flywaydb.core.api.MigrationVersion;
@@ -60,8 +62,10 @@ public class MinimumFlywayMigrationVersionCheckTest {
   @Test
   void testMigrationMatchesMinimum() {
     val version = "0.22.0.1";
-    val migrator = mock(DatabaseMigrator.class);
-    when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(version));
+    val migrator = mock(Flyway.class);
+    val service = mock(MigrationInfoService.class);
+    when(service.current()).thenReturn(new StubMigrationInfo(version));
+    when(migrator.info()).thenReturn(service);
 
     assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, version, DEFAULT_TIMEOUT_MS));
   }
@@ -70,8 +74,10 @@ public class MinimumFlywayMigrationVersionCheckTest {
   void testMigrationExceedsMinimum() {
     val minVersion = "0.22.0.1";
     val latestVersion = "0.30.0";
-    val migrator = mock(DatabaseMigrator.class);
-    when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(latestVersion));
+    val migrator = mock(Flyway.class);
+    val service = mock(MigrationInfoService.class);
+    when(service.current()).thenReturn(new StubMigrationInfo(latestVersion));
+    when(migrator.info()).thenReturn(service);
 
     assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
   }
@@ -82,12 +88,14 @@ public class MinimumFlywayMigrationVersionCheckTest {
     val minVersion = "0.30.0";
     val latestVersion = "0.33.0.1";
 
-    val migrator = mock(DatabaseMigrator.class);
-    when(migrator.getLatestMigration())
+    val migrator = mock(Flyway.class);
+    val service = mock(MigrationInfoService.class);
+    when(service.current())
         .thenReturn(new StubMigrationInfo(startVersion))
         .thenReturn(new StubMigrationInfo(startVersion))
         .thenReturn(new StubMigrationInfo(startVersion))
         .thenReturn(new StubMigrationInfo(latestVersion));
+    when(migrator.info()).thenReturn(service);
 
     assertDoesNotThrow(() -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
   }
@@ -97,8 +105,10 @@ public class MinimumFlywayMigrationVersionCheckTest {
     val startVersion = "0.22.0.1";
     val minVersion = "0.30.0";
 
-    val migrator = mock(DatabaseMigrator.class);
-    when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(startVersion));
+    val migrator = mock(Flyway.class);
+    val service = mock(MigrationInfoService.class);
+    when(service.current()).thenReturn(new StubMigrationInfo(startVersion));
+    when(migrator.info()).thenReturn(service);
 
     val startTime = System.currentTimeMillis();
     assertThrows(RuntimeException.class, () -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
@@ -110,11 +120,13 @@ public class MinimumFlywayMigrationVersionCheckTest {
     val startVersion = "0.22.0.1";
     val minVersion = "0.30.0";
 
-    val migrator = spy(DatabaseMigrator.class);
-    when(migrator.getLatestMigration()).thenReturn(new StubMigrationInfo(startVersion));
+    val migrator = mock(Flyway.class);
+    val service = mock(MigrationInfoService.class);
+    when(service.current()).thenReturn(new StubMigrationInfo(startVersion));
+    when(migrator.info()).thenReturn(service);
 
     Exceptions.swallow(() -> MinimumFlywayMigrationVersionCheck.assertMigrations(migrator, minVersion, DEFAULT_TIMEOUT_MS));
-    verify(migrator, times(MinimumFlywayMigrationVersionCheck.NUM_POLL_TIMES + 1)).getLatestMigration();
+    verify(service, times(MinimumFlywayMigrationVersionCheck.NUM_POLL_TIMES + 1)).current();
   }
 
   /**

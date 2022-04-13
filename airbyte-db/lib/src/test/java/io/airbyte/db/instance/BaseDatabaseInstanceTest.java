@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,15 +45,19 @@ class BaseDatabaseInstanceTest {
 
   @BeforeEach
   void createDatabase() {
-    database = Databases.createPostgresDatabaseWithRetry(
-        container.getUsername(), container.getPassword(), container.getJdbcUrl(),
+    database = Databases.createDatabaseWithRetry(
+        Databases.createDslContext(
+        Databases.dataSourceBuilder()
+            .withUsername(container.getUsername())
+            .withPassword(container.getPassword())
+            .withJdbcUrl(container.getJdbcUrl()).build(),
+            SQLDialect.POSTGRES),
         BaseDatabaseInstance.isDatabaseConnected(DATABASE_NAME));
   }
 
   @AfterEach
   void tearDown() throws Exception {
     database.transaction(ctx -> ctx.execute(String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME)));
-    database.close();
   }
 
   @Test

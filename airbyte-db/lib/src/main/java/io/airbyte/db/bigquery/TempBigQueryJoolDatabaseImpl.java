@@ -22,7 +22,7 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
   private final BigQueryDatabase realDatabase;
 
   public TempBigQueryJoolDatabaseImpl(final String projectId, final String jsonCreds) {
-    super(null, null);
+    super(null);
     realDatabase = Databases.createBigQueryDatabase(projectId, jsonCreds);
   }
 
@@ -34,11 +34,6 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
   @Override
   public <T> T transaction(final ContextQueryFunction<T> transform) throws SQLException {
     return transform.query(new FakeDefaultDSLContext(realDatabase));
-  }
-
-  @Override
-  public void close() throws Exception {
-    realDatabase.close();
   }
 
   public BigQueryDatabase getRealDatabase() {

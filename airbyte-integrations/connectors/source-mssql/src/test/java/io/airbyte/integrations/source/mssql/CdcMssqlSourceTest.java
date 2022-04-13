@@ -38,6 +38,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,21 +86,25 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .build());
 
     database = Databases.createDatabase(
-        container.getUsername(),
-        container.getPassword(),
-        String.format("jdbc:sqlserver://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        DRIVER_CLASS,
-        null);
+        Databases.createDslContext(
+        Databases.dataSourceBuilder()
+            .withUsername(container.getUsername())
+            .withPassword(container.getPassword())
+            .withJdbcUrl( String.format("jdbc:sqlserver://%s:%s",
+                container.getHost(),
+                container.getFirstMappedPort()))
+            .withDriverClassName(DRIVER_CLASS)
+            .build(), SQLDialect.DEFAULT));
 
     testJdbcDatabase = Databases.createJdbcDatabase(
-        TEST_USER_NAME,
-        TEST_USER_PASSWORD,
-        String.format("jdbc:sqlserver://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        DRIVER_CLASS);
+            Databases.dataSourceBuilder()
+                .withUsername(TEST_USER_NAME)
+                .withPassword(TEST_USER_PASSWORD)
+                .withJdbcUrl( String.format("jdbc:sqlserver://%s:%s",
+                    container.getHost(),
+                    container.getFirstMappedPort()))
+                .withDriverClassName(DRIVER_CLASS)
+                .build());
 
     executeQuery("CREATE DATABASE " + dbName + ";");
     switchSnapshotIsolation(true, dbName);
@@ -202,7 +207,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @AfterEach
   public void tearDown() {
     try {
-      database.close();
       container.close();
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -309,15 +313,16 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
       throw new RuntimeException(e);
     }
     final JdbcDatabase jdbcDatabase = Databases.createStreamingJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            dbName),
-        DRIVER_CLASS,
+        Databases.dataSourceBuilder()
+            .withUsername(config.get("username").asText())
+            .withPassword( config.get("password").asText())
+            .withJdbcUrl(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                dbName))
+            .withDriverClassName(DRIVER_CLASS)
+            .build(),
         new MssqlJdbcStreamingQueryConfiguration(),
-        Maps.newHashMap(),
         new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }

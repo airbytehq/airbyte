@@ -82,6 +82,7 @@ import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -106,9 +107,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -266,7 +269,8 @@ public class AcceptanceTests {
 
     // seed database.
     if (IS_GKE) {
-      final Database database = getSourceDatabase();
+      final DataSource dataSource = getSourceDataSource();
+      final Database database = getSourceDatabase(dataSource);
       final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
       final StringBuilder query = new StringBuilder();
       for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
@@ -275,13 +279,14 @@ public class AcceptanceTests {
         }
       }
       database.query(context -> context.execute(query.toString()));
+      close(dataSource);
     } else {
       PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
     }
   }
 
   @AfterEach
-  public void tearDown() throws ApiException, SQLException {
+  public void tearDown() throws ApiException, SQLException, IOException {
     clearSourceDbData();
     clearDestinationDbData();
     if (!IS_GKE) {
@@ -538,6 +543,7 @@ public class AcceptanceTests {
     final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
+    final DataSource sourceDataSource = getSourceDataSource();
 
     assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
     // instead of assertFalse to avoid NPE from unboxed.
@@ -562,7 +568,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
 
     // add new records and run again.
-    final Database source = getSourceDatabase();
+    final Database source = getSourceDatabase(sourceDataSource);
     // get contents of source before mutating records.
     final List<JsonNode> expectedRecords = retrieveSourceRecords(source, STREAM_NAME);
     expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
@@ -572,7 +578,7 @@ public class AcceptanceTests {
     // full refreshing, this record will appear in the output and cause the test to fail. if we are,
     // correctly, doing incremental, we will not find this value in the destination.
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
-    source.close();
+    close(sourceDataSource);
 
     LOGGER.info("Starting testIncrementalSync() sync 2");
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
@@ -705,6 +711,7 @@ public class AcceptanceTests {
         .primaryKey(List.of(List.of(COLUMN_NAME))));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    final DataSource sourceDataSource = getSourceDataSource();
 
     // sync from start
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
@@ -714,7 +721,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(true);
 
     // add new records and run again.
-    final Database source = getSourceDatabase();
+    final Database source = getSourceDatabase(sourceDataSource);
     final List<JsonNode> expectedRawRecords = retrieveSourceRecords(source, STREAM_NAME);
     expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "sherif").build()));
     expectedRawRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 7).put(COLUMN_NAME, "chris").build()));
@@ -723,7 +730,7 @@ public class AcceptanceTests {
     // retrieve latest snapshot of source records after modifications; the deduplicated table in
     // destination should mirror this latest state of records
     final List<JsonNode> expectedNormalizedRecords = retrieveSourceRecords(source, STREAM_NAME);
-    source.close();
+    close(sourceDataSource);
 
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -783,7 +790,7 @@ public class AcceptanceTests {
     // now cancel it so that we freeze state!
     try {
       apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
-    } catch (Exception e) {}
+    } catch (final Exception e) {}
 
     final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
 
@@ -1151,11 +1158,14 @@ public class AcceptanceTests {
   }
 
   private void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
-    final Database source = getSourceDatabase();
+    final DataSource sourceDataSource = getSourceDataSource();
+    final DataSource desintationDataSource = getDestinationDataSource();
+
+    final Database source = getSourceDatabase(sourceDataSource);
 
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
     final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
-    final Database destination = getDestinationDatabase();
+    final Database destination = getDestinationDatabase(desintationDataSource);
     final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
     assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
         String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
@@ -1164,24 +1174,45 @@ public class AcceptanceTests {
       final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
       assertRawDestinationContains(sourceRecords, pair);
     }
+
+    close(sourceDataSource);
+    close(desintationDataSource);
   }
 
-  private Database getSourceDatabase() {
+  private DataSource getSourceDataSource() {
     if (IS_KUBE && IS_GKE) {
-      return GKEPostgresConfig.getSourceDatabase();
+      return GKEPostgresConfig.getSourceDataSource();
     }
-    return getDatabase(sourcePsql);
+
+    return Databases.dataSourceBuilder()
+        .withUsername(sourcePsql.getUsername())
+        .withPassword(sourcePsql.getPassword())
+        .withJdbcUrl(sourcePsql.getJdbcUrl())
+        .build();
   }
 
-  private Database getDestinationDatabase() {
+  private DataSource getDestinationDataSource() {
     if (IS_KUBE && IS_GKE) {
-      return GKEPostgresConfig.getDestinationDatabase();
+      return GKEPostgresConfig.getDestinationDataSource();
     }
-    return getDatabase(destinationPsql);
+
+    return Databases.dataSourceBuilder()
+        .withUsername(sourcePsql.getUsername())
+        .withPassword(sourcePsql.getPassword())
+        .withJdbcUrl(sourcePsql.getJdbcUrl())
+        .build();
   }
 
-  private Database getDatabase(final PostgreSQLContainer db) {
-    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+  private Database getSourceDatabase(final DataSource dataSource) {
+    return getDatabase(dataSource);
+  }
+
+  private Database getDestinationDatabase(final DataSource dataSource) {
+    return getDatabase(dataSource);
+  }
+
+  private Database getDatabase(final DataSource dataSource) {
+    return Databases.createDatabase(Databases.createDslContext(dataSource, SQLDialect.POSTGRES));
   }
 
   private Set<SchemaTableNamePair> listAllTables(final Database database) throws SQLException {
@@ -1233,7 +1264,8 @@ public class AcceptanceTests {
   }
 
   private void assertNormalizedDestinationContains(final List<JsonNode> sourceRecords) throws Exception {
-    final Database destination = getDestinationDatabase();
+    final DataSource desintationDataSource = getDestinationDataSource();
+    final Database destination = getDestinationDatabase(desintationDataSource);
     final String finalDestinationTable = String.format("%spublic.%s%s", OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
     final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
 
@@ -1247,6 +1279,8 @@ public class AcceptanceTests {
                   && r.get(COLUMN_ID).asInt() == sourceStreamRecord.get(COLUMN_ID).asInt()),
           String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
     }
+
+    close(desintationDataSource);
   }
 
   private ConnectionRead createConnection(final String name,
@@ -1336,14 +1370,19 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
-    final Database destination = getDestinationDatabase();
+    final DataSource desintationDataSource = getDestinationDataSource();
+    final Database destination = getDestinationDatabase(desintationDataSource);
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
     final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, pair.tableName.replace(".", "_"));
     final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + pair.schemaName, rawStreamName);
     assertTrue(namePairs.contains(rawTablePair), "can't find a non-normalized version (raw) of " + rawTablePair.getFullyQualifiedTableName());
 
-    return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
+    try {
+      return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
+    } finally {
+      close(desintationDataSource);
+    }
   }
 
   private JsonNode getSourceDbConfig() {
@@ -1445,20 +1484,24 @@ public class AcceptanceTests {
         .getSourceDefinitionId();
   }
 
-  private void clearSourceDbData() throws SQLException {
-    final Database database = getSourceDatabase();
+  private void clearSourceDbData() throws SQLException, IOException {
+    final DataSource sourceDatatSource = getSourceDataSource();
+    final Database database = getSourceDatabase(sourceDatatSource);
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
       database.query(context -> context.execute(String.format("DROP TABLE %s.%s", pair.schemaName, pair.tableName)));
     }
+    close(sourceDatatSource);
   }
 
-  private void clearDestinationDbData() throws SQLException {
-    final Database database = getDestinationDatabase();
+  private void clearDestinationDbData() throws SQLException, IOException {
+    final DataSource destinationDataSource = getDestinationDataSource();
+    final Database database = getDestinationDatabase(destinationDataSource);
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
       database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
     }
+    close(destinationDataSource);
   }
 
   private void deleteSource(final UUID sourceId) throws ApiException {
@@ -1484,6 +1527,12 @@ public class AcceptanceTests {
 
   private void deleteOperation(final UUID destinationId) throws ApiException {
     apiClient.getOperationApi().deleteOperation(new OperationIdRequestBody().operationId(destinationId));
+  }
+
+  private void close(final DataSource dataSource) throws IOException {
+    if(dataSource instanceof Closeable) {
+      ((Closeable)dataSource).close();
+    }
   }
 
   private static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {

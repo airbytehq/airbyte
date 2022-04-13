@@ -26,6 +26,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
@@ -52,6 +53,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -239,16 +241,14 @@ public class SchedulerApp {
     waitForServer(configs);
     LOGGER.info("Creating Job DB connection pool...");
     final Database jobDatabase = new JobsDatabaseInstance(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl())
+        Databases.createDslContext(
+        Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword()).build(), SQLDialect.POSTGRES))
             .getInitialized();
 
     final Database configDatabase = new ConfigsDatabaseInstance(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl())
-            .getInitialized();
+        Databases.createDslContext(
+            Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword()).build(), SQLDialect.POSTGRES))
+        .getInitialized();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())

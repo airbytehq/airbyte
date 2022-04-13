@@ -10,33 +10,25 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseInstance;
-import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.micronaut.context.annotation.Factory;
-import io.micronaut.context.annotation.Value;
 import java.io.IOException;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 
 @Factory
 public class DatabaseBeanFactory {
 
   @Singleton
   @Named("configDatabaseInstance")
-  public DatabaseInstance configDatabaseInstance(
-                                                 @Value("${airbyte.database.config.user}") final String configDatabaseUser,
-                                                 @Value("${airbyte.database.config.password}") final String configDatabasePassword,
-                                                 @Value("${airbyte.database.config.url}") final String configDatabaseUrl)
+  public DatabaseInstance configDatabaseInstance(@Named("config") final DSLContext dslContext)
       throws IOException {
-    return new ConfigsDatabaseInstance(
-        configDatabaseUser,
-        configDatabasePassword,
-        configDatabaseUrl);
+    return new ConfigsDatabaseInstance(dslContext);
   }
 
   @Singleton
@@ -59,15 +51,9 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Named("jobsDatabaseInstance")
-  public DatabaseInstance jobsDatabaseInstance(
-                                               @Value("${airbyte.database.jobs.user}") final String jobDatabaseUser,
-                                               @Value("${airbyte.database.jobs.password}") final String jobDatabasePassword,
-                                               @Value("${airbyte.database.jobs.url}") final String jobDatabaseUrl)
+  public DatabaseInstance jobsDatabaseInstance(@Named("jobs") final DSLContext dslContext)
       throws IOException {
-    return new JobsDatabaseInstance(
-        jobDatabaseUser,
-        jobDatabasePassword,
-        jobDatabaseUrl);
+    return new JobsDatabaseInstance(dslContext);
   }
 
   @Singleton
@@ -79,18 +65,6 @@ public class DatabaseBeanFactory {
   @Singleton
   public JobPersistence jobPersistence(@Named("jobDatabase") final Database jobDatabase) {
     return new DefaultJobPersistence(jobDatabase);
-  }
-
-  @Singleton
-  @Named("configDbMigrator")
-  public DatabaseMigrator configDbMirator(@Named("configDatabase") final Database configDatabase) {
-    return new ConfigsDatabaseMigrator(configDatabase, DatabaseBeanFactory.class.getSimpleName());
-  }
-
-  @Singleton
-  @Named("jobDbMigrator")
-  public DatabaseMigrator jobDatabseMigrator(@Named("jobDatabase") final Database jobDatabase) {
-    return new JobsDatabaseMigrator(jobDatabase, DatabaseBeanFactory.class.getSimpleName());
   }
 
 }

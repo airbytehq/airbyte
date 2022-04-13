@@ -23,6 +23,7 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.db.instance.FlywayConfigurationConstants;
 import io.airbyte.oauth.OAuthImplementationFactory;
 import io.airbyte.scheduler.client.DefaultSchedulerJobClient;
 import io.airbyte.scheduler.client.DefaultSynchronousSchedulerClient;
@@ -35,12 +36,14 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
+import io.airbyte.server.DatabaseInitializer;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.flyway.FlywayConfigurationProperties;
 import io.micronaut.http.client.DefaultHttpClientConfiguration;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.HttpClientConfiguration;
@@ -55,6 +58,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.sql.DataSource;
+import jdk.jfr.Name;
+import org.flywaydb.core.Flyway;
+import org.jooq.DSLContext;
 
 @Factory
 public class ApplicationBeanFactory {
@@ -80,8 +87,8 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  public AirbyteVersion airbyteVersion(final Configs configs) {
-    return configs.getAirbyteVersion();
+  public AirbyteVersion airbyteVersion(@Value("${airbyte.version}") final String version) {
+    return new AirbyteVersion(version);
   }
 
   @Singleton
@@ -95,20 +102,20 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  public SecretsHydrator secretsHydrator(final Configs configs) throws IOException {
-    return SecretPersistence.getSecretsHydrator(configs);
+  public SecretsHydrator secretsHydrator(final Configs configs, @Named("config") final DSLContext dslContext) throws IOException {
+    return SecretPersistence.getSecretsHydrator(configs, dslContext);
   }
 
   @Singleton
   @Named("secretPersistence")
-  public Optional<SecretPersistence> secretPersistence(final Configs configs) throws IOException {
-    return SecretPersistence.getLongLived(configs);
+  public Optional<SecretPersistence> secretPersistence(final Configs configs, @Named("config") final DSLContext dslContext) throws IOException {
+    return SecretPersistence.getLongLived(configs, dslContext);
   }
 
   @Singleton
   @Named("ephemeralSecretPersistence")
-  public Optional<SecretPersistence> ephemeralSecretPersistence(final Configs configs) throws IOException {
-    return SecretPersistence.getEphemeral(configs);
+  public Optional<SecretPersistence> ephemeralSecretPersistence(final Configs configs, @Named("config") final DSLContext dslContext) throws IOException {
+    return SecretPersistence.getEphemeral(configs, dslContext);
   }
 
   @Singleton
@@ -240,6 +247,34 @@ public class ApplicationBeanFactory {
                                  final WorkspaceHelper workspaceHelper,
                                  final TrackingClient trackingClient) {
     return new JobNotifier(webappUrl, configRepository, workspaceHelper, trackingClient);
+  }
+
+  @Singleton
+  @Named("configFlyway")
+  public Flyway configFlyway(@Named("config") final DataSource configDataSource,
+      @Named("config") final FlywayConfigurationProperties configsFlywayConfigurationProperties) {
+    return configsFlywayConfigurationProperties.getFluentConfiguration()
+        .dataSource(configDataSource)
+        .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
+        .baselineDescription(FlywayConfigurationConstants.BASELINE_DESCRIPTION)
+        .baselineOnMigrate(FlywayConfigurationConstants.BASELINE_ON_MIGRATION)
+        .installedBy(DatabaseInitializer.class.getSimpleName())
+        .table(String.format("airbyte_%s_migrations", "configs"))
+        .load();
+  }
+
+  @Singleton
+  @Named("jobsFlyway")
+  public Flyway jobsFlyway(@Named("jobs") final DataSource jobsDataSource,
+      @Named("jobs") final FlywayConfigurationProperties jobsFlywayConfigurationProperties) {
+    return jobsFlywayConfigurationProperties.getFluentConfiguration()
+        .dataSource(jobsDataSource)
+        .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
+        .baselineDescription(FlywayConfigurationConstants.BASELINE_DESCRIPTION)
+        .baselineOnMigrate(FlywayConfigurationConstants.BASELINE_ON_MIGRATION)
+        .installedBy(DatabaseInitializer.class.getSimpleName())
+        .table(String.format("airbyte_%s_migrations", "jobs"))
+        .load();
   }
 
 }

@@ -4,7 +4,8 @@
 
 package io.airbyte.db;
 
-import com.google.common.collect.Maps;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -17,9 +18,11 @@ import io.airbyte.db.mongodb.MongoDatabase;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
+import javax.sql.DataSource;
 import lombok.val;
-import org.apache.commons.dbcp2.BasicDataSource;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,27 +31,12 @@ public class Databases {
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
   private static final long DEFAULT_WAIT_MS = 5 * 1000;
 
-  public static Database createPostgresDatabase(final String username,
-                                                final String password,
-                                                final String host,
-                                                final int port,
-                                                final String database) {
-    return createPostgresDatabase(username, password, String.format("jdbc:postgresql://%s:%s/%s", host, port, database));
-  }
-
-  public static Database createPostgresDatabase(final String username, final String password, final String jdbcConnectionString) {
-    return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
-  }
-
-  public static Database createPostgresDatabaseWithRetry(final String username,
-                                                         final String password,
-                                                         final String jdbcConnectionString,
-                                                         final Function<Database, Boolean> isDbReady) {
+  public static Database createDatabaseWithRetry(final DSLContext dslContext, final Function<Database, Boolean> isDbReady) {
     Database database = null;
     while (database == null) {
       try {
         val infinity = Integer.MAX_VALUE;
-        database = createPostgresDatabaseWithRetryTimeout(username, password, jdbcConnectionString, isDbReady, infinity);
+        database = createDatabaseWithRetryTimeout(dslContext, isDbReady, infinity);
       } catch (final IOException e) {
         // This should theoretically never happen since we set the timeout to be a very high number.
       }
@@ -58,39 +46,34 @@ public class Databases {
     return database;
   }
 
-  public static Database createPostgresDatabaseWithRetryTimeout(final String username,
-                                                                final String password,
-                                                                final String jdbcConnectionString,
+  public static Database createDatabaseWithRetryTimeout(final DSLContext dslContext,
                                                                 final Function<Database, Boolean> isDbReady,
                                                                 final long timeoutMs)
       throws IOException {
-    Database database = null;
-    if (jdbcConnectionString == null || jdbcConnectionString.trim().equals("")) {
-      throw new IllegalArgumentException("Using a null or empty jdbc url will hang database creation; aborting.");
+    if (dslContext == null) {
+      throw new IllegalArgumentException("DSLContext required.");
     }
 
+    final Database database = createDatabase(dslContext);
+    boolean isReady = false;
     var totalTime = 0;
-    while (database == null) {
+    while (!isReady) {
       LOGGER.warn("Waiting for database to become available...");
       if (totalTime >= timeoutMs) {
-        final var error = String.format("Unable to connection to database at %s..", jdbcConnectionString);
+        final var error = String.format("Unable to connection to database.");
         throw new IOException(error);
       }
 
       try {
-        database = createPostgresDatabase(username, password, jdbcConnectionString);
-        if (!isDbReady.apply(database)) {
+        isReady = isDbReady.apply(database);
+        if (!isReady) {
           LOGGER.info("Database is not ready yet. Please wait a moment, it might still be initializing...");
-          database.close();
-
-          database = null;
           Exceptions.toRuntime(() -> Thread.sleep(DEFAULT_WAIT_MS));
           totalTime += DEFAULT_WAIT_MS;
         }
       } catch (final Exception e) {
         // Ignore the exception because this likely means that the database server is still initializing.
         LOGGER.warn("Ignoring exception while trying to request database:", e);
-        database = null;
         Exceptions.toRuntime(() -> Thread.sleep(DEFAULT_WAIT_MS));
         totalTime += DEFAULT_WAIT_MS;
       }
@@ -100,125 +83,28 @@ public class Databases {
     return database;
   }
 
-  public static JdbcDatabase createRedshiftDatabase(final String username, final String password, final String jdbcConnectionString) {
-    return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
+  public static Database createDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
   }
 
-  public static Database createMySqlDatabase(final String username, final String password, final String jdbcConnectionString) {
-    return createDatabase(username, password, jdbcConnectionString, "com.mysql.cj.jdbc.Driver", SQLDialect.MYSQL);
+  public static JdbcDatabase createJdbcDatabase(final DataSource dataSource) {
+    return createJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations());
   }
 
-  public static Database createSqlServerDatabase(final String username, final String password, final String jdbcConnectionString) {
-    return createDatabase(username, password, jdbcConnectionString, "com.microsoft.sqlserver.jdbc.SQLServerDriver", SQLDialect.DEFAULT);
-  }
-
-  public static Database createOracleDatabase(final String username, final String password, final String jdbcConnectionString) {
-    return createDatabase(username, password, jdbcConnectionString, "oracle.jdbc.OracleDriver", SQLDialect.DEFAULT);
-  }
-
-  public static Database createClickhouseDatabase(final String username, final String password, final String jdbcConnectionString) {
-    return createDatabase(username, password, jdbcConnectionString, "ru.yandex.clickhouse.ClickHouseDriver", SQLDialect.DEFAULT);
-  }
-
-  public static Database createMariaDbDatabase(final String username, final String password, final String jdbcConnectionString) {
-    return createDatabase(username, password, jdbcConnectionString, "org.mariadb.jdbc.Driver", SQLDialect.MARIADB);
-  }
-
-  public static Database createDatabase(final String username,
-                                        final String password,
-                                        final String jdbcConnectionString,
-                                        final String driverClassName,
-                                        final SQLDialect dialect) {
-    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
-
-    return new Database(connectionPool, dialect);
-  }
-
-  public static Database createDatabase(final String username,
-                                        final String password,
-                                        final String jdbcConnectionString,
-                                        final String driverClassName,
-                                        final SQLDialect dialect,
-                                        final Map<String, String> connectionProperties) {
-    final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
-
-    return new Database(connectionPool, dialect);
-  }
-
-  public static JdbcDatabase createJdbcDatabase(final String username,
-                                                final String password,
-                                                final String jdbcConnectionString,
-                                                final String driverClassName) {
-    return createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, JdbcUtils.getDefaultSourceOperations());
-  }
-
-  public static JdbcDatabase createJdbcDatabase(final String username,
-                                                final String password,
-                                                final String jdbcConnectionString,
-                                                final String driverClassName,
+  public static JdbcDatabase createJdbcDatabase(final DataSource dataSource,
                                                 final JdbcSourceOperations sourceOperations) {
-    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
-
-    return new DefaultJdbcDatabase(connectionPool, sourceOperations);
+    return new DefaultJdbcDatabase(dataSource, sourceOperations);
   }
 
-  public static JdbcDatabase createJdbcDatabase(final String username,
-                                                final String password,
-                                                final String jdbcConnectionString,
-                                                final String driverClassName,
-                                                final Map<String, String> connectionProperties) {
-    return createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties,
-        JdbcUtils.getDefaultSourceOperations());
-  }
-
-  public static JdbcDatabase createJdbcDatabase(final String username,
-                                                final String password,
-                                                final String jdbcConnectionString,
-                                                final String driverClassName,
-                                                final Map<String, String> connectionProperties,
+  public static JdbcDatabase createJdbcDatabase(final DataSource dataSource,
                                                 final JdbcCompatibleSourceOperations<?> sourceOperations) {
-    final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
-
-    return new DefaultJdbcDatabase(connectionPool, sourceOperations);
+    return new DefaultJdbcDatabase(dataSource, sourceOperations);
   }
 
-  public static JdbcDatabase createStreamingJdbcDatabase(final String username,
-                                                         final String password,
-                                                         final String jdbcConnectionString,
-                                                         final String driverClassName,
+  public static JdbcDatabase createStreamingJdbcDatabase(final DataSource dataSource,
                                                          final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
-                                                         final Map<String, String> connectionProperties,
                                                          final JdbcCompatibleSourceOperations<?> sourceOperations) {
-    final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
-
-    return new StreamingJdbcDatabase(connectionPool, sourceOperations, jdbcStreamingQuery);
-  }
-
-  private static BasicDataSource createBasicDataSource(final String username,
-                                                       final String password,
-                                                       final String jdbcConnectionString,
-                                                       final String driverClassName) {
-    return createBasicDataSource(username, password, jdbcConnectionString, driverClassName,
-        Maps.newHashMap());
-  }
-
-  public static BasicDataSource createBasicDataSource(final String username,
-                                                      final String password,
-                                                      final String jdbcConnectionString,
-                                                      final String driverClassName,
-                                                      final Map<String, String> connectionProperties) {
-    final BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDriverClassName(driverClassName);
-    connectionPool.setUsername(username);
-    connectionPool.setPassword(password);
-    connectionPool.setInitialSize(0);
-    connectionPool.setMaxTotal(5);
-    connectionPool.setUrl(jdbcConnectionString);
-    connectionProperties.forEach(connectionPool::addConnectionProperty);
-    return connectionPool;
+    return new StreamingJdbcDatabase(dataSource, sourceOperations, jdbcStreamingQuery);
   }
 
   public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {
@@ -229,4 +115,96 @@ public class Databases {
     return new MongoDatabase(connectionString, databaseName);
   }
 
+  public static DSLContext createDslContext(final DataSource dataSource, final SQLDialect dialect) { return DSL.using(dataSource, dialect); }
+
+  public static DataSourceBuilder dataSourceBuilder() { return new DataSourceBuilder(); };
+
+  public static class DataSourceBuilder {
+
+    private static final Map<String,String> JDBC_URL_FORMATS = Map.of("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s",
+        "com.amazon.redshift.jdbc.Driver", "jdbc:redshift://%s:%d/%s",
+        "com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s",
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d/%s",
+        "oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%d:%s",
+        "ru.yandex.clickhouse.ClickHouseDriver", "jdbc:ch://%s:%d/%s",
+        "org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s"
+        );
+
+    private String database;
+    private String driverClassName = "org.postgresql.Driver";
+    private String host;
+    private String jdbcUrl;
+    private Integer maximumPoolSize = 5;
+    private Integer minimumPoolSize = 0;
+    private String password;
+    private Integer port = 5432;
+    private String username;
+
+    private DataSourceBuilder () {}
+
+    public DataSourceBuilder withDatabase(final String database) {
+      this.database = database;
+      return this;
+    }
+
+    public DataSourceBuilder withDriverClassName(final String driverClassName) {
+      this.driverClassName = driverClassName;
+      return this;
+    }
+
+    public DataSourceBuilder withHost(final String host) {
+      this.host = host;
+      return this;
+    }
+
+    public DataSourceBuilder withJdbcUrl(final String jdbcUrl) {
+      this.jdbcUrl = jdbcUrl;
+      return this;
+    }
+
+    public DataSourceBuilder withMaximumPoolSize(final Integer maximumPoolSize) {
+      if(maximumPoolSize != null) {
+        this.maximumPoolSize = maximumPoolSize;
+      }
+      return this;
+    }
+
+    public DataSourceBuilder withMinimumPoolSize(final Integer minimumPoolSize) {
+      if(minimumPoolSize != null) {
+        this.minimumPoolSize = minimumPoolSize;
+      }
+      return this;
+    }
+
+    public DataSourceBuilder withPassword(final String password) {
+      this.password = password;
+      return this;
+    }
+
+    public DataSourceBuilder withPort(final Integer port) {
+      if(port != null) {
+        this.port = port;
+      }
+      return this;
+    }
+
+    public DataSourceBuilder withUsername(final String username) {
+      this.username = username;
+      return this;
+    }
+
+    public DataSource build() {
+      final HikariConfig config = new HikariConfig();
+      config.setDriverClassName(driverClassName);
+      config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(JDBC_URL_FORMATS.getOrDefault(driverClassName, ""), host, port, database));
+      config.setMaximumPoolSize(maximumPoolSize);
+      config.setMinimumIdle(minimumPoolSize);
+      config.setPassword(password);
+      config.setUsername(username);
+
+      final HikariDataSource dataSource = new HikariDataSource(config);
+      dataSource.validate();
+      return dataSource;
+    }
+  }
 }

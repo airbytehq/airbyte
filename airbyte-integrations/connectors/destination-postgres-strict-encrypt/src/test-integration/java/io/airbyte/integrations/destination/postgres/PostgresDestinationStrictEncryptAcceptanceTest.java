@@ -109,8 +109,12 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
-        db.getJdbcUrl()).query(
+    return Databases.createDatabase(
+        Databases.dataSourceBuilder()
+            .withJdbcUrl(db.getJdbcUrl())
+            .withPassword(db.getPassword())
+            .withUsername(db.getUsername())
+            .build()).query(
             ctx -> ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                 .stream()

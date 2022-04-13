@@ -15,9 +15,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,7 +62,7 @@ public class BootloaderAppTest {
     environmentVariables.set("DATABASE_PASSWORD", "docker");
     environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
-    val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
+    val bootloader = new Bootloader(mockedConfigs, mockedFeatureFlags);
     bootloader.load();
 
     val jobDatabase = new JobsDatabaseInstance(
@@ -91,23 +89,23 @@ public class BootloaderAppTest {
   @Test
   void testIsLegalUpgradePredicate() {
     // starting from no previous version is always legal.
-    assertTrue(BootloaderApp.isLegalUpgrade(null, new AirbyteVersion("0.17.1-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(null, new AirbyteVersion("0.32.0-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(null, new AirbyteVersion("0.32.1-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(null, new AirbyteVersion("0.33.1-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(null, new AirbyteVersion("0.17.1-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(null, new AirbyteVersion("0.32.0-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(null, new AirbyteVersion("0.32.1-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(null, new AirbyteVersion("0.33.1-alpha")));
     // starting from a version that is pre-breaking migration cannot go past the breaking migration.
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.17.1-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.18.0-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.32.0-alpha")));
-    assertFalse(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.32.1-alpha")));
-    assertFalse(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.33.0-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.17.1-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.18.0-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.32.0-alpha")));
+    assertFalse(Bootloader.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.32.1-alpha")));
+    assertFalse(Bootloader.isLegalUpgrade(new AirbyteVersion("0.17.0-alpha"), new AirbyteVersion("0.33.0-alpha")));
     // any migration starting at the breaking migration or after it can upgrade to anything.
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.32.0-alpha"), new AirbyteVersion("0.32.1-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.32.0-alpha"), new AirbyteVersion("0.33.0-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.32.1-alpha"), new AirbyteVersion("0.32.1-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.32.1-alpha"), new AirbyteVersion("0.33.0-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.33.0-alpha"), new AirbyteVersion("0.33.1-alpha")));
-    assertTrue(BootloaderApp.isLegalUpgrade(new AirbyteVersion("0.33.0-alpha"), new AirbyteVersion("0.34.0-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.32.0-alpha"), new AirbyteVersion("0.32.1-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.32.0-alpha"), new AirbyteVersion("0.33.0-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.32.1-alpha"), new AirbyteVersion("0.32.1-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.32.1-alpha"), new AirbyteVersion("0.33.0-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.33.0-alpha"), new AirbyteVersion("0.33.1-alpha")));
+    assertTrue(Bootloader.isLegalUpgrade(new AirbyteVersion("0.33.0-alpha"), new AirbyteVersion("0.34.0-alpha")));
   }
 
   @Test
@@ -134,7 +132,7 @@ public class BootloaderAppTest {
     val mockedFeatureFlags = mock(FeatureFlags.class);
     when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
-    new BootloaderApp(mockedConfigs, () -> testTriggered.set(true), mockedFeatureFlags).load();
+    new Bootloader(mockedConfigs, () -> testTriggered.set(true), mockedFeatureFlags).load();
 
     assertTrue(testTriggered.get());
   }

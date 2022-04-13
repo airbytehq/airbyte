@@ -289,12 +289,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
     final JdbcDatabase database = Databases.createStreamingJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
-        driverClass,
+        Databases.dataSourceBuilder()
+            .withUsername(jdbcConfig.get("username").asText())
+            .withPassword(jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null)
+            .withJdbcUrl(jdbcConfig.get("jdbc_url").asText())
+            .withDriverClassName(driverClass)
+            .build(),
         jdbcStreamingQueryConfiguration,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);

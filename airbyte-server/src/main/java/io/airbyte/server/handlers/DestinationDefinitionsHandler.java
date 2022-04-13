@@ -65,7 +65,7 @@ public class DestinationDefinitionsHandler {
   private SynchronousSchedulerClient schedulerSynchronousClient;
 
   @Inject
-  private AirbyteGithubStore githubStore;
+  private AirbyteGithubStore airbyteGithubStore;
 
   @Inject
   private DestinationHandler destinationHandler;
@@ -123,7 +123,7 @@ public class DestinationDefinitionsHandler {
 
   private List<StandardDestinationDefinition> getLatestDestinations() {
     try {
-      return githubStore.getLatestDestinations();
+      return airbyteGithubStore.getLatestDestinations();
     } catch (final InterruptedException e) {
       throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }

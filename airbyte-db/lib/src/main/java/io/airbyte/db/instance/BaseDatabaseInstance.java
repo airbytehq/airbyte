@@ -12,7 +12,9 @@ import io.airbyte.db.ExceptionWrappingDatabase;
 import java.io.IOException;
 import java.util.Set;
 import java.util.function.Function;
+import javax.sql.DataSource;
 import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,45 +26,36 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseDatabaseInstance.class);
 
-  protected final String username;
-  protected final String password;
-  protected final String connectionString;
+  protected final DSLContext dslContext;
   protected final String initialSchema;
   protected final String databaseName;
   protected final Set<String> initialExpectedTables;
   protected final Function<Database, Boolean> isDatabaseReady;
 
   /**
-   * @param connectionString in the format of
-   *        jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}
+   * @param dslContext The {@link DSLContext} used to connect to the database.
+   * @param initialSchema the initial database structure.
    * @param databaseName this name is only for logging purpose; it may not be the actual database name
    *        in the server
-   * @param initialSchema the initial database structure.
    * @param isDatabaseReady a function to check if the database has been initialized and ready for
    *        consumption
    */
-  protected BaseDatabaseInstance(final String username,
-                                 final String password,
-                                 final String connectionString,
+  protected BaseDatabaseInstance(final DSLContext dslContext,
                                  final String initialSchema,
                                  final String databaseName,
                                  final Set<String> initialExpectedTables,
                                  final Function<Database, Boolean> isDatabaseReady) {
-    this.username = username;
-    this.password = password;
-    this.connectionString = connectionString;
+    this.dslContext = dslContext;
     this.initialSchema = initialSchema;
-    this.databaseName = databaseName;
     this.initialExpectedTables = initialExpectedTables;
+    this.databaseName = databaseName;
     this.isDatabaseReady = isDatabaseReady;
   }
 
   @Override
   public boolean isInitialized() throws IOException {
-    final Database database = Databases.createPostgresDatabaseWithRetryTimeout(
-        username,
-        password,
-        connectionString,
+    final Database database = Databases.createDatabaseWithRetryTimeout(
+        dslContext,
         isDatabaseConnected(databaseName),
         DEFAULT_CONNECTION_TIMEOUT_MS);
     return new ExceptionWrappingDatabase(database).transaction(ctx -> initialExpectedTables.stream().allMatch(tableName -> hasTable(ctx, tableName)));
@@ -72,11 +65,7 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
   public Database getInitialized() {
     // When we don't need to setup the database, it means the database is initialized
     // somewhere else, and it is considered ready only when data has been loaded into it.
-    return Databases.createPostgresDatabaseWithRetry(
-        username,
-        password,
-        connectionString,
-        isDatabaseReady);
+    return Databases.createDatabaseWithRetry(dslContext, isDatabaseReady);
   }
 
   @Override
@@ -84,10 +73,8 @@ public abstract class BaseDatabaseInstance implements DatabaseInstance {
     // When we need to setup the database, it means the database will be initialized after
     // we connect to the database. So the database itself is considered ready as long as
     // the connection is alive.
-    final Database database = Databases.createPostgresDatabaseWithRetry(
-        username,
-        password,
-        connectionString,
+    final Database database = Databases.createDatabaseWithRetry(
+        dslContext,
         isDatabaseConnected(databaseName));
 
     new ExceptionWrappingDatabase(database).transaction(ctx -> {

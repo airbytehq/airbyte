@@ -13,6 +13,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -21,11 +22,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -50,24 +53,21 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
   static final Field<OffsetDateTime> COLUMN_CREATED_AT = DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
   static final Field<OffsetDateTime> COLUMN_UPDATED_AT = DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
 
-  private final String databaseUser;
-  private final String databasePassword;
-  private final String databaseUrl;
+  private final DSLContext dslContext;
 
   public V0_30_22_001__Store_last_sync_state() {
     // EnvConfigs left in place for migration purposes as FlyWay prevents injection, but isolated to
     // local scope.
     final EnvConfigs configs = new EnvConfigs();
-    this.databaseUser = configs.getDatabaseUser();
-    this.databasePassword = configs.getDatabasePassword();
-    this.databaseUrl = configs.getDatabaseUrl();
+    this.dslContext =
+        Databases.createDslContext(
+          Databases.dataSourceBuilder().withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword()).withJdbcUrl(configs.getDatabaseUrl()).build(),
+          SQLDialect.POSTGRES);
   }
 
   @VisibleForTesting
-  V0_30_22_001__Store_last_sync_state(final String databaseUser, final String databasePassword, final String databaseUrl) {
-    this.databaseUser = databaseUser;
-    this.databasePassword = databasePassword;
-    this.databaseUrl = databaseUrl;
+  V0_30_22_001__Store_last_sync_state(final DSLContext dslContext) {
+    this.dslContext = dslContext;
   }
 
   @Override
@@ -75,7 +75,7 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
     LOGGER.info("Running migration: {}", this.getClass().getSimpleName());
     final DSLContext ctx = DSL.using(context.getConnection());
 
-    final Optional<Database> jobsDatabase = getJobsDatabase(databaseUser, databasePassword, databaseUrl);
+    final Optional<Database> jobsDatabase = getJobsDatabase(dslContext);
     if (jobsDatabase.isPresent()) {
       copyData(ctx, getStandardSyncStates(jobsDatabase.get()), OffsetDateTime.now());
     }
@@ -108,15 +108,15 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
    * data from the job database).
    */
   @VisibleForTesting
-  static Optional<Database> getJobsDatabase(final String databaseUser, final String databasePassword, final String databaseUrl) {
+  static Optional<Database> getJobsDatabase(final DSLContext dslContext) {
     try {
-      if (databaseUrl == null || "".equals(databaseUrl.trim())) {
-        throw new IllegalArgumentException("The databaseUrl cannot be empty.");
+      if (dslContext == null) {
+        throw new IllegalArgumentException("The DSLContext cannot be null.");
       }
       // If the environment variables exist, it means the migration is run in production.
       // Connect to the official job database.
-      final Database jobsDatabase = new JobsDatabaseInstance(databaseUser, databasePassword, databaseUrl).getInitialized();
-      LOGGER.info("[{}] Connected to jobs database: {}", MIGRATION_NAME, databaseUrl);
+      final Database jobsDatabase = new JobsDatabaseInstance(dslContext).getInitialized();
+      LOGGER.info("[{}] Connected to jobs database.", MIGRATION_NAME);
       return Optional.of(jobsDatabase);
     } catch (final IllegalArgumentException e) {
       // If the environment variables do not exist, it means the migration is run in development.

@@ -22,6 +22,7 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
@@ -80,7 +81,10 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
+import javax.sql.DataSource;
 import lombok.AllArgsConstructor;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -354,7 +358,10 @@ public class WorkerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
-    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs);
+    final DataSource dataSource = Databases.dataSourceBuilder().withJdbcUrl(configs.getDatabaseUrl()).withUsername(configs.getDatabaseUser()).withPassword(configs.getDatabasePassword()).build();
+    final DSLContext dslContext = Databases.createDslContext(dataSource, SQLDialect.POSTGRES);
+
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configs, dslContext);
 
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.KUBERNETES)) {
       KubePortManagerSingleton.init(configs.getTemporalWorkerPorts());
@@ -364,11 +371,7 @@ public class WorkerApp {
 
     TemporalUtils.configureTemporalNamespace(temporalService);
 
-    final Database configDatabase = new ConfigsDatabaseInstance(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl())
-            .getInitialized();
+    final Database configDatabase = new ConfigsDatabaseInstance(dslContext).getInitialized();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())
@@ -377,11 +380,7 @@ public class WorkerApp {
     final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
-    final Database jobDatabase = new JobsDatabaseInstance(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl())
-            .getInitialized();
+    final Database jobDatabase = new JobsDatabaseInstance(dslContext).getInitialized();
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
     TrackingClientSingleton.initialize(

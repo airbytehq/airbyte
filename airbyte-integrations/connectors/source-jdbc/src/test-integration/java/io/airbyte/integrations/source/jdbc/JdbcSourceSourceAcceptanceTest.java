@@ -48,10 +48,12 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
             container.getDatabaseName()))
         .build());
 
-    database = Databases.createPostgresDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        config.get("jdbc_url").asText());
+    database = Databases.createDatabase(
+        Databases.dataSourceBuilder()
+            .withJdbcUrl(config.get("jdbc_url").asText())
+            .withUsername(config.get("username").asText())
+            .withPassword(config.get("password").asText())
+            .build());
 
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");

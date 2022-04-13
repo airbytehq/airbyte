@@ -9,6 +9,8 @@ import io.airbyte.db.Databases;
 import io.airbyte.test.acceptance.AcceptanceTests.Type;
 import java.util.HashMap;
 import java.util.Map;
+import javax.sql.DataSource;
+import org.jooq.SQLDialect;
 
 /**
  * This class is used to provide information related to the test databases for running the
@@ -42,12 +44,20 @@ public class GKEPostgresConfig {
     return dbConfig;
   }
 
-  public static Database getSourceDatabase() {
-    return Databases.createPostgresDatabase(USERNAME, PASSWORD, "jdbc:postgresql://localhost:2000/postgresdb");
+  public static DataSource getSourceDataSource() {
+    return Databases.dataSourceBuilder()
+            .withUsername(USERNAME)
+            .withPassword(PASSWORD)
+            .withJdbcUrl("jdbc:postgresql://localhost:2000/postgresdb")
+            .build();
   }
 
-  public static Database getDestinationDatabase() {
-    return Databases.createPostgresDatabase(USERNAME, PASSWORD, "jdbc:postgresql://localhost:3000/postgresdb");
+  public static DataSource getDestinationDataSource() {
+    return Databases.dataSourceBuilder()
+            .withUsername(USERNAME)
+            .withPassword(PASSWORD)
+            .withJdbcUrl("jdbc:postgresql://localhost:3000/postgresdb")
+            .build();
   }
 
 }

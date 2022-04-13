@@ -9,11 +9,12 @@ import io.airbyte.api.model.DbMigrationRead;
 import io.airbyte.api.model.DbMigrationReadList;
 import io.airbyte.api.model.DbMigrationRequestBody;
 import io.airbyte.api.model.DbMigrationState;
-import io.airbyte.db.instance.DatabaseMigrator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.output.MigrateOutput;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -22,21 +23,21 @@ import org.flywaydb.core.api.output.MigrateResult;
 public class DbMigrationHandler {
 
   @Inject
-  @Named("configDbMigrator")
-  private DatabaseMigrator configDbMigrator;
+  @Named("configFlyway")
+  private Flyway configFlyway;
 
   @Inject
-  @Named("jobDbMigrator")
-  private DatabaseMigrator jobDbMigrator;
+  @Named("jobsFlyway")
+  private Flyway jobsFlyway;
 
   public DbMigrationReadList list(final DbMigrationRequestBody request) {
-    final DatabaseMigrator migrator = getMigrator(request.getDatabase());
+    final Flyway migrator = getMigrator(request.getDatabase());
     return new DbMigrationReadList()
-        .migrations(migrator.list().stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
+        .migrations(Stream.of(migrator.info().all()).map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
   }
 
   public DbMigrationExecutionRead migrate(final DbMigrationRequestBody request) {
-    final DatabaseMigrator migrator = getMigrator(request.getDatabase());
+    final Flyway migrator = getMigrator(request.getDatabase());
     final MigrateResult result = migrator.migrate();
     return new DbMigrationExecutionRead()
         .initialVersion(result.initialSchemaVersion)
@@ -44,11 +45,11 @@ public class DbMigrationHandler {
         .executedMigrations(result.migrations.stream().map(DbMigrationHandler::toMigrationRead).collect(Collectors.toList()));
   }
 
-  private DatabaseMigrator getMigrator(final String database) {
+  private Flyway getMigrator(final String database) {
     if (database.equalsIgnoreCase("configs")) {
-      return configDbMigrator;
+      return configFlyway;
     } else if (database.equalsIgnoreCase("jobs")) {
-      return jobDbMigrator;
+      return jobsFlyway;
     }
     throw new IllegalArgumentException("Unexpected database: " + database);
   }
