@@ -278,7 +278,7 @@ class BulkSalesforceStream(SalesforceStream):
         if os.path.isfile(tmp_file):
             return tmp_file
         else:
-            raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: `{self.name}`, file {tmp_file} doesn't exist.")
+            raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist.")
 
     def read_with_chunks(self, path: str = None, chunk_size: int = 100) -> Iterable[Tuple[int, Mapping[str, Any]]]:
         """
@@ -287,7 +287,7 @@ class BulkSalesforceStream(SalesforceStream):
         @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
         """
         try:
-            with open(path, "r", encoding="utf-8") as data:
+            with open(path+"s", "r", encoding="utf-8") as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
@@ -297,7 +297,7 @@ class BulkSalesforceStream(SalesforceStream):
             self.logger.info(f"Empty data received. {e}")
             yield from []
         except IOError as ioe:
-            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Path: {path}. Stream: `{self.name}`", ioe)
+            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
         finally:
             # remove binary tmp file, after data is read
             os.remove(path)

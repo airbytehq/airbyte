@@ -27,4 +27,4 @@ class TypeSalesforceException(SalesforceException):
 
 class TmpFileIOError(Error):
     def __init__(self, msg: str, err: str = None):
-        super().__init__(self.logger.fatal(f"{msg} for job: {msg}. Error: {err}"))
+        self.logger.fatal(f"{msg}. Error: {err}")
