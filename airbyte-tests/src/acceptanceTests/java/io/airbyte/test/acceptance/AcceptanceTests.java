@@ -142,13 +142,15 @@ import org.testcontainers.utility.MountableFile;
  * operations take much longer due to Kubernetes pod spin up times. We run a subset to sanity check
  * basic Airbyte Kubernetes Sync features.
  * <p>
- * Many of the tests here use the {@link RetryingTest} annotation instead of the more common
- * {@link Test} to allow multiple tries for a test to pass. This is because these tests sometimes
- * fail transiently, and we haven't been able to fix that yet.
+ * Some tests here use the {@link RetryingTest} annotation instead of the more common {@link Test}
+ * to allow multiple tries for a test to pass. This is because these tests sometimes fail
+ * transiently, and we haven't been able to fix that yet.
  * <p>
  * However, in general we should prefer using {@code @Test} instead and only resort to using
  * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
  * to using {@code @Test} if possible.
+ * <p>
+ * For this class we currently use {@code @RetryingTest} for all tests that can run on k8s.
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -321,7 +323,7 @@ public class AcceptanceTests {
 
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(-2)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -333,7 +335,7 @@ public class AcceptanceTests {
     assertNotNull(spec.getConnectionSpecification());
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(-1)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -343,7 +345,7 @@ public class AcceptanceTests {
     assertEquals(404, e.getCode());
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(0)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -355,7 +357,7 @@ public class AcceptanceTests {
     assertNotNull(spec.getConnectionSpecification());
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(1)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -376,7 +378,7 @@ public class AcceptanceTests {
     assertEquals(getDestinationDbConfigWithHiddenPassword(), createdDestination.getConnectionConfiguration());
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(2)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -390,7 +392,7 @@ public class AcceptanceTests {
     assertEquals(CheckConnectionRead.StatusEnum.SUCCEEDED, checkOperationStatus);
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(3)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -414,7 +416,7 @@ public class AcceptanceTests {
     assertEquals(expectedConfig, response.getConnectionConfiguration());
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(4)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -465,7 +467,7 @@ public class AcceptanceTests {
     assertEquals(expected, actual);
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(6)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -625,7 +627,7 @@ public class AcceptanceTests {
 
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(10)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -652,7 +654,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(11)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -676,7 +678,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(12)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
@@ -701,7 +703,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
   }
 
-  @RetryingTest(3)
+  @Test
   @Order(13)
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
