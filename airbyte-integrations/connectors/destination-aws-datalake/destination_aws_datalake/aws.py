@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import json
 import boto3
 from airbyte_cdk.destinations import Destination
 from botocore.exceptions import ClientError
@@ -234,12 +235,15 @@ class LakeformationTransaction:
         self._aws_handler.lf_client.cancel_transaction(TransactionId=self.txid)
 
     def commit_transaction(self):
-        self._logger.debug("Commiting Lakeformation Transaction")
+        self._logger.debug(f"Commiting Lakeformation Transaction {self.txid}")
         self._aws_handler.lf_client.commit_transaction(TransactionId=self.txid)
 
     def extend_transaction(self):
         self._logger.debug("Extending Lakeformation Transaction")
         self._aws_handler.lf_client.extend_transaction(TransactionId=self.txid)
+    
+    def describe_transaction(self):
+        return self._aws_handler.lf_client.describe_transaction(TransactionId=self.txid)
 
     def __enter__(self, transaction_type="READ_AND_WRITE"):
         self._logger.debug("Starting Lakeformation Transaction")
@@ -249,6 +253,9 @@ class LakeformationTransaction:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._logger.debug("Exiting LakeformationTransaction context manager")
+        tx_desc = self.describe_transaction()
+        self._logger.debug(json.dumps(tx_desc, default=str))
+
         if exc_type:
             self._logger.error("Exiting LakeformationTransaction context manager due to an exception")
             self._logger.error(repr(exc_type))
@@ -257,5 +264,9 @@ class LakeformationTransaction:
             self._transaction = None
         else:
             self._logger.debug("Exiting LakeformationTransaction context manager due to reaching end of with block")
-            self.commit_transaction()
-            self._transaction = None
+            try:
+                self.commit_transaction()
+                self._transaction = None
+            except Exception as e:
+                self._logger.error(f"Could not commit the transaction id = {self.txid}")
+                raise(e)
