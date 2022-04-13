@@ -11,7 +11,7 @@
         {%- endset -%}
         {%- set public_schema_count = run_query(public_schema_query).rows[0]['count'] -%}
 
-        set search_path to '$user', {%- if public_schema_count > 0} -%} public, {%- endif -%} {{ schemaname }};
+        set search_path to '$user', {%- if public_schema_count > 0 -%} public, {%- endif -%} {{ schemaname }};
         select type from pg_table_def where tablename = '{{ tablename }}' and "column" = '{{ var("json_column") }}' and schemaname = '{{ schemaname }}';
     {%- endcall -%}
 
