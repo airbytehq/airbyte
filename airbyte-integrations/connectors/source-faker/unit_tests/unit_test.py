@@ -59,7 +59,7 @@ def test_read_random_data():
     record_rows_count = 0
     state_rows_count = 0
     for row in iterator:
-        if row.type is Type.RECORD:  # TODO: Python seems to really overload the "IS" operator, is this the right way to do this?
+        if row.type is Type.RECORD:
             record_rows_count = record_rows_count + 1
         if row.type is Type.STATE:
             state_rows_count = state_rows_count + 1
