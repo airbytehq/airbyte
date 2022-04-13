@@ -91,7 +91,14 @@ class HydroVuStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield from response.json()
+        def format_record(r):
+            gps = r['gps']
+            del r['gps']
+            r['latitude'] = gps['latitude']
+            r['longitude'] = gps['longitude']
+            return r
+
+        yield from (format_record(r) for r in response.json())
 
 
 class Locations(HydroVuStream):

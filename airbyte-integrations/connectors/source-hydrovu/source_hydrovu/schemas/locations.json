@@ -11,10 +11,8 @@
     "description": {
       "type": "string"
     },
-    "gps": {
-      "latitude": {"type": "number"},
-      "longitude": {"type": "number"}
-    }
+    "latitude": {"type": "number"},
+    "longitude": {"type": "number"}
   }
 }
 
