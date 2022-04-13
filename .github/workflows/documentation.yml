@@ -30,3 +30,7 @@ jobs:
       # Install and build Docusaurus website
       - name: Check for docusaurus changes
         run: ./tools/bin/check_docusaurus_build_changes
+      # Install and build Docusaurus website
+      - name: Do some crazy deployment workflow
+        run: ./tools/bin/deploy_docusaurus
+

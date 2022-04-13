@@ -11,7 +11,7 @@ const config = {
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
     // this is non-functional, just a link back to OSS docs right now
     url: 'https://airbytehq.github.io',
-    baseUrl: '/airbyte/',
+    baseUrl: '/',
     onBrokenLinks: 'warn',
     onBrokenMarkdownLinks: 'warn',
     favicon: 'img/favicon.png',
