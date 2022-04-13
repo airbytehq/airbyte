@@ -1065,8 +1065,7 @@ class TeamMemberships(GithubStream):
             for record in parent_records:
                 yield {"organization": record["organization"], "team_slug": record["team_slug"], "username": record["login"]}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        stream_slice = kwargs["stream_slice"]
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         yield self.transform(response.json(), stream_slice=stream_slice)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
