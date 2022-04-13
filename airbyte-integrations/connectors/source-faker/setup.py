@@ -16,7 +16,7 @@ setup(
     name="source_faker",
     description="Source implementation for Faker.",
     author="Airbyte",
-    author_email="contact@airbyte.io",
+    author_email="evan@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},
