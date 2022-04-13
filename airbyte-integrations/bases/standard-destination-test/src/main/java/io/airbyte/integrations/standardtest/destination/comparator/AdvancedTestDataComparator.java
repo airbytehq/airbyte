@@ -40,9 +40,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    result.add(identifier);
-    return result;
+    return List.of(identifier);
   }
 
   protected void compareObjects(final JsonNode expectedObject, final JsonNode actualObject) {
@@ -134,7 +132,7 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected boolean compareBooleanValues(final String firstBooleanValue, final String secondBooleanValue) {
-    return Boolean.valueOf(firstBooleanValue) == Boolean.valueOf(secondBooleanValue);
+    return Boolean.parseBoolean(firstBooleanValue) == Boolean.parseBoolean(secondBooleanValue);
   }
 
   protected boolean compareNumericValues(final String firstNumericValue, final String secondNumericValue) {

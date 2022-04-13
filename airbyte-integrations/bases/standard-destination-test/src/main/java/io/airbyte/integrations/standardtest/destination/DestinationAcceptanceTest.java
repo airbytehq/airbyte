@@ -302,9 +302,7 @@ public abstract class DestinationAcceptanceTest {
   protected abstract void tearDown(TestDestinationEnv testEnv) throws Exception;
 
   protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    result.add(identifier);
-    return result;
+    return List.of(identifier);
   }
 
   @BeforeEach
