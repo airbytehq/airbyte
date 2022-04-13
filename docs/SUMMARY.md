@@ -74,6 +74,7 @@
     * [Facebook Pages](integrations/sources/facebook-pages.md)
     * [Files](integrations/sources/file.md)
     * [Flexport](integrations/sources/flexport.md)
+    * [Freshcaller](integrations/sources/freshcaller.md)
     * [Freshdesk](integrations/sources/freshdesk.md)
     * [Freshsales](integrations/sources/freshsales.md)
     * [Freshservice](integrations/sources/freshservice.md)
