@@ -14,7 +14,7 @@
     "organization": {
       "type": "string"
     },
-    "slug": {
+    "team_slug": {
       "type": "string"
     },
     "username": {
