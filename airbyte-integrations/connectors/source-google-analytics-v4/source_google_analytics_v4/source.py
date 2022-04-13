@@ -523,21 +523,20 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         if config.get("credentials_json"):
             return GoogleAnalyticsServiceOauth2Authenticator(config)
 
-        auth_params = config.get("credentials")
+        auth_params = config["credentials"]
 
-        if auth_params.get("auth_type") == "Service" or auth_params.get("credentials_json"):
+        if auth_params["auth_type"] == "Service" or auth_params.get("credentials_json"):
             return GoogleAnalyticsServiceOauth2Authenticator(auth_params)
         else:
             return Oauth2Authenticator(
                 token_refresh_endpoint="https://oauth2.googleapis.com/token",
-                client_secret=auth_params.get("client_secret"),
-                client_id=auth_params.get("client_id"),
-                refresh_token=auth_params.get("refresh_token"),
+                client_secret=auth_params["client_secret"],
+                client_id=auth_params["client_id"],
+                refresh_token=auth_params["refresh_token"],
                 scopes=["https://www.googleapis.com/auth/analytics.readonly"],
             )
 
     def check_connection(self, logger: logging.Logger, config: MutableMapping) -> Tuple[bool, Any]:
-
         # declare additional variables
         authenticator = self.get_authenticator(config)
         config["authenticator"] = authenticator
