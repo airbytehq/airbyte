@@ -1,5 +1,5 @@
 import { applyProviders } from "./configProviders";
-import { DeepPartial, Provider } from "./types";
+import { DeepPartial, ProviderAsync } from "./types";
 
 type Value = {
   prop1: {
@@ -29,7 +29,7 @@ describe("applyProviders", function () {
         innerProp: "1",
       },
     };
-    const providers: Provider<DeepPartial<Value>>[] = [
+    const providers: ProviderAsync<DeepPartial<Value>>[] = [
       async () => ({
         prop1: {
           innerProp: "John",

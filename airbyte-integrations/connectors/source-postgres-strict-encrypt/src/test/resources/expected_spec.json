@@ -98,13 +98,13 @@
               },
               "replication_slot": {
                 "type": "string",
-                "title":"Replication Slot",
+                "title": "Replication Slot",
                 "description": "A plug-in logical replication slot.",
                 "order": 2
               },
               "publication": {
                 "type": "string",
-                "title":"Publication",
+                "title": "Publication",
                 "description": "A Postgres publication used for consuming changes.",
                 "order": 3
               }

@@ -4,6 +4,7 @@ import { useIntl } from "react-intl";
 
 import StatusIcon from "components/StatusIcon";
 import ImageBlock from "components/ImageBlock";
+
 import { Status } from "../types";
 
 type IProps = {

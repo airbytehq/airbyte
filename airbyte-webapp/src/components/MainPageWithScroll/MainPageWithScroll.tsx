@@ -24,11 +24,7 @@ type IProps = {
   children?: React.ReactNode;
 };
 
-const MainPageWithScroll: React.FC<IProps> = ({
-  headTitle,
-  pageTitle,
-  children,
-}) => {
+const MainPageWithScroll: React.FC<IProps> = ({ headTitle, pageTitle, children }) => {
   return (
     <Page>
       {headTitle}

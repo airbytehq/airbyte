@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 
 /**
- * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file or with a password.
+ * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
+ * or with a password.
  */
 public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -61,9 +62,9 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema)
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -88,8 +89,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
-      final String streamName,
-      final String namespace)
+                                                     final String streamName,
+                                                     final String namespace)
       throws Exception {
     final var tableName = namingResolver.getIdentifier(streamName);
     final String schema = namespace != null ? namingResolver.getIdentifier(namespace) : namingResolver.getIdentifier(schemaName);

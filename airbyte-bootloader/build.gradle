@@ -13,7 +13,7 @@ dependencies {
     implementation project(':airbyte-scheduler:persistence')
     implementation project(':airbyte-scheduler:models')
 
-    implementation 'io.temporal:temporal-sdk:1.6.0'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation "org.flywaydb:flyway-core:7.14.0"
 
     testImplementation "org.testcontainers:postgresql:1.15.3"
@@ -29,6 +29,8 @@ application {
 // Publish this so Airbyte Cloud can consume and extend the classes within this jar.
 // This needs to be a shadow jar as none of the other modules are published.
 shadowJar {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
     zip64 true
     mergeServiceFiles()
     exclude 'META-INF/*.RSA'
@@ -78,6 +80,13 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("bootloader",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("bootloader", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
+
+// produce reproducible archives
+// (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}

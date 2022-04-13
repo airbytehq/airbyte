@@ -1,8 +1,17 @@
+export enum CreditStatus {
+  "POSITIVE" = "positive",
+  "NEGATIVE_WITHIN_GRACE_PERIOD" = "negative_within_grace_period",
+  "NEGATIVE_BEYOND_GRACE_PERIOD" = "negative_beyond_grace_period",
+  "NEGATIVE_MAX_THRESHOLD" = "negative_max_threshold",
+}
+
 export interface CloudWorkspace {
   name: string;
   workspaceId: string;
   billingUserId: string;
   remainingCredits: number;
+  creditStatus?: CreditStatus;
+  lastCreditPurchaseIncrementTimestamp?: number | null;
 }
 
 export interface CreditConsumptionByConnector {

@@ -1,23 +1,31 @@
 import React from "react";
+import styled from "styled-components";
 
 import { Attempt, Logs, JobDebugInfoMeta } from "core/domain/job";
+
 import DownloadButton from "./DownloadButton";
 import DebugInfoButton from "./DebugInfoButton";
 import LogsTable from "./Logs";
 import AttemptDetails from "./AttemptDetails";
-import styled from "styled-components";
+import { LinkToAttemptButton } from "./LinkToAttemptButton";
 
-const CenteredDetails = styled.div`
-  text-align: center;
-  padding-top: 9px;
+const LogHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 9px;
   font-size: 12px;
-  line-height: 28px;
-  color: ${({ theme }) => theme.greyColor40};
-  position: relative;
+  padding: 0 10px;
 `;
+
 const AttemptDetailsSection = styled.div`
   padding-left: 10px;
   padding-top: 10px;
+`;
+
+const LogPath = styled.span`
+  flex: 1;
+  color: ${({ theme }) => theme.greyColor40};
 `;
 
 const LogsDetails: React.FC<{
@@ -33,13 +41,12 @@ const LogsDetails: React.FC<{
         <AttemptDetails attempt={currentAttempt} />
       </AttemptDetailsSection>
     )}
-    <CenteredDetails>
-      <div>{path}</div>
-      {logs?.logLines && (
-        <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />
-      )}
+    <LogHeader>
+      <LogPath>{path}</LogPath>
+      <LinkToAttemptButton jobId={id} attemptId={currentAttempt?.id} />
+      {logs?.logLines && <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />}
       {jobDebugInfo && <DebugInfoButton jobDebugInfo={jobDebugInfo} />}
-    </CenteredDetails>
+    </LogHeader>
     <LogsTable logsArray={logs?.logLines} />
   </>
 );

@@ -14,7 +14,7 @@ from typing import Any, Dict
 import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.catalog_processor import CatalogProcessor
+from normalization.transform_catalog import TransformCatalog
 
 temporary_folders = set()
 
@@ -195,6 +195,9 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.SNOWFLAKE.value:
         copy_tree("../dbt-project-template-snowflake", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-snowflake/dbt_project.yml"
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        copy_tree("../dbt-project-template-redshift", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-redshift/dbt_project.yml"
     dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
@@ -246,12 +249,14 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
         os.path.join(test_root_dir, "dbt_project.yml"),
         os.path.join(test_root_dir, "first_dbt_project.yml"),
     )
-    dbt_test_utils.copy_replace(
-        os.path.join(test_root_dir, "first_dbt_project.yml"),
-        os.path.join(test_root_dir, "dbt_project.yml"),
-        pattern=r'source-paths: \["models"\]',
-        replace_value='source-paths: ["modified_models"]',
-    )
+
+    def update(config_yaml):
+        if config_yaml["model-paths"] == ["models"]:
+            config_yaml["model-paths"] = ["modified_models"]
+            return True, config_yaml
+        return False, None
+
+    dbt_test_utils.update_yaml_file(os.path.join(test_root_dir, "dbt_project.yml"), update)
     # Run a sync to update raw tables in destinations
     return run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json")
 
@@ -280,10 +285,16 @@ def generate_dbt_models(destination_type: DestinationType, test_resource_name: s
     """
     This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
     """
-    catalog_processor = CatalogProcessor(os.path.join(test_root_dir, output_dir, "generated"), destination_type)
-    catalog_processor.process(
-        os.path.join("resources", test_resource_name, "data_input", catalog_file), "_airbyte_data", dbt_test_utils.target_schema
-    )
+    transform_catalog = TransformCatalog()
+    transform_catalog.config = {
+        "integration_type": destination_type.value,
+        "schema": dbt_test_utils.target_schema,
+        "catalog": [os.path.join("resources", test_resource_name, "data_input", catalog_file)],
+        "output_path": os.path.join(test_root_dir, output_dir, "generated"),
+        "json_column": "_airbyte_data",
+        "profile_config_dir": test_root_dir,
+    }
+    transform_catalog.process_catalog()
 
 
 def setup_dbt_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):

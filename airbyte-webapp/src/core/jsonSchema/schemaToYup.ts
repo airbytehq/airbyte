@@ -34,20 +34,20 @@ export const buildYupFormForJsonSchema = (
     | null = null;
 
   if (jsonSchema.oneOf && uiConfig && propertyPath) {
-    const selectedSchema =
-      jsonSchema.oneOf.find((condition) => {
-        if (typeof condition !== "boolean") {
-          return uiConfig[propertyPath]?.selectedItem === condition.title;
-        }
-        return false;
-      }) ?? jsonSchema.oneOf[0];
+    let selectedSchema = jsonSchema.oneOf.find(
+      (condition) => typeof condition !== "boolean" && uiConfig[propertyPath]?.selectedItem === condition.title
+    );
+
+    // Select first oneOf path if no item selected
+    selectedSchema = selectedSchema ?? jsonSchema.oneOf[0];
+
     if (selectedSchema && typeof selectedSchema !== "boolean") {
       return buildYupFormForJsonSchema(
         { type: jsonSchema.type, ...selectedSchema },
         uiConfig,
         jsonSchema,
         propertyKey,
-        propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
+        propertyPath
       );
     }
   }
@@ -57,10 +57,7 @@ export const buildYupFormForJsonSchema = (
       schema = yup.string().trim();
 
       if (jsonSchema?.pattern !== undefined) {
-        schema = schema.matches(
-          new RegExp(jsonSchema.pattern),
-          "form.pattern.error"
-        );
+        schema = schema.matches(new RegExp(jsonSchema.pattern), "form.pattern.error");
       }
 
       break;
@@ -79,10 +76,7 @@ export const buildYupFormForJsonSchema = (
       }
       break;
     case "array":
-      if (
-        typeof jsonSchema.items === "object" &&
-        !Array.isArray(jsonSchema.items)
-      ) {
+      if (typeof jsonSchema.items === "object" && !Array.isArray(jsonSchema.items)) {
         schema = yup
           .array()
           .of(
@@ -99,9 +93,7 @@ export const buildYupFormForJsonSchema = (
     case "object":
       let objectSchema = yup.object();
 
-      const keyEntries = Object.entries(
-        jsonSchema.properties || {}
-      ).map(([propertyKey, condition]) => [
+      const keyEntries = Object.entries(jsonSchema.properties || {}).map(([propertyKey, condition]) => [
         propertyKey,
         typeof condition !== "boolean"
           ? buildYupFormForJsonSchema(

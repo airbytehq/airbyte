@@ -31,7 +31,6 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
-| Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
 | Namespaces | No |
 
@@ -41,11 +40,17 @@ The connector is restricted by normal Intercom [requests limitation](https://dev
 
 The Intercom connector should not run into Intercom API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## Getting started
+## Getting Started (Airbyte Cloud)
 
-### Requirements
+### Setup guide
 
-* Intercom Access Token
+How to configure the connector in the Airbyte UI:
+
+1. Click Authenticate your account to sign in with Intercom and authorize your account.
+2. Fill in the `start date` field.
+3. You should be ready to sync data.
+
+## Getting started (Airbyte OSS) 
 
 ### Setup guide
 
@@ -55,6 +60,9 @@ Please read [How to get your Access Token](https://developers.intercom.com/build
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.16 | 2022-03-23 | [11206](https://github.com/airbytehq/airbyte/pull/11206) | Added conversation_id field to conversation_part records |
+| 0.1.15 | 2022-03-22 | [11176](https://github.com/airbytehq/airbyte/pull/11176) | Correct `check_connection` URL |
+| 0.1.14 | 2022-03-16 | [11208](https://github.com/airbytehq/airbyte/pull/11208) | Improve 'conversations' incremental sync speed |
 | 0.1.13 | 2022-01-14 | [9513](https://github.com/airbytehq/airbyte/pull/9513) | Added handling of scroll param when it expired |
 | 0.1.12 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Updated fields and descriptions |
 | 0.1.11 | 2021-12-13 | [8685](https://github.com/airbytehq/airbyte/pull/8685) | Remove time.sleep for rate limit |

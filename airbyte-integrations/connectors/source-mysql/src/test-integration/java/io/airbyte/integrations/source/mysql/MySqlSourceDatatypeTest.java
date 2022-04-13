@@ -17,6 +17,7 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,7 +75,7 @@ public class MySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             config.get("database").asText()),
         "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL,
-        "zeroDateTimeBehavior=convertToNull");
+        Map.of("zeroDateTimeBehavior", "convertToNull"));
 
     // It disable strict mode in the DB and allows to insert specific values.
     // For example, it's possible to insert date with zero values "2021-00-00"

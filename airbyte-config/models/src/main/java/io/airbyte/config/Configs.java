@@ -8,10 +8,8 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -179,6 +177,11 @@ public interface Configs {
   String getTemporalHost();
 
   /**
+   * Define the number of retention days for the temporal history
+   */
+  int getTemporalRetentionInDays();
+
+  /**
    * Define the url where the Airbyte Server is hosted at. Airbyte services use this information.
    * Manipulates the `INTERNAL_API_HOST` variable.
    */
@@ -205,6 +208,13 @@ public interface Configs {
    * Define the number of days a sync job will execute for before timing out.
    */
   int getSyncJobMaxTimeoutDays();
+
+  /**
+   * Defines whether job creation uses connector-specific resource requirements when spawning jobs.
+   * Works on both Docker and Kubernetes. Defaults to false for ease of use in OSS trials of Airbyte
+   * but recommended for production deployments.
+   */
+  boolean connectorSpecificResourceDefaultsEnabled();
 
   /**
    * Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending
@@ -236,6 +246,18 @@ public interface Configs {
    * an empty map.
    */
   Map<String, String> getJobDefaultEnvMap();
+
+  /**
+   * Defines the number of consecutive job failures required before a connection is auto-disabled if
+   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   */
+  int getMaxFailedJobsInARowBeforeConnectionDisable();
+
+  /**
+   * Defines the required number of days with only failed jobs before a connection is auto-disabled if
+   * the AUTO_DISABLE_FAILING_CONNECTIONS flag is set to true.
+   */
+  int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
 
   // Jobs - Kube only
   /**
@@ -269,24 +291,46 @@ public interface Configs {
   List<TolerationPOJO> getJobKubeTolerations();
 
   /**
-   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
+   * Define one or more Job pod node selectors. Each kv-pair is separated by a `,`. Used for the sync
+   * job and as fallback in case job specific (spec, check, discover) node selectors are not defined.
    */
-  Optional<Map<String, String>> getJobKubeNodeSelectors();
+  Map<String, String> getJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getSpecJobKubeNodeSelectors();
+  Map<String, String> getSpecJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Check job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getCheckJobKubeNodeSelectors();
+  Map<String, String> getCheckJobKubeNodeSelectors();
 
   /**
    * Define node selectors for Discover job pods specifically. Each kv-pair is separated by a `,`.
    */
-  Optional<Map<String, String>> getDiscoverJobKubeNodeSelectors();
+  Map<String, String> getDiscoverJobKubeNodeSelectors();
+
+  /**
+   * Define one or more Job pod annotations. Each kv-pair is separated by a `,`. Used for the sync job
+   * and as fallback in case job specific (spec, check, discover) annotations are not defined.
+   */
+  Map<String, String> getJobKubeAnnotations();
+
+  /**
+   * Define annotations for Spec job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getSpecJobKubeAnnotations();
+
+  /**
+   * Define annotations for Check job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getCheckJobKubeAnnotations();
+
+  /**
+   * Define annotations for Discover job pods specifically. Each kv-pair is separated by a `,`.
+   */
+  Map<String, String> getDiscoverJobKubeAnnotations();
 
   /**
    * Define the Job pod connector image pull policy.
@@ -318,41 +362,6 @@ public interface Configs {
    */
   String getJobKubeNamespace();
 
-  /**
-   * Define the interval for checking for a Kubernetes pod status for a worker of an unspecified type.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getDefaultWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "get spec" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getSpecWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "check connection" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getCheckWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "discover" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getDiscoverWorkerStatusCheckInterval();
-
-  /**
-   * Define the interval for checking for "replication" Kubernetes pod statuses.
-   *
-   * In seconds if specified by environment variable. Airbyte internal use only.
-   */
-  Duration getReplicationWorkerStatusCheckInterval();
-
   // Logging/Monitoring/Tracking
   /**
    * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are
@@ -377,6 +386,18 @@ public interface Configs {
   boolean getPublishMetrics();
 
   /**
+   * Set the Agent to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
+   * for Airbyte internal use.
+   */
+  String getDDAgentHost();
+
+  /**
+   * Set the port to publish Datadog metrics to. Only relevant if metrics should be published. Mainly
+   * for Airbyte internal use.
+   */
+  String getDDDogStatsDPort();
+
+  /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
    */
   TrackingStrategy getTrackingStrategy();
@@ -388,6 +409,32 @@ public interface Configs {
    * are involved here. Please see {@link MaxWorkersConfig} for more info.
    */
   MaxWorkersConfig getMaxWorkers();
+
+  /**
+   * Define if the worker should run get spec workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunGetSpecWorkflows();
+
+  /**
+   * Define if the worker should run check connection workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunCheckConnectionWorkflows();
+
+  /**
+   * Define if the worker should run discover workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunDiscoverWorkflows();
+
+  /**
+   * Define if the worker should run sync workflows. Defaults to true. Internal-use only.
+   */
+  boolean shouldRunSyncWorkflows();
+
+  /**
+   * Define if the worker should run connection manager workflows. Defaults to true. Internal-use
+   * only.
+   */
+  boolean shouldRunConnectionManagerWorkflows();
 
   // Worker - Kube only
   /**

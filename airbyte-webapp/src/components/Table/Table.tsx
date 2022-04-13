@@ -1,20 +1,19 @@
 import React, { memo, useMemo } from "react";
 import styled from "styled-components";
-import {
-  Cell,
-  Column,
-  ColumnInstance,
-  SortingRule,
-  useSortBy,
-  useTable,
-} from "react-table";
+import { Cell, Column, ColumnInstance, SortingRule, useSortBy, useTable } from "react-table";
 
 import { Card } from "components";
+
+type PaddingProps = {
+  left?: number;
+  right?: number;
+};
 
 type IHeaderProps = {
   headerHighlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
+  customPadding?: PaddingProps;
 } & ColumnInstance;
 
 type ICellProps = {
@@ -25,6 +24,7 @@ type IThProps = {
   highlighted?: boolean;
   collapse?: boolean;
   customWidth?: number;
+  customPadding?: PaddingProps;
   light?: boolean;
 } & React.ThHTMLAttributes<HTMLTableHeaderCellElement>;
 
@@ -33,8 +33,7 @@ const TableView = styled(Card).attrs({ as: "table" })<{ light?: boolean }>`
   width: 100%;
   max-width: 100%;
   border-radius: 10px;
-  box-shadow: ${({ light, theme }) =>
-    light ? "none" : `0 2px 4px ${theme.cardShadowColor}`};
+  box-shadow: ${({ light, theme }) => (light ? "none" : `0 2px 4px ${theme.cardShadowColor}`)};
 };
 `;
 
@@ -42,13 +41,16 @@ const Tr = styled.tr<{
   hasClick?: boolean;
   erroredRows?: boolean;
 }>`
-  background: ${({ theme, erroredRows }) =>
-    erroredRows ? theme.dangerTransparentColor : theme.whiteColor};
+  background: ${({ theme, erroredRows }) => (erroredRows ? theme.dangerTransparentColor : theme.whiteColor)};
   cursor: ${({ hasClick }) => (hasClick ? "pointer" : "auto")};
 `;
 
-const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
-  padding: 16px 13px;
+const Td = styled.td<{
+  collapse?: boolean;
+  customWidth?: number;
+  customPadding?: PaddingProps;
+}>`
+  padding: ${({ customPadding }) => `16px ${customPadding?.right ?? 13}px 16px ${customPadding?.left ?? 13}px`};
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;
@@ -57,8 +59,7 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
   overflow: hidden;
   text-overflow: ellipsis;
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
-  width: ${({ collapse, customWidth }) =>
-    customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto"};
+  width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
 
   tr:last-child > & {
     border-bottom: none;
@@ -75,16 +76,13 @@ const Td = styled.td<{ collapse?: boolean; customWidth?: number }>`
 
 const Th = styled.th<IThProps>`
   background: ${({ theme, light }) => (light ? "none" : theme.textColor)};
-  padding: 9px 13px 10px;
+  padding: ${({ customPadding }) => `9px ${customPadding?.right ?? 13}px 10px ${customPadding?.left ?? 13}px`};
   text-align: left;
   font-size: ${({ light }) => (light ? 11 : 10)}px;
   line-height: 12px;
-  color: ${({ theme, highlighted }) =>
-    highlighted ? theme.whiteColor : theme.lightTextColor};
-  border-bottom: ${({ theme, light }) =>
-    light ? "none" : ` 1px solid ${theme.backgroundColor}`};
-  width: ${({ collapse, customWidth }) =>
-    customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto"};
+  color: ${({ theme, highlighted }) => (highlighted ? theme.whiteColor : theme.lightTextColor)};
+  border-bottom: ${({ theme, light }) => (light ? "none" : ` 1px solid ${theme.backgroundColor}`)};
+  width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
   font-weight: ${({ light }) => (light ? 400 : 600)};
   text-transform: ${({ light }) => (light ? "capitalize" : "uppercase")};
 
@@ -111,14 +109,7 @@ type IProps = {
   sortBy?: Array<SortingRule<any>>;
 };
 
-const Table: React.FC<IProps> = ({
-  columns,
-  data,
-  onClickRow,
-  erroredRows,
-  sortBy,
-  light,
-}) => {
+const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
   const [plugins, config] = useMemo(() => {
     const pl = [];
     const plConfig: Record<string, unknown> = {};
@@ -129,13 +120,7 @@ const Table: React.FC<IProps> = ({
     }
     return [pl, plConfig];
   }, [sortBy]);
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable(
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
       ...config,
       columns,
@@ -148,15 +133,13 @@ const Table: React.FC<IProps> = ({
     <TableView {...getTableProps()} light={light}>
       <thead>
         {headerGroups.map((headerGroup, key) => (
-          <tr
-            {...headerGroup.getHeaderGroupProps()}
-            key={`table-header-${key}`}
-          >
+          <tr {...headerGroup.getHeaderGroupProps()} key={`table-header-${key}`}>
             {headerGroup.headers.map((column: IHeaderProps, columnKey) => (
               <Th
                 {...column.getHeaderProps()}
                 highlighted={column.headerHighlighted}
                 collapse={column.collapse}
+                customPadding={column.customPadding}
                 customWidth={column.customWidth}
                 key={`table-column-${key}-${columnKey}`}
                 light={light}
@@ -185,6 +168,7 @@ const Table: React.FC<IProps> = ({
                     <Td
                       {...cell.getCellProps()}
                       collapse={cell.column.collapse}
+                      customPadding={cell.column.customPadding}
                       customWidth={cell.column.customWidth}
                       key={`table-cell-${row.id}-${key}`}
                     >

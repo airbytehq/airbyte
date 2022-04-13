@@ -5,11 +5,7 @@ import type { User } from "packages/cloud/lib/domain/users";
 
 let inited = false;
 
-const useFullStory = (
-  config: FullStory.SnippetOptions,
-  enabled: boolean,
-  user: User | null
-): boolean => {
+const useFullStory = (config: FullStory.SnippetOptions, enabled: boolean, user: User | null): boolean => {
   useEffect(() => {
     if (!inited && enabled) {
       try {
@@ -19,6 +15,7 @@ const useFullStory = (
         console.error("Failed to init Full Story");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
   useEffect(() => {
@@ -36,6 +33,7 @@ const useFullStory = (
         FullStory.anonymize();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return inited;

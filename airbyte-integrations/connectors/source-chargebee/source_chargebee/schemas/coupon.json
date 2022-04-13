@@ -5,15 +5,15 @@
   "properties": {
     "id": {
       "type": ["string", "null"],
-      "max-length": 40
+      "max-length": 100
     },
     "name": {
       "type": ["string", "null"],
-      "max-length": 150
+      "max-length": 50
     },
     "invoice_name": {
       "type": ["string", "null"],
-      "max-length": 150
+      "max-length": 100
     },
     "discount_type": {
       "type": ["string", "null"],
@@ -80,7 +80,7 @@
         "properties": {
           "item_type": {
             "type": ["string", "null"],
-            "enum": ["plan", "adddon", "charge"]
+            "enum": ["plan", "addon", "charge"]
           },
           "constraint": {
             "type": ["string", "null"],
@@ -88,41 +88,31 @@
           },
           "item_price_ids": {
             "type": ["array", "null"],
-            "items": {
-              "type": ["object", "null"],
-              "properties": {}
-            }
+            "items": {}
           }
         }
       }
     },
     "item_constraint_criteria": {
       "type": ["array", "null"],
-      "items": ["object", "null"],
-      "properties": {
-        "item_type": {
-          "type": ["string", "null"],
-          "enum": ["plan", "adddon", "charge"]
-        },
-        "currencies": {
-          "type": ["array", "null"],
-          "items": {
-            "type": ["object", "null"],
-            "properties": {}
-          }
-        },
-        "item_family_ids": {
-          "type": ["array", "null"],
-          "items": {
-            "type": ["object", "null"],
-            "properties": {}
-          }
-        },
-        "item_price_periods": {
-          "type": ["array", "null"],
-          "items": {
-            "type": ["object", "null"],
-            "properties": {}
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "item_type": {
+            "type": ["string", "null"],
+            "enum": ["plan", "addon", "charge"]
+          },
+          "currencies": {
+            "type": ["array", "null"],
+            "items": {}
+          },
+          "item_family_ids": {
+            "type": ["array", "null"],
+            "items": {}
+          },
+          "item_price_periods": {
+            "type": ["array", "null"],
+            "items": {}
           }
         }
       }

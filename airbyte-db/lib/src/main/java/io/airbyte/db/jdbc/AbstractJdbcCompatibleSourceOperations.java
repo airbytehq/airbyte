@@ -53,8 +53,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void putArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    ArrayNode arrayNode = new ObjectMapper().createArrayNode();
-    ResultSet arrayResultSet = resultSet.getArray(index).getResultSet();
+    final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(index).getResultSet();
     while (arrayResultSet.next()) {
       arrayNode.add(arrayResultSet.getString(2));
     }
@@ -143,13 +143,21 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
     // value in the following format
     try {
-      var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
-      var nanos = micro + "000";
-      var valueWithoutMicros = value.replace("." + micro, "");
+      var valueWithoutMicros = value;
+      final StringBuilder nanos = new StringBuilder();
+      final var dotIndex = value.indexOf(".");
+      if (dotIndex > 0) {
+        final var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
+        nanos.append(micro);
+        valueWithoutMicros = value.replace("." + micro, "");
+      }
+      while (nanos.length() != 9) {
+        nanos.append("0");
+      }
 
-      var timestamp = Timestamp
-          .from(DataTypeUtils.DATE_FORMAT.parse(valueWithoutMicros).toInstant());
-      timestamp.setNanos(Integer.parseInt(nanos));
+      final var timestamp = Timestamp
+          .from(DataTypeUtils.getDateFormat().parse(valueWithoutMicros).toInstant());
+      timestamp.setNanos(Integer.parseInt(nanos.toString()));
       preparedStatement.setTimestamp(parameterIndex, timestamp);
     } catch (final ParseException e) {
       throw new RuntimeException(e);
@@ -158,7 +166,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
-      final Timestamp from = Timestamp.from(DataTypeUtils.DATE_FORMAT.parse(value).toInstant());
+      final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
       preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
     } catch (final ParseException e) {
       throw new RuntimeException(e);

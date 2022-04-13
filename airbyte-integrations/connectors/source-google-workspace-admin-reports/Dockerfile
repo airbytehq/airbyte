@@ -1,4 +1,4 @@
-FROM python:3.7.11-alpine3.14 as base
+FROM python:3.9.11-alpine3.15 as base
 
 # build and load all requirements
 FROM base as builder
@@ -34,5 +34,5 @@ COPY source_google_workspace_admin_reports ./source_google_workspace_admin_repor
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.7
+LABEL io.airbyte.version=0.1.8
 LABEL io.airbyte.name=airbyte/source-google-workspace-admin-reports

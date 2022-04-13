@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -119,8 +120,8 @@ class DefaultAirbyteStreamFactoryTest {
   }
 
   private Stream<AirbyteMessage> stringToMessageStream(final String inputString) {
-    final InputStream inputStream = new ByteArrayInputStream(inputString.getBytes());
-    final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+    final InputStream inputStream = new ByteArrayInputStream(inputString.getBytes(StandardCharsets.UTF_8));
+    final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
     return new DefaultAirbyteStreamFactory(protocolPredicate, logger, new Builder()).create(bufferedReader);
   }
 

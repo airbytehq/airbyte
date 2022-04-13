@@ -15,8 +15,9 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,10 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   private static final String PASSWORD = "password";
 
+  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "ssl", "true",
+      "sslmode", "none");
+
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new ClickhouseDestination(), HOST_KEY, PORT_KEY);
   }
@@ -41,31 +46,24 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final List<String> additionalParameters = new ArrayList<>();
-
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s?",
+    final String jdbcUrl = String.format("jdbc:clickhouse://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText()));
-
-    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
-      additionalParameters.add("ssl=true");
-      additionalParameters.add("sslmode=none");
-    }
-
-    if (!additionalParameters.isEmpty()) {
-      additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
-    }
+        config.get("database").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put("jdbc_url", jdbcUrl);
 
     if (config.has(PASSWORD)) {
       configBuilder.put(PASSWORD, config.get(PASSWORD).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  private boolean useSsl(final JsonNode config) {
+    return !config.has("ssl") || config.get("ssl").asBoolean();
   }
 
   @Override
@@ -83,7 +81,17 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     }
   }
 
-  public static void main(String[] args) throws Exception {
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    if (useSsl(config)) {
+      return SSL_JDBC_PARAMETERS;
+    } else {
+      // No need for any parameters if the connection doesn't use SSL
+      return new HashMap<>();
+    }
+  }
+
+  public static void main(final String[] args) throws Exception {
     final Destination destination = ClickhouseDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", ClickhouseDestination.class);
     new IntegrationRunner(destination).run(args);

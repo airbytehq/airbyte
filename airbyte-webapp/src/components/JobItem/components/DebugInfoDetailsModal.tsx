@@ -94,9 +94,7 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
     const sourceDetails = getSourceDetails();
     const destinationDetails = getDestinationDetails();
 
-    navigator.clipboard.writeText(
-      [airbyteVersionDetails, sourceDetails, destinationDetails].join("\n")
-    );
+    navigator.clipboard.writeText([airbyteVersionDetails, sourceDetails, destinationDetails].join("\n"));
   };
 
   return (
