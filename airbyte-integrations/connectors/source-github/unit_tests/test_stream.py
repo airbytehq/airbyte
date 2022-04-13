@@ -32,6 +32,7 @@ from source_github.streams import (
     Reviews,
     Stargazers,
     Tags,
+    TeamMembers,
     Teams,
     Users,
 )
@@ -744,3 +745,38 @@ def test_stream_reviews_incremental_read():
     assert responses.calls[0].request.params["direction"] == "asc"
     assert urlbase(responses.calls[3].request.url) == url_pulls
     assert responses.calls[3].request.params["direction"] == "asc"
+
+
+@responses.activate
+def test_stream_team_members_full_refresh():
+    organization_args = {"organizations": ["org1"]}
+    repository_args = {"repositories": [], "page_size_for_large_streams": 100}
+
+    responses.add(
+        "GET",
+        "https://api.github.com/orgs/org1/teams",
+        json=[
+            {"id": 1, "slug": "team1"},
+            {"id": 2, "slug": "team2"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/orgs/org1/teams/team1/members",
+        json=[
+            {"login": "login1", "id": 1},
+            {"login": "login2", "id": 2},
+        ],
+    )
+
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/members", json=[{"login": "login2", "id": 2}])
+
+    stream = TeamMembers(parent=Teams(**organization_args), **repository_args)
+    records = read_full_refresh(stream)
+
+    assert records == [
+        {"id": 1, "login": "login1", "organization": "org1", "team_slug": "team1"},
+        {"id": 2, "login": "login2", "organization": "org1", "team_slug": "team1"},
+        {"id": 2, "login": "login2", "organization": "org1", "team_slug": "team2"},
+    ]
