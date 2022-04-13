@@ -3,6 +3,7 @@
   "connectionSpecification": {
     "title": "Amazon Ads Spec",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
       "auth_type": {
         "title": "Auth Type",

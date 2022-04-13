@@ -5,13 +5,18 @@
 from typing import List
 
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Extra, Field
 from source_amazon_ads.constants import AmazonAdsRegion
 
 
 class AmazonAdsConfig(BaseModel):
     class Config:
         title = "Amazon Ads Spec"
+        # ignore extra attributes during model initialization
+        # https://pydantic-docs.helpmanual.io/usage/model_config/
+        extra = Extra.ignore
+        # it's default, but better to be more explicit
+        schema_extra = {"additionalProperties": True}
 
     auth_type: str = Field(default="oauth2.0", const=True, order=0)
 
@@ -70,18 +75,13 @@ class AmazonAdsConfig(BaseModel):
     )
 
     @classmethod
-    def schema(cls, **kvargs):
-        schema = super().schema(**kvargs)
-        # We are using internal _host parameter to set API host to sandbox
-        # environment for SAT but dont want it to be visible for end users,
-        # filter out it from the jsonschema output
-        schema["properties"] = {name: desc for name, desc in schema["properties"].items() if not name.startswith("_")}
+    def schema(cls, **kwargs):
+        schema = super().schema(**kwargs)
         # Transform pydantic generated enum for region
         definitions = schema.pop("definitions", None)
         if definitions:
             schema["properties"]["region"].update(definitions["AmazonAdsRegion"])
             schema["properties"]["region"].pop("allOf", None)
-            schema["properties"]["region"].pop("$ref", None)
         return schema
 
 
