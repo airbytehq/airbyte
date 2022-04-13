@@ -13,6 +13,10 @@ const useChangedFormsById = createGlobalState<Record<string, boolean>>({});
 export const useFormChangeTrackerService = (): FormChangeTrackerServiceApi => {
   const [changedFormsById, setChangedFormsById] = useChangedFormsById();
 
+  const clearAllFormChanges = useCallback(() => {
+    setChangedFormsById({});
+  }, [setChangedFormsById]);
+
   const clearFormChange = useCallback(
     (id: string) => {
       setChangedFormsById({ ...changedFormsById, [id]: false });
@@ -32,6 +36,7 @@ export const useFormChangeTrackerService = (): FormChangeTrackerServiceApi => {
   return {
     trackFormChange,
     clearFormChange,
+    clearAllFormChanges,
   };
 };
 

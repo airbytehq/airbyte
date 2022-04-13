@@ -13,6 +13,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import CreateControls from "./components/CreateControls";
@@ -79,8 +80,12 @@ const FormContainer = styled(Form)`
   }
 `;
 
+interface ConnectionFormSubmitResult {
+  onSubmitComplete: () => void;
+}
+
 interface ConnectionFormProps {
-  onSubmit: (values: ConnectionFormValues) => void;
+  onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
@@ -110,6 +115,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   connection,
 }) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
+  const { clearAllFormChanges } = useFormChangeTrackerService();
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const [submitError, setSubmitError] = useState<Error | null>(null);
@@ -129,18 +135,30 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
       setSubmitError(null);
       try {
-        await onSubmit(formValues);
+        const result = await onSubmit(formValues);
+
         formikHelpers.resetForm({ values });
+        clearAllFormChanges();
 
         const requiresReset = isEditMode && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
         }
+
+        result?.onSubmitComplete?.();
       } catch (e) {
         setSubmitError(e);
       }
     },
-    [editSchemeMode, initialValues.syncCatalog, isEditMode, onSubmit, connection.operations, workspace.workspaceId]
+    [
+      connection.operations,
+      workspace.workspaceId,
+      onSubmit,
+      isEditMode,
+      initialValues.syncCatalog,
+      editSchemeMode,
+      clearAllFormChanges,
+    ]
   );
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
