@@ -92,9 +92,9 @@ class SourceFaker(Source):
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
 
-        count = config["count"] if "count" in config else 0
-        seed = config["seed"] if "seed" in config else state["seed"] if "seed" in state else -1
-        Faker.seed(seed) if seed >= 0 else None
+        count:int = config["count"] if "count" in config else 0
+        seed:int = config["seed"] if "seed" in config else state["seed"] if "seed" in state else None
+        Faker.seed(seed)
         fake = Faker()
 
         for stream in catalog.streams:
