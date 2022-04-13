@@ -386,7 +386,7 @@
         "name": "team_members",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["id"], ["team_slug"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -396,7 +396,7 @@
         "name": "team_memberships",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
+        "source_defined_primary_key": [["url"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
