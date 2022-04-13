@@ -160,6 +160,66 @@ and paste it into a new file (i.e. `state.json`). Now you can run an incremental
 python source.py read --config secrets/valid_config.json --catalog incremental_configured_catalog.json --state state.json 
 ```
 
+## Run the incremental tests
+
+The [Source Acceptance Test (SAT) suite](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) also includes test cases to ensure that incremental mode is working correctly. To enable them, modify the existing `acceptance-test-config.yml` by adding the following:
+
+```yaml
+  incremental:
+    - config_path: "secrets/valid_config.json"
+      configured_catalog_path: "incremental_configured_catalog.json"
+```
+
+Your full `acceptance-test-config.yml` should look something like this:
+
+```yaml
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-stock-ticker-api:dev
+tests:
+  spec:
+    - spec_path: "spec.json"
+      config_path: "secrets/valid_config.json"
+  connection:
+    - config_path: "secrets/valid_config.json"
+      status: "succeed"
+    - config_path: "secrets/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/valid_config.json"
+  basic_read:
+    - config_path: "secrets/valid_config.json"
+      configured_catalog_path: "fullrefresh_configured_catalog.json"
+      empty_streams: []
+  full_refresh:
+    - config_path: "secrets/valid_config.json"
+      configured_catalog_path: "fullrefresh_configured_catalog.json"
+  incremental:
+    - config_path: "secrets/valid_config.json"
+      configured_catalog_path: "incremental_configured_catalog.json"
+```
+
+You can now run the tests once again:
+
+```bash
+./acceptance-test-docker.sh
+```
+
+Finally, you should see a successful test summary:
+
+```
+collecting ... 
+ test_core.py ✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓✓                                                                                                                                                                                         86% ████████▋ 
+ test_full_refresh.py ✓                                                                                                                                                                                                   91% █████████▏
+ test_incremental.py ✓s                                                                                                                                                                                                  100% ██████████
+
+======================================================================================================= short test summary info ========================================================================================================
+SKIPPED [1] source_acceptance_test/tests/test_incremental.py:21: `future_state_path` not specified, skipping
+
+Results (8.87s):
+      21 passed
+```
+
 That's all you need to do to add incremental functionality to the stock ticker Source.
 
 You can deploy the new version of your connector simply by running:
