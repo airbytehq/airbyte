@@ -13,11 +13,13 @@ from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStr
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
+import logging
 
 from .models.spreadsheet import RowData, Spreadsheet
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 
+logger = logging.getLogger("airbyte")
 
 class Helpers(object):
     @staticmethod
@@ -135,7 +137,7 @@ class Helpers(object):
         client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
-        print(f"available_sheets: {available_sheets}")
+        logger.info(f"Available sheets: {available_sheets}") 
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:
