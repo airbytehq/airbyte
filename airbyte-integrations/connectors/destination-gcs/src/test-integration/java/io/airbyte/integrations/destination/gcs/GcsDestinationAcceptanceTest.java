@@ -21,14 +21,14 @@ import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -104,7 +104,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
 
   @Override
   protected TestDataComparator getTestDataComparator() {
-    return new GcsTestDataComparator();
+    return new AdvancedTestDataComparator();
   }
 
   @Override
