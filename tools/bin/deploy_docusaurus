@@ -74,7 +74,7 @@ git commit --message "Adds CNAME to deploy"
 git branch
 
 # note that this is NOT airbyte repo
-git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
+git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git gh_pages
 
 # Want to push from your own computer? uncomment this line and comment out the push above
 # git push --force https://git@github.com/airbytehq/airbytehq.github.io.git
