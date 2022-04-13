@@ -7,13 +7,13 @@ with __dbt__cte__multiple_column_names_conflicts_ab1 as (
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: "integrationtests".test_normalization._airbyte_raw_multiple_column_names_conflicts
 select
-    case when json_extract_path_text(_airbyte_data, 'id', true) != '' then json_extract_path_text(_airbyte_data, 'id', true) end as id,
-    case when json_extract_path_text(_airbyte_data, 'User Id', true) != '' then json_extract_path_text(_airbyte_data, 'User Id', true) end as "user id",
-    case when json_extract_path_text(_airbyte_data, 'user_id', true) != '' then json_extract_path_text(_airbyte_data, 'user_id', true) end as user_id,
-    case when json_extract_path_text(_airbyte_data, 'User id', true) != '' then json_extract_path_text(_airbyte_data, 'User id', true) end as "user id_1",
-    case when json_extract_path_text(_airbyte_data, 'user id', true) != '' then json_extract_path_text(_airbyte_data, 'user id', true) end as "user id_2",
-    case when json_extract_path_text(_airbyte_data, 'User@Id', true) != '' then json_extract_path_text(_airbyte_data, 'User@Id', true) end as "user@id",
-    case when json_extract_path_text(_airbyte_data, 'UserId', true) != '' then json_extract_path_text(_airbyte_data, 'UserId', true) end as userid,
+    case when _airbyte_data."id" != '' then _airbyte_data."id" end as id,
+    case when _airbyte_data."User Id" != '' then _airbyte_data."User Id" end as "user id",
+    case when _airbyte_data."user_id" != '' then _airbyte_data."user_id" end as user_id,
+    case when _airbyte_data."User id" != '' then _airbyte_data."User id" end as "user id_1",
+    case when _airbyte_data."user id" != '' then _airbyte_data."user id" end as "user id_2",
+    case when _airbyte_data."User@Id" != '' then _airbyte_data."User@Id" end as "user@id",
+    case when _airbyte_data."UserId" != '' then _airbyte_data."UserId" end as userid,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at

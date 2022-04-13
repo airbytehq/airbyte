@@ -13,53 +13,16 @@ with __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_pa
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
-with numbers as (
-    
 
-    
-
-    with p as (
-        select 0 as generated_number union all select 1
-    ), unioned as (
-
-    select
-
-    
-    p0.generated_number * power(2, 0)
-    
-    
-    + 1
-    as generated_number
-
-    from
-
-    
-    p as p0
-    
-    
-
-    )
-
-    select *
-    from unioned
-    where generated_number <= 2
-    order by generated_number
-
-
-),
-joined as (
-    select
-        _airbyte_partition_hashid as _airbyte_hashid,
-        json_extract_array_element_text(double_array_data, numbers.generated_number::int - 1, true) as _airbyte_nested_data
-    from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
-    cross join numbers
-    -- only generate the number of records in the cross join that corresponds
-    -- to the number of items in "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition".double_array_data
-    where numbers.generated_number <= json_array_length(double_array_data, true)
-)
+    with joined as (
+            select
+                table_alias._airbyte_partition_hashid as _airbyte_hashid,
+                _airbyte_nested_data
+            from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition" as table_alias, table_alias.double_array_data as _airbyte_nested_data
+        )
 select
     _airbyte_partition_hashid,
-    case when json_extract_path_text(_airbyte_nested_data, 'id', true) != '' then json_extract_path_text(_airbyte_nested_data, 'id', true) end as id,
+    case when _airbyte_nested_data."id" != '' then _airbyte_nested_data."id" end as id,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at

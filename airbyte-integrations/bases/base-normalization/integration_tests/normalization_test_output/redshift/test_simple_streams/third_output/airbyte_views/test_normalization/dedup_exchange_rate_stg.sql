@@ -7,14 +7,14 @@ with __dbt__cte__dedup_exchange_rate_ab1 as (
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: "integrationtests".test_normalization._airbyte_raw_dedup_exchange_rate
 select
-    case when json_extract_path_text(_airbyte_data, 'id', true) != '' then json_extract_path_text(_airbyte_data, 'id', true) end as id,
-    case when json_extract_path_text(_airbyte_data, 'currency', true) != '' then json_extract_path_text(_airbyte_data, 'currency', true) end as currency,
-    case when json_extract_path_text(_airbyte_data, 'new_column', true) != '' then json_extract_path_text(_airbyte_data, 'new_column', true) end as new_column,
-    case when json_extract_path_text(_airbyte_data, 'date', true) != '' then json_extract_path_text(_airbyte_data, 'date', true) end as date,
-    case when json_extract_path_text(_airbyte_data, 'timestamp_col', true) != '' then json_extract_path_text(_airbyte_data, 'timestamp_col', true) end as timestamp_col,
-    case when json_extract_path_text(_airbyte_data, 'HKD@spéçiäl & characters', true) != '' then json_extract_path_text(_airbyte_data, 'HKD@spéçiäl & characters', true) end as "hkd@spéçiäl & characters",
-    case when json_extract_path_text(_airbyte_data, 'NZD', true) != '' then json_extract_path_text(_airbyte_data, 'NZD', true) end as nzd,
-    case when json_extract_path_text(_airbyte_data, 'USD', true) != '' then json_extract_path_text(_airbyte_data, 'USD', true) end as usd,
+    case when _airbyte_data."id" != '' then _airbyte_data."id" end as id,
+    case when _airbyte_data."currency" != '' then _airbyte_data."currency" end as currency,
+    case when _airbyte_data."new_column" != '' then _airbyte_data."new_column" end as new_column,
+    case when _airbyte_data."date" != '' then _airbyte_data."date" end as date,
+    case when _airbyte_data."timestamp_col" != '' then _airbyte_data."timestamp_col" end as timestamp_col,
+    case when _airbyte_data."HKD@spéçiäl & characters" != '' then _airbyte_data."HKD@spéçiäl & characters" end as "hkd@spéçiäl & characters",
+    case when _airbyte_data."NZD" != '' then _airbyte_data."NZD" end as nzd,
+    case when _airbyte_data."USD" != '' then _airbyte_data."USD" end as usd,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
@@ -34,10 +34,10 @@ select
     cast(new_column as 
     float
 ) as new_column,
-    cast(nullif(date, '') as 
+    cast(nullif(date::varchar, '') as 
     date
 ) as date,
-    cast(nullif(timestamp_col, '') as 
+    cast(nullif(timestamp_col::varchar, '') as 
     timestamp with time zone
 ) as timestamp_col,
     cast("hkd@spéçiäl & characters" as 
