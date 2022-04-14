@@ -14,6 +14,7 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.List;
+import java.util.Set;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -81,6 +82,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         + "    price           numeric\n"
         + ");"));
 
+    database.query(ctx -> ctx.fetch("SET TIMEZONE TO 'MST'"));
     return database;
   }
 
@@ -527,7 +529,6 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
             .build());
-
   }
 
 }

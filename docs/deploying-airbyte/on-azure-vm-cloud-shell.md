@@ -1,8 +1,10 @@
-# On Azure\(VM\)
+# On Azure (VM)
 
-{% hint style="info" %}
+:::info
+
 The instructions have been tested on `Azure VM Linux (ubuntu 18.04)`
-{% endhint %}
+
+:::
 
 ## Launch Azure Cloud Shell
 
@@ -118,13 +120,17 @@ sudo docker-compose up -d
 
 ## Connect to Airbyte
 
-{% hint style="danger" %}
-For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
-{% endhint %}
+:::danger
 
-{% hint style="info" %}
+For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
+
+:::
+
+:::info
+
 This part assumes that you have access to a terminal on your workstation
-{% endhint %}
+
+:::
 
 * Create ssh tunnel for port 8000
 
