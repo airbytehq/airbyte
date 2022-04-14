@@ -28,8 +28,8 @@ dependencies {
     implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
 
     // Lombok
-    implementation 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor('org.projectlombok:lombok:1.18.20')
+    implementation "org.projectlombok:lombok:${rootProject.ext.lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${rootProject.ext.lombok_version}"
 
     // MongoDB
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'

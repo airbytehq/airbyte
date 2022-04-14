@@ -23,10 +23,14 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,19 +39,22 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
-
+    dataSource = Databases.dataSourceBuilder()
+        .withUsername(container.getUsername())
+        .withPassword(container.getPassword())
+        .withJdbcUrl(container.getJdbcUrl()).build();
+    database = new ConfigsDatabaseInstance(
+        Databases.createDslContext(dataSource, SQLDialect.POSTGRES)).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(MigrationDevHelper.createMigrator(dataSource, MigrationDevHelper.CONFIGS_DB_IDENTIFIER), database);
     truncateAllTables();
   }
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    if (dataSource instanceof Closeable) {
+      ((Closeable) dataSource).close();
+    }
   }
 
   @Test

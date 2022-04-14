@@ -20,6 +20,7 @@ plugins {
 }
 
 ext {
+    lombok_version = '1.18.22'
     micronaut_version = '3.4.1'
 }
 
@@ -306,11 +307,11 @@ subprojects {
         implementation 'software.amazon.awssdk:s3:2.16.84'
 
         // Lombok dependencies
-        compileOnly 'org.projectlombok:lombok:1.18.22'
-        annotationProcessor 'org.projectlombok:lombok:1.18.22'
+        compileOnly "org.projectlombok:lombok:${rootProject.ext.lombok_version}"
+        annotationProcessor "org.projectlombok:lombok:${rootProject.ext.lombok_version}"
 
-        testCompileOnly 'org.projectlombok:lombok:1.18.22'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+        testCompileOnly "org.projectlombok:lombok:${rootProject.ext.lombok_version}"
+        testAnnotationProcessor "org.projectlombok:lombok:${rootProject.ext.lombok_version}"
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'

@@ -30,8 +30,11 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.io.Closeable;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -42,6 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,18 +58,22 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
 
   @BeforeEach
   public void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    dataSource = Databases.dataSourceBuilder()
+        .withUsername(container.getUsername())
+        .withPassword(container.getPassword())
+        .withJdbcUrl(container.getJdbcUrl()).build();
+    database = new ConfigsDatabaseInstance(
+        Databases.createDslContext(dataSource, SQLDialect.POSTGRES)).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(MigrationDevHelper.createMigrator(dataSource, MigrationDevHelper.CONFIGS_DB_IDENTIFIER), database);
     truncateAllTables();
   }
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    if (dataSource instanceof Closeable) {
+      ((Closeable) dataSource).close();
+    }
   }
 
   @Test

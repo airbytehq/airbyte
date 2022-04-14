@@ -28,6 +28,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.jooq.Record1;
 import org.jooq.Result;
 import org.jooq.Table;
@@ -41,6 +42,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class BaseDatabaseConfigPersistenceTest {
 
   protected static PostgreSQLContainer<?> container;
+  protected static DataSource dataSource;
   protected static Database database;
   protected static DatabaseConfigPersistence configPersistence;
   protected static JsonSecretsProcessor jsonSecretsProcessor;

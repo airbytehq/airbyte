@@ -21,10 +21,14 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.development.MigrationDevHelper;
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.UUID;
 import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,18 +48,22 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
 
   @BeforeAll
   public static void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    dataSource = Databases.dataSourceBuilder()
+        .withUsername(container.getUsername())
+        .withPassword(container.getPassword())
+        .withJdbcUrl(container.getJdbcUrl()).build();
+    database = new ConfigsDatabaseInstance(
+        Databases.createDslContext(dataSource, SQLDialect.POSTGRES)).getAndInitialize();
     configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(MigrationDevHelper.createMigrator(dataSource, MigrationDevHelper.CONFIGS_DB_IDENTIFIER), database);
     truncateAllTables();
   }
 
   @AfterAll
   public static void tearDown() throws Exception {
-    database.close();
+    if (dataSource instanceof Closeable) {
+      ((Closeable) dataSource).close();
+    }
   }
 
   @BeforeEach

@@ -12,7 +12,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
+import io.airbyte.db.instance.development.MigrationDevHelper;
+import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,17 +39,21 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
 
   @BeforeAll
   public static void setup() throws Exception {
-    database = new ConfigsDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    dataSource = Databases.dataSourceBuilder()
+        .withUsername(container.getUsername())
+        .withPassword(container.getPassword())
+        .withJdbcUrl(container.getJdbcUrl()).build();
+    database = new ConfigsDatabaseInstance(
+        Databases.createDslContext(dataSource, SQLDialect.POSTGRES)).getAndInitialize();
     configPersistence = new DatabaseConfigPersistence(database, jsonSecretsProcessor);
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, DatabaseConfigPersistenceLoadDataTest.class.getName());
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+    MigrationDevHelper.runLastMigration(MigrationDevHelper.createMigrator(dataSource, MigrationDevHelper.CONFIGS_DB_IDENTIFIER), database);
   }
 
   @AfterAll
   public static void tearDown() throws Exception {
-    database.close();
+    if (dataSource instanceof Closeable) {
+      ((Closeable) dataSource).close();
+    }
   }
 
   @BeforeEach
