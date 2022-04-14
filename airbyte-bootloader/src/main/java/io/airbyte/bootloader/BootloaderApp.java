@@ -17,6 +17,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -57,11 +58,13 @@ public class BootloaderApp {
   private final Configs configs;
   private Runnable postLoadExecution;
   private final FeatureFlags featureFlags;
+  private final SecretMigrator secretMigrator;
 
   @VisibleForTesting
-  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
+  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags, final SecretMigrator secretMigrator) {
     this.configs = configs;
     this.featureFlags = featureFlags;
+    this.secretMigrator = secretMigrator;
   }
 
   /**
@@ -72,32 +75,48 @@ public class BootloaderApp {
    * @param configs
    * @param postLoadExecution
    */
-  public BootloaderApp(final Configs configs, final Runnable postLoadExecution, final FeatureFlags featureFlags) {
+  public BootloaderApp(final Configs configs,
+                       final Runnable postLoadExecution,
+                       final FeatureFlags featureFlags,
+                       final SecretMigrator secretMigrator) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
+    this.secretMigrator = secretMigrator;
   }
 
   public BootloaderApp() {
     configs = new EnvConfigs();
     featureFlags = new EnvVariableFeatureFlags();
-    postLoadExecution = () -> {
-      try {
-        final Database configDatabase =
-            new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
-                .getAndInitialize();
-        final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-            .maskSecrets(!featureFlags.exposeSecretsInExport())
-            .copySecrets(true)
-            .build();
-        final ConfigPersistence configPersistence =
-            DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-        configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
-        LOGGER.info("Loaded seed data..");
-      } catch (final IOException e) {
-        e.printStackTrace();
-      }
-    };
+
+    try {
+      final Database configDatabase = new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(),
+          configs.getConfigDatabaseUrl())
+              .getAndInitialize();
+      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+          .maskSecrets(!featureFlags.exposeSecretsInExport())
+          .copySecrets(true)
+          .build();
+
+      final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+      final SecretPersistence secretPersistence = SecretPersistence.getEphemeral(configs).orElseThrow();
+      secretMigrator = new SecretMigrator(configPersistence, secretPersistence);
+      /*
+       * try { secretMigrator.migrateSecrets(); } catch (final JsonValidationException e) {
+       * e.printStackTrace(); }
+       */
+
+      postLoadExecution = () -> {
+        try {
+          configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+          LOGGER.info("Loaded seed data..");
+        } catch (final IOException e) {
+          e.printStackTrace();
+        }
+      };
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void load() throws Exception {

@@ -10,6 +10,7 @@ dependencies {
     implementation project(':airbyte-config:persistence')
     implementation project(':airbyte-db:lib')
     implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:persistence')
     implementation project(':airbyte-scheduler:models')
 
