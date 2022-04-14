@@ -213,7 +213,6 @@ public class BigQueryDenormalizedUtilsTest {
 
   @Test
   public void testEmittedAtTimeConversion() {
-    // in this test we don't care about json schema and naming resolver, so leave it as a null
     final JsonNode jsonNodeSchema = getSchema();
     final TestBigQueryDenormalizedRecordFormatter rf = new TestBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
