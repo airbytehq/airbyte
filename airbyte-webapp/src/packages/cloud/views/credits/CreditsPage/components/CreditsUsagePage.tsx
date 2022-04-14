@@ -35,7 +35,7 @@ const CreditsUsagePage: React.FC = () => {
   const { formatMessage, formatDate } = useIntl();
 
   const { workspaceId } = useCurrentWorkspace();
-  const { data } = useGetUsage(workspaceId);
+  const data = useGetUsage(workspaceId);
 
   const chartData = useMemo(
     () =>

@@ -26,6 +26,7 @@ python3 main_dev_transform_catalog.py \
     """
 
     config: dict = {}
+    DBT_PROJECT = "dbt_project.yml"
 
     def __init__(self):
         self.config = {}
@@ -49,6 +50,7 @@ python3 main_dev_transform_catalog.py \
             "catalog": parsed_args.catalog,
             "output_path": parsed_args.out,
             "json_column": parsed_args.json_column,
+            "profile_config_dir": parsed_args.profile_config_dir,
         }
 
     def process_catalog(self) -> None:
@@ -60,6 +62,13 @@ python3 main_dev_transform_catalog.py \
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
             processor.process(catalog_file=catalog_file, json_column_name=json_col, default_schema=schema)
+        self.update_dbt_project_vars(json_column=self.config["json_column"], models_to_source=processor.models_to_source)
+
+    def update_dbt_project_vars(self, **vars_config: Dict[str, Any]):
+        filename = os.path.join(self.config["profile_config_dir"], self.DBT_PROJECT)
+        config = read_yaml_config(filename)
+        config["vars"] = {**config.get("vars", {}), **vars_config}
+        write_yaml_config(config, filename)
 
 
 def read_profiles_yml(profile_dir: str) -> Any:
@@ -67,6 +76,19 @@ def read_profiles_yml(profile_dir: str) -> Any:
         config = yaml.load(file, Loader=yaml.FullLoader)
         obj = config["normalize"]["outputs"]["prod"]
         return obj
+
+
+def read_yaml_config(filename: str) -> Dict[str, Any]:
+    with open(filename, "r") as fp:
+        config = yaml.safe_load(fp)
+    if not isinstance(config, dict):
+        raise RuntimeError("{} does not parse to a dictionary".format(os.path.basename(filename)))
+    return config
+
+
+def write_yaml_config(config: Dict[str, Any], filename: str):
+    with open(filename, "w") as fp:
+        fp.write(yaml.dump(config, sort_keys=False))
 
 
 def extract_schema(profiles_yml: Dict) -> str:

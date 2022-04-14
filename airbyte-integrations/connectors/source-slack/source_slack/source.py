@@ -12,7 +12,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from pendulum import DateTime, Period
 
@@ -77,8 +77,20 @@ class SlackStream(HttpStream, ABC):
         """The name of the field in the response which contains the data"""
 
 
-class Channels(SlackStream):
+class ChanneledStream(SlackStream, ABC):
+    """Slack stream with channel filter"""
+
+    def __init__(self, channel_filter: List[str] = [], **kwargs):
+        self.channel_filter = channel_filter
+        super().__init__(**kwargs)
+
+
+class Channels(ChanneledStream):
     data_field = "channels"
+
+    @property
+    def use_cache(self) -> bool:
+        return True
 
     def path(self, **kwargs) -> str:
         return "conversations.list"
@@ -88,9 +100,23 @@ class Channels(SlackStream):
         params["types"] = "public_channel"
         return params
 
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[MutableMapping]:
+        json_response = response.json()
+        channels = json_response.get(self.data_field, [])
+        if self.channel_filter:
+            channels = [channel for channel in channels if channel["name"] in self.channel_filter]
+        yield from channels
 
-class ChannelMembers(SlackStream):
+
+class ChannelMembers(ChanneledStream):
     data_field = "members"
+    primary_key = ["member_id", "channel_id"]
 
     def path(self, **kwargs) -> str:
         return "conversations.members"
@@ -106,7 +132,7 @@ class ChannelMembers(SlackStream):
             yield {"member_id": member_id, "channel_id": stream_slice["channel_id"]}
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        channels_stream = Channels(authenticator=self._session.auth)
+        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
         for channel_record in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel_id": channel_record["id"]}
 
@@ -133,7 +159,7 @@ def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -
         start_date = end_date
 
 
-class IncrementalMessageStream(SlackStream, ABC):
+class IncrementalMessageStream(ChanneledStream, ABC):
     data_field = "messages"
     cursor_field = "float_ts"
     primary_key = ["channel_id", "ts"]
@@ -171,26 +197,17 @@ class IncrementalMessageStream(SlackStream, ABC):
         return current_stream_state
 
 
-class ChannelMessages(IncrementalMessageStream):
+class ChannelMessages(HttpSubStream, IncrementalMessageStream):
     def path(self, **kwargs) -> str:
         return "conversations.history"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._start_ts))
-        for period in chunk_date_range(start_date):
-            yield {"oldest": period.start.timestamp(), "latest": period.end.timestamp()}
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        # Channel is provided when reading threads
-        if "channel" in stream_slice:
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        else:
-            # if channel is not provided, then get channels and read accordingly
-            channels = Channels(authenticator=self._session.auth)
-            for channel_record in channels.read_records(sync_mode=SyncMode.full_refresh):
-                stream_slice["channel"] = channel_record["id"]
-                yield from super().read_records(stream_slice=stream_slice, **kwargs)
+        for parent_slice in super().stream_slices(sync_mode=SyncMode.full_refresh):
+            channel = parent_slice["parent"]
+            for period in chunk_date_range(start_date):
+                yield {"channel": channel["id"], "oldest": period.start.timestamp(), "latest": period.end.timestamp()}
 
 
 class Threads(IncrementalMessageStream):
@@ -220,7 +237,7 @@ class Threads(IncrementalMessageStream):
         """
 
         stream_state = stream_state or {}
-        channels_stream = Channels(authenticator=self._session.auth)
+        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
 
         if self.cursor_field in stream_state:
             # Since new messages can be posted to threads continuously after the parent message has been posted, we get messages from the latest date
@@ -231,7 +248,7 @@ class Threads(IncrementalMessageStream):
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
             messages_start_date = pendulum.from_timestamp(self._start_ts)
 
-        messages_stream = ChannelMessages(authenticator=self._session.auth, default_start_date=messages_start_date)
+        messages_stream = ChannelMessages(parent=channels_stream, authenticator=self._session.auth, default_start_date=messages_start_date)
 
         for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
             self.logger.info(f"Syncing replies {message_chunk}")
@@ -321,12 +338,21 @@ class SourceSlack(AbstractSource):
         authenticator = self._get_authenticator(config)
         default_start_date = pendulum.parse(config["start_date"])
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
+        channel_filter = config["channel_filter"]
 
+        channels = Channels(authenticator=authenticator, channel_filter=channel_filter)
         streams = [
-            Channels(authenticator=authenticator),
-            ChannelMembers(authenticator=authenticator),
-            ChannelMessages(authenticator=authenticator, default_start_date=default_start_date),
-            Threads(authenticator=authenticator, default_start_date=default_start_date, lookback_window=threads_lookback_window),
+            channels,
+            ChannelMembers(authenticator=authenticator, channel_filter=channel_filter),
+            ChannelMessages(
+                parent=channels, authenticator=authenticator, default_start_date=default_start_date, channel_filter=channel_filter
+            ),
+            Threads(
+                authenticator=authenticator,
+                default_start_date=default_start_date,
+                lookback_window=threads_lookback_window,
+                channel_filter=channel_filter,
+            ),
             Users(authenticator=authenticator),
         ]
 

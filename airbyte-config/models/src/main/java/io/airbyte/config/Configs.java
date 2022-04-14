@@ -338,6 +338,11 @@ public interface Configs {
   String getJobKubeMainContainerImagePullPolicy();
 
   /**
+   * Define the Job pod connector sidecar image pull policy.
+   */
+  String getJobKubeSidecarContainerImagePullPolicy();
+
+  /**
    * Define the Job pod connector image pull secret. Useful when hosting private images.
    */
   String getJobKubeMainContainerImagePullSecret();

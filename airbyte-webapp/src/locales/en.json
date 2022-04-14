@@ -22,6 +22,8 @@
   "sidebar.joinSlack": "Join our Slack",
   "sidebar.status": "Airbyte status",
   "sidebar.chat": "Chat with us",
+  "sidebar.support": "Support",
+  "sidebar.supportTicket": "Submit a Ticket",
   "sidebar.recipes": "Tutorials - Use cases",
 
   "form.continue": "Continue",
