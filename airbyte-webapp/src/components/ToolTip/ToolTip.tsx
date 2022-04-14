@@ -31,8 +31,8 @@ const ToolTipView = styled.div<{ $disabled?: boolean }>`
   max-width: 380px;
   z-index: 10;
 
-  div:hover > &,
-  &:hover {
+  div:hover > &&,
+  &&:hover {
     display: ${({ $disabled }) => ($disabled ? "none" : "block")};
   }
 `;
