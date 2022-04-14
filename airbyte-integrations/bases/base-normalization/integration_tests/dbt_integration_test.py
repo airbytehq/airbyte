@@ -14,10 +14,9 @@ import sys
 import threading
 import time
 from copy import copy
-from typing import Any, Callable, Dict, List
+from typing import Any, Dict, List
 
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.transform import read_yaml_config, write_yaml_config
 from normalization.transform_config.transform import TransformConfig
 
 NORMALIZATION_TEST_TARGET = "NORMALIZATION_TEST_TARGET"
@@ -377,8 +376,6 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-clickhouse:dev"
         elif DestinationType.SNOWFLAKE.value == destination_type.value:
             return "airbyte/normalization-snowflake:dev"
-        elif DestinationType.REDSHIFT.value == destination_type.value:
-            return "airbyte/normalization-redshift:dev"
         else:
             return "airbyte/normalization:dev"
 
@@ -530,10 +527,3 @@ class DbtIntegrationTest(object):
             return [d.value for d in {DestinationType.from_string(s.strip()) for s in target_str.split(",")}]
         else:
             return [d.value for d in DestinationType]
-
-    @staticmethod
-    def update_yaml_file(filename: str, callback: Callable):
-        config = read_yaml_config(filename)
-        updated, config = callback(config)
-        if updated:
-            write_yaml_config(config, filename)
