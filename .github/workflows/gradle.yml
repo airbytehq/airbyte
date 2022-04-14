@@ -80,8 +80,6 @@ jobs:
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
 
-
-
   # Uncomment to debug.
   #  changes-output:
   #    name: "Debug Change Detection Logic"
@@ -114,11 +112,9 @@ jobs:
         with:
           java-version: "17"
 
-      # octavia-cli install and testing requires Python.
-      # We use 3.8 in this project because 3.7 is not supported on Apple M1.
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.9"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -221,7 +217,7 @@ jobs:
 
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user

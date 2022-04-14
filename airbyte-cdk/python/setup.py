@@ -57,7 +57,7 @@ setup(
         "vcrpy",
         "Deprecated~=1.2",
     ],
-    python_requires=">=3.7.0",
+    python_requires=">=3.9",
     extras_require={
         "dev": [
             "MyPy~=0.812",

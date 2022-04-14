@@ -175,12 +175,6 @@ module.exports = function (plop) {
           base: genericSourceInputRoot,
           templateFiles: `${genericSourceInputRoot}/**/**`,
         },
-        {
-          type:'add',
-          abortOnFail: true,
-          templateFile: `${genericSourceInputRoot}/.gitignore.hbs`,
-          path: `${genericSourceOutputRoot}/.gitignore`
-        },
         {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
       ]
     });
