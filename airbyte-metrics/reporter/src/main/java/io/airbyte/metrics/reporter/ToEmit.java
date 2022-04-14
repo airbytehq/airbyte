@@ -16,36 +16,36 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
- * This class contains all metrics emitted by the {@link ReporterApp}.
+ * This class contains all metrics emitted by the {@link Reporter}.
  */
 @Slf4j
 @AllArgsConstructor
 public enum ToEmit {
 
   NUM_PENDING_JOBS(countMetricEmission(() -> {
-    final var pendingJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfPendingJobs);
+    final var pendingJobs = Reporter.database.query(MetricQueries::numberOfPendingJobs);
     DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_PENDING_JOBS, pendingJobs);
   })),
   NUM_RUNNING_JOBS(countMetricEmission(() -> {
-    final var runningJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfRunningJobs);
+    final var runningJobs = Reporter.database.query(MetricQueries::numberOfRunningJobs);
     DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_RUNNING_JOBS, runningJobs);
   })),
   OLDEST_RUNNING_JOB_AGE_SECS(countMetricEmission(() -> {
-    final var age = ReporterApp.configDatabase.query(MetricQueries::oldestRunningJobAgeSecs);
+    final var age = Reporter.database.query(MetricQueries::oldestRunningJobAgeSecs);
     DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
   })),
   OLDEST_PENDING_JOB_AGE_SECS(countMetricEmission(() -> {
-    final var age = ReporterApp.configDatabase.query(MetricQueries::oldestPendingJobAgeSecs);
+    final var age = Reporter.database.query(MetricQueries::oldestPendingJobAgeSecs);
     DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
   })),
   NUM_ACTIVE_CONN_PER_WORKSPACE(countMetricEmission(() -> {
-    final var age = ReporterApp.configDatabase.query(MetricQueries::numberOfActiveConnPerWorkspace);
+    final var age = Reporter.database.query(MetricQueries::numberOfActiveConnPerWorkspace);
     for (long count : age) {
       DogStatsDMetricSingleton.percentile(MetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
     }
   })),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(countMetricEmission(() -> {
-    final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
+    final var times = Reporter.database.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
     for (Pair<JobStatus, Double> pair : times) {
       DogStatsDMetricSingleton.recordTimeGlobal(
           MetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
@@ -57,7 +57,7 @@ public enum ToEmit {
   final public long period;
   final public TimeUnit timeUnit;
 
-  ToEmit(Runnable toEmit) {
+  ToEmit(final Runnable toEmit) {
     this(toEmit, 15, TimeUnit.SECONDS);
   }
 
@@ -68,12 +68,12 @@ public enum ToEmit {
    * @param metricQuery
    * @return
    */
-  private static Runnable countMetricEmission(Procedure metricQuery) {
+  private static Runnable countMetricEmission(final Procedure metricQuery) {
     return () -> {
       try {
         metricQuery.call();
         DogStatsDMetricSingleton.count(MetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         log.error("Exception querying database for metric: ", e);
       }
     };

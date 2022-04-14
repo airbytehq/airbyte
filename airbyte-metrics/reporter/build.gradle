@@ -3,16 +3,58 @@ plugins {
 }
 
 dependencies {
+    annotationProcessor platform("io.micronaut:micronaut-bom:${rootProject.ext.micronaut_version}")
+    annotationProcessor 'io.micronaut:micronaut-inject-java'
+    annotationProcessor 'io.micronaut:micronaut-management'
+    annotationProcessor 'io.micronaut:micronaut-validation'
+
+    implementation platform("io.micronaut:micronaut-bom:${rootProject.ext.micronaut_version}")
+    implementation 'io.micronaut:micronaut-inject'
+    implementation 'io.micronaut:micronaut-validation'
+    implementation 'io.micronaut:micronaut-runtime'
+    implementation 'io.micronaut:micronaut-http-server-netty'
+    implementation 'io.micronaut:micronaut-http-client'
+    implementation 'io.micronaut:micronaut-management'
+    implementation 'io.micronaut.flyway:micronaut-flyway:5.2.0'
+    implementation 'io.micronaut.sql:micronaut-jdbc-hikari'
+    implementation 'io.micronaut.sql:micronaut-jooq'
+
+    implementation 'javax.inject:javax.inject:1'
+
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-metrics:lib')
+
+    testAnnotationProcessor platform("io.micronaut:micronaut-bom:${rootProject.ext.micronaut_version}")
+    testAnnotationProcessor 'io.micronaut:micronaut-inject-java'
+
+    testImplementation 'org.testcontainers:postgresql:1.16.3'
+    testImplementation 'uk.org.webcompere:system-stubs-jupiter:1.2.0'
+    testImplementation 'org.testcontainers:junit-jupiter:1.16.3'
+    testImplementation 'io.micronaut.test:micronaut-test-core:3.1.1'
+    testImplementation 'io.micronaut.test:micronaut-test-junit5:3.1.1'
+    testRuntimeOnly 'com.h2database:h2:2.1.210'
 }
 
 application {
-    applicationName = "airbyte-metrics-reporter"
-    mainClass = 'io.airbyte.metrics.reporter.ReporterApp'
+    applicationName = 'airbyte-metrics-reporter'
+    mainClass = 'io.airbyte.metrics.reporter.Application'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
+run {
+    // default for running on local machine.
+    environment 'DATABASE_USER', env.DATABASE_USER
+    environment 'DATABASE_PASSWORD', env.DATABASE_PASSWORD
+    environment 'DATABASE_URL', env.DATABASE_URL
+
+    environment 'AIRBYTE_VERSION', env.VERSION
+    environment 'MICRONAUT_ENVIRONMENTS', 'local'
+    environment 'SERVICE_NAME', 'airbyte-metrics-reporter'
 }
 
 task copyGeneratedTar(type: Copy) {

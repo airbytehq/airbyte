@@ -1,0 +1,44 @@
+micronaut:
+  application:
+    name: ${SERVICE_NAME}
+  security:
+    intercept-url-map:
+      - pattern: /**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+
+airbyte:
+  version: ${AIRBYTE_VERSION}
+
+datasources:
+  config:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    maximum-pool-size: 10
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+
+endpoints:
+  all:
+    enabled: true
+
+jooq:
+  datasources:
+    config:
+      jackson-converter-enabled: true
+      sql-dialect: 'POSTGRES'
+    jobs:
+      jackson-converter-enabled: true
+      sql-dialect: 'POSTGRES'
+
+logger:
+  levels:
+    io.airbyte.metrics.reporter: DEBUG
+#    io.micronaut.context.condition: DEBUG
+
+
+
