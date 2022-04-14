@@ -49,7 +49,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     return CopyConsumerFactory.create(
         outputRecordCollector,
         getDatabase(config),
-        getSqlOperations(redshiftDataTmpTableMode),
+        getSqlOperations(),
         getNameTransformer(),
         S3CopyConfig.getS3CopyConfig(config),
         catalog,
@@ -75,10 +75,6 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
   public SqlOperations getSqlOperations() {
-    throw new UnsupportedOperationException("RedshiftCopyS3Destination.getSqlOperations() without arguments not supported in Redshift destination connector.");
-  }
-
-  public SqlOperations getSqlOperations(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
     return new RedshiftSqlOperations(redshiftDataTmpTableMode);
   }
 
