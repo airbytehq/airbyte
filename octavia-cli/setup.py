@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="octavia-cli",
-    version="0.1.0",
+    version="0.35.67",
     description="A command line interface to manage Airbyte configurations",
     long_description=README,
     author="Airbyte",
@@ -48,8 +48,9 @@ setup(
         "jinja2~=3.0.3",
         "deepdiff~=5.7.0",
         "pyyaml~=6.0",
+        "analytics-python~=1.4.0",
     ],
-    python_requires=">=3.8.12",
+    python_requires=">=3.9.11",
     extras_require={
         "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
         "sphinx-docs": [
