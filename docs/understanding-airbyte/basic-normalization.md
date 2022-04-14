@@ -352,7 +352,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
-|                 | 0.1.77 | 2022-04-14 | [\#](https://github.com/airbytehq/airbyte/pull/) | |
+|                 | 0.1.77 | 2022-04-14 | [\#12005](https://github.com/airbytehq/airbyte/pull/12005) | Fix issue with redundant `public` schema in search_path |
 |                 | 0.1.76 | 2022-04-12 | [\#9610](https://github.com/airbytehq/airbyte/pull/9610) | Add support redshift SUPER type |
 | 0.35.65-alpha   | 0.1.75 | 2022-04-09 | [\#11511](https://github.com/airbytehq/airbyte/pull/11511) | Move DBT modules from `/tmp/dbt_modules` to `/dbt` |
 | 0.35.61-alpha   | 0.1.74 | 2022-03-24 | [\#10905](https://github.com/airbytehq/airbyte/pull/10905) | Update clickhouse dbt version |
