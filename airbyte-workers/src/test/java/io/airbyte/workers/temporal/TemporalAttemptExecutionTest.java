@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
-import io.airbyte.db.instance.test.TestDatabaseProviders;
+import io.airbyte.db.Databases;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,8 +63,13 @@ class TemporalAttemptExecutionTest {
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws IOException {
-    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
-    final Database jobDatabase = databaseProviders.createNewJobsDatabase();
+    final Database jobDatabase = Databases.createDatabase(
+        Databases.createDslContext(
+            Databases.dataSourceBuilder()
+                .withPassword(container.getPassword())
+                .withUsername(container.getUsername())
+                .withJdbcUrl(container.getJdbcUrl()).build(),
+            SQLDialect.POSTGRES));
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
 
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_attempt_execution_test");

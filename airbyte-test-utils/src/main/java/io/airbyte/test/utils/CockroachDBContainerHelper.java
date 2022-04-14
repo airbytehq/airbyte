@@ -14,6 +14,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import java.io.IOException;
 import java.util.UUID;
+import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.utility.MountableFile;
@@ -62,26 +63,29 @@ public class CockroachDBContainerHelper {
   }
 
   public static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+    final DataSource dataSource = Databases.dataSourceBuilder()
+        .withPassword(config.get("password").asText())
+        .withUsername(config.get("username").asText())
+        .withJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+            config.get("database").asText()))
+        .withDriverClassName("org.postgresql.Driver")
+        .build();
+    return Databases.createDatabase(Databases.createDslContext(dataSource, SQLDialect.POSTGRES));
   }
 
   public static JdbcDatabase getJdbcDatabaseFromConfig(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+    final DataSource dataSource = Databases.dataSourceBuilder()
+        .withPassword(config.get("password").asText())
+        .withUsername(config.get("username").asText())
+        .withJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver");
+            config.get("database").asText()))
+        .withDriverClassName("org.postgresql.Driver")
+        .build();
+    return Databases.createJdbcDatabase(dataSource);
   }
 
 }
