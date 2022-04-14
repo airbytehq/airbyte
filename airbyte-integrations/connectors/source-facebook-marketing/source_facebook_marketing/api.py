@@ -11,7 +11,6 @@ import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
-from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
@@ -177,4 +176,3 @@ class API:
             return AdAccount(f"act_{account_id}")
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
-
