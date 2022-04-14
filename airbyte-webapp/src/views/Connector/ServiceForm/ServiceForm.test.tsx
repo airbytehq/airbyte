@@ -1,11 +1,11 @@
-import React from "react";
-import userEvent from "@testing-library/user-event";
 import { getByTestId, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
 import selectEvent from "react-select-event";
 
-import { ServiceForm } from "views/Connector/ServiceForm";
-import { render } from "utils/testutils";
 import { AirbyteJSONSchema } from "core/jsonSchema";
+import { render } from "utils/testutils";
+import { ServiceForm } from "views/Connector/ServiceForm";
 
 import { ServiceFormValues } from "./types";
 
@@ -112,9 +112,9 @@ jest.mock("hooks/services/useWorkspace", () => ({
 describe("Service Form", () => {
   describe("should display json schema specs", () => {
     let container: HTMLElement;
-    beforeEach(() => {
+    beforeEach(async () => {
       const handleSubmit = jest.fn();
-      const renderResult = render(
+      const renderResult = await render(
         <ServiceForm
           formType="source"
           onSubmit={handleSubmit}
@@ -193,8 +193,8 @@ describe("Service Form", () => {
   describe("filling service form", () => {
     let result: ServiceFormValues;
     let container: HTMLElement;
-    beforeEach(() => {
-      const renderResult = render(
+    beforeEach(async () => {
+      const renderResult = await render(
         <ServiceForm
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
