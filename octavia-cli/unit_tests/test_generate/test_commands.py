@@ -9,8 +9,8 @@ from octavia_cli.generate import commands
 
 
 @pytest.fixture
-def context_object(mocker):
-    return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mocker.Mock(), "WORKSPACE_ID": "foo"}
+def context_object(mock_api_client, mock_telemetry_client):
+    return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mock_api_client, "WORKSPACE_ID": "foo", "TELEMETRY_CLIENT": mock_telemetry_client}
 
 
 def test_generate_initialized(mocker, context_object):

@@ -13,8 +13,13 @@ def patch_click(mocker):
 
 
 @pytest.fixture
-def context_object(mock_api_client):
-    return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mock_api_client, "WORKSPACE_ID": "workspace_id"}
+def context_object(mock_api_client, mock_telemetry_client):
+    return {
+        "PROJECT_IS_INITIALIZED": True,
+        "API_CLIENT": mock_api_client,
+        "WORKSPACE_ID": "workspace_id",
+        "TELEMETRY_CLIENT": mock_telemetry_client,
+    }
 
 
 def test_apply_not_initialized():

@@ -3,6 +3,7 @@
 #
 
 import click
+import pkg_resources
 import pytest
 from click.testing import CliRunner
 from octavia_cli import entrypoint
@@ -14,37 +15,63 @@ def dumb(ctx):
     pass
 
 
+def test_set_context_object(mocker):
+    mocker.patch.object(entrypoint, "TelemetryClient")
+    mocker.patch.object(entrypoint, "get_api_client")
+    mocker.patch.object(entrypoint, "get_workspace_id")
+    mocker.patch.object(entrypoint, "build_user_agent")
+    mocker.patch.object(entrypoint, "check_is_initialized")
+    mock_ctx = mocker.Mock(obj={})
+    built_context = entrypoint.set_context_object(mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry")
+    entrypoint.TelemetryClient.assert_called_with("enable_telemetry")
+    mock_ctx.ensure_object.assert_called_with(dict)
+    built_context.obj == {
+        "OCTAVIA_VERSION": pkg_resources.require("octavia-cli")[0].version,
+        "TELEMETRY_CLIENT": entrypoint.TelemetryClient.return_value,
+        "WORKSPACE_ID": entrypoint.get_workspace_id.return_value,
+        "API_CLIENT": entrypoint.get_api_client.return_value,
+        "PROJECT_IS_INITIALIZED": entrypoint.check_is_initialized.return_value,
+    }
+
+
+def test_set_context_object_error(mocker):
+    mocker.patch.object(entrypoint, "TelemetryClient")
+    mock_ctx = mocker.Mock(obj={})
+    mock_ctx.ensure_object.side_effect = Exception()
+    with pytest.raises(Exception):
+        entrypoint.set_context_object(mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry")
+        entrypoint.TelemetryClient.return_value.send_command_telemetry.assert_called_with(
+            mock_ctx, error=mock_ctx.ensure_object.side_effect
+        )
+
+
 def test_octavia(mocker):
     mocker.patch.object(entrypoint, "click")
-    mocker.patch.object(entrypoint, "get_api_client")
-    mocker.patch.object(entrypoint, "get_workspace_id", mocker.Mock(return_value="api-defined-workspace-id"))
-    mocker.patch.object(entrypoint, "check_is_initialized", mocker.Mock(return_value=True))
-    context_object = {}
+    mocker.patch.object(
+        entrypoint,
+        "set_context_object",
+        mocker.Mock(return_value=mocker.Mock(obj={"WORKSPACE_ID": "api-defined-workspace-id", "PROJECT_IS_INITIALIZED": True})),
+    )
     entrypoint.octavia.add_command(dumb)
     runner = CliRunner()
-    result = runner.invoke(entrypoint.octavia, ["--airbyte-url", "test-airbyte-url", "dumb"], obj=context_object)
-    entrypoint.get_api_client.assert_called()
-    entrypoint.get_workspace_id.assert_called_with(entrypoint.get_api_client.return_value, None)
+    result = runner.invoke(entrypoint.octavia, ["--airbyte-url", "test-airbyte-url", "dumb"], obj={})
+    entrypoint.set_context_object.assert_called()
     expected_message = "🐙 - Octavia is targetting your Airbyte instance running at test-airbyte-url on workspace api-defined-workspace-id."
     entrypoint.click.style.assert_called_with(expected_message, fg="green")
     entrypoint.click.echo.assert_called_with(entrypoint.click.style.return_value)
-    assert context_object == {
-        "API_CLIENT": entrypoint.get_api_client.return_value,
-        "WORKSPACE_ID": entrypoint.get_workspace_id.return_value,
-        "PROJECT_IS_INITIALIZED": entrypoint.check_is_initialized.return_value,
-    }
     assert result.exit_code == 0
 
 
 def test_octavia_not_initialized(mocker):
     mocker.patch.object(entrypoint, "click")
-    mocker.patch.object(entrypoint, "get_api_client")
-    mocker.patch.object(entrypoint, "get_workspace_id", mocker.Mock(return_value="api-defined-workspace-id"))
-    mocker.patch.object(entrypoint, "check_is_initialized", mocker.Mock(return_value=False))
-    context_object = {}
+    mocker.patch.object(
+        entrypoint,
+        "set_context_object",
+        mocker.Mock(return_value=mocker.Mock(obj={"WORKSPACE_ID": "api-defined-workspace-id", "PROJECT_IS_INITIALIZED": False})),
+    )
     entrypoint.octavia.add_command(dumb)
     runner = CliRunner()
-    result = runner.invoke(entrypoint.octavia, ["--airbyte-url", "test-airbyte-url", "dumb"], obj=context_object)
+    result = runner.invoke(entrypoint.octavia, ["--airbyte-url", "test-airbyte-url", "dumb"], obj={})
     entrypoint.click.style.assert_called_with("🐙 - Project is not yet initialized.", fg="red", bold=True)
     entrypoint.click.echo.assert_called_with(entrypoint.click.style.return_value)
     assert result.exit_code == 0
