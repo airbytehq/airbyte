@@ -57,15 +57,20 @@ pwd
 
 # We should be here but we are playing with fire
 git fetch
+# checkout the branch tracking it's remote
 git switch gh-pages
 
+# For tracking in the commit message
 revision=$(git rev-parse --short HEAD)
 
+# explained at length below
 set +o xtrace
 echo -e "$blue_text""Writing CNAME file!\n\n""$default_text"
 set -o xtrace
 
-# github expects this CNAME file for pages
+# This is a weird one.  GH Pages expects a CNAME file when redirecting
+# we redirect docs.airbyte.io to airbytehq.github.io
+# this tells github to expect docs.airbyte.com points to us
 echo "docs.airbyte.com" > CNAME
 
 git add CNAME
