@@ -53,8 +53,8 @@ const config = {
                 title: '',
                 logo: {
                     alt: 'Simple, secure and extensible data integration',
-                    src: 'img/logo-dark.png',
-                    srcDark: 'img/logo-light.png',
+                    src: 'img/logo-dark_2.png',
+                    srcDark: 'img/logo-light_2.png',
                     width: 140,
                     height: 40,
                 },
