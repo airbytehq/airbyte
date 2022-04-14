@@ -358,6 +358,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final String namespace,
                         final String image,
                         final String imagePullPolicy,
+                        final String sidecarImagePullPolicy,
                         final int stdoutLocalPort,
                         final int stderrLocalPort,
                         final String kubeHeartbeatUrl,
@@ -453,6 +454,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
@@ -461,6 +463,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
@@ -469,6 +472,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
@@ -485,6 +489,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
