@@ -1020,7 +1020,7 @@ jobs:
 #      - platform-new-scheduler-acceptance
 #      - kube-acceptance-test
 #      - kube-acceptance-test-v2
-    if: ${{ failure() }}
+    if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Publish to Cloud Build Failure Slack Channel
         uses: abinoda/slack-action@master
