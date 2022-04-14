@@ -108,8 +108,24 @@ run {
 
     environment 'AIRBYTE_VERSION', env.VERSION
     environment 'MICRONAUT_ENVIRONMENTS', 'local'
+    environment 'RUN_DATABASE_MIGRATION_ON_STARTUP', 'true'
     environment 'SERVICE_NAME', project.name
 }
+
+test {
+    environment 'DATABASE_USER', env.DATABASE_USER
+    environment 'DATABASE_PASSWORD', env.DATABASE_PASSWORD
+    environment 'DATABASE_URL', env.DATABASE_URL
+
+    environment 'AIRBYTE_VERSION', env.VERSION
+    environment 'MICRONAUT_ENVIRONMENTS', 'test'
+    environment 'RUN_DATABASE_MIGRATION_ON_STARTUP', 'true'
+    environment 'SERVICE_NAME', project.name
+
+    // Required to enable mocked beans
+    systemProperty("mockito.test.enabled", "true")
+}
+
 
 task copyGeneratedTar(type: Copy) {
     dependsOn copyDocker

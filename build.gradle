@@ -1,4 +1,5 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.github.spotbugs.snom.SpotBugsTask
 
 buildscript {
     repositories {
@@ -329,6 +330,14 @@ subprojects {
 
     tasks.withType(Zip) {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    tasks.withType(SpotBugsTask) {
+        // Reports can be found under each subproject in build/reports/spotbugs/html
+        reports {
+            xml.required = false
+            html.required = true
+        }
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')

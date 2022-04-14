@@ -4,7 +4,9 @@
 
 package io.airbyte.db.instance.jobs;
 
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 
 public class JobsDatabaseMigratorTest extends AbstractJobsDatabaseTest {
@@ -13,9 +15,9 @@ public class JobsDatabaseMigratorTest extends AbstractJobsDatabaseTest {
 
   @Test
   public void dumpSchema() throws IOException {
-    final DatabaseMigrator migrator = new JobsDatabaseMigrator(database, JobsDatabaseMigratorTest.class.getSimpleName());
+    final Flyway migrator = MigrationDevHelper.createMigrator(dataSource, MigrationDevHelper.JOBS_DB_IDENTIFIER);
     migrator.migrate();
-    final String schema = migrator.dumpSchema();
+    final String schema = MigrationDevHelper.dumpSchema(database);
     MigrationDevHelper.dumpSchema(schema, SCHEMA_DUMP_FILE, false);
   }
 

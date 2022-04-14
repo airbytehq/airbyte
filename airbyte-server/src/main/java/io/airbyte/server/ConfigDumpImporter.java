@@ -87,30 +87,6 @@ public class ConfigDumpImporter {
   @Value("${config.import.definitions:true}")
   private boolean importDefinitions;
 
-  // public ConfigDumpImporter(final ConfigRepository configRepository,
-  // final SecretsRepositoryWriter secretsRepositoryWriter,
-  // final JobPersistence jobPersistence,
-  // final WorkspaceHelper workspaceHelper,
-  // final boolean importDefinitions) {
-  // this(configRepository, secretsRepositoryWriter, jobPersistence, workspaceHelper, new
-  // JsonSchemaValidator(), importDefinitions);
-  // }
-  //
-  // @VisibleForTesting
-  // public ConfigDumpImporter(final ConfigRepository configRepository,
-  // final SecretsRepositoryWriter secretsRepositoryWriter,
-  // final JobPersistence jobPersistence,
-  // final WorkspaceHelper workspaceHelper,
-  // final JsonSchemaValidator jsonSchemaValidator,
-  // final boolean importDefinitions) {
-  // this.jsonSchemaValidator = jsonSchemaValidator;
-  // this.jobPersistence = jobPersistence;
-  // this.configRepository = configRepository;
-  // this.secretsRepositoryWriter = secretsRepositoryWriter;
-  // this.workspaceHelper = workspaceHelper;
-  // this.importDefinitions = importDefinitions;
-  // }
-
   /**
    * Re-initialize the staged resource folder that contains uploaded artifacts when importing
    * workspaces. This is because they need to be done in two steps (two API endpoints), upload

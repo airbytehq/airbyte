@@ -31,7 +31,7 @@ public class HttpRequestTraceService {
       final String body = (String) request.getBody(String.class).orElse(null);
 
       final boolean isPrintable = request.getHeaders().getContentType().isPresent() &&
-          MediaType.APPLICATION_JSON.equals(MediaType.of(request.getHeaders().getContentType().get())) &&
+          MediaType.APPLICATION_JSON_TYPE.equals(MediaType.of(request.getHeaders().getContentType().get())) &&
           isValidJson(body);
 
       LOGGER.info("{} {} {} {} {}", request.getRemoteAddress(), request.getMethod(), request.getUri(),

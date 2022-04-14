@@ -4,6 +4,7 @@
 
 package io.airbyte.metrics.reporter;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.db.Database;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.runtime.event.annotation.EventListener;
@@ -29,7 +30,11 @@ public class Reporter {
   static Database database;
 
   @EventListener
+  @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
   public void onStartup(final StartupEvent startupEvent) {
+    // Hack to expose the database connection to the enum. This should be refactored so that each "job"
+    // is its
+    // own singleton bean that can have the database connection injected into it.
     Reporter.database = configDatabase;
     final var toEmits = ToEmit.values();
     log.info("Scheduling {} metrics for emission...", toEmits.length);

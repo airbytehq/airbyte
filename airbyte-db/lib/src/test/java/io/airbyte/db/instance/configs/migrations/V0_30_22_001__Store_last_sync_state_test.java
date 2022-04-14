@@ -92,11 +92,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @Timeout(value = 2,
            unit = TimeUnit.MINUTES)
   public static void setupJobDatabase() throws Exception {
-    jobDatabase = new JobsDatabaseInstance(
-        Databases.createDslContext(
-            Databases.dataSourceBuilder().withUsername(container.getUsername()).withPassword(container.getPassword())
-                .withJdbcUrl(container.getJdbcUrl()).build(),
-            SQLDialect.POSTGRES)).getAndInitialize();
+    jobDatabase = new JobsDatabaseInstance(Databases.createDslContext(dataSource, SQLDialect.POSTGRES)).getAndInitialize();
   }
 
   @Test

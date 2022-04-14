@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -100,14 +101,16 @@ public class TestDefaultJdbcDatabase {
   }
 
   private JdbcDatabase getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+    final DataSource dataSource = Databases.dataSourceBuilder()
+        .withUsername(config.get("username").asText())
+        .withPassword(config.get("password").asText())
+        .withJdbcUrl(String.format("jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver");
+            config.get("database").asText()))
+        .withDriverClassName("org.postgresql.Driver")
+        .build();
+    return Databases.createJdbcDatabase(dataSource);
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {

@@ -45,8 +45,10 @@ public class MigrationDevHelper {
 
   public static final String CONFIGS_DB_IDENTIFIER = "configs";
   public static final String JOBS_DB_IDENTIFIER = "jobs";
+  public static final String TOYS_DB_IDENTIFIER = "toy";
   private static final String CONFIG_MIGRATION_FILE_LOCATION = "classpath:io/airbyte/db/instance/configs/migrations";
   private static final String JOBS_MIGRATION_FILE_LOCATION = "classpath:io/airbyte/db/instance/jobs/migrations";
+  private static final String TOYS_MIGRATION_FILE_LOCATION = "classpath:io/airbyte/db/instance/toys/migrations";
 
   public static final Flyway createMigrator(final DataSource dataSource, final String type) {
     return Flyway.configure()
@@ -66,6 +68,8 @@ public class MigrationDevHelper {
         return CONFIG_MIGRATION_FILE_LOCATION;
       case JOBS_DB_IDENTIFIER:
         return JOBS_MIGRATION_FILE_LOCATION;
+      case TOYS_DB_IDENTIFIER:
+        return TOYS_MIGRATION_FILE_LOCATION;
       default:
         return null;
     }
@@ -252,7 +256,7 @@ public class MigrationDevHelper {
     return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.serialize(), nextMigrationId));
   }
 
-  private static String dumpSchema(final Database database) throws IOException {
+  public static String dumpSchema(final Database database) throws IOException {
     return getDisclaimer() + new ExceptionWrappingDatabase(database).query(ctx -> ctx.meta().ddl().queryStream()
         .map(query -> query.toString() + ";")
         .filter(statement -> !statement.startsWith("create schema"))

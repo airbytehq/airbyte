@@ -20,6 +20,7 @@ dependencies {
     implementation 'io.micronaut.sql:micronaut-jooq'
 
     implementation 'javax.inject:javax.inject:1'
+    implementation 'com.github.spotbugs:spotbugs-annotations:4.6.0'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db:jooq')
@@ -55,6 +56,20 @@ run {
     environment 'AIRBYTE_VERSION', env.VERSION
     environment 'MICRONAUT_ENVIRONMENTS', 'local'
     environment 'SERVICE_NAME', 'airbyte-metrics-reporter'
+}
+
+test {
+    env.each { entry ->
+        environment entry.getKey(), entry.getValue()
+    }
+    environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
+    environment 'AIRBYTE_VERSION', env.VERSION
+    environment 'MICRONAUT_ENVIRONMENTS', 'test'
+    environment 'RUN_DATABASE_MIGRATION_ON_STARTUP', 'true'
+    environment 'SERVICE_NAME', 'airbyte-metrics-reporter'
+
+    // Required to enable mocked beans
+    systemProperty("mockito.test.enabled", "true")
 }
 
 task copyGeneratedTar(type: Copy) {

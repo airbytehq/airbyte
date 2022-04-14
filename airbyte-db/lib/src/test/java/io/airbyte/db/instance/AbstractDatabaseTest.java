@@ -5,7 +5,10 @@
 package io.airbyte.db.instance;
 
 import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
+import java.io.Closeable;
 import java.io.IOException;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,6 +18,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class AbstractDatabaseTest {
 
   protected static PostgreSQLContainer<?> container;
+  protected static DataSource dataSource;
 
   @BeforeAll
   public static void dbSetup() {
@@ -23,6 +27,11 @@ public abstract class AbstractDatabaseTest {
         .withUsername("docker")
         .withPassword("docker");
     container.start();
+    dataSource = Databases.dataSourceBuilder()
+        .withJdbcUrl(container.getJdbcUrl())
+        .withPassword(container.getPassword())
+        .withUsername(container.getUsername())
+        .build();
   }
 
   @AfterAll
@@ -39,7 +48,9 @@ public abstract class AbstractDatabaseTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    if (dataSource instanceof Closeable) {
+      ((Closeable) dataSource).close();
+    }
   }
 
   /**

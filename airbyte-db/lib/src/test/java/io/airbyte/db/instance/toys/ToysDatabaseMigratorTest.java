@@ -8,8 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.AbstractDatabaseTest;
+import io.airbyte.db.instance.development.MigrationDevHelper;
 import java.io.IOException;
+import org.flywaydb.core.Flyway;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 
 class ToysDatabaseMigratorTest extends AbstractDatabaseTest {
@@ -19,23 +23,23 @@ class ToysDatabaseMigratorTest extends AbstractDatabaseTest {
 
   @Override
   public Database getDatabase() throws IOException {
-    return new ToysDatabaseInstance(container.getUsername(), container.getPassword(), container.getJdbcUrl()).getAndInitialize();
+    return new ToysDatabaseInstance(Databases.createDslContext(dataSource, SQLDialect.POSTGRES)).getAndInitialize();
   }
 
   @Test
   public void testMigration() throws Exception {
-    final DatabaseMigrator migrator = new ToysDatabaseMigrator(database, ToysDatabaseMigratorTest.class.getSimpleName());
+    final Flyway migrator = MigrationDevHelper.createMigrator(dataSource, MigrationDevHelper.TOYS_DB_IDENTIFIER);
 
     // Compare pre migration baseline schema
-    migrator.createBaseline();
+    migrator.baseline();
     final String preMigrationSchema = MoreResources.readResource(PRE_MIGRATION_SCHEMA_DUMP).strip();
-    final String actualPreMigrationSchema = migrator.dumpSchema();
+    final String actualPreMigrationSchema = MigrationDevHelper.dumpSchema(database);
     assertEquals(preMigrationSchema, actualPreMigrationSchema, "The pre migration schema dump has changed");
 
     // Compare post migration schema
     migrator.migrate();
     final String postMigrationSchema = MoreResources.readResource(POST_MIGRATION_SCHEMA_DUMP).strip();
-    final String actualPostMigrationSchema = migrator.dumpSchema();
+    final String actualPostMigrationSchema = MigrationDevHelper.dumpSchema(database);
     assertEquals(postMigrationSchema, actualPostMigrationSchema, "The post migration schema dump has changed");
   }
 

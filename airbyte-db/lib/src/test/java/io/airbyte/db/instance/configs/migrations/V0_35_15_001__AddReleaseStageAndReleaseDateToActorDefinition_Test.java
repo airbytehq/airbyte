@@ -4,7 +4,7 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.ActorType;
 import io.airbyte.db.instance.configs.migrations.V0_35_15_001__AddReleaseStageAndReleaseDateToActorDefinition.ReleaseStage;
@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,7 @@ public class V0_35_15_001__AddReleaseStageAndReleaseDateToActorDefinition_Test e
 
   @Test
   public void test() throws SQLException, IOException {
-
-    final Database database = getDatabase();
-    final DSLContext context = DSL.using(database.getDataSource().getConnection());
+    final DSLContext context = Databases.createDslContext(dataSource, SQLDialect.POSTGRES);
 
     // necessary to add actor_definition table
     V0_32_8_001__AirbyteConfigDatabaseDenormalization.migrate(context);

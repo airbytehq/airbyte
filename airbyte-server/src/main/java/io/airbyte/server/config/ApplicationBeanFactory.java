@@ -242,10 +242,11 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  public JobNotifier jobNotifier(@Value("airbyte.web_app.url") final String webappUrl,
+  public JobNotifier jobNotifier(@Value("${airbyte.web_app_url}") final String webappUrl,
                                  final ConfigRepository configRepository,
                                  final WorkspaceHelper workspaceHelper,
                                  final TrackingClient trackingClient) {
+    System.out.println("webappUrl -> " + webappUrl);
     return new JobNotifier(webappUrl, configRepository, workspaceHelper, trackingClient);
   }
 

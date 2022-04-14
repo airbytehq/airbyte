@@ -60,7 +60,6 @@ import java.util.stream.Stream;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -175,11 +174,6 @@ class DefaultJobPersistenceTest {
 
     jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, DEFAULT_MINIMUM_AGE_IN_DAYS, DEFAULT_EXCESSIVE_NUMBER_OF_JOBS,
         DEFAULT_MINIMUM_RECENCY_COUNT);
-  }
-
-  @AfterEach
-  void tearDown() throws Exception {
-    jobDatabase.close();
   }
 
   private void resetDb() throws SQLException {
