@@ -1,64 +1,42 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
 import pytest
 from airbyte_cdk import AirbyteLogger
+from source_mixpanel.source import FunnelsList, SourceMixpanel, TokenAuthenticatorBase64
 
-from source_mixpanel.source import SourceMixpanel
+from .utils import setup_response
 
 logger = AirbyteLogger()
 
-MIXPANEL_BASE_URL = "https://mixpanel.com/api/2.0/"
+
+@pytest.fixture
+def check_connection_url(config):
+    auth = TokenAuthenticatorBase64(token=config["api_secret"])
+    return FunnelsList(authenticator=auth, **config).path
 
 
-def test_check_connection(requests_mock, config, empty_response_ok):
-    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "funnels/list", empty_response_ok)
-
+@pytest.mark.parametrize("response_code,expect_success", [(200, True), (400, False)])
+def test_check_connection(requests_mock, check_connection_url, config, response_code, expect_success):
+    requests_mock.register_uri("GET", check_connection_url, setup_response(response_code, {}))
     ok, error = SourceMixpanel().check_connection(logger, config)
-
-    assert ok and not error
-
-
-def test_check_connection_bad_request(requests_mock, config, empty_response_bad):
-    requests_mock.register_uri("GET", MIXPANEL_BASE_URL + "funnels/list", empty_response_bad)
-
-    ok, error = SourceMixpanel().check_connection(logger, config)
-
-    assert not ok and error
+    assert ok == expect_success and error != expect_success
+    if not expect_success:
+        assert ok and not error
 
 
-def test_check_connection_empty():
+def test_check_connection_bad_config():
     config = {}
     ok, error = SourceMixpanel().check_connection(logger, config)
-
     assert not ok and error
 
 
 def test_check_connection_incomplete(config):
     config.pop("api_secret")
-
     ok, error = SourceMixpanel().check_connection(logger, config)
-
     assert not ok and error
 
 
 def test_streams(config):
     streams = SourceMixpanel().streams(config)
-
     assert len(streams) == 7
-
-
-@pytest.fixture
-def empty_response_ok():
-    return setup_response(200, {})
-
-
-@pytest.fixture
-def empty_response_bad():
-    return setup_response(400, {})
-
-
-def setup_response(status, body):
-    return [
-        {
-            "json": body,
-            "status_code": status
-        }
-    ]
