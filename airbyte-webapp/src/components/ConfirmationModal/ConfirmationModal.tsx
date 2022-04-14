@@ -14,7 +14,7 @@ const Content = styled.div`
 `;
 
 const ButtonContent = styled.div`
-  padding-top: 28px;
+  margin-top: 26px;
   display: flex;
   justify-content: flex-end;
 `;
