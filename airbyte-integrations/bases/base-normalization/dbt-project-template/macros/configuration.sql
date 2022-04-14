@@ -6,7 +6,7 @@
     {%- set schemaname, _, tablename = var("models_to_source")[this.identifier].partition(".") -%}
 
     {%- call statement("get_column_type", fetch_result=True) -%}
-        set search_path to '$user', public, {{ schemaname }};
+        set search_path to '$user', {{ schemaname }};
         select type from pg_table_def where tablename = '{{ tablename }}' and "column" = '{{ var("json_column") }}' and schemaname = '{{ schemaname }}';
     {%- endcall -%}
 
