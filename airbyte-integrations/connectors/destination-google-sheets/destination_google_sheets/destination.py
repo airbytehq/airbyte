@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from .auth import GoogleSpreadsheetsAuth
-from .helpers import Helpers
+from .helpers import connection_test_write
 
 
 class DestinationGoogleSheets(Destination):
@@ -23,14 +23,11 @@ class DestinationGoogleSheets(Destination):
             :: Status.SUCCEEDED - if creadentials are valid, token is refreshed, target spreadsheet is available.
             :: Status.FAILED - if could not obtain fresh token, target spreadsheet is not available or other exception occured (with message).
         """
-        # get target spreadsheet_id from user's input, if provided.
-        spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"]) or None
+        
         try:
             client = GoogleSpreadsheetsAuth.authenticate(config)
-            if spreadsheet_id:
-                # try to open the target spreadsheet to check availability
-                client.open_by_key(spreadsheet_id)
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            if connection_test_write(client, config) is True:
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except RefreshError as token_err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{token_err}")
         except Exception as err:

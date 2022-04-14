@@ -8,10 +8,11 @@ from typing import Dict, List
 from google.oauth2 import credentials as client_account
 # from google.oauth2 import service_account
 
-# the list of required scopes/permissions, more info: https://developers.google.com/sheets/api/guides/authorizing#OAuth2Authorizing
+# the list of required scopes/permissions
+# more info: https://developers.google.com/sheets/api/guides/authorizing#OAuth2Authorizing
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets", # read/write access for sheets
-    "https://www.googleapis.com/auth/drive.file" # read/write access to files created or opened by the airbyte connector
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.file",
 ]
 
 class GoogleSpreadsheetsAuth:
