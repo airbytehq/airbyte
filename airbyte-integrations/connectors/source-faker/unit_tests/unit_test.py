@@ -6,6 +6,7 @@ import jsonschema
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_faker import SourceFaker
 
+
 def test_source_streams():
     source = SourceFaker()
     config = {"count": 1}

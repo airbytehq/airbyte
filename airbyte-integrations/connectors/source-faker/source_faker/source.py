@@ -18,7 +18,6 @@ from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     Status,
-    SyncMode,
     Type,
 )
 from airbyte_cdk.sources import Source
