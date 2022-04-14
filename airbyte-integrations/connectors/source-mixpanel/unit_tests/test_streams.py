@@ -18,7 +18,7 @@ from source_mixpanel.source import (
     Revenue,
 )
 
-from .utils import setup_response
+from .utils import get_url_to_mock, setup_response
 
 logger = AirbyteLogger()
 
@@ -74,7 +74,7 @@ def funnels_list_response():
 
 def test_funnels_list_stream(requests_mock, config, funnels_list_response):
     stream = FunnelsList(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", stream.path, funnels_list_response)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), funnels_list_response)
 
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
 
@@ -83,8 +83,9 @@ def test_funnels_list_stream(requests_mock, config, funnels_list_response):
 
 
 @pytest.fixture
-def funnels_list_path(config):
-    return FunnelsList(authenticator=MagicMock(), **config).path
+def funnels_list_url(config):
+    funnel_list = FunnelsList(authenticator=MagicMock(), **config)
+    return get_url_to_mock(funnel_list)
 
 
 @pytest.fixture
@@ -117,10 +118,10 @@ def funnels_response():
     )
 
 
-def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_response, funnels_list_path):
+def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_response, funnels_list_url):
     stream = Funnels(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", funnels_list_path, funnels_list_response)
-    requests_mock.register_uri("GET", stream.path, funnels_response)
+    requests_mock.register_uri("GET", funnels_list_url, funnels_list_response)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), funnels_response)
 
     stream_slices = stream.stream_slices(sync_mode=SyncMode.incremental)
 
@@ -150,7 +151,7 @@ def engage_schema_response():
 def test_engage_schema(requests_mock, engage_schema_response):
 
     stream = EngageSchema(authenticator=MagicMock())
-    requests_mock.register_uri("GET", stream.path, engage_schema_response)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), engage_schema_response)
 
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
 
@@ -174,7 +175,7 @@ def annotations_response():
 def test_annotations_stream(requests_mock, annotations_response):
 
     stream = Annotations(authenticator=MagicMock())
-    requests_mock.register_uri("GET", stream.path, annotations_response)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), annotations_response)
 
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
@@ -204,7 +205,7 @@ def revenue_response():
 def test_revenue_stream(requests_mock, revenue_response):
 
     stream = Revenue(authenticator=MagicMock())
-    requests_mock.register_uri("GET", stream.path, revenue_response)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), revenue_response)
 
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
@@ -236,7 +237,7 @@ def export_schema_response():
 def test_export_schema(requests_mock, export_schema_response):
 
     stream = ExportSchema(authenticator=MagicMock())
-    requests_mock.register_uri("GET", stream.path, export_schema_response)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), export_schema_response)
 
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
 
@@ -269,7 +270,7 @@ def export_response():
 def test_export_stream(requests_mock, export_response):
 
     stream = Export(authenticator=MagicMock())
-    requests_mock.register_uri("GET", stream.path, export_response)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
 
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
