@@ -10,7 +10,6 @@ import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.Binding;
-import com.google.cloud.Condition;
 import com.google.cloud.Policy;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -57,7 +56,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -66,6 +64,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final List<String> REQUIRED_PERMISSIONS = List.of(
       "storage.multipartUploads.abort",
@@ -142,13 +141,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       if (!missingPermissions.isEmpty()) {
         LOGGER.warn("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
 
-        return checkIamPermissionsWithLimitedAccess(clientEmail,storage,bucketName,bucketPath,config, uri);
-//        LOGGER.error("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
-//
-//        return new AirbyteConnectionStatus()
-//            .withStatus(AirbyteConnectionStatus.Status.FAILED)
-//            .withMessage("Could not connect to the Gcs bucket with the provided configuration. "
-//                + "Missing permissions: " + missingPermissions);
+        return checkIamPermissionsWithLimitedAccess(clientEmail, storage, bucketName, bucketPath, config, uri);
+
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
 
@@ -162,46 +156,49 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private AirbyteConnectionStatus checkIamPermissionsWithLimitedAccess(String clientEmail, Storage storage, String bucketName, String bucketPath, JsonNode config, URI uri) {
+  private AirbyteConnectionStatus checkIamPermissionsWithLimitedAccess(String clientEmail,
+                                                                       Storage storage,
+                                                                       String bucketName,
+                                                                       String bucketPath,
+                                                                       JsonNode config,
+                                                                       URI uri) {
     Policy iamPolicy = storage.getIamPolicy(bucketName, Storage.BucketSourceOption.requestedPolicyVersion(3));
     // Print binding information
     List<Binding> serviceAccountConditionalBindings = iamPolicy.getBindingsList()
-            .stream()
-            .filter(binding -> binding.getCondition() != null)
-            .filter(binding -> !binding.getMembers().isEmpty() && binding.getMembers().stream().anyMatch(x ->x.contains(clientEmail)))
-            .collect(Collectors.toList());
+        .stream()
+        .filter(binding -> binding.getCondition() != null)
+        .filter(binding -> !binding.getMembers().isEmpty() && binding.getMembers().stream().anyMatch(x -> x.contains(clientEmail)))
+        .collect(Collectors.toList());
 
     List<Binding> objectAdminBindings = serviceAccountConditionalBindings.stream()
-            .filter(binding -> binding.getRole().equals("roles/storage.objectAdmin"))
-            .collect(Collectors.toList());
+        .filter(binding -> binding.getRole().equals("roles/storage.objectAdmin"))
+        .collect(Collectors.toList());
 
-    if (objectAdminBindings.isEmpty()){
+    if (objectAdminBindings.isEmpty()) {
       return new AirbyteConnectionStatus()
-              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage("Service account "+ clientEmail +" must have role id roles/storage.objectAdmin");
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("Service account " + clientEmail + " must have role id roles/storage.objectAdmin");
     }
-//    resource.type == "storage.googleapis.com/Object" &&
-//            resource.name.startsWith("projects/_/buckets/test-perm-bucket/objects/test-path")
 
     boolean pathAllowed = objectAdminBindings.stream()
-            .anyMatch(binding -> Objects.requireNonNull(binding.getCondition()).getExpression() != null
-                    && allowedBucketPath(binding.getCondition().getExpression(), bucketPath));
+        .anyMatch(binding -> Objects.requireNonNull(binding.getCondition()).getExpression() != null
+            && allowedBucketPath(binding.getCondition().getExpression(), bucketPath));
 
-    if (!pathAllowed){
+    if (!pathAllowed) {
       return new AirbyteConnectionStatus()
-              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage("Service account "+ clientEmail +" does not have access to "+uri);
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("Service account " + clientEmail + " does not have access to " + uri);
     }
-  return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 
   private boolean allowedBucketPath(String expression, String bucketPath) {
     return Stream.of(expression.split("&&"))
-            .anyMatch(cond -> {
-              String[] elements = cond.split("/");
-              return cond.contains("resource.name.startsWith(")
-                      && List.of(elements).get(elements.length-1).equals(bucketPath+"\")");
-            });
+        .anyMatch(cond -> {
+          String[] elements = cond.split("/");
+          return cond.contains("resource.name.startsWith(")
+              && List.of(elements).get(elements.length - 1).equals(bucketPath + "\")");
+        });
   }
 
   protected BigQuery getBigQuery(final JsonNode config) {

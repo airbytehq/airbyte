@@ -14,7 +14,7 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-bigquery
 ENV ENABLE_SENTRY true
-ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+
 COPY --from=build /airbyte /airbyte
 
 LABEL io.airbyte.version=1.1.0

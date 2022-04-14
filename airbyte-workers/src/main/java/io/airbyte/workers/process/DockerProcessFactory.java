@@ -115,10 +115,10 @@ public class DockerProcessFactory implements ProcessFactory {
           "--log-driver",
           "none");
 
-      // if (networkName != null) {
-      // cmd.add("--network");
-      // cmd.add(networkName);
-      // }
+      if (networkName != null) {
+        cmd.add("--network");
+        cmd.add(networkName);
+      }
 
       if (workspaceMountSource != null) {
         cmd.add("-v");
