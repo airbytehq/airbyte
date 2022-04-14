@@ -2130,7 +2130,7 @@ export const updateConnection = (connectionUpdate: ConnectionUpdate) => {
  * List connections for workspace. Does not return deleted connections.
  * @summary Returns all connections for a workspace.
  */
-export const listConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+export const useListConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
   return req<ConnectionReadList>({
     url: `/v1/connections/list`,
     method: "post",
@@ -2747,7 +2747,7 @@ export type DeleteDestinationResult = NonNullable<AsyncReturnType<typeof deleteD
 export type CloneDestinationResult = NonNullable<AsyncReturnType<typeof cloneDestination>>;
 export type CreateConnectionResult = NonNullable<AsyncReturnType<typeof createConnection>>;
 export type UpdateConnectionResult = NonNullable<AsyncReturnType<typeof updateConnection>>;
-export type ListConnectionsForWorkspaceResult = NonNullable<AsyncReturnType<typeof listConnectionsForWorkspace>>;
+export type ListConnectionsForWorkspaceResult = NonNullable<AsyncReturnType<typeof useListConnectionsForWorkspace>>;
 export type ListAllConnectionsForWorkspaceResult = NonNullable<AsyncReturnType<typeof listAllConnectionsForWorkspace>>;
 export type GetConnectionResult = NonNullable<AsyncReturnType<typeof getConnection>>;
 export type GetStateResult = NonNullable<AsyncReturnType<typeof getState>>;

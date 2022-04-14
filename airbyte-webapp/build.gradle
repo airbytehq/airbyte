@@ -1,9 +1,6 @@
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
-
 plugins {
     id "base"
     id "com.github.node-gradle.node" version "3.1.1"
-    id "org.openapi.generator" version "5.3.1"
 }
 
 def nodeVersion = System.getenv('NODE_VERSION') ?: '16.13.0'
@@ -92,4 +89,3 @@ dockerBuildTask.dependsOn(copyNginx)
 dockerBuildTask.dependsOn(copyDocs)
 dockerBuildTask.dependsOn(copyAssets)
 assemble.dependsOn(dockerBuildTask)
-
