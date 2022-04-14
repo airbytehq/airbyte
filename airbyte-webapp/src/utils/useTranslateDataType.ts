@@ -29,9 +29,5 @@ export const useTranslateDataType = (props: AirbyteConnectorData) => {
     [dataType, formatMessage]
   );
 
-  // if (dataTypeFormatted === `airbyte.datatype.${dataType}`) {
-  //   return formatMessage({ id: "airbyte.datatype.unknown" });
-  // }
-
   return dataTypeFormatted;
 };
