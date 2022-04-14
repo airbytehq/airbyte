@@ -50,7 +50,7 @@ setup(
         "pyyaml~=6.0",
         "analytics-python~=1.4.0",
     ],
-    python_requires=">=3.8.12",
+    python_requires=">=3.9.11",
     extras_require={
         "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
         "sphinx-docs": [
