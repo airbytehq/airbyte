@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.54
+- Add ability to import `IncrementalMixin` from `airbyte_cdk.sources.streams`.
+- Bumped minimum supported Python version to 3.9.
+
 ## 0.1.53
 Remove a false positive error logging during the send process.
 

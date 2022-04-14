@@ -137,6 +137,7 @@ Let's also add this parameter to the constructor and declare the `cursor_field`:
 
 ```python
 from datetime import datetime, timedelta
+from airbyte_cdk.sources.streams import IncrementalMixin
 
 
 class ExchangeRates(HttpStream, IncrementalMixin):
