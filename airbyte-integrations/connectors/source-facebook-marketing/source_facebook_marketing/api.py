@@ -173,6 +173,6 @@ class API:
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
         try:
-            return AdAccount(f"act_{account_id}")
+            return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:
             raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
