@@ -1013,14 +1013,14 @@ jobs:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
     needs:
-      - build-connectors-base
-      - frontend-build
+#      - build-connectors-base
+#      - frontend-build
       - octavia-cli-build
-      - platform-build
-      - platform-new-scheduler-acceptance
-      - kube-acceptance-test
-      - kube-acceptance-test-v2
-    if: ${{ failure() && github.ref == 'refs/heads/master' }}
+#      - platform-build
+#      - platform-new-scheduler-acceptance
+#      - kube-acceptance-test
+#      - kube-acceptance-test-v2
+    if: ${{ failure() }}
     steps:
       - name: Publish to Cloud Build Failure Slack Channel
         uses: abinoda/slack-action@master
