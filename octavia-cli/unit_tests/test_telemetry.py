@@ -15,8 +15,7 @@ def test_build_user_agent():
 class TestTelemetryClient:
     @pytest.mark.parametrize("send_data", [True, False])
     def test_init(self, mocker, send_data):
-        assert isinstance(telemetry.TelemetryClient.DEV_WRITE_KEY, str)
-        assert isinstance(telemetry.TelemetryClient.PROD_WRITE_KEY, str)
+        assert isinstance(telemetry.TelemetryClient.WRITE_KEY, str)
         mocker.patch.object(telemetry.TelemetryClient, "write_key", "my_write_key")
         mocker.patch.object(telemetry.analytics, "Client")
         telemetry_client = telemetry.TelemetryClient(send_data)
@@ -28,13 +27,11 @@ class TestTelemetryClient:
         mocker.patch.object(telemetry.analytics, "Client")
         return telemetry.TelemetryClient(True)
 
-    @pytest.mark.parametrize("octavia_env", ["dev", "foo", "bar", None])
-    def test_write_key(self, mocker, telemetry_client, octavia_env):
-        mocker.patch.object(telemetry.os, "getenv", mocker.Mock(return_value=octavia_env))
-        if octavia_env == "dev":
-            assert telemetry_client.write_key == telemetry_client.DEV_WRITE_KEY
-        else:
-            assert telemetry_client.write_key == telemetry_client.PROD_WRITE_KEY
+    @pytest.mark.parametrize("octavia_custom_write_key", ["my_custom_write_key", None])
+    def test_write_key(self, mocker, telemetry_client, octavia_custom_write_key):
+        mocker.patch.object(telemetry.os, "getenv", mocker.Mock(return_value=octavia_custom_write_key))
+        assert telemetry_client.write_key == telemetry.os.getenv.return_value
+        telemetry.os.getenv.assert_called_with("OCTAVIA_TELEMETRY_WRITE_KEY", telemetry_client.WRITE_KEY)
 
     @pytest.mark.parametrize("extra_info_name", ["foo", None])
     def test__create_command_name_multi_contexts(self, mocker, telemetry_client, extra_info_name):

@@ -19,7 +19,7 @@ class OctaviaCommand(click.Command):
             parent (t.Optional[click.Context], optional): The parent context if available.. Defaults to None.
 
         Raises:
-            e: Raise whatever exception that was catch.
+            e: Raise whatever exception that was caught.
 
         Returns:
             click.Context: The built context.
@@ -38,7 +38,7 @@ class OctaviaCommand(click.Command):
             ctx (click.Context): The invocation context.
 
         Raises:
-            e: Raise whatever exception that was catch.
+            e: Raise whatever exception that was caught.
 
         Returns:
             t.Any: The invocation return value.
