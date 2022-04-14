@@ -5,15 +5,11 @@
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +27,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
   enum DestinationType {
-    INSERT_WITH_SUPER_TMP_TYPE,
-    COPY_S3_WITH_SUPER_TMP_TYPE
+    INSERT,
+    COPY_S3
   }
 
   public RedshiftDestination() {
@@ -40,16 +36,23 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   public static DestinationType getTypeFromConfig(final JsonNode config) {
-    return determineUploadMode(config);
+    if (isCopy(config)) {
+      return DestinationType.COPY_S3;
+    } else {
+      return DestinationType.INSERT;
+    }
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
-    return Map.of(
-        DestinationType.INSERT_WITH_SUPER_TMP_TYPE, new RedshiftInsertDestination(RedshiftDataTmpTableMode.SUPER),
-        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.SUPER));
+    final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination();
+    final RedshiftCopyS3Destination copyS3Destination = new RedshiftCopyS3Destination();
+
+    return ImmutableMap.of(
+        DestinationType.INSERT, insertDestination,
+        DestinationType.COPY_S3, copyS3Destination);
   }
 
-  public static DestinationType determineUploadMode(final JsonNode config) {
+  public static boolean isCopy(final JsonNode config) {
     final var bucketNode = config.get("s3_bucket_name");
     final var regionNode = config.get("s3_bucket_region");
     final var accessKeyIdNode = config.get("access_key_id");
@@ -60,15 +63,13 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final var emptyRegion = regionNode == null || regionNode.asText().equals("");
 
     if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
-      LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
-                  "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
-      return DestinationType.INSERT_WITH_SUPER_TMP_TYPE;
+      return false;
     }
 
     if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null) {
       throw new RuntimeException("Error: Partially missing S3 Configuration.");
     }
-    return DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE;
+    return true;
   }
 
   public static void main(final String[] args) throws Exception {
