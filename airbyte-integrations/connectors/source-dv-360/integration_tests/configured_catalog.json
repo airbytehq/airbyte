@@ -3,7 +3,26 @@
     {
       "stream": {
         "name": "standard",
-        "json_schema": {},
+        "json_schema": {
+          "date": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "partner_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clicks": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": false,
         "default_cursor_field": ["date"]
@@ -19,49 +38,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "advertiser": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "advertiser_id": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
             "date": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "insertion_order": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "insertion_order_id": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "line_item": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "line_item_id": {
-              "type": [
-                "null",
-                "string"
-              ]
-            },
-            "partner": {
               "type": [
                 "null",
                 "string"
@@ -79,6 +56,68 @@
                 "string"
               ]
             }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "floodlight",
+        "json_schema": {
+          "date": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "partner_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "floodlight_impressions": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "unique_reach_audience",
+        "json_schema": {
+          "date": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "partner_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "viewable_impressions": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
