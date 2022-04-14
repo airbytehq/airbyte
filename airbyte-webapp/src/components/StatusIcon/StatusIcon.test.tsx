@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 
-import StatusIcon from "./StatusIcon";
+import StatusIcon, { StatusIconStatus } from "./StatusIcon";
 
 describe("<StatusIcon />", () => {
   test("renders with title and default icon", () => {
@@ -14,7 +14,7 @@ describe("<StatusIcon />", () => {
     expect(component.getByText(`${value}`)).toBeDefined();
   });
 
-  const statusCases = [
+  const statusCases: { status: StatusIconStatus; icon: string }[] = [
     { status: "success", icon: "check" },
     { status: "inactive", icon: "pause" },
     { status: "empty", icon: "ban" },
@@ -27,7 +27,7 @@ describe("<StatusIcon />", () => {
     const props = {
       title,
       value,
-      [status]: true,
+      status,
     };
 
     const component = render(<StatusIcon {...props} />);

@@ -45,7 +45,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({ con
     <>
       {active.length ? (
         <StatusIcon
-          success
+          status="success"
           value={active.length}
           title={formatMessage({
             id: "connection.successSync",
@@ -54,7 +54,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({ con
       ) : null}
       {inactive.length ? (
         <StatusIcon
-          inactive
+          status="inactive"
           value={inactive.length}
           title={formatMessage({
             id: "connection.disabledConnection",
@@ -71,7 +71,7 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({ con
       ) : null}
       {empty.length ? (
         <StatusIcon
-          empty
+          status="empty"
           value={empty.length}
           title={formatMessage({
             id: "connection.noSyncData",

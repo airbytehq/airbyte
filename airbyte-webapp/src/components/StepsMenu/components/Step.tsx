@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import StatusIcon from "components/StatusIcon";
+import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
 
 import Status from "core/statuses";
 
@@ -63,6 +64,9 @@ const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, s
     }
   };
 
+  const statusIconStatus: StatusIconStatus | undefined =
+    status !== Status.FAILED && !isPartialSuccess ? "success" : isPartialSuccess ? "warning" : undefined;
+
   return (
     <StepView
       data-id={`${id.toLowerCase()}-step`}
@@ -72,9 +76,7 @@ const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, s
       lightMode={lightMode}
     >
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
-      {status ? (
-        <StatusIcon success={status !== Status.FAILED && !isPartialSuccess} warning={isPartialSuccess} />
-      ) : null}
+      {status ? <StatusIcon status={statusIconStatus} /> : null}
       {name}
     </StepView>
   );
