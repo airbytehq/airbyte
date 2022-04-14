@@ -214,7 +214,6 @@ const ConnectorServiceTypeControl: React.FC<{
 
   const getNoOptionsMessage = useCallback(
     ({ inputValue }: { inputValue: string }) => {
-      console.log("Analytics events send!", inputValue);
       analytics.track(
         formType === "source"
           ? "Airbyte.UI.NewSource.NoMatchingConnector"
