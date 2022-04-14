@@ -70,12 +70,12 @@ public class Bootloader {
   private DataSource jobsDataSource;
 
   @Inject
-  @Named("config")
-  private FlywayConfigurationProperties configFlywayConfigurationProperties;
+  @Named("configFlyway")
+  private Flyway configFlyway;
 
   @Inject
-  @Named("jobs")
-  private FlywayConfigurationProperties jobsFlywayConfigurationProperties;
+  @Named("jobsFlyway")
+  private Flyway jobsFlyway;
 
   @Inject
   private JobPersistence jobPersistence;
@@ -188,24 +188,6 @@ public class Bootloader {
   }
 
   private void runFlywayMigration() {
-    final Flyway configFlyway = configFlywayConfigurationProperties.getFluentConfiguration()
-        .dataSource(configDataSource)
-        .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
-        .baselineDescription(FlywayConfigurationConstants.BASELINE_DESCRIPTION)
-        .baselineOnMigrate(FlywayConfigurationConstants.BASELINE_ON_MIGRATION)
-        .installedBy(Bootloader.class.getSimpleName())
-        .table(String.format("airbyte_%s_migrations", "configs"))
-        .load();
-
-    final Flyway jobsFlyway = jobsFlywayConfigurationProperties.getFluentConfiguration()
-        .dataSource(jobsDataSource)
-        .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
-        .baselineDescription(FlywayConfigurationConstants.BASELINE_DESCRIPTION)
-        .baselineOnMigrate(FlywayConfigurationConstants.BASELINE_ON_MIGRATION)
-        .installedBy(Bootloader.class.getSimpleName())
-        .table(String.format("airbyte_%s_migrations", "jobs"))
-        .load();
-
     configFlyway.baseline();
     jobsFlyway.baseline();
 

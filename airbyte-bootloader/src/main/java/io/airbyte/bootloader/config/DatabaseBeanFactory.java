@@ -4,19 +4,25 @@
 
 package io.airbyte.bootloader.config;
 
+import io.airbyte.bootloader.Bootloader;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
+import io.airbyte.db.instance.FlywayConfigurationConstants;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.micronaut.context.annotation.Factory;
+import io.micronaut.flyway.FlywayConfigurationProperties;
 import java.io.IOException;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 
 @Factory
@@ -45,22 +51,36 @@ public class DatabaseBeanFactory {
     return new DefaultJobPersistence(jobsDatabase);
   }
 
-  // @Singleton
-  // @Named("configsDbMigrator")
-  // public DatabaseMigrator configsDbMigrator(@Named("configDatabase") final Database configDatabase)
-  // {
-  // return new ConfigsDatabaseMigrator(configDatabase, Bootloader.class.getSimpleName());
-  // }
-  //
-  // @Singleton
-  // @Named("jobsDbMigrator")
-  // public DatabaseMigrator jobsDbMigrator(@Named("jobsDatabase") final Database jobsDatabase) {
-  // return new JobsDatabaseMigrator(jobsDatabase, Bootloader.class.getSimpleName());
-  // }
-
   @Singleton
   public ConfigRepository configRepository(final ConfigPersistence configPersistence, @Named("configDatabase") final Database configDatabase) {
     return new ConfigRepository(configPersistence, configDatabase);
   }
 
+  @Singleton
+  @Named("configFlyway")
+  public Flyway configFlyway(@Named("config") final FlywayConfigurationProperties configFlywayConfigurationProperties,
+      @Named("config") final DataSource configDataSource) {
+    return configFlywayConfigurationProperties.getFluentConfiguration()
+        .dataSource(configDataSource)
+        .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
+        .baselineDescription(FlywayConfigurationConstants.BASELINE_DESCRIPTION)
+        .baselineOnMigrate(FlywayConfigurationConstants.BASELINE_ON_MIGRATION)
+        .installedBy(Bootloader.class.getSimpleName())
+        .table(String.format("airbyte_%s_migrations", "configs"))
+        .load();
+  }
+
+  @Singleton
+  @Named("jobsFlyway")
+  public Flyway jobsFlyway(@Named("jobs") final FlywayConfigurationProperties jobsFlywayConfigurationProperties,
+      @Named("jobs") final DataSource jobsDataSource) {
+    return jobsFlywayConfigurationProperties.getFluentConfiguration()
+        .dataSource(jobsDataSource)
+        .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
+        .baselineDescription(FlywayConfigurationConstants.BASELINE_DESCRIPTION)
+        .baselineOnMigrate(FlywayConfigurationConstants.BASELINE_ON_MIGRATION)
+        .installedBy(Bootloader.class.getSimpleName())
+        .table(String.format("airbyte_%s_migrations", "jobs"))
+        .load();
+  }
 }
