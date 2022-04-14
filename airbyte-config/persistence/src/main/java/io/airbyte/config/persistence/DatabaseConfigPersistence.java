@@ -626,7 +626,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     });
     final List<ConfigWithMetadata<ActorCatalog>> actorCatalogs = new ArrayList<>();
     for (final Record record : result) {
-      final ActorCatalog actorCatalog = buildActorCatalog(record);
+      final ActorCatalog actorCatalog = DbConverter.buildActorCatalog(record);
       actorCatalogs.add(new ConfigWithMetadata<>(
           record.get(ACTOR_CATALOG.ID).toString(),
           ConfigSchema.ACTOR_CATALOG.name(),
@@ -635,13 +635,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           actorCatalog));
     }
     return actorCatalogs;
-  }
-
-  private ActorCatalog buildActorCatalog(final Record record) {
-    return new ActorCatalog()
-        .withId(record.get(ACTOR_CATALOG.ID))
-        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
-        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
   }
 
   private List<ConfigWithMetadata<ActorCatalogFetchEvent>> listActorCatalogFetchEventWithMetadata() throws IOException {

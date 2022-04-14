@@ -401,7 +401,7 @@ class SchedulerHandlerTest {
             .withDockerImageTag(SOURCE_DOCKER_TAG)
             .withSourceDefinitionId(source.getSourceDefinitionId()));
     when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
-    when(configRepository.getSourceCatalog(any(), any(), any())).thenReturn(Optional.empty());
+    when(configRepository.getActorCatalog(any(), any(), any())).thenReturn(Optional.empty());
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn(discoverResponse);
 
@@ -411,8 +411,8 @@ class SchedulerHandlerTest {
     assertNotNull(actual.getJobInfo());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
-    verify(configRepository).getSourceCatalog(eq(request.getSourceId()), any(), eq(SOURCE_DOCKER_TAG));
-    verify(configRepository).writeActorCatalogFetchEvent(eq(airbyteCatalog), eq(source.getSourceId()), any(), eq(SOURCE_DOCKER_TAG));
+    verify(configRepository).getActorCatalog(eq(request.getSourceId()), eq(SOURCE_DOCKER_TAG), any());
+    verify(configRepository).writeActorCatalogFetchEvent(eq(airbyteCatalog), eq(source.getSourceId()), eq(SOURCE_DOCKER_TAG), any());
     verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }
 
@@ -440,7 +440,7 @@ class SchedulerHandlerTest {
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
         .withCatalogHash("")
         .withId(UUID.randomUUID());
-    when(configRepository.getSourceCatalog(any(), any(), any())).thenReturn(Optional.of(actorCatalog));
+    when(configRepository.getActorCatalog(any(), any(), any())).thenReturn(Optional.of(actorCatalog));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn(discoverResponse);
 
@@ -450,7 +450,7 @@ class SchedulerHandlerTest {
     assertNotNull(actual.getJobInfo());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
-    verify(configRepository).getSourceCatalog(eq(request.getSourceId()), any(), any());
+    verify(configRepository).getActorCatalog(eq(request.getSourceId()), any(), any());
     verify(configRepository, never()).writeActorCatalogFetchEvent(any(), any(), any(), any());
     verify(synchronousSchedulerClient, never()).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }
@@ -479,7 +479,7 @@ class SchedulerHandlerTest {
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
         .withCatalogHash("")
         .withId(UUID.randomUUID());
-    when(configRepository.getSourceCatalog(any(), any(), any())).thenReturn(Optional.of(actorCatalog));
+    when(configRepository.getActorCatalog(any(), any(), any())).thenReturn(Optional.of(actorCatalog));
     when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE))
         .thenReturn(discoverResponse);
 
@@ -489,7 +489,7 @@ class SchedulerHandlerTest {
     assertNotNull(actual.getJobInfo());
     assertTrue(actual.getJobInfo().getSucceeded());
     verify(configRepository).getSourceConnection(source.getSourceId());
-    verify(configRepository).getSourceCatalog(eq(request.getSourceId()), any(), any());
+    verify(configRepository).getActorCatalog(eq(request.getSourceId()), any(), any());
     verify(configRepository).writeActorCatalogFetchEvent(any(), any(), any(), any());
     verify(synchronousSchedulerClient).createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE);
   }

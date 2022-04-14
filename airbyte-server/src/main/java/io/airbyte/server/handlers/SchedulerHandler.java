@@ -262,11 +262,11 @@ public class SchedulerHandler {
         Charsets.UTF_8)).toString();
     final String connectorVersion = sourceDef.getDockerImageTag();
     final Optional<ActorCatalog> currentCatalog =
-        configRepository.getSourceCatalog(discoverSchemaRequestBody.getSourceId(), configHash, connectorVersion);
+        configRepository.getActorCatalog(discoverSchemaRequestBody.getSourceId(), connectorVersion, configHash);
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
       final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
-      configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), configHash, connectorVersion);
+      configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
       return discoverJobToOutput(response);
     }
     final AirbyteCatalog airbyteCatalog = Jsons.object(currentCatalog.get().getCatalog(), AirbyteCatalog.class);
