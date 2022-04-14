@@ -17,7 +17,7 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 2. In the left navigation bar, click **Sources**. In the top-right corner, click + **new source**.
 3. On the Set up the source page, enter the name for the Salesforce connector and select **Facebook Marketing** from the Source type dropdown.
 4. Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
-5. For **Start Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+5. For **Start Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data. :warning: **WARNING** Insight tables are only able to pull data from 37 months. If you are syncing insight tables and your start date is older than 37 months your sync will fail.
 6. For **End Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
 7. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762). 
 8. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.

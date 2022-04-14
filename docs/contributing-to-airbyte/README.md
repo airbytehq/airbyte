@@ -60,9 +60,11 @@ It's easy to add your own connector to Airbyte! **Since Airbyte connectors are e
 
 For sources, simply head over to our [Python CDK](../connector-development/cdk-python/).
 
-{% hint style="info" %}
+:::info
+
 The CDK currently does not support creating destinations, but it will very soon.
-{% endhint %}
+
+::::
 
 * See [Building new connectors](../connector-development/) to get started.
 * Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](../connector-development/tutorials/building-a-python-source.md) and [Build Java Destination Connectors](../connector-development/tutorials/building-a-java-destination.md)

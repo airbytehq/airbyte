@@ -120,9 +120,15 @@ public class ConfigRepositoryE2EReadWriteTest {
   void testWorkspaceCountConnections() throws IOException {
 
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    assertEquals(MockData.standardSyncs().size() - 1, configRepository.countConnectionsForWorkspace(workspaceId));
-    assertEquals(MockData.destinationConnections().size() - 1, configRepository.countDestinationsForWorkspace(workspaceId));
-    assertEquals(MockData.sourceConnections().size() - 1, configRepository.countSourcesForWorkspace(workspaceId));
+    assertEquals(4, configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(2, configRepository.countDestinationsForWorkspace(workspaceId));
+    assertEquals(2, configRepository.countSourcesForWorkspace(workspaceId));
+  }
+
+  @Test
+  void testWorkspaceCountConnectionsDeprecated() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    assertEquals(1, configRepository.countConnectionsForWorkspace(workspaceId));
   }
 
   @Test
@@ -375,6 +381,36 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     result = configRepository.getSourceOAuthParamByDefinitionIdOptional(missingId, sourceOAuthParameter.getSourceDefinitionId());
     assertFalse(result.isPresent());
+  }
+
+  @Test
+  public void testGetStandardSyncUsingOperation() throws IOException {
+    final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+
+    final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
+
+    assertThat(syncs).hasSameElementsAs(expectedSyncs);
+
+  }
+
+  @Test
+  public void testDeleteStandardSyncOperation()
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID deletedOperationId = MockData.standardSyncOperations().get(0).getOperationId();
+    final List<StandardSync> syncs = MockData.standardSyncs();
+    configRepository.deleteStandardSyncOperation(deletedOperationId);
+
+    for (final StandardSync sync : syncs) {
+      final StandardSync retrievedSync = configRepository.getStandardSync(sync.getConnectionId());
+      for (final UUID operationId : sync.getOperationIds()) {
+        if (operationId.equals(deletedOperationId)) {
+          assertThat(retrievedSync.getOperationIds()).doesNotContain(deletedOperationId);
+        } else {
+          assertThat(retrievedSync.getOperationIds()).contains(operationId);
+        }
+      }
+    }
   }
 
 }
