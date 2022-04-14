@@ -1,0 +1,27 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/faker",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Faker Source Spec",
+    "type": "object",
+    "required": ["count"],
+    "additionalProperties": false,
+    "properties": {
+      "count": {
+        "title": "Count",
+        "description": "How many fake records should be generated",
+        "type": "integer",
+        "minimum": 1,
+        "default": 100,
+        "order": 0
+      },
+      "seed": {
+        "title": "Seed",
+        "description": "Manually control the faker random seed to return the same values on subsequent runs (leave -1 for random)",
+        "type": "integer",
+        "default": -1,
+        "order": 1
+      }
+    }
+  }
+}
