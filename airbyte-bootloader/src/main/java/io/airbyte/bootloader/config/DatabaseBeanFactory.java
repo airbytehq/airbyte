@@ -18,7 +18,6 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.flyway.FlywayConfigurationProperties;
 import java.io.IOException;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
@@ -59,7 +58,7 @@ public class DatabaseBeanFactory {
   @Singleton
   @Named("configFlyway")
   public Flyway configFlyway(@Named("config") final FlywayConfigurationProperties configFlywayConfigurationProperties,
-      @Named("config") final DataSource configDataSource) {
+                             @Named("config") final DataSource configDataSource) {
     return configFlywayConfigurationProperties.getFluentConfiguration()
         .dataSource(configDataSource)
         .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
@@ -73,7 +72,7 @@ public class DatabaseBeanFactory {
   @Singleton
   @Named("jobsFlyway")
   public Flyway jobsFlyway(@Named("jobs") final FlywayConfigurationProperties jobsFlywayConfigurationProperties,
-      @Named("jobs") final DataSource jobsDataSource) {
+                           @Named("jobs") final DataSource jobsDataSource) {
     return jobsFlywayConfigurationProperties.getFluentConfiguration()
         .dataSource(jobsDataSource)
         .baselineVersion(FlywayConfigurationConstants.BASELINE_VERSION)
@@ -83,4 +82,5 @@ public class DatabaseBeanFactory {
         .table(String.format("airbyte_%s_migrations", "jobs"))
         .load();
   }
+
 }
