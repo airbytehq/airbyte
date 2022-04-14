@@ -22,6 +22,7 @@ public class TestBigQueryDenormalizedRecordFormatter extends
   @Override
   public void addAirbyteColumns(ObjectNode data,
                                 AirbyteRecordMessage recordMessage) {
+    // this method just exposes a protected method for testing making it public
     super.addAirbyteColumns(data, recordMessage);
   }
 

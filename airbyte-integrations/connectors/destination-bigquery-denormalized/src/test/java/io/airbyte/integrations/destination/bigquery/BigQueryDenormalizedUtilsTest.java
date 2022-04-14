@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 
 public class BigQueryDenormalizedUtilsTest {
 
@@ -124,7 +125,8 @@ public class BigQueryDenormalizedUtilsTest {
     final Field items = fields.get("items");
     assertEquals(1, items.getSubFields().size());
     assertEquals(LegacySQLTypeName.RECORD, items.getType());
-    assertEquals(LegacySQLTypeName.TIMESTAMP, items.getSubFields().get("nested_datetime").getType());
+    assertEquals(LegacySQLTypeName.TIMESTAMP,
+        items.getSubFields().get("nested_datetime").getType());
   }
 
   @Test
@@ -213,16 +215,15 @@ public class BigQueryDenormalizedUtilsTest {
 
   @Test
   public void testEmittedAtTimeConversion() {
-    final JsonNode jsonNodeSchema = getSchema();
-    final TestBigQueryDenormalizedRecordFormatter rf = new TestBigQueryDenormalizedRecordFormatter(
-        jsonNodeSchema, new BigQuerySQLNameTransformer());
+    final TestBigQueryDenormalizedRecordFormatter mockedFormatter = Mockito.mock(
+        TestBigQueryDenormalizedRecordFormatter.class, Mockito.CALLS_REAL_METHODS);
 
     final ObjectMapper mapper = new ObjectMapper();
     final ObjectNode objectNode = mapper.createObjectNode();
 
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage();
     airbyteRecordMessage.setEmittedAt(1602637589000L);
-    rf.addAirbyteColumns(objectNode, airbyteRecordMessage);
+    mockedFormatter.addAirbyteColumns(objectNode, airbyteRecordMessage);
 
     assertEquals("2020-10-14 01:06:29.000000+00:00",
         objectNode.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).textValue());
