@@ -134,8 +134,8 @@ class TestMyFacebookAdsApi:
                 f"Utilization is too high ({usage})%, pausing for {fb_api._compute_pause_interval.return_value}"
             )
 
-    def test_find_account(self, api, requests_mock):
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_test/", [{"json": {"id": "act_test"}}])
-        account = api._find_account("test")
+    def test_find_account(self, api, account_id, requests_mock):
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", [{"json": {"id": "act_test"}}])
+        account = api._find_account(account_id)
         assert isinstance(account, AdAccount)
         assert account.get_id() == "act_test"
