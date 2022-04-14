@@ -10,7 +10,7 @@ export const useChangedFormsById = createGlobalState<Record<string, boolean>>({}
 export const useUniqueFormId = (formId?: string) => {
   const location = useLocation();
   return useMemo(
-    () => formId ?? `${location.pathname.toLowerCase().replace(/\//gi, "_")}__${uniqueId("form_")}`,
+    () => formId ?? `${location.pathname.toLowerCase().substring(1).replace(/\//gi, "_")}__${uniqueId("form_")}`,
     [formId, location.pathname]
   );
 };
