@@ -3,9 +3,9 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faTimes, faBan, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
-import PauseIcon from "./components/Pause";
+import PauseIcon from "./PauseIcon";
 
-type IProps = {
+interface Props {
   success?: boolean;
   warning?: boolean;
   title?: string;
@@ -14,18 +14,12 @@ type IProps = {
   className?: string;
   big?: boolean;
   value?: string | number;
-};
+}
 
-const getWidth = (props: IProps) => {
-  if (props.big) {
-    return props.value ? 57 : 40;
-  }
+const getBadgeWidth = (props: Props) => (props.big ? (props.value ? 57 : 40) : props.value ? 37 : 20);
 
-  return props.value ? 37 : 20;
-};
-
-const Badge = styled.div<IProps>`
-  width: ${(props) => getWidth(props)}px;
+const Badge = styled.div<Props>`
+  width: ${(props) => getBadgeWidth(props)}px;
   height: ${({ big }) => (big ? 40 : 20)}px;
   background: ${(props) =>
     props.success
@@ -56,21 +50,23 @@ const Value = styled.span`
   vertical-align: top;
 `;
 
-const StatusIcon: React.FC<IProps> = (props) => (
-  <Badge {...props}>
-    {props.success ? (
-      <FontAwesomeIcon icon={faCheck} title={props.title} />
-    ) : props.inactive ? (
-      <PauseIcon />
-    ) : props.empty ? (
-      <FontAwesomeIcon icon={faBan} title={props.title} />
-    ) : props.warning ? (
-      <FontAwesomeIcon icon={faExclamationTriangle} title={props.title} />
-    ) : (
-      <FontAwesomeIcon icon={faTimes} title={props.title} />
-    )}
-    {props.value && <Value>{props.value}</Value>}
-  </Badge>
-);
+const StatusIcon: React.FC<Props> = ({ title, ...props }) => {
+  return (
+    <Badge {...props}>
+      {props.success ? (
+        <FontAwesomeIcon icon={faCheck} title={title} />
+      ) : props.inactive ? (
+        <PauseIcon title={title} />
+      ) : props.empty ? (
+        <FontAwesomeIcon icon={faBan} title={title} />
+      ) : props.warning ? (
+        <FontAwesomeIcon icon={faExclamationTriangle} title={title} />
+      ) : (
+        <FontAwesomeIcon icon={faTimes} title={title} />
+      )}
+      {props.value && <Value>{props.value}</Value>}
+    </Badge>
+  );
+};
 
 export default StatusIcon;
