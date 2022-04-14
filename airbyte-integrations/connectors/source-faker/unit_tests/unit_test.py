@@ -6,8 +6,6 @@ import jsonschema
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_faker import SourceFaker
 
-# TODO: airbyte/airbyte-integrations/connectors/source-faker/.venv/lib/python3.9/site-packages/airbyte_cdk/sources/utils/transform.py:12: DeprecationWarning: Call to deprecated class AirbyteLogger. (Use logging.getLogger('airbyte') instead) -- Deprecated since version 0.1.47.
-
 def test_source_streams():
     source = SourceFaker()
     config = {"count": 1}

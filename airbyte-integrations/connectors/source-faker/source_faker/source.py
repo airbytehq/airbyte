@@ -98,13 +98,10 @@ class SourceFaker(Source):
 
         for stream in catalog.streams:
             if stream.stream.name == "Users":
-                records_to_create = count
                 cursor = get_stream_cursor(state, stream.stream.name)
                 total_records = cursor
-                if stream.sync_mode == SyncMode.incremental:
-                    records_to_create = records_to_create - cursor
 
-                for i in range(0, records_to_create):
+                for i in range(cursor, count):
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(
