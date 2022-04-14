@@ -9,12 +9,14 @@ import static java.util.Objects.isNull;
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.Binding;
+import com.google.cloud.Condition;
+import com.google.cloud.Policy;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
+import com.google.cloud.storage.*;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
@@ -48,13 +50,14 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.net.URI;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
@@ -63,7 +66,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final List<String> REQUIRED_PERMISSIONS = List.of(
       "storage.multipartUploads.abort",
@@ -118,13 +120,16 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus checkStorageIamPermissions(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
+    final String bucketPath = loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
+    final URI uri = URI.create("gs://" + bucketName + "/" + loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH).asText());
 
     try {
       final ServiceAccountCredentials credentials = getServiceAccountCredentials(config);
+      String clientEmail = credentials.getClientEmail();
 
       final Storage storage = StorageOptions.newBuilder()
           .setProjectId(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText())
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setCredentials(credentials)
           .build().getService();
       final List<Boolean> permissionsCheckStatusList = storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS);
 
@@ -135,12 +140,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .toList();
 
       if (!missingPermissions.isEmpty()) {
-        LOGGER.error("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
+        LOGGER.warn("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
 
-        return new AirbyteConnectionStatus()
-            .withStatus(AirbyteConnectionStatus.Status.FAILED)
-            .withMessage("Could not connect to the Gcs bucket with the provided configuration. "
-                + "Missing permissions: " + missingPermissions);
+        return checkIamPermissionsWithLimitedAccess(clientEmail,storage,bucketName,bucketPath,config, uri);
+//        LOGGER.error("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
+//
+//        return new AirbyteConnectionStatus()
+//            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+//            .withMessage("Could not connect to the Gcs bucket with the provided configuration. "
+//                + "Missing permissions: " + missingPermissions);
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
 
@@ -152,6 +160,48 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
               .getMessage());
     }
+  }
+
+  private AirbyteConnectionStatus checkIamPermissionsWithLimitedAccess(String clientEmail, Storage storage, String bucketName, String bucketPath, JsonNode config, URI uri) {
+    Policy iamPolicy = storage.getIamPolicy(bucketName, Storage.BucketSourceOption.requestedPolicyVersion(3));
+    // Print binding information
+    List<Binding> serviceAccountConditionalBindings = iamPolicy.getBindingsList()
+            .stream()
+            .filter(binding -> binding.getCondition() != null)
+            .filter(binding -> !binding.getMembers().isEmpty() && binding.getMembers().stream().anyMatch(x ->x.contains(clientEmail)))
+            .collect(Collectors.toList());
+
+    List<Binding> objectAdminBindings = serviceAccountConditionalBindings.stream()
+            .filter(binding -> binding.getRole().equals("roles/storage.objectAdmin"))
+            .collect(Collectors.toList());
+
+    if (objectAdminBindings.isEmpty()){
+      return new AirbyteConnectionStatus()
+              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withMessage("Service account "+ clientEmail +" must have role id roles/storage.objectAdmin");
+    }
+//    resource.type == "storage.googleapis.com/Object" &&
+//            resource.name.startsWith("projects/_/buckets/test-perm-bucket/objects/test-path")
+
+    boolean pathAllowed = objectAdminBindings.stream()
+            .anyMatch(binding -> Objects.requireNonNull(binding.getCondition()).getExpression() != null
+                    && allowedBucketPath(binding.getCondition().getExpression(), bucketPath));
+
+    if (!pathAllowed){
+      return new AirbyteConnectionStatus()
+              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withMessage("Service account "+ clientEmail +" does not have access to "+uri);
+    }
+  return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+  }
+
+  private boolean allowedBucketPath(String expression, String bucketPath) {
+    return Stream.of(expression.split("&&"))
+            .anyMatch(cond -> {
+              String[] elements = cond.split("/");
+              return cond.contains("resource.name.startsWith(")
+                      && List.of(elements).get(elements.length-1).equals(bucketPath+"\")");
+            });
   }
 
   protected BigQuery getBigQuery(final JsonNode config) {
