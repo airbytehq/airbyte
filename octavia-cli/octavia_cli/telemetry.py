@@ -25,7 +25,7 @@ def build_user_agent(octavia_version: str, workspace_id: str) -> str:
 
 class TelemetryClient:
 
-    WRITE_KEY = "aWjmJoEYrPXNBCsELHsBEbNeZR2IJfJI"
+    WRITE_KEY = "ER8EjdRVFut7n05XPaaTKrSEnjLscyKr"
 
     def __init__(self, send_data: bool = False) -> None:
         """Create a TelemetryClient instance.
