@@ -718,7 +718,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.1.6"
+- dockerImage: "airbyte/source-bigquery:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
     connectionSpecification:
@@ -2068,7 +2068,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-file:0.2.9"
+- dockerImage: "airbyte/source-file:0.2.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -2125,9 +2125,6 @@
             properties:
               storage:
                 type: "string"
-                enum:
-                - "HTTPS"
-                default: "HTTPS"
                 const: "HTTPS"
           - title: "GCS: Google Cloud Storage"
             required:
@@ -2136,9 +2133,6 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "GCS"
-                default: "GCS"
                 const: "GCS"
               service_account_json:
                 type: "string"
@@ -2157,9 +2151,6 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "S3"
-                default: "S3"
                 const: "S3"
               aws_access_key_id:
                 type: "string"
@@ -2182,9 +2173,6 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "AzBlob"
-                default: "AzBlob"
                 const: "AzBlob"
               storage_account:
                 type: "string"
@@ -2217,24 +2205,25 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "SSH"
-                default: "SSH"
                 const: "SSH"
               user:
                 type: "string"
                 title: "User"
+                description: ""
               password:
                 type: "string"
                 title: "Password"
+                description: ""
                 airbyte_secret: true
               host:
                 type: "string"
                 title: "Host"
+                description: ""
               port:
                 type: "string"
                 title: "Port"
                 default: "22"
+                description: ""
           - title: "SCP: Secure copy protocol"
             required:
             - "storage"
@@ -2244,24 +2233,25 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "SCP"
-                default: "SCP"
                 const: "SCP"
               user:
                 type: "string"
                 title: "User"
+                description: ""
               password:
                 type: "string"
                 title: "Password"
+                description: ""
                 airbyte_secret: true
               host:
                 type: "string"
                 title: "Host"
+                description: ""
               port:
                 type: "string"
                 title: "Port"
                 default: "22"
+                description: ""
           - title: "SFTP: Secure File Transfer Protocol"
             required:
             - "storage"
@@ -2271,24 +2261,25 @@
               storage:
                 type: "string"
                 title: "Storage"
-                enum:
-                - "SFTP"
-                default: "SFTP"
                 const: "SFTP"
               user:
                 type: "string"
                 title: "User"
+                description: ""
               password:
                 type: "string"
                 title: "Password"
+                description: ""
                 airbyte_secret: true
               host:
                 type: "string"
                 title: "Host"
+                description: ""
               port:
                 type: "string"
                 title: "Port"
                 default: "22"
+                description: ""
           - title: "Local Filesystem (limited)"
             required:
             - "storage"
@@ -2299,9 +2290,6 @@
                 description: "WARNING: Note that the local storage URL available for\
                   \ reading must start with the local mount \"/local/\" at the moment\
                   \ until we implement more advanced docker mounting options."
-                enum:
-                - "local"
-                default: "local"
                 const: "local"
     supportsNormalization: false
     supportsDBT: false
@@ -2754,7 +2742,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.17"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -2783,7 +2771,7 @@
           - "2020-06-01"
         window_in_days:
           type: "integer"
-          title: "Window in days"
+          title: "Window in days (Optional)"
           description: "The amount of days for each data-chunk beginning from start_date.\
             \ Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364,\
             \ as for a Year)."
@@ -2798,7 +2786,7 @@
         custom_reports:
           order: 3
           type: "string"
-          title: "Custom Reports (optional)"
+          title: "Custom Reports (Optional)"
           description: "A JSON array describing the custom reports you want to sync\
             \ from GA. Check out the <a href=\"https://docs.airbyte.io/integrations/sources/google-analytics-v4\"\
             >docs</a> to get more information about this field."
@@ -2818,31 +2806,32 @@
               auth_type:
                 type: "string"
                 const: "Client"
-                enum:
-                - "Client"
-                default: "Client"
                 order: 0
               client_id:
                 title: "Client ID"
                 type: "string"
                 description: "The Client ID of your Google Analytics developer application."
                 airbyte_secret: true
+                order: 1
               client_secret:
                 title: "Client Secret"
                 type: "string"
                 description: "The Client Secret of your Google Analytics developer\
                   \ application."
                 airbyte_secret: true
+                order: 2
               refresh_token:
                 title: "Refresh Token"
                 type: "string"
                 description: "The token for obtaining a new access token."
                 airbyte_secret: true
+                order: 3
               access_token:
-                title: "Access Token"
+                title: "Access Token (Optional)"
                 type: "string"
                 description: "Access Token for making authenticated requests."
                 airbyte_secret: true
+                order: 4
           - type: "object"
             title: "Service Account Key Authentication"
             required:
@@ -2851,9 +2840,6 @@
               auth_type:
                 type: "string"
                 const: "Service"
-                enum:
-                - "Service"
-                default: "Service"
                 order: 0
               credentials_json:
                 title: "JSON credentials"
@@ -7312,7 +7298,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.2"
+- dockerImage: "airbyte/source-salesforce:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
