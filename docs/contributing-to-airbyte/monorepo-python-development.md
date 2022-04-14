@@ -89,3 +89,34 @@ The following setup steps are written for PyCharm but should have similar equiva
 You should now have access to code completion and proper syntax highlighting for python projects.
 
 If you need to work on another connector you can quickly change the current virtual environment in the bottom toolbar.
+
+## Intra Repo Python Dependencies
+
+Sometimes, you may want to use other python module(s) within the Airbyte monorepo as dependencies for your connector. This can be achieved as follows:
+
+1. To enable the dependency for local development, add a line referencing the dependency module in the requirements.txt of your connector, in the format:
+   
+    ```text
+    -e {relative path to dependency}
+    ```
+   
+    
+In the case of the `source-file-secure` connector, it has the `source-file` connector as a dependency. Initially the requirements file looks like:
+
+```text
+-e ../../bases/source-acceptance-test
+-e .
+```
+
+and after we add the dependency line:
+
+```text
+-e ../../bases/source-acceptance-test
+-e ../source-file
+-e .
+```
+
+When you `pip install -r requirements.txt`, a symlink to the dependency module will be added in your local venv’s site-packages. This is sufficient for local development, but we also need to add the dependency to the Dockerfile so that it's picked up during build.
+
+2.  There are 3 lines (for each dependency) that we need to add in the Dockerfile:
+    1. At the top of the file, before the other , we 
