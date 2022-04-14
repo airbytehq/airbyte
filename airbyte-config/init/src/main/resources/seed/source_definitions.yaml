@@ -221,6 +221,12 @@
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-pages
   icon: facebook.svg
   sourceType: api
+- name: Faker
+  sourceDefinitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
+  dockerRepository: airbyte/source-faker
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/source-faker
+  sourceType: api
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
