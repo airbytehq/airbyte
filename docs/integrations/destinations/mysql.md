@@ -110,6 +110,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date | Pull Request | Subject                                                                                             |
 |:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------|
+| 0.1.19  | 2022-04-14 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Enable Append Dedup Sync Mode                                                                    |
 | 0.1.18  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.1.17  | 2022-02-16 | [10362](https://github.com/airbytehq/airbyte/pull/10362) | Add jdbc_url_params support for optional JDBC parameters                                            |
 | 0.1.16  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                        |
