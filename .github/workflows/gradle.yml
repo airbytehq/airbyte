@@ -99,9 +99,6 @@ jobs:
     name: "Octavia CLI: Build"
     timeout-minutes: 90
     steps:
-      - name: Force Failure
-        run: exit 1
-
       - name: Checkout Airbyte
         uses: actions/checkout@v2
 
