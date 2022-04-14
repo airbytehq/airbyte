@@ -32,8 +32,6 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   protected JsonNode config;
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
 
-  protected TestDestinationEnv testDestinationEnv;
-
   @Override
   protected String getImageName() {
     return "airbyte/destination-redshift:dev";
@@ -126,7 +124,6 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
     config = configForSchema;
-    this.testDestinationEnv = testEnv;
   }
 
   @Override
@@ -145,10 +142,6 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
             baseConfig.get("database").asText()),
         "com.amazon.redshift.jdbc.Driver", null,
         RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
-  }
-
-  public RedshiftSQLNameTransformer getNamingResolver() {
-    return namingResolver;
   }
 
   @Override
