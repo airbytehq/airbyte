@@ -78,14 +78,6 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
-task generateApiClient(type: GenerateTask) {
-    inputSpec =  "$rootDir.absolutePath/airbyte-api/src/main/openapi/config.yaml"
-    outputDir = "$rootDir.absolutePath/airbyteApiClient"
-
-    generatorName = "typescript-fetch"
-    packageName = "airbyteApiClient"
-}
-
 
 copyBuild.dependsOn npm_run_build
 copyNginx.dependsOn npm_run_build
@@ -101,4 +93,3 @@ dockerBuildTask.dependsOn(copyDocs)
 dockerBuildTask.dependsOn(copyAssets)
 assemble.dependsOn(dockerBuildTask)
 
-assemble.dependsOn generateApiClient

@@ -12,7 +12,8 @@
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 -s public --quiet",
     "lint": "eslint --ext js,ts,tsx src",
-    "license-check": "node ./scripts/license-check.js"
+    "license-check": "node ./scripts/license-check.js",
+    "generate-client": "node ./generateApiClient.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
@@ -90,6 +91,7 @@
     "husky": "^4.2.3",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.7",
+    "orval": "^6.7.1",
     "prettier": "^2.6.2",
     "react-scripts": "^5.0.1",
     "react-select-event": "^5.5.0",
