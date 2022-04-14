@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.db.exception.CustomExceptionUtils.MY_SQL_CONNECTOR;
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.MY_SQL;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.checkBinlog;
@@ -17,6 +17,7 @@ import com.mysql.cj.MysqlType;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -215,7 +216,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  public String getConnectorType() {
-    return MY_SQL_CONNECTOR;
+  public ConnectorType getConnectorType() {
+    return MY_SQL;
   }
 }

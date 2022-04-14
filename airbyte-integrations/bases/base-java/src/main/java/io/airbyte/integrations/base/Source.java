@@ -6,6 +6,7 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -36,8 +37,8 @@ public interface Source extends Integration {
    */
   AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
 
-  default String getConnectorType() {
-    return "NO_IMPLEMENTED_YET";
+  default ConnectorType getConnectorType() {
+    return ConnectorType.DEFAULT;
   }
 
 }
