@@ -81,12 +81,12 @@ jobs:
         with:
           java-version: "${{ env.JAVA_VERSION }}"
 
-    - name: Set node-version
-      shell: bash
-      run: echo "NODE_VERSION="$(cat .node-version)"" >> $GITHUB_ENV
-    - uses: actions/setup-node@v1
-      with:
-        node-version: "${{ env.NODE_VERSION }}"
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat .node-version)"" >> $GITHUB_ENV
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
 
       - name: Fix EC-2 Runner
         run: |
