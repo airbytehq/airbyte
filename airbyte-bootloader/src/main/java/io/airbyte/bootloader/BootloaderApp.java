@@ -99,12 +99,19 @@ public class BootloaderApp {
           .build();
 
       final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-      final SecretPersistence secretPersistence = SecretPersistence.getEphemeral(configs).orElseThrow();
-      secretMigrator = new SecretMigrator(configPersistence, secretPersistence);
-      /*
-       * try { secretMigrator.migrateSecrets(); } catch (final JsonValidationException e) {
-       * e.printStackTrace(); }
-       */
+      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getEphemeral(configs);
+      if (secretPersistence.isPresent()) {
+        secretMigrator = new SecretMigrator(configPersistence, secretPersistence.get());
+
+        try {
+          secretMigrator.migrateSecrets();
+        } catch (final JsonValidationException e) {
+          e.printStackTrace();
+        }
+      } else {
+        LOGGER.info("No secret destination specify, it won't migrate secrets");
+        secretMigrator = null;
+      }
 
       postLoadExecution = () -> {
         try {
