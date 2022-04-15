@@ -237,6 +237,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 0.3.1  | 2022-04-15 | [11978](https://github.com/airbytehq/airbyte/pull/11978) | Fixed emittedAt timestamp. |
 | 0.3.0  | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption. |
 | 0.2.15 | 2022-04-05 | [11166](https://github.com/airbytehq/airbyte/pull/11166) | Fixed handling of anyOf and allOf fields |
 | 0.2.14 | 2022-04-02 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec |

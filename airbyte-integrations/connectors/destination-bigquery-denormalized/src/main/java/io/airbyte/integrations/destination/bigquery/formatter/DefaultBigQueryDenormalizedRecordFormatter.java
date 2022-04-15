@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -141,7 +142,9 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   }
 
   protected void addAirbyteColumns(final ObjectNode data, final AirbyteRecordMessage recordMessage) {
-    final long emittedAtMicroseconds = recordMessage.getEmittedAt();
+    // currently emittedAt time is in millis format from airbyte message
+    final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(
+        recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
 
     data.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
