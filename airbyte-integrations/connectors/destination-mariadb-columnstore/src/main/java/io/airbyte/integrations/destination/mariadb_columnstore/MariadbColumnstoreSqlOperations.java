@@ -8,6 +8,7 @@ import com.vdurmont.semver4j.Semver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.integrations.types.GenericParamType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MariadbColumnstoreSqlOperations<T,S> extends JdbcSqlOperations<T,S> {
+public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations<GenericParamType, GenericParamType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreSqlOperations.class);
   private final String MINIMUM_VERSION = "5.5.3";

@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
+import io.airbyte.integrations.types.GenericParamType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.io.PrintWriter;
@@ -27,7 +28,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public abstract class JdbcSqlOperations<T, S> implements SqlOperations<T, S> {
+public abstract class JdbcSqlOperations<T extends GenericParamType, S extends GenericParamType> implements SqlOperations<T, S> {
 
   protected static final String SHOW_SCHEMAS = "show schemas;";
   protected static final String NAME = "name";

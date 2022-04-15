@@ -12,10 +12,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
+import io.airbyte.integrations.types.GenericParamType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -26,7 +26,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftSqlOperations extends JdbcSqlOperations<List<WriteConfig>, Set<String>> implements SqlOperations<List<WriteConfig>, Set<String>> {
+public class RedshiftSqlOperations extends JdbcSqlOperations<GenericParamType<List<WriteConfig>>, GenericParamType<Set<String>>>{
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
@@ -105,10 +105,12 @@ public class RedshiftSqlOperations extends JdbcSqlOperations<List<WriteConfig>, 
    * @param database         - Database object for interacting with a JDBC connection.
    * @param writeConfigsList - list of write configs.
    */
+
+
   @Override
-  public void onDestinationStartOperations(final JdbcDatabase database, final List<WriteConfig> writeConfigsList) {
+  public void onDestinationStartOperations(final JdbcDatabase database, final GenericParamType<List<WriteConfig>> writeConfigsList) {
     LOGGER.info("Executing specific logic for Redshift Destination DB engine...");
-    Set<String> schemas = writeConfigsList.stream().map(WriteConfig::getOutputSchemaName).collect(toSet());
+    Set<String> schemas = writeConfigsList.get().stream().map(WriteConfig::getOutputSchemaName).collect(toSet());
     List<String> schemaAndTableWithNotSuperType = schemas
         .stream()
         .flatMap(schemaName -> discoverNotSuperTables(database, schemaName).stream())
@@ -125,8 +127,9 @@ public class RedshiftSqlOperations extends JdbcSqlOperations<List<WriteConfig>, 
    * @param schemaNames   - schema names.
    */
   @Override
-  public void onCloseTransactionOperations(final JdbcDatabase database, final Set<String> schemaNames) {
+  public void onCloseTransactionOperations(final JdbcDatabase database, final GenericParamType<Set<String>> schemaNames) {
     List<String> schemaAndTableWithNotSuperType = schemaNames
+        .get()
         .stream()
         .flatMap(schemaName -> discoverNotSuperTables(database, schemaName).stream())
         .toList();

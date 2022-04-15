@@ -9,6 +9,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.integrations.types.GenericParamType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MySQLSqlOperations<T,S> extends JdbcSqlOperations<T,S> {
+public class MySQLSqlOperations extends JdbcSqlOperations<GenericParamType, GenericParamType> {
 
   private boolean isLocalFileEnabled = false;
 
