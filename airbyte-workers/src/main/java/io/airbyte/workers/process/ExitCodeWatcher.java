@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,11 +28,13 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   private final Consumer<Integer> onExitCode;
   private final Runnable onWatchFailure;
   /**
-   * This flag is set to false when we either (a) find the pod's exit code, or (b) when the pod is
-   * deleted. This is so that we call exactly one of onExitCode and onWatchFailure, and we make that
-   * call exactly once.
+   * This flag is set to false when we either (a) find the pod's exit code, or (b) when the pod is deleted. This is so that we call exactly one of
+   * onExitCode and onWatchFailure, and we make that call exactly once.
+   * <p>
+   * We rely on this class being side-effect-free, outside of persistExitCode() and persistFailure(). Those two methods use compareAndSet to prevent
+   * race conditions. Everywhere else, we can be sloppy because we won't actually emit any output.
    */
-  private boolean active = true;
+  private final AtomicBoolean active = new AtomicBoolean(true);
 
   /**
    * @param onExitCode callback used to store the exit code
@@ -88,7 +91,7 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   private boolean shouldCheckPod(final Pod pod) {
     final boolean correctName = podName.equals(pod.getMetadata().getName());
     final boolean correctNamespace = podNamespace.equals(pod.getMetadata().getNamespace());
-    return active && correctName && correctNamespace && KubePodResourceHelper.isTerminal(pod);
+    return active.get() && correctName && correctNamespace && KubePodResourceHelper.isTerminal(pod);
   }
 
   private Optional<Integer> getExitCode(final Pod pod) {
@@ -104,17 +107,18 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   }
 
   private void persistExitCode(final int exitCode) {
-    log.info("Received exit code {} for pod {}", exitCode, podName);
-    onExitCode.accept(exitCode);
-    active = false;
+    if (active.compareAndSet(true, false)) {
+      log.info("Received exit code {} for pod {}", exitCode, podName);
+      onExitCode.accept(exitCode);
+    }
   }
 
   private void persistFailure() {
-    // shut ourselves down and log an error. the pod is completely gone, and we have no way to retrieve
-    // its exit code
-    active = false;
-    log.error("Pod {} was deleted before we could retrieve its exit code", podName);
-    onWatchFailure.run();
+    if (active.compareAndSet(true, false)) {
+      // Log an error. The pod is completely gone, and we have no way to retrieve its exit code
+      log.error("Pod {} was deleted before we could retrieve its exit code", podName);
+      onWatchFailure.run();
+    }
   }
 
 }
