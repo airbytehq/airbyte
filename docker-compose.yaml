@@ -46,8 +46,6 @@ services:
       - DATABASE_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_USER=${DATABASE_USER}
-    ports:
-      - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data
   scheduler:

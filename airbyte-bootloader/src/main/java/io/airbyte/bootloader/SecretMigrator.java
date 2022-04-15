@@ -88,10 +88,8 @@ public class SecretMigrator {
         .forEach(source -> {
           try {
             configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
-          } catch (final JsonValidationException e) {
-            e.printStackTrace();
-          } catch (final IOException e) {
-            e.printStackTrace();
+          } catch (final JsonValidationException | IOException e) {
+            throw new RuntimeException(e);
           }
         });
   }
@@ -111,10 +109,8 @@ public class SecretMigrator {
         .forEach(destination -> {
           try {
             configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), destination);
-          } catch (final JsonValidationException e) {
-            e.printStackTrace();
-          } catch (final IOException e) {
-            e.printStackTrace();
+          } catch (final JsonValidationException | IOException e) {
+            throw new RuntimeException(e);
           }
         });
   }
