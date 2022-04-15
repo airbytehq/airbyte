@@ -215,12 +215,12 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   }
 
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(
-      final ContainerOrchestratorConfig containerOrchestratorConfig,
-      final IntegrationLauncherConfig sourceLauncherConfig,
-      final IntegrationLauncherConfig destinationLauncherConfig,
-      final JobRunConfig jobRunConfig,
-      final ResourceRequirements resourceRequirements,
-      final Supplier<ActivityExecutionContext> activityContext)
+                                                                                                                     final ContainerOrchestratorConfig containerOrchestratorConfig,
+                                                                                                                     final IntegrationLauncherConfig sourceLauncherConfig,
+                                                                                                                     final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                                     final JobRunConfig jobRunConfig,
+                                                                                                                     final ResourceRequirements resourceRequirements,
+                                                                                                                     final Supplier<ActivityExecutionContext> activityContext)
       throws IOException {
 
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();

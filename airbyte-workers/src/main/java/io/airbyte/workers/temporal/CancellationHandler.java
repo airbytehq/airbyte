@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal;
 
-import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.client.ActivityCompletionException;
 import org.slf4j.Logger;

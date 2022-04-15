@@ -25,7 +25,6 @@ import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
-import java.util.function.Supplier;
 
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 

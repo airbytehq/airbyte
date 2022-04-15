@@ -73,8 +73,8 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                   final IntegrationLauncherConfig destinationLauncherConfig,
                   final ResourceRequirements resourceRequirements,
                   final OperatorDbtInput input) {
-      final ActivityExecutionContext context = Activity.getExecutionContext();
-      return TemporalUtils.withBackgroundHeartbeat(
+    final ActivityExecutionContext context = Activity.getExecutionContext();
+    return TemporalUtils.withBackgroundHeartbeat(
         () -> {
           final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
           final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
@@ -86,13 +86,13 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
 
           final CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> workerFactory;
 
-            if (containerOrchestratorConfig.isPresent()) {
-                workerFactory =
-                    getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig,
-                        () -> context);
-            } else {
-                workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements);
-            }
+          if (containerOrchestratorConfig.isPresent()) {
+            workerFactory =
+                getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig,
+                    () -> context);
+          } else {
+            workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements);
+          }
 
           final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution =
               new TemporalAttemptExecution<>(
@@ -126,12 +126,12 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                 NormalizationRunnerFactory.NORMALIZATION_VERSION)));
   }
 
-    private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getContainerLauncherWorkerFactory(
-        final WorkerConfigs workerConfigs,
-        final IntegrationLauncherConfig destinationLauncherConfig,
-        final JobRunConfig jobRunConfig,
-        final Supplier<ActivityExecutionContext> activityContext)
-        throws IOException {
+  private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getContainerLauncherWorkerFactory(
+                                                                                                       final WorkerConfigs workerConfigs,
+                                                                                                       final IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                                       final JobRunConfig jobRunConfig,
+                                                                                                       final Supplier<ActivityExecutionContext> activityContext)
+      throws IOException {
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
     final var connectionId = UUID.fromString(jobScope);
 

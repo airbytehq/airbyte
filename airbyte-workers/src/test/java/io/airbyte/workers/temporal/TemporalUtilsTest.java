@@ -189,7 +189,7 @@ class TemporalUtilsTest {
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
       ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
-          //TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
+          // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           () -> {
             latch.await();
             return new Object();
@@ -197,8 +197,7 @@ class TemporalUtilsTest {
           () -> {
             latch.countDown();
             return context;
-          }
-      );
+          });
     }));
 
     testEnv.start();
@@ -231,7 +230,7 @@ class TemporalUtilsTest {
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
       ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
-          //TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
+          // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           new AtomicReference<>(() -> {}),
           () -> {
             latch.await();
@@ -240,8 +239,7 @@ class TemporalUtilsTest {
           () -> {
             latch.countDown();
             return context;
-          }
-      );
+          });
     }));
 
     testEnv.start();

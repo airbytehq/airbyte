@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -12,31 +16,31 @@ import org.junit.jupiter.api.Test;
 
 class CancellationHandlerTest {
 
-    @Test
-    void testCancellationHandler() {
+  @Test
+  void testCancellationHandler() {
 
-        final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
+    final TestWorkflowEnvironment testEnv = TestWorkflowEnvironment.newInstance();
 
-        final Worker worker = testEnv.newWorker("task-queue");
+    final Worker worker = testEnv.newWorker("task-queue");
 
-        worker.registerWorkflowImplementationTypes(HeartbeatWorkflow.HeartbeatWorkflowImpl.class);
-        final WorkflowClient client = testEnv.getWorkflowClient();
+    worker.registerWorkflowImplementationTypes(HeartbeatWorkflow.HeartbeatWorkflowImpl.class);
+    final WorkflowClient client = testEnv.getWorkflowClient();
 
-        worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-            ActivityExecutionContext context = Activity.getExecutionContext();
-            new CancellationHandler.TemporalCancellationHandler(context).checkAndHandleCancellation(() -> {});
-        }));
+    worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
+      ActivityExecutionContext context = Activity.getExecutionContext();
+      new CancellationHandler.TemporalCancellationHandler(context).checkAndHandleCancellation(() -> {});
+    }));
 
-        testEnv.start();
+    testEnv.start();
 
-        final HeartbeatWorkflow heartbeatWorkflow = client.newWorkflowStub(
-            HeartbeatWorkflow.class,
-            WorkflowOptions.newBuilder()
-                .setTaskQueue("task-queue")
-                .build());
+    final HeartbeatWorkflow heartbeatWorkflow = client.newWorkflowStub(
+        HeartbeatWorkflow.class,
+        WorkflowOptions.newBuilder()
+            .setTaskQueue("task-queue")
+            .build());
 
-        assertDoesNotThrow(heartbeatWorkflow::execute);
+    assertDoesNotThrow(heartbeatWorkflow::execute);
 
-    }
+  }
 
 }
