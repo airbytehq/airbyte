@@ -48,6 +48,9 @@ if ! git config --list --global | grep --silent user.email; then
   set -o xtrace
   git config --global user.email=davin@airbyte.io
   git config --global user.name=octavia-squidington-iii
+  GIT_USER=octavia-squidington-iii
+  CURRENT_BRANCH=master
+  USE_SSH=true
 fi
 
 cd docusaurus
@@ -60,7 +63,8 @@ yarn install
 yarn build
 
 # write a prod website to airbytehq/airbyte gh_pages branch
-yarn deploy
+yarn run publish-gh-pages
+
 
 
 # Git makes more sense from /
