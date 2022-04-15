@@ -14,7 +14,7 @@ Airbyte is on a mission to make data integration pipelines a commodity.
 * **No more security compliance process** to go through as Airbyte is self-hosted. 
 * **No more pricing indexed on volume**, as cloud-based solutions offer. 
 
-Here's a list of our [connectors with their health status](docs/integrations/).
+Here's a list of our [connectors with their health status](integrations/README.md).
 
 ## Quick start
 
@@ -44,7 +44,7 @@ Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40
 
 We love contributions to Airbyte, big or small.
 
-See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/slack.airbyte.io) where the core team can help answer your questions.
+See our [Contributing guide](contributing-to-airbyte/README.md) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. If you have any questions, please open a draft PR or visit our [slack channel](https://slack.airbyte.io/) where the core team can help answer your questions.
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 
@@ -62,9 +62,9 @@ For general help using Airbyte, please refer to the official Airbyte documentati
 
 ## Roadmap
 
-Check out our [roadmap](docs/project-overview/roadmap.md) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years.
+Check out our [roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years.
 
 ## License
 
-See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic. 
+See the [LICENSE](project-overview/licenses/README.md) file for licensing information, and our [FAQ](project-overview/licenses/license-faq.md) for any questions you may have on that topic. 
 
