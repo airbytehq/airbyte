@@ -116,6 +116,9 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   private void persistFailure() {
     if (active.compareAndSet(true, false)) {
       // Log an error. The pod is completely gone, and we have no way to retrieve its exit code
+      // In theory, this shouldn't really happen. From https://pkg.go.dev/k8s.io/client-go/tools/cache#DeletedFinalStateUnknown:
+      // > in the case where an object was deleted but the watch deletion event was missed while disconnected from apiserver
+      // But we have this handler just in case.
       log.error("Pod {} was deleted before we could retrieve its exit code", podName);
       onWatchFailure.run();
     }
