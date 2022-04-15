@@ -36,6 +36,6 @@ services:
     image: airbyte/container-orchestrator:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte/container-orchestrator
+      context: airbyte-container-orchestrator
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
