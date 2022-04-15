@@ -28,11 +28,13 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   private final Consumer<Integer> onExitCode;
   private final Runnable onWatchFailure;
   /**
-   * This flag is set to false when we either (a) find the pod's exit code, or (b) when the pod is deleted. This is so that we call exactly one of
-   * onExitCode and onWatchFailure, and we make that call exactly once.
+   * This flag is set to false when we either (a) find the pod's exit code, or (b) when the pod is
+   * deleted. This is so that we call exactly one of onExitCode and onWatchFailure, and we make that
+   * call exactly once.
    * <p>
-   * We rely on this class being side-effect-free, outside of persistExitCode() and persistFailure(). Those two methods use compareAndSet to prevent
-   * race conditions. Everywhere else, we can be sloppy because we won't actually emit any output.
+   * We rely on this class being side-effect-free, outside of persistExitCode() and persistFailure().
+   * Those two methods use compareAndSet to prevent race conditions. Everywhere else, we can be sloppy
+   * because we won't actually emit any output.
    */
   private final AtomicBoolean active = new AtomicBoolean(true);
 
@@ -116,8 +118,10 @@ public class ExitCodeWatcher implements ResourceEventHandler<Pod> {
   private void persistFailure() {
     if (active.compareAndSet(true, false)) {
       // Log an error. The pod is completely gone, and we have no way to retrieve its exit code
-      // In theory, this shouldn't really happen. From https://pkg.go.dev/k8s.io/client-go/tools/cache#DeletedFinalStateUnknown:
-      // > in the case where an object was deleted but the watch deletion event was missed while disconnected from apiserver
+      // In theory, this shouldn't really happen. From
+      // https://pkg.go.dev/k8s.io/client-go/tools/cache#DeletedFinalStateUnknown:
+      // "in the case where an object was deleted but the watch deletion event was missed while
+      // disconnected from apiserver"
       // But we have this handler just in case.
       log.error("Pod {} was deleted before we could retrieve its exit code", podName);
       onWatchFailure.run();
