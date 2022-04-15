@@ -114,6 +114,7 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String STDOUT_PIPE_FILE = PIPES_DIR + "/stdout";
   private static final String STDERR_PIPE_FILE = PIPES_DIR + "/stderr";
   public static final String CONFIG_DIR = "/config";
+  public static final String TMP_DIR = "/tmp";
   private static final String TERMINATION_DIR = "/termination";
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
@@ -357,6 +358,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final String namespace,
                         final String image,
                         final String imagePullPolicy,
+                        final String sidecarImagePullPolicy,
                         final int stdoutLocalPort,
                         final int stderrLocalPort,
                         final String kubeHeartbeatUrl,
@@ -422,13 +424,24 @@ public class KubePodProcess extends Process implements KubePod {
         .withMountPath(TERMINATION_DIR)
         .build();
 
+    final Volume tmpVolume = new VolumeBuilder()
+        .withName("tmp")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build();
+
+    final VolumeMount tmpVolumeMount = new VolumeMountBuilder()
+        .withName("tmp")
+        .withMountPath(TMP_DIR)
+        .build();
+
     final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount), busyboxImage);
     final Container main = getMain(
         image,
         imagePullPolicy,
         usesStdin,
         entrypointOverride,
-        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
+        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount, tmpVolumeMount),
         resourceRequirements,
         internalToExternalPorts,
         envMap,
@@ -441,6 +454,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
@@ -449,6 +463,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
@@ -457,6 +472,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
@@ -473,6 +489,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
@@ -497,7 +514,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)
-        .withVolumes(pipeVolume, configVolume, terminationVolume)
+        .withVolumes(pipeVolume, configVolume, terminationVolume, tmpVolume)
         .endSpec()
         .build();
 
