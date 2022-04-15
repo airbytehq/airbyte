@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -112,8 +111,7 @@ class BigQueryDestinationTest {
   private static Stream<Arguments> datasetIdResetterProvider() {
     // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
     return Stream.of(
-        Arguments.arguments(new DatasetIdResetter(config -> {
-        })),
+        Arguments.arguments(new DatasetIdResetter(config -> {})),
         Arguments.arguments(new DatasetIdResetter(
             config -> {
               final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
@@ -154,9 +152,9 @@ class BigQueryDestinationTest {
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
-                io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
-                io.airbyte.protocol.models.Field
-                    .of("id", JsonSchemaType.STRING))
+            io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
+            io.airbyte.protocol.models.Field
+                .of("id", JsonSchemaType.STRING))
             .withDestinationSyncMode(DestinationSyncMode.APPEND),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaType.STRING))));
 
@@ -244,6 +242,7 @@ class BigQueryDestinationTest {
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);
@@ -278,6 +277,7 @@ class BigQueryDestinationTest {
 
     final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
 
+    consumer.start();
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
@@ -286,7 +286,7 @@ class BigQueryDestinationTest {
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
-        .collect(toList());
+        .toList();
     assertTmpTablesNotPresent(catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
@@ -341,6 +341,7 @@ class BigQueryDestinationTest {
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);

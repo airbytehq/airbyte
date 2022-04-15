@@ -26,9 +26,7 @@ const SingleValue: React.FC<IProps> = (props) => {
     <ItemView>
       {props.data.img ? <Icon>{props.data.img}</Icon> : null}
       <Text>
-        <components.SingleValue {...props}>
-          {props.children}
-        </components.SingleValue>
+        <components.SingleValue {...props}>{props.children}</components.SingleValue>
       </Text>
     </ItemView>
   );

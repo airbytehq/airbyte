@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseSerializedBuffer implements SerializableBuffer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseSerializedBuffer.class);
+  private static final String GZ_SUFFIX = ".gz";
 
   private final BufferStorage bufferStorage;
   private final CountingOutputStream byteCounter;
@@ -63,6 +64,8 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * an InputStream to read from instead. This is used when flushing the buffer into some other
    * destination.
    */
+  protected abstract void flushWriter() throws IOException;
+
   protected abstract void closeWriter() throws IOException;
 
   public SerializableBuffer withCompression(final boolean useCompression) {
@@ -93,11 +96,21 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
   }
 
+  @Override
   public String getFilename() throws IOException {
+    if (useCompression && !bufferStorage.getFilename().endsWith(GZ_SUFFIX)) {
+      return bufferStorage.getFilename() + GZ_SUFFIX;
+    }
     return bufferStorage.getFilename();
   }
 
+  @Override
   public File getFile() throws IOException {
+    if (useCompression && !bufferStorage.getFilename().endsWith(GZ_SUFFIX)) {
+      if (bufferStorage.getFile().renameTo(new File(bufferStorage.getFilename() + GZ_SUFFIX))) {
+        LOGGER.info("Renaming compressed file to include .gz file extension");
+      }
+    }
     return bufferStorage.getFile();
   }
 
@@ -113,11 +126,13 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   @Override
   public void flush() throws IOException {
     if (inputStream == null && !isClosed) {
-      closeWriter();
+      flushWriter();
       if (compressedBuffer != null) {
-        // we need to close the gzip stream to finish compression and write trailer data.
+        LOGGER.info("Wrapping up compression and write GZIP trailer data.");
+        compressedBuffer.flush();
         compressedBuffer.close();
       }
+      closeWriter();
       bufferStorage.close();
       inputStream = convertToInputStream();
       LOGGER.info("Finished writing data to {} ({})", getFilename(), FileUtils.byteCountToDisplaySize(byteCounter.getCount()));
@@ -132,20 +147,27 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   @Override
   public void close() throws Exception {
     if (!isClosed) {
-      inputStream.close();
+      // inputStream can be null if the accept method encounters
+      // an error before inputStream is initialized
+      if (inputStream != null) {
+        inputStream.close();
+      }
       bufferStorage.deleteFile();
       isClosed = true;
     }
   }
 
+  @Override
   public long getMaxTotalBufferSizeInBytes() {
     return bufferStorage.getMaxTotalBufferSizeInBytes();
   }
 
+  @Override
   public long getMaxPerStreamBufferSizeInBytes() {
     return bufferStorage.getMaxPerStreamBufferSizeInBytes();
   }
 
+  @Override
   public int getMaxConcurrentStreamsInBuffer() {
     return bufferStorage.getMaxConcurrentStreamsInBuffer();
   }

@@ -12,7 +12,17 @@ import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, PROPERTIES_PARAM_MAX_LENGTH, Companies, Deals, Engagements, Products, Stream, Workflows, split_properties
+from source_hubspot.streams import (
+    API,
+    PROPERTIES_PARAM_MAX_LENGTH,
+    Companies,
+    Deals,
+    Engagements,
+    Products,
+    Stream,
+    Workflows,
+    split_properties,
+)
 
 NUMBER_OF_PROPERTIES = 2000
 
@@ -408,57 +418,65 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     """
 
     # Mocking Request
-    requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?hapikey=test_api_key&count=250", [
-        {
-            "json": {
-                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250)],
-                "hasMore": True,
-                "offset": 250
+    requests_mock.register_uri(
+        "GET",
+        "/engagements/v1/engagements/paged?hapikey=test_api_key&count=250",
+        [
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250)],
+                    "hasMore": True,
+                    "offset": 250,
+                },
+                "status_code": 200,
             },
-            "status_code": 200,
-        },
-        {
-            "json": {
-                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250, 500)],
-                "hasMore": True,
-                "offset": 500
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250, 500)],
+                    "hasMore": True,
+                    "offset": 500,
+                },
+                "status_code": 200,
             },
-            "status_code": 200,
-        },
-        {
-            "json": {
-                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595251}} for y in range(500, 600)],
-                "hasMore": False
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595251}} for y in range(500, 600)],
+                    "hasMore": False,
+                },
+                "status_code": 200,
             },
-            "status_code": 200,
-        }
-    ])
+        ],
+    )
 
-    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", [
-        {
-            "json": {
-                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
-                "hasMore": True,
-                "offset": 100
+    requests_mock.register_uri(
+        "GET",
+        "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100",
+        [
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
+                    "hasMore": True,
+                    "offset": 100,
+                },
+                "status_code": 200,
             },
-            "status_code": 200,
-        },
-        {
-            "json": {
-                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100, 200)],
-                "hasMore": True,
-                "offset": 200
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100, 200)],
+                    "hasMore": True,
+                    "offset": 200,
+                },
+                "status_code": 200,
             },
-            "status_code": 200,
-        },
-        {
-            "json": {
-                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(200, 250)],
-                "hasMore": False
+            {
+                "json": {
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(200, 250)],
+                    "hasMore": False,
+                },
+                "status_code": 200,
             },
-            "status_code": 200,
-        }
-    ])
+        ],
+    )
 
     # Create test_stream instance for full refresh.
     test_stream = Engagements(**common_params)
@@ -485,7 +503,7 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
             "json": {
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
                 "hasMore": True,
-                "offset": x*100
+                "offset": x * 100,
             },
             "status_code": 200,
         }

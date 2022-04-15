@@ -18,7 +18,7 @@ jobs:
         id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ secrets.SLASH_COMMAND_PAT }}
+          token: ${{ secrets.DAVINCHIA_PAT }}
           commands: |
             test
             test-performance
