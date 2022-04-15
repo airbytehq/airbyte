@@ -85,12 +85,12 @@
         }
       }
     },
-    
+
     "tags": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
-        }  
-      }      
+      }
+    }
   }
 }
