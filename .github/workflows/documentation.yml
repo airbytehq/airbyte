@@ -32,5 +32,6 @@ jobs:
       # Install and build Docusaurus website
       - name: Deploy docs to production (it's weird)
         run: ./tools/bin/deploy_docusaurus
-        env: GITHUB_TOKEN: ${{ secrets.OCTAVIA_PAT }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.OCTAVIA_PAT }}
 
