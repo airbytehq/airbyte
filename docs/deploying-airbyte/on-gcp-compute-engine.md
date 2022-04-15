@@ -7,7 +7,11 @@
 :information_source: These steps only need to be done once (no matter how many people use the Compute Engine instance)
 
 
-### Set up a Google Cloud Service account
+### Setup steps for a specific Airbyte Source or Destination
+
+#### Google Cloud SQL Database
+
+Set up a Google Cloud Service account
 1. Create a service account (if you do not already have one)
    1. Follow the instructions on either the `Console` or `gcloud` tab: https://cloud.google.com/iam/docs/creating-managing-service-accounts
    1. Assign these roles to the service account
