@@ -46,11 +46,8 @@ if ! git config --list --global | grep --silent user.email; then
   set +o xtrace
   echo -e "$blue_text""github email not found adding Octavia's""$default_text"
   set -o xtrace
-  git config --global user.email=davin@airbyte.io
-  git config --global user.name=octavia-squidington-iii
-  GIT_USER=octavia-squidington-iii
-  CURRENT_BRANCH=master
-  USE_SSH=true
+  git config --global user.email="octavia-squidington-iii@users.noreply.github.com"
+  git config --global user.name="octavia-squidington-iii"
 fi
 
 cd docusaurus
@@ -62,8 +59,9 @@ yarn install
 # generate static content
 yarn build
 
+# context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
 # write a prod website to airbytehq/airbyte gh_pages branch
-yarn run publish-gh-pages
+GIT_USER=octavia-squidington-iii yarn run publish-gh-pages
 
 
 
