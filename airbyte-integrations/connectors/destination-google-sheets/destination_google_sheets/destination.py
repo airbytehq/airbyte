@@ -2,14 +2,16 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
+import time
 from typing import Any, Iterable, Mapping
+from xml.etree.ElementPath import prepare_parent
 from google.auth.exceptions import RefreshError
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
-from .auth import GoogleSpreadsheetsAuth
-from .helpers import connection_test_write
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Type
+from .client import GoogleSpreadsheetsClient
+from .writer import GoogleSpreadsheetsWriter
+from .helpers import connection_test_write, get_headers_from_schema
 
 
 class DestinationGoogleSheets(Destination):
@@ -25,7 +27,7 @@ class DestinationGoogleSheets(Destination):
         """
         
         try:
-            client = GoogleSpreadsheetsAuth.authenticate(config)
+            client = GoogleSpreadsheetsClient(config).client
             if connection_test_write(client, config) is True:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except RefreshError as token_err:
@@ -39,19 +41,31 @@ class DestinationGoogleSheets(Destination):
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
-
-        This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
-        in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
-        successfully persisted to the destination. This is used to ensure fault tolerance in the case that a sync fails before fully completing,
-        then the source is given the last state message output from this method as the starting point of the next sync.
-
-        :param config: dict of JSON configuration matching the configuration declared in spec.json
-        :param configured_catalog: The Configured Catalog describing the schema of the data being received and how it should be persisted in the
-                                    destination
-        :param input_messages: The stream of input messages received from the source
-        :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
+        writer = GoogleSpreadsheetsWriter(GoogleSpreadsheetsClient(config))
+                
+        for configured_stream in configured_catalog.streams:
+            writer.buffer_stream(configured_stream)
+            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                writer.delete_stream_entries(configured_stream.stream.name)
+                writer.set_headers(configured_stream.stream.name, get_headers_from_schema(configured_stream))
+
+        for message in input_messages:
+            if message.type == Type.STATE:
+                yield message
+            elif message.type == Type.RECORD:
+                record = message.record
+                writer.add_to_buffer(record.stream, record.data)
+                writer.queue_write_operation(record.stream)
+            else:
+                continue
+        # if there are any records left
+        if writer.buffer_has_more_values():
+            writer.write_whats_left()
         
-        pass
+        
+                
+        
+
+        

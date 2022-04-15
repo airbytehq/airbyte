@@ -50,6 +50,7 @@ python main.py spec
 python main.py check --config secrets/config_oauth.json
 python main.py discover --config secrets/config_oauth.json
 python main.py write --config secrets/config_oauth.json --catalog integration_tests/configured_catalog.json
+cat integration_tests/messages.txt | python main.py write --config secrets/config_oauth.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image

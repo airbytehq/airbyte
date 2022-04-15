@@ -8,6 +8,7 @@ import pandas as pd
 from pygsheets import client, Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound
 from requests import codes as status_codes
+from airbyte_cdk.models import AirbyteStream
     
 def error_handler(error) -> bool:
     return error.resp.status != status_codes.TOO_MANY_REQUESTS
@@ -26,8 +27,8 @@ def create_test_df() -> pd.DataFrame:
     return data
 
 def connection_test_write(client: client, config: str) -> bool:
-    wks_name = "_airbyte_conn_test"
-    test_range = (0,0)
+    wks_name: str = "_airbyte_conn_test"
+    test_range: tuple = (0,0)
     
     sh = client.open_by_key(get_spreadsheet_id(config["spreadsheet_id"]))
     
@@ -50,11 +51,17 @@ def connection_test_write(client: client, config: str) -> bool:
     try:
         if sh.worksheets('title', wks_name):
             remove_test_wks(sh)
-        result = check_values(populate_test_wks(add_test_wks(sh)))
+        result: bool = check_values(populate_test_wks(add_test_wks(sh)))
     except WorksheetNotFound:
-        result = check_values(populate_test_wks(add_test_wks(sh)))
+        result: bool = check_values(populate_test_wks(add_test_wks(sh)))
     finally:
         remove_test_wks(sh)
 
     return result
+
+def get_headers_from_schema(configured_stream: AirbyteStream):
+    headers = []
+    for header in configured_stream.stream.json_schema.get('properties').get('data').get('properties').keys():
+        headers.append(header)
+    return headers
     
