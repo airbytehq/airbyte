@@ -61,7 +61,7 @@ yarn build
 
 # context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
 # write a prod website to airbytehq/airbyte gh_pages branch
-GIT_USER=octavia-squidington-iii yarn run publish-gh-pages
+GIT_USER=octavia-squidington-iii yarn run deploy
 
 
 
