@@ -31,7 +31,7 @@ pwd
 
 
 # Yarn check (which is commonly used to check for program existance)
-if ! which -s yarn; then
+if ! which yarn > /dev/null; then
   echo -e "$red_text""yarn not found HALP!!\n\n""$default_text"
   exit 1
 fi
