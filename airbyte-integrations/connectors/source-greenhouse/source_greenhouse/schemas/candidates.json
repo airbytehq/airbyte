@@ -178,16 +178,16 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "last_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "id": {
                 "type": "integer"
               },
               "first_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "employee_id": {
                 "type": ["null", "string"]
