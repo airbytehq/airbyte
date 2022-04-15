@@ -137,7 +137,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       if (!missingPermissions.isEmpty()) {
         LOGGER.warn("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
-
+        // if user or service account has a conditional binding for processing handling in the GCS bucket,
+        // testIamPermissions will not work properly, so we use the standard check method of GCS destination
         final GcsDestination gcsDestination = new GcsDestination();
         final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
         return gcsDestination.check(gcsJsonNodeConfig);
