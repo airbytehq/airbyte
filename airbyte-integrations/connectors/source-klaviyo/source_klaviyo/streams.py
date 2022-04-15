@@ -4,7 +4,8 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
-
+import datetime
+import time
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -99,7 +100,13 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         state_ts = int(current_stream_state.get(self.cursor_field, 0))
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), state_ts)}
+        latest_record = latest_record.get(self.cursor_field)
+
+        if isinstance(latest_record, str):
+            latest_record = datetime.datetime.strptime(latest_record,"%Y-%m-%d %H:%M:%S")
+            latest_record = datetime.datetime.timestamp(latest_record)
+
+        return {self.cursor_field: max(latest_record, state_ts)}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """

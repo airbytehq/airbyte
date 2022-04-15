@@ -104,9 +104,9 @@ class Event(BaseSchemaModel):
     statistic_id: str
     event_properties: dict
     person: dict
-    flow_id: str
-    campaign_id: str
-    flow_message_id: str
+    flow_id: Optional[str]
+    campaign_id: Optional[str]
+    flow_message_id: Optional[str]
 
 
 class Flow(BaseSchemaModel):
@@ -115,7 +115,7 @@ class Flow(BaseSchemaModel):
     status: str
     created: datetime
     updated: datetime
-    customer_filter: dict
+    customer_filter: Optional[dict]
     trigger: dict
 
 
