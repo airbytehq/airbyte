@@ -4,7 +4,6 @@
 
 import time
 from typing import Any, Iterable, Mapping
-from xml.etree.ElementPath import prepare_parent
 from google.auth.exceptions import RefreshError
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -28,7 +27,7 @@ class DestinationGoogleSheets(Destination):
         
         try:
             client = GoogleSpreadsheetsClient(config).client
-            if connection_test_write(client, config) is True:
+            if connection_test_write(client) is True:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except RefreshError as token_err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{token_err}")
@@ -47,10 +46,10 @@ class DestinationGoogleSheets(Destination):
                 
         for configured_stream in configured_catalog.streams:
             writer.buffer_stream(configured_stream)
+            writer.set_headers(configured_stream.stream.name, get_headers_from_schema(configured_stream))
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 writer.delete_stream_entries(configured_stream.stream.name)
-                writer.set_headers(configured_stream.stream.name, get_headers_from_schema(configured_stream))
-
+                
         for message in input_messages:
             if message.type == Type.STATE:
                 yield message
@@ -61,7 +60,7 @@ class DestinationGoogleSheets(Destination):
             else:
                 continue
         # if there are any records left
-        if writer.buffer_has_more_values():
+        if writer.buffer_has_more_records():
             writer.write_whats_left()
         
         

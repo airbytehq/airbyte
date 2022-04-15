@@ -8,8 +8,6 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "pygsheets",
-    "pendulum",
-    "pandas",
     "google-auth-oauthlib",
     "google-api-python-client",
 ]
