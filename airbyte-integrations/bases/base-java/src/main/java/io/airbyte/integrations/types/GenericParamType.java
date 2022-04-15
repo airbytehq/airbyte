@@ -2,7 +2,7 @@ package io.airbyte.integrations.types;
 
 /**
  * This class used as the generic type parameter to define the type of the parameter.
- * Could be useful fot specific situations when we need to have a generic type parameter
+ * Could be useful for specific situations when we need to have a generic type parameter
  *
  * @see io.airbyte.integrations.destination.redshift.RedshiftDestination
  */
