@@ -38,7 +38,11 @@ fi
 
 set -o xtrace
 
-GIT_USER="octavia-squidington-iii"
+if ! git config --list --global | grep --silent user.email; then
+  echo -e "$blue_text""github email not found adding Octavia's""$default_text"
+  git config --global user.email=davin@airbyte.io
+  git config --global user.name=octavia-squidington-iii
+fi
 
 cd docusaurus
 pwd
