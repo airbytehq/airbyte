@@ -23,7 +23,7 @@ Change Management:
 
  * OpenAPI spec version: 1.0.0
  */
-import { req } from "./UseApiOverride";
+import { useApiOverride } from "./useApiOverride";
 /**
  * Input failed validation
  */
@@ -1411,8 +1411,8 @@ export interface SourceSearch {
 /**
  * @summary Creates a workspace
  */
-export const createWorkspace = (workspaceCreate: WorkspaceCreate) => {
-  return req<WorkspaceRead>({
+export const useCreateWorkspace = (workspaceCreate: WorkspaceCreate) => {
+  return useApiOverride<WorkspaceRead>({
     url: `/v1/workspaces/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1423,8 +1423,8 @@ export const createWorkspace = (workspaceCreate: WorkspaceCreate) => {
 /**
  * @summary Deletes a workspace
  */
-export const deleteWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<void>({
+export const useDeleteWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<void>({
     url: `/v1/workspaces/delete`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1435,15 +1435,15 @@ export const deleteWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) 
 /**
  * @summary List all workspaces registered in the current Airbyte deployment
  */
-export const listWorkspaces = () => {
-  return req<WorkspaceReadList>({ url: `/v1/workspaces/list`, method: "post" });
+export const useListWorkspaces = () => {
+  return useApiOverride<WorkspaceReadList>({ url: `/v1/workspaces/list`, method: "post" });
 };
 
 /**
  * @summary Find workspace by ID
  */
-export const getWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<WorkspaceRead>({
+export const useGetWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<WorkspaceRead>({
     url: `/v1/workspaces/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1454,8 +1454,8 @@ export const getWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => 
 /**
  * @summary Find workspace by slug
  */
-export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody) => {
-  return req<WorkspaceRead>({
+export const useGetWorkspaceBySlug = (slugRequestBody: SlugRequestBody) => {
+  return useApiOverride<WorkspaceRead>({
     url: `/v1/workspaces/get_by_slug`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1466,8 +1466,8 @@ export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody) => {
 /**
  * @summary Update workspace state
  */
-export const updateWorkspace = (workspaceUpdate: WorkspaceUpdate) => {
-  return req<WorkspaceRead>({
+export const useUpdateWorkspace = (workspaceUpdate: WorkspaceUpdate) => {
+  return useApiOverride<WorkspaceRead>({
     url: `/v1/workspaces/update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1478,8 +1478,8 @@ export const updateWorkspace = (workspaceUpdate: WorkspaceUpdate) => {
 /**
  * @summary Update workspace name
  */
-export const updateWorkspaceName = (workspaceUpdateName: WorkspaceUpdateName) => {
-  return req<WorkspaceRead>({
+export const useUpdateWorkspaceName = (workspaceUpdateName: WorkspaceUpdateName) => {
+  return useApiOverride<WorkspaceRead>({
     url: `/v1/workspaces/update_name`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1490,8 +1490,8 @@ export const updateWorkspaceName = (workspaceUpdateName: WorkspaceUpdateName) =>
 /**
  * @summary Update workspace feedback state
  */
-export const updateWorkspaceFeedback = (workspaceGiveFeedback: WorkspaceGiveFeedback) => {
-  return req<void>({
+export const useUpdateWorkspaceFeedback = (workspaceGiveFeedback: WorkspaceGiveFeedback) => {
+  return useApiOverride<void>({
     url: `/v1/workspaces/tag_feedback_status_as_done`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1502,8 +1502,8 @@ export const updateWorkspaceFeedback = (workspaceGiveFeedback: WorkspaceGiveFeed
 /**
  * @summary Try sending a notifications
  */
-export const tryNotificationConfig = (notification: Notification) => {
-  return req<NotificationRead>({
+export const useTryNotificationConfig = (notification: Notification) => {
+  return useApiOverride<NotificationRead>({
     url: `/v1/notifications/try`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1514,8 +1514,8 @@ export const tryNotificationConfig = (notification: Notification) => {
 /**
  * @summary Creates a sourceDefinition
  */
-export const createSourceDefinition = (sourceDefinitionCreate: SourceDefinitionCreate) => {
-  return req<SourceDefinitionRead>({
+export const useCreateSourceDefinition = (sourceDefinitionCreate: SourceDefinitionCreate) => {
+  return useApiOverride<SourceDefinitionRead>({
     url: `/v1/source_definitions/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1526,8 +1526,8 @@ export const createSourceDefinition = (sourceDefinitionCreate: SourceDefinitionC
 /**
  * @summary Update a sourceDefinition
  */
-export const updateSourceDefinition = (sourceDefinitionUpdate: SourceDefinitionUpdate) => {
-  return req<SourceDefinitionRead>({
+export const useUpdateSourceDefinition = (sourceDefinitionUpdate: SourceDefinitionUpdate) => {
+  return useApiOverride<SourceDefinitionRead>({
     url: `/v1/source_definitions/update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1538,23 +1538,23 @@ export const updateSourceDefinition = (sourceDefinitionUpdate: SourceDefinitionU
 /**
  * @summary List all the sourceDefinitions the current Airbyte deployment is configured to use
  */
-export const listSourceDefinitions = () => {
-  return req<SourceDefinitionReadList>({ url: `/v1/source_definitions/list`, method: "post" });
+export const useListSourceDefinitions = () => {
+  return useApiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list`, method: "post" });
 };
 
 /**
  * Guaranteed to retrieve the latest information on supported sources.
  * @summary List the latest sourceDefinitions Airbyte supports
  */
-export const listLatestSourceDefinitions = () => {
-  return req<SourceDefinitionReadList>({ url: `/v1/source_definitions/list_latest`, method: "post" });
+export const useListLatestSourceDefinitions = () => {
+  return useApiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list_latest`, method: "post" });
 };
 
 /**
  * @summary Get source
  */
-export const getSourceDefinition = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
-  return req<SourceDefinitionRead>({
+export const useGetSourceDefinition = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
+  return useApiOverride<SourceDefinitionRead>({
     url: `/v1/source_definitions/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1565,8 +1565,8 @@ export const getSourceDefinition = (sourceDefinitionIdRequestBody: SourceDefinit
 /**
  * @summary Delete a source definition
  */
-export const deleteSourceDefinition = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
-  return req<void>({
+export const useDeleteSourceDefinition = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
+  return useApiOverride<void>({
     url: `/v1/source_definitions/delete`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1577,8 +1577,8 @@ export const deleteSourceDefinition = (sourceDefinitionIdRequestBody: SourceDefi
 /**
  * @summary List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used by admins to view and modify a given workspace's grants.
  */
-export const listPrivateSourceDefinitions = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<PrivateSourceDefinitionReadList>({
+export const useListPrivateSourceDefinitions = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<PrivateSourceDefinitionReadList>({
     url: `/v1/source_definitions/list_private`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1589,8 +1589,8 @@ export const listPrivateSourceDefinitions = (workspaceIdRequestBody: WorkspaceId
 /**
  * @summary List all the sourceDefinitions the given workspace is configured to use
  */
-export const listSourceDefinitionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<SourceDefinitionReadList>({
+export const useListSourceDefinitionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<SourceDefinitionReadList>({
     url: `/v1/source_definitions/list_for_workspace`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1601,8 +1601,8 @@ export const listSourceDefinitionsForWorkspace = (workspaceIdRequestBody: Worksp
 /**
  * @summary Creates a custom sourceDefinition for the given workspace
  */
-export const createCustomSourceDefinition = (customSourceDefinitionCreate: CustomSourceDefinitionCreate) => {
-  return req<SourceDefinitionRead>({
+export const useCreateCustomSourceDefinition = (customSourceDefinitionCreate: CustomSourceDefinitionCreate) => {
+  return useApiOverride<SourceDefinitionRead>({
     url: `/v1/source_definitions/create_custom`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1613,10 +1613,10 @@ export const createCustomSourceDefinition = (customSourceDefinitionCreate: Custo
 /**
  * @summary Get a sourceDefinition that is configured for the given workspace
  */
-export const getSourceDefinitionForWorkspace = (
+export const useGetSourceDefinitionForWorkspace = (
   sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId
 ) => {
-  return req<SourceDefinitionRead>({
+  return useApiOverride<SourceDefinitionRead>({
     url: `/v1/source_definitions/get_for_workspace`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1627,8 +1627,8 @@ export const getSourceDefinitionForWorkspace = (
 /**
  * @summary Update a custom sourceDefinition for the given workspace
  */
-export const updateCustomSourceDefinition = (customSourceDefinitionUpdate: CustomSourceDefinitionUpdate) => {
-  return req<SourceDefinitionRead>({
+export const useUpdateCustomSourceDefinition = (customSourceDefinitionUpdate: CustomSourceDefinitionUpdate) => {
+  return useApiOverride<SourceDefinitionRead>({
     url: `/v1/source_definitions/update_custom`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1639,8 +1639,10 @@ export const updateCustomSourceDefinition = (customSourceDefinitionUpdate: Custo
 /**
  * @summary Delete a custom source definition for the given workspace
  */
-export const deleteCustomSourceDefinition = (sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId) => {
-  return req<void>({
+export const useDeleteCustomSourceDefinition = (
+  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId
+) => {
+  return useApiOverride<void>({
     url: `/v1/source_definitions/delete_custom`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1651,10 +1653,10 @@ export const deleteCustomSourceDefinition = (sourceDefinitionIdWithWorkspaceId: 
 /**
  * @summary grant a private, non-custom sourceDefinition to a given workspace
  */
-export const grantSourceDefinitionToWorkspace = (
+export const useGrantSourceDefinitionToWorkspace = (
   sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId
 ) => {
-  return req<PrivateSourceDefinitionRead>({
+  return useApiOverride<PrivateSourceDefinitionRead>({
     url: `/v1/source_definitions/grant_definition`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1665,10 +1667,10 @@ export const grantSourceDefinitionToWorkspace = (
 /**
  * @summary revoke a grant to a private, non-custom sourceDefinition from a given workspace
  */
-export const revokeSourceDefinitionFromWorkspace = (
+export const useRevokeSourceDefinitionFromWorkspace = (
   sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId
 ) => {
-  return req<void>({
+  return useApiOverride<void>({
     url: `/v1/source_definitions/revoke_definition`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1679,8 +1681,8 @@ export const revokeSourceDefinitionFromWorkspace = (
 /**
  * @summary Get specification for a SourceDefinition.
  */
-export const getSourceDefinitionSpecification = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
-  return req<SourceDefinitionSpecificationRead>({
+export const useGetSourceDefinitionSpecification = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
+  return useApiOverride<SourceDefinitionSpecificationRead>({
     url: `/v1/source_definition_specifications/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1691,8 +1693,8 @@ export const getSourceDefinitionSpecification = (sourceDefinitionIdRequestBody: 
 /**
  * @summary Create a source
  */
-export const createSource = (sourceCreate: SourceCreate) => {
-  return req<SourceRead>({
+export const useCreateSource = (sourceCreate: SourceCreate) => {
+  return useApiOverride<SourceRead>({
     url: `/v1/sources/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1703,8 +1705,8 @@ export const createSource = (sourceCreate: SourceCreate) => {
 /**
  * @summary Update a source
  */
-export const updateSource = (sourceUpdate: SourceUpdate) => {
-  return req<SourceRead>({
+export const useUpdateSource = (sourceUpdate: SourceUpdate) => {
+  return useApiOverride<SourceRead>({
     url: `/v1/sources/update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1716,8 +1718,8 @@ export const updateSource = (sourceUpdate: SourceUpdate) => {
  * List sources for workspace. Does not return deleted sources.
  * @summary List sources for workspace
  */
-export const listSourcesForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<SourceReadList>({
+export const useListSourcesForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<SourceReadList>({
     url: `/v1/sources/list`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1728,8 +1730,8 @@ export const listSourcesForWorkspace = (workspaceIdRequestBody: WorkspaceIdReque
 /**
  * @summary Get source
  */
-export const getSource = (sourceIdRequestBody: SourceIdRequestBody) => {
-  return req<SourceRead>({
+export const useGetSource = (sourceIdRequestBody: SourceIdRequestBody) => {
+  return useApiOverride<SourceRead>({
     url: `/v1/sources/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1740,8 +1742,8 @@ export const getSource = (sourceIdRequestBody: SourceIdRequestBody) => {
 /**
  * @summary Search sources
  */
-export const searchSources = (sourceSearch: SourceSearch) => {
-  return req<SourceReadList>({
+export const useSearchSources = (sourceSearch: SourceSearch) => {
+  return useApiOverride<SourceReadList>({
     url: `/v1/sources/search`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1752,8 +1754,8 @@ export const searchSources = (sourceSearch: SourceSearch) => {
 /**
  * @summary Clone source
  */
-export const cloneSource = (sourceIdRequestBody: SourceIdRequestBody) => {
-  return req<SourceRead>({
+export const useCloneSource = (sourceIdRequestBody: SourceIdRequestBody) => {
+  return useApiOverride<SourceRead>({
     url: `/v1/sources/clone`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1764,8 +1766,8 @@ export const cloneSource = (sourceIdRequestBody: SourceIdRequestBody) => {
 /**
  * @summary Delete a source
  */
-export const deleteSource = (sourceIdRequestBody: SourceIdRequestBody) => {
-  return req<void>({
+export const useDeleteSource = (sourceIdRequestBody: SourceIdRequestBody) => {
+  return useApiOverride<void>({
     url: `/v1/sources/delete`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1776,8 +1778,8 @@ export const deleteSource = (sourceIdRequestBody: SourceIdRequestBody) => {
 /**
  * @summary Check connection to the source
  */
-export const checkConnectionToSource = (sourceIdRequestBody: SourceIdRequestBody) => {
-  return req<CheckConnectionRead>({
+export const useCheckConnectionToSource = (sourceIdRequestBody: SourceIdRequestBody) => {
+  return useApiOverride<CheckConnectionRead>({
     url: `/v1/sources/check_connection`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1788,8 +1790,8 @@ export const checkConnectionToSource = (sourceIdRequestBody: SourceIdRequestBody
 /**
  * @summary Check connection for a proposed update to a source
  */
-export const checkConnectionToSourceForUpdate = (sourceUpdate: SourceUpdate) => {
-  return req<CheckConnectionRead>({
+export const useCheckConnectionToSourceForUpdate = (sourceUpdate: SourceUpdate) => {
+  return useApiOverride<CheckConnectionRead>({
     url: `/v1/sources/check_connection_for_update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1800,8 +1802,8 @@ export const checkConnectionToSourceForUpdate = (sourceUpdate: SourceUpdate) => 
 /**
  * @summary Discover the schema catalog of the source
  */
-export const discoverSchemaForSource = (sourceDiscoverSchemaRequestBody: SourceDiscoverSchemaRequestBody) => {
-  return req<SourceDiscoverSchemaRead>({
+export const useDiscoverSchemaForSource = (sourceDiscoverSchemaRequestBody: SourceDiscoverSchemaRequestBody) => {
+  return useApiOverride<SourceDiscoverSchemaRead>({
     url: `/v1/sources/discover_schema`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1812,8 +1814,8 @@ export const discoverSchemaForSource = (sourceDiscoverSchemaRequestBody: SourceD
 /**
  * @summary Creates a destinationsDefinition
  */
-export const createDestinationDefinition = (destinationDefinitionCreate: DestinationDefinitionCreate) => {
-  return req<DestinationDefinitionRead>({
+export const useCreateDestinationDefinition = (destinationDefinitionCreate: DestinationDefinitionCreate) => {
+  return useApiOverride<DestinationDefinitionRead>({
     url: `/v1/destination_definitions/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1824,8 +1826,8 @@ export const createDestinationDefinition = (destinationDefinitionCreate: Destina
 /**
  * @summary Update destinationDefinition
  */
-export const updateDestinationDefinition = (destinationDefinitionUpdate: DestinationDefinitionUpdate) => {
-  return req<DestinationDefinitionRead>({
+export const useUpdateDestinationDefinition = (destinationDefinitionUpdate: DestinationDefinitionUpdate) => {
+  return useApiOverride<DestinationDefinitionRead>({
     url: `/v1/destination_definitions/update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1836,23 +1838,26 @@ export const updateDestinationDefinition = (destinationDefinitionUpdate: Destina
 /**
  * @summary List all the destinationDefinitions the current Airbyte deployment is configured to use
  */
-export const listDestinationDefinitions = () => {
-  return req<DestinationDefinitionReadList>({ url: `/v1/destination_definitions/list`, method: "post" });
+export const useListDestinationDefinitions = () => {
+  return useApiOverride<DestinationDefinitionReadList>({ url: `/v1/destination_definitions/list`, method: "post" });
 };
 
 /**
  * Guaranteed to retrieve the latest information on supported destinations.
  * @summary List the latest destinationDefinitions Airbyte supports
  */
-export const listLatestDestinationDefinitions = () => {
-  return req<DestinationDefinitionReadList>({ url: `/v1/destination_definitions/list_latest`, method: "post" });
+export const useListLatestDestinationDefinitions = () => {
+  return useApiOverride<DestinationDefinitionReadList>({
+    url: `/v1/destination_definitions/list_latest`,
+    method: "post",
+  });
 };
 
 /**
  * @summary Get destinationDefinition
  */
-export const getDestinationDefinition = (destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody) => {
-  return req<DestinationDefinitionRead>({
+export const useGetDestinationDefinition = (destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody) => {
+  return useApiOverride<DestinationDefinitionRead>({
     url: `/v1/destination_definitions/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1863,8 +1868,10 @@ export const getDestinationDefinition = (destinationDefinitionIdRequestBody: Des
 /**
  * @summary Delete a destination definition
  */
-export const deleteDestinationDefinition = (destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody) => {
-  return req<void>({
+export const useDeleteDestinationDefinition = (
+  destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody
+) => {
+  return useApiOverride<void>({
     url: `/v1/destination_definitions/delete`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1875,8 +1882,8 @@ export const deleteDestinationDefinition = (destinationDefinitionIdRequestBody: 
 /**
  * @summary List all private, non-custom destinationDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used by admins to view and modify a given workspace's grants.
  */
-export const listPrivateDestinationDefinitions = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<PrivateDestinationDefinitionReadList>({
+export const useListPrivateDestinationDefinitions = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<PrivateDestinationDefinitionReadList>({
     url: `/v1/destination_definitions/list_private`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1887,8 +1894,8 @@ export const listPrivateDestinationDefinitions = (workspaceIdRequestBody: Worksp
 /**
  * @summary List all the destinationDefinitions the given workspace is configured to use
  */
-export const listDestinationDefinitionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<DestinationDefinitionReadList>({
+export const useListDestinationDefinitionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<DestinationDefinitionReadList>({
     url: `/v1/destination_definitions/list_for_workspace`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1899,10 +1906,10 @@ export const listDestinationDefinitionsForWorkspace = (workspaceIdRequestBody: W
 /**
  * @summary Creates a custom destinationDefinition for the given workspace
  */
-export const createCustomDestinationDefinition = (
+export const useCreateCustomDestinationDefinition = (
   customDestinationDefinitionCreate: CustomDestinationDefinitionCreate
 ) => {
-  return req<DestinationDefinitionRead>({
+  return useApiOverride<DestinationDefinitionRead>({
     url: `/v1/destination_definitions/create_custom`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1913,10 +1920,10 @@ export const createCustomDestinationDefinition = (
 /**
  * @summary Get a destinationDefinition that is configured for the given workspace
  */
-export const getDestinationDefinitionForWorkspace = (
+export const useGetDestinationDefinitionForWorkspace = (
   destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId
 ) => {
-  return req<DestinationDefinitionRead>({
+  return useApiOverride<DestinationDefinitionRead>({
     url: `/v1/destination_definitions/get_for_workspace`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1927,10 +1934,10 @@ export const getDestinationDefinitionForWorkspace = (
 /**
  * @summary Update a custom destinationDefinition for the given workspace
  */
-export const updateCustomDestinationDefinition = (
+export const useUpdateCustomDestinationDefinition = (
   customDestinationDefinitionUpdate: CustomDestinationDefinitionUpdate
 ) => {
-  return req<DestinationDefinitionRead>({
+  return useApiOverride<DestinationDefinitionRead>({
     url: `/v1/destination_definitions/update_custom`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1941,10 +1948,10 @@ export const updateCustomDestinationDefinition = (
 /**
  * @summary Delete a custom destination definition for the given workspace
  */
-export const deleteCustomDestinationDefinition = (
+export const useDeleteCustomDestinationDefinition = (
   destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId
 ) => {
-  return req<void>({
+  return useApiOverride<void>({
     url: `/v1/destination_definitions/delete_custom`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1955,10 +1962,10 @@ export const deleteCustomDestinationDefinition = (
 /**
  * @summary grant a private, non-custom destinationDefinition to a given workspace
  */
-export const grantDestinationDefinitionToWorkspace = (
+export const useGrantDestinationDefinitionToWorkspace = (
   destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId
 ) => {
-  return req<PrivateDestinationDefinitionRead>({
+  return useApiOverride<PrivateDestinationDefinitionRead>({
     url: `/v1/destination_definitions/grant_definition`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1969,10 +1976,10 @@ export const grantDestinationDefinitionToWorkspace = (
 /**
  * @summary revoke a grant to a private, non-custom destinationDefinition from a given workspace
  */
-export const revokeDestinationDefinitionFromWorkspace = (
+export const useRevokeDestinationDefinitionFromWorkspace = (
   destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId
 ) => {
-  return req<void>({
+  return useApiOverride<void>({
     url: `/v1/destination_definitions/revoke_definition`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1983,10 +1990,10 @@ export const revokeDestinationDefinitionFromWorkspace = (
 /**
  * @summary Get specification for a destinationDefinition
  */
-export const getDestinationDefinitionSpecification = (
+export const useGetDestinationDefinitionSpecification = (
   destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody
 ) => {
-  return req<DestinationDefinitionSpecificationRead>({
+  return useApiOverride<DestinationDefinitionSpecificationRead>({
     url: `/v1/destination_definition_specifications/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -1997,8 +2004,8 @@ export const getDestinationDefinitionSpecification = (
 /**
  * @summary Create a destination
  */
-export const createDestination = (destinationCreate: DestinationCreate) => {
-  return req<DestinationRead>({
+export const useCreateDestination = (destinationCreate: DestinationCreate) => {
+  return useApiOverride<DestinationRead>({
     url: `/v1/destinations/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2009,8 +2016,8 @@ export const createDestination = (destinationCreate: DestinationCreate) => {
 /**
  * @summary Update a destination
  */
-export const updateDestination = (destinationUpdate: DestinationUpdate) => {
-  return req<DestinationRead>({
+export const useUpdateDestination = (destinationUpdate: DestinationUpdate) => {
+  return useApiOverride<DestinationRead>({
     url: `/v1/destinations/update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2021,8 +2028,8 @@ export const updateDestination = (destinationUpdate: DestinationUpdate) => {
 /**
  * @summary List configured destinations for a workspace
  */
-export const listDestinationsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<DestinationReadList>({
+export const useListDestinationsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<DestinationReadList>({
     url: `/v1/destinations/list`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2033,8 +2040,8 @@ export const listDestinationsForWorkspace = (workspaceIdRequestBody: WorkspaceId
 /**
  * @summary Get configured destination
  */
-export const getDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
-  return req<DestinationRead>({
+export const useGetDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
+  return useApiOverride<DestinationRead>({
     url: `/v1/destinations/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2045,8 +2052,8 @@ export const getDestination = (destinationIdRequestBody: DestinationIdRequestBod
 /**
  * @summary Search destinations
  */
-export const searchDestinations = (destinationSearch: DestinationSearch) => {
-  return req<DestinationReadList>({
+export const useSearchDestinations = (destinationSearch: DestinationSearch) => {
+  return useApiOverride<DestinationReadList>({
     url: `/v1/destinations/search`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2057,8 +2064,8 @@ export const searchDestinations = (destinationSearch: DestinationSearch) => {
 /**
  * @summary Check connection to the destination
  */
-export const checkConnectionToDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
-  return req<CheckConnectionRead>({
+export const useCheckConnectionToDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
+  return useApiOverride<CheckConnectionRead>({
     url: `/v1/destinations/check_connection`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2069,8 +2076,8 @@ export const checkConnectionToDestination = (destinationIdRequestBody: Destinati
 /**
  * @summary Check connection for a proposed update to a destination
  */
-export const checkConnectionToDestinationForUpdate = (destinationUpdate: DestinationUpdate) => {
-  return req<CheckConnectionRead>({
+export const useCheckConnectionToDestinationForUpdate = (destinationUpdate: DestinationUpdate) => {
+  return useApiOverride<CheckConnectionRead>({
     url: `/v1/destinations/check_connection_for_update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2081,8 +2088,8 @@ export const checkConnectionToDestinationForUpdate = (destinationUpdate: Destina
 /**
  * @summary Delete the destination
  */
-export const deleteDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
-  return req<void>({
+export const useDeleteDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
+  return useApiOverride<void>({
     url: `/v1/destinations/delete`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2093,8 +2100,8 @@ export const deleteDestination = (destinationIdRequestBody: DestinationIdRequest
 /**
  * @summary Clone destination
  */
-export const cloneDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
-  return req<DestinationRead>({
+export const useCloneDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
+  return useApiOverride<DestinationRead>({
     url: `/v1/destinations/clone`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2105,8 +2112,8 @@ export const cloneDestination = (destinationIdRequestBody: DestinationIdRequestB
 /**
  * @summary Create a connection between a source and a destination
  */
-export const createConnection = (connectionCreate: ConnectionCreate) => {
-  return req<ConnectionRead>({
+export const useCreateConnection = (connectionCreate: ConnectionCreate) => {
+  return useApiOverride<ConnectionRead>({
     url: `/v1/connections/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2117,8 +2124,8 @@ export const createConnection = (connectionCreate: ConnectionCreate) => {
 /**
  * @summary Update a connection
  */
-export const updateConnection = (connectionUpdate: ConnectionUpdate) => {
-  return req<ConnectionRead>({
+export const useUpdateConnection = (connectionUpdate: ConnectionUpdate) => {
+  return useApiOverride<ConnectionRead>({
     url: `/v1/connections/update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2131,7 +2138,7 @@ export const updateConnection = (connectionUpdate: ConnectionUpdate) => {
  * @summary Returns all connections for a workspace.
  */
 export const useListConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<ConnectionReadList>({
+  return useApiOverride<ConnectionReadList>({
     url: `/v1/connections/list`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2143,8 +2150,8 @@ export const useListConnectionsForWorkspace = (workspaceIdRequestBody: Workspace
  * List connections for workspace, including deleted connections.
  * @summary Returns all connections for a workspace, including deleted connections.
  */
-export const listAllConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<ConnectionReadList>({
+export const useListAllConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<ConnectionReadList>({
     url: `/v1/connections/list_all`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2155,8 +2162,8 @@ export const listAllConnectionsForWorkspace = (workspaceIdRequestBody: Workspace
 /**
  * @summary Get a connection
  */
-export const getConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return req<ConnectionRead>({
+export const useGetConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
+  return useApiOverride<ConnectionRead>({
     url: `/v1/connections/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2167,8 +2174,8 @@ export const getConnection = (connectionIdRequestBody: ConnectionIdRequestBody) 
 /**
  * @summary Fetch the current state for a connection.
  */
-export const getState = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return req<ConnectionState>({
+export const useGetState = (connectionIdRequestBody: ConnectionIdRequestBody) => {
+  return useApiOverride<ConnectionState>({
     url: `/v1/state/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2179,8 +2186,8 @@ export const getState = (connectionIdRequestBody: ConnectionIdRequestBody) => {
 /**
  * @summary Search connections
  */
-export const searchConnections = (connectionSearch: ConnectionSearch) => {
-  return req<ConnectionReadList>({
+export const useSearchConnections = (connectionSearch: ConnectionSearch) => {
+  return useApiOverride<ConnectionReadList>({
     url: `/v1/connections/search`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2191,8 +2198,8 @@ export const searchConnections = (connectionSearch: ConnectionSearch) => {
 /**
  * @summary Delete a connection
  */
-export const deleteConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return req<void>({
+export const useDeleteConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
+  return useApiOverride<void>({
     url: `/v1/connections/delete`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2203,8 +2210,8 @@ export const deleteConnection = (connectionIdRequestBody: ConnectionIdRequestBod
 /**
  * @summary Trigger a manual sync of the connection
  */
-export const syncConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return req<JobInfoRead>({
+export const useSyncConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
+  return useApiOverride<JobInfoRead>({
     url: `/v1/connections/sync`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2215,8 +2222,8 @@ export const syncConnection = (connectionIdRequestBody: ConnectionIdRequestBody)
 /**
  * @summary Reset the data for the connection. Deletes data generated by the connection in the destination. Resets any cursors back to initial state.
  */
-export const resetConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return req<JobInfoRead>({
+export const useResetConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
+  return useApiOverride<JobInfoRead>({
     url: `/v1/connections/reset`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2227,8 +2234,8 @@ export const resetConnection = (connectionIdRequestBody: ConnectionIdRequestBody
 /**
  * @summary Check if an operation to be created is valid
  */
-export const checkOperation = (operatorConfiguration: OperatorConfiguration) => {
-  return req<CheckOperationRead>({
+export const useCheckOperation = (operatorConfiguration: OperatorConfiguration) => {
+  return useApiOverride<CheckOperationRead>({
     url: `/v1/operations/check`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2239,8 +2246,8 @@ export const checkOperation = (operatorConfiguration: OperatorConfiguration) => 
 /**
  * @summary Create an operation to be applied as part of a connection pipeline
  */
-export const createOperation = (operationCreate: OperationCreate) => {
-  return req<OperationRead>({
+export const useCreateOperation = (operationCreate: OperationCreate) => {
+  return useApiOverride<OperationRead>({
     url: `/v1/operations/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2251,8 +2258,8 @@ export const createOperation = (operationCreate: OperationCreate) => {
 /**
  * @summary Update an operation
  */
-export const updateOperation = (operationUpdate: OperationUpdate) => {
-  return req<OperationRead>({
+export const useUpdateOperation = (operationUpdate: OperationUpdate) => {
+  return useApiOverride<OperationRead>({
     url: `/v1/operations/update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2264,8 +2271,8 @@ export const updateOperation = (operationUpdate: OperationUpdate) => {
  * List operations for connection.
  * @summary Returns all operations for a connection.
  */
-export const listOperationsForConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return req<OperationReadList>({
+export const useListOperationsForConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
+  return useApiOverride<OperationReadList>({
     url: `/v1/operations/list`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2276,8 +2283,8 @@ export const listOperationsForConnection = (connectionIdRequestBody: ConnectionI
 /**
  * @summary Returns an operation
  */
-export const getOperation = (operationIdRequestBody: OperationIdRequestBody) => {
-  return req<OperationRead>({
+export const useGetOperation = (operationIdRequestBody: OperationIdRequestBody) => {
+  return useApiOverride<OperationRead>({
     url: `/v1/operations/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2288,8 +2295,8 @@ export const getOperation = (operationIdRequestBody: OperationIdRequestBody) => 
 /**
  * @summary Delete an operation
  */
-export const deleteOperation = (operationIdRequestBody: OperationIdRequestBody) => {
-  return req<void>({
+export const useDeleteOperation = (operationIdRequestBody: OperationIdRequestBody) => {
+  return useApiOverride<void>({
     url: `/v1/operations/delete`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2300,8 +2307,8 @@ export const deleteOperation = (operationIdRequestBody: OperationIdRequestBody) 
 /**
  * @summary Run check connection for a given source configuration
  */
-export const executeSourceCheckConnection = (sourceCoreConfig: SourceCoreConfig) => {
-  return req<CheckConnectionRead>({
+export const useExecuteSourceCheckConnection = (sourceCoreConfig: SourceCoreConfig) => {
+  return useApiOverride<CheckConnectionRead>({
     url: `/v1/scheduler/sources/check_connection`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2312,8 +2319,8 @@ export const executeSourceCheckConnection = (sourceCoreConfig: SourceCoreConfig)
 /**
  * @summary Run discover schema for a given source a source configuration
  */
-export const executeSourceDiscoverSchema = (sourceCoreConfig: SourceCoreConfig) => {
-  return req<SourceDiscoverSchemaRead>({
+export const useExecuteSourceDiscoverSchema = (sourceCoreConfig: SourceCoreConfig) => {
+  return useApiOverride<SourceDiscoverSchemaRead>({
     url: `/v1/scheduler/sources/discover_schema`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2324,8 +2331,8 @@ export const executeSourceDiscoverSchema = (sourceCoreConfig: SourceCoreConfig) 
 /**
  * @summary Run check connection for a given destination configuration
  */
-export const executeDestinationCheckConnection = (destinationCoreConfig: DestinationCoreConfig) => {
-  return req<CheckConnectionRead>({
+export const useExecuteDestinationCheckConnection = (destinationCoreConfig: DestinationCoreConfig) => {
+  return useApiOverride<CheckConnectionRead>({
     url: `/v1/scheduler/destinations/check_connection`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2336,8 +2343,8 @@ export const executeDestinationCheckConnection = (destinationCoreConfig: Destina
 /**
  * @summary List all database migrations
  */
-export const listMigrations = (dbMigrationRequestBody: DbMigrationRequestBody) => {
-  return req<DbMigrationReadList>({
+export const useListMigrations = (dbMigrationRequestBody: DbMigrationRequestBody) => {
+  return useApiOverride<DbMigrationReadList>({
     url: `/v1/db_migrations/list`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2348,8 +2355,8 @@ export const listMigrations = (dbMigrationRequestBody: DbMigrationRequestBody) =
 /**
  * @summary Migrate the database to the latest version
  */
-export const executeMigrations = (dbMigrationRequestBody: DbMigrationRequestBody) => {
-  return req<DbMigrationExecutionRead>({
+export const useExecuteMigrations = (dbMigrationRequestBody: DbMigrationRequestBody) => {
+  return useApiOverride<DbMigrationExecutionRead>({
     url: `/v1/db_migrations/migrate`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2361,10 +2368,10 @@ export const executeMigrations = (dbMigrationRequestBody: DbMigrationRequestBody
  * @summary Sets instancewide variables to be used for the oauth flow when creating this source. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables.
 
  */
-export const setInstancewideSourceOauthParams = (
+export const useSetInstancewideSourceOauthParams = (
   setInstancewideSourceOauthParamsRequestBody: SetInstancewideSourceOauthParamsRequestBody
 ) => {
-  return req<void>({
+  return useApiOverride<void>({
     url: `/v1/source_oauths/oauth_params/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2375,8 +2382,8 @@ export const setInstancewideSourceOauthParams = (
 /**
  * @summary Given a source connector definition ID, return the URL to the consent screen where to redirect the user to.
  */
-export const getSourceOAuthConsent = (sourceOauthConsentRequest: SourceOauthConsentRequest) => {
-  return req<OAuthConsentRead>({
+export const useGetSourceOAuthConsent = (sourceOauthConsentRequest: SourceOauthConsentRequest) => {
+  return useApiOverride<OAuthConsentRead>({
     url: `/v1/source_oauths/get_consent_url`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2387,8 +2394,8 @@ export const getSourceOAuthConsent = (sourceOauthConsentRequest: SourceOauthCons
 /**
  * @summary Given a source def ID generate an access/refresh token etc.
  */
-export const completeSourceOAuth = (completeSourceOauthRequest: CompleteSourceOauthRequest) => {
-  return req<CompleteOAuthResponse>({
+export const useCompleteSourceOAuth = (completeSourceOauthRequest: CompleteSourceOauthRequest) => {
+  return useApiOverride<CompleteOAuthResponse>({
     url: `/v1/source_oauths/complete_oauth`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2399,8 +2406,8 @@ export const completeSourceOAuth = (completeSourceOauthRequest: CompleteSourceOa
 /**
  * @summary Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to.
  */
-export const getDestinationOAuthConsent = (destinationOauthConsentRequest: DestinationOauthConsentRequest) => {
-  return req<OAuthConsentRead>({
+export const useGetDestinationOAuthConsent = (destinationOauthConsentRequest: DestinationOauthConsentRequest) => {
+  return useApiOverride<OAuthConsentRead>({
     url: `/v1/destination_oauths/get_consent_url`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2411,8 +2418,8 @@ export const getDestinationOAuthConsent = (destinationOauthConsentRequest: Desti
 /**
  * @summary Given a destination def ID generate an access/refresh token etc.
  */
-export const completeDestinationOAuth = (completeDestinationOAuthRequest: CompleteDestinationOAuthRequest) => {
-  return req<CompleteOAuthResponse>({
+export const useCompleteDestinationOAuth = (completeDestinationOAuthRequest: CompleteDestinationOAuthRequest) => {
+  return useApiOverride<CompleteOAuthResponse>({
     url: `/v1/destination_oauths/complete_oauth`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2424,10 +2431,10 @@ export const completeDestinationOAuth = (completeDestinationOAuthRequest: Comple
  * @summary Sets instancewide variables to be used for the oauth flow when creating this destination. When set, these variables will be injected into a connector's configuration before any interaction with the connector image itself. This enables running oauth flows with consistent variables e.g: the company's Google Ads developer_token, client_id, and client_secret without the user having to know about these variables.
 
  */
-export const setInstancewideDestinationOauthParams = (
+export const useSetInstancewideDestinationOauthParams = (
   setInstancewideDestinationOauthParamsRequestBody: SetInstancewideDestinationOauthParamsRequestBody
 ) => {
-  return req<void>({
+  return useApiOverride<void>({
     url: `/v1/destination_oauths/oauth_params/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2438,8 +2445,8 @@ export const setInstancewideDestinationOauthParams = (
 /**
  * @summary Returns all non-deleted connections for a workspace.
  */
-export const webBackendListConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<WebBackendConnectionReadList>({
+export const useWebBackendListConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<WebBackendConnectionReadList>({
     url: `/v1/web_backend/connections/list`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2450,8 +2457,8 @@ export const webBackendListConnectionsForWorkspace = (workspaceIdRequestBody: Wo
 /**
  * @summary Returns all connections for a workspace.
  */
-export const webBackendListAllConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<WebBackendConnectionReadList>({
+export const useWebBackendListAllConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<WebBackendConnectionReadList>({
     url: `/v1/web_backend/connections/list_all`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2462,8 +2469,8 @@ export const webBackendListAllConnectionsForWorkspace = (workspaceIdRequestBody:
 /**
  * @summary Get a connection
  */
-export const webBackendGetConnection = (webBackendConnectionRequestBody: WebBackendConnectionRequestBody) => {
-  return req<WebBackendConnectionRead>({
+export const useWebBackendGetConnection = (webBackendConnectionRequestBody: WebBackendConnectionRequestBody) => {
+  return useApiOverride<WebBackendConnectionRead>({
     url: `/v1/web_backend/connections/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2474,8 +2481,8 @@ export const webBackendGetConnection = (webBackendConnectionRequestBody: WebBack
 /**
  * @summary Create a connection
  */
-export const webBackendCreateConnection = (webBackendConnectionCreate: WebBackendConnectionCreate) => {
-  return req<WebBackendConnectionRead>({
+export const useWebBackendCreateConnection = (webBackendConnectionCreate: WebBackendConnectionCreate) => {
+  return useApiOverride<WebBackendConnectionRead>({
     url: `/v1/web_backend/connections/create`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2486,8 +2493,8 @@ export const webBackendCreateConnection = (webBackendConnectionCreate: WebBacken
 /**
  * @summary Update a connection
  */
-export const webBackendUpdateConnection = (webBackendConnectionUpdate: WebBackendConnectionUpdate) => {
-  return req<WebBackendConnectionRead>({
+export const useWebBackendUpdateConnection = (webBackendConnectionUpdate: WebBackendConnectionUpdate) => {
+  return useApiOverride<WebBackendConnectionRead>({
     url: `/v1/web_backend/connections/update`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2498,8 +2505,8 @@ export const webBackendUpdateConnection = (webBackendConnectionUpdate: WebBacken
 /**
  * @summary Search connections
  */
-export const webBackendSearchConnections = (webBackendConnectionSearch: WebBackendConnectionSearch) => {
-  return req<WebBackendConnectionReadList>({
+export const useWebBackendSearchConnections = (webBackendConnectionSearch: WebBackendConnectionSearch) => {
+  return useApiOverride<WebBackendConnectionReadList>({
     url: `/v1/web_backend/connections/search`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2510,8 +2517,8 @@ export const webBackendSearchConnections = (webBackendConnectionSearch: WebBacke
 /**
  * @summary Returns the current state of a workspace
  */
-export const webBackendGetWorkspaceState = (webBackendWorkspaceState: WebBackendWorkspaceState) => {
-  return req<WebBackendWorkspaceStateResult>({
+export const useWebBackendGetWorkspaceState = (webBackendWorkspaceState: WebBackendWorkspaceState) => {
+  return useApiOverride<WebBackendWorkspaceStateResult>({
     url: `/v1/web_backend/workspace/state`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2522,8 +2529,8 @@ export const webBackendGetWorkspaceState = (webBackendWorkspaceState: WebBackend
 /**
  * @summary Returns recent jobs for a connection. Jobs are returned in descending order by createdAt.
  */
-export const listJobsFor = (jobListRequestBody: JobListRequestBody) => {
-  return req<JobReadList>({
+export const useListJobsFor = (jobListRequestBody: JobListRequestBody) => {
+  return useApiOverride<JobReadList>({
     url: `/v1/jobs/list`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2534,8 +2541,8 @@ export const listJobsFor = (jobListRequestBody: JobListRequestBody) => {
 /**
  * @summary Get information about a job
  */
-export const getJobInfo = (jobIdRequestBody: JobIdRequestBody) => {
-  return req<JobInfoRead>({
+export const useGetJobInfo = (jobIdRequestBody: JobIdRequestBody) => {
+  return useApiOverride<JobInfoRead>({
     url: `/v1/jobs/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2546,8 +2553,8 @@ export const getJobInfo = (jobIdRequestBody: JobIdRequestBody) => {
 /**
  * @summary Cancels a job
  */
-export const cancelJob = (jobIdRequestBody: JobIdRequestBody) => {
-  return req<JobInfoRead>({
+export const useCancelJob = (jobIdRequestBody: JobIdRequestBody) => {
+  return useApiOverride<JobInfoRead>({
     url: `/v1/jobs/cancel`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2558,8 +2565,8 @@ export const cancelJob = (jobIdRequestBody: JobIdRequestBody) => {
 /**
  * @summary Gets all information needed to debug this job
  */
-export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody) => {
-  return req<JobDebugInfoRead>({
+export const useGetJobDebugInfo = (jobIdRequestBody: JobIdRequestBody) => {
+  return useApiOverride<JobDebugInfoRead>({
     url: `/v1/jobs/get_debug_info`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2570,15 +2577,15 @@ export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody) => {
 /**
  * @summary Health Check
  */
-export const getHealthCheck = () => {
-  return req<HealthCheckRead>({ url: `/v1/health`, method: "get" });
+export const useGetHealthCheck = () => {
+  return useApiOverride<HealthCheckRead>({ url: `/v1/health`, method: "get" });
 };
 
 /**
  * @summary Get logs
  */
-export const getLogs = (logsRequestBody: LogsRequestBody) => {
-  return req<Blob>({
+export const useGetLogs = (logsRequestBody: LogsRequestBody) => {
+  return useApiOverride<Blob>({
     url: `/v1/logs/get`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2590,22 +2597,22 @@ export const getLogs = (logsRequestBody: LogsRequestBody) => {
 /**
  * @summary Returns the openapi specification
  */
-export const getOpenApiSpec = () => {
-  return req<Blob>({ url: `/v1/openapi`, method: "get", responseType: "blob" });
+export const useGetOpenApiSpec = () => {
+  return useApiOverride<Blob>({ url: `/v1/openapi`, method: "get", responseType: "blob" });
 };
 
 /**
  * @summary Export Airbyte Configuration and Data Archive
  */
-export const exportArchive = () => {
-  return req<AirbyteArchive>({ url: `/v1/deployment/export`, method: "post" });
+export const useExportArchive = () => {
+  return useApiOverride<AirbyteArchive>({ url: `/v1/deployment/export`, method: "post" });
 };
 
 /**
  * @summary Import Airbyte Configuration and Data Archive
  */
-export const importArchive = (airbyteArchive: AirbyteArchive) => {
-  return req<ImportRead>({
+export const useImportArchive = (airbyteArchive: AirbyteArchive) => {
+  return useApiOverride<ImportRead>({
     url: `/v1/deployment/import`,
     method: "post",
     headers: { "Content-Type": "application/x-gzip" },
@@ -2616,8 +2623,8 @@ export const importArchive = (airbyteArchive: AirbyteArchive) => {
 /**
  * @summary Export Airbyte Workspace Configuration
  */
-export const exportWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return req<AirbyteArchive>({
+export const useExportWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
+  return useApiOverride<AirbyteArchive>({
     url: `/v1/deployment/export_workspace`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2628,8 +2635,8 @@ export const exportWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) 
 /**
  * @summary Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
  */
-export const uploadArchiveResource = (airbyteArchive: AirbyteArchive) => {
-  return req<UploadRead>({
+export const useUploadArchiveResource = (airbyteArchive: AirbyteArchive) => {
+  return useApiOverride<UploadRead>({
     url: `/v1/deployment/upload_archive_resource`,
     method: "post",
     headers: { "Content-Type": "application/x-gzip" },
@@ -2641,8 +2648,8 @@ export const uploadArchiveResource = (airbyteArchive: AirbyteArchive) => {
  * @summary Import Airbyte Configuration into Workspace (this operation might change ids of imported configurations). Note, in order to use this api endpoint, you might need to upload a temporary archive resource with 'deployment/upload_archive_resource' first
 
  */
-export const importIntoWorkspace = (importRequestBody: ImportRequestBody) => {
-  return req<ImportRead>({
+export const useImportIntoWorkspace = (importRequestBody: ImportRequestBody) => {
+  return useApiOverride<ImportRead>({
     url: `/v1/deployment/import_into_workspace`,
     method: "post",
     headers: { "Content-Type": "application/json" },
@@ -2650,154 +2657,193 @@ export const importIntoWorkspace = (importRequestBody: ImportRequestBody) => {
   });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
-
-export type CreateWorkspaceResult = NonNullable<AsyncReturnType<typeof createWorkspace>>;
-export type DeleteWorkspaceResult = NonNullable<AsyncReturnType<typeof deleteWorkspace>>;
-export type ListWorkspacesResult = NonNullable<AsyncReturnType<typeof listWorkspaces>>;
-export type GetWorkspaceResult = NonNullable<AsyncReturnType<typeof getWorkspace>>;
-export type GetWorkspaceBySlugResult = NonNullable<AsyncReturnType<typeof getWorkspaceBySlug>>;
-export type UpdateWorkspaceResult = NonNullable<AsyncReturnType<typeof updateWorkspace>>;
-export type UpdateWorkspaceNameResult = NonNullable<AsyncReturnType<typeof updateWorkspaceName>>;
-export type UpdateWorkspaceFeedbackResult = NonNullable<AsyncReturnType<typeof updateWorkspaceFeedback>>;
-export type TryNotificationConfigResult = NonNullable<AsyncReturnType<typeof tryNotificationConfig>>;
-export type CreateSourceDefinitionResult = NonNullable<AsyncReturnType<typeof createSourceDefinition>>;
-export type UpdateSourceDefinitionResult = NonNullable<AsyncReturnType<typeof updateSourceDefinition>>;
-export type ListSourceDefinitionsResult = NonNullable<AsyncReturnType<typeof listSourceDefinitions>>;
-export type ListLatestSourceDefinitionsResult = NonNullable<AsyncReturnType<typeof listLatestSourceDefinitions>>;
-export type GetSourceDefinitionResult = NonNullable<AsyncReturnType<typeof getSourceDefinition>>;
-export type DeleteSourceDefinitionResult = NonNullable<AsyncReturnType<typeof deleteSourceDefinition>>;
-export type ListPrivateSourceDefinitionsResult = NonNullable<AsyncReturnType<typeof listPrivateSourceDefinitions>>;
-export type ListSourceDefinitionsForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof listSourceDefinitionsForWorkspace>
+export type UseCreateWorkspaceResult = NonNullable<Awaited<ReturnType<typeof useCreateWorkspace>>>;
+export type UseDeleteWorkspaceResult = NonNullable<Awaited<ReturnType<typeof useDeleteWorkspace>>>;
+export type UseListWorkspacesResult = NonNullable<Awaited<ReturnType<typeof useListWorkspaces>>>;
+export type UseGetWorkspaceResult = NonNullable<Awaited<ReturnType<typeof useGetWorkspace>>>;
+export type UseGetWorkspaceBySlugResult = NonNullable<Awaited<ReturnType<typeof useGetWorkspaceBySlug>>>;
+export type UseUpdateWorkspaceResult = NonNullable<Awaited<ReturnType<typeof useUpdateWorkspace>>>;
+export type UseUpdateWorkspaceNameResult = NonNullable<Awaited<ReturnType<typeof useUpdateWorkspaceName>>>;
+export type UseUpdateWorkspaceFeedbackResult = NonNullable<Awaited<ReturnType<typeof useUpdateWorkspaceFeedback>>>;
+export type UseTryNotificationConfigResult = NonNullable<Awaited<ReturnType<typeof useTryNotificationConfig>>>;
+export type UseCreateSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof useCreateSourceDefinition>>>;
+export type UseUpdateSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof useUpdateSourceDefinition>>>;
+export type UseListSourceDefinitionsResult = NonNullable<Awaited<ReturnType<typeof useListSourceDefinitions>>>;
+export type UseListLatestSourceDefinitionsResult = NonNullable<
+  Awaited<ReturnType<typeof useListLatestSourceDefinitions>>
 >;
-export type CreateCustomSourceDefinitionResult = NonNullable<AsyncReturnType<typeof createCustomSourceDefinition>>;
-export type GetSourceDefinitionForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof getSourceDefinitionForWorkspace>
+export type UseGetSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof useGetSourceDefinition>>>;
+export type UseDeleteSourceDefinitionResult = NonNullable<Awaited<ReturnType<typeof useDeleteSourceDefinition>>>;
+export type UseListPrivateSourceDefinitionsResult = NonNullable<
+  Awaited<ReturnType<typeof useListPrivateSourceDefinitions>>
 >;
-export type UpdateCustomSourceDefinitionResult = NonNullable<AsyncReturnType<typeof updateCustomSourceDefinition>>;
-export type DeleteCustomSourceDefinitionResult = NonNullable<AsyncReturnType<typeof deleteCustomSourceDefinition>>;
-export type GrantSourceDefinitionToWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof grantSourceDefinitionToWorkspace>
+export type UseListSourceDefinitionsForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useListSourceDefinitionsForWorkspace>>
 >;
-export type RevokeSourceDefinitionFromWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof revokeSourceDefinitionFromWorkspace>
+export type UseCreateCustomSourceDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useCreateCustomSourceDefinition>>
 >;
-export type GetSourceDefinitionSpecificationResult = NonNullable<
-  AsyncReturnType<typeof getSourceDefinitionSpecification>
+export type UseGetSourceDefinitionForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useGetSourceDefinitionForWorkspace>>
 >;
-export type CreateSourceResult = NonNullable<AsyncReturnType<typeof createSource>>;
-export type UpdateSourceResult = NonNullable<AsyncReturnType<typeof updateSource>>;
-export type ListSourcesForWorkspaceResult = NonNullable<AsyncReturnType<typeof listSourcesForWorkspace>>;
-export type GetSourceResult = NonNullable<AsyncReturnType<typeof getSource>>;
-export type SearchSourcesResult = NonNullable<AsyncReturnType<typeof searchSources>>;
-export type CloneSourceResult = NonNullable<AsyncReturnType<typeof cloneSource>>;
-export type DeleteSourceResult = NonNullable<AsyncReturnType<typeof deleteSource>>;
-export type CheckConnectionToSourceResult = NonNullable<AsyncReturnType<typeof checkConnectionToSource>>;
-export type CheckConnectionToSourceForUpdateResult = NonNullable<
-  AsyncReturnType<typeof checkConnectionToSourceForUpdate>
+export type UseUpdateCustomSourceDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useUpdateCustomSourceDefinition>>
 >;
-export type DiscoverSchemaForSourceResult = NonNullable<AsyncReturnType<typeof discoverSchemaForSource>>;
-export type CreateDestinationDefinitionResult = NonNullable<AsyncReturnType<typeof createDestinationDefinition>>;
-export type UpdateDestinationDefinitionResult = NonNullable<AsyncReturnType<typeof updateDestinationDefinition>>;
-export type ListDestinationDefinitionsResult = NonNullable<AsyncReturnType<typeof listDestinationDefinitions>>;
-export type ListLatestDestinationDefinitionsResult = NonNullable<
-  AsyncReturnType<typeof listLatestDestinationDefinitions>
+export type UseDeleteCustomSourceDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useDeleteCustomSourceDefinition>>
 >;
-export type GetDestinationDefinitionResult = NonNullable<AsyncReturnType<typeof getDestinationDefinition>>;
-export type DeleteDestinationDefinitionResult = NonNullable<AsyncReturnType<typeof deleteDestinationDefinition>>;
-export type ListPrivateDestinationDefinitionsResult = NonNullable<
-  AsyncReturnType<typeof listPrivateDestinationDefinitions>
+export type UseGrantSourceDefinitionToWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useGrantSourceDefinitionToWorkspace>>
 >;
-export type ListDestinationDefinitionsForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof listDestinationDefinitionsForWorkspace>
+export type UseRevokeSourceDefinitionFromWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useRevokeSourceDefinitionFromWorkspace>>
 >;
-export type CreateCustomDestinationDefinitionResult = NonNullable<
-  AsyncReturnType<typeof createCustomDestinationDefinition>
+export type UseGetSourceDefinitionSpecificationResult = NonNullable<
+  Awaited<ReturnType<typeof useGetSourceDefinitionSpecification>>
 >;
-export type GetDestinationDefinitionForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof getDestinationDefinitionForWorkspace>
+export type UseCreateSourceResult = NonNullable<Awaited<ReturnType<typeof useCreateSource>>>;
+export type UseUpdateSourceResult = NonNullable<Awaited<ReturnType<typeof useUpdateSource>>>;
+export type UseListSourcesForWorkspaceResult = NonNullable<Awaited<ReturnType<typeof useListSourcesForWorkspace>>>;
+export type UseGetSourceResult = NonNullable<Awaited<ReturnType<typeof useGetSource>>>;
+export type UseSearchSourcesResult = NonNullable<Awaited<ReturnType<typeof useSearchSources>>>;
+export type UseCloneSourceResult = NonNullable<Awaited<ReturnType<typeof useCloneSource>>>;
+export type UseDeleteSourceResult = NonNullable<Awaited<ReturnType<typeof useDeleteSource>>>;
+export type UseCheckConnectionToSourceResult = NonNullable<Awaited<ReturnType<typeof useCheckConnectionToSource>>>;
+export type UseCheckConnectionToSourceForUpdateResult = NonNullable<
+  Awaited<ReturnType<typeof useCheckConnectionToSourceForUpdate>>
 >;
-export type UpdateCustomDestinationDefinitionResult = NonNullable<
-  AsyncReturnType<typeof updateCustomDestinationDefinition>
+export type UseDiscoverSchemaForSourceResult = NonNullable<Awaited<ReturnType<typeof useDiscoverSchemaForSource>>>;
+export type UseCreateDestinationDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useCreateDestinationDefinition>>
 >;
-export type DeleteCustomDestinationDefinitionResult = NonNullable<
-  AsyncReturnType<typeof deleteCustomDestinationDefinition>
+export type UseUpdateDestinationDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useUpdateDestinationDefinition>>
 >;
-export type GrantDestinationDefinitionToWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof grantDestinationDefinitionToWorkspace>
+export type UseListDestinationDefinitionsResult = NonNullable<
+  Awaited<ReturnType<typeof useListDestinationDefinitions>>
 >;
-export type RevokeDestinationDefinitionFromWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof revokeDestinationDefinitionFromWorkspace>
+export type UseListLatestDestinationDefinitionsResult = NonNullable<
+  Awaited<ReturnType<typeof useListLatestDestinationDefinitions>>
 >;
-export type GetDestinationDefinitionSpecificationResult = NonNullable<
-  AsyncReturnType<typeof getDestinationDefinitionSpecification>
+export type UseGetDestinationDefinitionResult = NonNullable<Awaited<ReturnType<typeof useGetDestinationDefinition>>>;
+export type UseDeleteDestinationDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useDeleteDestinationDefinition>>
 >;
-export type CreateDestinationResult = NonNullable<AsyncReturnType<typeof createDestination>>;
-export type UpdateDestinationResult = NonNullable<AsyncReturnType<typeof updateDestination>>;
-export type ListDestinationsForWorkspaceResult = NonNullable<AsyncReturnType<typeof listDestinationsForWorkspace>>;
-export type GetDestinationResult = NonNullable<AsyncReturnType<typeof getDestination>>;
-export type SearchDestinationsResult = NonNullable<AsyncReturnType<typeof searchDestinations>>;
-export type CheckConnectionToDestinationResult = NonNullable<AsyncReturnType<typeof checkConnectionToDestination>>;
-export type CheckConnectionToDestinationForUpdateResult = NonNullable<
-  AsyncReturnType<typeof checkConnectionToDestinationForUpdate>
+export type UseListPrivateDestinationDefinitionsResult = NonNullable<
+  Awaited<ReturnType<typeof useListPrivateDestinationDefinitions>>
 >;
-export type DeleteDestinationResult = NonNullable<AsyncReturnType<typeof deleteDestination>>;
-export type CloneDestinationResult = NonNullable<AsyncReturnType<typeof cloneDestination>>;
-export type CreateConnectionResult = NonNullable<AsyncReturnType<typeof createConnection>>;
-export type UpdateConnectionResult = NonNullable<AsyncReturnType<typeof updateConnection>>;
-export type ListConnectionsForWorkspaceResult = NonNullable<AsyncReturnType<typeof useListConnectionsForWorkspace>>;
-export type ListAllConnectionsForWorkspaceResult = NonNullable<AsyncReturnType<typeof listAllConnectionsForWorkspace>>;
-export type GetConnectionResult = NonNullable<AsyncReturnType<typeof getConnection>>;
-export type GetStateResult = NonNullable<AsyncReturnType<typeof getState>>;
-export type SearchConnectionsResult = NonNullable<AsyncReturnType<typeof searchConnections>>;
-export type DeleteConnectionResult = NonNullable<AsyncReturnType<typeof deleteConnection>>;
-export type SyncConnectionResult = NonNullable<AsyncReturnType<typeof syncConnection>>;
-export type ResetConnectionResult = NonNullable<AsyncReturnType<typeof resetConnection>>;
-export type CheckOperationResult = NonNullable<AsyncReturnType<typeof checkOperation>>;
-export type CreateOperationResult = NonNullable<AsyncReturnType<typeof createOperation>>;
-export type UpdateOperationResult = NonNullable<AsyncReturnType<typeof updateOperation>>;
-export type ListOperationsForConnectionResult = NonNullable<AsyncReturnType<typeof listOperationsForConnection>>;
-export type GetOperationResult = NonNullable<AsyncReturnType<typeof getOperation>>;
-export type DeleteOperationResult = NonNullable<AsyncReturnType<typeof deleteOperation>>;
-export type ExecuteSourceCheckConnectionResult = NonNullable<AsyncReturnType<typeof executeSourceCheckConnection>>;
-export type ExecuteSourceDiscoverSchemaResult = NonNullable<AsyncReturnType<typeof executeSourceDiscoverSchema>>;
-export type ExecuteDestinationCheckConnectionResult = NonNullable<
-  AsyncReturnType<typeof executeDestinationCheckConnection>
+export type UseListDestinationDefinitionsForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useListDestinationDefinitionsForWorkspace>>
 >;
-export type ListMigrationsResult = NonNullable<AsyncReturnType<typeof listMigrations>>;
-export type ExecuteMigrationsResult = NonNullable<AsyncReturnType<typeof executeMigrations>>;
-export type SetInstancewideSourceOauthParamsResult = NonNullable<
-  AsyncReturnType<typeof setInstancewideSourceOauthParams>
+export type UseCreateCustomDestinationDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useCreateCustomDestinationDefinition>>
 >;
-export type GetSourceOAuthConsentResult = NonNullable<AsyncReturnType<typeof getSourceOAuthConsent>>;
-export type CompleteSourceOAuthResult = NonNullable<AsyncReturnType<typeof completeSourceOAuth>>;
-export type GetDestinationOAuthConsentResult = NonNullable<AsyncReturnType<typeof getDestinationOAuthConsent>>;
-export type CompleteDestinationOAuthResult = NonNullable<AsyncReturnType<typeof completeDestinationOAuth>>;
-export type SetInstancewideDestinationOauthParamsResult = NonNullable<
-  AsyncReturnType<typeof setInstancewideDestinationOauthParams>
+export type UseGetDestinationDefinitionForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useGetDestinationDefinitionForWorkspace>>
 >;
-export type WebBackendListConnectionsForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof webBackendListConnectionsForWorkspace>
+export type UseUpdateCustomDestinationDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useUpdateCustomDestinationDefinition>>
 >;
-export type WebBackendListAllConnectionsForWorkspaceResult = NonNullable<
-  AsyncReturnType<typeof webBackendListAllConnectionsForWorkspace>
+export type UseDeleteCustomDestinationDefinitionResult = NonNullable<
+  Awaited<ReturnType<typeof useDeleteCustomDestinationDefinition>>
 >;
-export type WebBackendGetConnectionResult = NonNullable<AsyncReturnType<typeof webBackendGetConnection>>;
-export type WebBackendCreateConnectionResult = NonNullable<AsyncReturnType<typeof webBackendCreateConnection>>;
-export type WebBackendUpdateConnectionResult = NonNullable<AsyncReturnType<typeof webBackendUpdateConnection>>;
-export type WebBackendSearchConnectionsResult = NonNullable<AsyncReturnType<typeof webBackendSearchConnections>>;
-export type WebBackendGetWorkspaceStateResult = NonNullable<AsyncReturnType<typeof webBackendGetWorkspaceState>>;
-export type ListJobsForResult = NonNullable<AsyncReturnType<typeof listJobsFor>>;
-export type GetJobInfoResult = NonNullable<AsyncReturnType<typeof getJobInfo>>;
-export type CancelJobResult = NonNullable<AsyncReturnType<typeof cancelJob>>;
-export type GetJobDebugInfoResult = NonNullable<AsyncReturnType<typeof getJobDebugInfo>>;
-export type GetHealthCheckResult = NonNullable<AsyncReturnType<typeof getHealthCheck>>;
-export type GetLogsResult = NonNullable<AsyncReturnType<typeof getLogs>>;
-export type GetOpenApiSpecResult = NonNullable<AsyncReturnType<typeof getOpenApiSpec>>;
-export type ExportArchiveResult = NonNullable<AsyncReturnType<typeof exportArchive>>;
-export type ImportArchiveResult = NonNullable<AsyncReturnType<typeof importArchive>>;
-export type ExportWorkspaceResult = NonNullable<AsyncReturnType<typeof exportWorkspace>>;
-export type UploadArchiveResourceResult = NonNullable<AsyncReturnType<typeof uploadArchiveResource>>;
-export type ImportIntoWorkspaceResult = NonNullable<AsyncReturnType<typeof importIntoWorkspace>>;
+export type UseGrantDestinationDefinitionToWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useGrantDestinationDefinitionToWorkspace>>
+>;
+export type UseRevokeDestinationDefinitionFromWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useRevokeDestinationDefinitionFromWorkspace>>
+>;
+export type UseGetDestinationDefinitionSpecificationResult = NonNullable<
+  Awaited<ReturnType<typeof useGetDestinationDefinitionSpecification>>
+>;
+export type UseCreateDestinationResult = NonNullable<Awaited<ReturnType<typeof useCreateDestination>>>;
+export type UseUpdateDestinationResult = NonNullable<Awaited<ReturnType<typeof useUpdateDestination>>>;
+export type UseListDestinationsForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useListDestinationsForWorkspace>>
+>;
+export type UseGetDestinationResult = NonNullable<Awaited<ReturnType<typeof useGetDestination>>>;
+export type UseSearchDestinationsResult = NonNullable<Awaited<ReturnType<typeof useSearchDestinations>>>;
+export type UseCheckConnectionToDestinationResult = NonNullable<
+  Awaited<ReturnType<typeof useCheckConnectionToDestination>>
+>;
+export type UseCheckConnectionToDestinationForUpdateResult = NonNullable<
+  Awaited<ReturnType<typeof useCheckConnectionToDestinationForUpdate>>
+>;
+export type UseDeleteDestinationResult = NonNullable<Awaited<ReturnType<typeof useDeleteDestination>>>;
+export type UseCloneDestinationResult = NonNullable<Awaited<ReturnType<typeof useCloneDestination>>>;
+export type UseCreateConnectionResult = NonNullable<Awaited<ReturnType<typeof useCreateConnection>>>;
+export type UseUpdateConnectionResult = NonNullable<Awaited<ReturnType<typeof useUpdateConnection>>>;
+export type UseListConnectionsForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useListConnectionsForWorkspace>>
+>;
+export type UseListAllConnectionsForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useListAllConnectionsForWorkspace>>
+>;
+export type UseGetConnectionResult = NonNullable<Awaited<ReturnType<typeof useGetConnection>>>;
+export type UseGetStateResult = NonNullable<Awaited<ReturnType<typeof useGetState>>>;
+export type UseSearchConnectionsResult = NonNullable<Awaited<ReturnType<typeof useSearchConnections>>>;
+export type UseDeleteConnectionResult = NonNullable<Awaited<ReturnType<typeof useDeleteConnection>>>;
+export type UseSyncConnectionResult = NonNullable<Awaited<ReturnType<typeof useSyncConnection>>>;
+export type UseResetConnectionResult = NonNullable<Awaited<ReturnType<typeof useResetConnection>>>;
+export type UseCheckOperationResult = NonNullable<Awaited<ReturnType<typeof useCheckOperation>>>;
+export type UseCreateOperationResult = NonNullable<Awaited<ReturnType<typeof useCreateOperation>>>;
+export type UseUpdateOperationResult = NonNullable<Awaited<ReturnType<typeof useUpdateOperation>>>;
+export type UseListOperationsForConnectionResult = NonNullable<
+  Awaited<ReturnType<typeof useListOperationsForConnection>>
+>;
+export type UseGetOperationResult = NonNullable<Awaited<ReturnType<typeof useGetOperation>>>;
+export type UseDeleteOperationResult = NonNullable<Awaited<ReturnType<typeof useDeleteOperation>>>;
+export type UseExecuteSourceCheckConnectionResult = NonNullable<
+  Awaited<ReturnType<typeof useExecuteSourceCheckConnection>>
+>;
+export type UseExecuteSourceDiscoverSchemaResult = NonNullable<
+  Awaited<ReturnType<typeof useExecuteSourceDiscoverSchema>>
+>;
+export type UseExecuteDestinationCheckConnectionResult = NonNullable<
+  Awaited<ReturnType<typeof useExecuteDestinationCheckConnection>>
+>;
+export type UseListMigrationsResult = NonNullable<Awaited<ReturnType<typeof useListMigrations>>>;
+export type UseExecuteMigrationsResult = NonNullable<Awaited<ReturnType<typeof useExecuteMigrations>>>;
+export type UseSetInstancewideSourceOauthParamsResult = NonNullable<
+  Awaited<ReturnType<typeof useSetInstancewideSourceOauthParams>>
+>;
+export type UseGetSourceOAuthConsentResult = NonNullable<Awaited<ReturnType<typeof useGetSourceOAuthConsent>>>;
+export type UseCompleteSourceOAuthResult = NonNullable<Awaited<ReturnType<typeof useCompleteSourceOAuth>>>;
+export type UseGetDestinationOAuthConsentResult = NonNullable<
+  Awaited<ReturnType<typeof useGetDestinationOAuthConsent>>
+>;
+export type UseCompleteDestinationOAuthResult = NonNullable<Awaited<ReturnType<typeof useCompleteDestinationOAuth>>>;
+export type UseSetInstancewideDestinationOauthParamsResult = NonNullable<
+  Awaited<ReturnType<typeof useSetInstancewideDestinationOauthParams>>
+>;
+export type UseWebBackendListConnectionsForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useWebBackendListConnectionsForWorkspace>>
+>;
+export type UseWebBackendListAllConnectionsForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof useWebBackendListAllConnectionsForWorkspace>>
+>;
+export type UseWebBackendGetConnectionResult = NonNullable<Awaited<ReturnType<typeof useWebBackendGetConnection>>>;
+export type UseWebBackendCreateConnectionResult = NonNullable<
+  Awaited<ReturnType<typeof useWebBackendCreateConnection>>
+>;
+export type UseWebBackendUpdateConnectionResult = NonNullable<
+  Awaited<ReturnType<typeof useWebBackendUpdateConnection>>
+>;
+export type UseWebBackendSearchConnectionsResult = NonNullable<
+  Awaited<ReturnType<typeof useWebBackendSearchConnections>>
+>;
+export type UseWebBackendGetWorkspaceStateResult = NonNullable<
+  Awaited<ReturnType<typeof useWebBackendGetWorkspaceState>>
+>;
+export type UseListJobsForResult = NonNullable<Awaited<ReturnType<typeof useListJobsFor>>>;
+export type UseGetJobInfoResult = NonNullable<Awaited<ReturnType<typeof useGetJobInfo>>>;
+export type UseCancelJobResult = NonNullable<Awaited<ReturnType<typeof useCancelJob>>>;
+export type UseGetJobDebugInfoResult = NonNullable<Awaited<ReturnType<typeof useGetJobDebugInfo>>>;
+export type UseGetHealthCheckResult = NonNullable<Awaited<ReturnType<typeof useGetHealthCheck>>>;
+export type UseGetLogsResult = NonNullable<Awaited<ReturnType<typeof useGetLogs>>>;
+export type UseGetOpenApiSpecResult = NonNullable<Awaited<ReturnType<typeof useGetOpenApiSpec>>>;
+export type UseExportArchiveResult = NonNullable<Awaited<ReturnType<typeof useExportArchive>>>;
+export type UseImportArchiveResult = NonNullable<Awaited<ReturnType<typeof useImportArchive>>>;
+export type UseExportWorkspaceResult = NonNullable<Awaited<ReturnType<typeof useExportWorkspace>>>;
+export type UseUploadArchiveResourceResult = NonNullable<Awaited<ReturnType<typeof useUploadArchiveResource>>>;
+export type UseImportIntoWorkspaceResult = NonNullable<Awaited<ReturnType<typeof useImportIntoWorkspace>>>;
