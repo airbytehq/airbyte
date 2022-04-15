@@ -29,7 +29,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Set java-version
         shell: bash
-        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+        run: echo "JAVA_VERSION="$(cat .java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
           java-version: "${{ env.JAVA_VERSION }}"
@@ -73,7 +73,7 @@ jobs:
           ref: ${{ github.event.inputs.gitref }}
       - name: Set python-version
         shell: bash
-        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
+        run: echo "PYTHON_VERSION="$(cat .python-version)"" >> $GITHUB_ENV
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
