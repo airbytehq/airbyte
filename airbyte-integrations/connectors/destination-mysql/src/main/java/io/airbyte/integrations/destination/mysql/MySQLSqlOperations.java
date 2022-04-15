@@ -18,7 +18,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MySQLSqlOperations extends JdbcSqlOperations {
+public class MySQLSqlOperations<T,S> extends JdbcSqlOperations<T,S> {
 
   private boolean isLocalFileEnabled = false;
 

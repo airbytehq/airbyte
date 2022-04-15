@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+import static java.util.stream.Collectors.*;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -122,22 +123,22 @@ public class CopyConsumerFactory {
     return (hasFailed) -> {
       pairToIgnoredRecordCount
           .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
-      closeAsOneTransaction(new ArrayList<>(pairToCopier.values()), hasFailed, database, sqlOperations);
+      closeAsOneTransaction(pairToCopier, hasFailed, database, sqlOperations);
     };
   }
 
-  private static void closeAsOneTransaction(final List<StreamCopier> streamCopiers,
+  private static void closeAsOneTransaction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
                                             boolean hasFailed,
                                             final JdbcDatabase db,
                                             final SqlOperations sqlOperations)
       throws Exception {
     Exception firstException = null;
+    List<StreamCopier> streamCopiers = new ArrayList<>(pairToCopier.values());
     try {
       final List<String> queries = new ArrayList<>();
       for (final var copier : streamCopiers) {
         try {
           copier.closeStagingUploader(hasFailed);
-
           if (!hasFailed) {
             copier.createDestinationSchema();
             copier.createTemporaryTable();
@@ -156,6 +157,7 @@ public class CopyConsumerFactory {
         }
       }
       if (!hasFailed) {
+        sqlOperations.onCloseTransactionOperations(db, pairToCopier.keySet().stream().map(AirbyteStreamNameNamespacePair::getNamespace).collect(toSet()));
         sqlOperations.executeTransaction(db, queries);
       }
     } finally {

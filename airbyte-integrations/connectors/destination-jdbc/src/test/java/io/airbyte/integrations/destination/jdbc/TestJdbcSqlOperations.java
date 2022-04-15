@@ -8,7 +8,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 
-public class TestJdbcSqlOperations extends JdbcSqlOperations {
+public class TestJdbcSqlOperations<T,S> extends JdbcSqlOperations<T,S> {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,

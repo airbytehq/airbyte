@@ -8,15 +8,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
+import java.util.Set;
 
 // todo (cgardens) - is it necessary to expose so much configurability in this interface. review if
 // we can narrow the surface area.
-public interface SqlOperations {
+public interface SqlOperations<T, S> {
 
   /**
    * Create a schema with provided name if it does not already exist.
    *
-   * @param database Database that the connector is syncing
+   * @param database   Database that the connector is syncing
    * @param schemaName Name of schema.
    * @throws Exception exception
    */
@@ -25,9 +26,8 @@ public interface SqlOperations {
   /**
    * Denotes whether the schema exists in destination database
    *
-   * @param database Database that the connector is syncing
+   * @param database   Database that the connector is syncing
    * @param schemaName Name of schema.
-   *
    * @return true if the schema exists in destination database, false if it doesn't
    */
   default boolean isSchemaExists(final JdbcDatabase database, final String schemaName) throws Exception {
@@ -37,9 +37,9 @@ public interface SqlOperations {
   /**
    * Create a table with provided name in provided schema if it does not already exist.
    *
-   * @param database Database that the connector is syncing
+   * @param database   Database that the connector is syncing
    * @param schemaName Name of schema
-   * @param tableName Name of table
+   * @param tableName  Name of table
    * @throws Exception exception
    */
   void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
@@ -47,9 +47,9 @@ public interface SqlOperations {
   /**
    * Query to create a table with provided name in provided schema if it does not already exist.
    *
-   * @param database Database that the connector is syncing
+   * @param database   Database that the connector is syncing
    * @param schemaName Name of schema
-   * @param tableName Name of table
+   * @param tableName  Name of table
    * @return query
    */
   String createTableQuery(JdbcDatabase database, String schemaName, String tableName);
@@ -58,7 +58,7 @@ public interface SqlOperations {
    * Drop the table if it exists.
    *
    * @param schemaName Name of schema
-   * @param tableName Name of table
+   * @param tableName  Name of table
    * @throws Exception exception
    */
   void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
@@ -66,9 +66,9 @@ public interface SqlOperations {
   /**
    * Query to remove all records from a table. Assumes the table exists.
    *
-   * @param database Database that the connector is syncing
+   * @param database   Database that the connector is syncing
    * @param schemaName Name of schema
-   * @param tableName Name of table
+   * @param tableName  Name of table
    * @return Query
    */
   String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName);
@@ -76,21 +76,20 @@ public interface SqlOperations {
   /**
    * Insert records into table. Assumes the table exists.
    *
-   * @param database Database that the connector is syncing
-   * @param records Records to insert.
+   * @param database   Database that the connector is syncing
+   * @param records    Records to insert.
    * @param schemaName Name of schema
-   * @param tableName Name of table
+   * @param tableName  Name of table
    * @throws Exception exception
    */
   void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
 
   /**
-   * Query to copy all records from source table to destination table. Both tables must be in the
-   * specified schema. Assumes both table exist.
+   * Query to copy all records from source table to destination table. Both tables must be in the specified schema. Assumes both table exist.
    *
-   * @param database Database that the connector is syncing
-   * @param schemaName Name of schema
-   * @param sourceTableName Name of source table
+   * @param database             Database that the connector is syncing
+   * @param schemaName           Name of schema
+   * @param sourceTableName      Name of source table
    * @param destinationTableName Name of destination table
    * @return Query
    */
@@ -100,7 +99,7 @@ public interface SqlOperations {
    * Given an arbitrary number of queries, execute a transaction.
    *
    * @param database Database that the connector is syncing
-   * @param queries Queries to execute
+   * @param queries  Queries to execute
    * @throws Exception exception
    */
   void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception;
@@ -119,16 +118,29 @@ public interface SqlOperations {
 
 
   /**
-   * The method is responsible for executing some specific DB Engine logic in onStart method.
-   * We can override this method to execute specific logic e.g. to handle any necessary migrations in the destination, etc.
-   *
+   * The method is responsible for executing some specific DB Engine logic in onStart method. We can override this method to execute specific logic
+   * e.g. to handle any necessary migrations in the destination, etc.
+   * <p>
    * In next example you can see how migration from VARCHAR to SUPER column is handled for the Redshift destination:
-   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationStartOperations
    *
    * @param database - Database that the connector is interacting with
-   * @param writeConfigsList - List of write configs
+   * @param params   - Generic parameters that are passed to the destination
+   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationStartOperations
    */
-  default void onDestinationStartOperations(JdbcDatabase database, List<WriteConfig> writeConfigsList) {
+  default void onDestinationStartOperations(JdbcDatabase database, T params) {
+    // do nothing
+  }
+
+  /**
+   * We can override this method to execute some specific logic during S3 staging in closeAsOneTransaction method.
+   * <p>
+   * In next example you can see how migration from VARCHAR to SUPER column is handled for the Redshift destination:
+   *
+   * @param database - Database that the connector is interacting with
+   * @param params   - Generic parameters that are passed to the destination
+   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onCloseTransactionOperations(JdbcDatabase, Set)
+   */
+  default void onCloseTransactionOperations(JdbcDatabase database, S params) {
     // do nothing
   }
 }

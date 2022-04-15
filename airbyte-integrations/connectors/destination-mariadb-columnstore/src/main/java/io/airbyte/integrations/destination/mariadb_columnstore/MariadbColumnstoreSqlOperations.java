@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
+public class MariadbColumnstoreSqlOperations<T,S> extends JdbcSqlOperations<T,S> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreSqlOperations.class);
   private final String MINIMUM_VERSION = "5.5.3";

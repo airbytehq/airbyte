@@ -18,7 +18,7 @@ import java.util.List;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 
-public class PostgresSqlOperations extends JdbcSqlOperations {
+public class PostgresSqlOperations<T,S> extends JdbcSqlOperations<T,S> {
 
   public PostgresSqlOperations() {
     super(new PostgresDataAdapter());

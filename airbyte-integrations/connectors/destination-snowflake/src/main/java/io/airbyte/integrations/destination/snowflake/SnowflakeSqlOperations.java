@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations {
+class SnowflakeSqlOperations<T,S> extends JdbcSqlOperations<T,S> implements SqlOperations<T,S> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;

@@ -10,7 +10,7 @@ import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 
-public class DatabricksSqlOperations extends JdbcSqlOperations {
+public class DatabricksSqlOperations<T,S> extends JdbcSqlOperations<T,S> {
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {

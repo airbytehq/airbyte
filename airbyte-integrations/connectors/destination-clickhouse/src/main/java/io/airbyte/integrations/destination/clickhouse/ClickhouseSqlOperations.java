@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +20,7 @@ import ru.yandex.clickhouse.ClickHouseConnection;
 import ru.yandex.clickhouse.ClickHouseStatement;
 import ru.yandex.clickhouse.domain.ClickHouseFormat;
 
-public class ClickhouseSqlOperations extends JdbcSqlOperations {
+public class ClickhouseSqlOperations<T,S> extends JdbcSqlOperations<T,S> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseSqlOperations.class);
 

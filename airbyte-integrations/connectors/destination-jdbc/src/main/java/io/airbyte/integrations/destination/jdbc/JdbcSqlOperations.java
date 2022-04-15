@@ -27,7 +27,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public abstract class JdbcSqlOperations implements SqlOperations {
+public abstract class JdbcSqlOperations<T, S> implements SqlOperations<T, S> {
 
   protected static final String SHOW_SCHEMAS = "show schemas;";
   protected static final String NAME = "name";

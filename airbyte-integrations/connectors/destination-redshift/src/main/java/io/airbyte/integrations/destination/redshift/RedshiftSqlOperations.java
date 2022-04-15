@@ -26,7 +26,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOperations {
+public class RedshiftSqlOperations extends JdbcSqlOperations<List<WriteConfig>, Set<String>> implements SqlOperations<List<WriteConfig>, Set<String>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
@@ -110,6 +110,23 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
     LOGGER.info("Executing specific logic for Redshift Destination DB engine...");
     Set<String> schemas = writeConfigsList.stream().map(WriteConfig::getOutputSchemaName).collect(toSet());
     List<String> schemaAndTableWithNotSuperType = schemas
+        .stream()
+        .flatMap(schemaName -> discoverNotSuperTables(database, schemaName).stream())
+        .toList();
+    if (!schemaAndTableWithNotSuperType.isEmpty()) {
+      updateVarcharDataColumnToSuperDataColumn(database, schemaAndTableWithNotSuperType);
+    }
+  }
+
+  /**
+   * In case of redshift we need to discover all tables with not super type and update them after to SUPER type. This would be done once.
+   *
+   * @param database      - Database object for interacting with a JDBC connection.
+   * @param schemaNames   - schema names.
+   */
+  @Override
+  public void onCloseTransactionOperations(final JdbcDatabase database, final Set<String> schemaNames) {
+    List<String> schemaAndTableWithNotSuperType = schemaNames
         .stream()
         .flatMap(schemaName -> discoverNotSuperTables(database, schemaName).stream())
         .toList();

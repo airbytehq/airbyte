@@ -14,7 +14,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
 
-public class SqlServerOperations implements SqlOperations {
+public class SqlServerOperations<T,S> implements SqlOperations<T,S> {
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
