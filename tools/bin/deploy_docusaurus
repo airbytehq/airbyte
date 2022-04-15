@@ -38,6 +38,8 @@ fi
 
 set -o xtrace
 
+GIT_USER="octavia-squidington-iii"
+
 cd docusaurus
 pwd
 
