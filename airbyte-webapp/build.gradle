@@ -75,7 +75,6 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
-
 copyBuild.dependsOn npm_run_build
 copyNginx.dependsOn npm_run_build
 copyDocs.dependsOn npm_run_build
