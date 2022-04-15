@@ -36,7 +36,7 @@ if ! which yarn > /dev/null; then
   exit 1
 fi
 
-set -o xtracex
+set -o xtrace
 
 # touch is non-destructive and the cloud doesn't have this file
 touch $HOME/.gitconfig
@@ -45,7 +45,7 @@ touch $HOME/.gitconfig
 if ! git config --list --global | grep --silent user.email; then
   set +o xtrace
   echo -e "$blue_text""github email not found adding Octavia's""$default_text"
-  set -o xtracex
+  set -o xtrace
   git config --global user.email=davin@airbyte.io
   git config --global user.name=octavia-squidington-iii
 fi
