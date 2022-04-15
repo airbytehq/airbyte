@@ -76,6 +76,7 @@ public class KubePodProcessIntegrationTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcessIntegrationTest.class);
 
   private static final int RANDOM_FILE_LINE_LENGTH = 100;
+  private static final long KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS = 30 * 1000L;
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
@@ -308,7 +309,7 @@ public class KubePodProcessIntegrationTest {
         new PodOperationContext()
             .withName(pod.getMetadata().getName())
             .withNamespace(pod.getMetadata().getNamespace()),
-        30 * 1000L);
+        KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS);
     podInformer.addEventHandler(new ExitCodeWatcher(
         pod.getMetadata().getName(),
         pod.getMetadata().getNamespace(),
