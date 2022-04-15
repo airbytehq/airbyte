@@ -162,7 +162,7 @@ const ConnectorServiceTypeControl: React.FC<{
   documentationUrl,
   onOpenRequestConnectorModal,
 }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const [field, fieldMeta, { setValue }] = useField(property.path);
   const analytics = useAnalyticsService();
 
@@ -212,6 +212,21 @@ const ConnectorServiceTypeControl: React.FC<{
     [availableServices]
   );
 
+  const getNoOptionsMessage = useCallback(
+    ({ inputValue }: { inputValue: string }) => {
+      analytics.track(
+        formType === "source"
+          ? "Airbyte.UI.NewSource.NoMatchingConnector"
+          : "Airbyte.UI.NewDestination.NoMatchingConnector",
+        {
+          query: inputValue,
+        }
+      );
+      return formatMessage({ id: "form.noConnectorFound" });
+    },
+    [analytics, formType, formatMessage]
+  );
+
   const selectedService = React.useMemo(
     () => availableServices.find((s) => Connector.id(s) === field.value),
     [field.value, availableServices]
@@ -259,6 +274,7 @@ const ConnectorServiceTypeControl: React.FC<{
           options={sortedDropDownData}
           onChange={handleSelect}
           onMenuOpen={onMenuOpen}
+          noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
       {selectedService && documentationUrl && (
