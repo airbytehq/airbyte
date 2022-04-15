@@ -3,7 +3,7 @@ FROM openjdk:${JDK_VERSION}-slim AS server
 
 EXPOSE 8000
 
-ARG VERSION=0.35.66-alpha
+ARG VERSION=0.36.0-alpha
 
 ENV APPLICATION airbyte-server
 ENV VERSION ${VERSION}
