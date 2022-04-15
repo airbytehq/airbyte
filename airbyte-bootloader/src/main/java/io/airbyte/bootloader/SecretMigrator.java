@@ -65,14 +65,15 @@ public class SecretMigrator {
     final List<SourceConnection> sources = configPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
 
     log.info("Migrating Sources");
-    sources.stream().map(source -> {
-      final JsonNode migratedConfig = migrateConfiguration(new ConnectorConfiguration(
-          source.getWorkspaceId(),
-          source.getConfiguration(),
-          definitionIdToSourceSpecs.get(source.getSourceDefinitionId())));
-      source.setConfiguration(migratedConfig);
-      return source;
-    })
+    sources.stream()
+        .map(source -> {
+          final JsonNode migratedConfig = migrateConfiguration(new ConnectorConfiguration(
+              source.getWorkspaceId(),
+              source.getConfiguration(),
+              definitionIdToSourceSpecs.get(source.getSourceDefinitionId())));
+          source.setConfiguration(migratedConfig);
+          return source;
+        })
         .forEach(source -> {
           try {
             configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
