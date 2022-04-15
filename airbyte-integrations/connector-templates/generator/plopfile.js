@@ -27,6 +27,8 @@ module.exports = function (plop) {
   const docRoot = '../../../docs/integrations';
   const definitionRoot = '../../../airbyte-config/init/src/main/resources';
 
+  const sourceAcceptanceTestFilesInputRoot = '../source_acceptance_test_files';
+
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
@@ -86,6 +88,14 @@ module.exports = function (plop) {
         base: httpApiInputRoot,
         templateFiles: `${httpApiInputRoot}/**/**`,
       },
+      // common acceptance tests
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: httpApiOutputRoot,
+        base: sourceAcceptanceTestFilesInputRoot,
+        templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+      },
       // plop doesn't add dotfiles by default so we manually add them
       {
         type:'add',
@@ -113,6 +123,14 @@ module.exports = function (plop) {
          base: singerSourceInputRoot,
          templateFiles: `${singerSourceInputRoot}/**/**`,
        },
+       // common acceptance tests
+       {
+         abortOnFail: true,
+         type:'addMany',
+         destination: singerSourceOutputRoot,
+         base: sourceAcceptanceTestFilesInputRoot,
+         templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+       },
        {
          type:'add',
          abortOnFail: true,
@@ -139,6 +157,14 @@ module.exports = function (plop) {
                 destination: pythonSourceOutputRoot,
                 base: pythonSourceInputRoot,
                 templateFiles: `${pythonSourceInputRoot}/**/**`,
+            },
+            // common acceptance tests
+            {
+              abortOnFail: true,
+              type:'addMany',
+              destination: pythonSourceOutputRoot,
+              base: sourceAcceptanceTestFilesInputRoot,
+              templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
             },
             {
                 type:'add',
@@ -174,6 +200,14 @@ module.exports = function (plop) {
           destination: genericSourceOutputRoot,
           base: genericSourceInputRoot,
           templateFiles: `${genericSourceInputRoot}/**/**`,
+        },
+        // common acceptance tests
+        {
+          abortOnFail: true,
+          type:'addMany',
+          destination: genericSourceOutputRoot,
+          base: sourceAcceptanceTestFilesInputRoot,
+          templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
         },
         {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
       ]
