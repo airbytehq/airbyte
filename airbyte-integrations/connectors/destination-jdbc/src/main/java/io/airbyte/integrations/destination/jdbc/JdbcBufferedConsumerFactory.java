@@ -120,7 +120,6 @@ public class JdbcBufferedConsumerFactory {
                                                  final List<WriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing tmp tables in destination started for {} streams", writeConfigs.size());
-      sqlOperations.onDestinationStartOperations(database, writeConfigs);
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         final String tmpTableName = writeConfig.getTmpTableName();
