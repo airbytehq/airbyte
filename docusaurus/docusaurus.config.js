@@ -9,9 +9,10 @@ const config = {
     title: 'Airbyte Documentation',
     tagline:
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
-    // this is non-functional, just a link back to OSS docs right now
     url: 'https://airbytehq.github.io',
-    baseUrl: '/airbyte/',
+    // Assumed relative path.  If you are using airbytehq.github.io use /
+    // anything else should match the repo name
+    baseUrl: '/',
     onBrokenLinks: 'warn',
     onBrokenMarkdownLinks: 'warn',
     favicon: 'img/favicon.png',
