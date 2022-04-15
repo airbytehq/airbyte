@@ -10,7 +10,7 @@ If you are a visual learner and want to see a video version of this guide going 
 
 ## Dependencies
 
-1. Python &gt;= 3.7
+1. Python &gt;= 3.9
 2. Docker
 3. NodeJS
 

@@ -1,4 +1,4 @@
-FROM python:3.8.12-slim as base
+FROM python:3.9-slim as base
 
 RUN apt-get upgrade \
     && pip install --upgrade pip
@@ -14,5 +14,5 @@ USER octavia-cli
 WORKDIR /home/octavia-project
 ENTRYPOINT ["octavia"]
 
-LABEL io.airbyte.version=dev
+LABEL io.airbyte.version=0.36.0-alpha
 LABEL io.airbyte.name=airbyte/octavia-cli

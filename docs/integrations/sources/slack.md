@@ -38,6 +38,8 @@ This Source is capable of syncing the following core Streams:
 
 The connector is restricted by normal Slack [requests limitation](https://api.slack.com/docs/rate-limits).
 
+It is recommended to sync required channels only, this can be done by specifying config variable `channel_filter` in settings.
+
 The Slack connector should not run into Slack API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
@@ -60,15 +62,19 @@ You can get more detailed information about this type of authentication by readi
 
 ### Setup guide
 
-{% hint style="info" %}
+:::info
+
 If you are using an "legacy" Slack API, skip to the Legacy API Key section below.
-{% endhint %}
+
+:::
 
 In order to pull data out of your Slack instance, you need to create a Slack App. This may sound daunting, but it is actually pretty straight forward. Slack supplies [documentation](https://api.slack.com/start) on how to build apps. Feel free to follow that if you want to do something fancy. We'll describe the steps we followed to creat the Slack App for this tutorial.
 
-{% hint style="info" %}
+:::info
+
 This tutorial assumes that you are an administrator on your slack instance. If you are not, you will need to coordinate with your administrator on the steps that require setting permissions for your app.
-{% endhint %}
+
+:::
 
 1. Go to the [apps page](https://api.slack.com/apps)
 2. Click "Create New App"
@@ -111,6 +117,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.15 | 2022-03-31 | [11613](https://github.com/airbytehq/airbyte/pull/11613) | Add 'channel_filter' config and improve performance |
 | 0.1.14 | 2022-01-26 | [9575](https://github.com/airbytehq/airbyte/pull/9575) | Correct schema |
 | 0.1.13 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
 | 0.1.12 | 2021-10-07 | [6570](https://github.com/airbytehq/airbyte/pull/6570) | Implement OAuth support with OAuth authenticator |

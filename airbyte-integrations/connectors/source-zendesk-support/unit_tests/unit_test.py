@@ -7,10 +7,18 @@ from datetime import datetime
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
+import pytest
 import pytz
 import requests
 from source_zendesk_support.source import BasicApiTokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, END_OF_STREAM_KEY, BaseSourceZendeskSupportStream, TicketComments
+from source_zendesk_support.streams import (
+    DATETIME_FORMAT,
+    END_OF_STREAM_KEY,
+    BaseSourceZendeskSupportStream,
+    SourceZendeskTicketExportStream,
+    TicketComments,
+    Tickets,
+)
 
 # config
 STREAM_ARGS = {
@@ -33,7 +41,7 @@ STREAM_RESPONSE: dict = {
                     "type": "Comment",
                     "author_id": 10,
                     "body": "test_comment",
-                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br></div>',
+                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br/></div>',
                     "plain_body": "test_comment",
                     "public": True,
                     "attachments": [],
@@ -78,6 +86,12 @@ def test_str2unixtime():
     output = BaseSourceZendeskSupportStream.str2unixtime(DATETIME_STR)
     assert output == expected
 
+def test_check_start_time_param():
+    expected = 1626936955
+    start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
+    output = SourceZendeskTicketExportStream.check_start_time_param(start_time)
+    assert output == expected
+
 
 def test_parse_next_page_number(requests_mock):
     expected = dict(parse_qsl(urlparse(STREAM_RESPONSE.get("next_page")).query)).get("page")
@@ -90,13 +104,30 @@ def test_parse_next_page_number(requests_mock):
 def test_next_page_token(requests_mock):
     # mocking the logic of next_page_token
     if STREAM_RESPONSE.get(END_OF_STREAM_KEY) is False:
-        expected = {"created_at": "1122334455"}
+        expected = {"created_at": 1122334455}
     else:
         expected = None
     requests_mock.get(STREAM_URL, json=STREAM_RESPONSE)
     test_response = requests.get(STREAM_URL)
     output = TEST_STREAM.next_page_token(test_response)
     assert expected == output
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # valid state, expect the value of the state
+        ({"updated_at": "2022-04-01"}, 1648771200),
+        # invalid state, expect the start_date from STREAM_ARGS
+        ({"updated_at": ""}, 1643241600),
+        ({"updated_at": None}, 1643241600),
+        ({"missing_cursor": "2022-04-01"}, 1643241600),
+    ],
+    ids=["state present", "empty string in state", "state is None", "cursor is not in the state object"],
+)
+def test_check_stream_state(stream_state, expected):
+    result = Tickets(**STREAM_ARGS).check_stream_state(stream_state)
+    assert result == expected
 
 
 def test_request_params(requests_mock):

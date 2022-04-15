@@ -4,13 +4,15 @@ The following technologies are required to build Airbyte locally.
 
 1. [`Java 17`](https://jdk.java.net/archive/)
 2. `Node 16`
-3. `Python 3.7`
+3. `Python 3.9`
 4. `Docker`
 5. `Jq`
 
-{% hint style="info" %}
+:::info
+
 Manually switching between different language versions can get hairy. We recommend using a version manager such as [`pyenv`](https://github.com/pyenv/pyenv) or [`jenv`](https://github.com/jenv/jenv).
-{% endhint %}
+
+:::
 
 To start contributing:
 
@@ -26,20 +28,11 @@ To start contributing:
 
 ## Build with `gradle`
 
-{% hint style="info" %}
-If you're using Mac M1 \(Apple Silicon\) machines, you can run Airbyte locally only in `dev` mode and you need to set these environment variables in order to build Airbyte:
+:::info
 
-```bash
-export DOCKER_BUILD_PLATFORM=linux/arm64
-export DOCKER_BUILD_ARCH=arm64
-export ALPINE_IMAGE=arm64v8/alpine:3.14
-export POSTGRES_IMAGE=arm64v8/postgres:13-alpine
-export JDK_VERSION=17
-```
+If you're using Mac M1 \(Apple Silicon\) machines, you may run into some problems (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
 
-There are some known issues (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
-
-{% endhint %}
+:::
 
 To compile and build just the platform \(not all the connectors\):
 
@@ -51,22 +44,34 @@ This will build all the code and run all the unit tests.
 
 `SUB_BUILD=PLATFORM ./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
 
-{% hint style="info" %}
+:::info
+
+Optionally, you may pass a `VERSION` environment variable to the gradle build command. If present, gradle will use this value as a tag for all created artifacts (both Jars and Docker images).
+
+If unset, gradle will default to using the current VERSION in `.env` for Jars, and `dev` as the Docker image tag.
+
+:::
+
+:::info
+
 Gradle will use all CPU cores by default. If Gradle uses too much/too little CPU, tuning the number of CPU cores it uses to better suit a dev's need can help.
 
 Adjust this by either, 1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`. 2. Setting a cli option: `SUB_BUILD=PLATFORM ./gradlew build --max-workers 3` 3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
 
 A good rule of thumb is to set this to \(\# of cores - 1\).
-{% endhint %}
 
-{% hint style="info" %}
+:::
+
+:::info
+
 On Mac, if you run into an error while compiling openssl \(this happens when running pip install\), you may need to explicitly add these flags to your bash profile so that the C compiler can find the appropriate libraries.
 
 ```text
 export LDFLAGS="-L/usr/local/opt/openssl/lib"
 export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ```
-{% endhint %}
+
+:::
 
 ## Run in `dev` mode with `docker-compose`
 

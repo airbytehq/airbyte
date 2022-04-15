@@ -16,6 +16,7 @@ import io.airbyte.config.init.YamlSeedConfigPersistence;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -79,19 +80,24 @@ public class BootloaderApp {
 
   public BootloaderApp() {
     configs = new EnvConfigs();
+    featureFlags = new EnvVariableFeatureFlags();
     postLoadExecution = () -> {
       try {
         final Database configDatabase =
             new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
                 .getAndInitialize();
-        final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
+        final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+            .maskSecrets(!featureFlags.exposeSecretsInExport())
+            .copySecrets(true)
+            .build();
+        final ConfigPersistence configPersistence =
+            DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
         configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
         LOGGER.info("Loaded seed data..");
       } catch (final IOException e) {
         e.printStackTrace();
       }
     };
-    featureFlags = new EnvVariableFeatureFlags();
   }
 
   public void load() throws Exception {
@@ -112,7 +118,11 @@ public class BootloaderApp {
       runFlywayMigration(configs, configDatabase, jobDatabase);
       LOGGER.info("Ran Flyway migrations...");
 
-      final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase);
+      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+          .maskSecrets(!featureFlags.exposeSecretsInExport())
+          .copySecrets(false)
+          .build();
+      final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
       final ConfigRepository configRepository =
           new ConfigRepository(configPersistence, configDatabase);
 

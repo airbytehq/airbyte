@@ -4,19 +4,30 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.Schedule;
+import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +78,73 @@ public class DbConverter {
         .withNotifications(notificationList)
         .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))
         .withFeedbackDone(record.get(WORKSPACE.FEEDBACK_COMPLETE));
+  }
+
+  public static StandardSourceDefinition buildStandardSourceDefinition(final Record record) {
+    return new StandardSourceDefinition()
+        .withSourceDefinitionId(record.get(ACTOR_DEFINITION.ID))
+        .withDockerImageTag(record.get(ACTOR_DEFINITION.DOCKER_IMAGE_TAG))
+        .withIcon(record.get(ACTOR_DEFINITION.ICON))
+        .withDockerRepository(record.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
+        .withDocumentationUrl(record.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
+        .withName(record.get(ACTOR_DEFINITION.NAME))
+        .withSourceType(record.get(ACTOR_DEFINITION.SOURCE_TYPE) == null ? null
+            : Enums.toEnum(record.get(ACTOR_DEFINITION.SOURCE_TYPE, String.class), SourceType.class).orElseThrow())
+        .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
+        .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
+        .withPublic(record.get(ACTOR_DEFINITION.PUBLIC))
+        .withCustom(record.get(ACTOR_DEFINITION.CUSTOM))
+        .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
+            : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardSourceDefinition.ReleaseStage.class).orElseThrow())
+        .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
+            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
+        .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
+            ? null
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
+  }
+
+  public static StandardDestinationDefinition buildStandardDestinationDefinition(final Record record) {
+    return new StandardDestinationDefinition()
+        .withDestinationDefinitionId(record.get(ACTOR_DEFINITION.ID))
+        .withDockerImageTag(record.get(ACTOR_DEFINITION.DOCKER_IMAGE_TAG))
+        .withIcon(record.get(ACTOR_DEFINITION.ICON))
+        .withDockerRepository(record.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
+        .withDocumentationUrl(record.get(ACTOR_DEFINITION.DOCUMENTATION_URL))
+        .withName(record.get(ACTOR_DEFINITION.NAME))
+        .withSpec(Jsons.deserialize(record.get(ACTOR_DEFINITION.SPEC).data(), ConnectorSpecification.class))
+        .withTombstone(record.get(ACTOR_DEFINITION.TOMBSTONE))
+        .withPublic(record.get(ACTOR_DEFINITION.PUBLIC))
+        .withCustom(record.get(ACTOR_DEFINITION.CUSTOM))
+        .withReleaseStage(record.get(ACTOR_DEFINITION.RELEASE_STAGE) == null ? null
+            : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardDestinationDefinition.ReleaseStage.class).orElseThrow())
+        .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
+            : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
+        .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
+            ? null
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));
+  }
+
+  public static DestinationOAuthParameter buildDestinationOAuthParameter(final Record record) {
+    return new DestinationOAuthParameter()
+        .withOauthParameterId(record.get(ACTOR_OAUTH_PARAMETER.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
+        .withDestinationDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
+  }
+
+  public static SourceOAuthParameter buildSourceOAuthParameter(final Record record) {
+    return new SourceOAuthParameter()
+        .withOauthParameterId(record.get(ACTOR_OAUTH_PARAMETER.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
+        .withSourceDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
+  }
+
+  public static ActorCatalog buildActorCatalog(final Record record) {
+    return new ActorCatalog()
+        .withId(record.get(ACTOR_CATALOG.ID))
+        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
+        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
   }
 
 }

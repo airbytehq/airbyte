@@ -51,6 +51,7 @@ import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.validation.json.JsonValidationException;
@@ -312,7 +313,7 @@ class ConnectionsHandlerTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void testUpdateConnection(boolean useNewScheduler) throws JsonValidationException, ConfigNotFoundException, IOException {
+    void testUpdateConnection(final boolean useNewScheduler) throws JsonValidationException, ConfigNotFoundException, IOException {
       when(featureFlags.usesNewScheduler())
           .thenReturn(useNewScheduler);
 
@@ -417,8 +418,8 @@ class ConnectionsHandlerTest {
       final ConnectionReadList actualConnectionReadListWithDeleted = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody, true);
       final List<ConnectionRead> connections = actualConnectionReadListWithDeleted.getConnections();
       assertEquals(2, connections.size());
-      assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSync), connections.get(0));
-      assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSyncDeleted), connections.get(1));
+      assertEquals(ApiPojoConverters.internalToConnectionRead(standardSync), connections.get(0));
+      assertEquals(ApiPojoConverters.internalToConnectionRead(standardSyncDeleted), connections.get(1));
 
     }
 

@@ -188,7 +188,104 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.0.0"
+- dockerImage: "airbyte/destination-aws-datalake:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/aws-datalake"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "AWS Datalake Destination Spec"
+      type: "object"
+      required:
+      - "credentials"
+      - "region"
+      - "bucket_name"
+      - "bucket_prefix"
+      additionalProperties: false
+      properties:
+        aws_account_id:
+          type: "string"
+          title: "AWS Account Id"
+          description: "target aws account id"
+          examples:
+          - "111111111111"
+        region:
+          title: "AWS Region"
+          type: "string"
+          description: "Region name"
+          airbyte_secret: false
+        credentials:
+          title: "Authentication mode"
+          description: "Choose How to Authenticate to AWS."
+          type: "object"
+          oneOf:
+          - type: "object"
+            title: "IAM Role"
+            required:
+            - "role_arn"
+            - "credentials_title"
+            properties:
+              credentials_title:
+                type: "string"
+                title: "Credentials Title"
+                description: "Name of the credentials"
+                const: "IAM Role"
+                enum:
+                - "IAM Role"
+                default: "IAM Role"
+                order: 0
+              role_arn:
+                title: "Target Role Arn"
+                type: "string"
+                description: "Will assume this role to write data to s3"
+                airbyte_secret: false
+          - type: "object"
+            title: "IAM User"
+            required:
+            - "credentials_title"
+            - "aws_access_key_id"
+            - "aws_secret_access_key_id"
+            properties:
+              credentials_title:
+                type: "string"
+                title: "Credentials Title"
+                description: "Name of the credentials"
+                const: "IAM User"
+                enum:
+                - "IAM User"
+                default: "IAM User"
+                order: 0
+              aws_access_key_id:
+                title: "Access Key Id"
+                type: "string"
+                description: "AWS User Access Key Id"
+                airbyte_secret: true
+              aws_secret_access_key:
+                title: "Secret Access Key"
+                type: "string"
+                description: "Secret Access Key"
+                airbyte_secret: true
+        bucket_name:
+          title: "S3 Bucket Name"
+          type: "string"
+          description: "Name of the bucket"
+          airbyte_secret: false
+        bucket_prefix:
+          title: "Target S3 Bucket Prefix"
+          type: "string"
+          description: "S3 prefix"
+          airbyte_secret: false
+        lakeformation_database_name:
+          title: "Lakeformation Database Name"
+          type: "string"
+          description: "Which database to use"
+          airbyte_secret: false
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+- dockerImage: "airbyte/destination-bigquery:1.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -217,7 +314,7 @@
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
-            \ dataset. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-accounts#creating\"\
+            \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
             >here</a>."
           title: "Project ID"
         dataset_id:
@@ -272,7 +369,7 @@
             \ <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\"\
             >docs</a> if you need help generating this key. Default credentials will\
             \ be used if this field is left empty."
-          title: "Credentials JSON (Optional)"
+          title: "Service Account Key JSON (Optional)"
           airbyte_secret: true
         transformation_priority:
           type: "string"
@@ -293,10 +390,10 @@
           type: "object"
           title: "Loading Method"
           description: "Loading method used to send select the way data will be uploaded\
-            \ to BigQuery. <br><b>Standard Inserts</b> - Direct uploading using SQL\
+            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
             \ INSERT statements. This method is extremely inefficient and provided\
             \ only for quick testing. In almost all cases, you should use staging.\
-            \ <br><b>GCS Staging</b> - Writes large batches of records to a file,\
+            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
             \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
             \ the file. Recommended for most workloads for better speed and scalability.\
             \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
@@ -398,7 +495,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.2.11"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -411,14 +508,13 @@
       additionalProperties: true
       properties:
         big_query_client_buffer_size_mb:
-          title: "Google BigQuery client chunk size"
-          description: "Google BigQuery client's chunk (buffer) size (MIN = 1, MAX\
-            \ = 15) for each table. The size that will be written by a single RPC.\
-            \ Written data will be buffered and only flushed upon reaching this size\
-            \ or closing the channel. It defaults to 15MiB. Smaller chunk size means\
-            \ less memory consumption, and is recommended for big data sets. For more\
-            \ details refer to the documentation <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
-            >here</a>"
+          title: "Google BigQuery Client Chunk Size (Optional)"
+          description: "Google BigQuery client's chunk (buffer) size (MIN=1, MAX =\
+            \ 15) for each table. The size that will be written by a single RPC. Written\
+            \ data will be buffered and only flushed upon reaching this size or closing\
+            \ the channel. The default 15MB value is used if not set explicitly. Read\
+            \ more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
+            >here</a>."
           type: "integer"
           minimum: 1
           maximum: 15
@@ -428,18 +524,22 @@
         project_id:
           type: "string"
           description: "The GCP project ID for the project containing the target BigQuery\
-            \ dataset."
+            \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
+            >here</a>."
           title: "Project ID"
         dataset_id:
           type: "string"
-          description: "Default BigQuery Dataset ID tables are replicated to if the\
-            \ source does not specify a namespace."
+          description: "The default BigQuery Dataset ID that tables are replicated\
+            \ to if the source does not specify a namespace. Read more <a href=\"\
+            https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
           title: "Default Dataset ID"
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
-            \ will not be applied."
-          title: "Dataset Location"
+            \ will not be applied. The default \"US\" value is used if not set explicitly.\
+            \ Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\"\
+            >here</a>."
+          title: "Dataset Location (Optional)"
           default: "US"
           enum:
           - "US"
@@ -476,19 +576,26 @@
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.io/integrations/destinations/bigquery\"\
+            \ <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\"\
             >docs</a> if you need help generating this key. Default credentials will\
             \ be used if this field is left empty."
-          title: "Credentials JSON"
+          title: "Service Account Key JSON (Optional)"
           airbyte_secret: true
         loading_method:
           type: "object"
-          title: "Loading Method"
-          description: "Select the way that data will be uploaded to BigQuery."
+          title: "Loading Method *"
+          description: "Loading method used to send select the way data will be uploaded\
+            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
+            \ INSERT statements. This method is extremely inefficient and provided\
+            \ only for quick testing. In almost all cases, you should use staging.\
+            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
+            \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
+            \ the file. Recommended for most workloads for better speed and scalability.\
+            \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
+            >here</a>."
           oneOf:
           - title: "Standard Inserts"
             additionalProperties: false
-            description: "Direct uploading using streams."
             required:
             - "method"
             properties:
@@ -497,9 +604,6 @@
                 const: "Standard"
           - title: "GCS Staging"
             additionalProperties: false
-            description: "Writes large batches of records to a file, uploads the file\
-              \ to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended\
-              \ for large production workloads for better speed and scalability."
             required:
             - "method"
             - "gcs_bucket_name"
@@ -512,16 +616,18 @@
               gcs_bucket_name:
                 title: "GCS Bucket Name"
                 type: "string"
-                description: "The name of the GCS bucket."
+                description: "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\"\
+                  >here</a>."
                 examples:
                 - "airbyte_sync"
               gcs_bucket_path:
+                title: "GCS Bucket Path"
                 description: "Directory under the GCS bucket where data will be written."
                 type: "string"
                 examples:
                 - "data_sync/test"
               part_size_mb:
-                title: "Block Size (MB) for GCS multipart upload"
+                title: "Block Size (MB) for GCS Multipart Upload (Optional)"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
                   \ to upload a bigger files and improve the speed, but consumes more\
@@ -536,14 +642,19 @@
                 type: "string"
                 description: "This upload method is supposed to temporary store records\
                   \ in GCS bucket. What do you want to do with data in GCS bucket\
-                  \ when migration has finished?"
-                title: "GCS tmp files afterward processing"
+                  \ when migration has finished? The default \"Delete all tmp files\
+                  \ from GCS\" value is used if not set explicitly."
+                title: "GCS Tmp Files Afterward Processing (Optional)"
                 default: "Delete all tmp files from GCS"
                 enum:
                 - "Delete all tmp files from GCS"
                 - "Keep all tmp files in GCS"
               credential:
                 title: "Credential"
+                description: "An HMAC key is a type of credential and can be associated\
+                  \ with a service account or a user account in Cloud Storage. Read\
+                  \ more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\"\
+                  >here</a>."
                 type: "object"
                 oneOf:
                 - title: "HMAC key"
@@ -1177,7 +1288,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.1.24"
+- dockerImage: "airbyte/destination-gcs:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -1187,32 +1298,36 @@
       required:
       - "gcs_bucket_name"
       - "gcs_bucket_path"
-      - "gcs_bucket_region"
       - "credential"
       - "format"
       additionalProperties: false
       properties:
         gcs_bucket_name:
           title: "GCS Bucket Name"
+          order: 1
           type: "string"
-          description: "You can find the bucket name in the  App Engine Admin console\
-            \ Application Settings page, under the label  Google Cloud Storage Bucket."
+          description: "You can find the bucket name in the App Engine Admin console\
+            \ Application Settings page, under the label Google Cloud Storage Bucket.\
+            \ Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\"\
+            >here</a>."
           examples:
           - "airbyte_sync"
         gcs_bucket_path:
+          title: "GCS Bucket Path"
           description: "GCS Bucket Path string Subdirectory under the above bucket\
             \ to sync the data into."
+          order: 2
           type: "string"
           examples:
           - "data_sync/test"
         gcs_bucket_region:
-          title: "GCS Bucket Region"
+          title: "GCS Bucket Region (Optional)"
           type: "string"
-          default: ""
-          description: "Select a Region of the GCS Bucket."
+          order: 3
+          default: "us"
+          description: "Select a Region of the GCS Bucket. Read more <a href=\"https://cloud.google.com/storage/docs/locations\"\
+            >here</a>."
           enum:
-          - ""
-          - "-- North America --"
           - "northamerica-northeast1"
           - "northamerica-northeast2"
           - "us-central1"
@@ -1222,10 +1337,8 @@
           - "us-west2"
           - "us-west3"
           - "us-west4"
-          - "-- South America --"
           - "southamerica-east1"
           - "southamerica-west1"
-          - "-- Europe --"
           - "europe-central2"
           - "europe-north1"
           - "europe-west1"
@@ -1233,7 +1346,6 @@
           - "europe-west3"
           - "europe-west4"
           - "europe-west6"
-          - "-- Asia --"
           - "asia-east1"
           - "asia-east2"
           - "asia-northeast1"
@@ -1243,20 +1355,22 @@
           - "asia-south2"
           - "asia-southeast1"
           - "asia-southeast2"
-          - "-- Australia --"
           - "australia-southeast1"
           - "australia-southeast2"
-          - "-- Multi-regions --"
           - "asia"
           - "eu"
           - "us"
-          - "-- Dual-regions --"
           - "asia1"
           - "eur4"
           - "nam4"
         credential:
-          title: "Credential"
+          title: "Authentication"
+          description: "An HMAC key is a type of credential and can be associated\
+            \ with a service account or a user account in Cloud Storage. Read more\
+            \ <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\"\
+            >here</a>."
           type: "object"
+          order: 0
           oneOf:
           - title: "HMAC Key"
             required:
@@ -1271,25 +1385,35 @@
                 default: "HMAC_KEY"
               hmac_key_access_id:
                 type: "string"
-                description: "HMAC key access ID. When linked to a service account,\
-                  \ this ID is 61 characters long; when linked to a user account,\
-                  \ it is 24 characters long."
-                title: "HMAC Key Access ID"
+                description: "When linked to a service account, this ID is 61 characters\
+                  \ long; when linked to a user account, it is 24 characters long.\
+                  \ Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys#overview\"\
+                  >here</a>."
+                title: "Access ID"
                 airbyte_secret: true
+                order: 0
                 examples:
                 - "1234567890abcdefghij1234"
               hmac_key_secret:
                 type: "string"
                 description: "The corresponding secret for the access ID. It is a\
-                  \ 40-character base-64 encoded string."
-                title: "HMAC Key Secret"
+                  \ 40-character base-64 encoded string.  Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys#secrets\"\
+                  >here</a>."
+                title: "Secret"
                 airbyte_secret: true
+                order: 1
                 examples:
                 - "1234567890abcdefghij1234567890ABCDEFGHIJ"
         format:
           title: "Output Format"
           type: "object"
-          description: "Output data format"
+          description: "Output data format. One of the following formats must be selected\
+            \ - <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#advantages_of_avro\"\
+            >AVRO</a> format, <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet#parquet_schemas\"\
+            >PARQUET</a> format, <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#loading_csv_data_into_a_table\"\
+            >CSV</a> format, or <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#loading_json_data_into_a_new_table\"\
+            >JSONL</a> format."
+          order: 4
           oneOf:
           - title: "Avro: Apache Avro"
             required:
@@ -1319,7 +1443,6 @@
                 - title: "Deflate"
                   required:
                   - "codec"
-                  - "compression_level"
                   properties:
                     codec:
                       type: "string"
@@ -1327,7 +1450,7 @@
                       - "Deflate"
                       default: "Deflate"
                     compression_level:
-                      title: "Deflate level"
+                      title: "Deflate level (Optional)"
                       description: "0: no compression & fastest, 9: best compression\
                         \ & slowest."
                       type: "integer"
@@ -1346,7 +1469,6 @@
                 - title: "xz"
                   required:
                   - "codec"
-                  - "compression_level"
                   properties:
                     codec:
                       type: "string"
@@ -1354,8 +1476,15 @@
                       - "xz"
                       default: "xz"
                     compression_level:
-                      title: "Compression Level"
-                      description: "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\"\
+                      title: "Compression Level (Optional)"
+                      description: "The presets 0-3 are fast presets with medium compression.\
+                        \ The presets 4-6 are fairly slow presets with high compression.\
+                        \ The default preset is 6. The presets 7-9 are like the preset\
+                        \ 6 but use bigger dictionaries and have higher compressor\
+                        \ and decompressor memory requirements. Unless the uncompressed\
+                        \ size of the file exceeds 8 MiB, 16 MiB, or 32 MiB, it is\
+                        \ waste of memory to use the presets 7, 8, or 9, respectively.\
+                        \ Read more <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\"\
                         >here</a> for details."
                       type: "integer"
                       default: 6
@@ -1364,7 +1493,6 @@
                 - title: "zstandard"
                   required:
                   - "codec"
-                  - "compression_level"
                   properties:
                     codec:
                       type: "string"
@@ -1372,7 +1500,7 @@
                       - "zstandard"
                       default: "zstandard"
                     compression_level:
-                      title: "Compression Level"
+                      title: "Compression Level (Optional)"
                       description: "Negative levels are 'fast' modes akin to lz4 or\
                         \ snappy, levels above 9 are generally for archival purposes,\
                         \ and levels above 18 use a lot of memory."
@@ -1381,7 +1509,7 @@
                       minimum: -5
                       maximum: 22
                     include_checksum:
-                      title: "Include Checksum"
+                      title: "Include Checksum (Optional)"
                       description: "If true, include a checksum with each data block."
                       type: "boolean"
                       default: false
@@ -1395,7 +1523,7 @@
                       - "snappy"
                       default: "snappy"
               part_size_mb:
-                title: "Block Size (MB) for GCS multipart upload"
+                title: "Block Size (MB) for GCS multipart upload (Optional)"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
                   \ to upload a bigger files and improve the speed, but consumes9\
@@ -1407,7 +1535,6 @@
           - title: "CSV: Comma-Separated Values"
             required:
             - "format_type"
-            - "flattening"
             properties:
               format_type:
                 type: "string"
@@ -1416,15 +1543,15 @@
                 default: "CSV"
               flattening:
                 type: "string"
-                title: "Normalization (Flattening)"
-                description: "Whether the input json data should be normalized (flattened)\
+                title: "Normalization (Optional)"
+                description: "Whether the input JSON data should be normalized (flattened)\
                   \ in the output CSV. Please refer to docs for details."
                 default: "No flattening"
                 enum:
                 - "No flattening"
                 - "Root level flattening"
               part_size_mb:
-                title: "Block Size (MB) for GCS multipart upload"
+                title: "Block Size (MB) for GCS multipart upload (Optional)"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
                   \ to upload a bigger files and improve the speed, but consumes9\
@@ -1443,7 +1570,7 @@
                 - "JSONL"
                 default: "JSONL"
               part_size_mb:
-                title: "Block Size (MB) for GCS multipart upload"
+                title: "Block Size (MB) for GCS multipart upload (Optional)"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
                   \ to upload a bigger files and improve the speed, but consumes9\
@@ -1462,9 +1589,10 @@
                 - "Parquet"
                 default: "Parquet"
               compression_codec:
-                title: "Compression Codec"
+                title: "Compression Codec (Optional)"
                 description: "The compression algorithm used to compress data pages."
                 type: "string"
+                default: "UNCOMPRESSED"
                 enum:
                 - "UNCOMPRESSED"
                 - "SNAPPY"
@@ -1473,9 +1601,8 @@
                 - "BROTLI"
                 - "LZ4"
                 - "ZSTD"
-                default: "UNCOMPRESSED"
               block_size_mb:
-                title: "Block Size (Row Group Size) (MB)"
+                title: "Block Size (Row Group Size) (MB) (Optional)"
                 description: "This is the size of a row group being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will improve\
                   \ the IO when reading, but consume more memory when writing. Default:\
@@ -1485,7 +1612,7 @@
                 examples:
                 - 128
               max_padding_size_mb:
-                title: "Max Padding Size (MB)"
+                title: "Max Padding Size (MB) (Optional)"
                 description: "Maximum size allowed as padding to align row groups.\
                   \ This is also the minimum size of a row group. Default: 8 MB."
                 type: "integer"
@@ -1493,7 +1620,7 @@
                 examples:
                 - 8
               page_size_kb:
-                title: "Page Size (KB)"
+                title: "Page Size (KB) (Optional)"
                 description: "The page size is for compression. A block is composed\
                   \ of pages. A page is the smallest unit that must be read fully\
                   \ to access a single record. If this value is too small, the compression\
@@ -1503,7 +1630,7 @@
                 examples:
                 - 1024
               dictionary_page_size_kb:
-                title: "Dictionary Page Size (KB)"
+                title: "Dictionary Page Size (KB) (Optional)"
                 description: "There is one dictionary page per column per row group\
                   \ when dictionary encoding is used. The dictionary page size works\
                   \ like the page size but for dictionary. Default: 1024 KB."
@@ -1512,7 +1639,7 @@
                 examples:
                 - 1024
               dictionary_encoding:
-                title: "Dictionary Encoding"
+                title: "Dictionary Encoding (Optional)"
                 description: "Default: true."
                 type: "boolean"
                 default: true
@@ -1553,7 +1680,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-pubsub:0.1.2"
+- dockerImage: "airbyte/destination-pubsub:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/pubsub"
     connectionSpecification:
@@ -2092,7 +2219,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.15"
+- dockerImage: "airbyte/destination-mssql:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -2872,7 +2999,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.15"
+- dockerImage: "airbyte/destination-postgres:0.3.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
@@ -3469,7 +3596,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.2.10"
+- dockerImage: "airbyte/destination-s3:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3491,17 +3618,27 @@
             \ S3, just leave empty)."
           examples:
           - "http://localhost:9000"
+          order: 0
         s3_bucket_name:
           title: "S3 Bucket Name"
           type: "string"
           description: "The name of the S3 bucket."
           examples:
           - "airbyte_sync"
+          order: 1
         s3_bucket_path:
           description: "Directory under the S3 bucket where data will be written."
           type: "string"
           examples:
           - "data_sync/test"
+          order: 2
+        s3_path_format:
+          description: "Format string on how data will be organized inside the S3\
+            \ bucket directory"
+          type: "string"
+          examples:
+          - "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
+          order: 3
         s3_bucket_region:
           title: "S3 Bucket Region"
           type: "string"
@@ -3534,6 +3671,7 @@
           - "me-south-1"
           - "us-gov-east-1"
           - "us-gov-west-1"
+          order: 4
         access_key_id:
           type: "string"
           description: "The access key id to access the S3 bucket. Airbyte requires\
@@ -3543,6 +3681,7 @@
           airbyte_secret: true
           examples:
           - "A012345678910EXAMPLE"
+          order: 5
         secret_access_key:
           type: "string"
           description: "The corresponding secret to the access key id, if S3 Key Id\
@@ -3551,6 +3690,7 @@
           airbyte_secret: true
           examples:
           - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+          order: 6
         format:
           title: "Output Format"
           type: "object"
@@ -3781,6 +3921,7 @@
                 description: "Default: true."
                 type: "boolean"
                 default: true
+          order: 7
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
@@ -3840,7 +3981,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.22"
+- dockerImage: "airbyte/destination-snowflake:0.4.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -3854,7 +3995,6 @@
       - "database"
       - "schema"
       - "username"
-      - "password"
       additionalProperties: true
       properties:
         host:
@@ -3906,11 +4046,56 @@
           type: "string"
           title: "Username"
           order: 5
-        password:
-          description: "The password associated with the username."
-          type: "string"
-          airbyte_secret: true
-          title: "Password"
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            order: 0
+            required:
+            - "access_token"
+            - "refresh_token"
+            properties:
+              auth_type:
+                type: "string"
+                const: "OAuth2.0"
+                enum:
+                - "OAuth2.0"
+                default: "OAuth2.0"
+                order: 0
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your Drift developer application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                title: "Client Secret"
+                description: "The Client Secret of your Drift developer application."
+                airbyte_secret: true
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "Access Token for making authenticated requests."
+                airbyte_secret: true
+              refresh_token:
+                type: "string"
+                title: "Refresh Token"
+                description: "Refresh Token for making authenticated requests."
+                airbyte_secret: true
+          - title: "Username and Password"
+            type: "object"
+            required:
+            - "password"
+            order: 1
+            properties:
+              password:
+                description: "The password associated with the username."
+                type: "string"
+                airbyte_secret: true
+                title: "Password"
+                order: 1
           order: 6
         jdbc_url_params:
           description: "Additional properties to pass to the JDBC URL string when\
@@ -4150,6 +4335,56 @@
     - "overwrite"
     - "append"
     - "append_dedup"
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "credentials"
+      - "auth_type"
+      predicate_value: "OAuth2.0"
+      oauth_config_specification:
+        oauth_user_input_from_connector_config_specification:
+          type: "object"
+          properties:
+            host:
+              type: "string"
+              path_in_connector_config:
+              - "host"
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "access_token"
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "refresh_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_secret"
 - dockerImage: "airbyte/destination-mariadb-columnstore:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore"

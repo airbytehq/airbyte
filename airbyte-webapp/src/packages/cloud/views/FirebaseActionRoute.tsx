@@ -1,10 +1,11 @@
 import React from "react";
 import { useAsync } from "react-use";
 
-import useRouter from "hooks/useRouter";
 import LoadingPage from "components/LoadingPage";
 
+import useRouter from "hooks/useRouter";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
+
 import { ResetPasswordConfirmPage } from "./auth/ConfirmPasswordResetPage";
 
 export enum FirebaseActionMode {

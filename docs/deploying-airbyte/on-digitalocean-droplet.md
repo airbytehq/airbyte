@@ -1,8 +1,8 @@
-# On DigitalOcean \(Droplet\)
+# On DigitalOcean (Droplet)
 
 The instructions have been tested on `DigitalOcean Droplet ($5)`. 
 
-Alternatively, you can one-click deploy Airbyte to DigitalOcean using their marketplace:<br>
+Alternatively, you can one-click deploy Airbyte to DigitalOcean using their marketplace:<br/>
 <a href="https://cloud.digitalocean.com/droplets/new?onboarding_origin=marketplace&appId=95451155&image=airbyte&utm_source=deploying-airbyte_on-digitalocean-droplet"><img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DigitalOcean" /></a>
 
 ## Create a new droplet
