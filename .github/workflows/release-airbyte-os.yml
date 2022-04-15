@@ -57,10 +57,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set python-version
-        shell: bash
-        run: echo "PYTHON_VERSION="$(cat .python-version)"" >> $GITHUB_ENV
-
       - name: Set java-version
         shell: bash
         run: echo "JAVA_VERSION="$(cat .java-version)"" >> $GITHUB_ENV
@@ -74,6 +70,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "${{ env.NODE_VERSION }}"
+
+      - name: Set python-version
+        shell: bash
+        run: echo "PYTHON_VERSION="$(cat .python-version)"" >> $GITHUB_ENV
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
