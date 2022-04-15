@@ -56,17 +56,28 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Set python-version
+        shell: bash
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
+
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: "${{ env.PYTHON_VERSION }}"
       - name: Release Airbyte
         id: release_airbyte
         env:
@@ -87,16 +98,25 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}"
+      - name: Set python-version
+        shell: bash
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: "${{ env.PYTHON_VERSION }}"
       - name: Release Octavia
         id: release_octavia
         env:
@@ -115,10 +135,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - name: Set python-version
+        shell: bash
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: "${{ env.PYTHON_VERSION }}"
       - name: Bump version
         id: bump_version
         env:

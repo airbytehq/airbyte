@@ -74,13 +74,19 @@ jobs:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "16.13.0"
+    - name: Set node-version
+      shell: bash
+      run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
+    - uses: actions/setup-node@v1
+      with:
+        node-version: "${{ env.NODE_VERSION }}"
 
       - name: Fix EC-2 Runner
         run: |

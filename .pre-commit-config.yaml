@@ -31,7 +31,7 @@ repos:
         types_or: [yaml, json]
         exclude: |
           (?x)^.*(
-              .github/|
+              .github/.*|
               source_specs.yaml|
               destination_specs.yaml|
               .gitlab-ci.yml

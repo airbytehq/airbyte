@@ -108,13 +108,19 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set python-version
+        shell: bash
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: "${{ env.PYTHON_VERSION }}"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -187,17 +193,27 @@ jobs:
         with:
           cache-key: ${{ secrets.CACHE_VERSION }}
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}"
 
-      - uses: actions/setup-python@v2
+      - name: Set python-version
+        shell: bash
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
+      - name: Install Python
+        uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: "${{ env.PYTHON_VERSION }}"
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
@@ -295,13 +311,19 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -334,13 +356,19 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -432,13 +460,19 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -569,13 +603,19 @@ jobs:
             **/.venv
           key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -668,13 +708,19 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}"
 
       - name: Fix EC-2 Runner
         run: |
@@ -837,13 +883,19 @@ jobs:
           cache-key: ${{ secrets.CACHE_VERSION }}
           cache-python: "false"
 
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
 
+      - name: Set node-version
+        shell: bash
+        run: echo "NODE_VERSION="$(cat ../../.node-version)"" >> $GITHUB_ENV
       - uses: actions/setup-node@v1
         with:
-          node-version: "16.13.0"
+          node-version: "${{ env.NODE_VERSION }}"
 
       - name: Fix EC-2 Runner
         run: |

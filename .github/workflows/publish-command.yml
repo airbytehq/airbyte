@@ -100,14 +100,19 @@ jobs:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
           token: ${{ secrets.OCTAVIA_PAT }}
-      - name: Install Java
-        uses: actions/setup-java@v1
+      - name: Set java-version
+        shell: bash
+        run: echo "JAVA_VERSION="$(cat ../../.java-version)"" >> $GITHUB_ENV
+      - uses: actions/setup-java@v1
         with:
-          java-version: "17"
+          java-version: "${{ env.JAVA_VERSION }}"
+      - name: Set python-version
+        shell: bash
+        run: echo "PYTHON_VERSION="$(cat ../../.python-version)"" >> $GITHUB_ENV
       - name: Install Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: "${{ env.PYTHON_VERSION }}"
       - name: Install Pyenv and Tox
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
