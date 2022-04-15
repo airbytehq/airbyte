@@ -25,26 +25,6 @@ if [[ "$(which java)" && "$(java --version)" ]];
         printf "not installed, please install Java ${DESIRED_JAVA_VERSION}"
 fi;
 
-#printf "\n";
-#DESIRED_PIP_VERSION="$(cat ../../.pip-version)"
-#printf "Pip ";
-#if [[ "$(which pip)" && "$(pip --version)" ]];
-#    then
-#        str="$(pip --version)"
-#        # Returns like "pip 20.X.Y from.."
-#        IFS=' ' read -ra array <<< "${str}"
-#        pip_version="${array[1]}"
-#        printf "${pip_version} is installed"
-#        if [[ "${pip_version}" == "${DESIRED_PIP_VERSION}" ]];
-#            then
-#                printf " and matches version ${DESIRED_PIP_VERSION}"
-#            else
-#                printf " but does not match version ${DESIRED_PIP_VERSION}, you might see unexpected behavior"
-#        fi
-#    else
-#        printf "not installed, please install Pip ${DESIRED_PIP_VERSION}"
-#fi;
-
 printf "\n";
 printf "Python ";
 DESIRED_PYTHON_VERSION="$(cat ../../.python-version)"
@@ -81,6 +61,29 @@ if [[ "$(which node)" && "$(node --version)" ]];
         fi
     else
         printf "not installed, please install Node ${DESIRED_NODE_VERSION}"
+fi;
+
+# Stuff below here the specific version is not as important, more important to just
+# know you have them installed. If you disagree and think specific version matters, feel free
+# to implement like the blocks above.
+printf "\n";
+DESIRED_PIP_VERSION="$(cat ../../.pip-version)"
+printf "Pip ";
+if [[ "$(which pip)" && "$(pip --version)" ]];
+    then
+        str="$(pip --version)"
+        # Returns like "pip 20.X.Y from.."
+        IFS=' ' read -ra array <<< "${str}"
+        pip_version="${array[1]}"
+        printf "${pip_version} is installed"
+        if [[ "${pip_version}" == "${DESIRED_PIP_VERSION}" ]];
+            then
+                printf " and matches version ${DESIRED_PIP_VERSION}"
+            else
+                printf " but does not match version ${DESIRED_PIP_VERSION}, you might see unexpected behavior"
+        fi
+    else
+        printf "not installed, please install Pip ${DESIRED_PIP_VERSION}"
 fi;
 
 printf "\n"

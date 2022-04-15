@@ -74,11 +74,14 @@ jobs:
       - name: Set python-version
         shell: bash
         run: echo "PYTHON_VERSION="$(cat .python-version)"" >> $GITHUB_ENV
+      - name: Set pip-version
+        shell: bash
+        run: echo "PIP_VERSION="$(cat .pip-version)"" >> $GITHUB_ENV
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
           python_version: "${{ env.PYTHON_VERSION }}"
-          pip_version: "21.1"
+          pip_version: "${{ env.PIP_VERSION }}"
           subdir: "airbyte-cdk/python/"
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
