@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.35.67-alpha",
+  "version": "0.36.0-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -86,6 +86,7 @@
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-jest": "^26.1.4",
     "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "express": "^4.17.3",
     "husky": "^4.2.3",
     "license-checker": "^25.0.1",
