@@ -11,6 +11,11 @@ def test_directories_to_create():
     assert commands.DIRECTORIES_TO_CREATE == {"connections", "destinations", "sources"}
 
 
+@pytest.fixture
+def context_object(mock_telemetry_client):
+    return {"TELEMETRY_CLIENT": mock_telemetry_client}
+
+
 @pytest.mark.parametrize(
     "directories_to_create,mkdir_side_effects,expected_created_directories,expected_not_created_directories",
     [
@@ -29,18 +34,18 @@ def test_create_directories(
     commands.os.mkdir.assert_has_calls([mocker.call(d) for d in directories_to_create])
 
 
-def test_init(mocker):
+def test_init(mocker, context_object):
     runner = CliRunner()
     mocker.patch.object(commands, "create_directories", mocker.Mock(return_value=(["dir_a", "dir_b"], [])))
-    result = runner.invoke(commands.init)
+    result = runner.invoke(commands.init, obj=context_object)
     assert result.exit_code == 0
     assert result.output == "🔨 - Initializing the project.\n✅ - Created the following directories: dir_a, dir_b.\n"
 
 
-def test_init_some_existing_directories(mocker):
+def test_init_some_existing_directories(mocker, context_object):
     runner = CliRunner()
     mocker.patch.object(commands, "create_directories", mocker.Mock(return_value=(["dir_a"], ["dir_b"])))
-    result = runner.invoke(commands.init)
+    result = runner.invoke(commands.init, obj=context_object)
     assert result.exit_code == 0
     assert (
         result.output
@@ -48,9 +53,9 @@ def test_init_some_existing_directories(mocker):
     )
 
 
-def test_init_all_existing_directories(mocker):
+def test_init_all_existing_directories(mocker, context_object):
     runner = CliRunner()
     mocker.patch.object(commands, "create_directories", mocker.Mock(return_value=([], ["dir_a", "dir_b"])))
-    result = runner.invoke(commands.init)
+    result = runner.invoke(commands.init, obj=context_object)
     assert result.exit_code == 0
     assert result.output == "🔨 - Initializing the project.\n❓ - Already existing directories: dir_a, dir_b.\n"

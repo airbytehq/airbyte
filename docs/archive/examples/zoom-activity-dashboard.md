@@ -56,7 +56,7 @@ Once you are in, you need to click on the **Develop** dropdown and then click on
 
 Clicking on **Build App** for the first time will display a modal for you to accept the Zoom’s API license and terms of use. Do accept if you agree and you will be presented with the below screen.
 
-![](../../.gitbook/assets/zoom-marketplace-build-screen%20(3)%20(3)%20(1).png)
+![](../../.gitbook/assets/zoom-marketplace-build-screen%20(3)%20(3).png)
 
 Select **JWT** as the app you want to build and click on the **Create** button on the card. You will be presented with a modal to enter the app name; type in `airbyte-zoom`.
 
@@ -120,7 +120,7 @@ Select a **Sync frequency** of **manual** and then click on **Set up connection*
 
 After successfully making the connection, you will see your PostgreSQL destination. Click on the Launch button to start the data replication.
 
-![](../../.gitbook/assets/launch%20(3)%20(3)%20(1).png)
+![](../../.gitbook/assets/launch%20(3)%20(3).png)
 
 Then click on the **airbyte-zoom-destination** to see the Sync page.
 
@@ -144,7 +144,7 @@ Go ahead and install Tableau on your machine. After the installation is complete
 
 Once your activation is successful, you will see your Tableau dashboard.
 
-![](../../.gitbook/assets/tableau-dashboard%20(3)%20(3)%20(1).png)
+![](../../.gitbook/assets/tableau-dashboard%20(3)%20(3).png)
 
 On the sidebar menu under the **To a Server** section, click on the **More…** menu. You will see a list of datasource connectors you can connect Tableau with.
 
@@ -194,7 +194,7 @@ Tableau should now look like this:
 
 Now, to finish up, we need to add the **meetings\(Count\) measure** Tableau already calculated for us in the **Rows** section. So drag **meetings\(Count\)** onto the Columns section to complete the chart.
 
-![](../../.gitbook/assets/evolution-of-meetings-per-week%20(3)%20(3)%20(2).png)
+![](../../.gitbook/assets/evolution-of-meetings-per-week%20(3)%20(3).png)
 
 And now we are done with the very first chart. Let's save the sheet and create a new Dashboard that we will add this sheet to as well as the others we will be creating.
 

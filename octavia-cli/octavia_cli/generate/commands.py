@@ -5,6 +5,7 @@
 import click
 import octavia_cli.generate.definitions as definitions
 from octavia_cli.apply import resources
+from octavia_cli.base_commands import OctaviaCommand
 from octavia_cli.check_context import requires_init
 
 from .renderers import ConnectionRenderer, ConnectorSpecificationRenderer
@@ -25,7 +26,7 @@ def generate_source_or_destination(definition_type, api_client, definition_id, r
     click.echo(click.style(message, fg="green"))
 
 
-@generate.command(name="source", help="Create YAML for a source")
+@generate.command(cls=OctaviaCommand, name="source", help="Create YAML for a source")
 @click.argument("definition_id", type=click.STRING)
 @click.argument("resource_name", type=click.STRING)
 @click.pass_context
@@ -33,7 +34,7 @@ def source(ctx: click.Context, definition_id: str, resource_name: str):
     generate_source_or_destination("source", ctx.obj["API_CLIENT"], definition_id, resource_name)
 
 
-@generate.command(name="destination", help="Create YAML for a destination")
+@generate.command(cls=OctaviaCommand, name="destination", help="Create YAML for a destination")
 @click.argument("definition_id", type=click.STRING)
 @click.argument("resource_name", type=click.STRING)
 @click.pass_context
@@ -41,7 +42,7 @@ def destination(ctx: click.Context, definition_id: str, resource_name: str):
     generate_source_or_destination("destination", ctx.obj["API_CLIENT"], definition_id, resource_name)
 
 
-@generate.command(name="connection", help="Generate a YAML template for a connection.")
+@generate.command(cls=OctaviaCommand, name="connection", help="Generate a YAML template for a connection.")
 @click.argument("connection_name", type=click.STRING)
 @click.option(
     "--source",
