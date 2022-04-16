@@ -7,12 +7,11 @@ package io.airbyte.integrations.destination.staging;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.types.GenericParamType;
 import java.util.List;
 import java.util.UUID;
 import org.joda.time.DateTime;
 
-public interface StagingOperations extends SqlOperations<GenericParamType, GenericParamType>  {
+public interface StagingOperations extends SqlOperations  {
 
   String getStageName(String namespace, String streamName);
 

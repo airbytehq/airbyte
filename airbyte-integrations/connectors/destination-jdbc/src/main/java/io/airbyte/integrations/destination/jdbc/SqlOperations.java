@@ -6,14 +6,17 @@ package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.types.GenericParamType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // todo (cgardens) - is it necessary to expose so much configurability in this interface. review if
 // we can narrow the surface area.
-public interface SqlOperations<T, S> {
+public interface SqlOperations {
+
+  Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
   /**
    * Create a schema with provided name if it does not already exist.
@@ -119,29 +122,17 @@ public interface SqlOperations<T, S> {
 
 
   /**
-   * The method is responsible for executing some specific DB Engine logic in onStart method. We can override this method to execute specific logic
+   * The method is responsible for executing some specific DB Engine logic in onClose method. We can override this method to execute specific logic
    * e.g. to handle any necessary migrations in the destination, etc.
    * <p>
    * In next example you can see how migration from VARCHAR to SUPER column is handled for the Redshift destination:
    *
    * @param database - Database that the connector is interacting with
-   * @param params   - Generic parameters that are passed to the destination
-   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationStartOperations
+   * @param schemaNames   - schemas will be discovered
+   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationCloseOperations
    */
-  default void onDestinationStartOperations(JdbcDatabase database, T params) {
+  default void onDestinationCloseOperations(JdbcDatabase database, Set<String> schemaNames) {
     // do nothing
-  }
-
-  /**
-   * We can override this method to execute some specific logic during S3 staging in closeAsOneTransaction method.
-   * <p>
-   * In next example you can see how migration from VARCHAR to SUPER column is handled for the Redshift destination:
-   *
-   * @param database - Database that the connector is interacting with
-   * @param params   - Generic parameters that are passed to the destination
-   * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onCloseTransactionOperations(JdbcDatabase, Set)
-   */
-  default void onCloseTransactionOperations(JdbcDatabase database, S params) {
-    // do nothing
+    LOGGER.info("No onDestinationCloseOperations required for this destination.");
   }
 }

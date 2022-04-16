@@ -7,11 +7,10 @@ package io.airbyte.integrations.destination.databricks;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.integrations.types.GenericParamType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 
-public class DatabricksSqlOperations extends JdbcSqlOperations<GenericParamType, GenericParamType> {
+public class DatabricksSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
