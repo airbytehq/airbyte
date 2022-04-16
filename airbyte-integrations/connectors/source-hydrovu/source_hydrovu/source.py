@@ -91,6 +91,8 @@ class HydroVuStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
+
+        """
         def format_record(r):
             gps = r['gps']
             del r['gps']
@@ -99,6 +101,11 @@ class HydroVuStream(HttpStream, ABC):
             return r
 
         yield from (format_record(r) for r in response.json())
+        """
+
+        yield {}
+
+
 
 
 class Locations(HydroVuStream):
@@ -119,11 +126,112 @@ class Locations(HydroVuStream):
         return "locations/list"
 
 
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        def format_record(r):
+            gps = r['gps']
+            del r['gps']
+            r['latitude'] = gps['latitude']
+            r['longitude'] = gps['longitude']
+            return r
+
+        yield from (format_record(r) for r in response.json())
+
+
+
+class Readings(Locations):
+    primary_key = 'id'
+
+
+    def __init__(self, auth, *args, **kw):
+        super(Readings, self).__init__(*args, **kw)
+        
+        #locations = Locations()
+        
+
+        print ("auth2")
+        print (auth)
+
+        locations = Locations(authenticator=auth)
+       
+
+
+        records = locations.read_records('full-refresh')
+
+        print ("-------------------------")
+        print ("-------------------------")
+
+        for r in records:
+            print (r)
+
+        print ("-------------------------")
+        print ("-------------------------")
+
+
+        #locations = Locations(authenticator=auth)
+       
+        #locations_list = locations.parse_response()
+
+        #locations_list = list(locations.read_records('full-refresh'))
+
+        #records = list(p.read_records('full-refresh'))
+        #self._pages = (r for r in sorted(r['id'] for r in records))
+
+
+
+
+
+        #print ("locations_list")
+        #print (locations_list)
+
+
+    #def path(self):
+    #    return "readings/list"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        #return "locations/list"
+        return "readings/list"
+
+
+"""
 class Readings(HydroVuStream):
     primary_key = 'id'
 
-    def path(self):
+
+    def __init__(self, *args, **kw):
+        super(Readings, self).__init__(*args, **kw)
+        locations = Locations()
+       
+        locations_list = locations.parse_response()
+
+        #locations_list = list(locations.read_records('full-refresh'))
+
+        #records = list(p.read_records('full-refresh'))
+        #self._pages = (r for r in sorted(r['id'] for r in records))
+
+
+
+        print ("locations_list")
+        print (locations_list)
+
+
+    #def path(self):
+    #    return "readings/list"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        #return "locations/list"
         return "readings/list"
+
+"""
+
 
 
 class myOauth2Authenticator(Oauth2Authenticator):
@@ -181,4 +289,8 @@ class SourceHydrovu(AbstractSource):
                                      ""
                                      )
 
-        return [Locations(authenticator=auth), Readings(authenticator=auth)]
+
+        print ("auth1")
+        print (auth)
+
+        return [Locations(authenticator=auth), Readings(auth, authenticator=auth)]
