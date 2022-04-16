@@ -22,13 +22,14 @@ class GoogleSpreadsheetsWriter:
         self.client = client
     
     def buffer_stream(self, configured_stream):
-        self.write_buffer.append({configured_stream.stream.name: []})
-        self._headers.append(
-            {
-                configured_stream.stream.name: sorted(list(configured_stream.stream.json_schema.get("properties").keys())),
-                "is_set": False
-            }
-        )
+        if configured_stream:
+            self.write_buffer.append({configured_stream.stream.name: []})
+            self._headers.append(
+                {
+                    configured_stream.stream.name: sorted(list(configured_stream.stream.json_schema.get("properties").keys())),
+                    "is_set": False
+                }
+            )
     
     def add_to_buffer(self, stream_name: str, record: Mapping):   
         for stream in self.write_buffer:
@@ -88,9 +89,14 @@ class GoogleSpreadsheetsWriter:
             if stream_name in stream:
                 values = stream[stream_name]
         wks = self.client.open_worksheet(f"{stream_name}")
-        self.logger.info(f"Writing data for stream: {stream_name}")
+        # TODO:
         print(f"\nValues: {values}\n")
-        wks.append_table(values, start="A2", dimension='ROWS')
+        # 
+        if len(values) > 0:
+            self.logger.info(f"Writing data for stream: {stream_name}")
+            wks.append_table(values, start="A2", dimension='ROWS')
+        else:
+            self.logger.info(f"Skipping empty stream: {stream_name}")
         
     def write_whats_left(self):
         for stream in self.write_buffer:
@@ -98,5 +104,3 @@ class GoogleSpreadsheetsWriter:
             if stream_name in stream:
                 self.write_from_queue(stream_name)
                 self.flush_buffer(stream_name)
-    
-    

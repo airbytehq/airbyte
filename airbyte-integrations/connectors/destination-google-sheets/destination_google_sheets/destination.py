@@ -44,17 +44,17 @@ class DestinationGoogleSheets(Destination):
         writer = GoogleSpreadsheetsWriter(GoogleSpreadsheetsClient(config))
                 
         for configured_stream in configured_catalog.streams:
-            writer.buffer_stream(configured_stream)       
+            writer.buffer_stream(configured_stream)    
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 writer.delete_stream_entries(configured_stream.stream.name)
         
         for message in input_messages:
-            if message.type == Type.STATE:
-                yield message
-            elif message.type == Type.RECORD:
+            if message.type == Type.RECORD:
                 record = message.record
                 writer.add_to_buffer(record.stream, record.data)
                 writer.queue_write_operation(record.stream)
+            elif message.type == Type.STATE:
+                yield message
             else:
                 continue
         
