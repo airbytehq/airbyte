@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import time
 from typing import Any, Iterable, Mapping
 from google.auth.exceptions import RefreshError
 from airbyte_cdk import AirbyteLogger
@@ -10,7 +9,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Type
 from .client import GoogleSpreadsheetsClient
 from .writer import GoogleSpreadsheetsWriter
-from .helpers import connection_test_write, get_headers_from_schema
+from .helpers import connection_test_write
 
 
 class DestinationGoogleSheets(Destination):
@@ -45,11 +44,10 @@ class DestinationGoogleSheets(Destination):
         writer = GoogleSpreadsheetsWriter(GoogleSpreadsheetsClient(config))
                 
         for configured_stream in configured_catalog.streams:
-            writer.buffer_stream(configured_stream)
-            writer.set_headers(configured_stream.stream.name, get_headers_from_schema(configured_stream))
+            writer.buffer_stream(configured_stream)       
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 writer.delete_stream_entries(configured_stream.stream.name)
-                
+        
         for message in input_messages:
             if message.type == Type.STATE:
                 yield message
@@ -59,6 +57,7 @@ class DestinationGoogleSheets(Destination):
                 writer.queue_write_operation(record.stream)
             else:
                 continue
+        
         # if there are any records left
         if writer.buffer_has_more_records():
             writer.write_whats_left()

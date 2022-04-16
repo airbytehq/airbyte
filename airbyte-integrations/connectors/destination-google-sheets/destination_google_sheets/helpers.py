@@ -4,10 +4,10 @@
 
 
 import re
+from typing import Mapping
 from pygsheets import client, Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound
 from requests import codes as status_codes
-from airbyte_cdk.models import AirbyteStream
     
 def error_handler(error) -> bool:
     return error.resp.status != status_codes.TOO_MANY_REQUESTS
@@ -20,11 +20,11 @@ def get_spreadsheet_id(id_or_url: str) -> str:
     else:
         return id_or_url
     
-def get_headers_from_schema(configured_stream: AirbyteStream):
-    headers = []
-    for header in configured_stream.stream.json_schema.get('properties').get('data').get('properties').keys():
-        headers.append(header)
-    return headers
+def values_to_str(values: list):
+    return [str(values[i]) for i in range(len(values))]
+    
+def get_record_values(record: Mapping):
+    return values_to_str(list(record.values()))
 
 def connection_test_write(client: client) -> bool:
     wks_name: str = "_airbyte_conn_test"
