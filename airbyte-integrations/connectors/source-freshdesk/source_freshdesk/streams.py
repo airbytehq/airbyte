@@ -22,6 +22,7 @@ LINK_REGEX = re.compile(r'<(.*?)>;\s*rel="next"')
 class FreshdeskStream(HttpStream, ABC):
     """Basic stream API that allows to iterate over entities"""
     call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
+    primary_key = "id"
 
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator)
@@ -123,15 +124,50 @@ class IncrementalFreshdeskStream(FreshdeskStream, ABC):
 
 
 class Agents(FreshdeskStream):
-    primary_key = "id"
 
     def path(self, **kwargs) -> str:
         return "agents"
 
 
+class Companies(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "companies"
+
+
 class Contacts(IncrementalFreshdeskStream):
     state_filter = "_updated_since"
-    primary_key = "id"
 
     def path(self, **kwargs) -> str:
         return "contacts"
+
+
+class Groups(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "groups"
+
+
+class Roles(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "roles"
+
+
+class Skills(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "skills"
+
+
+class TimeEntries(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "time_entries"
+
+
+class SatisfactionRatings(IncrementalFreshdeskStream):
+    state_filter = "created_since"
+
+    def path(self, **kwargs) -> str:
+        return "surveys/satisfaction_ratings"
