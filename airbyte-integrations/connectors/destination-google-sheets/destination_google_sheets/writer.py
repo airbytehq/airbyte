@@ -3,8 +3,9 @@
 #
 
 
-from airbyte_cdk import AirbyteLogger
 from typing import Mapping
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteStream
 from .client import GoogleSpreadsheetsClient
 from .helpers import get_record_values
 
@@ -21,7 +22,7 @@ class GoogleSpreadsheetsWriter:
     def __init__(self, client: GoogleSpreadsheetsClient):
         self.client = client
     
-    def buffer_stream(self, configured_stream):
+    def buffer_stream(self, configured_stream: AirbyteStream):
         if configured_stream:
             self.write_buffer.append({configured_stream.stream.name: []})
             self._headers.append(
@@ -36,7 +37,7 @@ class GoogleSpreadsheetsWriter:
             if stream_name in stream:
                 stream[stream_name].append(get_record_values(self.normalize_record(stream_name, record)))
     
-    def buffer_has_more_records(self):
+    def buffer_has_more_records(self) -> bool:
         for stream in self.write_buffer:
             stream_name = list(stream.keys())[0]
             if stream_name in stream:
@@ -68,11 +69,10 @@ class GoogleSpreadsheetsWriter:
             if stream_name in stream:
                 for key in stream[stream_name]:
                     if key not in record.keys():
-                        record.update({key: ""})
+                        record.update({key: None})
                 for key in record.copy().keys():
                     if key not in stream[stream_name]:
                         record.pop(key)
-
         return dict(sorted(record.items(), key=lambda x: x[0]))
              
     def queue_write_operation(self, stream_name: str):
@@ -83,16 +83,13 @@ class GoogleSpreadsheetsWriter:
                     self.flush_buffer(stream_name)   
     
     def write_from_queue(self, stream_name: str):
-        values = []
+        values: list = []
         self.check_headers(stream_name)
         for stream in self.write_buffer:
             if stream_name in stream:
                 values = stream[stream_name]
-        wks = self.client.open_worksheet(f"{stream_name}")
-        # TODO:
-        print(f"\nValues: {values}\n")
-        # 
         if len(values) > 0:
+            wks = self.client.open_worksheet(f"{stream_name}")
             self.logger.info(f"Writing data for stream: {stream_name}")
             wks.append_table(values, start="A2", dimension='ROWS')
         else:
