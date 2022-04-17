@@ -3,6 +3,7 @@
 #
 
 
+from airbyte_cdk.entrypoint import logger
 from typing import Any, Iterable, Mapping, Tuple
 
 from airbyte_cdk.models import AirbyteStream

@@ -340,7 +340,7 @@ class ConversationsAPI(ClientIncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
-        tickets = TicketsAPI(self._api)
+        tickets = TicketsAPI(self._api)                               
         if self.state:
             tickets.state = self.state
         for ticket in tickets.list():
