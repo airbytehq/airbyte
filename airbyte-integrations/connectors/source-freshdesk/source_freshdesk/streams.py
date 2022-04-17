@@ -10,9 +10,11 @@ from urllib import parse
 import pendulum
 import requests
 import re
+from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.auth import HTTPBasicAuth
+from airbyte_cdk.sources.utils.sentry import AirbyteSentry
+from requests.auth import AuthBase
 from source_freshdesk.utils import CallCredit
 
 
@@ -24,8 +26,8 @@ class FreshdeskStream(HttpStream, ABC):
     call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
     primary_key = "id"
 
-    def __init__(self, config: Mapping[str, Any], *args, **kwargs):
-        super().__init__(authenticator=HTTPBasicAuth(username=config["api_key"], password="unused_with_api_key"))
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
+        super().__init__(authenticator=authenticator)
         requests_per_minute = config["requests_per_minute"]
         start_date = config["start_date"]
         self.domain = config["domain"]
@@ -96,7 +98,6 @@ class FreshdeskStream(HttpStream, ABC):
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, ABC):
-    state_filter = "updated_since"
 
     @property
     def cursor_field(self) -> str:
@@ -164,6 +165,93 @@ class TimeEntries(FreshdeskStream):
 
     def path(self, **kwargs) -> str:
         return "time_entries"
+
+
+class Tickets(IncrementalFreshdeskStream):
+    state_filter = "updated_since"
+    ticket_paginate_limit = 300
+
+    def path(self, **kwargs) -> str:
+        return "tickets"
+    
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        if next_page_token and "updated_since" in next_page_token:
+            params["updated_since"] = next_page_token["updated_since"]
+        return params
+    
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Read ticket records
+
+        This block extends Incremental stream to overcome '300 page' server error.
+        Since the Ticket endpoint has a 300 page pagination limit, after 300 pages, update the parameters with
+        query using 'updated_since' = last_record, if there is more data remaining.
+        """
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        page = 1
+        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
+            while not pagination_complete:
+                request_headers = self.request_headers(
+                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                )
+                request = self._create_prepared_request(
+                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                    data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                )
+                response = self._send_request(request, {})
+                tickets = response.json()
+                yield from tickets
+
+                next_page_token = self.next_page_token(response)
+                # checkpoint & switch the pagination
+                if page == self.ticket_paginate_limit and next_page_token:
+                    # get last_record from latest batch, pos. -1, because of ACS order of records
+                    last_record_updated_at = tickets[-1]["updated_at"]
+                    page = 0  # reset page counter
+                    last_record_updated_at = pendulum.parse(last_record_updated_at)
+                    # updating request parameters with last_record state
+                    next_page_token["updated_since"] = last_record_updated_at
+                # Increment page
+                page += 1
+
+                if not next_page_token:
+                    pagination_complete = True
+
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
+
+
+class Conversations(FreshdeskStream):
+    """Notes and Replies"""
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
+        super().__init__(**kwargs)
+        self.tickets_stream = Tickets(authenticator=authenticator, config=config)
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"tickets/{stream_slice['id']}/conversations"
+    
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for ticket in self.tickets_stream.read_records(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice={}, stream_state={}
+        ):
+            yield {'id': ticket['id']}
 
 
 class SatisfactionRatings(IncrementalFreshdeskStream):
