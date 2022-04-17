@@ -15,8 +15,7 @@ from airbyte_cdk.utils.event_timing import create_timer
 from requests import HTTPError
 from source_freshdesk.api import API
 from source_freshdesk.errors import FreshdeskError, FreshdeskNotFound, FreshdeskUnauthorized
-from source_freshdesk.streams import Agents, Contacts
-from requests.auth import HTTPBasicAuth
+from source_freshdesk.streams import Agents, Companies, Contacts, Groups, Roles, SatisfactionRatings, Skills, TimeEntries
 
 
 class SourceFreshdesk(AbstractSource):
@@ -38,6 +37,12 @@ class SourceFreshdesk(AbstractSource):
     
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
-            Agents(authenticator=HTTPBasicAuth(username=config["api_key"], password="X"), config=config),
-            Contacts(authenticator=HTTPBasicAuth(username=config["api_key"], password="X"), config=config),
+            Agents(config=config),
+            Companies(config=config),
+            Contacts(config=config),
+            Groups(config=config),
+            Roles(config=config),
+            Skills(config=config),
+            TimeEntries(config=config),
+            SatisfactionRatings(config=config)
         ]
