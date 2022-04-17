@@ -12,7 +12,7 @@ import requests
 import re
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.auth import AuthBase
+from requests.auth import HTTPBasicAuth
 from source_freshdesk.utils import CallCredit
 
 
@@ -24,8 +24,8 @@ class FreshdeskStream(HttpStream, ABC):
     call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
     primary_key = "id"
 
-    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
-        super().__init__(authenticator=authenticator)
+    def __init__(self, config: Mapping[str, Any], *args, **kwargs):
+        super().__init__(authenticator=HTTPBasicAuth(username=config["api_key"], password="unused_with_api_key"))
         requests_per_minute = config["requests_per_minute"]
         start_date = config["start_date"]
         self.domain = config["domain"]
