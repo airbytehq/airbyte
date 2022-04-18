@@ -76,7 +76,7 @@ pwd
 # We should be here but we are playing with fire
 git fetch
 # We force push gh-pages.  Local copies confuse things
-# This line looks overly complex to enure we don't error if that branch doesn't exist
+# This line uses || true to enure we don't error if that branch doesn't exist
 git branch -D gh-pages 2> /dev/null || true
 # checkout the branch tracking it's remote
 git switch --track origin/gh-pages
@@ -107,6 +107,9 @@ if test "$(tty)" == "not a tty"; then
 else
   git push --force git@github.com:airbytehq/airbytehq.github.io.git
 fi
+
+# Let's leave the tire fire of force pushes
+git checkout -
 
 
 # Want to push from your own computer? uncomment this line and comment out the push above

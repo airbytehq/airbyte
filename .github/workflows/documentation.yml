@@ -26,7 +26,6 @@ jobs:
           node-version: '16.13.0'
           cache: 'yarn'
           cache-dependency-path: docusaurus
-      disabled for green build.  more testing needed
       # Build Docusaurus website
       - name: Check for docusaurus changes
         run: ./tools/bin/check_docusaurus_build_changes
