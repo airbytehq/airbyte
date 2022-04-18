@@ -62,6 +62,13 @@ class GoogleSpreadsheetsClient:
             stream = self.client.add_worksheet(stream_name)
         finally:
             return stream
+        
+    def set_headers(self, stream_name: str, headers_list: List[str]):
+        """
+        Sets headers belonging to the input stream
+        """
+        stream: Worksheet = self.open_worksheet(f"{stream_name}")
+        stream.update_row(1, headers_list)
 
     def index_cols(self, stream: Worksheet) -> Mapping[str, int]:
         """
@@ -97,3 +104,4 @@ class GoogleSpreadsheetsClient:
         Removes duplicated rows, provided by `rows_list` as list of indexes.
         """
         [stream.delete_rows(row, 1) for row in rows_list]
+        

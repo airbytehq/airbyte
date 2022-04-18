@@ -21,14 +21,7 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         Deletes all the records belonging to the input stream.
         """
         self.client.clean_worksheet(f"{stream_name}")
-
-    def set_headers(self, stream_name: str, headers_list: List[str]):
-        """
-        Sets headers belonging to the input stream
-        """
-        stream: Worksheet = self.client.open_worksheet(f"{stream_name}")
-        stream.update_row(1, headers_list)
-
+        
     def check_headers(self, stream_name: str):
         """
         Checks whether data headers belonging to the input stream are set.
@@ -36,7 +29,7 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         for streams in self.stream_info:
             if stream_name in streams:
                 if not streams["is_set"]:
-                    self.set_headers(stream_name, streams[stream_name])
+                    self.client.set_headers(stream_name, streams[stream_name])
                     streams["is_set"] = True
 
     def queue_write_operation(self, stream_name: str):
