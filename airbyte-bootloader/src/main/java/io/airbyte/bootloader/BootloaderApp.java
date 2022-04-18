@@ -103,7 +103,10 @@ public class BootloaderApp {
       postLoadExecution = () -> {
         try {
           configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
-          secretMigrator.migrateSecrets();
+
+          if (featureFlags.runSecretMigration()) {
+            secretMigrator.migrateSecrets();
+          }
           LOGGER.info("Loaded seed data..");
         } catch (final IOException | JsonValidationException e) {
           throw new RuntimeException(e);
