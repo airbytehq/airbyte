@@ -9,13 +9,10 @@ import { actions, initialState, confirmationModalServiceReducer } from "./reduce
 
 const ConfirmationModalServiceContext = React.createContext<ConfirmationModalServiceApi | undefined>(undefined);
 
-export const useConfirmationModalService: (
-  confirmationModal?: ConfirmationModalOptions,
-  dependencies?: []
-) => {
+export const useConfirmationModalService: (confirmationModal?: ConfirmationModalOptions) => {
   openConfirmationModal: (confirmationModal: ConfirmationModalOptions) => void;
   closeConfirmationModal: () => void;
-} = (confirmationModal, dependencies) => {
+} = (confirmationModal) => {
   const confirmationModalService = useContext(ConfirmationModalServiceContext);
   if (!confirmationModalService) {
     throw new Error("useConfirmationModalService must be used within a ConfirmationModalService.");
@@ -30,7 +27,7 @@ export const useConfirmationModalService: (
         confirmationModalService.closeConfirmationModal();
       }
     };
-  }, [confirmationModal, confirmationModalService, ...(dependencies ?? [])]);
+  }, [confirmationModal, confirmationModalService]);
 
   return {
     openConfirmationModal: confirmationModalService.openConfirmationModal,
