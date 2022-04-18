@@ -31,6 +31,7 @@ pwd
 
 
 # Yarn check (which is commonly used to check for program existance)
+# -s/--silent doesn't exist in cloud's Ubuntu
 if ! which yarn > /dev/null; then
   echo -e "$red_text""yarn not found HALP!!\n\n""$default_text"
   exit 1
@@ -38,17 +39,25 @@ fi
 
 set -o xtrace
 
-# touch is non-destructive and the cloud doesn't have this file
-touch $HOME/.gitconfig
-
-# Set email and user name
-if ! git config --list --global | grep --silent user.email; then
+# local check for changes.  Fail here early instead of 40 seconds from now
+if ! test -z "$(git status --short)"; then
   set +o xtrace
-  echo -e "$blue_text""github email not found adding Octavia's""$default_text"
-  set -o xtrace
-  git config --global user.email="octavia-squidington-iii@users.noreply.github.com"
-  git config --global user.name="octavia-squidington-iii"
+  echo -e "$red_text""You have uncommitted changes!!!\n\n""$default_text"
+  echo -e "$red_text""Commit and try again""$default_text"
+  exit 1
 fi
+
+# touch is non-destructive and the cloud doesn't have this file
+# touch $HOME/.gitconfig
+
+# # Set email and user name
+# if ! git config --list --global | grep --silent user.email; then
+#   set +o xtrace
+#   echo -e "$blue_text""github email not found adding Octavia's""$default_text"
+#   set -o xtrace
+#   git config --global user.email="octavia-squidington-iii@users.noreply.github.com"
+#   git config --global user.name="octavia-squidington-iii"
+# fi
 
 cd docusaurus
 pwd
@@ -59,8 +68,9 @@ yarn install
 # generate static content
 yarn build
 
-# test -t checks for a tty (interactive shell)
-if test -t; then
+# Check tty for local/remote deploys (we expect cloud to be non-interactive)
+# results like /dev/ttys000 || not a tty
+if test "$(tty)" == "not a tty"; then
   # context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
   # write a prod website to airbytehq/airbyte gh_pages branch
   GIT_USER=octavia-squidington-iii GIT_TOKEN=$GITHUB_TOKEN yarn run deploy
@@ -81,7 +91,7 @@ git fetch
 # This line looks overly complex to enure we don't error if that branch doesn't exist
 git branch -D gh-pages 2> /dev/null || true
 # checkout the branch tracking it's remote
-git switch gh-pages
+git switch --track origin/gh-pages
 
 # For tracking in the commit message
 revision=$(git rev-parse --short HEAD)
@@ -103,8 +113,7 @@ git commit --message "Adds CNAME to deploy for $revision"
 # non functional. for debugging
 git branch
 
-# Check istty for local/remote deploys (we expect cloud to be non-interactive)
-if test -t; then
+if test "$(tty)" == "not a tty"; then
   # note that this is NOT airbyte repo
   git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
 else
