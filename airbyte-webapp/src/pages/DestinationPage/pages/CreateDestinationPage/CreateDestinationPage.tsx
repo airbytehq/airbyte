@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 
 import { FormPageContent } from "components/ConnectorBlocks";
-import DocumentationPanel from "components/DocumentationPanel";
+import DocumentationPanel from "components/DocumentationPanel/DocumentationPanel";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 

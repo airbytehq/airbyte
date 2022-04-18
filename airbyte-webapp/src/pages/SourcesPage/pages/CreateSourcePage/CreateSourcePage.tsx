@@ -4,7 +4,7 @@ import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 
 import { PageTitle } from "components";
 import { FormPageContent } from "components/ConnectorBlocks";
-import DocumentationPanel from "components/DocumentationPanel";
+import DocumentationPanel from "components/DocumentationPanel/DocumentationPanel";
 import HeadTitle from "components/HeadTitle";
 
 import { ConnectionConfiguration } from "core/domain/connection";
