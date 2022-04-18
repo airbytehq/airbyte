@@ -59,9 +59,7 @@ class FileStream(Stream, ABC):
         self._path_pattern = path_pattern
         self._provider = provider
         self._format = format
-        self._schema: Dict[str, Any] = {}
-        if schema:
-            self._schema = self._parse_user_input_schema(schema)
+        self._schema: Dict[str, Any] = self._parse_user_input_schema(schema) if schema else {}
         self.master_schema: Dict[str, Any] = None
         LOGGER.info(f"initialised stream with format: {format}")
 
@@ -156,11 +154,10 @@ class FileStream(Stream, ABC):
         return sorted(self.pattern_matched_filepath_iterator(self.filepath_iterator()), key=lambda file_info: file_info.last_modified)
 
     def _get_schema_map(self) -> Mapping[str, Any]:
-        return_schema: Dict[str, Any] = None
-        if self._schema != {}:
+        if self._schema:
             return_schema = deepcopy(self._schema)
         else:  # we have no provided schema or schema state from a previous incremental run
-            return_schema = self._get_master_schema()
+            return_schema = self.master_schema if self.master_schema else self._get_master_schema()
 
         return_schema[self.ab_additional_col] = "object"
         return_schema[self.ab_last_mod_col] = "string"
@@ -380,7 +377,6 @@ class IncrementalFileStream(FileStream, ABC):
         )
         state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
 
-        state_dict["schema"] = self._get_schema_map()
         return state_dict
 
     def stream_slices(
@@ -399,11 +395,6 @@ class IncrementalFileStream(FileStream, ABC):
             yield from super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
         else:
-            # if necessary and present, let's update this object's schema attribute to the schema stored in state
-            # TODO: ideally we could do this on __init__ but I'm not sure that's possible without breaking from cdk style implementation
-            if self._schema == {} and stream_state is not None and "schema" in stream_state.keys():
-                self._schema = stream_state["schema"]
-
             # logic here is to bundle all files with exact same last modified timestamp together in each slice
             prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
             grouped_files_by_time: List[Dict[str, Any]] = []
