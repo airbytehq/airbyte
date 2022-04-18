@@ -30,7 +30,6 @@ export const useConfirmationModalService: (
         confirmationModalService.closeConfirmationModal();
       }
     };
-    // eslint-disable-next-line
   }, [confirmationModal, confirmationModalService, ...(dependencies ?? [])]);
 
   return {

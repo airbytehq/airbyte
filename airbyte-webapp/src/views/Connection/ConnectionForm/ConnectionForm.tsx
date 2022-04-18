@@ -6,7 +6,7 @@ import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
 import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
-import FormChangeTracker from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { equal } from "utils/objects";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";

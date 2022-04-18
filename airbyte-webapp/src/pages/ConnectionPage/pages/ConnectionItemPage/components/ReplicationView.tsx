@@ -93,9 +93,7 @@ const ReplicationView: React.FC<IProps> = ({ onAfterSaveSchema, connectionId }) 
       setActiveUpdatingSchemaMode(false);
     }
 
-    if (formikHelpers) {
-      formikHelpers.resetForm({ values });
-    }
+    formikHelpers?.resetForm({ values });
   };
 
   const onSubmitResetModal = async () => {

@@ -4,7 +4,7 @@ import { useMutation } from "react-query";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import FormChangeTracker from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/FormChangeTracker";
 
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";

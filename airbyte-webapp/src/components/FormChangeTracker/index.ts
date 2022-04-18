@@ -1,3 +1,1 @@
-import FormChangeTracker from "./FormChangeTracker";
-
-export default FormChangeTracker;
+export { FormChangeTracker } from "./FormChangeTracker";

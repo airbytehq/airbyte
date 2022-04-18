@@ -12,11 +12,11 @@ type NavigationContextWithBlock = ContextType<typeof NavigationContext> & { navi
 /**
  * @source https://github.com/remix-run/react-router/commit/256cad70d3fd4500b1abcfea66f3ee622fb90874
  */
-export const useBlocker = (blocker: Blocker, when = true) => {
+export const useBlocker = (blocker: Blocker, block = true) => {
   const { navigator } = useContext(NavigationContext) as NavigationContextWithBlock;
 
   useEffect(() => {
-    if (!when) {
+    if (!block) {
       return;
     }
 
@@ -36,5 +36,5 @@ export const useBlocker = (blocker: Blocker, when = true) => {
     });
 
     return unblock;
-  }, [navigator, blocker, when]);
+  }, [navigator, blocker, block]);
 };

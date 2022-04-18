@@ -31,7 +31,7 @@ export const useFormChangeTrackerService = (): FormChangeTrackerServiceApi => {
 
   const trackFormChange = useCallback(
     (id: string, changed: boolean) => {
-      if (!!changedFormsById?.[id] !== changed) {
+      if (Boolean(changedFormsById?.[id]) !== changed) {
         setChangedFormsById({ ...changedFormsById, [id]: changed });
       }
     },

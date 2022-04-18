@@ -17,7 +17,7 @@ export const FormChangeTrackerService: React.FC = ({ children }) => {
         title: "form.discardChanges",
         text: "form.discardChangesConfirmation",
         submitButtonText: "form.discardChanges",
-        onSubmit: async () => {
+        onSubmit: () => {
           setChangedFormsById({});
           closeConfirmationModal();
           tx.retry();

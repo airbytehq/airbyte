@@ -7,7 +7,7 @@ import * as yup from "yup";
 import { getIn, useFormik, useFormikContext } from "formik";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
-import FormChangeTracker from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { equal } from "utils/objects";
 import { Transformation } from "core/domain/connection/operation";

@@ -8,7 +8,7 @@ interface Props {
   formId?: string;
 }
 
-const FormChangeTracker: React.FC<Props> = ({ changed, formId }) => {
+export const FormChangeTracker: React.FC<Props> = ({ changed, formId }) => {
   const id = useUniqueFormId(formId);
   const prevChanged = usePrevious(changed);
 
@@ -22,5 +22,3 @@ const FormChangeTracker: React.FC<Props> = ({ changed, formId }) => {
 
   return null;
 };
-
-export default FormChangeTracker;
