@@ -59,9 +59,15 @@ yarn install
 # generate static content
 yarn build
 
-# context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
-# write a prod website to airbytehq/airbyte gh_pages branch
-GIT_USER=octavia-squidington-iii yarn run deploy
+# test -t checks for a tty (interactive shell)
+if test -t; then
+  # context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
+  # write a prod website to airbytehq/airbyte gh_pages branch
+  GIT_USER=octavia-squidington-iii GIT_TOKEN=$GITHUB_TOKEN yarn run deploy
+else
+  yarn run deploy
+fi
+
 
 
 
@@ -71,6 +77,9 @@ pwd
 
 # We should be here but we are playing with fire
 git fetch
+# We force push gh-pages.  Local copies confuse things
+# This line looks overly complex to enure we don't error if that branch doesn't exist
+git branch -D gh-pages 2> /dev/null || true
 # checkout the branch tracking it's remote
 git switch gh-pages
 
@@ -94,11 +103,16 @@ git commit --message "Adds CNAME to deploy for $revision"
 # non functional. for debugging
 git branch
 
-# note that this is NOT airbyte repo
-git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
+# Check istty for local/remote deploys (we expect cloud to be non-interactive)
+if test -t; then
+  # note that this is NOT airbyte repo
+  git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
+else
+  git push --force https://git@github.com/airbytehq/airbytehq.github.io.git
+fi
+
 
 # Want to push from your own computer? uncomment this line and comment out the push above
-# git push --force https://git@github.com/airbytehq/airbytehq.github.io.git
 
 set +o xtrace
 echo -e "$blue_text""Script exiting 0 GREAT SUCCESS!!!?""$default_text"

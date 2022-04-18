@@ -2,7 +2,7 @@ name: compile-docusaurus-static-assets
 
 on:
   push:
-    branches: [master, toph_an_endless_persuit_of_docs]
+    branches: [master, toph_docs_pipeline_fixes_bugs_n_gitbook]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -26,13 +26,13 @@ jobs:
           node-version: '16.13.0'
           cache: 'yarn'
           cache-dependency-path: docusaurus
-      # disabled for green build.  more testing needed
-      # # Build Docusaurus website
-      # - name: Check for docusaurus changes
-      #   run: ./tools/bin/check_docusaurus_build_changes
-      # # Install and build Docusaurus website
-      # - name: Deploy docs to production (it's weird)
-      #   run: ./tools/bin/deploy_docusaurus
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.OCTAVIA_PAT }}
+      disabled for green build.  more testing needed
+      # Build Docusaurus website
+      - name: Check for docusaurus changes
+        run: ./tools/bin/check_docusaurus_build_changes
+      # Install and build Docusaurus website
+      - name: Deploy docs to production (it's weird)
+        run: ./tools/bin/deploy_docusaurus
+        env:
+          GITHUB_TOKEN: ${{ secrets.OCTAVIA_PAT }}
 
