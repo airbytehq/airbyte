@@ -50,8 +50,8 @@ public class SecretMigrator {
 
   /**
    * Perform a secret migration. It will load all the actor specs extract the secret JsonPath from it.
-   * Then for all the secret that are stored in a plain text format, it will save the plain text in the secret manager and
-   * store the coordinate in the config DB.
+   * Then for all the secret that are stored in a plain text format, it will save the plain text in
+   * the secret manager and store the coordinate in the config DB.
    */
   public void migrateSecrets() throws JsonValidationException, IOException {
     if (secretPersistence.isEmpty()) {
@@ -134,8 +134,8 @@ public class SecretMigrator {
   }
 
   /**
-   * This is a generic method to migrate an actor configuration
-   * It will extract the secret path form the provided spec and then replace them by coordinates in the actor configuration
+   * This is a generic method to migrate an actor configuration It will extract the secret path form
+   * the provided spec and then replace them by coordinates in the actor configuration
    */
   @VisibleForTesting
   JsonNode migrateConfiguration(final ConnectorConfiguration connectorConfiguration, final Supplier<UUID> uuidProvider) {

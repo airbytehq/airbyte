@@ -97,21 +97,20 @@ public class BootloaderApp {
 
       final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
 
+      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getEphemeral(configs);
+      secretMigrator = new SecretMigrator(configPersistence, secretPersistence);
+
       postLoadExecution = () -> {
         try {
           configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+          secretMigrator.migrateSecrets();
           LOGGER.info("Loaded seed data..");
-        } catch (final IOException e) {
-          e.printStackTrace();
+        } catch (final IOException | JsonValidationException e) {
+          throw new RuntimeException(e);
         }
       };
 
-      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getEphemeral(configs);
-
-      secretMigrator = new SecretMigrator(configPersistence, secretPersistence);
-      secretMigrator.migrateSecrets();
-
-    } catch (final IOException | JsonValidationException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
