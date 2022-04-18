@@ -17,9 +17,8 @@ interface Props {
 
 const getBadgeWidth = (props: Props) => (props.big ? (props.value ? 57 : 40) : props.value ? 37 : 20);
 
-const _iconByStatus: Record<StatusIconStatus, IconDefinition | undefined> = {
+const _iconByStatus: Partial<Record<StatusIconStatus, IconDefinition | undefined>> = {
   empty: faBan,
-  inactive: undefined,
   success: faCheck,
   warning: faExclamationTriangle,
 };

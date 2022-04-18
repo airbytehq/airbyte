@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 
 import StatusIcon from "components/StatusIcon";
@@ -64,8 +64,10 @@ const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, s
     }
   };
 
-  const statusIconStatus: StatusIconStatus | undefined =
-    status !== Status.FAILED && !isPartialSuccess ? "success" : isPartialSuccess ? "warning" : undefined;
+  const statusIconStatus: StatusIconStatus | undefined = useMemo(
+    () => (status !== Status.FAILED && !isPartialSuccess ? "success" : isPartialSuccess ? "warning" : undefined),
+    [status, isPartialSuccess]
+  );
 
   return (
     <StepView
