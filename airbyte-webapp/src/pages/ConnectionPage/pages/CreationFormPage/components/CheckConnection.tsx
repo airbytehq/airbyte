@@ -48,7 +48,7 @@ const CheckConnection: React.FC<IProps> = ({ isLoading, type, error, retry, link
 
     return (
       <Content>
-        <StatusIcon success={false} big />
+        <StatusIcon big />
         <Title>
           <FormattedMessage id="connection.testsFailed" />
         </Title>
@@ -79,7 +79,7 @@ const CheckConnection: React.FC<IProps> = ({ isLoading, type, error, retry, link
 
   return (
     <Content>
-      <StatusIcon success big />
+      <StatusIcon status="success" big />
       <Title>
         <FormattedMessage id="connection.testsPassed" />
       </Title>
