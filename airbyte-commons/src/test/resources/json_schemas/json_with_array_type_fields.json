@@ -1,0 +1,18 @@
+{
+  "type": ["object", "array", "string"],
+  "properties": {
+    "company": {
+      "type": "string",
+      "description": "company name"
+    }
+  },
+  "items": {
+    "type": "object",
+    "properties": {
+      "user": {
+        "type": "string",
+        "description": "username"
+      }
+    }
+  }
+}

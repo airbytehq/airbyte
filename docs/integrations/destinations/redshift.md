@@ -113,9 +113,6 @@ Therefore, Airbyte Redshift destination will create tables and schemas using the
 ## Data Size Limitations
 
 Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
-## Data Size Limitations
-
-Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
 See [docs](https://docs.aws.amazon.com/redshift/latest/dg/r_Character_types.html)
 
 ## Encryption
@@ -126,7 +123,6 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request | Subject |
 |:--------| :--------  | :-----       | :------ |
-| 0.3.30  | 2022-02-17 | [\#9407](https://github.com/airbytehq/airbyte/pull/9407) | Added option to support SUPER datatype in _airbyte_raw_** table |
 | 0.3.29  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name |                                                                   |
 | 0.3.28  | 2022-03-18 | [\#11254](https://github.com/airbytehq/airbyte/pull/11254) | Fixed missing records during S3 staging |
 | 0.3.27  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
