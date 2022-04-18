@@ -21,7 +21,6 @@ import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.dsl.internal.PodOperationContext;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.informers.SharedInformerFactory;
 import java.io.IOException;
@@ -304,12 +303,10 @@ public class KubePodProcessIntegrationTest {
         .filter(p -> p.getMetadata().getLabels().containsKey("uuid") && p.getMetadata().getLabels().get("uuid").equals(uuid.toString()))
         .collect(Collectors.toList()).get(0);
     final SharedInformerFactory sharedInformerFactory = fabricClient.informers();
-    final SharedIndexInformer<Pod> podInformer = sharedInformerFactory.sharedIndexInformerFor(
-        Pod.class,
-        new PodOperationContext()
-            .withName(pod.getMetadata().getName())
-            .withNamespace(pod.getMetadata().getNamespace()),
-        KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS);
+    final SharedIndexInformer<Pod> podInformer = fabricClient.pods()
+        .inNamespace(pod.getMetadata().getNamespace())
+        .withName(pod.getMetadata().getName())
+        .inform();
     podInformer.addEventHandler(new ExitCodeWatcher(
         pod.getMetadata().getName(),
         pod.getMetadata().getNamespace(),

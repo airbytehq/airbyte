@@ -31,9 +31,7 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.PodResource;
-import io.fabric8.kubernetes.client.dsl.internal.PodOperationContext;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
-import io.fabric8.kubernetes.client.informers.SharedInformerFactory;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import java.io.IOException;
 import java.io.InputStream;
@@ -149,7 +147,7 @@ public class KubePodProcess extends Process implements KubePod {
   private final int stderrLocalPort;
   private final ExecutorService executorService;
   private final CompletableFuture<Integer> exitCodeFuture;
-  private final SharedInformerFactory sharedInformerFactory;
+  private final SharedIndexInformer<Pod> podInformer;
 
   public static String getPodIP(final KubernetesClient client, final String podName, final String podNamespace) {
     final var pod = client.pods().inNamespace(podNamespace).withName(podName).get();
@@ -307,16 +305,7 @@ public class KubePodProcess extends Process implements KubePod {
     LOGGER.info("Waiting for init container to be ready before copying files...");
     final PodResource<Pod> pod =
         client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
-    try {
-      pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
-    } catch (final InterruptedException e) {
-      LOGGER.error("Init pod not found after 5 minutes");
-      LOGGER.error("Pod search executed in namespace {} for pod name {} resulted in: {}",
-          podDefinition.getMetadata().getNamespace(),
-          podDefinition.getMetadata().getName(),
-          pod.get().toString());
-      throw e;
-    }
+    pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
     LOGGER.info("Init container present..");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
@@ -531,13 +520,10 @@ public class KubePodProcess extends Process implements KubePod {
     // This is safe only because we are blocking the init pod until we copy files onto it.
     // See the ExitCodeWatcher comments for more info.
     exitCodeFuture = new CompletableFuture<>();
-    sharedInformerFactory = fabricClient.informers();
-    final SharedIndexInformer<Pod> podInformer = sharedInformerFactory.sharedIndexInformerFor(
-        Pod.class,
-        new PodOperationContext()
-            .withName(pod.getMetadata().getName())
-            .withNamespace(namespace),
-        kubeInformerResyncMillis);
+    podInformer = fabricClient.pods()
+        .inNamespace(namespace)
+        .withName(pod.getMetadata().getName())
+        .inform();
     podInformer.addEventHandler(new ExitCodeWatcher(
         pod.getMetadata().getName(),
         namespace,
@@ -552,7 +538,6 @@ public class KubePodProcess extends Process implements KubePod {
 
           exitCodeFuture.complete(KILLED_EXIT_CODE);
         }));
-    sharedInformerFactory.startAllRegisteredInformers();
 
     waitForInitPodToRun(fabricClient, podDefinition);
 
@@ -717,7 +702,7 @@ public class KubePodProcess extends Process implements KubePod {
 
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
-    Exceptions.swallow(this.sharedInformerFactory::stopAllRegisteredInformers);
+    Exceptions.swallow(this.podInformer::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
     KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);

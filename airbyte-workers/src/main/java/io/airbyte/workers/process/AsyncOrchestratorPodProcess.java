@@ -310,16 +310,12 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .createOrReplace(podToCreate);
 
     log.info("Waiting for pod to be running...");
-    try {
-      kubernetesClient.pods()
-          .inNamespace(kubePodInfo.namespace())
-          .withName(kubePodInfo.name())
-          .waitUntilCondition(p -> {
-            return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
-          }, 5, TimeUnit.MINUTES);
-    } catch (final InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    kubernetesClient.pods()
+        .inNamespace(kubePodInfo.namespace())
+        .withName(kubePodInfo.name())
+        .waitUntilCondition(p -> {
+          return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
+        }, 5, TimeUnit.MINUTES);
 
     final var podStatus = kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
