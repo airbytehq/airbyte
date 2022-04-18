@@ -102,8 +102,13 @@ git commit --message "Adds CNAME to deploy for $revision"
 git branch
 
 if test "$(tty)" == "not a tty"; then
+  set +o xtrace
+  echo -e "$blue_text""github email not found adding Octavia's""$default_text"
+  set -o xtrace
+  git config --global user.email="octavia-squidington-iii@users.noreply.github.com"
+  git config --global user.name="octavia-squidington-iii"
   # note that this is NOT airbyte repo
-  git push --force https://$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
+  git push --force https://octavia-squidington-iii:$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
 else
   git push --force git@github.com:airbytehq/airbytehq.github.io.git
 fi

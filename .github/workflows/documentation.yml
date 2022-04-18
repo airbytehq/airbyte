@@ -27,7 +27,7 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: docusaurus
       # Build Docusaurus website
-      - name: Check for docusaurus changes
+      - name: Check for docusaurus changes not committed
         run: ./tools/bin/check_docusaurus_build_changes
       # Install and build Docusaurus website
       - name: Deploy docs to production (it's weird)
