@@ -9,16 +9,18 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.flows.*;
-import io.airbyte.oauth.flows.facebook.FacebookMarketingOAuthFlow;
-import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
-import io.airbyte.oauth.flows.facebook.InstagramOAuthFlow;
-import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
-import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
-import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
-import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
-import io.airbyte.oauth.flows.google.YouTubeAnalyticsOAuthFlow;
+import io.airbyte.oauth.flows.facebook.*;
+import io.airbyte.oauth.flows.google.*;
 import java.net.http.HttpClient;
 import java.util.Map;
+// import io.airbyte.oauth.flows.facebook.FacebookMarketingOAuthFlow;
+// import io.airbyte.oauth.flows.facebook.FacebookPagesOAuthFlow;
+// import io.airbyte.oauth.flows.facebook.InstagramOAuthFlow;
+// import io.airbyte.oauth.flows.google.GoogleAdsOAuthFlow;
+// import io.airbyte.oauth.flows.google.GoogleAnalyticsOAuthFlow;
+// import io.airbyte.oauth.flows.google.GoogleSearchConsoleOAuthFlow;
+// import io.airbyte.oauth.flows.google.GoogleSheetsOAuthFlow;
+// import io.airbyte.oauth.flows.google.YouTubeAnalyticsOAuthFlow;
 
 public class OAuthImplementationFactory {
 
@@ -63,6 +65,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-shopify", new ShopifyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-tiktok-marketing", new TikTokMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
+        .put("airbyte/destination-google-sheets", new DestinationGoogleSheetsOAuthFlow(configRepository, httpClient))
         .build();
   }
 
