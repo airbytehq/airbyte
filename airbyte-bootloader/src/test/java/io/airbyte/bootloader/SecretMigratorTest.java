@@ -45,7 +45,7 @@ public class SecretMigratorTest {
 
   @BeforeEach
   void setup() {
-    secretMigrator = Mockito.spy(new SecretMigrator(configPersistence, secretPersistence));
+    secretMigrator = Mockito.spy(new SecretMigrator(configPersistence, Optional.of(secretPersistence)));
   }
 
   @Test

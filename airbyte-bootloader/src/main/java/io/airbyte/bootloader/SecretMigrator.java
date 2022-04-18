@@ -48,6 +48,11 @@ public class SecretMigrator {
 
   }
 
+  /**
+   * Perform a secret migration. It will load all the actor specs extract the secret JsonPath from it.
+   * Then for all the secret that are stored in a plain text format, it will save the plain text in the secret manager and
+   * store the coordinate in the config DB.
+   */
   public void migrateSecrets() throws JsonValidationException, IOException {
     if (secretPersistence.isEmpty()) {
       log.info("No secret persistence is provided, the migration won't be run ");
@@ -78,6 +83,9 @@ public class SecretMigrator {
     migrateDestinations(destinations, definitionIdToDestinationSpecs);
   }
 
+  /**
+   * This is migrating the secrets for the source actors
+   */
   @VisibleForTesting
   void migrateSources(final List<SourceConnection> sources, final Map<UUID, JsonNode> definitionIdToSourceSpecs) {
     log.info("Migrating Sources");
@@ -100,6 +108,9 @@ public class SecretMigrator {
         });
   }
 
+  /**
+   * This is migrating the secrets for the destination actors
+   */
   @VisibleForTesting
   void migrateDestinations(final List<DestinationConnection> destinations, final Map<UUID, JsonNode> definitionIdToDestinationSpecs) {
     log.info("Migration Destinations");
@@ -122,6 +133,10 @@ public class SecretMigrator {
         });
   }
 
+  /**
+   * This is a generic method to migrate an actor configuration
+   * It will extract the secret path form the provided spec and then replace them by coordinates in the actor configuration
+   */
   @VisibleForTesting
   JsonNode migrateConfiguration(final ConnectorConfiguration connectorConfiguration, final Supplier<UUID> uuidProvider) {
     if (connectorConfiguration.getSpecs() == null) {
@@ -158,16 +173,25 @@ public class SecretMigrator {
     return connectorConfigurationJson.get();
   }
 
+  /**
+   * Wrapper to help to mock static methods
+   */
   @VisibleForTesting
   List<String> getSecretPath(final JsonNode specs) {
     return SecretsHelpers.getSortedSecretPaths(specs);
   }
 
+  /**
+   * Wrapper to help to mock static methods
+   */
   @VisibleForTesting
   List<String> getAllExplodedPath(final JsonNode node, final String path) {
     return JsonPaths.getPaths(node, path);
   }
 
+  /**
+   * Wrapper to help to mock static methods
+   */
   @VisibleForTesting
   Optional<JsonNode> getValueForPath(final JsonNode node, final String path) {
     return JsonPaths.getSingleValue(node, path);
