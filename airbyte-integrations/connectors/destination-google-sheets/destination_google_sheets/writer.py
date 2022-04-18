@@ -5,6 +5,9 @@
 
 from typing import List
 
+from airbyte_cdk.models import AirbyteStream
+from pygsheets import Worksheet
+
 from .buffer import WriteBuffer
 from .client import GoogleSpreadsheetsClient
 
@@ -23,18 +26,18 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         """
         Sets headers belonging to the input stream
         """
-        wks = self.client.open_worksheet(f"{stream_name}")
-        wks.update_row(1, headers_list)
+        stream: Worksheet = self.client.open_worksheet(f"{stream_name}")
+        stream.update_row(1, headers_list)
 
     def check_headers(self, stream_name: str):
         """
         Checks whether data headers belonging to the input stream are set.
         """
-        for stream in self.stream_info:
-            if stream_name in stream:
-                if not stream["is_set"]:
-                    self.set_headers(stream_name, stream[stream_name])
-                    stream["is_set"] = True
+        for streams in self.stream_info:
+            if stream_name in streams:
+                if not streams["is_set"]:
+                    self.set_headers(stream_name, streams[stream_name])
+                    streams["is_set"] = True
 
     def queue_write_operation(self, stream_name: str):
         """
@@ -44,9 +47,9 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         2) writes it to the target worksheet
         3) cleans-up the records_buffer belonging to input stream
         """
-        for stream in self.records_buffer:
-            if stream_name in stream:
-                if len(stream[stream_name]) == self.flush_interval:
+        for streams in self.records_buffer:
+            if stream_name in streams:
+                if len(streams[stream_name]) == self.flush_interval:
                     self.write_from_queue(stream_name)
                     self.flush_buffer(stream_name)
 
@@ -60,13 +63,13 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         """
         values: list = []
         self.check_headers(stream_name)
-        for stream in self.records_buffer:
-            if stream_name in stream:
-                values = stream[stream_name]
+        for streams in self.records_buffer:
+            if stream_name in streams:
+                values = streams[stream_name]
         if len(values) > 0:
-            wks = self.client.open_worksheet(f"{stream_name}")
+            stream: Worksheet = self.client.open_worksheet(f"{stream_name}")
             self.logger.info(f"Writing data for stream: {stream_name}")
-            wks.append_table(values, start="A2", dimension="ROWS")
+            stream.append_table(values, start="A2", dimension="ROWS")
         else:
             self.logger.info(f"Skipping empty stream: {stream_name}")
 
@@ -75,8 +78,28 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         Stands for writing records that are still left to be written,
         but don't match the condition for `queue_write_operation`.
         """
-        for stream in self.records_buffer:
-            stream_name = list(stream.keys())[0]
-            if stream_name in stream:
+        for streams in self.records_buffer:
+            stream_name = list(streams.keys())[0]
+            if stream_name in streams:
                 self.write_from_queue(stream_name)
                 self.flush_buffer(stream_name)
+
+    def deduplicate_records(self, configured_stream: AirbyteStream):
+        """
+        Finds and removes duplicated records for target stream, using `primary_key`.
+        Processing the worksheet happens offline and sync it afterwards to reduce API calls rate
+        If rate limits are hit while deduplicating, it will be handeled automatically, the operation continues after backoff.
+        """
+        primary_key: str = configured_stream.primary_key[0][0]
+        stream_name: str = configured_stream.stream.name
+        stream: Worksheet = self.client.open_worksheet(f"{stream_name}")
+        rows_to_remove: list = self.client.find_duplicates(stream, primary_key)
+
+        if len(rows_to_remove) > 0:
+            self.logger.info(f"Duplicated records are detected for stream: {stream_name}, resolving...")
+            stream.unlink()
+            self.client.remove_duplicates(stream, rows_to_remove)
+            stream.sync()
+            self.logger.info(f"Finished deduplicating records for stream: {stream_name}")
+        else:
+            print(f"No duplicated records detected for stream: {stream_name}")

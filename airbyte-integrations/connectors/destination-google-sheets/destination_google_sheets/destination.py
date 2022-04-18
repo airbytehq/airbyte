@@ -61,3 +61,8 @@ class DestinationGoogleSheets(Destination):
         # if there are any records left
         if writer.buffer_has_more_records():
             writer.write_whats_left()
+
+        # append deduplicate strategy
+        for configured_stream in configured_catalog.streams:
+            if configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
+                writer.deduplicate_records(configured_stream)

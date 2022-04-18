@@ -1,6 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/google-sheets",
-  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "supportsIncremental": true,
   "supportsDBT": false,
   "supportsNormalization": false,

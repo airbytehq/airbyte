@@ -2,10 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Dict, List
+from typing import Dict, List, Mapping
 
 import pygsheets
-from pygsheets import client
+from pygsheets import Worksheet, client
 from pygsheets.exceptions import WorksheetNotFound
 
 from .auth import SCOPES, GoogleSpreadsheetsAuth
@@ -42,20 +42,58 @@ class GoogleSpreadsheetsClient:
             wks_list.append(wks.title)
         yield from wks_list
 
-    def clean_worksheet(self, name: str):
+    def clean_worksheet(self, stream_name: str):
         """
         Cleans up the existing records inside the worksheet or creates one, if doesn't exist.
         """
         try:
-            wks = self.open_worksheet(name)
-            wks.clear()
+            stream = self.open_worksheet(stream_name)
+            stream.clear()
         except WorksheetNotFound:
-            self.client.add_worksheet(name)
+            self.client.add_worksheet(stream_name)
 
-    def open_worksheet(self, name: str):
+    def open_worksheet(self, stream_name: str) -> Worksheet:
+        """
+        Opens the connection to target worksheet, if exists. Otherwise, creates one.
+        """
         try:
-            wks = self.client.worksheet_by_title(name)
+            stream = self.client.worksheet_by_title(stream_name)
         except WorksheetNotFound:
-            wks = self.client.add_worksheet(name)
+            stream = self.client.add_worksheet(stream_name)
         finally:
-            return wks
+            return stream
+
+    def index_cols(self, stream: Worksheet) -> Mapping[str, int]:
+        """
+        Helps to find the index of every colums exists in worksheet.
+        Returns: Mapping with column name and it's index.
+            {"id": 1, "name": 2, ..., "other": 99}
+        """
+        header = stream[1]
+        col_index = {}
+        for i, col in enumerate(header):
+            col_index[col] = i + 1
+        return col_index
+
+    def find_duplicates(self, stream: Worksheet, primary_key: str):
+        """
+        Finds the duplicated records inside of target worksheet.
+        Returns: List of indexes of rows to remove from target worksheet.
+            [1, 4, 5, ..., 99]
+        """
+        rows_unique, rows_to_delete = [], []
+        target_col = self.index_cols(stream)[primary_key]
+        col_values = stream.get_col(target_col, include_tailing_empty=False)[1:]
+        for i, row in enumerate(col_values, 1):
+            if col_values[i - 1] not in rows_unique:
+                rows_unique.append(row)
+            else:
+                rows_to_delete.append(i + 1)
+        rows_to_delete.reverse()
+        return rows_to_delete
+
+    def remove_duplicates(self, stream: Worksheet, rows_list: list):
+        """
+        Removes duplicated rows, provided by `rows_list` as list of indexes.
+        """
+        [stream.delete_rows(row, 1) for row in rows_list]
