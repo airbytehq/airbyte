@@ -239,7 +239,7 @@ class Tickets(IncrementalFreshdeskStream):
 class Conversations(FreshdeskStream):
     """Notes and Replies"""
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(authenticator=authenticator, config=config, args=args, kwargs=kwargs)
         self.tickets_stream = Tickets(authenticator=authenticator, config=config)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
