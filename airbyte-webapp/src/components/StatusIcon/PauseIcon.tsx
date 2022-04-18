@@ -1,0 +1,14 @@
+interface Props {
+  color?: string;
+  title?: string;
+}
+
+const PauseIcon = ({ color = "currentColor", title }: Props): JSX.Element => (
+  <svg width="6" height="11" viewBox="0 0 6 11" fill="none" role="img" data-icon="pause">
+    {title && <title>{title}</title>}
+    <line x1="1" y1="1.5" x2="1" y2="10.5" stroke={color} strokeWidth="2" />
+    <line x1="5" y1="1.5" x2="5" y2="10.5" stroke={color} strokeWidth="2" />
+  </svg>
+);
+
+export default PauseIcon;
