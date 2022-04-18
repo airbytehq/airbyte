@@ -29,7 +29,6 @@ runs:
     - name: Set python-version
       shell: bash
       run: echo "PYTHON_VERSION="$(cat .python-version)"" >> $GITHUB_ENV
-
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
