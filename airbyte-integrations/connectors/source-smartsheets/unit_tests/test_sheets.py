@@ -94,25 +94,26 @@ def test_check_connection_success(mocker, config):
     assert status is True
 
 
-columns = [
+_columns = [
     Mock(id="1101932201830276", title="id", type="TEXT_NUMBER"),
     Mock(id="5605531829200772", title="first_name", type="TEXT_NUMBER"),
     Mock(id="3353732015515524", title="last_name", type="TEXT_NUMBER"),
 ]
 
 
-cells = [
+_cells = [
     Mock(column_id="1101932201830276", value="11"),
     Mock(column_id="5605531829200772", value="Leonardo"),
     Mock(column_id="3353732015515524", value="Dicaprio"),
 ]
 
 
-@pytest.mark.parametrize("row", permutations(cells))
-def test_different_cell_order_produces_same_result(get_sheet_mocker, config, row):
+@pytest.mark.parametrize(("row", "columns"), (*((perm, _columns) for perm in permutations(_cells)), ([], _columns), ([], [])))
+def test_different_cell_order_produces_same_result(get_sheet_mocker, config, row, columns):
     sheet = SmartSheetAPIWrapper(config)
-    sheet_mock = Mock(rows=[Mock(cells=row)], columns=columns)
+    sheet_mock = Mock(rows=[Mock(cells=row)] if row else [], columns=columns)
     get_sheet_mocker(sheet, data=Mock(return_value=sheet_mock))
 
     records = sheet.read_records(from_dt="2020-01-01T00:00:00Z")
-    assert list(records) == [{"id": "11", "first_name": "Leonardo", "last_name": "Dicaprio", "modifiedAt": ANY}]
+    expected_records = [] if not row else [{"id": "11", "first_name": "Leonardo", "last_name": "Dicaprio", "modifiedAt": ANY}]
+    assert list(records) == expected_records
