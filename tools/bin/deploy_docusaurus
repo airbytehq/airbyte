@@ -59,6 +59,11 @@ yarn build
 # Check tty for local/remote deploys (we expect cloud to be non-interactive)
 # results like /dev/ttys000 || not a tty
 if test "$(tty)" == "not a tty"; then
+  set +o xtrace
+  echo -e "$blue_text""github email not found adding Octavia's""$default_text"
+  set -o xtrace
+  git config user.email="octavia-squidington-iii@users.noreply.github.com"
+  git config user.name="octavia-squidington-iii"
   # context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
   # write a prod website to airbytehq/airbyte gh_pages branch
   GIT_USER=octavia-squidington-iii GIT_TOKEN=$GITHUB_TOKEN yarn run deploy
@@ -102,11 +107,6 @@ git commit --message "Adds CNAME to deploy for $revision"
 git branch
 
 if test "$(tty)" == "not a tty"; then
-  set +o xtrace
-  echo -e "$blue_text""github email not found adding Octavia's""$default_text"
-  set -o xtrace
-  git config --global user.email="octavia-squidington-iii@users.noreply.github.com"
-  git config --global user.name="octavia-squidington-iii"
   # note that this is NOT airbyte repo
   git push --force https://octavia-squidington-iii:$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
 else
