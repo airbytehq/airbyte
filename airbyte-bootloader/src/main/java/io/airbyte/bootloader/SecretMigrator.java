@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SecretMigrator {
 
   private final ConfigPersistence configPersistence;
-  private final SecretPersistence secretPersistence;
+  private final Optional<SecretPersistence> secretPersistence;
 
   @Value
   static class ConnectorConfiguration {
@@ -49,8 +49,13 @@ public class SecretMigrator {
   }
 
   public void migrateSecrets() throws JsonValidationException, IOException {
-    final List<StandardSourceDefinition> standardSourceDefinitions = configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION,
-        StandardSourceDefinition.class);
+    if (secretPersistence.isEmpty()) {
+      log.info("No secret persistence is provided, the migration won't be run ");
+
+      return;
+    }
+    final List<StandardSourceDefinition> standardSourceDefinitions =
+        configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class);
 
     final Map<UUID, JsonNode> definitionIdToSourceSpecs = standardSourceDefinitions
         .stream().collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId,
@@ -73,6 +78,7 @@ public class SecretMigrator {
     migrateDestinations(destinations, definitionIdToDestinationSpecs);
   }
 
+  @VisibleForTesting
   void migrateSources(final List<SourceConnection> sources, final Map<UUID, JsonNode> definitionIdToSourceSpecs) {
     log.info("Migrating Sources");
     sources.stream()
@@ -94,6 +100,7 @@ public class SecretMigrator {
         });
   }
 
+  @VisibleForTesting
   void migrateDestinations(final List<DestinationConnection> destinations, final Map<UUID, JsonNode> definitionIdToDestinationSpecs) {
     log.info("Migration Destinations");
 
@@ -115,6 +122,7 @@ public class SecretMigrator {
         });
   }
 
+  @VisibleForTesting
   JsonNode migrateConfiguration(final ConnectorConfiguration connectorConfiguration, final Supplier<UUID> uuidProvider) {
     if (connectorConfiguration.getSpecs() == null) {
       throw new IllegalStateException("No connector definition to match the connector");
@@ -122,7 +130,8 @@ public class SecretMigrator {
 
     final AtomicReference<JsonNode> connectorConfigurationJson = new AtomicReference<>(connectorConfiguration.getConfiguration());
     final List<String> uniqSecretPaths = getSecretPath(connectorConfiguration.getSpecs())
-        .stream().flatMap(secretPath -> getAllExplodedPath(connectorConfigurationJson.get(), secretPath).stream())
+        .stream()
+        .flatMap(secretPath -> getAllExplodedPath(connectorConfigurationJson.get(), secretPath).stream())
         .toList();
 
     final UUID workspaceId = connectorConfiguration.getWorkspace();
@@ -137,7 +146,7 @@ public class SecretMigrator {
         final JsonNode stringSecretValue = secretValue.get();
 
         final SecretCoordinate coordinate = new SecretCoordinate("airbyte_workspace_" + workspaceId + "_secret_" + uuidProvider.get(), 1);
-        secretPersistence.write(coordinate, stringSecretValue.textValue());
+        secretPersistence.get().write(coordinate, stringSecretValue.textValue());
         connectorConfigurationJson.set(JsonPaths.replaceAtJsonNode(connectorConfigurationJson.get(), secretPath,
             Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinate.getFullCoordinate()))));
       } else {

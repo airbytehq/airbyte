@@ -24,14 +24,9 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
-import io.temporal.client.WorkflowClient;
-import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,28 +85,17 @@ public class BootloaderApp {
     featureFlags = new EnvVariableFeatureFlags();
 
     try {
-      final Database configDatabase = new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(),
-          configs.getConfigDatabaseUrl())
-              .getAndInitialize();
+      final Database configDatabase = new ConfigsDatabaseInstance(
+          configs.getConfigDatabaseUser(),
+          configs.getConfigDatabasePassword(),
+          configs.getConfigDatabaseUrl()).getAndInitialize();
+
       final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
           .maskSecrets(!featureFlags.exposeSecretsInExport())
           .copySecrets(true)
           .build();
 
       final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getEphemeral(configs);
-      if (secretPersistence.isPresent()) {
-        secretMigrator = new SecretMigrator(configPersistence, secretPersistence.get());
-
-        try {
-          secretMigrator.migrateSecrets();
-        } catch (final JsonValidationException e) {
-          e.printStackTrace();
-        }
-      } else {
-        LOGGER.info("No secret destination specify, it won't migrate secrets");
-        secretMigrator = null;
-      }
 
       postLoadExecution = () -> {
         try {
@@ -121,7 +105,13 @@ public class BootloaderApp {
           e.printStackTrace();
         }
       };
-    } catch (final IOException e) {
+
+      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getEphemeral(configs);
+
+      secretMigrator = new SecretMigrator(configPersistence, secretPersistence);
+      secretMigrator.migrateSecrets();
+
+    } catch (final IOException | JsonValidationException e) {
       throw new RuntimeException(e);
     }
   }
@@ -253,18 +243,6 @@ public class BootloaderApp {
       jobDbMigrator.migrate();
     } else {
       LOGGER.info("Auto database migration is skipped");
-    }
-  }
-
-  private static void cleanupZombies(final JobPersistence jobPersistence) throws IOException {
-    final Configs configs = new EnvConfigs();
-    final WorkflowClient wfClient =
-        WorkflowClient.newInstance(WorkflowServiceStubs.newInstance(
-            WorkflowServiceStubsOptions.newBuilder().setTarget(configs.getTemporalHost()).build()));
-    for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      LOGGER.info("Kill zombie job {} for connection {}", zombieJob.getId(), zombieJob.getScope());
-      wfClient.newUntypedWorkflowStub("sync_" + zombieJob.getId())
-          .terminate("Zombie");
     }
   }
 
