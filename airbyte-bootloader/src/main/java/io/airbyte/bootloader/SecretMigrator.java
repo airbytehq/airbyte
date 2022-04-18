@@ -44,7 +44,7 @@ public class SecretMigrator {
 
     private final UUID workspace;
     private final JsonNode configuration;
-    private final JsonNode specs;
+    private final JsonNode spec;
 
   }
 
@@ -87,9 +87,10 @@ public class SecretMigrator {
    * This is migrating the secrets for the source actors
    */
   @VisibleForTesting
-  void migrateSources(final List<SourceConnection> sources, final Map<UUID, JsonNode> definitionIdToSourceSpecs) {
+  void migrateSources(final List<SourceConnection> sources, final Map<UUID, JsonNode> definitionIdToSourceSpecs)
+      throws JsonValidationException, IOException {
     log.info("Migrating Sources");
-    sources.stream()
+    final List<SourceConnection> sourceConnections = sources.stream()
         .map(source -> {
           final JsonNode migratedConfig = migrateConfiguration(new ConnectorConfiguration(
               source.getWorkspaceId(),
@@ -99,23 +100,22 @@ public class SecretMigrator {
           source.setConfiguration(migratedConfig);
           return source;
         })
-        .forEach(source -> {
-          try {
-            configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
-          } catch (final JsonValidationException | IOException e) {
-            throw new RuntimeException(e);
-          }
-        });
+        .toList();
+
+    for (final SourceConnection source : sourceConnections) {
+      configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
+    }
   }
 
   /**
    * This is migrating the secrets for the destination actors
    */
   @VisibleForTesting
-  void migrateDestinations(final List<DestinationConnection> destinations, final Map<UUID, JsonNode> definitionIdToDestinationSpecs) {
+  void migrateDestinations(final List<DestinationConnection> destinations, final Map<UUID, JsonNode> definitionIdToDestinationSpecs)
+      throws JsonValidationException, IOException {
     log.info("Migration Destinations");
 
-    destinations.stream().map(destination -> {
+    final List<DestinationConnection> destinationConnections = destinations.stream().map(destination -> {
       final JsonNode migratedConfig = migrateConfiguration(new ConnectorConfiguration(
           destination.getWorkspaceId(),
           destination.getConfiguration(),
@@ -124,13 +124,10 @@ public class SecretMigrator {
       destination.setConfiguration(migratedConfig);
       return destination;
     })
-        .forEach(destination -> {
-          try {
-            configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), destination);
-          } catch (final JsonValidationException | IOException e) {
-            throw new RuntimeException(e);
-          }
-        });
+        .toList();
+    for (final DestinationConnection destination : destinationConnections) {
+      configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), destination);
+    }
   }
 
   /**
@@ -139,12 +136,12 @@ public class SecretMigrator {
    */
   @VisibleForTesting
   JsonNode migrateConfiguration(final ConnectorConfiguration connectorConfiguration, final Supplier<UUID> uuidProvider) {
-    if (connectorConfiguration.getSpecs() == null) {
+    if (connectorConfiguration.getSpec() == null) {
       throw new IllegalStateException("No connector definition to match the connector");
     }
 
     final AtomicReference<JsonNode> connectorConfigurationJson = new AtomicReference<>(connectorConfiguration.getConfiguration());
-    final List<String> uniqSecretPaths = getSecretPath(connectorConfiguration.getSpecs())
+    final List<String> uniqSecretPaths = getSecretPath(connectorConfiguration.getSpec())
         .stream()
         .flatMap(secretPath -> getAllExplodedPath(connectorConfigurationJson.get(), secretPath).stream())
         .toList();
