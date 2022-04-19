@@ -310,7 +310,7 @@ class DbtIntegrationTest(object):
         else:
             os.chdir(request.fspath.dirname)
 
-    def generate_profile_yaml_file(self, destination_type: DestinationType, test_root_dir: str) -> Dict[str, Any]:
+    def generate_profile_yaml_file(self, destination_type: DestinationType, test_root_dir: str, random_schema: bool = False) -> Dict[str, Any]:
         """
         Each destination requires different settings to connect to. This step generates the adequate profiles.yml
         as described here: https://docs.getdbt.com/reference/profiles.yml
@@ -327,6 +327,10 @@ class DbtIntegrationTest(object):
             }
         elif destination_type.value == DestinationType.MYSQL.value:
             profiles_config["database"] = self.target_schema
+        elif destination_type.value == DestinationType.REDSHIFT.value:
+            profiles_config["schema"] = self.target_schema
+            if random_schema:
+                profiles_config["schema"] = self.target_schema + "_" + "".join(random.choices(string.ascii_lowercase, k=5))
         else:
             profiles_config["schema"] = self.target_schema
         if destination_type.value == DestinationType.CLICKHOUSE.value:
