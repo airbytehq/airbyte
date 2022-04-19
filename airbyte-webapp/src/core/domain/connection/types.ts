@@ -29,13 +29,19 @@ export type ScheduleProperties = {
   timeUnit: ConnectionSchedule;
 };
 
+export enum ConnectionStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  DEPRECATED = "depreacted",
+}
+
 export interface Connection {
   connectionId: string;
   name: string;
   prefix: string;
   sourceId: string;
   destinationId: string;
-  status: string;
+  status: ConnectionStatus;
   schedule: ScheduleProperties | null;
   syncCatalog: SyncSchema;
   latestSyncJobCreatedAt?: number | null;

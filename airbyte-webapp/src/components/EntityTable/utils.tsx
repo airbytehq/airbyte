@@ -1,8 +1,8 @@
-import { Connection } from "core/domain/connection";
+import { Connection, ConnectionStatus } from "core/domain/connection";
 import Status from "core/statuses";
 import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
 
-import { ITableDataItem, EntityTableDataItem, Status as ConnectionStatus } from "./types";
+import { ITableDataItem, EntityTableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
@@ -106,10 +106,10 @@ export const getConnectionTableData = (
   });
 };
 
-export const getConnectionSyncStatus = (status: string, lastSyncStatus: string | null): string | null => {
-  if (status === ConnectionStatus.INACTIVE) return ConnectionStatus.INACTIVE;
-  if (!lastSyncStatus) return ConnectionStatus.EMPTY;
-  if (lastSyncStatus === Status.FAILED) return ConnectionStatus.FAILED;
+export const getConnectionSyncStatus = (status: ConnectionStatus, lastSyncJobStatus: string | null): string => {
+  if (status === ConnectionStatus.INACTIVE) return ConnectionSyncStatus.INACTIVE;
+  if (!lastSyncJobStatus) return ConnectionSyncStatus.EMPTY;
+  if (lastSyncJobStatus === Status.FAILED) return ConnectionSyncStatus.FAILED;
 
-  return ConnectionStatus.ACTIVE;
+  return ConnectionSyncStatus.ACTIVE;
 };
