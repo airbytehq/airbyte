@@ -7,7 +7,6 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,9 +24,6 @@ public interface AutoDisableConnectionActivity {
 
     private Instant currTimestamp;
 
-    // Used to determine if a warning has been recently sent.
-    private Optional<Instant> lastWarningTimestamp;
-
   }
 
   @Data
@@ -36,8 +32,6 @@ public interface AutoDisableConnectionActivity {
   class AutoDisableConnectionOutput {
 
     private boolean disabled;
-
-    private Optional<Instant> lastWarningTimestamp;
 
   }
 

@@ -266,11 +266,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       if (autoDisableConnectionVersion != Workflow.DEFAULT_VERSION) {
         final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
-            new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()),
-                workflowInternalState.getLastAutoDisableWarningTimestamp());
+            new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
         final AutoDisableConnectionOutput output = runMandatoryActivityWithOutput(
             autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
-        workflowInternalState.setLastAutoDisableWarningTimestamp(output.getLastWarningTimestamp());
+        if (output.isDisabled()) {
+          log.info("Auto-disabled for constantly failing for Connection {}", connectionId);
+        }
       }
 
       resetNewConnectionInput(connectionUpdaterInput);

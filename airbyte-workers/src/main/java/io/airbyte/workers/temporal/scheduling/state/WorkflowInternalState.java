@@ -5,9 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.state;
 
 import io.airbyte.config.FailureReason;
-import java.time.Instant;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +22,5 @@ public class WorkflowInternalState {
   // StandardSyncOutput standardSyncOutput = null;
   private final Set<FailureReason> failures = new HashSet<>();
   private Boolean partialSuccess = null;
-
-  private Optional<Instant> lastAutoDisableWarningTimestamp = Optional.empty();
 
 }
