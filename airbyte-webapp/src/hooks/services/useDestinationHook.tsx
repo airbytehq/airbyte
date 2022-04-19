@@ -1,4 +1,4 @@
-import { QueryObserverSuccessResult, useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
@@ -10,8 +10,9 @@ import { useInitService } from "services/useInitService";
 import { DestinationService } from "core/domain/connector/DestinationService";
 
 import { SCOPE_WORKSPACE } from "../../services/Scope";
-import { useCurrentWorkspace } from "./useWorkspace";
+import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 export const destinationsKeys = {
   all: [SCOPE_WORKSPACE, "destinations"] as const,
@@ -45,11 +46,7 @@ const useDestinationList = (): DestinationList => {
   const workspace = useCurrentWorkspace();
   const service = useDestinationService();
 
-  return (
-    useQuery(destinationsKeys.lists(), () =>
-      service.list(workspace.workspaceId)
-    ) as QueryObserverSuccessResult<DestinationList>
-  ).data;
+  return useSuspenseQuery(destinationsKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
 const useGetDestination = <T extends string | undefined | null>(
@@ -57,11 +54,9 @@ const useGetDestination = <T extends string | undefined | null>(
 ): T extends string ? Destination : Destination | undefined => {
   const service = useDestinationService();
 
-  return (
-    useQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
-      enabled: isDefined(destinationId),
-    }) as QueryObserverSuccessResult<Destination>
-  ).data;
+  return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
+    enabled: isDefined(destinationId),
+  });
 };
 
 const useCreateDestination = () => {

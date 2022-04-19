@@ -22,6 +22,8 @@
   "sidebar.joinSlack": "Join our Slack",
   "sidebar.status": "Airbyte status",
   "sidebar.chat": "Chat with us",
+  "sidebar.support": "Support",
+  "sidebar.supportTicket": "Submit a Ticket",
   "sidebar.recipes": "Tutorials - Use cases",
 
   "form.continue": "Continue",
@@ -32,6 +34,7 @@
   "form.selectConnector": "Type to search for a connector",
   "form.searchName": "search by name...",
   "form.noResult": "No result",
+  "form.noConnectorFound": "No matching connector found",
   "form.sourceName.placeholder": "Your source name",
   "form.destinationName.placeholder": "Your destination name",
   "form.connectionName.placeholder": "Name",
@@ -487,5 +490,21 @@
 
   "ui.keyValuePair": "{key}: {value}",
   "ui.keyValuePairV2": "{key} ({value})",
-  "ui.keyValuePairV3": "{key}, {value}"
+  "ui.keyValuePairV3": "{key}, {value}",
+
+  "airbyte.datatype.string": "String",
+  "airbyte.datatype.date": "Date",
+  "airbyte.datatype.timestamp_with_timezone": "Timestamp with Timezone",
+  "airbyte.datatype.timestamp_without_timezone": "Datetime",
+  "airbyte.datatype.datetime": "Datetime",
+  "airbyte.datatype.integer": "Integer",
+  "airbyte.datatype.big_integer": "Big Integer",
+  "airbyte.datatype.number": "Number",
+  "airbyte.datatype.big_number": "Big Number",
+  "airbyte.datatype.array": "Array",
+  "airbyte.datatype.object": "Object",
+  "airbyte.datatype.untyped": "Untyped",
+  "airbyte.datatype.union": "Union",
+  "airbyte.datatype.unknown": "Unknown",
+  "airbyte.datatype.boolean": "Boolean"
 }

@@ -61,9 +61,11 @@ First, you can run the image locally. Connectors should have instructions in the
 
 ### 2. Requesting GitHub PR Integration Test Runs
 
-{% hint style="warning" %}
+:::caution
+
 This option is not available to PRs from forks, so it is effectively limited to Airbyte employees.
-{% endhint %}
+
+:::
 
 If you don't want to handle secrets, you're making a relatively minor change, or you want to ensure the connector's integration test will run remotely, you should request builds on GitHub. You can request an integration test run by creating a comment with a slash command.
 

@@ -80,8 +80,6 @@ jobs:
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
 
-
-
   # Uncomment to debug.
   #  changes-output:
   #    name: "Debug Change Detection Logic"
@@ -114,11 +112,9 @@ jobs:
         with:
           java-version: "17"
 
-      # octavia-cli install and testing requires Python.
-      # We use 3.8 in this project because 3.7 is not supported on Apple M1.
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.9"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -149,26 +145,6 @@ jobs:
 
       - name: Run integration tests
         run: ./tools/bin/integration_tests_octavia.sh
-
-      - name: Slack Notification - Failure
-        if: failure() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Build failure"
-          SLACK_FOOTER: ""
-
-      - name: Slack Notification - Success
-        if: success() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildbot
-          SLACK_TITLE: "Build Success"
-          SLACK_FOOTER: ""
 
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
@@ -221,7 +197,7 @@ jobs:
 
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
+          python-version: "3.9"
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
@@ -252,25 +228,6 @@ jobs:
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
-      - name: Slack Notification - Failure
-        if: failure() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Build failure"
-          SLACK_FOOTER: ""
-
-      - name: Slack Notification - Success
-        if: success() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildbot
-          SLACK_TITLE: "Build Success"
-          SLACK_FOOTER: ""
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
     name: "Connectors Base: Stop Build EC2 Runner"
@@ -532,25 +489,6 @@ jobs:
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
 
-      - name: Slack Notification - Failure
-        if: failure() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Build failure"
-          SLACK_FOOTER: ""
-
-      - name: Slack Notification - Success
-        if: success() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildbot
-          SLACK_TITLE: "Build Success"
-          SLACK_FOOTER: ""
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
     name: "Platform: Stop Build EC2 Runner"
@@ -659,25 +597,6 @@ jobs:
       - name: Run End-to-End Acceptance Tests with the new scheduler
         run: ./tools/bin/acceptance_test_with_new_scheduler.sh
 
-      - name: Slack Notification - Failure
-        if: failure() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Build failure"
-          SLACK_FOOTER: ""
-
-      - name: Slack Notification - Success
-        if: success() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildbot
-          SLACK_TITLE: "Build Success"
-          SLACK_FOOTER: ""
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-new-scheduler-acceptance-runner:
     name: "Platform: Stop Docker w/ Scheduler v2 Test Runner"
@@ -1009,3 +928,62 @@ jobs:
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner-v2.outputs.ec2-instance-id }}
+
+  notify-failure-slack-channel:
+    name: "Notify Slack Channel on Build Failures"
+    runs-on: ubuntu-latest
+    needs:
+      - build-connectors-base
+      - frontend-build
+      - octavia-cli-build
+      - platform-build
+      - platform-new-scheduler-acceptance
+      - kube-acceptance-test
+      - kube-acceptance-test-v2
+    if: ${{ failure() && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Publish to OSS Build Failure Slack Channel
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          args: >-
+            {\"channel\":\"C03BEADRPNY\", \"blocks\":[
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Merge to OSS Master failed! :bangbang: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
+            {\"type\":\"divider\"}]}
+
+  notify-failure-slack-channel-fixed-broken-build:
+    name: "Notify Slack Channel on Build Fixes"
+    runs-on: ubuntu-latest
+    needs:
+      - build-connectors-base
+      - frontend-build
+      - octavia-cli-build
+      - platform-build
+      - platform-new-scheduler-acceptance
+      - kube-acceptance-test
+      - kube-acceptance-test-v2
+    if: success()
+    steps:
+      - name: Get Previous Workflow Status
+        uses: Mercymeilya/last-workflow-status@v0.3
+        id: last_status
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      # To avoid clogging up the channel, only publish build success if the previous build was a failure since this means the build was fixed.
+      - name: Publish Build Fixed Message to OSS Build Failure Slack Channel
+        if: ${{ steps.last_status.outputs.last_status == 'failure' }}
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          args: >-
+            {\"channel\":\"C03AXC61YBZ\", \"blocks\":[
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" OSS Master Fixed! :white_check_mark: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket: \n\"}},
+            {\"type\":\"divider\"}]}

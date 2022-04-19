@@ -41,7 +41,7 @@ STREAM_RESPONSE: dict = {
                     "type": "Comment",
                     "author_id": 10,
                     "body": "test_comment",
-                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br></div>',
+                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br/></div>',
                     "plain_body": "test_comment",
                     "public": True,
                     "attachments": [],
@@ -85,6 +85,7 @@ def test_str2unixtime():
     expected = calendar.timegm(DATETIME_FROM_STR.utctimetuple())
     output = BaseSourceZendeskSupportStream.str2unixtime(DATETIME_STR)
     assert output == expected
+
 
 def test_check_start_time_param():
     expected = 1626936955
