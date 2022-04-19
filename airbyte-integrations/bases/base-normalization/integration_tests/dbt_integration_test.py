@@ -310,7 +310,9 @@ class DbtIntegrationTest(object):
         else:
             os.chdir(request.fspath.dirname)
 
-    def generate_profile_yaml_file(self, destination_type: DestinationType, test_root_dir: str, random_schema: bool = False) -> Dict[str, Any]:
+    def generate_profile_yaml_file(
+        self, destination_type: DestinationType, test_root_dir: str, random_schema: bool = False
+    ) -> Dict[str, Any]:
         """
         Each destination requires different settings to connect to. This step generates the adequate profiles.yml
         as described here: https://docs.getdbt.com/reference/profiles.yml
