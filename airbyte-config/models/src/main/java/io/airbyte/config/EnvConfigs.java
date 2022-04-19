@@ -100,7 +100,6 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
   private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
   private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
-  public static final String KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS = "KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS";
 
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -160,7 +159,6 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
-  private static final long DEFAULT_KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS = 30 * 1000;
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -860,11 +858,6 @@ public class EnvConfigs implements Configs {
   @Override
   public int getActivityNumberOfAttempt() {
     return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "10"));
-  }
-
-  @Override
-  public long getKubePodWatcherResyncPeriodMillis() {
-    return getEnvOrDefault(KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS, DEFAULT_KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS);
   }
 
   // Helpers

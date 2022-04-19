@@ -59,8 +59,7 @@ public class OrchestratorConstants {
           EnvConfigs.STATE_STORAGE_S3_BUCKET_NAME,
           EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
           EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
-          EnvConfigs.STATE_STORAGE_S3_REGION,
-          EnvConfigs.KUBE_POD_WATCHER_RESYNC_PERIOD_MILLIS))
+          EnvConfigs.STATE_STORAGE_S3_REGION))
       .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";

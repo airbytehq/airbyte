@@ -50,7 +50,6 @@ public class KubeProcessFactory implements ProcessFactory {
   private final KubernetesClient fabricClient;
   private final String kubeHeartbeatUrl;
   private final String processRunnerHost;
-  private final long kubeInformerResyncMillis;
   private final boolean isOrchestrator;
 
   /**
@@ -60,15 +59,13 @@ public class KubeProcessFactory implements ProcessFactory {
                             final String namespace,
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
-                            final boolean isOrchestrator,
-                            final long kubeInformerResyncMillis) {
+                            final boolean isOrchestrator) {
     this(
         workerConfigs,
         namespace,
         fabricClient,
         kubeHeartbeatUrl,
         Exceptions.toRuntime(() -> InetAddress.getLocalHost().getHostAddress()),
-        kubeInformerResyncMillis,
         isOrchestrator);
   }
 
@@ -87,14 +84,12 @@ public class KubeProcessFactory implements ProcessFactory {
                             final KubernetesClient fabricClient,
                             final String kubeHeartbeatUrl,
                             final String processRunnerHost,
-                            final long kubeInformerResyncMillis,
                             final boolean isOrchestrator) {
     this.workerConfigs = workerConfigs;
     this.namespace = namespace;
     this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.processRunnerHost = processRunnerHost;
-    this.kubeInformerResyncMillis = kubeInformerResyncMillis;
     this.isOrchestrator = isOrchestrator;
   }
 
@@ -151,7 +146,6 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getJobCurlImage(),
           MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap()),
           internalToExternalPorts,
-          kubeInformerResyncMillis,
           args);
     } catch (final Exception e) {
       throw new WorkerException(e.getMessage(), e);

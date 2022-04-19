@@ -216,8 +216,7 @@ public class ContainerOrchestratorApp {
           configs.getJobKubeNamespace(),
           fabricClient,
           kubeHeartbeatUrl,
-          false,
-          configs.getKubePodWatcherResyncPeriodMillis());
+          false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,
