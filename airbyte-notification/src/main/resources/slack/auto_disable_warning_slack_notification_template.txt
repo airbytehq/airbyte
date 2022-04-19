@@ -1,0 +1,7 @@
+Your connection from %s to %s is about to be disabled because it failed consecutively 50 times or that there were only failed jobs in the past 7 days.
+
+Once it has failed 100 times consecutively or has been failing for 14 days in a row, the connection will be automatically disabled.
+
+Please address the failing issues and re-enable the connection.
+
+The most recent attempted %s You can access its logs here: %s

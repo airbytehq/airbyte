@@ -122,13 +122,11 @@ public class JobNotifier {
             if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
-            // alert message currently only supported by email through customer.io
-          } else if (CONNECTION_DISABLED_NOTIFICATION.equals(action) && notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
+          } else if (CONNECTION_DISABLED_NOTIFICATION.equals(action)) {
             if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
             }
-          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION.equals(action)
-              && notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
+          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION.equals(action)) {
             if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
             }
