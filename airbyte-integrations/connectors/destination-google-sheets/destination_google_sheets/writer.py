@@ -56,9 +56,11 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         """
         values: list = []
         self.check_headers(stream_name)
+        
         for streams in self.records_buffer:
             if stream_name in streams:
                 values = streams[stream_name]
+                
         if len(values) > 0:
             stream: Worksheet = self.client.open_worksheet(f"{stream_name}")
             self.logger.info(f"Writing data for stream: {stream_name}")
@@ -85,14 +87,13 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         """
         primary_key: str = configured_stream.primary_key[0][0]
         stream_name: str = configured_stream.stream.name
+        
         stream: Worksheet = self.client.open_worksheet(f"{stream_name}")
         rows_to_remove: list = self.client.find_duplicates(stream, primary_key)
 
         if len(rows_to_remove) > 0:
-            self.logger.info(f"Duplicated records are detected for stream: {stream_name}, resolving...")
-            stream.unlink()
+            self.logger.info(f"Duplicated records are found for stream: {stream_name}, resolving...")
             self.client.remove_duplicates(stream, rows_to_remove)
-            stream.sync()
             self.logger.info(f"Finished deduplicating records for stream: {stream_name}")
         else:
-            print(f"No duplicated records detected for stream: {stream_name}")
+            print(f"No duplicated records found for stream: {stream_name}")

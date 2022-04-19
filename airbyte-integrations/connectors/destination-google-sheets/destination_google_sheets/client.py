@@ -24,6 +24,7 @@ class GoogleSpreadsheetsClient:
         config_creds = GoogleSpreadsheetsAuth.get_credentials(self.config)
         authenticated_creds = GoogleSpreadsheetsAuth.get_authenticated_google_credentials(config_creds)
         client = pygsheets.authorize(custom_credentials=authenticated_creds, scopes=SCOPES)
+        
         return client.open_by_key(self.spreadsheet_id)
 
     @property
@@ -32,15 +33,6 @@ class GoogleSpreadsheetsClient:
         Returns the id from the input url provided, or the actual id, if provided by user.
         """
         return get_spreadsheet_id(self.config["spreadsheet_id"])
-
-    def list_worksheets(self) -> List:
-        """
-        Returns the existing worksheets inside of target spreadsheet.
-        """
-        wks_list = []
-        for wks in self.client.worksheets():
-            wks_list.append(wks.title)
-        yield from wks_list
 
     def clean_worksheet(self, stream_name: str):
         """
@@ -78,8 +70,10 @@ class GoogleSpreadsheetsClient:
         """
         header = stream[1]
         col_index = {}
+        
         for i, col in enumerate(header):
             col_index[col] = i + 1
+            
         return col_index
 
     def find_duplicates(self, stream: Worksheet, primary_key: str):
@@ -89,19 +83,24 @@ class GoogleSpreadsheetsClient:
             [1, 4, 5, ..., 99]
         """
         rows_unique, rows_to_delete = [], []
-        target_col = self.index_cols(stream)[primary_key]
-        col_values = stream.get_col(target_col, include_tailing_empty=False)[1:]
+        
+        pk_col_index = self.index_cols(stream)[primary_key]
+        col_values = stream.get_col(pk_col_index, include_tailing_empty=False)[1:] # get everything but 0 position.
+        
         for i, row in enumerate(col_values, 1):
             if col_values[i - 1] not in rows_unique:
                 rows_unique.append(row)
             else:
                 rows_to_delete.append(i + 1)
-        rows_to_delete.reverse()
+                
+        rows_to_delete.reverse() # reverse the order of the list
         return rows_to_delete
 
     def remove_duplicates(self, stream: Worksheet, rows_list: list):
         """
         Removes duplicated rows, provided by `rows_list` as list of indexes.
         """
+        stream.unlink()
         [stream.delete_rows(row, 1) for row in rows_list]
+        stream.sync()
         
