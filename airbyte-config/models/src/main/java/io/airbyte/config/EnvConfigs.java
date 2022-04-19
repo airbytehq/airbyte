@@ -100,6 +100,7 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
   private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
   private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
+  private static final String RUN_VERSION_CHECK_ON_CUSTOM_CONNECTORS = "RUN_VERSION_CHECK_ON_CUSTOM_CONNECTORS";
 
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
@@ -731,6 +732,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDDDogStatsDPort() {
     return getEnvOrDefault(DD_DOGSTATSD_PORT, "");
+  }
+
+  @Override
+  public boolean getRunVersionCheckOnCustomConnectors() {
+    return getEnvOrDefault(RUN_VERSION_CHECK_ON_CUSTOM_CONNECTORS, true);
   }
 
   @Override

@@ -32,6 +32,7 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.SourceConnection;
@@ -49,6 +50,7 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -1592,6 +1594,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .from(ACTOR_DEFINITION)
         .fetch()
         .stream()
+        .filter(
+            row -> new EnvConfigs().getRunVersionCheckOnCustomConnectors() || row.get(ACTOR_DEFINITION.RELEASE_STAGE) != ReleaseStage.custom
+        )
         .collect(Collectors.toMap(
             row -> row.getValue(ACTOR_DEFINITION.DOCKER_REPOSITORY),
             row -> {
