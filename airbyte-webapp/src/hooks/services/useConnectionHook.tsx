@@ -134,18 +134,20 @@ const useGetConnection = (connectionId: string, options?: { refetchInterval: num
 const useCreateConnection = () => {
   const service = useWebConnectionService();
   const queryClient = useQueryClient();
-
   const analyticsService = useAnalyticsService();
 
   return useMutation(
     async (conn: CreateConnectionProps) => {
       const { values, source, destination, sourceDefinition, destinationDefinition } = conn;
+
       const response = await service.create({
         sourceId: source?.sourceId,
         destinationId: destination?.destinationId,
         ...values,
         status: "active",
       });
+
+      const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config.selected === true).length;
 
       const frequencyData = FrequencyConfig.find((item) => equal(item.config, values.schedule));
 
@@ -156,6 +158,8 @@ const useCreateConnection = () => {
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
         connector_destination_definition_id: destinationDefinition?.destinationDefinitionId,
+        available_streams: values.syncCatalog.streams.length,
+        enabled_streams: enabledStreams,
       });
 
       return response;
