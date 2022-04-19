@@ -145,16 +145,8 @@ class Readings(Locations):
 
     def __init__(self, auth, *args, **kw):
         super(Readings, self).__init__(*args, **kw)
-        
-        #locations = Locations()
-        
-
-        print ("auth2")
-        print (auth)
 
         locations = Locations(authenticator=auth)
-       
-
 
         records = locations.read_records('full-refresh')
 
@@ -162,31 +154,14 @@ class Readings(Locations):
         print ("-------------------------")
 
         for r in records:
-            print (r)
+            print (r['id'])
 
         print ("-------------------------")
         print ("-------------------------")
 
 
-        #locations = Locations(authenticator=auth)
-       
-        #locations_list = locations.parse_response()
-
-        #locations_list = list(locations.read_records('full-refresh'))
-
-        #records = list(p.read_records('full-refresh'))
         #self._pages = (r for r in sorted(r['id'] for r in records))
 
-
-
-
-
-        #print ("locations_list")
-        #print (locations_list)
-
-
-    #def path(self):
-    #    return "readings/list"
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -198,39 +173,6 @@ class Readings(Locations):
         #return "locations/list"
         return "readings/list"
 
-
-"""
-class Readings(HydroVuStream):
-    primary_key = 'id'
-
-
-    def __init__(self, *args, **kw):
-        super(Readings, self).__init__(*args, **kw)
-        locations = Locations()
-       
-        locations_list = locations.parse_response()
-
-        #locations_list = list(locations.read_records('full-refresh'))
-
-        #records = list(p.read_records('full-refresh'))
-        #self._pages = (r for r in sorted(r['id'] for r in records))
-
-
-
-        print ("locations_list")
-        print (locations_list)
-
-
-    #def path(self):
-    #    return "readings/list"
-
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        #return "locations/list"
-        return "readings/list"
-
-"""
 
 
 
