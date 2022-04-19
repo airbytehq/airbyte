@@ -106,10 +106,25 @@ export const getConnectionTableData = (
   });
 };
 
-export const getConnectionSyncStatus = (status: ConnectionStatus, lastSyncJobStatus: string | null): string => {
+export const getConnectionSyncStatus = (
+  status: ConnectionStatus,
+  lastSyncJobStatus: Status | null
+): ConnectionSyncStatus => {
   if (status === ConnectionStatus.INACTIVE) return ConnectionSyncStatus.INACTIVE;
-  if (!lastSyncJobStatus) return ConnectionSyncStatus.EMPTY;
-  if (lastSyncJobStatus === Status.FAILED) return ConnectionSyncStatus.FAILED;
 
-  return ConnectionSyncStatus.ACTIVE;
+  switch (lastSyncJobStatus) {
+    case Status.SUCCEEDED:
+      return ConnectionSyncStatus.ACTIVE;
+
+    case Status.FAILED:
+    case Status.CANCELLED:
+      return ConnectionSyncStatus.FAILED;
+
+    case Status.PENDING:
+    case Status.RUNNING:
+      return ConnectionSyncStatus.PENDING;
+
+    default:
+      return ConnectionSyncStatus.EMPTY;
+  }
 };

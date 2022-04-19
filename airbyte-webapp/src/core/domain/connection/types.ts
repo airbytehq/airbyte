@@ -1,5 +1,6 @@
 import { SyncSchema } from "core/domain/catalog";
 import { AirbyteJSONSchema } from "core/jsonSchema";
+import Status from "core/statuses";
 
 import { Destination, Source } from "../connector";
 import { Operation } from "./operation";
@@ -48,7 +49,7 @@ export interface Connection {
   namespaceDefinition: ConnectionNamespaceDefinition;
   namespaceFormat: string;
   isSyncing?: boolean;
-  latestSyncJobStatus: string | null;
+  latestSyncJobStatus: Status | null;
   operationIds: string[];
 
   // WebBackend connection specific fields
