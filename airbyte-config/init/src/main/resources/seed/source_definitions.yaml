@@ -789,6 +789,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api
+- name: TiDB
+  sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
+  dockerRepository: airbyte/source-tidb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/tidb
+  sourceType: database
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing

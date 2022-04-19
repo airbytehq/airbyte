@@ -118,7 +118,6 @@ Using this feature requires additional configuration, when creating the source. 
 
 ## Changelog
 
-| Version | Date | Pull Request |
-| :------ | :--- | :----------- |
-| 0.1.0   |      |              |
-
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | ------- |
+| 0.1.0   | 2022-04-19 | [11283](https://github.com/airbytehq/airbyte/pull/11283) | Initial Release |
