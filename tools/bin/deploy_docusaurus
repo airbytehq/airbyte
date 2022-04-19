@@ -67,6 +67,7 @@ if test "$(tty)" == "not a tty"; then
   echo "machine github.com login octavia-squidington-iii password $GITHUB_TOKEN" > $HOME/.netrc
   # context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
   # write a prod website to airbytehq/airbyte gh_pages branch
+  # NOT ACTUALLY WORKING
   GIT_USER="octavia-squidington-iii" yarn run publish-gh-pages
 else
   yarn run deploy
