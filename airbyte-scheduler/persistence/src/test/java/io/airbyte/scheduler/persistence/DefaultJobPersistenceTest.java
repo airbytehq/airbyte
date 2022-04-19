@@ -60,7 +60,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.Record;
 import org.jooq.Result;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
