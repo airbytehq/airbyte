@@ -4,7 +4,7 @@ This page guides you through the process of setting up the Mailchimp source conn
 
 ## Prerequisites
 
-For Apikey authorization:
+For API Key authorization:
 * Mailchimp account 
 * Mailchimp API key
 
