@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import boto3
 from airbyte_cdk.destinations import Destination
 from botocore.exceptions import ClientError

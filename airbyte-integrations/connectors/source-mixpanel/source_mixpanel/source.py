@@ -827,7 +827,6 @@ class SourceMixpanel(AbstractSource):
 
         return True, None
 
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
