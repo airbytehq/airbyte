@@ -64,7 +64,7 @@
         "title": "S3 Bucket Region (Optional)",
         "type": "string",
         "default": "",
-        "description": "The region of the S3 staging bucket to use if utilising a copy strategy.",
+        "description": "The region of the S3 staging bucket to use if utilising a COPY strategy.",
         "enum": [
           "",
           "us-east-1",
@@ -94,7 +94,7 @@
       },
       "access_key_id": {
         "type": "string",
-        "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
+        "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
         "title": "S3 Key Id (Optional)",
         "airbyte_secret": true
       },
@@ -109,13 +109,13 @@
         "minimum": 10,
         "maximum": 100,
         "examples": ["10"],
-        "description": "Optional. Increase this if syncing tables larger than 100GB. Only relevant for COPY. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.",
+        "description": "Increase this if syncing tables larger than 100GB. Only relevant for COPY. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note: a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.",
         "title": "Stream Part Size (Optional)"
       },
       "purge_staging_data": {
         "title": "Purge Staging Files and Tables (Optional)",
         "type": "boolean",
-        "description": "Whether to delete the staging files from S3 after completing the sync. See the docs for details. Only relevant for COPY. Defaults to true.",
+        "description": "Whether to delete the staging files from S3 after completing the sync. See the docs for details. https://docs.airbyte.com/integrations/destinations/redshift#2a-fill-up-s3-info-for-copy-strategy. Only relevant for COPY. Defaults to true.",
         "default": true
       }
     }
