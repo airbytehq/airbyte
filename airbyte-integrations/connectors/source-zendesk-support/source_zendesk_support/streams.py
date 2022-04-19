@@ -361,17 +361,17 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return params
 
 
-class SourceZendeskTicketExportStream(SourceZendeskSupportCursorPaginationStream):
+class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationStream):
     """Incremental Export from Tickets stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based
 
-    @ param response_list_name: the main nested entity to look at inside of response, defualt = response_list_name
+    @ param response_list_name: the main nested entity to look at inside of response, default = response_list_name
     @ param sideload_param : parameter variable to include various information to response
         more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
     """
 
     cursor_field = "updated_at"
-    response_list_name: str = "tickets"
+    response_list_name: str = None
     sideload_param: str = None
 
     @staticmethod
@@ -410,11 +410,11 @@ class SourceZendeskTicketExportStream(SourceZendeskSupportCursorPaginationStream
             yield record
 
 
-class SourceZendeskSupportTicketEventsExportStream(SourceZendeskTicketExportStream):
+class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExportStream):
     """Incremental Export from TicketEvents stream:
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
 
-    @ param response_list_name: the main nested entity to look at inside of response, defualt = "ticket_events"
+    @ param response_list_name: the main nested entity to look at inside of response, default = "ticket_events"
     @ param response_target_entity: nested property inside of `response_list_name`, default = "child_events"
     @ param list_entities_from_event : the list of nested child_events entities to include from parent record
     @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
@@ -441,58 +441,10 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskTicketExportStre
                     yield event
 
 
-class SourceZendeskUserExportStream(SourceZendeskSupportCursorPaginationStream):
-    """Incremental Export from User stream:
-    https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export
-
-    @ param response_list_name: the main nested entity to look at inside of response, defualt = response_list_name
-    @ param sideload_param : parameter variable to include various information to response
-        more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
-    """
-
-    cursor_field = "updated_at"
-    response_list_name: str = "users"
-    sideload_param: str = None
-
-    @staticmethod
-    def check_start_time_param(requested_start_time: int, value: int = 1):
-        """
-        Requesting users in the future is not allowed, hits 400 - bad request.
-        We get current UNIX timestamp minus `value` from now(), default = 1 (minute).
-
-        Returns: either close to now UNIX timestamp or previously requested UNIX timestamp.
-        """
-        now = calendar.timegm(pendulum.now().subtract(minutes=value).utctimetuple())
-        return now if requested_start_time > now else requested_start_time
-
-    def path(self, **kwargs) -> str:
-        return f"incremental/{self.response_list_name}.json"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Returns next_page_token based on `end_of_stream` parameter inside of response
-        """
-        next_page_token = super().next_page_token(response)
-        return None if response.json().get(END_OF_STREAM_KEY, False) else next_page_token
-
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, next_page_token, **kwargs)
-        # check "start_time" is not in the future
-        params["start_time"] = self.check_start_time_param(params["start_time"])
-        if self.sideload_param:
-            params["include"] = self.sideload_param
-        return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in response.json().get(self.response_list_name, []):
-            yield record
-
-
-class Users(SourceZendeskUserExportStream):
+class Users(SourceZendeskIncrementalExportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
 
+    response_list_name: str = "users"
 
 class Organizations(SourceZendeskSupportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
@@ -501,6 +453,7 @@ class Organizations(SourceZendeskSupportStream):
 class Tickets(SourceZendeskTicketExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
+    response_list_name: str = "tickets"
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
