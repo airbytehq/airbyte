@@ -1012,7 +1012,7 @@ class TeamMembers(GithubStream):
 
     primary_key = ["id", "team_slug"]
 
-    def __init__(self, parent: HttpStream, **kwargs):
+    def __init__(self, parent: Teams, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
 
@@ -1045,7 +1045,7 @@ class TeamMemberships(GithubStream):
 
     primary_key = ["url"]
 
-    def __init__(self, parent: HttpStream, **kwargs):
+    def __init__(self, parent: TeamMembers, **kwargs):
         super().__init__(**kwargs)
         self.parent = parent
 
