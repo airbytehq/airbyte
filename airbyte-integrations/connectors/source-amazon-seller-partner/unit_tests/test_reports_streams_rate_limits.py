@@ -2,8 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-import time
-
 import pytest
 import requests
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException

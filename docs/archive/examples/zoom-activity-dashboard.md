@@ -246,8 +246,6 @@ The rest of the charts will be needing the **webinars** and `report_webinar_part
 
 For this chart, as for the meeting’s counterpart, we will get a calculated field off the Duration field to get the **Webinar Duration in Hours**, and then plot **Created At** against the **Sum of Webinar Duration in Hours**, as shown in the screenshot below. Note: Make sure you create a new sheet for each of these graphs.
 
-![](../../.gitbook/assets/duration-spent-in-weekly-webinars%20(3)%20(3).png)
-
 ### Participants for all webinars per week
 
 This calculation is the same as the number of participants for all meetings per week, but instead of using the **meetings** and `report_meeting_participants` tables, we will use the webinars and `report_webinar_participants` tables.
