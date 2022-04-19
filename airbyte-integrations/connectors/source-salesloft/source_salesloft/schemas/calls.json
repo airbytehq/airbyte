@@ -5,9 +5,17 @@
     "id": {
       "type": "integer"
     },
-    "added_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "to": {
+      "type": ["null", "string"]
+    },
+    "duration": {
+      "type": ["null", "integer"]
+    },
+    "sentiment": {
+      "type": ["null", "string"]
+    },
+    "disposition": {
+      "type": ["null", "string"]
     },
     "created_at": {
       "type": "string",
@@ -17,84 +25,84 @@
       "type": "string",
       "format": "date-time"
     },
-    "person_deleted": {
-      "type": ["null", "boolean"]
+    "user": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
     },
-    "currently_on_cadence": {
-      "type": ["null", "boolean"]
+    "action": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        }
+      }
     },
-    "current_state": {
-      "type": ["null", "string"]
+    "called_person": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "crm_activity": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "note": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "_href": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "cadence": {
       "type": ["null", "object"],
       "additionalProperties": false,
       "properties": {
-        "_href": {
-          "type": ["null", "string"]
-        },
         "id": {
           "type": ["null", "integer"]
+        },
+        "_href": {
+          "type": ["null", "string"]
         }
       }
     },
-    "person": {
+    "step": {
       "type": ["null", "object"],
       "additionalProperties": false,
       "properties": {
-        "_href": {
-          "type": ["null", "string"]
-        },
         "id": {
           "type": ["null", "integer"]
-        }
-      }
-    },
-    "user": {
-      "type": ["null", "object"],
-      "additionalProperties": false,
-      "properties": {
+        },
         "_href": {
           "type": ["null", "string"]
-        },
-        "id": {
-          "type": ["null", "integer"]
-        }
-      }
-    },
-    "latest_action": {
-      "type": ["null", "object"],
-      "additionalProperties": false,
-      "properties": {
-        "_href": {
-          "type": ["null", "string"]
-        },
-        "id": {
-          "type": ["null", "integer"]
-        }
-      }
-    },
-    "counts": {
-      "type": ["null", "object"],
-      "additionalProperties": true,
-      "properties": {
-        "views": {
-          "type": ["null", "integer"]
-        },
-        "clicks": {
-          "type": ["null", "integer"]
-        },
-        "replies": {
-          "type": ["null", "integer"]
-        },
-        "calls": {
-          "type": ["null", "integer"]
-        },
-        "sent_emails": {
-          "type": ["null", "integer"]
-        },
-        "bounces": {
-          "type": ["null", "integer"]
         }
       }
     }
