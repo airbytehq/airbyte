@@ -14,6 +14,9 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -54,6 +57,26 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new RedshiftTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
                                            final String streamName,
                                            final String namespace,
@@ -91,18 +114,6 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return getDatabase().query(
