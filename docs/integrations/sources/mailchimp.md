@@ -27,7 +27,7 @@ please [register](https://mailchimp.com/developer/marketing/guides/access-user-d
 your Mailchimp account.
 2. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 3. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-4. On the Set up the source page, enter the name for the Mailchimp connector and select **Mailchimp** from the Source type dropdown.
+4. On the source setup page, elect **Mailchimp** from the Source type dropdown and enter a name for this connector.
 5. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
 6. Log in and Authorize to the Mailchimp account and click `Set up source`.
 
