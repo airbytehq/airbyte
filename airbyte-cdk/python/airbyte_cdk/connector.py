@@ -65,29 +65,6 @@ class Connector(ABC):
 
         package = self.__class__.__module__.split(".")[0]
 
-        # formats = [
-        #     {"extension": "yaml", "loader": lambda data: yaml.load(data, yaml.SafeLoader)},
-        #     {"extension": "yml", "loader": lambda data: yaml.load(data, yaml.SafeLoader)},
-        #     {"extension": "json", "loader": lambda data: json.loads(data)}
-        # ]
-        #
-        # spec_obj = None
-        # for spec_format in formats:
-        #     try:
-        #         raw_spec = pkgutil.get_data(package, f"spec.{spec_format['extension']}")
-        #         if not raw_spec:
-        #             continue
-        #         if spec_obj:
-        #             raise ValueError("Found multiple spec files in the package. Only one of spec.yaml or spec.json should be provided.")
-        #         spec_obj = spec_format["loader"](raw_spec)
-        #     except FileNotFoundError:
-        #         continue
-        #
-        # if not spec_obj:
-        #     raise ValueError("Unable to find spec.")
-        #
-        # return ConnectorSpecification.parse_obj(spec_obj)
-
         yaml_spec = load_optional_package_file(package, "spec.yaml")
         json_spec = load_optional_package_file(package, "spec.json")
 
