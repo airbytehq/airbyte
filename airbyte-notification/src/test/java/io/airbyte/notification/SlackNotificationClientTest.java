@@ -122,13 +122,12 @@ public class SlackNotificationClientTest {
   void testNotifyConnectionDisabled() throws IOException, InterruptedException {
     final String expectedNotificationMessage =
         """
-            Your connection from source-test to destination-test was disabled because it failed consecutively 100 times or that there were only failed jobs in the past 14 days.
-            
-            Please address the failing issues and re-enable the connection.
-            
-            The most recent attempted job description You can access its logs here: logUrl
-            """;
+        Your connection from source-test to destination-test was disabled because it failed consecutively 100 times or that there were only failed jobs in the past 14 days.
 
+        Please address the failing issues and re-enable the connection.
+
+        The most recent attempted job description You can access its logs here: logUrl
+        """;
 
     server.createContext("/test", new ServerHandler(expectedNotificationMessage));
     final SlackNotificationClient client =
@@ -143,14 +142,14 @@ public class SlackNotificationClientTest {
   void testNotifyConnectionDisabledWarning() throws IOException, InterruptedException {
     final String expectedNotificationWarningMessage =
         """
-            Your connection from source-test to destination-test is about to be disabled because it failed consecutively 50 times or that there were only failed jobs in the past 7 days.
+        Your connection from source-test to destination-test is about to be disabled because it failed consecutively 50 times or that there were only failed jobs in the past 7 days.
 
-            Once it has failed 100 times consecutively or has been failing for 14 days in a row, the connection will be automatically disabled.
+        Once it has failed 100 times consecutively or has been failing for 14 days in a row, the connection will be automatically disabled.
 
-            Please address the failing issues and re-enable the connection.
-            
-            The most recent attempted job description You can access its logs here: logUrl
-            """;
+        Please address the failing issues and re-enable the connection.
+
+        The most recent attempted job description You can access its logs here: logUrl
+        """;
 
     server.createContext("/test", new ServerHandler(expectedNotificationWarningMessage));
     final SlackNotificationClient client =
