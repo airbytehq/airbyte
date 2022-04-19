@@ -8,6 +8,7 @@ import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.auth.oauth2.UserCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
@@ -31,6 +32,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -156,13 +158,17 @@ public class BigQueryUtils {
     return GcsDestinationConfig.getGcsDestinationConfig(getGcsAvroJsonNodeConfig(config));
   }
 
+
   public static JsonNode getGcsAvroJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
         .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
-        .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
+        .put(BigQueryConsts.CREDENTIAL, BigQueryCredentialsFactory.isOauth(config) ?
+            Jsons.jsonNode(ImmutableMap.builder().put("credential_type", "OAUTH2").build()) :
+            loadingMethod.get(BigQueryConsts.CREDENTIAL))
+        .put(BigQueryConsts.CREDENTIALS, config.get(BigQueryConsts.CREDENTIALS))
         .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
             + "  \"format_type\": \"AVRO\",\n"
             + "  \"flattening\": \"No flattening\",\n"

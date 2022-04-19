@@ -7,6 +7,7 @@ import static java.util.Objects.isNull;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.api.services.iam.v1.model.ServiceAccount;
 import com.google.api.services.iam.v1.model.ServiceAccountKey;
+import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -15,7 +16,6 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
-import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.oauth.BigQueryServiceAccountKeysManager;
 import io.airbyte.integrations.destination.bigquery.oauth.BigQueryServiceAccountManager;
@@ -26,21 +26,32 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQuerySecurityFactory {
+public class BigQueryCredentialsFactory {
 
   private static final String AUTH_TYPE = "auth_type";
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryCredentialsFactory.class);
 
-  public static BigQuery createClient(JsonNode config) {
-    return isOauth(config) ? createOAuthAccount(config) : createServiceAccount(config);
+  private BigQueryCredentialsFactory() {
   }
 
-  private static BigQuery createOAuthAccount(JsonNode config) {
-    final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
+  public static Credentials createCredentialsClient(JsonNode config) {
+    return isOauth(config) ? getOAuthClientCredentials(config) : getServiceAccountCredentials(config);
+  }
+
+  public static BigQuery createBigQueryClientWithCredentials(JsonNode config) throws IOException {
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+    Credentials credentials = isOauth(config) ? getOAuthClientCredentials(config) : getServiceAccountCredentials(config);
+    return BigQueryOptions.newBuilder()
+        .setProjectId(projectId)
+        .setCredentials(!isNull(credentials) ? credentials : GoogleCredentials.getApplicationDefault())
+        .build()
+        .getService();
+  }
+
+  private static Credentials getOAuthClientCredentials(JsonNode config) {
     AccessToken accessToken = new AccessToken(config.get(CREDENTIALS).get("access_token").asText(), null);
     String refreshToken = config.get(CREDENTIALS).get("refresh_token").asText();
-    GoogleCredentials credential =
+    GoogleCredentials credentials =
         UserCredentials.newBuilder()
             .setClientId(config.get(CREDENTIALS).get("client_id").asText())
             .setClientSecret(config.get(CREDENTIALS).get("client_secret").asText())
@@ -48,22 +59,15 @@ public class BigQuerySecurityFactory {
             .setRefreshToken(refreshToken)
             .build();
     try {
-      credential.refreshIfExpired();
+      credentials.refreshIfExpired();
     } catch (IOException e) {
       LOGGER.error("Error appears when refresh the token...", e);
       throw new RuntimeException(e);
     }
-    return bigQueryBuilder
-        .setProjectId(projectId)
-        .setCredentials(credential)
-        .build()
-        .getService();
+    return credentials;
   }
 
-  private static BigQuery createServiceAccount(JsonNode config) {
-    final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-    final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-
+  private static Credentials getServiceAccountCredentials(JsonNode config) {
     ServiceAccountCredentials credentials = null;
     if (BigQueryUtils.isUsingJsonCredentials(config)) {
       // handle the credentials json being passed as a json object or a json object already serialized as
@@ -79,15 +83,7 @@ public class BigQuerySecurityFactory {
         e.printStackTrace();
       }
     }
-    try {
-      return bigQueryBuilder
-          .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
-          .build()
-          .getService();
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    return credentials;
   }
 
   private static BigQuery createServiceAccountAndServiceKeyFromOAuth(JsonNode config) {

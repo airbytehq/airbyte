@@ -8,7 +8,10 @@ import static java.util.Objects.isNull;
 
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
@@ -26,8 +29,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.factory.BigQuerySecurityFactory;
-import io.airbyte.integrations.destination.bigquery.oauth.BigQueryBucketManager;
+import io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -46,6 +48,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +85,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     try {
       final String datasetId = BigQueryUtils.getDatasetId(config);
       final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-      final BigQuery bigquery = getBigQuery(config);
+      final BigQuery bigquery = BigQueryCredentialsFactory.createBigQueryClientWithCredentials(config);
       final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
 
       BigQueryUtils.createDataset(bigquery, datasetId, datasetLocation);
@@ -91,11 +94,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .setUseLegacySql(false)
           .build();
 
+
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        BigQueryBucketManager.createBucketWithStorageClassAndLocation(config);
-        final GcsDestination gcsDestination = new GcsDestination();
-        final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
-        final AirbyteConnectionStatus airbyteConnectionStatus = gcsDestination.check(gcsJsonNodeConfig);
         // TODO: use GcsDestination::check instead of writing our own custom logic to check perms
         // this is not currently possible because using the Storage class to check perms requires
         // a service account key, and the GCS destination does not accept a Service Account Key,
@@ -123,7 +123,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
 
     try {
-      final ServiceAccountCredentials credentials = getServiceAccountCredentials(config);
+      final Credentials credentials = BigQueryCredentialsFactory.createCredentialsClient(config);
 
       final Storage storage = StorageOptions.newBuilder()
           .setProjectId(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText())
@@ -157,62 +157,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  protected BigQuery getBigQuery(final JsonNode config) {
-    return BigQuerySecurityFactory.createClient(config);
-  }
 
-    try {
-      final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-      ServiceAccountCredentials credentials = null;
-      if (BigQueryUtils.isUsingJsonCredentials(config)) {
-        // handle the credentials json being passed as a json object or a json object already serialized as
-        // a string.
-        credentials = getServiceAccountCredentials(config);
-      }
-      return bigQueryBuilder
-          .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
-          .build()
-          .getService();
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-
-  private ServiceAccountCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
-    final ServiceAccountCredentials credentials;
-    final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
-        ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-        : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-    credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
-    return credentials;
-  }
-
-  /**
-   * Strategy:
-   * <p>
-   * 1. Create a temporary table for each stream
-   * </p>
-   * <p>
-   * 2. Write records to each stream directly (the bigquery client handles managing when to push the records over the network)
-   * </p>
-   * <p>
-   * 4. Once all records have been written close the writers, so that any remaining records are flushed.
-   * </p>
-   * <p>
-   * 5. Copy the temp tables to the final table name (overwriting if necessary).
-   * </p>
-   *
-   * @param config  - integration-specific configuration object as json. e.g. { "username": "airbyte", "password": "super secure" }
-   * @param catalog - schema of the incoming messages.
-   * @return consumer that writes singer messages to the database.
-   */
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector)
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
@@ -225,9 +174,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog)
+                                                                                            final ConfiguredAirbyteCatalog catalog)
       throws IOException {
-    final BigQuery bigquery = getBigQuery(config);
+
 
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
@@ -235,7 +184,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
-          .bigQuery(bigquery)
+          .bigQuery(BigQueryCredentialsFactory.createBigQueryClientWithCredentials(config))
           .configStream(configStream)
           .config(config)
           .formatterMap(getFormatterMap(stream.getJsonSchema()))
@@ -252,8 +201,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * BigQuery might have different structure of the Temporary table. If this method returns TRUE, temporary table will have only three common Airbyte
-   * attributes. In case of FALSE, temporary table structure will be in line with Airbyte message JsonSchema.
+   * BigQuery might have different structure of the Temporary table. If this method returns TRUE,
+   * temporary table will have only three common Airbyte attributes. In case of FALSE, temporary table
+   * structure will be in line with Airbyte message JsonSchema.
    *
    * @return use default AirbyteSchema or build using JsonSchema
    */
@@ -276,17 +226,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(config, catalog);
-  protected AirbyteMessageConsumer getRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs,
-      final Consumer<AirbyteMessage> outputRecordCollector) {
     return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
                                                      final ConfiguredAirbyteCatalog catalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector) {
+                                                     final Consumer<AirbyteMessage> outputRecordCollector) throws IOException {
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
-    final BigQuery bigQuery = getBigQuery(config);
+    final BigQuery bigQuery = BigQueryCredentialsFactory.createBigQueryClientWithCredentials(config);
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
     final UUID stagingId = UUID.randomUUID();
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);

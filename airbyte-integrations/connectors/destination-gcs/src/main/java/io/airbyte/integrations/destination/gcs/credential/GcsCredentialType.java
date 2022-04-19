@@ -5,5 +5,6 @@
 package io.airbyte.integrations.destination.gcs.credential;
 
 public enum GcsCredentialType {
-  HMAC_KEY
+  HMAC_KEY,
+  OAUTH2
 }
