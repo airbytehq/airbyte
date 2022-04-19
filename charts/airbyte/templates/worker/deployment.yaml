@@ -119,12 +119,19 @@ spec:
               name: airbyte-env
               key: JOB_KUBE_ANNOTATIONS
 {{- end }}
-{{- if $.Values.jobs.kube.selectors }}
+{{- if $.Values.jobs.kube.nodeSelector }}
         - name: JOB_KUBE_NODE_SELECTORS
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: JOB_KUBE_NODE_SELECTORS
+{{- end }}
+{{- if $.Values.jobs.kube.tolerations }}
+        - name: JOB_KUBE_TOLERATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: JOB_KUBE_TOLERATIONS
 {{- end }}
         - name: SUBMITTER_NUM_THREADS
           valueFrom:

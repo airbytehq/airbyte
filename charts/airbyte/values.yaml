@@ -962,12 +962,18 @@ jobs:
     ##    memory: 1Gi
     limits: {}
 
-  ## JOB_KUBE_ANNOTATIONS
-  ## pod annotations of the sync job and the default pod annotations fallback for others jobs
-  ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
-  ## JOB_KUBE_NODE_SELECTORS
-  ## pod node selectors of the sync job and the default pod node selectors fallback for others jobs
-  ## @params jobs.kube.selectors [object] key/value node selectors applied to kube jobs
   kube:
+    ## JOB_KUBE_ANNOTATIONS
+    ## pod annotations of the sync job and the default pod annotations fallback for others jobs
+    ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
     annotations: {}
-    selectors: {}
+
+    ## JOB_KUBE_NODE_SELECTORS
+    ## pod node selector of the sync job and the default pod node selector fallback for others jobs
+    ## @params jobs.kubeSelector [object] key/value node selector applied to kube jobs
+    nodeSelector: {}
+
+    ## JOB_KUBE_TOLERATIONS
+    ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
+    ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
