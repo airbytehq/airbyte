@@ -6,7 +6,7 @@ import { faCheck, faTimes, faBan, faExclamationTriangle, IconDefinition } from "
 import PauseIcon from "./PauseIcon";
 import CircleLoader from "./CircleLoader";
 
-export type StatusIconStatus = "empty" | "inactive" | "success" | "warning" | "running";
+export type StatusIconStatus = "empty" | "inactive" | "success" | "warning" | "loading";
 
 interface Props {
   className?: string;
@@ -60,7 +60,7 @@ const Value = styled.span`
 const StatusIcon: React.FC<Props> = ({ title, status, ...props }) => {
   const valueElement = props.value ? <Value>{props.value}</Value> : null;
 
-  if (status === "running") {
+  if (status === "loading") {
     return (
       <Container>
         <CircleLoader title={title} />

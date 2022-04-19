@@ -24,6 +24,8 @@ const CircleLoader = ({ title }: Props): JSX.Element => (
     height="18"
     shape-rendering="geometricPrecision"
     text-rendering="geometricPrecision"
+    role="img"
+    data-icon="circle-loader"
   >
     <defs>
       <linearGradient
