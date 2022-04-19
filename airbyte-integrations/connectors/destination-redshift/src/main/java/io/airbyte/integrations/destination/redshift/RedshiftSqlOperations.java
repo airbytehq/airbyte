@@ -142,10 +142,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations{
       }
     } catch (SQLException e) {
       LOGGER.error("Error during discoverNotSuperTables() appears: ", e);
-    } catch (Exception e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
-    return Collections.emptyList();
   }
 
   /**
@@ -171,6 +169,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations{
       database.execute(finalSqlStatement.toString());
     } catch (SQLException e) {
       LOGGER.error("Error during updateVarcharDataColumnToSuperDataColumn() appears: ", e);
+      throw new RuntimeException(e);
     }
   }
 }
