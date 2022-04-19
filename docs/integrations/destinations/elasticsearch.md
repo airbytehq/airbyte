@@ -66,4 +66,11 @@ The connector should be enhanced to support variable batch sizes.
 ### Setup guide
 
 Enter the hostname and/or other configuration information ... 
-#### TODO: more info, screenshots?, etc...
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.2 | 2022-04-19 | [11752](https://github.com/airbytehq/airbyte/pull/11752) | Reduce batch size to 32Mb |
+| 0.1.1 | 2022-02-10 | [10256](https://github.com/airbytehq/airbyte/pull/1256) | Add ExitOnOutOfMemoryError connectors |
+| 0.1.0 | 2021-10-13 | [7005](https://github.com/airbytehq/airbyte/pull/7005) | Initial release. |
+
