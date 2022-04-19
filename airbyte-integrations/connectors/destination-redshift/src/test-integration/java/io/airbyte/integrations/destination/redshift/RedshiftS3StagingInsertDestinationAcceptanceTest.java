@@ -31,6 +31,7 @@ import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +64,6 @@ public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftCo
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
-  @BeforeEach
   void setup(){
     MESSAGE_BOOKS1.getRecord().setNamespace(DATASET_ID);
     MESSAGE_BOOKS2.getRecord().setNamespace(DATASET_ID);
@@ -76,6 +76,7 @@ public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftCo
 
   @Test
   void testIfSuperTmpTableWasCreatedAfterVarcharTmpTableDuringS3Staging() throws Exception {
+    setup();
     Database database = getDatabase();
     String rawTableName = this.getNamingResolver().getRawTableName(BOOKS_STREAM_NAME);
     createTmpTableWithVarchar(database, rawTableName);

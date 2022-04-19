@@ -77,7 +77,6 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
     return original;
   }
 
-  @BeforeEach
   void setup(){
     MESSAGE_USERS1.getRecord().setNamespace(DATASET_ID);
     MESSAGE_USERS2.getRecord().setNamespace(DATASET_ID);
@@ -90,6 +89,7 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
 
   @Test
   void testIfSuperTmpTableWasCreatedAfterVarcharTmpTable() throws Exception {
+    setup();
     Database database = getDatabase();
     String rawTableName = this.getNamingResolver().getRawTableName(USERS_STREAM_NAME);
     createTmpTableWithVarchar(database, rawTableName);
