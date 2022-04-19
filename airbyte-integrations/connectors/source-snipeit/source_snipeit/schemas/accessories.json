@@ -97,16 +97,13 @@
             }
         },
         "updated_at": {
-            "type": "object",
-            "properties": {
-                "datetime": {
-                    "type": "string",
-                    "example": "2017-10-19 07:57:37"
-                },
-                "formatted": {
-                    "type": "string",
-                    "example": "Thu Oct 19, 2017 7:57AM"
-                }
+            "datetime": {
+                "type": "string",
+                "example": "2017-10-19 07:57:37"
+            },
+            "formatted": {
+                "type": "string",
+                "example": "Thu Oct 19, 2017 7:57AM"
             }
         },
         "available_actions": {

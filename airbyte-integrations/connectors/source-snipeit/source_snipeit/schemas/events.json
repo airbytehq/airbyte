@@ -18,6 +18,9 @@
         "note": {},
         "signature_file": {},
         "target": {},
-        "updated_at": {}
+        "updated_at": {
+            "datetime": {"type": "string"},
+            "formatted": {"type": "string"}
+        }
     }
 }

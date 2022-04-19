@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from source_snipeit.source import SnipeitStream
+from source_acceptance_test
 
 
 @pytest.fixture
