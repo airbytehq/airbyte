@@ -3,22 +3,20 @@
 #
 
 
-import sys
-import os
 import json
 import logging
+import os
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
 import yaml
-
 from airbyte_cdk import AirbyteSpec, Connector
 from airbyte_cdk.models import AirbyteConnectionStatus
 
-
-logger = logging.getLogger('airbyte')
+logger = logging.getLogger("airbyte")
 
 MODULE = sys.modules[__name__]
 MODULE_PATH = os.path.abspath(MODULE.__file__)
@@ -107,10 +105,7 @@ class TestConnectorSpec:
 
     @pytest.fixture
     def use_yaml_spec(self):
-        spec = {
-            "documentationUrl": "https://airbyte.com/#yaml",
-            "connectionSpecification": self.CONNECTION_SPECIFICATION
-        }
+        spec = {"documentationUrl": "https://airbyte.com/#yaml", "connectionSpecification": self.CONNECTION_SPECIFICATION}
 
         yaml_path = os.path.join(SPEC_ROOT, "spec.yaml")
         with open(yaml_path, "w") as f:
