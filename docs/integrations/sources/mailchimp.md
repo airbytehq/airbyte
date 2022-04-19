@@ -11,7 +11,7 @@ For API Key authorization:
 For OAuth2.0 authorization:
 * Mailchimp registered app
 * Mailchimp `client_id`
-* Mailchimp client_secret
+* Mailchimp `client_secret`
 
 ## Step 1: Set up Source
 
