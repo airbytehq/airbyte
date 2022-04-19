@@ -74,7 +74,7 @@
                     "companyBillingRate": {
                         "type": [
                             "null",
-                            "integer"
+                            "number"
                         ]
                     }
                 },
@@ -161,7 +161,7 @@
                         "hours": {
                             "type": [
                                 "null",
-                                "integer"
+                                "number"
                             ]
                         }
                     },
@@ -181,7 +181,7 @@
                         "amount": {
                             "type": [
                                 "null",
-                                "integer"
+                                "number"
                             ]
                         },
                         "currency": {
@@ -201,13 +201,13 @@
                                 "rate": {
                                     "type": [
                                         "null",
-                                        "integer"
+                                        "number"
                                     ]
                                 },
                                 "id": {
                                     "type": [
                                         "null",
-                                        "integer"
+                                        "string"
                                     ]
                                 }
                             },
@@ -376,7 +376,7 @@
                         "defaultRateId": {
                             "type": [
                                 "null",
-                                "integer"
+                                "string"
                             ]
                         },
                         "customRates": {
@@ -454,7 +454,7 @@
                         "defaultRateId": {
                             "type": [
                                 "null",
-                                "integer"
+                                "string"
                             ]
                         }
                     },
