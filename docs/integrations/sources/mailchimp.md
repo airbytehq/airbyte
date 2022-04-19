@@ -33,7 +33,7 @@ your Mailchimp account.
 
 **For Airbyte OSS:**
 
-1. For using an API key [create account](https://mailchimp.com/developer/marketing/guides/quick-start/#create-an-account) 
+1. For using an API key, [create an account](https://mailchimp.com/developer/marketing/guides/quick-start/#create-an-account) 
 in Mailchimp.
 2. [Generate](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) API key. 
 3. Go to local Airbyte page.
