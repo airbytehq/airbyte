@@ -45,9 +45,11 @@ You will need to choose an existing database or create a new database that will 
 2. Allow connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
 3. A staging S3 bucket with credentials \(for the COPY strategy\).
 
-{% hint style="info" %}
+:::info
+
 Even if your Airbyte instance is running on a server in the same VPC as your Redshift cluster, you may need to place them in the **same security group** to allow connections between the two.
-{% endhint %}
+
+:::
 
 ### Setup guide
 
@@ -108,9 +110,6 @@ Delimited identifiers \(also known as quoted identifiers\) begin and end with do
 
 Therefore, Airbyte Redshift destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
-## Data Size Limitations
-
-Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
 ## Data Size Limitations
 
 Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.

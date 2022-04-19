@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 import { useIntl } from "react-intl";
 
 import StatusIcon from "components/StatusIcon";
 import ImageBlock from "components/ImageBlock";
+import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
 
@@ -41,6 +42,17 @@ const Image = styled(ImageBlock)`
 
 const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
   const formatMessage = useIntl().formatMessage;
+  const statusIconStatus = useMemo<StatusIconStatus | undefined>(
+    () =>
+      status === Status.EMPTY
+        ? "empty"
+        : status === Status.ACTIVE
+        ? "success"
+        : status === Status.INACTIVE
+        ? "inactive"
+        : undefined,
+    [status]
+  );
   const title =
     status === Status.EMPTY
       ? formatMessage({
@@ -60,16 +72,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
 
   return (
     <Content>
-      {status ? (
-        <StatusIcon
-          title={title}
-          empty={status === Status.EMPTY}
-          success={status === Status.ACTIVE}
-          inactive={status === Status.INACTIVE}
-        />
-      ) : (
-        <Space />
-      )}
+      {status ? <StatusIcon title={title} status={statusIconStatus} /> : <Space />}
       {icon && <Image small img={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
