@@ -8,7 +8,7 @@ import { FormBlock } from "core/form/types";
 import { ServiceFormValues } from "./types";
 import { useServiceForm } from "./serviceFormContext";
 
-import { FormSection } from "./components/FormSection";
+import { FormSection } from "./components/Sections/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import EditControls from "./components/EditControls";
 import CreateControls from "./components/CreateControls";

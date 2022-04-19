@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "clientId": {
+      "type": ["null", "string"]
+    },
+    "externalUserId": {
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "$ref": "reference.json"
+    },
+    "anonymousId": {
+      "type": ["null", "string"]
+    }
+  }
+}

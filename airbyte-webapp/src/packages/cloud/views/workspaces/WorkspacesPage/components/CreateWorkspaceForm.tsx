@@ -60,7 +60,11 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({
               />
             )}
           </Field>
-          <LoadingButton type="submit" isLoading={isSubmitting}>
+          <LoadingButton
+            type="submit"
+            isLoading={isSubmitting}
+            data-testid="workspaces.create"
+          >
             <FormattedMessage id="workspaces.create" />
           </LoadingButton>
         </CreationForm>

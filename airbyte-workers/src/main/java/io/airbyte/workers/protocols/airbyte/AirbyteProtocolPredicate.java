@@ -9,6 +9,10 @@ import io.airbyte.protocol.models.AirbyteProtocolSchema;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.function.Predicate;
 
+/**
+ * Verify that the provided JsonNode is a valid AirbyteMessage. Any AirbyteMessage type is allowed
+ * (e.g. Record, State, Log, etc).
+ */
 public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
 
   private final JsonSchemaValidator jsonSchemaValidator;

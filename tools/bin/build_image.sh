@@ -8,6 +8,8 @@ DOCKERFILE="$3"
 TAGGED_IMAGE="$4"
 ID_FILE="$5"
 FOLLOW_SYMLINKS="$6"
+# https://docs.docker.com/develop/develop-images/build_enhancements/
+export DOCKER_BUILDKIT=1
 
 cd "$ROOT_DIR"
 . tools/lib/lib.sh
@@ -39,7 +41,7 @@ if [ "$FOLLOW_SYMLINKS" == "true" ]; then
   # to use as the build context
   tar cL "${exclusions[@]}" . | docker build - "${args[@]}"
 else
-  JDK_VERSION="${JDK_VERSION:-14.0.2}"
+  JDK_VERSION="${JDK_VERSION:-17.0.1}"
   if [[ -z "${DOCKER_BUILD_PLATFORM}" ]]; then
     docker build --build-arg JDK_VERSION="$JDK_VERSION" . "${args[@]}"
   else

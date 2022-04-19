@@ -22,138 +22,179 @@ import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.ConnectionRead;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.DestinationDefinitionRead;
-import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.api.client.model.ImportRead;
 import io.airbyte.api.client.model.ImportRead.StatusEnum;
 import io.airbyte.api.client.model.SourceDefinitionRead;
 import io.airbyte.api.client.model.WorkspaceIdRequestBody;
 import io.airbyte.api.client.model.WorkspaceRead;
-import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.concurrency.VoidCallable;
+import io.airbyte.commons.concurrency.WaitingUtils;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import java.io.File;
-import java.io.FileInputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.utility.ComparableVersion;
 
 /**
- * In order to run this test from intellij, build the docker images via SUB_BUILD=PLATFORM ./gradlew
- * composeBuild and replace System.getenv("MIGRATION_TEST_VERSION") with the version in your .env
- * file
+ * This class contains an e2e test simulating what a user encounter when trying to upgrade Airybte.
+ * <p>
+ * Three invariants are tested:
+ * <p>
+ * - upgrading pass 0.32.0 without first upgrading to 0.32.0 should error.
+ * <p>
+ * - upgrading pass 0.32.0 without first upgrading to 0.32.0 should not put the db in a bad state.
+ * <p>
+ * - upgrading from 0.32.0 to the latest version should work.
+ * <p>
+ * This test runs on the current code version and expects local images with the `dev` tag to be
+ * available. To do so, run SUB_BUILD=PLATFORM ./gradlew build.
+ * <p>
+ * When running this test consecutively locally, it might be necessary to run `docker volume prune`
+ * to remove hanging volumes.
  */
 public class MigrationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationAcceptanceTest.class);
 
   // assume env file is one directory level up from airbyte-tests.
-  private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
+  private static final File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
+
+  private static final String TEST_DATA_DOCKER_MOUNT = "airbyte_data_migration_test";
+  private static final String TEST_DB_DOCKER_MOUNT = "airbyte_db_migration_test";
+  private static final String TEST_WORKSPACE_DOCKER_MOUNT = "airbyte_workspace_migration_test";
+  private static final String TEST_LOCAL_ROOT = "/tmp/airbyte_local_migration_test";
+  private static final String TEST_LOCAL_DOCKER_MOUNT = "/tmp/airbyte_local_migration_test";
 
   @Test
   public void testAutomaticMigration() throws Exception {
-    // default to version in env file but can override it.
-    final String targetVersion;
-    if (System.getenv("MIGRATION_TEST_VERSION") != null) {
-      targetVersion = System.getenv("MIGRATION_TEST_VERSION");
-    } else {
-      final Properties prop = new Properties();
-      prop.load(new FileInputStream(ENV_FILE));
-      targetVersion = prop.getProperty("VERSION");
-    }
-    LOGGER.info("Using version: {} as target version", targetVersion);
-
-    firstRun();
-    secondRun(targetVersion);
-  }
-
-  private Consumer<String> logConsumerForServer(final Set<String> expectedLogs) {
-    return logLine -> expectedLogs.removeIf(entry -> {
-      if (logLine.contains("Migrating from version")) {
-        System.out.println("logLine = " + logLine);
-      }
-      return logLine.contains(entry);
+    // run version 17 (the oldest version of airbyte that supports auto migration)
+    final File version17DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-17-0-alpha.yaml");
+    final Properties version17EnvVariables = MoreProperties
+        .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-17-0.env"));
+    runAirbyte(version17DockerComposeFile, version17EnvVariables, () -> {
+      populateDataForFirstRun();
+      healthCheck(getApiClient());
     });
+
+    LOGGER.info("Finish initial 0.17.0-alpha start..");
+
+    // attempt to run from pre-version bump version to post-version bump version. expect failure.
+    final File currentDockerComposeFile = MoreResources.readResourceAsFile("docker-compose.yaml");
+    // piggybacks off of whatever the existing .env file is, so override default filesystem values in to
+    // point at test paths.
+    final Properties envFileProperties = overrideDirectoriesForTest(MoreProperties.envFileToProperties(ENV_FILE));
+    // use the dev version so the test is run on the current code version.
+    envFileProperties.setProperty("VERSION", "dev");
+    runAirbyteAndWaitForUpgradeException(currentDockerComposeFile, envFileProperties);
+    LOGGER.info("Finished testing upgrade exception..");
+
+    // run "faux" major version bump version
+    final File version32DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-32-0-alpha.yaml");
+
+    final Properties version32EnvFileProperties = MoreProperties
+        .envFileToProperties(MoreResources.readResourceAsFile("env-file-migration-test-0-32-0.env"));
+    runAirbyte(version32DockerComposeFile, version32EnvFileProperties, MigrationAcceptanceTest::assertHealthy);
+
+    // run from last major version bump to current version.
+    runAirbyte(currentDockerComposeFile, envFileProperties, MigrationAcceptanceTest::assertHealthy, false);
   }
 
-  @SuppressWarnings("UnstableApiUsage")
-  private void firstRun() throws Exception {
-    // 0.17.0-alpha-db-patch is specifically built for this test;
-    // it connects to the database with retries to fix flaky connection issue
-    // https://github.com/airbytehq/airbyte/issues/4955
-    final Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha-db-patch");
-
-    final Set<String> logsToExpect = new HashSet<>();
-    logsToExpect.add("Version: 0.17.0-alpha-db-patch");
-
-    final AirbyteTestContainer airbyteTestContainer =
-        new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose-migration-test-0-17-0-alpha.yaml").toURI()))
-            .setEnv(environmentVariables)
-            .setLogListener("server", logConsumerForServer(logsToExpect))
-            .build();
-
-    airbyteTestContainer.start();
-
-    assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
-    final ApiClient apiClient = getApiClient();
-    healthCheck(apiClient);
-    populateDataForFirstRun(apiClient);
-    airbyteTestContainer.stopRetainVolumes();
+  private Properties overrideDirectoriesForTest(final Properties properties) {
+    final Properties propertiesWithOverrides = new Properties(properties);
+    propertiesWithOverrides.put("DATA_DOCKER_MOUNT", TEST_DATA_DOCKER_MOUNT);
+    propertiesWithOverrides.put("DB_DOCKER_MOUNT", TEST_DB_DOCKER_MOUNT);
+    propertiesWithOverrides.put("WORKSPACE_DOCKER_MOUNT", TEST_WORKSPACE_DOCKER_MOUNT);
+    propertiesWithOverrides.put("LOCAL_ROOT", TEST_LOCAL_ROOT);
+    propertiesWithOverrides.put("LOCAL_DOCKER_MOUNT", TEST_LOCAL_DOCKER_MOUNT);
+    return propertiesWithOverrides;
   }
 
-  private String targetVersionWithoutPatch(final String targetVersion) {
-    return AirbyteVersion.versionWithoutPatch(targetVersion).serialize();
+  private void runAirbyte(final File dockerComposeFile, final Properties env, final VoidCallable assertionExecutable) throws Exception {
+    runAirbyte(dockerComposeFile, env, assertionExecutable, true);
   }
 
-  @SuppressWarnings("UnstableApiUsage")
-  private void secondRun(final String targetVersion) throws Exception {
-    final Set<String> logsToExpect = new HashSet<>();
-    logsToExpect.add("Version: " + targetVersion);
-    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha-db-patch, Target version: " + targetVersionWithoutPatch(targetVersion));
-    logsToExpect.add("Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.");
-    logsToExpect.add("Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.");
-    logsToExpect.add("Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.");
-    logsToExpect.add("Migrating from version: 0.20.0-alpha to version 0.21.0-alpha.");
-    logsToExpect.add("Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.");
-    logsToExpect.add("Migrations complete. Now on version: " + targetVersionWithoutPatch(targetVersion));
-
-    final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource("docker-compose.yaml").toURI()))
-        .setEnv(ENV_FILE)
-        // override to use test mounts.
-        .setEnvVariable("DATA_DOCKER_MOUNT", "airbyte_data_migration_test")
-        .setEnvVariable("DB_DOCKER_MOUNT", "airbyte_db_migration_test")
-        .setEnvVariable("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test")
-        .setEnvVariable("LOCAL_ROOT", "/tmp/airbyte_local_migration_test")
-        .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
-        .setLogListener("server", logConsumerForServer(logsToExpect))
+  private void runAirbyte(final File dockerComposeFile,
+                          final Properties env,
+                          final VoidCallable postStartupExecutable,
+                          final boolean retainVolumesOnStop)
+      throws Exception {
+    LOGGER.info("Start up Airbyte at version {}", env.get("VERSION"));
+    final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(dockerComposeFile)
+        .setEnv(env)
         .build();
 
-    airbyteTestContainer.start();
-
-    final ApiClient apiClient = getApiClient();
-    healthCheck(apiClient);
-
-    assertTrue(logsToExpect.isEmpty(), "Missing logs: " + logsToExpect);
-    assertDataFromApi(apiClient);
-
-    airbyteTestContainer.stop();
+    airbyteTestContainer.startBlocking();
+    postStartupExecutable.call();
+    if (retainVolumesOnStop) {
+      airbyteTestContainer.stopRetainVolumes();
+    } else {
+      airbyteTestContainer.stop();
+    }
   }
 
-  private void assertDataFromApi(final ApiClient apiClient) throws ApiException {
+  private void runAirbyteAndWaitForUpgradeException(final File dockerComposeFile, final Properties env) throws Exception {
+    final WaitForLogLine waitForLogLine = new WaitForLogLine();
+    LOGGER.info("Start up Airbyte at version {}", env.get("VERSION"));
+    final AirbyteTestContainer airbyteTestContainer = new AirbyteTestContainer.Builder(dockerComposeFile)
+        .setEnv(env)
+        .setLogListener("bootloader", waitForLogLine.getListener("After that upgrade is complete, you may upgrade to version"))
+        .build();
+
+    airbyteTestContainer.startAsync();
+
+    final Supplier<Boolean> condition = waitForLogLine.hasSeenLine();
+    final boolean loggedUpgradeException = WaitingUtils.waitForCondition(Duration.ofSeconds(5), Duration.ofMinutes(1), condition);
+    airbyteTestContainer.stopRetainVolumes();
+    assertTrue(loggedUpgradeException, "Airbyte failed to throw upgrade exception.");
+  }
+
+  /**
+   * Allows the test to listen for a specific log line so that the test can end as soon as that log
+   * line has been encountered.
+   */
+  private static class WaitForLogLine {
+
+    final AtomicBoolean hasSeenLine = new AtomicBoolean();
+
+    public Consumer<String> getListener(final String stringToListenFor) {
+      return (logLine) -> {
+        if (logLine.contains(stringToListenFor)) {
+          hasSeenLine.set(true);
+        }
+      };
+    }
+
+    public Supplier<Boolean> hasSeenLine() {
+      return hasSeenLine::get;
+    }
+
+  }
+
+  private static void assertHealthy() throws ApiException {
+    final ApiClient apiClient = getApiClient();
+    healthCheck(apiClient);
+    assertDataFromApi(apiClient);
+  }
+
+  private static void assertDataFromApi(final ApiClient apiClient) throws ApiException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = assertWorkspaceInformation(apiClient);
     assertSourceDefinitionInformation(apiClient);
     assertDestinationDefinitionInformation(apiClient);
     assertConnectionInformation(apiClient, workspaceIdRequestBody);
   }
 
-  private void assertSourceDefinitionInformation(final ApiClient apiClient) throws ApiException {
+  private static void assertSourceDefinitionInformation(final ApiClient apiClient) throws ApiException {
     final SourceDefinitionApi sourceDefinitionApi = new SourceDefinitionApi(apiClient);
     final List<SourceDefinitionRead> sourceDefinitions = sourceDefinitionApi.listSourceDefinitions().getSourceDefinitions();
     assertTrue(sourceDefinitions.size() >= 58);
@@ -167,9 +208,12 @@ public class MigrationAcceptanceTest {
       } else if (sourceDefinitionRead.getSourceDefinitionId().toString().equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
         final String[] tagBrokenAsArray = sourceDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
         assertEquals(3, tagBrokenAsArray.length);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
-        assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 4);
+        // todo (cgardens) - this is very brittle. depending on when this connector gets updated in
+        // source_definitions.yaml this test can start to break. for now just doing quick fix, but we should
+        // be able to do an actual version comparison like we do with AirbyteVersion.
+        assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
+        assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
+        assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 0, "actual tag: " + sourceDefinitionRead.getDockerImageTag());
         assertTrue(sourceDefinitionRead.getName().contains("Postgres"));
         foundPostgresSourceDefinition = true;
       }
@@ -179,13 +223,13 @@ public class MigrationAcceptanceTest {
     assertTrue(foundPostgresSourceDefinition);
   }
 
-  private void assertDestinationDefinitionInformation(final ApiClient apiClient) throws ApiException {
+  private static void assertDestinationDefinitionInformation(final ApiClient apiClient) throws ApiException {
     final DestinationDefinitionApi destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
     final List<DestinationDefinitionRead> destinationDefinitions = destinationDefinitionApi.listDestinationDefinitions().getDestinationDefinitions();
     assertTrue(destinationDefinitions.size() >= 10);
     boolean foundPostgresDestinationDefinition = false;
     boolean foundLocalCSVDestinationDefinition = false;
-    boolean foundSnowflakeDestinationDefintion = false;
+    boolean foundSnowflakeDestinationDefinition = false;
     for (final DestinationDefinitionRead destinationDefinitionRead : destinationDefinitions) {
       switch (destinationDefinitionRead.getDestinationDefinitionId().toString()) {
         case "25c5221d-dce2-4163-ade9-739ef790f503" -> {
@@ -199,23 +243,22 @@ public class MigrationAcceptanceTest {
           foundLocalCSVDestinationDefinition = true;
         }
         case "424892c4-daac-4491-b35d-c6688ba547ba" -> {
-          final String[] tagBrokenAsArray = destinationDefinitionRead.getDockerImageTag().replace(".", ",").split(",");
-          assertEquals(3, tagBrokenAsArray.length);
-          assertTrue(Integer.parseInt(tagBrokenAsArray[0]) >= 0);
-          assertTrue(Integer.parseInt(tagBrokenAsArray[1]) >= 3);
-          assertTrue(Integer.parseInt(tagBrokenAsArray[2]) >= 9);
+          final String tag = destinationDefinitionRead.getDockerImageTag();
+          final ComparableVersion version = new ComparableVersion(tag);
+          assertTrue(version.compareTo(new ComparableVersion("0.3.9")) >= 0);
           assertTrue(destinationDefinitionRead.getName().contains("Snowflake"));
-          foundSnowflakeDestinationDefintion = true;
+          foundSnowflakeDestinationDefinition = true;
         }
       }
     }
 
     assertTrue(foundPostgresDestinationDefinition);
     assertTrue(foundLocalCSVDestinationDefinition);
-    assertTrue(foundSnowflakeDestinationDefintion);
+    assertTrue(foundSnowflakeDestinationDefinition);
   }
 
-  private void assertConnectionInformation(final ApiClient apiClient, final WorkspaceIdRequestBody workspaceIdRequestBody) throws ApiException {
+  private static void assertConnectionInformation(final ApiClient apiClient, final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws ApiException {
     final ConnectionApi connectionApi = new ConnectionApi(apiClient);
     final List<ConnectionRead> connections = connectionApi.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections();
     assertEquals(connections.size(), 2);
@@ -240,7 +283,7 @@ public class MigrationAcceptanceTest {
     }
   }
 
-  private WorkspaceIdRequestBody assertWorkspaceInformation(final ApiClient apiClient) throws ApiException {
+  private static WorkspaceIdRequestBody assertWorkspaceInformation(final ApiClient apiClient) throws ApiException {
     final WorkspaceApi workspaceApi = new WorkspaceApi(apiClient);
     final WorkspaceRead workspace = workspaceApi.listWorkspaces().getWorkspaces().get(0);
     // originally the default workspace started with a hardcoded id. the migration in version 0.29.0
@@ -261,8 +304,8 @@ public class MigrationAcceptanceTest {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  private void populateDataForFirstRun(final ApiClient apiClient) throws ApiException, URISyntaxException {
-    final ImportApi deploymentApi = new ImportApi(apiClient);
+  private static void populateDataForFirstRun() throws ApiException, URISyntaxException {
+    final ImportApi deploymentApi = new ImportApi(getApiClient());
     final File file = Path
         .of(Resources.getResource("03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
         .toFile();
@@ -270,48 +313,20 @@ public class MigrationAcceptanceTest {
     assertEquals(importRead.getStatus(), StatusEnum.SUCCEEDED);
   }
 
-  private void healthCheck(final ApiClient apiClient) {
+  private static void healthCheck(final ApiClient apiClient) {
     final HealthApi healthApi = new HealthApi(apiClient);
     try {
-      final HealthCheckRead healthCheck = healthApi.getHealthCheck();
-      assertTrue(healthCheck.getDb());
+      healthApi.getHealthCheck();
     } catch (final ApiException e) {
       throw new RuntimeException("Health check failed, usually due to auto migration failure. Please check the logs for details.");
     }
   }
 
-  private ApiClient getApiClient() {
+  private static ApiClient getApiClient() {
     return new ApiClient().setScheme("http")
         .setHost("localhost")
         .setPort(8001)
         .setBasePath("/api");
-  }
-
-  private Map<String, String> getEnvironmentVariables(final String version) {
-    final Map<String, String> env = new HashMap<>();
-    env.put("VERSION", version);
-    env.put("DATABASE_USER", "docker");
-    env.put("DATABASE_PASSWORD", "docker");
-    env.put("DATABASE_DB", "airbyte");
-    env.put("CONFIG_ROOT", "/data");
-    env.put("WORKSPACE_ROOT", "/tmp/workspace");
-    env.put("DATA_DOCKER_MOUNT", "airbyte_data_migration_test");
-    env.put("DB_DOCKER_MOUNT", "airbyte_db_migration_test");
-    env.put("WORKSPACE_DOCKER_MOUNT", "airbyte_workspace_migration_test");
-    env.put("LOCAL_ROOT", "/tmp/airbyte_local_migration_test");
-    env.put("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test");
-    env.put("TRACKING_STRATEGY", "logging");
-    env.put("HACK_LOCAL_ROOT_PARENT", "/tmp");
-    env.put("WEBAPP_URL", "http://localhost:8000/");
-    env.put("API_URL", "http://localhost:8001/api/v1/");
-    env.put("TEMPORAL_HOST", "airbyte-temporal:7233");
-    env.put("INTERNAL_API_HOST", "airbyte-server:8001");
-    env.put("S3_LOG_BUCKET", "");
-    env.put("S3_LOG_BUCKET_REGION", "");
-    env.put("AWS_ACCESS_KEY_ID", "");
-    env.put("AWS_SECRET_ACCESS_KEY", "");
-    env.put("GCP_STORAGE_BUCKET", "");
-    return env;
   }
 
 }

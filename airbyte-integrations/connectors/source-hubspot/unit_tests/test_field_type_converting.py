@@ -17,7 +17,7 @@ from source_hubspot.api import Stream
         ("enumeration", {"type": ["null", "string"]}),
         ("object", {"type": ["null", "object"]}),
         ("array", {"type": ["null", "array"]}),
-        ("date", {"type": ["null", "string"], "format": "date-time"}),
+        ("date", {"type": ["null", "string"], "format": "date"}),
         ("date-time", {"type": ["null", "string"], "format": "date-time"}),
         ("datetime", {"type": ["null", "string"], "format": "date-time"}),
         ("json", {"type": ["null", "string"]}),

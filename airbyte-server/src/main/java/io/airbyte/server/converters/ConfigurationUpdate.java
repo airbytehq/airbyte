@@ -21,16 +21,14 @@ import java.util.UUID;
 public class ConfigurationUpdate {
 
   private final ConfigRepository configRepository;
-  private final SpecFetcher specFetcher;
   private final JsonSecretsProcessor secretsProcessor;
 
-  public ConfigurationUpdate(final ConfigRepository configRepository, final SpecFetcher specFetcher) {
-    this(configRepository, specFetcher, new JsonSecretsProcessor());
+  public ConfigurationUpdate(final ConfigRepository configRepository) {
+    this(configRepository, new JsonSecretsProcessor());
   }
 
-  public ConfigurationUpdate(final ConfigRepository configRepository, final SpecFetcher specFetcher, final JsonSecretsProcessor secretsProcessor) {
+  public ConfigurationUpdate(final ConfigRepository configRepository, final JsonSecretsProcessor secretsProcessor) {
     this.configRepository = configRepository;
-    this.specFetcher = specFetcher;
     this.secretsProcessor = secretsProcessor;
   }
 
@@ -41,7 +39,7 @@ public class ConfigurationUpdate {
     persistedSource.setName(sourceName);
     // get spec
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(persistedSource.getSourceDefinitionId());
-    final ConnectorSpecification spec = specFetcher.getSpec(sourceDefinition);
+    final ConnectorSpecification spec = sourceDefinition.getSpec();
     // copy any necessary secrets from the current source to the incoming updated source
     final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
         persistedSource.getConfiguration(),
@@ -59,7 +57,7 @@ public class ConfigurationUpdate {
     // get spec
     final StandardDestinationDefinition destinationDefinition = configRepository
         .getStandardDestinationDefinition(persistedDestination.getDestinationDefinitionId());
-    final ConnectorSpecification spec = specFetcher.getSpec(destinationDefinition);
+    final ConnectorSpecification spec = destinationDefinition.getSpec();
     // copy any necessary secrets from the current destination to the incoming updated destination
     final JsonNode updatedConfiguration = secretsProcessor.copySecrets(
         persistedDestination.getConfiguration(),

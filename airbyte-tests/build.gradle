@@ -41,13 +41,16 @@ dependencies {
 
     acceptanceTestsImplementation project(':airbyte-api')
     acceptanceTestsImplementation project(':airbyte-commons')
+    acceptanceTestsImplementation project(':airbyte-config:models')
     acceptanceTestsImplementation project(':airbyte-config:persistence')
     acceptanceTestsImplementation project(':airbyte-db:lib')
     acceptanceTestsImplementation project(':airbyte-tests')
     acceptanceTestsImplementation project(':airbyte-test-utils')
+    acceptanceTestsImplementation project(':airbyte-workers')
 
     acceptanceTestsImplementation 'com.fasterxml.jackson.core:jackson-databind'
     acceptanceTestsImplementation 'io.github.cdimascio:java-dotenv:3.0.0'
+    acceptanceTestsImplementation 'io.temporal:temporal-sdk:1.6.0'
     acceptanceTestsImplementation 'org.apache.commons:commons-csv:1.4'
     acceptanceTestsImplementation 'org.testcontainers:postgresql:1.15.3'
     acceptanceTestsImplementation 'org.postgresql:postgresql:42.2.18'

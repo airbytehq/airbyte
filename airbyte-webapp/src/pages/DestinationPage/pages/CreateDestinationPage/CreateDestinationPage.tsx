@@ -1,18 +1,16 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
-
-import { Routes } from "../../../routes";
 import PageTitle from "components/PageTitle";
 import DestinationForm from "./components/DestinationForm";
 import useRouter from "hooks/useRouter";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useDestination from "hooks/services/useDestinationHook";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
 import useWorkspace from "hooks/services/useWorkspace";
+import { JobInfo } from "../../../../core/domain/job/Job";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
@@ -48,7 +46,7 @@ const CreateDestinationPage: React.FC = () => {
       setSuccessRequest(true);
       setTimeout(() => {
         setSuccessRequest(false);
-        push(`${Routes.Destination}/${result.destinationId}`);
+        push(`../${result.destinationId}`);
       }, 2000);
     } catch (e) {
       setErrorStatusRequest(e);
@@ -69,7 +67,6 @@ const CreateDestinationPage: React.FC = () => {
           destinationDefinitions={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          jobInfo={errorStatusRequest?.response}
         />
       </FormPageContent>
     </>

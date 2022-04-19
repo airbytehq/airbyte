@@ -7,7 +7,7 @@
 **Data integration made simple, secure and extensible.**  
 The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.
 
-[![](docs/.gitbook/assets/deploy-locally.svg)](docs/deploying-airbyte/local-deployment.md) [![](docs/.gitbook/assets/deploy-on-aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
+[![](docs/.gitbook/assets/deploy_locally.svg)](docs/deploying-airbyte/local-deployment.md) [![](docs/.gitbook/assets/deploy_on_aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy_on_gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md) [![](docs/.gitbook/assets/deploy_on_k8s.svg)](docs/deploying-airbyte/on-kubernetes.md)
 
 ![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines.png)
 
@@ -33,8 +33,6 @@ docker-compose up
 Now visit [http://localhost:8000](http://localhost:8000)
 
 Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md) showing you how to load data from an API into a file, all on your computer.
-
-If you want to schedule a 20-min call with our team to help you get set up, please select [some time directly here](https://calendly.com/nataliekwong/airbyte-onboarding).
 
 ## Features
 

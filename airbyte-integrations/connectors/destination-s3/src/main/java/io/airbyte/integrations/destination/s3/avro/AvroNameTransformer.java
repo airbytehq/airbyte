@@ -15,7 +15,7 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
 
   @Override
   public String getIdentifier(final String name) {
-    return checkFirsCharInStreamName(convertStreamName(name));
+    return replaceForbiddenCharacters(checkFirsCharInStreamName(convertStreamName(name)));
   }
 
   private String checkFirsCharInStreamName(final String name) {
@@ -24,6 +24,10 @@ public class AvroNameTransformer extends ExtendedNameTransformer {
     } else {
       return "_" + name;
     }
+  }
+
+  private String replaceForbiddenCharacters(final String name) {
+    return name.replace("-", "_");
   }
 
 }

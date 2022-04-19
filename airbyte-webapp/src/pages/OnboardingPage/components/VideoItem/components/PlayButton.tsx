@@ -4,6 +4,7 @@ import styled, { keyframes } from "styled-components";
 type PlayButtonProps = {
   small?: boolean;
   onClick: () => void;
+  isLink?: boolean;
 };
 
 export const BigCircleAnimation = keyframes`
@@ -45,23 +46,35 @@ const MainCircle = styled.div<PlayButtonProps>`
   width: ${({ small }) => (small ? 42 : 85)}px;
   border-radius: 50%;
   background: ${({ theme }) => theme.primaryColor};
-  padding: ${({ small }) => (small ? "10px 0 0 16px" : "20px 0 0 32px")};
+  padding: ${({ small, isLink }) =>
+    isLink ? "0" : small ? "10px 0 0 16px" : "20px 0 0 32px"};
   box-shadow: 0 2.4px 4.8px ${({ theme }) => theme.cardShadowColor},
     0 16.2px 7.2px -10.2px ${({ theme }) => theme.cardShadowColor};
+  display: ${({ isLink }) => (isLink ? "flex" : "block")};
+  justify-content: center;
+  align-items: center;
+
+  & div {
+    display: ${({ isLink }) => (isLink ? "flex" : "none")};
+    justify-content: center;
+    align-items: center;
+  }
 
   &:hover {
     display: flex;
-    justify-content: center;
-    align-items: center;
     padding: 0;
 
     & > img {
       display: none;
     }
     & div {
+      animation-direction: alternate;
+      animation-duration: 0.5s;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+      animation-delay: 0s;
+
       display: flex;
-      justify-content: center;
-      align-items: center;
     }
   }
 `;
@@ -72,7 +85,7 @@ const BigCircle = styled.div<{ small?: boolean }>`
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.5);
   display: none;
-  animation: ${BigCircleAnimation} alternate 0.5s linear 0s infinite;
+  animation-name: ${BigCircleAnimation};
 `;
 
 const MiddleCircle = styled(BigCircle)`
@@ -87,13 +100,13 @@ const SmallCircle = styled(BigCircle)`
   animation-name: ${SmallCircleAnimation};
 `;
 
-const PlayButton: React.FC<PlayButtonProps> = ({ small, onClick }) => {
+const PlayButton: React.FC<PlayButtonProps> = ({ small, onClick, isLink }) => {
   return (
-    <MainCircle small={small} onClick={onClick}>
-      <img src="/play.svg" height={small ? 22 : 44} alt="play" />
-      <BigCircle>
-        <MiddleCircle>
-          <SmallCircle />
+    <MainCircle small={small} onClick={onClick} isLink={isLink}>
+      {!isLink && <img src="/play.svg" height={small ? 22 : 44} alt="play" />}
+      <BigCircle small={small}>
+        <MiddleCircle small={small}>
+          <SmallCircle small={small} />
         </MiddleCircle>
       </BigCircle>
     </MainCircle>

@@ -102,10 +102,7 @@
           },
           {
             "name": "_airbyte_additional_properties",
-            "type": [
-              "null",
-              {"type": "map", "values": "string"}
-            ],
+            "type": ["null", { "type": "map", "values": "string" }],
             "default": null
           }
         ]
@@ -125,7 +122,7 @@
         "fields": [
           {
             "name": "_airbyte_additional_properties",
-            "type": ["null", {"type": "map", "values": "string"}],
+            "type": ["null", { "type": "map", "values": "string" }],
             "default": null
           }
         ]
@@ -137,34 +134,102 @@
     "jsonFieldSchema": {
       "type": "object"
     },
-    "avroFieldType": ["null", {"type":"map","values":"string"}]
+    "avroFieldType": ["null", { "type": "map", "values": "string" }]
   },
   {
     "fieldName": "_ab_additional_properties",
     "jsonFieldSchema": {
       "type": "object"
     },
-    "avroFieldType": ["null", {"type":"map","values":"string"}]
+    "avroFieldType": ["null", { "type": "map", "values": "string" }]
   },
   {
     "fieldName": "any_of_field",
     "jsonFieldSchema": {
-      "anyOf": [{"type": "string"}, {"type": "integer"}]
+      "anyOf": [{ "type": "string" }, { "type": "integer" }]
     },
     "avroFieldType": ["null", "string", "int"]
   },
   {
     "fieldName": "all_of_field",
     "jsonFieldSchema": {
-      "allOf": [{"type": "string"}, {"type": "integer"}]
+      "allOf": [{ "type": "string" }, { "type": "integer" }]
     },
     "avroFieldType": ["null", "string", "int"]
   },
   {
     "fieldName": "one_of_field",
     "jsonFieldSchema": {
-      "oneOf": [{"type": "string"}, {"type": "integer"}]
+      "oneOf": [{ "type": "string" }, { "type": "integer" }]
     },
     "avroFieldType": ["null", "string", "int"]
+  },
+  {
+    "fieldName": "logical_type_date_time",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "long", "logicalType": "timestamp-micros" },
+      "string"
+    ]
+  },
+  {
+    "fieldName": "logical_type_date",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "date"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "int", "logicalType": "date" },
+      "string"
+    ]
+  },
+  {
+    "fieldName": "logical_type_time",
+    "jsonFieldSchema": {
+      "type": "string",
+      "format": "time"
+    },
+    "avroFieldType": [
+      "null",
+      { "type": "long", "logicalType": "time-micros" },
+      "string"
+    ]
+  },
+  {
+    "fieldName": "array_field_without_items",
+    "jsonFieldSchema": {
+      "type": "array"
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
+  },
+  {
+    "fieldName": "array_field_with_empty_items",
+    "jsonFieldSchema": {
+      "type": "array",
+      "items": {}
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
+  },
+  {
+    "fieldName": "field_without_type",
+    "jsonFieldSchema": {},
+    "avroFieldType": ["null", "string"]
   }
 ]

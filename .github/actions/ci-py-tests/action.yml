@@ -1,0 +1,85 @@
+name: "Runner CI Python Tests"
+description: "Runner CI Python Tests"
+inputs:
+  module-name:
+    required: true
+  module-folder:
+    required: true
+outputs:
+  coverage-paths:
+    description: "Coverage Paths"
+    value: ${{ steps.build-coverage-reports.outputs.coverage-paths }}
+  flake8-logs:
+    description: "Flake8 Logs"
+    value: ${{ steps.build-linter-reports.outputs.flake8-logs }}
+  mypy-logs:
+    description: "MyPy Logs"
+    value: ${{ steps.build-linter-reports.outputs.mypy-logs }}
+  black-diff:
+    description: "Black Diff"
+    value: ${{ steps.build-linter-reports.outputs.black-diff }}
+  isort-diff:
+    description: "Isort Diff"
+    value: ${{ steps.build-linter-reports.outputs.isort-diff }}
+runs:
+  using: "composite"
+  steps:
+    - name: Build Coverage Reports
+      id: build-coverage-reports
+      shell: bash
+      working-directory: ${{ inputs.module-folder }}
+      run: |
+        virtualenv .venv
+        source .venv/bin/activate
+        JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
+        pip install coverage[toml]~=6.2
+        mkdir -p .venv/source-acceptance-test
+        mkdir -p reports
+        SAT_DIR=$(git rev-parse --show-toplevel)/airbyte-integrations/bases/source-acceptance-test
+        PYPROJECT_CONFIG=$(git rev-parse --show-toplevel)/pyproject.toml
+        git ls-tree -r HEAD --name-only $SAT_DIR | while read src; do cp -f $src .venv/source-acceptance-test; done
+        pip install build
+        python -m build .venv/source-acceptance-test
+        pip install .venv/source-acceptance-test/dist/source_acceptance_test-*.whl
+        [ -f requirements.txt ] && pip install --quiet -r requirements.txt
+        pip install .[tests]
+        coverage run --rcfile=${PYPROJECT_CONFIG} -m pytest ./unit_tests || true
+        coverage xml --rcfile=${PYPROJECT_CONFIG} -o reports/coverage.xml || true
+
+        rm -rf .venv
+        echo "::set-output name=coverage-paths::reports/coverage.xml"
+
+    - name: Upload coverage to Codecov
+      if: ${{ always() }}
+      uses: codecov/codecov-action@v2
+
+    - name: Build Linter Reports
+      id: build-linter-reports
+      shell: bash
+      working-directory: ${{ inputs.module-folder }}
+      run: |
+        JSON_CONFIG='{"module": "${{ inputs.module-name }}", "folder": "${{ inputs.module-folder }}", "lang": "py"}'
+        REPORT_FOLDER=reports
+        PYPROJECT_CONFIG=$(git rev-parse --show-toplevel)/pyproject.toml
+
+        # run mypy
+        pip install lxml~=4.7 mypy~=0.910 .
+        mypy . --config-file=${PYPROJECT_CONFIG} | tee reports/mypy.log || true
+
+        # run black
+        pip install black~=21.12b0
+        XDG_CACHE_HOME=/dev/null black --config ${PYPROJECT_CONFIG} --diff . | tee reports/black.diff
+
+        # run isort
+        pip install isort~=5.10.1
+        cp ${PYPROJECT_CONFIG} ./pyproject.toml
+        isort --diff . | tee reports/isort.diff
+
+        # run flake8
+        pip install mccabe~=0.6.1 pyproject-flake8~=0.0.1a2
+        pflake8 --exit-zero . | grep ^. | tee reports/flake.txt
+
+        echo "::set-output name=mypy-logs::reports/mypy.log"
+        echo "::set-output name=black-diff::reports/black.diff"
+        echo "::set-output name=isort-diff::reports/isort.diff"
+        echo "::set-output name=flake8-logs::reports/flake.txt"

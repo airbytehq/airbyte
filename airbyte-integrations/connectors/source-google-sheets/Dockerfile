@@ -1,17 +1,38 @@
-FROM airbyte/integration-base-python:0.1.1
+FROM python:3.7.11-alpine3.14 as base
 
-RUN apt-get update && apt-get install -y jq curl bash && rm -rf /var/lib/apt/lists/*
-
-ENV CODE_PATH="google_sheets_source"
-ENV AIRBYTE_IMPL_MODULE="google_sheets_source"
-ENV AIRBYTE_IMPL_PATH="GoogleSheetsSource"
-
+# build and load all requirements
+FROM base as builder
 WORKDIR /airbyte/integration_code
-COPY $CODE_PATH ./$CODE_PATH
+
+# upgrade pip to the latest version
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata build-base
+
+
 COPY setup.py ./
-RUN pip install .
+# install necessary packages to a temporary folder
+RUN pip install --prefix=/install .
 
-ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
+# build a clean environment
+FROM base
+WORKDIR /airbyte/integration_code
 
-LABEL io.airbyte.version=0.2.6
+# copy all loaded and built libraries to a pure basic image
+COPY --from=builder /install /usr/local
+# add default timezone settings
+COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
+RUN echo "Etc/UTC" > /etc/timezone
+
+# bash is installed for more convenient debugging.
+RUN apk --no-cache add bash
+
+# copy payload code only
+COPY main.py ./
+COPY google_sheets_source ./google_sheets_source
+
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+
+LABEL io.airbyte.version=0.2.9
 LABEL io.airbyte.name=airbyte/source-google-sheets

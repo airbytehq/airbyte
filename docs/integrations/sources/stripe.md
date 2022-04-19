@@ -11,6 +11,8 @@ This Source is capable of syncing the following core Streams:
 * [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) \(Incremental\)
 * [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
 * [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
+* [Checkout Streams](https://stripe.com/docs/api/checkout/sessions/list) 
+* [Checkout Streams Line Items](https://stripe.com/docs/api/checkout/sessions/line_items)
 * [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
 * [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 * [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
@@ -21,6 +23,7 @@ This Source is capable of syncing the following core Streams:
 * [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 * [PaymentIntents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 * [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
+* [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 * [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 * [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 * [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
@@ -71,6 +74,12 @@ If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.27 | 2021-12-28 | [9148](https://github.com/airbytehq/airbyte/pull/9148) | Fix `date`, `arrival\_date` fields |
+| 0.1.26 | 2021-12-21 | [8992](https://github.com/airbytehq/airbyte/pull/8992) | Fix type `events.request` in schema |
+| 0.1.25 | 2021-11-25 | [8250](https://github.com/airbytehq/airbyte/pull/8250) | Rearrange setup fields |
+| 0.1.24 | 2021-11-08 | [7729](https://github.com/airbytehq/airbyte/pull/7729) | Include tax data in `checkout_sessions_line_items` stream |
+| 0.1.23 | 2021-11-08 | [7729](https://github.com/airbytehq/airbyte/pull/7729) | Correct `payment_intents` schema |
+| 0.1.22 | 2021-11-05 | [7345](https://github.com/airbytehq/airbyte/pull/7345) | Add 3 new streams |
 | 0.1.21 | 2021-10-07 | [6841](https://github.com/airbytehq/airbyte/pull/6841) | Fix missing `start_date` argument + update json files for SAT |
 | 0.1.20 | 2021-09-30 | [6017](https://github.com/airbytehq/airbyte/pull/6017) | Add lookback\_window\_days parameter |
 | 0.1.19 | 2021-09-27 | [6466](https://github.com/airbytehq/airbyte/pull/6466) | Use `start_date` parameter in incremental streams |

@@ -1,0 +1,26 @@
+{
+  "account_coupon_redemptions": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "accounts": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "coupons": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "invoices": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "measured_units": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "plans": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "subscriptions": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  },
+  "transactions": {
+    "updated_at": "2022-07-19T22:21:37Z"
+  }
+}

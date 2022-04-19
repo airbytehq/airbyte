@@ -51,6 +51,9 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("db", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+            .put("encryption_method", "unencrypted")
+            .build()))
         .build());
 
     final Database database = Databases.createDatabase(
@@ -139,13 +142,15 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "DOUBLE('1.7976931348623157E+308')")
             .addExpectedValues(null, "-1.7976931348623157E308", "-2.2250738585072014E-308", "2.2250738585072014E-308", "1.7976931348623157E308")
             .build());
+
+    // DECFLOAT type tests
     addDataTypeTestData(
         TestDataHolder.builder()
             .createTablePatternSql(CREATE_TABLE_SQL)
             .sourceType("DECFLOAT")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("DECFLOAT(16)")
-            .addInsertValues("null", "0", "DECFLOAT(10E+307, 16)", "DECFLOAT(10E-307, 16)")
+            .addInsertValues("null", "0", "1.0E308", "1.0E-306")
             .addExpectedValues(null, "0", "1E+308", "1E-306")
             .build());
     addDataTypeTestData(
@@ -157,16 +162,14 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addInsertValues("null", "0", "DECFLOAT(10E+307, 34)", "DECFLOAT(10E-307, 34)")
             .addExpectedValues(null, "0", "1E+308", "1E-306")
             .build());
-
-    // TODO "SNaN", "NaN", "Infinity" - fail with an exception in Db2 Driver during conversion to a
-    // BigDecimal.
-    // Could be fixed by mapping DECFLOAT to Double or String according to:
-    // https://www.ibm.com/docs/en/db2-for-zos/12?topic=dttmddtija-retrieval-special-values-from-decfloat-columns-in-java-applications
-    /*
-     * addDataTypeTestData( TestDataHolder.builder() .createTablePatternSql(CREATE_TABLE_SQL)
-     * .sourceType("DECFLOAT") .airbyteType(JsonSchemaPrimitive.NUMBER) .addInsertValues("SNaN", "NaN",
-     * "Infinity") .addExpectedValues() .build());
-     */
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .sourceType("DECFLOAT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("SNaN", "NaN", "Infinity", "-Infinity")
+            .addExpectedValues("NaN", "NaN", "Infinity", "-Infinity")
+            .build());
 
     // Boolean values
     addDataTypeTestData(

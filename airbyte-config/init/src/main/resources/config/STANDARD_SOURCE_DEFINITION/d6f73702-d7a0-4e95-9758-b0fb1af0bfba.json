@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "d6f73702-d7a0-4e95-9758-b0fb1af0bfba",
+  "name": "Jenkins",
+  "dockerRepository": "farosai/airbyte-jenkins-source",
+  "dockerImageTag": "0.1.23",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/jenkins",
+  "icon": "jenkins.svg"
+}

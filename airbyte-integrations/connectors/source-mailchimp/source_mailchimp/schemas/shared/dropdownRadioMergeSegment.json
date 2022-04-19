@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "title": "Dropdown/Radio Merge Field Segment",
+  "description": "An individual segment condition",
+  "required": ["field", "op"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "SelectMerge",
+      "enum": ["SelectMerge"]
+    },
+    "field": {
+      "type": "string",
+      "title": "Segment Field",
+      "description": "A merge field to segment.",
+      "example": "MMERGE6"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is", "not", "blank", "blank_not", "notcontain", "contains"],
+      "title": "Segment Operator",
+      "description": "Whether the member's merge information is/is not a value or is/is not blank.",
+      "example": "is"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Value",
+      "description": "The value to segment a text merge field with.",
+      "example": "Second Choice"
+    }
+  }
+}

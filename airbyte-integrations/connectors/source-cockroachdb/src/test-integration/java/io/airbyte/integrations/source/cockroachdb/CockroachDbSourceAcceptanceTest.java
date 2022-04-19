@@ -21,9 +21,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.CockroachContainer;
 
@@ -37,7 +35,7 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new CockroachContainer("cockroachdb/cockroach");
+    container = new CockroachContainer("cockroachdb/cockroach:v20.2.18");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -116,11 +114,6 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(
                     Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

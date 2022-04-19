@@ -13,7 +13,7 @@
     "properties": {
       "instance_type": {
         "description": "MongoDb instance to connect to. For MongoDB Atlas and Replica Set TLS connection is used by default.",
-        "title": "MongoDb instance type",
+        "title": "MongoDb Instance Type",
         "type": "object",
         "order": 0,
         "oneOf": [
@@ -29,13 +29,13 @@
               "host": {
                 "title": "Host",
                 "type": "string",
-                "description": "Host of a Mongo database to be replicated.",
+                "description": "The Host of a Mongo database to be replicated.",
                 "order": 0
               },
               "port": {
                 "title": "Port",
                 "type": "integer",
-                "description": "Port of a Mongo database to be replicated.",
+                "description": "The Port of a Mongo database to be replicated.",
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 27017,
@@ -43,7 +43,7 @@
                 "order": 1
               },
               "tls": {
-                "title": "TLS connection",
+                "title": "TLS Connection",
                 "type": "boolean",
                 "description": "Indicates whether TLS encryption protocol will be used to connect to MongoDB. It is recommended to use TLS connection if possible. For more information see <a href=\"https://docs.airbyte.io/integrations/sources/mongodb-v2\">documentation</a>.",
                 "default": false,

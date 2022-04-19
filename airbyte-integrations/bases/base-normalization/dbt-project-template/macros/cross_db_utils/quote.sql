@@ -10,3 +10,7 @@
 {% macro oracle__quote(column_name) -%}
   {{ '\"' ~ column_name ~ '\"'}}
 {%- endmacro %}
+
+{% macro clickhouse__quote(column_name) -%}
+  {{ '\"' ~ column_name ~ '\"'}}
+{%- endmacro %}

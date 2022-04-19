@@ -7,7 +7,7 @@ import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { Connection } from "core/domain/connection";
 import Link from "components/Link";
 import { Button, H1 } from "components/base";
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import Status from "core/statuses";
 
 const run = keyframes`
@@ -100,21 +100,21 @@ const ProgressBlock: React.FC<ProgressBlockProps> = ({
     <Bar>
       <Img src={"/process-arrow.svg"} width={20} />
       <FormattedMessage
-        id="onboarding.synchronisationProgress"
+        id="onboarding.synchronizationProgress"
         values={{
           sr: (...sr: React.ReactNode[]) => (
             <>
-              <Lnk to={`${Routes.Source}/${connection.sourceId}`}>{sr}</Lnk>{" "}
+              <Lnk to={`${RoutePaths.Source}/${connection.sourceId}`}>{sr}</Lnk>{" "}
               <FontAwesomeIcon icon={faChevronRight} />
             </>
           ),
           ds: (...ds: React.ReactNode[]) => (
-            <Lnk to={`${Routes.Destination}/${connection.destinationId}`}>
+            <Lnk to={`${RoutePaths.Destination}/${connection.destinationId}`}>
               {ds}
             </Lnk>
           ),
           sync: (...sync: React.ReactNode[]) => (
-            <Lnk to={`${Routes.Connections}/${connection.connectionId}`}>
+            <Lnk to={`${RoutePaths.Connections}/${connection.connectionId}`}>
               {sync}
             </Lnk>
           ),

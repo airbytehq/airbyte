@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "722ba4bf-06ec-45a4-8dd5-72e4a5cf3903",
+  "name": "My Hours",
+  "dockerRepository": "airbyte/source-my-hours",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/my-hours",
+  "icon": "my-hours.svg"
+}

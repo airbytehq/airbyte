@@ -2,7 +2,7 @@ import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { Routes } from "pages/routes";
+import { RoutePaths } from "pages/routes";
 import { DropDownRow, ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
 import useRouter from "hooks/useRouter";
@@ -58,12 +58,10 @@ const SourceItemPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
   });
 
-  const onClickBack = () => push(Routes.Source);
-
   const breadcrumbsData = [
     {
       name: <FormattedMessage id="sidebar.sources" />,
-      onClick: onClickBack,
+      onClick: () => push(".."),
     },
     { name: source.name },
   ];
@@ -88,17 +86,16 @@ const SourceItemPage: React.FC = () => {
   );
 
   const onSelect = (data: DropDownRow.IDataItem) => {
-    if (data.value === "create-new-item") {
-      push({
-        pathname: `${Routes.Source}${Routes.ConnectionNew}`,
-        state: { sourceId: source.sourceId },
-      });
-    } else {
-      push({
-        pathname: `${Routes.Source}${Routes.ConnectionNew}`,
-        state: { destinationId: data.value, sourceId: source.sourceId },
-      });
-    }
+    const path = `../${RoutePaths.ConnectionNew}`;
+    const state =
+      data.value === "create-new-item"
+        ? { sourceId: source.sourceId }
+        : {
+            destinationId: data.value,
+            sourceId: source.sourceId,
+          };
+
+    push(path, { state });
   };
 
   const renderContent = () => {

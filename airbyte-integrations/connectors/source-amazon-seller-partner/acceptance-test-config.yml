@@ -3,9 +3,9 @@ tests:
   spec:
     - spec_path: "source_amazon_seller_partner/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-      timeout_seconds: 60
+    # - config_path: "secrets/config.json"
+    #   status: "succeed"
+    #   timeout_seconds: 60
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
       timeout_seconds: 60
@@ -28,6 +28,16 @@ tests:
 #          "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT",
 #          "VendorDirectFulfillmentShipping",
 #        ]
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_alternate_purchase.json"
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_item_comparison.json"
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_market_basket.json"
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_repeat_purchase.json.json"
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_search_terms.json"
 # TODO: uncomment when Orders (or any other incremental) stream is filled with data
 #  incremental:
 #   - config_path: "secrets/config.json"

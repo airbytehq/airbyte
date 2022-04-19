@@ -1,5 +1,5 @@
 -- generic setup for a brand new empty postgresql RDS
- CREATE
+CREATE
     ROLE integrationtest_rw;
 
 GRANT integrationtest_rw TO airbyte;

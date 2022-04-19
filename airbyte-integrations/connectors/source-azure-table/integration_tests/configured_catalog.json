@@ -1,0 +1,24 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "Test",
+        "json_schema": {
+          "properties": {
+            "data": {
+              "type": "object"
+            },
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["metadata"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

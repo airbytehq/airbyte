@@ -4,32 +4,57 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from email.utils import parsedate_tz
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class BigcommerceStream(HttpStream, ABC):
     # Latest Stable Release
     api_version = "v3"
     # Page size
-    limit = 10
+    limit = 250
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
     primary_key = "id"
-    order_field = "date_created:asc"
+    order_field = "date_modified:asc"
     filter_field = "date_modified:min"
     data = "data"
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     def __init__(self, start_date: str, store_hash: str, access_token: str, **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.store_hash = store_hash
         self.access_token = access_token
+
+    @transformer.registerCustomTransform
+    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+        """
+        This functions tries to handle the various date-time formats BigCommerce API returns and normalize the values to isoformat.
+        """
+        if "format" in field_schema and field_schema["format"] == "date-time":
+            if not original_value:  # Some dates are empty strings: "".
+                return None
+            transformed_value = None
+            supported_formats = ["YYYY-MM-DD", "YYYY-MM-DDTHH:mm:ssZZ", "YYYY-MM-DDTHH:mm:ss[Z]", "ddd, D MMM YYYY HH:mm:ss ZZ"]
+            for format in supported_formats:
+                try:
+                    transformed_value = str(pendulum.from_format(original_value, format))  # str() returns isoformat
+                except ValueError:
+                    continue
+            if not transformed_value:
+                raise ValueError(f"Unsupported date-time format for {original_value}")
+            return transformed_value
+        return original_value
 
     @property
     def url_base(self) -> str:
@@ -49,10 +74,11 @@ class BigcommerceStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
+        params.update({"sort": self.order_field})
         if next_page_token:
             params.update(**next_page_token)
         else:
-            params.update({"sort": self.order_field})
+            params[self.filter_field] = self.start_date
         return params
 
     def request_headers(
@@ -85,11 +111,10 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
-        if not next_page_token:
-            params["sort"] = f"{self.order_field}"
-            params["limit"] = f"{self.limit}"
-            if stream_state:
-                params[self.filter_field] = stream_state.get(self.cursor_field)
+        if stream_state:
+            params[self.filter_field] = stream_state.get(self.cursor_field)
+        else:
+            params[self.filter_field] = self.start_date
         return params
 
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
@@ -120,10 +145,19 @@ class Customers(IncrementalBigcommerceStream):
         return f"{self.data_field}"
 
 
+class Products(IncrementalBigcommerceStream):
+    data_field = "products"
+    # Override `order_field` bacause Products API do not acept `asc` value
+    order_field = "date_modified"
+
+    def path(self, **kwargs) -> str:
+        return f"catalog/{self.data_field}"
+
+
 class Orders(IncrementalBigcommerceStream):
     data_field = "orders"
     api_version = "v2"
-    order_field = "id:asc"
+    order_field = "date_modified:asc"
     filter_field = "min_date_modified"
     page = 1
 
@@ -132,6 +166,19 @@ class Orders(IncrementalBigcommerceStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json() if len(response.content) > 0 else []
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        max_date = ""
+        if not current_stream_state.get(self.cursor_field):
+            max_date = latest_record.get(self.cursor_field, "")
+        elif latest_record.get(self.cursor_field) and current_stream_state.get(self.cursor_field):
+            latest_state_date_time = parsedate_tz(latest_record.get(self.cursor_field))
+            current_state_date_time = parsedate_tz(current_stream_state.get(self.cursor_field))
+            max_date = current_stream_state.get(self.cursor_field)
+            if current_state_date_time < latest_state_date_time:
+                max_date = latest_record.get(self.cursor_field)
+
+        return {self.cursor_field: max_date}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if len(response.content) > 0 and len(response.json()) == self.limit:
@@ -220,4 +267,5 @@ class SourceBigcommerce(AbstractSource):
             Pages(**args),
             Orders(**args),
             Transactions(**args),
+            Products(**args),
         ]

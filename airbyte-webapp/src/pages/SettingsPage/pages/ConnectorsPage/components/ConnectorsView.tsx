@@ -7,12 +7,15 @@ import ConnectorCell from "./ConnectorCell";
 import ImageCell from "./ImageCell";
 import VersionCell from "./VersionCell";
 import { Block, FormContentTitle, Title } from "./PageComponents";
-import { SourceDefinition } from "core/resources/SourceDefinition";
 import UpgradeAllButton from "./UpgradeAllButton";
 import CreateConnector from "./CreateConnector";
 import HeadTitle from "components/HeadTitle";
-import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { Connector, ConnectorDefinition } from "core/domain/connector";
+import {
+  Connector,
+  ConnectorDefinition,
+  DestinationDefinition,
+  SourceDefinition,
+} from "core/domain/connector";
 import {
   FeatureItem,
   useFeatureService,
@@ -59,6 +62,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             connectorName={cell.value}
             img={row.original.icon}
             hasUpdate={Connector.hasNewerVersion(row.original)}
+            isDeprecated={Connector.isDeprecated(row.original)}
           />
         ),
       },
@@ -90,7 +94,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
               collapse: true,
               Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
                 <VersionCell
-                  version={cell.value}
+                  version={cell.value || row.original.dockerImageTag}
                   id={Connector.id(row.original)}
                   onChange={onUpdateVersion}
                   feedback={feedbackList[Connector.id(row.original)]}

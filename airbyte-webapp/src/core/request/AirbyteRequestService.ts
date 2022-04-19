@@ -1,4 +1,4 @@
-import merge from "lodash.merge";
+import merge from "lodash/merge";
 
 import { CommonRequestError } from "./CommonRequestError";
 import { VersionError } from "./VersionError";

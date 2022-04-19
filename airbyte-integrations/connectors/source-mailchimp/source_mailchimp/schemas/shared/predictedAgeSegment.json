@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "Predicted Age Segment",
+  "description": "Segment by predicted age.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "PredictedAge",
+      "enum": ["PredictedAge"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["predicted_age_range"],
+      "title": "Segment Field",
+      "description": "Segment by predicted age."
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is"],
+      "title": "Segment Operator",
+      "description": "Members who are/not the exact criteria listed.",
+      "example": "is"
+    },
+    "value": {
+      "type": "string",
+      "enum": ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"],
+      "title": "Segment Operator",
+      "description": "The predicted age to segment.",
+      "example": "female"
+    }
+  }
+}

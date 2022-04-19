@@ -1,0 +1,26 @@
+{
+  "user_account_analytics": {
+    "date": "2021-06-09"
+  },
+  "ad_account_analytics": {
+    "DATE": "2021-06-09"
+  },
+  "campaigns": {
+    "updated_time": 1628867244
+  },
+  "ad_groups": {
+    "updated_time": 1628867244
+  },
+  "ads": {
+    "updated_time": 1628867244
+  },
+  "campaign_analytics": {
+    "DATE": "2021-06-09"
+  },
+  "ad_group_analytics": {
+    "DATE": "2021-06-09"
+  },
+  "ad_analytics": {
+    "DATE": "2021-06-09"
+  }
+}

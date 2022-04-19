@@ -7,12 +7,12 @@ package io.airbyte.oauth.flows;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -22,15 +22,15 @@ import org.apache.http.client.utils.URIBuilder;
  * Following docs from
  * https://help.salesforce.com/s/articleView?language=en_US&amp;id=sf.remoteaccess_oauth_web_server_flow.htm
  */
-public class SalesforceOAuthFlow extends BaseOAuthFlow {
+public class SalesforceOAuthFlow extends BaseOAuth2Flow {
   // Clickable link for IDE
   // https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
 
-  private static final String AUTHORIZE_URL = "https://login.salesforce.com/services/oauth2/authorize";
-  private static final String ACCESS_TOKEN_URL = "https://login.salesforce.com/services/oauth2/token";
+  private static final String AUTHORIZE_URL = "https://%s.salesforce.com/services/oauth2/authorize";
+  private static final String ACCESS_TOKEN_URL = "https://%s.salesforce.com/services/oauth2/token";
 
-  public SalesforceOAuthFlow(final ConfigRepository configRepository) {
-    super(configRepository);
+  public SalesforceOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
   @VisibleForTesting
@@ -39,9 +39,13 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
-      return new URIBuilder(AUTHORIZE_URL)
+      return new URIBuilder(String.format(AUTHORIZE_URL, getEnvironment(inputOAuthConfiguration)))
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("response_type", "code")
@@ -53,8 +57,8 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String getAccessTokenUrl() {
-    return ACCESS_TOKEN_URL;
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
+    return String.format(ACCESS_TOKEN_URL, getEnvironment(inputOAuthConfiguration));
   }
 
   @Override
@@ -69,14 +73,16 @@ public class SalesforceOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, final String accessTokenUrl) throws IOException {
-    System.out.println(Jsons.serialize(data));
-    if (data.has("refresh_token")) {
-      final String refreshToken = data.get("refresh_token").asText();
-      return Map.of("refresh_token", refreshToken);
-    } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+  public List<String> getDefaultOAuthOutputPath() {
+    return List.of();
+  }
+
+  private String getEnvironment(JsonNode inputOAuthConfiguration) {
+    var isSandbox = inputOAuthConfiguration.get("is_sandbox");
+    if (isSandbox == null) {
+      return "login";
     }
+    return (isSandbox.asBoolean() == true) ? "test" : "login";
   }
 
 }

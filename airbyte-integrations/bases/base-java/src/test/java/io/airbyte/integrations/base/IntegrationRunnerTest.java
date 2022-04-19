@@ -221,13 +221,13 @@ class IntegrationRunnerTest {
 
   @Test
   void testDestinationConsumerLifecycleSuccess() throws Exception {
-    final AirbyteMessage singerMessage1 = new AirbyteMessage()
+    final AirbyteMessage message1 = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    final AirbyteMessage singerMessage2 = new AirbyteMessage()
+    final AirbyteMessage message2 = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
@@ -237,43 +237,43 @@ class IntegrationRunnerTest {
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
             .withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n"
-        + Jsons.serialize(singerMessage2) + "\n"
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n"
+        + Jsons.serialize(message2) + "\n"
         + Jsons.serialize(stateMessage)).getBytes()));
 
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
 
     final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
-    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage2);
+    inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+    inOrder.verify(airbyteMessageConsumerMock).accept(message2);
     inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
     inOrder.verify(airbyteMessageConsumerMock).close();
   }
 
   @Test
   void testDestinationConsumerLifecycleFailure() throws Exception {
-    final AirbyteMessage singerMessage1 = new AirbyteMessage()
+    final AirbyteMessage message1 = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.deserialize("{ \"color\": \"blue\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    final AirbyteMessage singerMessage2 = new AirbyteMessage()
+    final AirbyteMessage message2 = new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes()));
 
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
-    doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(singerMessage1);
+    doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
 
     assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
 
     final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
+    inOrder.verify(airbyteMessageConsumerMock).accept(message1);
     inOrder.verify(airbyteMessageConsumerMock).close();
     inOrder.verifyNoMoreInteractions();
   }

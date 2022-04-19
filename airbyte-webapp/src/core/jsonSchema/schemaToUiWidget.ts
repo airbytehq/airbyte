@@ -1,5 +1,6 @@
 import { FormBlock } from "core/form/types";
 import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
+import { isDefined } from "../../utils/common";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -153,7 +154,11 @@ const pickDefaultFields = (
   ) {
     partialSchema.enum = schema.items.enum;
   } else if (schema.enum) {
-    partialSchema.enum = schema.enum;
+    if (schema.enum?.length === 1 && isDefined(schema.default)) {
+      partialSchema.const = schema.default;
+    } else {
+      partialSchema.enum = schema.enum;
+    }
   }
 
   return partialSchema;

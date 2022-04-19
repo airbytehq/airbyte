@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -57,7 +56,12 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
                 DATABASE_NAME + "." + COLLECTION_NAME,
                 Field.of("_id", JsonSchemaPrimitive.STRING),
                 Field.of("id", JsonSchemaPrimitive.STRING),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("name", JsonSchemaPrimitive.STRING),
+                Field.of("test", JsonSchemaPrimitive.STRING),
+                Field.of("test_array", JsonSchemaPrimitive.ARRAY),
+                Field.of("empty_test", JsonSchemaPrimitive.STRING),
+                Field.of("double_test", JsonSchemaPrimitive.NUMBER),
+                Field.of("int_test", JsonSchemaPrimitive.NUMBER))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withDefaultCursorField(List.of("_id")))));
   }
@@ -65,11 +69,6 @@ public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptan
   @Override
   protected JsonNode getState() throws Exception {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() throws Exception {
-    return Collections.emptyList();
   }
 
 }

@@ -32,9 +32,15 @@
         "type": "string",
         "format": "date-time"
       },
+      "fetch_thumbnail_images": {
+        "title": "Fetch Thumbnail Images",
+        "description": "In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url",
+        "default": false,
+        "type": "boolean"
+      },
       "include_deleted": {
         "title": "Include Deleted",
-        "description": "Include data from deleted campaigns, ads, and adsets.",
+        "description": "Include data from deleted campaigns, ads, and adsets",
         "default": false,
         "type": "boolean"
       },
@@ -48,7 +54,7 @@
       },
       "insights_days_per_job": {
         "title": "Insights Days Per Job",
-        "description": "Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
+        "description": "Number of days to sync in one job (the more data you have, the smaller this parameter should be)",
         "default": 7,
         "minimum": 1,
         "maximum": 30,

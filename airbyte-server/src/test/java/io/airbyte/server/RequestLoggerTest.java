@@ -7,7 +7,7 @@ package io.airbyte.server;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -95,7 +95,7 @@ public class RequestLoggerTest {
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
     LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER,
-        LogConfiguration.EMPTY,
+        LogConfigs.EMPTY,
         jobRoot);
 
     // We have to instanciate the logger here, because the MDC config has been changed to log in a

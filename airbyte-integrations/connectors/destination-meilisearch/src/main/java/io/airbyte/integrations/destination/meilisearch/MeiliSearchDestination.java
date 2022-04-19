@@ -64,7 +64,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MeiliSearchDestination.class);
 
-  private static final int MAX_BATCH_SIZE = 10000;
+  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mib
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSSSSSSS");
 
   public static final String AB_PK_COLUMN = "_ab_pk";
@@ -102,7 +102,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
         (data) -> true,
-        MAX_BATCH_SIZE);
+        MAX_BATCH_SIZE_BYTES);
   }
 
   private static Map<String, Index> createIndices(final ConfiguredAirbyteCatalog catalog, final Client client) throws Exception {

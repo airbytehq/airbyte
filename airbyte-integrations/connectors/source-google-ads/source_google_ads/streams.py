@@ -13,11 +13,16 @@ from .google_ads import GoogleAds
 
 
 def chunk_date_range(
-    start_date: str, conversion_window: int, field: str, end_date: str = None, time_unit: str = "months", days_of_data_storage: int = None
+    start_date: str,
+    conversion_window: int,
+    field: str,
+    end_date: str = None,
+    days_of_data_storage: int = None,
+    range_days: int = None,
 ) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
-    Returns a list of the beginning and ending timetsamps of each month between the start date and now.
+    Returns a list of the beginning and ending timestamps of each `range_days` between the start date and now.
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
     intervals = []
@@ -38,7 +43,7 @@ def chunk_date_range(
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date < end_date:
         intervals.append({field: start_date.to_date_string()})
-        start_date = start_date.add(**{time_unit: 1})
+        start_date = start_date.add(days=range_days)
 
     return intervals
 
@@ -64,33 +69,43 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     days_of_data_storage = None
     cursor_field = "segments.date"
     primary_key = None
-    time_unit = "months"
+    range_days = 15  # date range is set to 15 days, because for conversion_window_days default value is 14. Range less than 15 days will break the integration tests.
 
-    def __init__(self, start_date: str, conversion_window_days: int, **kwargs):
+    def __init__(self, start_date: str, conversion_window_days: int, time_zone: [pendulum.timezone, str], end_date: str = None, **kwargs):
         self.conversion_window_days = conversion_window_days
         self._start_date = start_date
+        self.time_zone = time_zone
+        self._end_date = end_date
         super().__init__(**kwargs)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
+        end_date = self._end_date
 
         return chunk_date_range(
             start_date=start_date,
+            end_date=end_date,
             conversion_window=self.conversion_window_days,
             field=self.cursor_field,
-            time_unit=self.time_unit,
             days_of_data_storage=self.days_of_data_storage,
+            range_days=self.range_days,
         )
 
-    @staticmethod
-    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None, time_unit: str = "months"):
-        end_date = end_date or pendulum.yesterday()
+    def get_date_params(self, stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
+        """
+        Returns `start_date` and `end_date` for the given stream_slice.
+        If (end_date - start_date) is a big date range (>= 1 month), it can take more than 2 hours to process all the records from the given slice.
+        After 2 hours next page tokens will be expired, finally resulting in page token expired error
+        Currently this method returns `start_date` and `end_date` with 15 days difference.
+        """
+
+        end_date = end_date or pendulum.yesterday(tz=self.time_zone)
         start_date = pendulum.parse(stream_slice.get(cursor_field))
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
 
-        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(**{time_unit: 1}))
+        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(days=self.range_days))
 
         # Fix issue #4806, start date should always be lower than end date.
         if start_date.add(days=1).date() >= end_date.date():
@@ -114,7 +129,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         return current_stream_state
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field, time_unit=self.time_unit)
+        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
         query = GoogleAds.convert_schema_into_query(
             schema=self.get_json_schema(), report_name=self.name, from_date=start_date, to_date=end_date, cursor_field=self.cursor_field
         )
@@ -195,10 +210,22 @@ class UserLocationReport(IncrementalGoogleAdsStream):
     """
 
 
+class GeographicReport(IncrementalGoogleAdsStream):
+    """
+    UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v8/geographic_view
+    """
+
+
+class KeywordReport(IncrementalGoogleAdsStream):
+    """
+    UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v8/keyword_view
+    """
+
+
 class ClickView(IncrementalGoogleAdsStream):
     """
     ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v8/ClickView
     """
 
-    time_unit = "days"
     days_of_data_storage = 90
+    range_days = 1

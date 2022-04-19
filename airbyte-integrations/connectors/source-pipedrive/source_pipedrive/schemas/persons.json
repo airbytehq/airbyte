@@ -78,10 +78,38 @@
       "type": ["null", "boolean"]
     },
     "phone": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "label": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "primary": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
     },
     "email": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "label": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "primary": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
     },
     "first_char": {
       "type": ["null", "string"]

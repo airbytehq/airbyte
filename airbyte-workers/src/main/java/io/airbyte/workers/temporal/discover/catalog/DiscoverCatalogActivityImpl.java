@@ -15,7 +15,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 
 public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
+  private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
@@ -38,7 +39,8 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final String databaseUrl;
   private final String airbyteVersion;
 
-  public DiscoverCatalogActivityImpl(final ProcessFactory processFactory,
+  public DiscoverCatalogActivityImpl(final WorkerConfigs workerConfigs,
+                                     final ProcessFactory processFactory,
                                      final SecretsHydrator secretsHydrator,
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
@@ -47,6 +49,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
                                      final String databasePassword,
                                      final String databaseUrl,
                                      final String airbyteVersion) {
+    this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
@@ -86,9 +89,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     return () -> {
       final IntegrationLauncher integrationLauncher =
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
-              processFactory, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+              processFactory, workerConfigs.getResourceRequirements());
       final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
-      return new DefaultDiscoverCatalogWorker(integrationLauncher, streamFactory);
+      return new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
     };
   }
 

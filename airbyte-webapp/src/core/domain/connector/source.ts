@@ -1,7 +1,7 @@
-import { SourceDefinition } from "core/resources/SourceDefinition";
 import {
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
+  SourceDefinition,
   SourceDefinitionSpecification,
 } from "./types";
 

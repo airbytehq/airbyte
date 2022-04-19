@@ -5,7 +5,6 @@
 package io.airbyte.workers.test_helpers;
 
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +12,9 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Collections;
 
+/**
+ * Should only be used by connector testing.
+ */
 public class EntrypointEnvChecker {
 
   /**
@@ -38,7 +40,8 @@ public class EntrypointEnvChecker {
         false,
         Collections.emptyMap(),
         "printenv",
-        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        null,
+        Collections.emptyMap(),
         Collections.emptyMap());
 
     final BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));

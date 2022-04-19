@@ -20,7 +20,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_hubspot",
-    description="Source implementation for Hubspot.",
+    description="Source implementation for HubSpot.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

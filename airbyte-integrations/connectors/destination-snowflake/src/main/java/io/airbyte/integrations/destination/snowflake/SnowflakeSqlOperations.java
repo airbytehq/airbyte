@@ -31,6 +31,10 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     database.execute(createTableQuery);
   }
 
+  public boolean isSchemaExists(JdbcDatabase database, String outputSchema) throws Exception {
+    return database.query(SHOW_SCHEMAS).map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
+  }
+
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
                                     final List<AirbyteRecordMessage> records,

@@ -3,5 +3,9 @@
   "name": "Facebook Marketing",
   "dockerRepository": "airbyte/source-facebook-marketing",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-facebook-marketing"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-facebook-marketing",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/facebook",
+    "connectionSpecification": {}
+  }
 }

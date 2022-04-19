@@ -8,7 +8,7 @@ from json import JSONDecodeError
 from typing import Mapping, Tuple
 
 import requests
-from base_python import BaseClient
+from airbyte_cdk.sources.deprecated.client import BaseClient
 from requests.exceptions import ConnectionError
 
 

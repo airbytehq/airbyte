@@ -5,7 +5,7 @@
 
 from collections import UserDict
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Union
 
 import pytest
 from yaml import load
@@ -65,3 +65,40 @@ class SecretDict(UserDict):
 
     def __repr__(self) -> str:
         return str(self)
+
+
+def find_key_inside_schema(schema_item: Union[dict, list, str], key: str = "$ref") -> dict:
+    """Checking the incoming schema for the presence of a `$ref` object in it"""
+    if isinstance(schema_item, list):
+        for list_schema_item in schema_item:
+            item = find_key_inside_schema(list_schema_item, key)
+            if item is not None:
+                return item
+    elif isinstance(schema_item, dict):
+        if key in schema_item:
+            return schema_item
+        for schema_object_value in schema_item.values():
+            item = find_key_inside_schema(schema_object_value, key)
+            if item is not None:
+                return item
+
+
+def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
+    """Find at least one keyword in a schema, skip object properties"""
+
+    def _find_keyword(schema, key, _skip=False):
+        if isinstance(schema, list):
+            for v in schema:
+                _find_keyword(v, key)
+        elif isinstance(schema, dict):
+            for k, v in schema.items():
+                if k == key and not _skip:
+                    raise StopIteration
+                rec_skip = k == "properties" and schema.get("type") == "object"
+                _find_keyword(v, key, rec_skip)
+
+    try:
+        _find_keyword(schema, key)
+    except StopIteration:
+        return True
+    return False

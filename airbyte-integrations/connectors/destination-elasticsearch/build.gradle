@@ -16,7 +16,6 @@ dependencies {
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
-    implementation 'org.projectlombok:lombok:1.18.20'
 
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
     // https://eclipse-ee4j.github.io/jsonp/

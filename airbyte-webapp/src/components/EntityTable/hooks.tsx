@@ -4,7 +4,7 @@ import FrequencyConfig from "config/FrequencyConfig.json";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import useConnection from "hooks/services/useConnectionHook";
 import { Status } from "./types";
-import { useAnalytics } from "hooks/useAnalytics";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 
 const useSyncActions = (): {
   changeStatus: (connection: Connection) => Promise<void>;
@@ -12,7 +12,7 @@ const useSyncActions = (): {
 } => {
   const { updateConnection } = useConnection();
   const SyncConnection = useFetcher(ConnectionResource.syncShape());
-  const analyticsService = useAnalytics();
+  const analyticsService = useAnalyticsService();
 
   const changeStatus = async (connection: Connection) => {
     await updateConnection({

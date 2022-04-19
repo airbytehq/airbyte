@@ -24,9 +24,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import org.testcontainers.containers.ClickHouseContainer;
 
 public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -81,11 +79,6 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

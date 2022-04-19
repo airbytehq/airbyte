@@ -19,7 +19,6 @@ import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,6 +29,7 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /*
  * This class represents a single run of a worker. It handles making sure the correct inputs and
@@ -39,8 +39,6 @@ import org.slf4j.LoggerFactory;
 public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
-
-  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
 
   private final JobRunConfig jobRunConfig;
   private final WorkerEnvironment workerEnvironment;
@@ -113,6 +111,12 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     try {
       mdcSetter.accept(jobRoot);
 
+      if (MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY) != null) {
+        LOGGER.info("Docker volume job log path: " + MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY));
+      } else if (MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY) != null) {
+        LOGGER.info("Cloud storage job log path: " + MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY));
+      }
+
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
       // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection per
       // workflow. See https://github.com/airbytehq/airbyte/issues/5936.
@@ -128,7 +132,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       cancellationChecker.run();
 
       workerThread.start();
-      scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+      scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, TemporalUtils.SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       try {
         // block and wait for the output

@@ -5,7 +5,7 @@ import { ContentCard } from "components";
 
 const TempConnector = {
   name: "Service",
-  documentationUrl: "http://service.com",
+  documentationUrl: "",
   sourceDefinitionId: "serviceId",
   dockerRepository: "",
   dockerImageTag: "",
@@ -19,6 +19,10 @@ export default {
   parameters: { actions: { argTypesRegex: "^on.*" } },
   args: {
     formType: "source",
+    formValues: {
+      serviceType: TempConnector.sourceDefinitionId,
+    },
+    onSubmit: (v) => console.log(v),
     availableServices: [TempConnector],
   },
 } as ComponentMeta<typeof ServiceForm>;
@@ -29,8 +33,14 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
     args.selectedConnector &&
     !(args.selectedConnector as any).sourceDefinitionId
   ) {
-    (args.selectedConnector as any).sourceDefinitionId = "";
+    (args.selectedConnector as any).sourceDefinitionId =
+      TempConnector.sourceDefinitionId;
   }
+
+  if (args.selectedConnector?.documentationUrl) {
+    args.selectedConnector.documentationUrl = "";
+  }
+
   return (
     <ContentCard title="Test">
       <ServiceForm {...args} />
@@ -40,8 +50,8 @@ const Template: ComponentStory<typeof ServiceForm> = (args) => {
 
 export const Common = Template.bind({});
 Common.args = {
-  // @ts-ignore
   selectedConnector: {
+    ...TempConnector,
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
@@ -119,8 +129,7 @@ Common.args = {
 export const Oneof = Template.bind({});
 Oneof.args = {
   selectedConnector: {
-    sourceDefinitionId: "",
-    documentationUrl: "",
+    ...TempConnector,
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",

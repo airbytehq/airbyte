@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "Goal Timestamp Segment",
+  "description": "Segment by most recent interaction with a website.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "GoalTimestamp",
+      "enum": ["GoalTimestamp"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["goal_last_visited"],
+      "title": "Segment Field",
+      "description": "Segment by most recent interaction with a website.",
+      "example": "goal_last_visited"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["greater", "less", "is"],
+      "title": "Segment Operator",
+      "description": "Whether the website activity happened after, before, or at a given timestamp.",
+      "example": "greater"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Value",
+      "description": "The date to check Goal activity against.",
+      "example": "2015-07-20 19:45:21"
+    }
+  }
+}

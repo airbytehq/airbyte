@@ -166,7 +166,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .sourceType("DOUBLE")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "-9007199254740991", "9007199254740991")
-            .addExpectedValues(null, "-9.007199254740991E15", "9.007199254740991E15")
+            .addExpectedValues(null, "-9.00719925474099E15", "9.00719925474099E15")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()

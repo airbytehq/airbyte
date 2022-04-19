@@ -5,6 +5,7 @@
 
 import pytest
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_intercom.source import Companies, Contacts, IntercomStream
 
@@ -46,3 +47,32 @@ def test_get_next_page_token(intercom_class, response_json, expected_output_toke
     test = intercom_class(authenticator=NoAuth).next_page_token(response)
 
     assert test == expected_output_token
+
+
+def test_switch_to_standard_endpoint_if_scroll_expired(requests_mock):
+    """
+    Test shows that if scroll param expired we try sync with standard API.
+    """
+
+    url = "https://api.intercom.io/companies/scroll"
+    requests_mock.get(
+        url,
+        json={"type": "company.list", "data": [{"type": "company", "id": "530370b477ad7120001d"}], "scroll_param": "expired_scroll_param"},
+    )
+
+    url = "https://api.intercom.io/companies/scroll?scroll_param=expired_scroll_param"
+    requests_mock.get(url, json={"errors": [{"code": "not_found", "message": "scroll parameter not found"}]}, status_code=404)
+
+    url = "https://api.intercom.io/companies"
+    requests_mock.get(url, json={"type": "company.list", "data": [{"type": "company", "id": "530370b477ad7120001d"}]})
+
+    stream1 = Companies(authenticator=NoAuth())
+
+    records = []
+
+    assert stream1._endpoint_type == Companies.EndpointType.scroll
+
+    for slice in stream1.stream_slices(sync_mode=SyncMode.full_refresh):
+        records += list(stream1.read_records(sync_mode=SyncMode, stream_slice=slice))
+
+    assert stream1._endpoint_type == Companies.EndpointType.standard

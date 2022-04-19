@@ -1,29 +1,19 @@
 import React from "react";
 import {
-  FormattedMessage,
   FormattedDateParts,
+  FormattedMessage,
   FormattedTimeParts,
 } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-import { JobItem as JobApiItem, Attempt } from "core/resources/Job";
-import { JobInfo } from "core/resources/Scheduler";
-import { Row, Cell } from "components/SimpleTableComponents";
+import { Attempt, JobInfo, JobMeta as JobApiItem } from "core/domain/job/Job";
+import { Cell, Row } from "components/SimpleTableComponents";
 import { Button, StatusIcon } from "components";
 import AttemptDetails from "./AttemptDetails";
 import Status from "core/statuses";
-import useJob from "hooks/services/useJob";
-
-type IProps = {
-  job: JobApiItem | JobInfo;
-  attempts: Attempt[];
-  isOpen?: boolean;
-  onExpand: () => void;
-  isFailed?: boolean;
-  shortInfo?: boolean;
-};
+import { useCancelJob } from "../../../services/job/JobService";
 
 const MainView = styled(Row)<{
   isOpen?: boolean;
@@ -92,19 +82,28 @@ const Arrow = styled.div<{
   }
 `;
 
+type IProps = {
+  job: JobApiItem | JobInfo;
+  attempts?: Attempt[];
+  isOpen?: boolean;
+  onExpand: () => void;
+  isFailed?: boolean;
+  shortInfo?: boolean;
+};
+
 const MainInfo: React.FC<IProps> = ({
   job,
-  attempts,
+  attempts = [],
   isOpen,
   onExpand,
   isFailed,
   shortInfo,
 }) => {
-  const { cancelJob } = useJob();
+  const cancelJob = useCancelJob();
 
-  const onCancelJob = (event: React.SyntheticEvent) => {
+  const onCancelJob = async (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    cancelJob(job.id);
+    return cancelJob(job.id);
   };
 
   const isNotCompleted =
@@ -148,14 +147,14 @@ const MainInfo: React.FC<IProps> = ({
         >
           {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
         </FormattedDateParts>
-        {attempts.length > 1 ? (
+        {attempts.length > 1 && (
           <AttemptCount>
             <FormattedMessage
               id="sources.countAttempts"
               values={{ count: attempts.length }}
             />
           </AttemptCount>
-        ) : null}
+        )}
         <Arrow isOpen={isOpen} isFailed={isFailed}>
           <FontAwesomeIcon icon={faAngleDown} />
         </Arrow>

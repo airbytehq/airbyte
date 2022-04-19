@@ -5,19 +5,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    ConnectorSpecification,
-    Type,
-)
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
 from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
-from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
 
 @pytest.mark.parametrize(
@@ -38,9 +29,80 @@ def test_discovery(schema, cursors, should_fail):
     }
     if should_fail:
         with pytest.raises(AssertionError):
-            t.test_defined_cursors_exist_in_schema(None, discovered_catalog)
+            t.test_defined_cursors_exist_in_schema(discovered_catalog)
     else:
-        t.test_defined_cursors_exist_in_schema(None, discovered_catalog)
+        t.test_defined_cursors_exist_in_schema(discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "schema, should_fail",
+    [
+        ({}, False),
+        ({"$ref": None}, True),
+        ({"properties": {"user": {"$ref": None}}}, True),
+        ({"properties": {"user": {"$ref": "user.json"}}}, True),
+        ({"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}}, False),
+        ({"properties": {"fake_items": {"type": "array", "items": {"$ref": "fake_item.json"}}}}, True),
+        (
+            {
+                "properties": {
+                    "fake_items": {
+                        "oneOf": [{"type": "object", "$ref": "fake_items_1.json"}, {"type": "object", "$ref": "fake_items_2.json"}]
+                    }
+                }
+            },
+            True,
+        ),
+    ],
+)
+def test_ref_in_discovery_schemas(schema, should_fail):
+    t = _TestDiscovery()
+    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
+    if should_fail:
+        with pytest.raises(AssertionError):
+            t.test_defined_refs_exist_in_schema(discovered_catalog)
+    else:
+        t.test_defined_refs_exist_in_schema(discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "schema, keyword, should_fail",
+    [
+        ({}, "allOf", False),
+        ({"allOf": [{"type": "string"}, {"maxLength": 1}]}, "allOf", True),
+        ({"type": "object", "properties": {"allOf": {"type": "string"}}}, "allOf", False),
+        ({"type": "object", "properties": {"name": {"allOf": [{"type": "string"}, {"maxLength": 1}]}}}, "allOf", True),
+        (
+            {"type": "object", "properties": {"name": {"type": "array", "items": {"allOf": [{"type": "string"}, {"maxLength": 4}]}}}},
+            "allOf",
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "array",
+                        "items": {"anyOf": [{"type": "number"}, {"allOf": [{"type": "string"}, {"maxLength": 4}, {"minLength": 2}]}]},
+                    }
+                },
+            },
+            "allOf",
+            True,
+        ),
+        ({"not": {"type": "string"}}, "not", True),
+        ({"type": "object", "properties": {"not": {"type": "string"}}}, "not", False),
+        ({"type": "object", "properties": {"name": {"not": {"type": "string"}}}}, "not", True),
+    ],
+)
+def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
+    t = _TestDiscovery()
+    discovered_catalog = {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema})}
+    if should_fail:
+        with pytest.raises(AssertionError):
+            t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
+    else:
+        t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
 
 
 @pytest.mark.parametrize(
@@ -83,220 +145,457 @@ def test_read(schema, record, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, expected_error",
+    "records, configured_catalog, expected_error",
     [
-        # SUCCESS: no authSpecification specified
-        (ConnectorSpecification(connectionSpecification={}), ""),
-        # FAIL: Field specified in root object does not exist
         (
-            ConnectorSpecification(
-                connectionSpecification={"type": "object"},
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "Specified oauth fields are missed from spec schema:",
-        ),
-        # SUCCESS: Empty root object
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "client_id": {"type": "string"},
-                        "client_secret": {"type": "string"},
-                        "access_token": {"type": "string"},
-                        "refresh_token": {"type": "string"},
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": [],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
+            [AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111)],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {"name": "test1", "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}}}}
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    )
+                ]
             ),
             "",
         ),
-        # FAIL: Some oauth fields missed
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "access_token": {"type": "string"},
-                            },
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
+            [AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111)],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}, "f2": {"type": "string"}}},
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    )
+                ]
             ),
-            "Specified oauth fields are missed from spec schema:",
+            r"`test1` stream has `\['/f2'\]`",
         ),
-        # SUCCESS: case w/o oneOf property
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "access_token": {"type": "string"},
-                                "refresh_token": {"type": "string"},
-                            },
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials"],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f2": "v2"}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {"type": "object", "properties": {"f1": {"type": "string"}, "f2": {"type": "string"}}},
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    )
+                ]
             ),
             "",
         ),
-        # SUCCESS: case w/ oneOf property
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f2": "v2", "f3": [1, 2, 3]}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
                                     "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {"type": "array", "items": {"type": "integer"}},
+                                    },
                                 },
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    )
+                ]
             ),
             "",
         ),
-        # FAIL: Wrong root object index
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f2": "v2", "f3": []}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
                                     "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {"type": "array", "items": {"type": "integer"}},
+                                    },
                                 },
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 1],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    )
+                ]
             ),
-            "Specified oauth fields are missed from spec schema:",
+            r"`test1` stream has `\['/f3/\[\]'\]`",
         ),
-        # SUCCESS: root object index equal to 1
         (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
-                            "type": "object",
-                            "oneOf": [
-                                {
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f2": "v2", "f3": {"f4": "v4", "f5": [1, 2]}}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
                                     "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {"type": "object", "properties": {"f4": {"type": "string"}, "f5": {"type": "array"}}},
+                                    },
                                 },
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 1],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    )
+                ]
             ),
             "",
+        ),
+        (
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f2": "v2", "f3": {"f4": "v4"}}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {"type": "object", "properties": {"f4": {"type": "string"}, "f5": {"type": "array"}}},
+                                    },
+                                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    )
+                ]
+            ),
+            r"`test1` stream has `\['/f3/f5/\[\]'\]`",
+        ),
+        (
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f2": "v2", "f3": {"f4": "v4"}}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {
+                                            "type": "object",
+                                            "properties": {
+                                                "f4": {"type": "string"},
+                                                "f5": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "f6": {"type": "string"},
+                                                            "f7": {"type": "array"},
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    )
+                ]
+            ),
+            r"`test1` stream has `\['/f3/f5/\[\]/f6', '/f3/f5/\[\]/f7/\[\]'\]`",
+        ),
+        (
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111),
+                AirbyteRecordMessage(
+                    stream="test1", data={"f2": "v2", "f3": {"f4": "v4", "f5": [{"f6": "v6", "f7": ["a", "b"]}]}}, emitted_at=111
+                ),
+                AirbyteRecordMessage(stream="test2", data={"f8": "v8"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test2", data={"f9": "v9"}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {
+                                            "type": "object",
+                                            "properties": {
+                                                "f4": {"type": "string"},
+                                                "f5": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "f6": {"type": "string"},
+                                                            "f7": {"type": "array"},
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    ),
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test2",
+                                "json_schema": {"type": "object", "properties": {"f8": {"type": "string"}, "f9": {"type": "string"}}},
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    ),
+                ]
+            ),
+            "",
+        ),
+        (
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f2": "v2", "f3": {"f4": "v4", "f5": [{"f6": "v6", "f7": []}]}}, emitted_at=111),
+                AirbyteRecordMessage(stream="test2", data={}, emitted_at=111),
+                AirbyteRecordMessage(stream="test2", data={"f9": "v9"}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {
+                                            "type": "object",
+                                            "properties": {
+                                                "f4": {"type": "string"},
+                                                "f5": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "f6": {"type": "string"},
+                                                            "f7": {"type": "array"},
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    ),
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test2",
+                                "json_schema": {"type": "object", "properties": {"f8": {"type": "string"}, "f9": {"type": "string"}}},
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    ),
+                ]
+            ),
+            r"(`test1` stream has `\['/f3/f5/\[\]/f7/\[\]']`)|(`test2` `\['/f8'\]`)",
+        ),
+        (
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1", "f2": "v2"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f3": {"f4": "v4"}}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {
+                                            "oneOf": [
+                                                {"type": "object", "properties": {"f4": {"type": "string"}}},
+                                                {"type": "object", "properties": {"f5": {"type": "array"}}},
+                                            ]
+                                        },
+                                    },
+                                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    ),
+                ]
+            ),
+            "",
+        ),
+        (
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1", "f2": "v2"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f3": {"f5": {"f7": "v7"}}}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {
+                                            "oneOf": [
+                                                {"type": "object", "properties": {"f4": {"type": "string"}}},
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "f5": {
+                                                            "oneOf": [
+                                                                {"type": "object", "properties": {"f6": {"type": "string"}}},
+                                                                {"type": "object", "properties": {"f7": {"type": "string"}}},
+                                                            ]
+                                                        }
+                                                    },
+                                                },
+                                            ]
+                                        },
+                                    },
+                                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    ),
+                ]
+            ),
+            "",
+        ),
+        (
+            [
+                AirbyteRecordMessage(stream="test1", data={"f1": "v1", "f2": "v2"}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={}, emitted_at=111),
+                AirbyteRecordMessage(stream="test1", data={"f3": {"f5": {}}}, emitted_at=111),
+            ],
+            ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream.parse_obj(
+                            {
+                                "name": "test1",
+                                "json_schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "f1": {"type": "string"},
+                                        "f2": {"type": "string"},
+                                        "f3": {
+                                            "oneOf": [
+                                                {"type": "object", "properties": {"f4": {"type": "string"}}},
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "f5": {
+                                                            "anyOf": [
+                                                                {"type": "object", "properties": {"f6": {"type": "string"}}},
+                                                                {"type": "object", "properties": {"f7": {"type": "string"}}},
+                                                            ]
+                                                        }
+                                                    },
+                                                },
+                                            ]
+                                        },
+                                    },
+                                },
+                            }
+                        ),
+                        sync_mode="full_refresh",
+                        destination_sync_mode="overwrite",
+                    ),
+                ]
+            ),
+            r"`test1` stream has `\['/f3\(0\)/f4', '/f3\(1\)/f5\(0\)/f6', '/f3\(1\)/f5\(1\)/f7'\]`",
         ),
     ],
 )
-def test_validate_oauth_flow(connector_spec, expected_error):
-    t = _TestSpec()
+def test_validate_field_appears_at_least_once(records, configured_catalog, expected_error):
+    t = _TestBasicRead()
     if expected_error:
         with pytest.raises(AssertionError, match=expected_error):
-            t.test_oauth_flow_parameters(connector_spec)
+            t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
     else:
-        t.test_oauth_flow_parameters(connector_spec)
+        t._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)

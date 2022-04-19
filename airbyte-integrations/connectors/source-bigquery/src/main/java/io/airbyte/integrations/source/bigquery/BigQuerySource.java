@@ -88,7 +88,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   protected JsonSchemaPrimitive getType(final StandardSQLTypeName columnType) {
-    return sourceOperations.getType(columnType);
+    return sourceOperations.getJsonType(columnType);
   }
 
   @Override

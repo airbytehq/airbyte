@@ -77,6 +77,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", dbName)
+        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put("username", TEST_USER_NAME)
         .put("password", TEST_USER_PASSWORD)
         .put("replication_method", "CDC")
@@ -313,7 +314,10 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             config.get("host").asText(),
             config.get("port").asInt(),
             dbName),
-        DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration(), null);
+        DRIVER_CLASS,
+        new MssqlJdbcStreamingQueryConfiguration(),
+        null,
+        new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 

@@ -7,6 +7,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_facebook_pages.metrics import PAGE_FIELDS, PAGE_METRICS, POST_FIELDS, POST_METRICS
 
 
@@ -14,6 +15,7 @@ class FacebookPagesStream(HttpStream, ABC):
     url_base = "https://graph.facebook.com/v12.0/"
     primary_key = "id"
     data_field = "data"
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(
         self,

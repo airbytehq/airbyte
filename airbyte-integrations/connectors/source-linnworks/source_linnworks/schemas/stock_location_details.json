@@ -1,0 +1,66 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "Address1": {
+      "type": "string",
+      "description": "1st line of address"
+    },
+    "Address2": {
+      "type": "string",
+      "description": "2nd line of address"
+    },
+    "City": {
+      "type": "string",
+      "description": "City"
+    },
+    "County": {
+      "type": "string",
+      "description": "County / Region"
+    },
+    "Country": {
+      "type": "string",
+      "description": "Country"
+    },
+    "ZipCode": {
+      "type": "string",
+      "description": "Postal code"
+    },
+    "IsNotTrackable": {
+      "type": "boolean",
+      "description": "Is the location trackable"
+    },
+    "LocationTag": {
+      "type": "string",
+      "description": "Location tag"
+    },
+    "CountInOrderUntilAcknowledgement": {
+      "type": "boolean",
+      "description": "Count in order"
+    },
+    "FulfilmentCenterDeductStockWhenProcessed": {
+      "type": "boolean",
+      "description": "Fulfilment center and stock will be deducted when order processed"
+    },
+    "IsWarehouseManaged": {
+      "type": "boolean",
+      "description": "Indicates if the location is warehouse managed"
+    },
+    "StockLocationId": {
+      "type": "string",
+      "description": "Location ID"
+    },
+    "LocationName": {
+      "type": "string",
+      "description": "Location name"
+    },
+    "IsFulfillmentCenter": {
+      "type": "boolean",
+      "description": "If location is a fulfillment center"
+    },
+    "StockLocationIntId": {
+      "type": "integer",
+      "description": "Stock location integer id."
+    }
+  }
+}

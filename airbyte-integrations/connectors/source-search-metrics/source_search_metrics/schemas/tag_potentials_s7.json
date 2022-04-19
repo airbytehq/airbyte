@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "keywords": {
+      "type": ["null", "integer"]
+    },
+    "rankings": {
+      "type": ["null", "integer"]
+    },
+    "traffic": {
+      "type": ["null", "integer"]
+    },
+    "traffic_max": {
+      "type": ["null", "integer"]
+    },
+    "traffic_volume": {
+      "type": ["null", "integer"]
+    },
+    "max_potential": {
+      "type": ["null", "integer"]
+    },
+    "date": {
+      "type": ["null", "integer"]
+    },
+    "winner": {
+      "type": ["null", "integer"]
+    },
+    "loser": {
+      "type": ["null", "integer"]
+    },
+    "tag": {
+      "type": ["null", "string"]
+    }
+  }
+}

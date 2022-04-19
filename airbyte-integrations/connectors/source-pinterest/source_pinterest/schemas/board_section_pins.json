@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "link": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "alt_text": {
+      "type": ["null", "string"]
+    },
+    "board_id": {
+      "type": ["null", "string"]
+    },
+    "board_section_id": {
+      "type": ["null", "string"]
+    },
+    "board_owner": {
+      "type": ["null", "object"],
+      "properties": {
+        "username": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "media": {
+      "type": ["null", "object"],
+      "properties": {
+        "media_type": {
+          "type": ["null", "string"]
+        },
+        "images": {
+          "type": ["null", "object"],
+          "properties": {
+            "150x150": {
+              "type": ["null", "object"],
+              "properties": {
+                "width": {
+                  "type": ["null", "integer"]
+                },
+                "height": {
+                  "type": ["null", "integer"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "400x300": {
+              "type": ["null", "object"],
+              "properties": {
+                "width": {
+                  "type": ["null", "integer"]
+                },
+                "height": {
+                  "type": ["null", "integer"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "600x": {
+              "type": ["null", "object"],
+              "properties": {
+                "width": {
+                  "type": ["null", "integer"]
+                },
+                "height": {
+                  "type": ["null", "integer"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "1200x": {
+              "type": ["null", "object"],
+              "properties": {
+                "width": {
+                  "type": ["null", "integer"]
+                },
+                "height": {
+                  "type": ["null", "integer"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "originals": {
+              "type": ["null", "object"],
+              "properties": {
+                "width": {
+                  "type": ["null", "integer"]
+                },
+                "height": {
+                  "type": ["null", "integer"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

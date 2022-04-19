@@ -51,7 +51,7 @@ public class LogClientSingleton {
   public static final String S3_MINIO_ENDPOINT = "S3_MINIO_ENDPOINT";
 
   // GCS
-  public static final String GCP_STORAGE_BUCKET = "GCP_STORAGE_BUCKET";
+  public static final String GCS_LOG_BUCKET = "GCS_LOG_BUCKET";
   public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
 
   public static final int DEFAULT_PAGE_SIZE = 1000;
@@ -131,7 +131,8 @@ public class LogClientSingleton {
   public void setJobMdc(final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs, final Path path) {
     if (shouldUseLocalLogs(workerEnvironment)) {
       LOGGER.debug("Setting docker job mdc");
-      MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, path.resolve(LogClientSingleton.LOG_FILENAME).toString());
+      final String resolvedPath = path.resolve(LogClientSingleton.LOG_FILENAME).toString();
+      MDC.put(LogClientSingleton.JOB_LOG_PATH_MDC_KEY, resolvedPath);
     } else {
       LOGGER.debug("Setting kube job mdc");
       createCloudClientIfNull(logConfigs);

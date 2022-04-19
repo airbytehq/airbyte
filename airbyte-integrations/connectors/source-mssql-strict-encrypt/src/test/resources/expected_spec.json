@@ -8,40 +8,45 @@
     "additionalProperties": false,
     "properties": {
       "host": {
-        "description": "Hostname of the database.",
+        "description": "The hostname of the database.",
+        "title": "Host",
         "type": "string"
       },
       "port": {
-        "description": "Port of the database.",
+        "description": "The port of the database.",
+        "title": "Port",
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
         "examples": ["1433"]
       },
       "database": {
-        "description": "Name of the database.",
+        "description": "The name of the database.",
+        "title": "Database",
         "type": "string",
         "examples": ["master"]
       },
       "username": {
-        "description": "Username to use to access the database.",
+        "description": "The username which is used to access the database.",
+        "title": "Username",
         "type": "string"
       },
       "password": {
-        "description": "Password associated with the username.",
+        "description": "The password associated with the username.",
+        "title": "Password",
         "type": "string",
         "airbyte_secret": true
       },
       "ssl_method": {
         "title": "SSL Method",
         "type": "object",
-        "description": "Encryption method to use when communicating with the database",
+        "description": "The encryption method which is used when communicating with the database.",
         "order": 6,
         "oneOf": [
           {
             "title": "Encrypted (trust server certificate)",
             "additionalProperties": false,
-            "description": "Use the cert provided by the server without verification.  (For testing purposes only!)",
+            "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
             "required": ["ssl_method"],
             "properties": {
               "ssl_method": {
@@ -55,7 +60,7 @@
           {
             "title": "Encrypted (verify certificate)",
             "additionalProperties": false,
-            "description": "Verify and use the cert provided by the server.",
+            "description": "Verify and use the certificate provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "properties": {
               "ssl_method": {
@@ -77,7 +82,7 @@
       "replication_method": {
         "type": "string",
         "title": "Replication Method",
-        "description": "Replication method to use for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+        "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
         "default": "STANDARD",
         "enum": ["STANDARD", "CDC"]
       }

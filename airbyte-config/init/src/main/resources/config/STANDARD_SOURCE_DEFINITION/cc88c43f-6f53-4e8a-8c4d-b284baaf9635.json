@@ -3,5 +3,6 @@
   "name": "Delighted",
   "dockerRepository": "airbyte/source-delighted",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/delighted"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/delighted",
+  "icon": "delighted.svg"
 }

@@ -6,6 +6,7 @@ The [connector specification](../understanding-airbyte/airbyte-specification.md#
 
 While iterating on your specification, you can preview what it will look like in the UI in realtime by following the instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-webapp/docs/HowTo-ConnectionSpecification.md).
 
+
 ### Secret obfuscation
 
 By default, any fields in a connector's specification are visible can be read in the UI. However, if you want to obfuscate fields in the UI and API \(for example when working with a password\), add the `airbyte_secret` annotation to your connector's `spec.json` e.g:
@@ -19,6 +20,35 @@ By default, any fields in a connector's specification are visible can be read in
 ```
 
 Here is an example of what the password field would look like: ![Screen Shot 2021-08-04 at 11 15 04 PM](https://user-images.githubusercontent.com/6246757/128300633-7f379b05-5f4a-46e8-ad88-88155e7f4260.png)
+
+
+### Ordering fields in the UI
+
+Use the `order` property inside a definition to determine the order in which it will appear relative to other objects on the same level of nesting in the UI. 
+
+For example, using the following spec: 
+
+```
+{
+  "username": {"type": "string", "order": 1},
+  "password": {"type": "string", "order": 2},
+  "cloud_provider": {
+    "order": 0,
+    "type": "object",
+    "properties" : {
+      "name": {"type": "string", "order": 0},
+      "region": {"type": "string", "order": 1}
+    }
+  }
+}
+```
+
+will result in the following configuration on the UI: 
+
+![Screen Shot 2021-11-18 at 7 14 04 PM](https://user-images.githubusercontent.com/6246757/142558797-135f6c73-f05d-479f-9d88-e20cae85870c.png)
+
+
+
 
 ### Multi-line String inputs
 

@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+    id 'airbyte-performance-test-java'
 }
 
 application {
@@ -28,6 +29,10 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
 
+    performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+    performanceTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
+
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

@@ -9,6 +9,7 @@ import com.google.api.client.util.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfig;
+import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -79,9 +80,30 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
+  public <T> ConfigWithMetadata<T> getConfigWithMetadata(final AirbyteConfig configType, final String configId, final Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    throw new UnsupportedOperationException("File Persistence doesn't support metadata");
+  }
+
+  @Override
+  public <T> List<ConfigWithMetadata<T>> listConfigsWithMetadata(final AirbyteConfig configType, final Class<T> clazz)
+      throws JsonValidationException, IOException {
+    throw new UnsupportedOperationException("File Persistence doesn't support metadata");
+  }
+
+  @Override
   public <T> void writeConfig(final AirbyteConfig configType, final String configId, final T config) throws IOException {
     synchronized (lock) {
       writeConfigInternal(configType, configId, config);
+    }
+  }
+
+  @Override
+  public <T> void writeConfigs(final AirbyteConfig configType, final Map<String, T> configs) throws IOException {
+    synchronized (lock) {
+      for (final Map.Entry<String, T> config : configs.entrySet()) {
+        writeConfigInternal(configType, config.getKey(), config.getValue());
+      }
     }
   }
 

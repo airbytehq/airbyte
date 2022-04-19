@@ -59,7 +59,7 @@ spec:
         volumeMounts:
         - name: airbyte-temporal-dynamicconfig
           mountPath: "/etc/temporal/config/dynamicconfig/"
-        {{- if .Values.server.resources }}
+        {{- if .Values.temporal.resources }}
         resources: {{- toYaml .Values.temporal.resources | nindent 10 }}
         {{- end }}
       volumes:

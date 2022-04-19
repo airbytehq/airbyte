@@ -7,13 +7,16 @@ package io.airbyte.integrations.destination.gcs.avro;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
+import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
-import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -28,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
+public class GcsAvroWriter extends BaseGcsWriter implements DestinationFileWriter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(GcsAvroWriter.class);
 
@@ -36,18 +39,36 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final DataFileWriter<GenericData.Record> dataFileWriter;
+  private final String gcsFileLocation;
+  private final String objectKey;
 
   public GcsAvroWriter(final GcsDestinationConfig config,
                        final AmazonS3 s3Client,
                        final ConfiguredAirbyteStream configuredStream,
                        final Timestamp uploadTimestamp,
-                       final Schema schema,
                        final JsonAvroConverter converter)
+      throws IOException {
+    this(config, s3Client, configuredStream, uploadTimestamp, converter, null);
+  }
+
+  public GcsAvroWriter(final GcsDestinationConfig config,
+                       final AmazonS3 s3Client,
+                       final ConfiguredAirbyteStream configuredStream,
+                       final Timestamp uploadTimestamp,
+                       final JsonAvroConverter converter,
+                       final JsonNode jsonSchema)
       throws IOException {
     super(config, s3Client, configuredStream);
 
+    final Schema schema = jsonSchema == null
+        ? GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true)
+        : new JsonToAvroSchemaConverter().getAvroSchema(jsonSchema, stream.getName(),
+            stream.getNamespace(), true, false, false, true);
+    LOGGER.info("Avro schema for stream {}: {}", stream.getName(), schema.toString(false));
+
     final String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, S3Format.AVRO);
-    final String objectKey = String.join("/", outputPrefix, outputFilename);
+    objectKey = String.join("/", outputPrefix, outputFilename);
+    gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
@@ -72,6 +93,17 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
   }
 
   @Override
+  public void write(final JsonNode formattedData) throws IOException {
+    final GenericData.Record record = avroRecordFactory.getAvroRecord(formattedData);
+    dataFileWriter.append(record);
+  }
+
+  @Override
+  public String getFileLocation() {
+    return gcsFileLocation;
+  }
+
+  @Override
   protected void closeWhenSucceed() throws IOException {
     dataFileWriter.close();
     outputStream.close();
@@ -83,6 +115,16 @@ public class GcsAvroWriter extends BaseGcsWriter implements S3Writer {
     dataFileWriter.close();
     outputStream.close();
     uploadManager.abort();
+  }
+
+  @Override
+  public S3Format getFileFormat() {
+    return S3Format.AVRO;
+  }
+
+  @Override
+  public String getOutputPath() {
+    return objectKey;
   }
 
 }

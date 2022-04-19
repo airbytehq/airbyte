@@ -16,12 +16,10 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.OracleContainer;
 
 public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -78,8 +76,11 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   }
 
   private void initAndStartJdbcContainer() {
-    db = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withNetwork(sshBastionContainer.getNetWork());
+    db = new OracleContainer()
+        .withUsername("test")
+        .withPassword("oracle")
+        .usingSid()
+        .withNetwork(sshBastionContainer.getNetWork());;
     db.start();
   }
 
@@ -134,11 +135,6 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
                 Field.of("ID", JsonSchemaPrimitive.NUMBER),
                 Field.of("NAME", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
-  }
-
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
   }
 
   @Override

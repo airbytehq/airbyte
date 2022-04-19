@@ -65,7 +65,8 @@ class JobTrackerTest {
   private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final String SOURCE_DEF_NAME = "postgres";
   private static final String DESTINATION_DEF_NAME = "bigquery";
-  public static final String CONNECTOR_VERSION = "test";
+  private static final String CONNECTOR_REPOSITORY = "test/test";
+  private static final String CONNECTOR_VERSION = "test";
   private static final long SYNC_START_TIME = 1000L;
   private static final long SYNC_END_TIME = 10000L;
   private static final long SYNC_DURATION = 9L; // in sync between end and start time
@@ -84,6 +85,7 @@ class JobTrackerTest {
       .put("attempt_completion_status", JobState.FAILED)
       .build();
   private static final ImmutableMap<String, Object> ATTEMPT_METADATA = ImmutableMap.<String, Object>builder()
+      .put("sync_start_time", SYNC_START_TIME)
       .put("duration", SYNC_DURATION)
       .put("volume_rows", SYNC_RECORDS_SYNC)
       .put("volume_mb", SYNC_BYTES_SYNC)
@@ -122,6 +124,7 @@ class JobTrackerTest {
         .put("attempt_id", 0)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
+        .put("connector_source_docker_repository", CONNECTOR_REPOSITORY)
         .put("connector_source_version", CONNECTOR_VERSION)
         .build();
 
@@ -129,6 +132,7 @@ class JobTrackerTest {
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
+            .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
@@ -150,6 +154,7 @@ class JobTrackerTest {
         .put("attempt_id", 0)
         .put("connector_destination", DESTINATION_DEF_NAME)
         .put("connector_destination_definition_id", UUID2)
+        .put("connector_destination_docker_repository", CONNECTOR_REPOSITORY)
         .put("connector_destination_version", CONNECTOR_VERSION)
         .build();
 
@@ -157,6 +162,7 @@ class JobTrackerTest {
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
+            .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
@@ -178,6 +184,7 @@ class JobTrackerTest {
         .put("attempt_id", 0)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
+        .put("connector_source_docker_repository", CONNECTOR_REPOSITORY)
         .put("connector_source_version", CONNECTOR_VERSION)
         .build();
 
@@ -185,6 +192,7 @@ class JobTrackerTest {
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
+            .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
@@ -296,22 +304,26 @@ class JobTrackerTest {
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
+            .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getDestinationDefinitionFromConnection(CONNECTION_ID))
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
+            .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
 
     when(configRepository.getStandardSourceDefinition(UUID1))
         .thenReturn(new StandardSourceDefinition()
             .withSourceDefinitionId(UUID1)
             .withName(SOURCE_DEF_NAME)
+            .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
     when(configRepository.getStandardDestinationDefinition(UUID2))
         .thenReturn(new StandardDestinationDefinition()
             .withDestinationDefinitionId(UUID2)
             .withName(DESTINATION_DEF_NAME)
+            .withDockerRepository(CONNECTOR_REPOSITORY)
             .withDockerImageTag(CONNECTOR_VERSION));
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
@@ -368,9 +380,11 @@ class JobTrackerTest {
         .put("connection_id", CONNECTION_ID)
         .put("connector_source", SOURCE_DEF_NAME)
         .put("connector_source_definition_id", UUID1)
+        .put("connector_source_docker_repository", CONNECTOR_REPOSITORY)
         .put("connector_source_version", CONNECTOR_VERSION)
         .put("connector_destination", DESTINATION_DEF_NAME)
         .put("connector_destination_definition_id", UUID2)
+        .put("connector_destination_docker_repository", CONNECTOR_REPOSITORY)
         .put("connector_destination_version", CONNECTOR_VERSION)
         .put("namespace_definition", NamespaceDefinitionType.SOURCE)
         .put("table_prefix", false)

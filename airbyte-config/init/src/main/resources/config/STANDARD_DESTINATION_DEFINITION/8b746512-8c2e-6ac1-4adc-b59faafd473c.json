@@ -3,5 +3,6 @@
   "name": "MongoDB",
   "dockerRepository": "airbyte/destination-mongodb",
   "dockerImageTag": "0.1.2",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mongodb"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mongodb",
+  "icon": "mongodb.svg"
 }

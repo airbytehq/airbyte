@@ -1,6 +1,7 @@
 import React, { useContext, useMemo } from "react";
 import { useLocalStorage } from "react-use";
-import useWorkspace from "hooks/services/useWorkspace";
+
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import casesConfig from "config/casesConfig.json";
 
 type Context = {
@@ -15,7 +16,7 @@ export const OnboardingServiceContext = React.createContext<Context | null>(
 );
 
 export const OnboardingServiceProvider: React.FC = ({ children }) => {
-  const { workspace } = useWorkspace();
+  const workspace = useCurrentWorkspace();
   const [feedbackPassed, setFeedbackPassed] = useLocalStorage<boolean>(
     `${workspace.workspaceId}/passFeedback`,
     false

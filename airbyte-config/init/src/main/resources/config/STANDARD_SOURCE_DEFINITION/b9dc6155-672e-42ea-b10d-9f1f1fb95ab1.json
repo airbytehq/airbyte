@@ -2,6 +2,7 @@
   "sourceDefinitionId": "b9dc6155-672e-42ea-b10d-9f1f1fb95ab1",
   "name": "Twilio",
   "dockerRepository": "airbyte/source-twilio",
-  "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/twilio"
+  "dockerImageTag": "0.1.2",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/twilio",
+  "icon": "twilio.svg"
 }

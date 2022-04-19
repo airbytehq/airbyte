@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "Similar Subscribers Segment Member Segment",
+  "description": "Segment by similar subscribers.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "FuzzySegment",
+      "enum": ["FuzzySegment"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["fuzzy_segment"],
+      "title": "Segment Field",
+      "description": "Segment by similar subscribers.",
+      "example": "fuzzy_segment"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["fuzzy_is", "fuzzy_not"],
+      "title": "Segment Operator",
+      "description": "Members who are/are not apart of a 'similar subscribers' segment.",
+      "example": "fuzzy_is"
+    },
+    "value": {
+      "type": "number",
+      "title": "Segment Operator",
+      "description": "The id for the 'similar subscribers' segment.",
+      "example": 48433
+    }
+  }
+}

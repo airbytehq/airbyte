@@ -7,7 +7,6 @@ package io.airbyte.workers.protocols.airbyte;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
-import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -30,22 +29,22 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
 
-  private final MdcScope containerLogMDC;
+  private final MdcScope.Builder containerLogMdcBuilder;
   private final AirbyteProtocolPredicate protocolValidator;
   private final Logger logger;
 
   public DefaultAirbyteStreamFactory() {
-    this(new Builder().build());
+    this(MdcScope.DEFAULT_BUILDER);
   }
 
-  public DefaultAirbyteStreamFactory(final MdcScope containerLogMDC) {
-    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMDC);
+  public DefaultAirbyteStreamFactory(final MdcScope.Builder containerLogMdcBuilder) {
+    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
   }
 
-  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger, final MdcScope containerLogMDC) {
+  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate, final Logger logger, final MdcScope.Builder containerLogMdcBuilder) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
-    this.containerLogMDC = containerLogMDC;
+    this.containerLogMdcBuilder = containerLogMdcBuilder;
   }
 
   @Override
@@ -58,7 +57,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
-            try (containerLogMDC) {
+            try (final var mdcScope = containerLogMdcBuilder.build()) {
               logger.info(line);
             }
           }
@@ -83,7 +82,7 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
         .filter(airbyteMessage -> {
           final boolean isLog = airbyteMessage.getType() == AirbyteMessage.Type.LOG;
           if (isLog) {
-            try (containerLogMDC) {
+            try (final var mdcScope = containerLogMdcBuilder.build()) {
               internalLog(airbyteMessage.getLog());
             }
           }

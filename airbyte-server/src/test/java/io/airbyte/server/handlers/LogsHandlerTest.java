@@ -13,7 +13,7 @@ import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.helpers.LogConfiguration;
+import io.airbyte.config.helpers.LogConfigs;
 import java.io.File;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class LogsHandlerTest {
     final Configs configs = mock(Configs.class);
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.DOCKER);
-    when(configs.getLogConfigs()).thenReturn(LogConfiguration.EMPTY);
+    when(configs.getLogConfigs()).thenReturn(LogConfigs.EMPTY);
 
     final File expected = Path.of(String.format("/workspace/server/logs/%s", LogClientSingleton.LOG_FILENAME)).toFile();
     final File actual = new LogsHandler().getLogs(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(),
@@ -39,7 +39,7 @@ class LogsHandlerTest {
     final Configs configs = mock(Configs.class);
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.DOCKER);
-    when(configs.getLogConfigs()).thenReturn(LogConfiguration.EMPTY);
+    when(configs.getLogConfigs()).thenReturn(LogConfigs.EMPTY);
 
     final File expected = Path.of(String.format("/workspace/scheduler/logs/%s", LogClientSingleton.LOG_FILENAME)).toFile();
     final File actual = new LogsHandler().getLogs(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(),

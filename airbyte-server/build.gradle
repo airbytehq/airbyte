@@ -4,6 +4,9 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
+// This is published as a shadow jar as the Airbyte Server jar is currently used
+// as a delivery mechanism for the common Airbyte libraries and clients. Proper
+// publishing is blocked on some gradle work.
 shadowJar {
     zip64 true
     mergeServiceFiles()
@@ -44,14 +47,14 @@ publishing {
 }
 
 dependencies {
-    implementation 'io.temporal:temporal-sdk:1.0.4'
+    implementation 'io.temporal:temporal-sdk:1.6.0'
 
     implementation 'org.apache.cxf:cxf-core:3.4.2'
 
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
-    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
     implementation 'org.glassfish.jersey.containers:jersey-container-servlet'
     implementation 'org.glassfish.jersey.inject:jersey-hk2'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
@@ -66,12 +69,13 @@ dependencies {
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-config:persistence')
+    implementation project(':airbyte-config:specs')
     implementation project(':airbyte-db:lib')
     implementation project(":airbyte-json-validation")
-    implementation project(':airbyte-migration')
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-scheduler:app')
     implementation project(':airbyte-scheduler:client')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
@@ -126,3 +130,17 @@ run {
     environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
     environment "TEMPORAL_HOST", "localhost:7233"
 }
+
+task copyGeneratedTar(type: Copy) {
+    dependsOn copyDocker
+    dependsOn distTar
+
+    from('build/distributions') {
+        include 'airbyte-server-*.tar'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("server",  "$project.projectDir")
+dockerBuildTask.dependsOn(copyGeneratedTar)
+assemble.dependsOn(dockerBuildTask)

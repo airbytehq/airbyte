@@ -22,17 +22,17 @@ public class LineGobbler implements VoidCallable {
   private final static Logger LOGGER = LoggerFactory.getLogger(LineGobbler.class);
 
   public static void gobble(final InputStream is, final Consumer<String> consumer) {
-    gobble(is, consumer, "generic", MdcScope.DEFAULT);
+    gobble(is, consumer, "generic", MdcScope.DEFAULT_BUILDER);
   }
 
-  public static void gobble(final InputStream is, final Consumer<String> consumer, final MdcScope mdcScope) {
-    gobble(is, consumer, "generic", mdcScope);
+  public static void gobble(final InputStream is, final Consumer<String> consumer, final MdcScope.Builder mdcScopeBuilder) {
+    gobble(is, consumer, "generic", mdcScopeBuilder);
   }
 
-  public static void gobble(final InputStream is, final Consumer<String> consumer, final String caller, final MdcScope mdcScope) {
+  public static void gobble(final InputStream is, final Consumer<String> consumer, final String caller, final MdcScope.Builder mdcScopeBuilder) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    final var gobbler = new LineGobbler(is, consumer, executor, mdc, caller, mdcScope);
+    final var gobbler = new LineGobbler(is, consumer, executor, mdc, caller, mdcScopeBuilder);
     executor.submit(gobbler);
   }
 
@@ -41,21 +41,21 @@ public class LineGobbler implements VoidCallable {
   private final ExecutorService executor;
   private final Map<String, String> mdc;
   private final String caller;
-  private final MdcScope containerLogMDC;
+  private final MdcScope.Builder containerLogMdcBuilder;
 
   LineGobbler(final InputStream is,
               final Consumer<String> consumer,
               final ExecutorService executor,
               final Map<String, String> mdc) {
-    this(is, consumer, executor, mdc, "generic", MdcScope.DEFAULT);
+    this(is, consumer, executor, mdc, "generic", MdcScope.DEFAULT_BUILDER);
   }
 
   LineGobbler(final InputStream is,
               final Consumer<String> consumer,
               final ExecutorService executor,
               final Map<String, String> mdc,
-              final MdcScope mdcScope) {
-    this(is, consumer, executor, mdc, "generic", mdcScope);
+              final MdcScope.Builder mdcScopeBuilder) {
+    this(is, consumer, executor, mdc, "generic", mdcScopeBuilder);
   }
 
   LineGobbler(final InputStream is,
@@ -63,13 +63,13 @@ public class LineGobbler implements VoidCallable {
               final ExecutorService executor,
               final Map<String, String> mdc,
               final String caller,
-              final MdcScope mdcScope) {
+              final MdcScope.Builder mdcScopeBuilder) {
     this.is = IOs.newBufferedReader(is);
     this.consumer = consumer;
     this.executor = executor;
     this.mdc = mdc;
     this.caller = caller;
-    this.containerLogMDC = mdcScope;
+    this.containerLogMdcBuilder = mdcScopeBuilder;
   }
 
   @Override
@@ -78,7 +78,7 @@ public class LineGobbler implements VoidCallable {
     try {
       String line;
       while ((line = is.readLine()) != null) {
-        try (containerLogMDC) {
+        try (final var mdcScope = containerLogMdcBuilder.build()) {
           consumer.accept(line);
         }
       }

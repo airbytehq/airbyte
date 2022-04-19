@@ -1,6 +1,13 @@
 import React from "react";
 import styled from "styled-components";
+import { Outlet } from "react-router-dom";
+
+import { LoadingPage } from "components";
+
 import SideBar from "packages/cloud/views/layout/SideBar";
+import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 
 const MainContainer = styled.div`
   width: 100%;
@@ -19,8 +26,18 @@ const Content = styled.div`
 
 const MainView: React.FC = (props) => (
   <MainContainer>
-    <SideBar />
-    <Content>{props.children}</Content>
+    <InsufficientPermissionsErrorBoundary
+      errorComponent={<StartOverErrorView />}
+    >
+      <SideBar />
+      <Content>
+        <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+          <React.Suspense fallback={<LoadingPage />}>
+            {props.children ?? <Outlet />}
+          </React.Suspense>
+        </ResourceNotFoundErrorBoundary>
+      </Content>
+    </InsufficientPermissionsErrorBoundary>
   </MainContainer>
 );
 
