@@ -113,8 +113,6 @@ class Deals(PipedriveStream):
 class DealFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields"""
 
-    primary_key = None
-
 
 class Leads(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/Leads#getLeads"""
@@ -132,8 +130,6 @@ class Activities(PipedriveStream):
 class ActivityFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields"""
 
-    primary_key = None
-
 
 class Organizations(PipedriveStream):
     """
@@ -145,8 +141,6 @@ class Organizations(PipedriveStream):
 class OrganizationFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields"""
 
-    primary_key = None
-
 
 class Persons(PipedriveStream):
     """
@@ -157,8 +151,6 @@ class Persons(PipedriveStream):
 
 class PersonFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields"""
-
-    primary_key = None
 
 
 class Pipelines(PipedriveStream):
