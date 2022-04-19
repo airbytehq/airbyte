@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -54,28 +53,28 @@ public class PostgresDestinationTest {
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
-            "host", "localhost",
-            "port", 1337,
-            "username", "user",
-            "database", "db"));
+        "host", "localhost",
+        "port", 1337,
+        "username", "user",
+        "database", "db"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
-            "host", "localhost",
-            "port", 1337,
-            "username", "user",
-            "database", "db",
-            "jdbc_url_params", extraParam));
+        "host", "localhost",
+        "port", 1337,
+        "username", "user",
+        "database", "db",
+        "jdbc_url_params", extraParam));
   }
 
   private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
     return Jsons.jsonNode(ImmutableMap.of(
-            "host", "localhost",
-            "port", 1337,
-            "username", "user",
-            "database", "db",
-            "ssl", false));
+        "host", "localhost",
+        "port", 1337,
+        "username", "user",
+        "database", "db",
+        "ssl", false));
   }
 
   @BeforeAll
@@ -116,14 +115,14 @@ public class PostgresDestinationTest {
   @Test
   void testDefaultParamsNoSSL() {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
-            buildConfigNoExtraJdbcParametersWithoutSsl());
+        buildConfigNoExtraJdbcParametersWithoutSsl());
     assertEquals(new HashMap<>(), defaultProperties);
   }
 
   @Test
   void testDefaultParamsWithSSL() {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
-            buildConfigNoJdbcParameters());
+        buildConfigNoJdbcParameters());
     assertEquals(PostgresDestination.SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
