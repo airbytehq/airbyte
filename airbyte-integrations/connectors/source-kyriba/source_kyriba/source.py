@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import requests
 import uuid
 import backoff
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -228,7 +228,9 @@ class CashFlows(IncrementalKyribaStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         # cash flow date range has to be less than a year
-        start = date.fromisoformat(self.start_date)
+        latest = stream_state.get(self.cursor_field)
+        latest_date = datetime.strptime(latest, "%Y-%m-%dT%H:%M:%SZ").date() if latest else None
+        start = latest_date or date.fromisoformat(self.start_date)
         end_date = self.end_date or date.today()
         slices = []
         while start <= end_date:
