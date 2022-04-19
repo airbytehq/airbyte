@@ -3,10 +3,11 @@
 #
 
 from glob import glob
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import airbyte_api_client
 import click
+from octavia_cli.base_commands import OctaviaCommand
 from octavia_cli.check_context import REQUIRED_PROJECT_DIRECTORIES, requires_init
 
 from .diff_helpers import display_diff_line
@@ -14,7 +15,7 @@ from .resources import BaseResource
 from .resources import factory as resource_factory
 
 
-@click.command(name="apply", help="Create or update Airbyte remote resources according local YAML configurations.")
+@click.command(cls=OctaviaCommand, name="apply", help="Create or update Airbyte remote resources according local YAML configurations.")
 @click.option("--file", "-f", "configurations_files", type=click.Path(), multiple=True)
 @click.option("--force", is_flag=True, default=False, help="Does not display the diff and updates without user prompt.")
 @click.pass_context
@@ -63,25 +64,27 @@ def apply_single_resource(resource: BaseResource, force: bool) -> None:
     click.echo("\n".join(messages))
 
 
-def should_update_resource(force: bool, diff: str, local_file_changed: bool) -> Tuple[bool, str]:
+def should_update_resource(force: bool, user_validation: Optional[bool], local_file_changed: bool) -> Tuple[bool, str]:
     """Function to decide if the resource needs an update or not.
 
     Args:
         force (bool): Whether force mode is on.
-        diff (str): The computed diff between local and remote for this resource.
+        user_validation (bool): User validated the existing changes.
         local_file_changed (bool): Whether the local file describing the resource was modified.
 
     Returns:
         Tuple[bool, str]: Boolean to know if resource should be updated and string describing the update reason.
     """
     if force:
-        should_update, update_reason = True, "🚨 - Running update because force mode is on."
-    elif diff:
-        should_update, update_reason = True, "✍️ - Running update because a diff was detected between local and remote resource."
-    elif local_file_changed:
+        should_update, update_reason = True, "🚨 - Running update because the force mode is activated."
+    elif user_validation is True:
+        should_update, update_reason = True, "🟢 - Running update because you validated the changes."
+    elif user_validation is False:
+        should_update, update_reason = False, "🔴 - Did not update because you refused the changes."
+    elif user_validation is None and local_file_changed:
         should_update, update_reason = (
             True,
-            "✍️ - Running update because a local file change was detected and a secret field might have been edited.",
+            "🟡 - Running update because a local file change was detected and a secret field might have been edited.",
         )
     else:
         should_update, update_reason = False, "😴 - Did not update because no change detected."
@@ -135,11 +138,14 @@ def update_resource(resource: BaseResource, force: bool) -> List[str]:
     Returns:
         List[str]: Post update messages to display to standard output.
     """
+    output_messages = []
     diff = resource.get_diff_with_remote_resource()
-    should_update, update_reason = should_update_resource(force, diff, resource.local_file_changed)
-    output_messages = [update_reason]
+    user_validation = None
     if not force and diff:
-        should_update = prompt_for_diff_validation(resource.resource_name, diff)
+        user_validation = prompt_for_diff_validation(resource.resource_name, diff)
+    should_update, update_reason = should_update_resource(force, user_validation, resource.local_file_changed)
+    click.echo(update_reason)
+
     if should_update:
         updated_resource, state = resource.update()
         output_messages.append(

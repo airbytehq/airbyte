@@ -249,9 +249,12 @@ public class SchedulerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final JsonSecretsProcessor jsonSecretsProcessor = new JsonSecretsProcessor();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor, featureFlags);
+    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+        .maskSecrets(!featureFlags.exposeSecretsInExport())
+        .copySecrets(true)
+        .build();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);

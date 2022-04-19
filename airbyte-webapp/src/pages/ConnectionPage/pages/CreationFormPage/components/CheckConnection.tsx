@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 import StatusIcon from "components/StatusIcon";
 import { Button, H4, Link, Spinner } from "components";
+
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 type IProps = {
@@ -41,19 +42,13 @@ const LinkButton = styled(Button)`
   margin-bottom: 6px;
 `;
 
-const CheckConnection: React.FC<IProps> = ({
-  isLoading,
-  type,
-  error,
-  retry,
-  linkToSettings,
-}) => {
+const CheckConnection: React.FC<IProps> = ({ isLoading, type, error, retry, linkToSettings }) => {
   if (error) {
     const errorMessage = createFormErrorMessage({ status: error });
 
     return (
       <Content>
-        <StatusIcon success={false} big />
+        <StatusIcon big />
         <Title>
           <FormattedMessage id="connection.testsFailed" />
         </Title>
@@ -84,7 +79,7 @@ const CheckConnection: React.FC<IProps> = ({
 
   return (
     <Content>
-      <StatusIcon success big />
+      <StatusIcon status="success" big />
       <Title>
         <FormattedMessage id="connection.testsPassed" />
       </Title>

@@ -1,7 +1,8 @@
 import { SyncSchema } from "core/domain/catalog";
-import { Operation } from "./operation";
 import { AirbyteJSONSchema } from "core/jsonSchema";
+
 import { Destination, Source } from "../connector";
+import { Operation } from "./operation";
 
 type ConnectionConfiguration = unknown;
 

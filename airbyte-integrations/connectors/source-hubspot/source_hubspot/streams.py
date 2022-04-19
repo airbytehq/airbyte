@@ -667,7 +667,7 @@ class IncrementalStream(Stream, ABC):
 
     @state.setter
     def state(self, value):
-        state_value = value[self.updated_at_field]
+        state_value = value.get(self.updated_at_field, self._state)
         self._state = (
             pendulum.parse(str(pendulum.from_timestamp(state_value / 1000)))
             if isinstance(state_value, int)
@@ -1090,12 +1090,12 @@ class Engagements(IncrementalStream):
         if self.state:
             params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
         return params
-    
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         return [None]
-    
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -1319,35 +1319,35 @@ class Contacts(CRMSearchStream):
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsMeetings(CRMSearchStream):
     entity = "meetings"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 

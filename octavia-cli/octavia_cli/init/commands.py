@@ -6,6 +6,7 @@ import os
 from typing import Iterable, Tuple
 
 import click
+from octavia_cli.base_commands import OctaviaCommand
 
 DIRECTORIES_TO_CREATE = {"connections", "destinations", "sources"}
 
@@ -22,8 +23,9 @@ def create_directories(directories_to_create: Iterable[str]) -> Tuple[Iterable[s
     return created_directories, not_created_directories
 
 
-@click.command(help="Initialize required directories for the project.")
-def init():
+@click.command(cls=OctaviaCommand, help="Initialize required directories for the project.")
+@click.pass_context
+def init(ctx: click.Context):
     click.echo("🔨 - Initializing the project.")
     created_directories, not_created_directories = create_directories(DIRECTORIES_TO_CREATE)
     if created_directories:
