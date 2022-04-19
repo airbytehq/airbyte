@@ -122,8 +122,8 @@ All Redshift connections are encrypted using SSL
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
-|:--------| :--------  | :-----       | :------ |
-| 0.3.30  | 2022-02-17 | [\#9407](https://github.com/airbytehq/airbyte/pull/9407) | Added option to support SUPER datatype in _airbyte_raw_** table |
+|:--------|:-----------| :-----       | :------ |
+| 0.3.31  | 2022-04-19 | [\#12064](https://github.com/airbytehq/airbyte/pull/12064) | Added option to support SUPER datatype in _airbyte_raw_** table |
 | 0.3.29  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name |                                                                   |
 | 0.3.28  | 2022-03-18 | [\#11254](https://github.com/airbytehq/airbyte/pull/11254) | Fixed missing records during S3 staging |
 | 0.3.27  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
