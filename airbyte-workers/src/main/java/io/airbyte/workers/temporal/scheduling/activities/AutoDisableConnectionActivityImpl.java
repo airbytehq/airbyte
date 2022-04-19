@@ -134,12 +134,14 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
                                                final int maxDaysOfOnlyFailedJobsBeforeWarning,
                                                final Job firstJob,
                                                final List<JobWithStatusAndTimestamp> jobs) {
-    if (jobs.size() <= 1) return false;
+    if (jobs.size() <= 1)
+      return false;
 
     // get previous failed job (skipping first job since that's considered "current" job)
     JobWithStatusAndTimestamp prevFailedJob = jobs.get(1);
     for (int i = 2; i < jobs.size(); i++) {
-      if (prevFailedJob.getStatus() == JobStatus.FAILED) break;
+      if (prevFailedJob.getStatus() == JobStatus.FAILED)
+        break;
       prevFailedJob = jobs.get(i);
     }
 
