@@ -40,7 +40,7 @@ You need a Postgres user with the following permissions:
 * can create tables and write rows.
 * can create schemas e.g:
 
-You can create such a user by runnig:
+You can create such a user by running:
 
 ```
 CREATE USER airbyte_user PASSWORD <password>;

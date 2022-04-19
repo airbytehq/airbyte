@@ -4,7 +4,7 @@ This is a blazing fast guide to building an HTTP source connector. Think of it a
 
 # Dependencies
 
-1. Python &gt;= 3.7
+1. Python &gt;= 3.9
 2. Docker
 3. NodeJS
 
