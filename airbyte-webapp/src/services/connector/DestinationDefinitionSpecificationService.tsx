@@ -29,7 +29,7 @@ function useGetService(): DestinationDefinitionSpecificationService {
 
 export const useGetDestinationDefinitionSpecification = (id: string): DestinationDefinitionSpecification => {
   const service = useGetService();
-  const workspaceId = useCurrentWorkspace().workspaceId;
+  const { workspaceId } = useCurrentWorkspace();
 
   return useSuspenseQuery(destinationDefinitionSpecificationKeys.detail(id), () => service.get(id, workspaceId));
 };
@@ -38,7 +38,7 @@ export const useGetDestinationDefinitionSpecificationAsync = (
   id: string | null
 ): QueryObserverResult<DestinationDefinitionSpecification, Error> => {
   const service = useGetService();
-  const workspaceId = useCurrentWorkspace().workspaceId;
+  const { workspaceId } = useCurrentWorkspace();
 
   const escapedId = id ?? "";
   return useQuery(destinationDefinitionSpecificationKeys.detail(escapedId), () => service.get(escapedId, workspaceId), {

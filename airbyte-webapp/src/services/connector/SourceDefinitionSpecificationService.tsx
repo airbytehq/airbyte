@@ -29,7 +29,7 @@ function useGetService(): SourceDefinitionSpecificationService {
 
 export const useGetSourceDefinitionSpecification = (id: string): SourceDefinitionSpecification => {
   const service = useGetService();
-  const workspaceId = useCurrentWorkspace().workspaceId;
+  const { workspaceId } = useCurrentWorkspace();
 
   return useSuspenseQuery(sourceDefinitionSpecificationKeys.detail(id), () => service.get(id, workspaceId));
 };
@@ -38,7 +38,7 @@ export const useGetSourceDefinitionSpecificationAsync = (
   id: string | null
 ): QueryObserverResult<SourceDefinitionSpecification, Error> => {
   const service = useGetService();
-  const workspaceId = useCurrentWorkspace().workspaceId;
+  const { workspaceId } = useCurrentWorkspace();
 
   const escapedId = id ?? "";
   return useQuery(sourceDefinitionSpecificationKeys.detail(escapedId), () => service.get(escapedId, workspaceId), {
