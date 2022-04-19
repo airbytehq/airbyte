@@ -64,6 +64,26 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
                                            final String streamName,
                                            final String namespace,
