@@ -86,6 +86,7 @@ def test_str2unixtime():
     output = BaseSourceZendeskSupportStream.str2unixtime(DATETIME_STR)
     assert output == expected
 
+
 def test_check_start_time_param():
     expected = 1626936955
     start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
