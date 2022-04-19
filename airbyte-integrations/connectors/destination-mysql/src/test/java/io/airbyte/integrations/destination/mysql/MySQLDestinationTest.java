@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 public class MySQLDestinationTest {
 
-  public static final String JDBC_URL = "jdbc:mysql://localhost:1337/db";
+  public static final String EXPECTED_JDBC_URL = "jdbc:mysql://localhost:1337/db";
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
@@ -43,23 +43,23 @@ public class MySQLDestinationTest {
   }
 
   @Test
-  void testNoExtraParams() {
+  void testJdbcUrlNoExtraParams() {
     final JsonNode config = buildConfigNoJdbcParameters();
     final JsonNode jdbcConfig = new MySQLDestination().toJdbcConfig(config);
-    assertEquals(JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
   }
 
   @Test
-  void testEmptyExtraParams() {
+  void testJdbcUrlEmptyExtraParams() {
     final JsonNode jdbcConfig = new MySQLDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
-    assertEquals(JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
   }
 
   @Test
-  void testExtraParams() {
+  void testJdbcUrlExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode jdbcConfig = new MySQLDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
-    assertEquals(JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
   }
 
   @Test
