@@ -77,10 +77,20 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
         case "boolean" -> json.put(key, Boolean.valueOf(value));
         case "integer" -> json.put(key, Integer.valueOf(value));
         case "number" -> json.put(key, Double.valueOf(value));
+        case "" -> addNoTypeValue(json, key, value);
         default -> json.put(key, value);
       }
     }
     return json;
+  }
+
+  private static void addNoTypeValue(ObjectNode json, String key, String value) {
+    if (value != null && (value.matches("^\\[.*\\]$")) || value.matches("^\\{.*\\}$")) {
+      var newNode = Jsons.deserialize(value);
+      json.set(key, newNode);
+    } else {
+      json.put(key, value);
+    }
   }
 
   @Override
