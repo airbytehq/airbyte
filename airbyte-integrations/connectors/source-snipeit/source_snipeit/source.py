@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, Tuple
 
 from copy import deepcopy
 from airbyte_cdk.sources import AbstractSource
