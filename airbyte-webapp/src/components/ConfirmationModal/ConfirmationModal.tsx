@@ -45,7 +45,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <ButtonWithMargin onClick={onClose} type="button" secondary>
           <FormattedMessage id="form.cancel" />
         </ButtonWithMargin>
-        <Button type="button" danger onClick={onSubmit} data-id="delete">
+        <Button type="button" danger onClick={onSubmit}>
           <FormattedMessage id={submitButtonText} />
         </Button>
       </ButtonContent>

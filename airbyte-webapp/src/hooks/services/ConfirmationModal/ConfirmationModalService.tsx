@@ -29,13 +29,16 @@ export const useConfirmationModalService: (confirmationModal?: ConfirmationModal
     };
   }, [confirmationModal, confirmationModalService]);
 
-  return {
-    openConfirmationModal: confirmationModalService.openConfirmationModal,
-    closeConfirmationModal: confirmationModalService.closeConfirmationModal,
-  };
+  return useMemo(
+    () => ({
+      openConfirmationModal: confirmationModalService.openConfirmationModal,
+      closeConfirmationModal: confirmationModalService.closeConfirmationModal,
+    }),
+    [confirmationModalService]
+  );
 };
 
-export const ConfirmationModalService = React.memo(({ children }: { children: React.ReactNode }) => {
+export const ConfirmationModalService = ({ children }: { children: React.ReactNode }) => {
   const [state, { openConfirmationModal, closeConfirmationModal }] = useTypesafeReducer<
     ConfirmationModalState,
     typeof actions
@@ -65,4 +68,4 @@ export const ConfirmationModalService = React.memo(({ children }: { children: Re
       ) : null}
     </>
   );
-});
+};

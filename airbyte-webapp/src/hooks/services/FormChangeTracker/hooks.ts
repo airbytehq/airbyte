@@ -1,19 +1,12 @@
 import { useCallback, useMemo } from "react";
 import { createGlobalState } from "react-use";
-import { useLocation } from "react-router-dom";
 import { uniqueId } from "lodash";
 
 import { FormChangeTrackerServiceApi } from "./types";
 
 export const useChangedFormsById = createGlobalState<Record<string, boolean>>({});
 
-export const useUniqueFormId = (formId?: string) => {
-  const location = useLocation();
-  return useMemo(
-    () => formId ?? `${location.pathname.toLowerCase().substring(1).replace(/\//gi, "_")}__${uniqueId("form_")}`,
-    [formId, location.pathname]
-  );
-};
+export const useUniqueFormId = (formId?: string) => useMemo(() => formId ?? uniqueId("form_"), [formId]);
 
 export const useFormChangeTrackerService = (): FormChangeTrackerServiceApi => {
   const [changedFormsById, setChangedFormsById] = useChangedFormsById();

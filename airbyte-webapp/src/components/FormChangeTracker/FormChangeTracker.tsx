@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { usePrevious } from "react-use";
 
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
@@ -14,7 +14,7 @@ export const FormChangeTracker: React.FC<Props> = ({ changed, formId }) => {
 
   const { trackFormChange } = useFormChangeTrackerService();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (changed !== prevChanged) {
       trackFormChange(id, changed);
     }
