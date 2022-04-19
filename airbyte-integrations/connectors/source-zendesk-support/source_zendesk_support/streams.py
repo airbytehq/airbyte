@@ -446,14 +446,16 @@ class Users(SourceZendeskIncrementalExportStream):
 
     response_list_name: str = "users"
 
+
 class Organizations(SourceZendeskSupportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
 
-class Tickets(SourceZendeskTicketExportStream):
+class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
     response_list_name: str = "tickets"
+
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
