@@ -2649,7 +2649,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.34"
+- dockerImage: "airbyte/source-google-ads:0.1.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -7868,7 +7868,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-smartsheets:0.1.8"
+- dockerImage: "airbyte/source-smartsheets:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/smartsheets"
     connectionSpecification:
