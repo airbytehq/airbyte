@@ -60,7 +60,7 @@ class Connector(ABC):
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
         Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
-        required to run this integration.
+        required to run this integration. By default, this will be loaded from a "spec.yaml" or a "spec.json" in the package root.
         """
 
         package = self.__class__.__module__.split(".")[0]
