@@ -49,7 +49,7 @@ The Mailchimp source connector supports the following [sync modes](https://docs.
  - Full Refresh
  - Incremental
 
-We don't support Incremental Deletes for `Campaigns`, `Lists`, and `Email Activity` streams. 
+We don't support Incremental Deletes for `Campaigns`, `Lists`, and `Email Activity` streams because
 Mailchimp doesn't give any information about deleted data in these streams.
 
 ## Performance considerations
