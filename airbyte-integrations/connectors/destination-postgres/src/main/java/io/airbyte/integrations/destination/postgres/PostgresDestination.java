@@ -50,30 +50,32 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(config.get(SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText()));
-
-    if (config.has("jdbc_url_params")) {
-      jdbcUrl.append(config.get("jdbc_url_params").asText());
-    }
+        config.get(DATABASE_KEY).asText()));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl)
-        .put("schema", schema);
+        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
+        .put(JDBC_URL_KEY, jdbcUrl)
+        .put(SCHEMA_KEY, schema);
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(PASSWORD_KEY)) {
+      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
     }
+
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));
+    }
+
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  // Default SSL true if empty
   private boolean useSsl(final JsonNode config) {
-    return !config.has("ssl") || config.get("ssl").asBoolean();
+    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
   }
 
   public static void main(final String[] args) throws Exception {

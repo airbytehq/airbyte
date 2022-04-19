@@ -29,7 +29,15 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
+  public static final String DATABASE_KEY = "database";
+  public static final String HOST_KEY = "host";
+  public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String PASSWORD_KEY = "password";
+  public static final String PORT_KEY = "port";
+  public static final String SSL_KEY = "ssl";
+  public static final String USERNAME_KEY = "username";
+  public static final String SCHEMA_KEY = "schema";
 
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
@@ -87,9 +95,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     final JsonNode jdbcConfig = toJdbcConfig(config);
 
     return Databases.createJdbcDatabase(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        jdbcConfig.get("jdbc_url").asText(),
+        jdbcConfig.get(USERNAME_KEY).asText(),
+        jdbcConfig.has(PASSWORD_KEY) ? jdbcConfig.get(PASSWORD_KEY).asText() : null,
+        jdbcConfig.get(JDBC_URL_KEY).asText(),
         driverClass,
         getConnectionProperties(config));
   }
