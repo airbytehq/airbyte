@@ -27,7 +27,7 @@ please [register](https://mailchimp.com/developer/marketing/guides/access-user-d
 your Mailchimp account.
 2. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 3. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-4. On the source setup page, elect **Mailchimp** from the Source type dropdown and enter a name for this connector.
+4. On the source setup page, select **Mailchimp** from the Source type dropdown and enter a name for this connector.
 5. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
 6. Log in and Authorize to the Mailchimp account and click `Set up source`.
 
@@ -45,12 +45,12 @@ in Mailchimp.
 
 ## Supported sync modes
 
-The Mailchimp source connector supports the following [sync modes](https://docs.airbyte.com/getting-started-with-airbyte-cloud/core-concepts#connection-sync-modes):
+The Mailchimp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
  - Full Refresh
  - Incremental
 
-We don't support Incremental Deletes for `Campaigns`, `Lists`, and `Email Activity` streams because
-Mailchimp doesn't give any information about deleted data in these streams.
+We don't support Incremental Deletes for `Campaigns`, `Lists`, and `Email Activity` streams because 
+the Mailchimp doesn't give any information about deleted data in these streams.
 
 ## Performance considerations
 
