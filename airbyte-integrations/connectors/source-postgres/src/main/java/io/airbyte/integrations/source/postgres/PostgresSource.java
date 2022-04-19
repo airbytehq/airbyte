@@ -20,6 +20,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -363,4 +364,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
 
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.POSTGRES;
+  }
 }
