@@ -7,11 +7,11 @@ Exchangerates API as an example since it is both simple but demonstrates a lot o
 
 ## Requirements
 
-* Python >= 3.7 
+* Python >= 3.9 
 * Docker
 * NodeJS (only used to generate the connector). We'll remove the NodeJS dependency soon.
 
-All the commands below assume that `python` points to a version of python >=3.7.0. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
+All the commands below assume that `python` points to a version of python >=3.9. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
 
 ## Checklist
 * Step 1: Create the source using the template

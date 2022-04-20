@@ -1,4 +1,4 @@
-# Google Cloud Storage \(GCS\)
+# Google Cloud Storage (GCS)
 
 ## Overview
 
@@ -235,6 +235,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.2  | 2022-04-05 | [\#11728](https://github.com/airbytehq/airbyte/pull/11728) | Properly clean-up bucket when running OVERWRITE sync mode |
 | 0.2.1  | 2022-04-05 | [\#11499](https://github.com/airbytehq/airbyte/pull/11499) | Updated spec and documentation. |
 | 0.2.0  | 2022-04-04 | [\#11686](https://github.com/airbytehq/airbyte/pull/11686) | Use serialized buffering strategy to reduce memory consumption; compress CSV and JSONL formats. |
 | 0.1.22 | 2022-02-12 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add JVM flag to exist on OOME. |

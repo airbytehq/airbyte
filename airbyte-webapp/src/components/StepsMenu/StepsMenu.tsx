@@ -25,12 +25,7 @@ const Content = styled.div`
   font-family: ${({ theme }) => theme.regularFont};
 `;
 
-const StepsMenu: React.FC<IProps> = ({
-  data,
-  onSelect,
-  activeStep,
-  lightMode,
-}) => {
+const StepsMenu: React.FC<IProps> = ({ data, onSelect, activeStep, lightMode }) => {
   return (
     <Content>
       {data.map((item, key) => (

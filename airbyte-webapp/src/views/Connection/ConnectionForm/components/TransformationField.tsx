@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { ArrayHelpers, FormikProps } from "formik";
 
-import TransformationForm from "views/Connection/TransformationForm";
 import ArrayOfObjectsEditor from "components/ArrayOfObjectsEditor";
+
+import TransformationForm from "views/Connection/TransformationForm";
 import { Transformation } from "core/domain/connection/operation";
 import { isDefined } from "utils/common";
 
@@ -19,10 +20,7 @@ const TransformationField: React.FC<
       items={form.values.transformations}
       editableItemIndex={editableItemIdx}
       mainTitle={
-        <FormattedMessage
-          id="form.transformationCount"
-          values={{ count: form.values.transformations.length }}
-        />
+        <FormattedMessage id="form.transformationCount" values={{ count: form.values.transformations.length }} />
       }
       addButtonText={<FormattedMessage id="form.addTransformation" />}
       onRemove={remove}
@@ -31,6 +29,7 @@ const TransformationField: React.FC<
       {(editableItem) => (
         <TransformationForm
           transformation={editableItem ?? defaultTransformation}
+          isNewTransformation={!editableItem}
           onCancel={() => setEditableItem(null)}
           onDone={(transformation) => {
             if (isDefined(editableItemIdx)) {

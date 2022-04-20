@@ -1,6 +1,7 @@
 import React from "react";
 
 import { FeatureItem, WithFeature } from "hooks/services/Feature";
+
 import { SectionContainer } from "../common";
 import { AuthButton } from "./AuthButton";
 

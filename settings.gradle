@@ -22,14 +22,14 @@ sourceControl {
 
 rootProject.name = 'airbyte'
 
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, OCTAVIA_CLI. Blank is equivalent to all.
+// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, ALL_CONNECTORS and OCTAVIA_CLI. Blank is equivalent to all.
 if (!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
 } else {
     def subBuild = System.getenv().get("SUB_BUILD")
     println("Building Airbyte Sub Build: " + subBuild)
-    if (subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE" && subBuild != "OCTAVIA_CLI") {
-        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE or OCTAVIA_CLI", subBuild))
+    if (subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE" && subBuild != "ALL_CONNECTORS" && subBuild != "OCTAVIA_CLI") {
+        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE, ALL_CONNECTORS or OCTAVIA_CLI", subBuild))
     }
 }
 
@@ -76,7 +76,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 // connectors base
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE") {
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
     include ':airbyte-cdk:python'
     include ':airbyte-integrations:bases:airbyte-protocol'
     include ':airbyte-integrations:bases:base'
@@ -115,7 +115,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 }
 
 // connectors
-if (!System.getenv().containsKey("SUB_BUILD")) {
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
     // include all connector projects
     def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
     println integrationsPath

@@ -1,13 +1,5 @@
 import { useMemo } from "react";
-import {
-  useLocation,
-  useNavigate,
-  useParams,
-  Location,
-  To,
-  NavigateOptions,
-} from "react-router-dom";
-
+import { useLocation, useNavigate, useParams, Location, To, NavigateOptions } from "react-router-dom";
 import queryString from "query-string";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -4,11 +4,10 @@ import { useMutation } from "react-query";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
+import { FormChangeTracker } from "components/FormChangeTracker";
+
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
-import {
-  CollapsibleCardProps,
-  CollapsibleCard,
-} from "views/Connection/CollapsibleCard";
+import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 const FormContainer = styled(Form)`
@@ -31,15 +30,11 @@ export const FormCard: React.FC<
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <Formik
-      {...form}
-      onSubmit={(values, formikHelpers) =>
-        mutateAsync({ values, formikHelpers })
-      }
-    >
+    <Formik {...form} onSubmit={(values, formikHelpers) => mutateAsync({ values, formikHelpers })}>
       {({ resetForm, isSubmitting, dirty, isValid }) => (
         <CollapsibleCard {...props}>
           <FormContainer>
+            <FormChangeTracker changed={dirty} />
             {children}
             <div>
               <EditControls
@@ -50,13 +45,9 @@ export const FormCard: React.FC<
                   resetForm();
                   reset();
                 }}
-                successMessage={
-                  isSuccess && formatMessage({ id: "form.changesSaved" })
-                }
+                successMessage={isSuccess && formatMessage({ id: "form.changesSaved" })}
                 errorMessage={
-                  errorMessage ?? !isValid
-                    ? formatMessage({ id: "connectionForm.validation.error" })
-                    : null
+                  errorMessage ?? !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
                 }
               />
             </div>

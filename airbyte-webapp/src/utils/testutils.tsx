@@ -1,9 +1,9 @@
-import React from "react";
-import { render as rtlRender, RenderResult } from "@testing-library/react";
-import { ThemeProvider } from "styled-components";
+import { act, Queries, render as rtlRender, RenderResult } from "@testing-library/react";
 import { History } from "history";
-import { MemoryRouter } from "react-router-dom";
+import React from "react";
 import { IntlProvider } from "react-intl";
+import { MemoryRouter } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
 
 import en from "locales/en.json";
 import { FeatureService } from "hooks/services/Feature";
@@ -19,10 +19,10 @@ type WrapperProps = {
   children?: React.ReactNode;
 };
 
-export function render(
+export async function render(
   ui: React.ReactNode,
   renderOptions?: RenderOptions
-): RenderResult {
+): Promise<RenderResult<Queries, HTMLElement>> {
   function Wrapper({ children }: WrapperProps) {
     return (
       <TestWrapper>
@@ -35,7 +35,12 @@ export function render(
     );
   }
 
-  return rtlRender(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
+  let renderResult: RenderResult<Queries, HTMLElement>;
+  await act(async () => {
+    renderResult = await rtlRender(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
+  });
+
+  return renderResult!;
 }
 
 export const TestWrapper: React.FC = ({ children }) => (

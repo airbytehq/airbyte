@@ -120,7 +120,10 @@ def test_config():
         "start_date": pendulum.now().subtract(days=2).date().strftime("%Y-%m-%d"),
         "dimensions": [],
         "credentials": {
-            "type": "Service",
+            "auth_type": "Client",
+            "client_id": "client_id_val",
+            "client_secret": "client_secret_val",
+            "refresh_token": "refresh_token_val",
         },
     }
     return copy.deepcopy(test_conf)
@@ -131,17 +134,6 @@ def test_config_auth_service(test_config):
     test_config["credentials"] = {
         "auth_type": "Service",
         "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
-    }
-    return copy.deepcopy(test_config)
-
-
-@pytest.fixture()
-def test_config_auth_client(test_config):
-    test_config["credentials"] = {
-        "auth_type": "Client",
-        "client_id": "client_id_val",
-        "client_secret": "client_secret_val",
-        "refresh_token": "refresh_token_val",
     }
     return copy.deepcopy(test_config)
 
@@ -261,7 +253,7 @@ def test_check_connection_success_jwt(
 @patch("source_google_analytics_v4.source.jwt")
 def test_check_connection_fails_oauth(
     jwt_encode_mock,
-    test_config_auth_client,
+    test_config,
     mocker,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
@@ -272,11 +264,10 @@ def test_check_connection_fails_oauth(
     then we assume than user doesn't have permission to read requested `view`
     """
     source = SourceGoogleAnalyticsV4()
-    is_success, msg = source.check_connection(MagicMock(), test_config_auth_client)
+    is_success, msg = source.check_connection(MagicMock(), test_config)
     assert is_success is False
     assert (
-        msg
-        == f"Please check the permissions for the requested view_id: {test_config_auth_client['view_id']}. Cannot retrieve data from that view ID."
+        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. Cannot retrieve data from that view ID."
     )
     jwt_encode_mock.encode.assert_not_called()
     assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
@@ -290,7 +281,7 @@ def test_check_connection_fails_oauth(
 @patch("source_google_analytics_v4.source.jwt")
 def test_check_connection_success_oauth(
     jwt_encode_mock,
-    test_config_auth_client,
+    test_config,
     mocker,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
@@ -301,7 +292,7 @@ def test_check_connection_success_oauth(
     then we assume than user has permission to read requested `view`
     """
     source = SourceGoogleAnalyticsV4()
-    is_success, msg = source.check_connection(MagicMock(), test_config_auth_client)
+    is_success, msg = source.check_connection(MagicMock(), test_config)
     assert is_success is True
     assert msg is None
     jwt_encode_mock.encode.assert_not_called()

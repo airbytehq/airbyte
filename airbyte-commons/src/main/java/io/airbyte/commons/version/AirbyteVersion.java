@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class AirbyteVersion {
 
-  public static final String DEV_VERSION = "dev";
+  public static final String DEV_VERSION_PREFIX = "dev";
   public static final String AIRBYTE_VERSION_KEY_NAME = "airbyte_version";
 
   private final String version;
@@ -25,7 +25,7 @@ public class AirbyteVersion {
     this.version = version;
     final String[] parsedVersion = version.replace("\n", "").strip().split("-")[0].split("\\.");
 
-    if (version.equals(DEV_VERSION)) {
+    if (isDev()) {
       this.major = null;
       this.minor = null;
       this.patch = null;
@@ -66,7 +66,7 @@ public class AirbyteVersion {
    * Only the major and minor part of the Version is taken into account.
    */
   public int compatibleVersionCompareTo(final AirbyteVersion another) {
-    if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION))
+    if (isDev() || another.isDev())
       return 0;
     final int majorDiff = compareVersion(major, another.major);
     if (majorDiff != 0) {
@@ -100,7 +100,7 @@ public class AirbyteVersion {
    * Compares two Airbyte Version to check if they are equivalent (including patch version).
    */
   public int patchVersionCompareTo(final AirbyteVersion another) {
-    if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) {
+    if (isDev() || another.isDev()) {
       return 0;
     }
     final int majorDiff = compareVersion(major, another.major);
@@ -118,7 +118,7 @@ public class AirbyteVersion {
    * Compares two Airbyte Version to check if only the patch version was updated.
    */
   public boolean checkOnlyPatchVersionIsUpdatedComparedTo(final AirbyteVersion another) {
-    if (version.equals(DEV_VERSION) || another.version.equals(DEV_VERSION)) {
+    if (isDev() || another.isDev()) {
       return false;
     }
     final int majorDiff = compareVersion(major, another.major);
@@ -133,7 +133,7 @@ public class AirbyteVersion {
   }
 
   public boolean isDev() {
-    return version.equals(DEV_VERSION);
+    return version.startsWith(DEV_VERSION_PREFIX);
   }
 
   /**

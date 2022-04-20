@@ -4,31 +4,24 @@ import { useField } from "formik";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
-import { WarningMessage } from "../WarningMessage";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
-import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
-
-import { FormBaseItem } from "core/form/types";
-import {
-  Connector,
-  ConnectorDefinition,
-  ReleaseStage,
-} from "core/domain/connector";
-
-import Instruction from "./Instruction";
-import {
-  IDataItem,
-  IProps as OptionProps,
-  OptionView,
-} from "components/base/DropDown/components/Option";
+import { ControlLabels, DropDown, DropDownRow } from "components";
+import { IDataItem, IProps as OptionProps, OptionView } from "components/base/DropDown/components/Option";
 import {
   IProps as SingleValueProps,
   Icon as SingleValueIcon,
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
+import { ConnectorIcon } from "components/ConnectorIcon";
+
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { FormBaseItem } from "core/form/types";
+import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { naturalComparator } from "utils/objects";
+
+import { WarningMessage } from "../WarningMessage";
+import Instruction from "./Instruction";
 
 const BottomElement = styled.div`
   background: ${(props) => props.theme.greyColro0};
@@ -107,46 +100,28 @@ function getOrderForReleaseStage(stage?: ReleaseStage): number {
   }
 }
 
-const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({
-  children,
-  ...props
-}) => (
+const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...props }) => (
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
     <BottomElement>
-      <Block
-        onClick={() =>
-          props.selectProps.selectProps.onOpenRequestConnectorModal(
-            props.selectProps.inputValue
-          )
-        }
-      >
+      <Block onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}>
         <FormattedMessage id="connector.requestConnectorBlock" />
       </Block>
     </BottomElement>
   </>
 );
 
-const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({
-  releaseStage,
-}) =>
+const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) =>
   releaseStage && releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
     <Stage>
-      <FormattedMessage
-        id={`connector.releaseStage.${releaseStage}`}
-        defaultMessage={releaseStage}
-      />
+      <FormattedMessage id={`connector.releaseStage.${releaseStage}`} defaultMessage={releaseStage} />
     </Stage>
   ) : null;
 
 const Option: React.FC<OptionProps> = (props) => {
   return (
     <components.Option {...props}>
-      <OptionView
-        data-testid={props.data.label}
-        isSelected={props.isSelected}
-        isDisabled={props.isDisabled}
-      >
+      <OptionView data-testid={props.data.label} isSelected={props.isSelected} isDisabled={props.isDisabled}>
         <Text>
           {props.data.img || null}
           <Label>{props.label}</Label>
@@ -188,7 +163,7 @@ const ConnectorServiceTypeControl: React.FC<{
   documentationUrl,
   onOpenRequestConnectorModal,
 }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const [field, fieldMeta, { setValue }] = useField(property.path);
   const analytics = useAnalyticsService();
 
@@ -215,13 +190,11 @@ const ConnectorServiceTypeControl: React.FC<{
   const sortedDropDownData = useMemo(
     () =>
       availableServices
-        .filter(
-          (item) => !disallowedOauthConnectors.includes(Connector.id(item))
-        )
+        .filter((item) => !disallowedOauthConnectors.includes(Connector.id(item)))
         .map((item) => ({
           label: item.name,
           value: Connector.id(item),
-          img: <ImageBlock img={item.icon} />,
+          img: <ConnectorIcon icon={item.icon} />,
           releaseStage: item.releaseStage,
         }))
         .sort((a, b) => {
@@ -231,16 +204,28 @@ const ConnectorServiceTypeControl: React.FC<{
           if (priorityA !== priorityB) {
             return priorityB - priorityA;
           } else if (a.releaseStage !== b.releaseStage) {
-            return (
-              getOrderForReleaseStage(a.releaseStage) -
-              getOrderForReleaseStage(b.releaseStage)
-            );
+            return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
           } else {
             return naturalComparator(a.label, b.label);
           }
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices]
+  );
+
+  const getNoOptionsMessage = useCallback(
+    ({ inputValue }: { inputValue: string }) => {
+      analytics.track(
+        formType === "source"
+          ? "Airbyte.UI.NewSource.NoMatchingConnector"
+          : "Airbyte.UI.NewDestination.NoMatchingConnector",
+        {
+          query: inputValue,
+        }
+      );
+      return formatMessage({ id: "form.noConnectorFound" });
+    },
+    [analytics, formType, formatMessage]
   );
 
   const selectedService = React.useMemo(
@@ -262,9 +247,7 @@ const ConnectorServiceTypeControl: React.FC<{
 
   const onMenuOpen = () => {
     const eventName =
-      formType === "source"
-        ? "Airbyte.UI.NewSource.SelectionOpened"
-        : "Airbyte.UI.NewDestination.SelectionOpened";
+      formType === "source" ? "Airbyte.UI.NewSource.SelectionOpened" : "Airbyte.UI.NewDestination.SelectionOpened";
     analytics.track(eventName, {});
   };
 
@@ -292,17 +275,14 @@ const ConnectorServiceTypeControl: React.FC<{
           options={sortedDropDownData}
           onChange={handleSelect}
           onMenuOpen={onMenuOpen}
+          noOptionsMessage={getNoOptionsMessage}
         />
       </ControlLabels>
       {selectedService && documentationUrl && (
-        <Instruction
-          selectedService={selectedService}
-          documentationUrl={documentationUrl}
-        />
+        <Instruction selectedService={selectedService} documentationUrl={documentationUrl} />
       )}
       {selectedService &&
-        (selectedService.releaseStage === ReleaseStage.ALPHA ||
-          selectedService.releaseStage === ReleaseStage.BETA) && (
+        (selectedService.releaseStage === ReleaseStage.ALPHA || selectedService.releaseStage === ReleaseStage.BETA) && (
           <WarningMessage stage={selectedService.releaseStage} />
         )}
     </>

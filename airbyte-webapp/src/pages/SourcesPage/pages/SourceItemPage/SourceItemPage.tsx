@@ -1,29 +1,27 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { DropDownRow, ImageBlock } from "components";
+import { DropDownRow } from "components";
 import PageTitle from "components/PageTitle";
-import useRouter from "hooks/useRouter";
 import Breadcrumbs from "components/Breadcrumbs";
-import {
-  ItemTabs,
-  StepsTypes,
-  TableItemTitle,
-} from "components/ConnectorBlocks";
+import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-
-import SourceConnectionTable from "./components/SourceConnectionTable";
-import SourceSettings from "./components/SourceSettings";
-import { getIcon } from "utils/imageUtils";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import { RoutePaths } from "../../../routePaths";
+import { ConnectorIcon } from "components/ConnectorIcon";
+
+import { getIcon } from "utils/imageUtils";
+import useRouter from "hooks/useRouter";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetSource } from "hooks/services/useSourceHook";
+
+import { RoutePaths } from "../../../routePaths";
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
+import SourceSettings from "./components/SourceSettings";
+import SourceConnectionTable from "./components/SourceConnectionTable";
 
 const SourceItemPage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }>();
@@ -47,9 +45,7 @@ const SourceItemPage: React.FC = () => {
     { name: source.name },
   ];
 
-  const connectionsWithSource = connections.filter(
-    (connectionItem) => connectionItem.sourceId === source.sourceId
-  );
+  const connectionsWithSource = connections.filter((connectionItem) => connectionItem.sourceId === source.sourceId);
 
   const destinationsDropDownData = useMemo(
     () =>
@@ -60,7 +56,7 @@ const SourceItemPage: React.FC = () => {
         return {
           label: item.name,
           value: item.destinationId,
-          img: <ImageBlock img={destinationDef?.icon} />,
+          img: <ConnectorIcon icon={destinationDef?.icon} />,
         };
       }),
     [destinations, destinationDefinitions]
@@ -81,12 +77,7 @@ const SourceItemPage: React.FC = () => {
 
   const renderContent = () => {
     if (currentStep === StepsTypes.SETTINGS) {
-      return (
-        <SourceSettings
-          currentSource={source}
-          connectionsWithSource={connectionsWithSource}
-        />
-      );
+      return <SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />;
     }
 
     return (
@@ -111,15 +102,11 @@ const SourceItemPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      headTitle={
-        <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
-      }
+      headTitle={<HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />}
       pageTitle={
         <PageTitle
           title={<Breadcrumbs data={breadcrumbsData} />}
-          middleComponent={
-            <ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />
-          }
+          middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
           withLine
         />
       }

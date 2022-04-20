@@ -27,7 +27,7 @@ This Source is capable of syncing the following core Streams:
 * [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms)
 * [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics)
 * [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
-* [Users](https://developer.zendesk.com/rest_api/docs/support/users)
+* [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export)
 
 ### Data type mapping
 
@@ -62,7 +62,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 ### Requirements
 
-* `Subdomain` - this is your Zendesk subdomain that can be found in your account URL. For example, in `https://{MY_SUBDOMAIN}.zendesk.com/`, where `MY_SUBDOMAIN` is the value of your subdomain. 
+* `Subdomain` - this is your Zendesk subdomain that can be found in your account URL. For example, in `https://{MY_SUBDOMAIN}.zendesk.com/`, where `MY_SUBDOMAIN` is the value of your subdomain.
 * `Authentication` - Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.
   * Authentication using `OAuth2.0` (Only for Airbyte Cloud) - obtain `access_token` by authorising using your Zendesk Account credentials. Simply proceed by pressing "Authenticate your Zendesk Account" and complete the authentication.
   * Authentication using `API Token`:
@@ -74,6 +74,8 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version  | Date       | Pull Request | Subject                                                |
 |:---------|:-----------| :-----       |:-------------------------------------------------------|
+| `0.2.6`  | 2022-04-19 | [12122](https://github.com/airbytehq/airbyte/pull/12122) | Fixed the bug when only 100,000 Users are synced [11895](https://github.com/airbytehq/airbyte/issues/11895) and fixed bug when `start_date` is not used on user stream [12059](https://github.com/airbytehq/airbyte/issues/12059).
+| `0.2.5`  | 2022-04-05 | [11727](https://github.com/airbytehq/airbyte/pull/11727) | Fixed the bug when state was not parsed correctly
 | `0.2.4`  | 2022-04-04 | [11688](https://github.com/airbytehq/airbyte/pull/11688) | Small documentation corrections
 | `0.2.3`  | 2022-03-23 | [11349](https://github.com/airbytehq/airbyte/pull/11349) | Fixed the bug when Tickets stream didn't return deleted records
 | `0.2.2`  | 2022-03-17 | [11237](https://github.com/airbytehq/airbyte/pull/11237) | Fixed the bug when TicketComments stream didn't return all records

@@ -11,9 +11,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -79,10 +76,20 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
         case "boolean" -> json.put(key, Boolean.valueOf(value));
         case "integer" -> json.put(key, Integer.valueOf(value));
         case "number" -> json.put(key, Double.valueOf(value));
+        case "" -> addNoTypeValue(json, key, value);
         default -> json.put(key, value);
       }
     }
     return json;
+  }
+
+  private static void addNoTypeValue(ObjectNode json, String key, String value) {
+    if (value != null && (value.matches("^\\[.*\\]$")) || value.matches("^\\{.*\\}$")) {
+      var newNode = Jsons.deserialize(value);
+      json.set(key, newNode);
+    } else {
+      json.put(key, value);
+    }
   }
 
   @Override
@@ -109,17 +116,6 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     }
 
     return jsonRecords;
-  }
-
-  @Override
-  protected void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog,
-                                                         List<AirbyteMessage> messages,
-                                                         String defaultSchema)
-      throws Exception {
-    final List<AirbyteRecordMessage> actualMessages = retrieveRawRecords(catalog, defaultSchema);
-    deserializeNestedObjects(messages, actualMessages);
-
-    assertSameMessages(messages, actualMessages, false);
   }
 
 }
