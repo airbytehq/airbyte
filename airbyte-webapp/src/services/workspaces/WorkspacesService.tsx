@@ -1,15 +1,14 @@
 import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
+import { Workspace, WorkspaceService } from "core/domain/workspace";
 import useRouter from "hooks/useRouter";
-import { Workspace, WorkspaceService, WorkspaceState } from "core/domain/workspace";
 import { RoutePaths } from "pages/routePaths";
-import { useConfig } from "config";
 
-import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
-import { useInitService } from "../useInitService";
-import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
+import { WorkspaceUpdate } from "../../core/request/GeneratedApi";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
+import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
+import { useInitService } from "../useInitService";
 
 export const workspaceKeys = {
   all: [SCOPE_USER, "workspaces"] as const,
@@ -69,23 +68,16 @@ export const useWorkspaceService = (): Context => {
 };
 
 function useWorkspaceApiService(): WorkspaceService {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-
-  return useInitService(
-    () => new WorkspaceService(config.apiUrl, middlewares),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config]
-  );
+  return useInitService(() => new WorkspaceService(), []);
 }
 
-export const useCurrentWorkspaceId = (): string => {
+export const useCurrentWorkspaceId = () => {
   const { params } = useRouter<unknown, { workspaceId: string }>();
 
   return params.workspaceId;
 };
 
-export const useCurrentWorkspace = (): Workspace => {
+export const useCurrentWorkspace = () => {
   const workspaceId = useCurrentWorkspaceId();
 
   return useGetWorkspace(workspaceId, {
@@ -93,11 +85,11 @@ export const useCurrentWorkspace = (): Workspace => {
   });
 };
 
-export const useCurrentWorkspaceState = (): WorkspaceState => {
+export const useCurrentWorkspaceState = () => {
   const workspaceId = useCurrentWorkspaceId();
   const service = useWorkspaceApiService();
 
-  return useSuspenseQuery(workspaceKeys.state(workspaceId), () => service.getState(workspaceId), {
+  return useSuspenseQuery(workspaceKeys.state(workspaceId), () => service.getState({ workspaceId }), {
     // We want to keep this query only shortly in cache, so we refetch
     // the data whenever the user might have changed sources/destinations/connections
     // without requiring to manually invalidate that query on each change.
@@ -105,7 +97,7 @@ export const useCurrentWorkspaceState = (): WorkspaceState => {
   });
 };
 
-export const useListWorkspaces = (): Workspace[] => {
+export const useListWorkspaces = () => {
   const service = useWorkspaceApiService();
 
   return useSuspenseQuery(workspaceKeys.lists(), () => service.list()).workspaces;
@@ -116,17 +108,16 @@ export const useGetWorkspace = (
   options?: {
     staleTime: number;
   }
-): Workspace => {
+) => {
   const service = useWorkspaceApiService();
-
-  return useSuspenseQuery(workspaceKeys.detail(workspaceId), () => service.get(workspaceId), options);
+  return useSuspenseQuery(workspaceKeys.detail(workspaceId), () => service.get({ workspaceId }), options);
 };
 
 export const useUpdateWorkspace = () => {
   const service = useWorkspaceApiService();
   const queryClient = useQueryClient();
 
-  return useMutation((workspace: Record<string, unknown>) => service.update(workspace), {
+  return useMutation((workspace: WorkspaceUpdate) => service.update(workspace), {
     onSuccess: (data) => {
       queryClient.setQueryData(workspaceKeys.detail(data.workspaceId), data);
     },

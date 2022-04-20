@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 
 import HeadTitle from "components/HeadTitle";
 
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import { Content, SettingsCard } from "../SettingsComponents";
 import AccountForm from "./components/AccountForm";
@@ -19,7 +19,13 @@ const AccountPage: React.FC = () => {
   } = useWorkspaceEditor();
 
   const onSubmit = async (data: { email: string }) => {
-    await updateData({ ...workspace, ...data });
+    await updateData({
+      ...workspace,
+      ...data,
+      news: !!workspace.news,
+      anonymousDataCollection: !!workspace.anonymousDataCollection,
+      securityUpdates: !!workspace.securityUpdates,
+    });
   };
 
   return (
@@ -28,7 +34,7 @@ const AccountPage: React.FC = () => {
       <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
         <Content>
           <AccountForm
-            email={workspace.email}
+            email={workspace.email ?? ""}
             onSubmit={onSubmit}
             errorMessage={errorMessage}
             successMessage={successMessage}

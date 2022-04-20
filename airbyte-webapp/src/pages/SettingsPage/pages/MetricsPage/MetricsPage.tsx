@@ -14,7 +14,7 @@ const MetricsPage: React.FC = () => {
   const { errorMessage, successMessage, loading, updateData } = useWorkspaceEditor();
 
   const onChange = async (data: { anonymousDataCollection: boolean }) => {
-    await updateData({ ...workspace, ...data });
+    await updateData({ ...workspace, ...data, news: !!workspace.news, securityUpdates: !!workspace.securityUpdates });
   };
 
   return (
