@@ -9,7 +9,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  verify-docusaurus-static-files:
+  deploy-docusaurus-to-docs-airbyte-io:
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -29,6 +29,12 @@ jobs:
           node-version: "${{ env.NODE_VERSION }}"
           cache: "yarn"
           cache-dependency-path: docusaurus
-      # Install and build Docusaurus website
-      - name: Check for docusaurus changes
-        run: ./tools/bin/check_docusaurus_build_changes
+      # # Build Docusaurus website
+      # - name: Check for docusaurus changes not committed
+      #   run: ./tools/bin/check_docusaurus_build_changes
+      # # Install and build Docusaurus website
+      # - name: Deploy docs to production (it's weird)
+      #   run: ./tools/bin/deploy_docusaurus
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.OCTAVIA_PAT }}
+
