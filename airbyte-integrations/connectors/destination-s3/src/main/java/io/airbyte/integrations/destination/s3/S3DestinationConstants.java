@@ -17,6 +17,10 @@ public final class S3DestinationConstants {
   public static final int DEFAULT_PART_SIZE_MB = 10;
   public static final String DEFAULT_PATH_FORMAT = "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_";
 
+  // gzip compression for CSV and JSONL
+  public static final String GZIP_COMPRESSION_ARG_NAME = "gzip_compression";
+  public static final boolean DEFAULT_GZIP_COMPRESSION = true;
+
   private S3DestinationConstants() {}
 
 }

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3.csv;
 
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.GZIP_COMPRESSION_ARG_NAME;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.PART_SIZE_MB_ARG_NAME;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,6 +15,9 @@ import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import java.util.Objects;
 
 public class S3CsvFormatConfig implements S3FormatConfig {
+
+  public static final String CSV_GZ_SUFFIX = ".csv.gz";
+  public static final String CSV_SUFFIX = ".csv";
 
   public enum Flattening {
 
@@ -45,18 +49,23 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   private final Flattening flattening;
   private final Long partSize;
+  private final boolean gzipCompression;
 
   public S3CsvFormatConfig(final JsonNode formatConfig) {
     this(
         Flattening.fromValue(formatConfig.has("flattening") ? formatConfig.get("flattening").asText() : Flattening.NO.value),
-        formatConfig.get(PART_SIZE_MB_ARG_NAME) != null
+        formatConfig.has(PART_SIZE_MB_ARG_NAME)
             ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
-            : S3DestinationConstants.DEFAULT_PART_SIZE_MB);
+            : S3DestinationConstants.DEFAULT_PART_SIZE_MB,
+        formatConfig.has(GZIP_COMPRESSION_ARG_NAME)
+            ? formatConfig.get(GZIP_COMPRESSION_ARG_NAME).asBoolean()
+            : S3DestinationConstants.DEFAULT_GZIP_COMPRESSION);
   }
 
-  public S3CsvFormatConfig(final Flattening flattening, final Long partSize) {
+  public S3CsvFormatConfig(final Flattening flattening, final Long partSize, final boolean gzipCompression) {
     this.flattening = flattening;
     this.partSize = partSize;
+    this.gzipCompression = gzipCompression;
   }
 
   @Override
@@ -71,6 +80,15 @@ public class S3CsvFormatConfig implements S3FormatConfig {
   @Override
   public Long getPartSize() {
     return partSize;
+  }
+
+  @Override
+  public String getFileExtension() {
+    return gzipCompression ? CSV_GZ_SUFFIX : CSV_SUFFIX;
+  }
+
+  public boolean isGzipCompression() {
+    return gzipCompression;
   }
 
   @Override
