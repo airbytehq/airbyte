@@ -1,47 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { JobDebugInfoDetails } from "core/domain/job/Job";
+import { cancelJob, getJobDebugInfo, getJobInfo, JobListRequestBody, listJobsFor } from "../../request/GeneratedApi";
 
-type ListParams = {
-  configId: string;
-  configTypes: string[];
-};
-
-class JobsService extends AirbyteRequestService {
-  get url(): string {
-    return "jobs";
+export class JobsService {
+  public async list(listParams: JobListRequestBody) {
+    return listJobsFor(listParams);
   }
 
-  public async list(listParams: ListParams): Promise<any> {
-    const jobs = await this.fetch<any>(`${this.url}/list`, listParams);
-
-    return jobs;
+  public async get(id: number) {
+    return getJobInfo({ id });
   }
 
-  public async get(jobId: string | number): Promise<any> {
-    const job = await this.fetch<any>(`${this.url}/get`, {
-      id: jobId,
-    });
-
-    return job;
+  public async cancel(id: number) {
+    return cancelJob({ id });
   }
 
-  public async cancel(jobId: string | number): Promise<any> {
-    const job = await this.fetch<any>(`${this.url}/cancel`, {
-      id: jobId,
-    });
-
-    return job;
-  }
-
-  public async getDebugInfo(jobId: string | number): Promise<JobDebugInfoDetails> {
-    const jobDebugInfo = await this.fetch<JobDebugInfoDetails>(`${this.url}/get_debug_info`, {
-      id: jobId,
-    });
-
-    return jobDebugInfo;
+  public async getDebugInfo(id: number) {
+    return getJobDebugInfo({ id });
   }
 }
-
-export { JobsService };
-export type { ListParams };

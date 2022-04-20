@@ -6,7 +6,7 @@ import styled from "styled-components";
 
 import { Button, ContentCard } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import JobItem from "components/JobItem";
+import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
 import { Destination, Source } from "core/domain/connector";
@@ -94,14 +94,14 @@ const CreateConnectionContent: React.FC<IProps> = ({
   };
 
   if (schemaErrorStatus) {
-    const jobInfo = LogsRequestError.extractJobInfo(schemaErrorStatus);
+    const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
       <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
         />
-        {jobInfo && <JobItem jobInfo={jobInfo} />}
+        {job && <JobItem job={job} />}
       </ContentCard>
     );
   }

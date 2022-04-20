@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ContentCard } from "components";
-import JobItem from "components/JobItem";
+import { JobItem } from "components/JobItem/JobItem";
 
-import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
-import { JobInfo } from "core/domain/job/Job";
-import { LogsRequestError } from "core/request/LogsRequestError";
 import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalytics } from "hooks/services/Analytics";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
+import { JobWithAttemptsRead } from "../../../core/request/GeneratedApi";
 import { useTestConnector } from "./useTestConnector";
 
 export type ConnectorCardProvidedProps = {
@@ -24,7 +24,7 @@ const ConnectorCard: React.FC<
   {
     title?: React.ReactNode;
     full?: boolean;
-    jobInfo?: JobInfo | null;
+    jobInfo?: JobWithAttemptsRead | null;
   } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
     (
       | {
@@ -72,7 +72,7 @@ const ConnectorCard: React.FC<
     }
   };
 
-  const jobInfoMapped = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
+  const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   return (
     <ContentCard title={title} full={full}>
@@ -87,7 +87,7 @@ const ConnectorCard: React.FC<
           props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
         }
       />
-      {jobInfoMapped && <JobItem jobInfo={jobInfoMapped} />}
+      {job && <JobItem job={job} />}
     </ContentCard>
   );
 };

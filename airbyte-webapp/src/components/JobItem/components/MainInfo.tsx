@@ -1,15 +1,13 @@
+import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
 import { Cell, Row } from "components/SimpleTableComponents";
 import { Button, StatusIcon } from "components";
 
-import { Attempt, JobInfo, JobMeta as JobApiItem } from "core/domain/job/Job";
-import Status from "core/statuses";
-
+import { AttemptRead, JobInfoRead, JobStatus, JobWithAttemptsRead } from "../../../core/request/GeneratedApi";
 import { useCancelJob } from "../../../services/job/JobService";
 import AttemptDetails from "./AttemptDetails";
 
@@ -79,8 +77,8 @@ const Text = styled.div`
 `;
 
 type IProps = {
-  job: JobApiItem | JobInfo;
-  attempts?: Attempt[];
+  job: Exclude<JobWithAttemptsRead["job"], undefined>;
+  attempts?: AttemptRead[];
   isOpen?: boolean;
   onExpand: () => void;
   isFailed?: boolean;
@@ -99,12 +97,15 @@ const MainInfo: React.FC<IProps> = ({
 }) => {
   const cancelJob = useCancelJob();
 
-  const onCancelJob = async (event: React.SyntheticEvent) => {
+  const onCancelJob = async (event: React.SyntheticEvent): Promise<JobInfoRead | void> => {
     event.stopPropagation();
-    return cancelJob(job.id);
+    if (job) {
+      return cancelJob(job.id);
+    }
   };
 
-  const isNotCompleted = job.status && [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
+  const isNotCompleted =
+    job.status && [JobStatus.pending, JobStatus.running, JobStatus.incomplete].includes(job.status);
 
   const jobStatus = isPartialSuccess ? (
     <FormattedMessage id="sources.partialSuccess" />

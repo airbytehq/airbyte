@@ -1,15 +1,15 @@
 import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { useIntl, FormattedMessage } from "react-intl";
 
 import Modal from "components/Modal";
 import { Button } from "components";
 
-import { JobDebugInfoMeta } from "core/domain/job";
+import { JobDebugRead } from "../../../core/request/GeneratedApi";
 
 export type IProps = {
   onClose: () => void;
-  jobDebugInfo: JobDebugInfoMeta;
+  jobDebugInfo: JobDebugRead;
 };
 
 const Content = styled.div`

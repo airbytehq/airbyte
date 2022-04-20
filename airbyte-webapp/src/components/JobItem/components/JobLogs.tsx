@@ -1,23 +1,23 @@
+import { clamp } from "lodash";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { clamp } from "lodash";
 import { useLocation } from "react-router-dom";
 
 import Status from "core/statuses";
-import { useGetJob, useGetDebugInfoJob } from "services/job/JobService";
-import { Attempt } from "core/domain/job/Job";
+import { useGetDebugInfoJob, useGetJob } from "services/job/JobService";
 
+import { AttemptRead } from "../../../core/request/GeneratedApi";
 import { parseAttemptLink } from "../attemptLinkUtils";
 import Logs from "./Logs";
-import Tabs from "./Tabs";
 import { LogsDetails } from "./LogsDetails";
+import Tabs from "./Tabs";
 
 type IProps = {
-  id: number | string;
+  id: number;
   jobIsFailed?: boolean;
 };
 
-const isPartialSuccess = (attempt: Attempt) => {
+const isPartialSuccess = (attempt: AttemptRead) => {
   return !!attempt.failureSummary?.partialSuccess;
 };
 

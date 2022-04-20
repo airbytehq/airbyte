@@ -1,15 +1,9 @@
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import Status from "core/statuses";
-import { SourceDefinition, DestinationDefinition } from "core/domain/connector";
 
-export interface JobMeta {
-  id: number | string;
-  configType: string;
-  configId: string;
-  createdAt: number;
-  startedAt: number;
-  updatedAt: number;
-  status: Status | null;
-}
+import { SynchronousJobRead } from "../../request/GeneratedApi";
+
+export type JobMeta = SynchronousJobRead;
 
 export interface Logs {
   logLines: string[];

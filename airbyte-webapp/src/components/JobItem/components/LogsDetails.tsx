@@ -1,13 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 
-import { Attempt, Logs, JobDebugInfoMeta } from "core/domain/job";
+import { Logs } from "core/domain/job";
 
-import DownloadButton from "./DownloadButton";
-import DebugInfoButton from "./DebugInfoButton";
-import LogsTable from "./Logs";
+import { AttemptRead, JobDebugRead } from "../../../core/request/GeneratedApi";
 import AttemptDetails from "./AttemptDetails";
+import DebugInfoButton from "./DebugInfoButton";
+import DownloadButton from "./DownloadButton";
 import { LinkToAttemptButton } from "./LinkToAttemptButton";
+import LogsTable from "./Logs";
 
 const LogHeader = styled.div`
   display: flex;
@@ -31,9 +32,9 @@ const LogPath = styled.span`
 const LogsDetails: React.FC<{
   id: number | string;
   path: string;
-  currentAttempt?: Attempt | null;
+  currentAttempt?: AttemptRead | null;
   logs?: Logs;
-  jobDebugInfo?: JobDebugInfoMeta;
+  jobDebugInfo?: JobDebugRead;
 }> = ({ path, logs, id, currentAttempt, jobDebugInfo }) => (
   <>
     {currentAttempt && (

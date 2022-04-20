@@ -1,19 +1,17 @@
-import { JobInfo } from "core/domain/job/Job";
-
 import { CommonRequestError } from "./CommonRequestError";
+import { JobWithAttemptsRead } from "./GeneratedApi";
 
 export class LogsRequestError extends CommonRequestError {
   __type = "common.errorWithLogs";
-  jobInfo: JobInfo;
+  jobInfo: JobWithAttemptsRead;
 
-  constructor(jobInfo: JobInfo, response: Response, msg?: string) {
+  constructor(jobInfo: JobWithAttemptsRead, response: Response, msg?: string) {
     super(response, msg);
     this.jobInfo = jobInfo;
     this._status = 400;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static extractJobInfo(error: any): JobInfo | null {
+  static extractJobInfo(error: any): JobWithAttemptsRead | null {
     if (!error) {
       return null;
     }
