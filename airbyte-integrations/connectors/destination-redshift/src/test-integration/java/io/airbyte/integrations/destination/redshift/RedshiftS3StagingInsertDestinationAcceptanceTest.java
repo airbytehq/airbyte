@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
@@ -32,66 +31,54 @@ import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
- * contain S3 credentials by default, we remove these credentials.
- */
-class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcceptanceTest {
+public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcceptanceTest {
 
   public static final String DATASET_ID = Strings.addRandomSuffix("airbyte_tests", "_", 8);
   private static final String TYPE = "type";
   private ConfiguredAirbyteCatalog catalog;
 
   private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users_" + RandomStringUtils.randomAlphabetic(5);
+  private static final String BOOKS_STREAM_NAME = "books_" + RandomStringUtils.randomAlphabetic(5);
 
-  private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
+  private static final AirbyteMessage MESSAGE_BOOKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+          .withRecord(new AirbyteRecordMessage().withStream(BOOKS_STREAM_NAME)
+                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "Harry Potter").put("id", "10").build()))
                   .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
+  private static final AirbyteMessage MESSAGE_BOOKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+          .withRecord(new AirbyteRecordMessage().withStream(BOOKS_STREAM_NAME)
+                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "The Great Gatsby").put("id", "30").build()))
                   .withEmittedAt(NOW.toEpochMilli()));
-  private static final AirbyteMessage USER_IN_THE_DB = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "Alex").put("id", "1").build()))
+  private static final AirbyteMessage BOOKS_IN_THE_DB = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+          .withRecord(new AirbyteRecordMessage().withStream(BOOKS_STREAM_NAME)
+                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "Brave New World").put("id", "1").build()))
                   .withEmittedAt(NOW.toEpochMilli()));
 
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
           .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   public JsonNode getStaticConfig() {
-    return removeStagingConfigurationFromRedshift(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
-  }
-
-  public static JsonNode removeStagingConfigurationFromRedshift(final JsonNode config) {
-    final var original = (ObjectNode) Jsons.clone(config);
-    original.remove("s3_bucket_name");
-    original.remove("s3_bucket_region");
-    original.remove("access_key_id");
-    original.remove("secret_access_key");
-    return original;
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   void setup(){
-    MESSAGE_USERS1.getRecord().setNamespace(DATASET_ID);
-    MESSAGE_USERS2.getRecord().setNamespace(DATASET_ID);
+    MESSAGE_BOOKS1.getRecord().setNamespace(DATASET_ID);
+    MESSAGE_BOOKS2.getRecord().setNamespace(DATASET_ID);
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-            CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, DATASET_ID,
+            CatalogHelpers.createConfiguredAirbyteStream(BOOKS_STREAM_NAME, DATASET_ID,
                             io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
                             io.airbyte.protocol.models.Field.of("id", JsonSchemaType.STRING))
                     .withDestinationSyncMode(DestinationSyncMode.APPEND)));
   }
 
   @Test
-  void testIfSuperTmpTableWasCreatedAfterVarcharTmpTable() throws Exception {
+  void testIfSuperTmpTableWasCreatedAfterVarcharTmpTableDuringS3Staging() throws Exception {
     setup();
     Database database = getDatabase();
-    String rawTableName = this.getNamingResolver().getRawTableName(USERS_STREAM_NAME);
+    String rawTableName = this.getNamingResolver().getRawTableName(BOOKS_STREAM_NAME);
     createTmpTableWithVarchar(database, rawTableName);
 
     assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, rawTableName, "character varying"));
@@ -99,20 +86,20 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
     final Destination destination = new RedshiftDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
     consumer.start();
-    consumer.accept(MESSAGE_USERS1);
-    consumer.accept(MESSAGE_USERS2);
+    consumer.accept(MESSAGE_BOOKS1);
+    consumer.accept(MESSAGE_BOOKS2);
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
     assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, rawTableName, "super"));
 
-    final List<JsonNode> usersActual = retrieveRecords(testDestinationEnv, USERS_STREAM_NAME, DATASET_ID, config);
+    final List<JsonNode> booksActual = retrieveRecords(testDestinationEnv, BOOKS_STREAM_NAME, DATASET_ID, config);
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(
-            MESSAGE_USERS1.getRecord().getData(),
-            MESSAGE_USERS2.getRecord().getData(),
-            USER_IN_THE_DB.getRecord().getData());
-    assertEquals(expectedUsersJson.size(), usersActual.size());
-    assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
+            MESSAGE_BOOKS1.getRecord().getData(),
+            MESSAGE_BOOKS2.getRecord().getData(),
+            BOOKS_IN_THE_DB.getRecord().getData());
+    assertEquals(expectedUsersJson.size(), booksActual.size());
+    assertTrue(expectedUsersJson.containsAll(booksActual) && booksActual.containsAll(expectedUsersJson));
   }
 
   private void createTmpTableWithVarchar(final Database database, final String streamName) throws SQLException {
@@ -128,7 +115,7 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
       // Simulate existing record
       q.fetch(String.format("""
       insert into %s.%s (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at) values  
-      ('9', '{\"id\":\"1\",\"name\":\"Alex\"}', '2022-02-09 12:02:13.322000 +00:00')""",
+      ('9', '{\"id\":\"1\",\"name\":\"Brave New World\"}', '2022-02-09 12:02:13.322000 +00:00')""",
               DATASET_ID,
               streamName));
       return null;
