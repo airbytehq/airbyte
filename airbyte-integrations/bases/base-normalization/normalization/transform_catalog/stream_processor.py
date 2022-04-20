@@ -6,11 +6,12 @@
 import os
 import re
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
 from normalization.destination_type import DestinationType
+from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
@@ -92,7 +93,7 @@ class StreamProcessor(object):
         json_column_name: str,
         properties: Dict,
         tables_registry: TableNameRegistry,
-        from_table: str,
+        from_table: Union[str, dbt_macro.Macro],
     ):
         """
         See StreamProcessor.create()
@@ -108,7 +109,7 @@ class StreamProcessor(object):
         self.json_column_name: str = json_column_name
         self.properties: Dict = properties
         self.tables_registry: TableNameRegistry = tables_registry
-        self.from_table: str = from_table
+        self.from_table: Union[str, dbt_macro.Macro] = from_table
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.json_path: List[str] = [stream_name]
@@ -121,6 +122,7 @@ class StreamProcessor(object):
         self.airbyte_emitted_at = "_airbyte_emitted_at"
         self.airbyte_normalized_at = "_airbyte_normalized_at"
         self.airbyte_unique_key = "_airbyte_unique_key"
+        self.models_to_source: Dict[str, str] = {}
 
     @staticmethod
     def create_from_parent(
@@ -177,7 +179,7 @@ class StreamProcessor(object):
         json_column_name: str,
         properties: Dict,
         tables_registry: TableNameRegistry,
-        from_table: str,
+        from_table: Union[str, dbt_macro.Macro],
     ) -> "StreamProcessor":
         """
         @param stream_name of the stream being processed
@@ -219,6 +221,14 @@ class StreamProcessor(object):
         for child in self.find_children_streams(self.from_table, column_names):
             child.collect_table_names()
 
+    def get_stream_source(self):
+        if not self.parent:
+            return self.from_table.source_name + "." + self.from_table.table_name
+        cur = self.parent
+        while cur.parent:
+            cur = cur.parent
+        return cur.from_table.source_name + "." + cur.from_table.table_name
+
     def process(self) -> List["StreamProcessor"]:
         """
         See description of StreamProcessor class.
@@ -236,7 +246,7 @@ class StreamProcessor(object):
             print(f"  Ignoring stream '{self.stream_name}' from {self.current_json_path()} because no columns were identified")
             return []
 
-        from_table = self.from_table
+        from_table = str(self.from_table)
         # Transformation Pipeline for this stream
         from_table = self.add_to_outputs(
             self.generate_json_parsing_model(from_table, column_names),
@@ -367,7 +377,7 @@ class StreamProcessor(object):
                     children.append(stream_processor)
         return children
 
-    def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         if self.destination_type == DestinationType.ORACLE:
             table_alias = ""
         else:
@@ -450,7 +460,7 @@ where 1 = 1
 
         return f"{json_extract} as {column_name}"
 
-    def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         template = Template(
             """
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
@@ -484,7 +494,7 @@ where 1 = 1
     def cast_property_types(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [self.cast_property_type(field, column_names[field][0], column_names[field][1]) for field in column_names]
 
-    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> str:
+    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:
         definition = self.properties[property_name]
         if "type" not in definition:
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
@@ -553,7 +563,7 @@ where 1 = 1
             return f"cast({column_name} as {sql_type}) as {column_name}"
 
     @staticmethod
-    def generate_mysql_date_format_statement(column_name: str) -> str:
+    def generate_mysql_date_format_statement(column_name: str) -> Any:
         template = Template(
             """
         case when {{column_name}} = '' then NULL
@@ -564,7 +574,7 @@ where 1 = 1
         return template.render(column_name=column_name)
 
     @staticmethod
-    def generate_snowflake_timestamp_statement(column_name: str) -> str:
+    def generate_snowflake_timestamp_statement(column_name: str) -> Any:
         """
         Generates snowflake DB specific timestamp case when statement
         """
@@ -590,7 +600,7 @@ where 1 = 1
         )
         return template.render(formats=formats, column_name=column_name)
 
-    def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
 
         template = Template(
             """
@@ -646,6 +656,8 @@ where 1 = 1
             col = f"boolean_to_string({column_name})"
         elif is_array(definition["type"]):
             col = f"array_to_string({column_name})"
+        elif is_object(definition["type"]):
+            col = f"object_to_string({column_name})"
         else:
             col = column_name
 
@@ -655,7 +667,7 @@ where 1 = 1
 
         return col
 
-    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         cursor_field = self.get_cursor_field(column_names)
         order_null = f"is null asc,\n            {cursor_field} desc"
         if self.destination_type.value == DestinationType.ORACLE.value:
@@ -981,7 +993,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
             else:
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
-    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> str:
+    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> Any:
         template = Template(
             """
 -- Final base SQL model
@@ -1022,7 +1034,7 @@ where 1 = 1
     def is_incremental_mode(destination_sync_mode: DestinationSyncMode) -> bool:
         return destination_sync_mode.value in [DestinationSyncMode.append.value, DestinationSyncMode.append_dedup.value]
 
-    def add_incremental_clause(self, sql_query: str) -> str:
+    def add_incremental_clause(self, sql_query: str) -> Any:
         template = Template(
             """
 {{ sql_query }}
@@ -1097,7 +1109,8 @@ where 1 = 1
         self.sql_outputs[output] = template.render(config=config, sql=sql, tags=self.get_model_tags(is_intermediate))
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
-        return ref_table(file_name)
+        self.models_to_source[file_name] = self.get_stream_source()
+        return str(dbt_macro.Ref(file_name))
 
     def get_model_materialization_mode(self, is_intermediate: bool, column_count: int = 0) -> TableMaterializationType:
         if is_intermediate:
@@ -1257,10 +1270,6 @@ where 1 = 1
 
 
 # Static Functions
-
-
-def ref_table(file_name: str) -> str:
-    return f"ref('{file_name}')"
 
 
 def find_properties_object(path: List[str], field: str, properties) -> Dict[str, Dict]:
