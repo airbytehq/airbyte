@@ -1,44 +1,40 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
-import { SourceDefinition } from "./types";
+import {
+  createSourceDefinition,
+  getSourceDefinition,
+  listSourceDefinitionsForWorkspace,
+  SourceDefinitionCreate,
+  SourceDefinitionRead,
+  SourceDefinitionUpdate,
+  updateSourceDefinition,
+} from "../../request/GeneratedApi";
 
-class SourceDefinitionService extends AirbyteRequestService {
+export class SourceDefinitionService extends AirbyteRequestService {
   get url(): string {
     return "source_definitions";
   }
 
-  public get(sourceDefinitionId: string): Promise<SourceDefinition> {
-    return this.fetch<SourceDefinition>(`${this.url}/get`, {
-      sourceDefinitionId,
-    });
+  public get(sourceDefinitionId: string) {
+    return getSourceDefinition({ sourceDefinitionId });
   }
 
-  public list(workspaceId: string): Promise<{ sourceDefinitions: SourceDefinition[] }> {
-    return this.fetch(`${this.url}/list`, {
-      workspaceId,
-    });
+  public list(workspaceId: string) {
+    return listSourceDefinitionsForWorkspace({ workspaceId });
   }
 
-  public listLatest(workspaceId: string): Promise<{ sourceDefinitions: SourceDefinition[] }> {
+  public listLatest(workspaceId: string): Promise<{ sourceDefinitions: SourceDefinitionRead[] }> {
+    // TODO: list_latest does not take a workspaceId
     return this.fetch(`${this.url}/list_latest`, {
       workspaceId,
     });
   }
 
-  public update(body: { sourceDefinitionId: string; dockerImageTag: string }): Promise<SourceDefinition> {
-    return this.fetch<SourceDefinition>(`${this.url}/update`, body);
+  public update(body: SourceDefinitionUpdate) {
+    return updateSourceDefinition(body);
   }
 
-  public create(body: CreateSourceDefinitionPayload): Promise<SourceDefinition> {
-    return this.fetch<SourceDefinition>(`${this.url}/create`, body);
+  public create(body: SourceDefinitionCreate) {
+    return createSourceDefinition(body);
   }
 }
-
-export type CreateSourceDefinitionPayload = {
-  name: string;
-  documentationUrl: string;
-  dockerImageTag: string;
-  dockerRepository: string;
-};
-
-export { SourceDefinitionService };
