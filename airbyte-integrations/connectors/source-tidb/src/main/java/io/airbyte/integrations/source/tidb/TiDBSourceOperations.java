@@ -1,4 +1,10 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.tidb;
+
+import static io.airbyte.db.jdbc.JdbcConstants.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
@@ -10,14 +16,11 @@ import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import static io.airbyte.db.jdbc.JdbcConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations<MysqlType> implements SourceOperations<ResultSet, MysqlType> {
 
@@ -138,9 +141,9 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
   public JsonSchemaType getJsonType(MysqlType mysqlType) {
     return switch (mysqlType) {
       case
-          // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
-          // getFieldType}
-          TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
+      // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
+      // getFieldType}
+      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case NULL -> JsonSchemaType.NULL;
       // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}
@@ -148,4 +151,5 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
       default -> JsonSchemaType.STRING;
     };
   }
+
 }

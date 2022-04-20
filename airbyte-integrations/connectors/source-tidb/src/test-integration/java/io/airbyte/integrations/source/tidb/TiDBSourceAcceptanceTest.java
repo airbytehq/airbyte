@@ -8,19 +8,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
+import java.util.HashMap;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.util.HashMap;
-
 
 public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -91,18 +88,18 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
+                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
+                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
 
   }

@@ -6,11 +6,11 @@ package io.airbyte.integrations.source.tidb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import com.mysql.cj.MysqlType;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -34,7 +34,7 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("port", container.getFirstMappedPort())
         .put("username", USER)
         .put("database", DATABASE)
-        //.put("ssl", true)
+        // .put("ssl", true)
         .build());
 
     super.setup();
