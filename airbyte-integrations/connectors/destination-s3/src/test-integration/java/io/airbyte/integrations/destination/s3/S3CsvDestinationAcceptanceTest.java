@@ -37,7 +37,9 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        "flattening", Flattening.ROOT_LEVEL.getValue()));
+        "flattening", Flattening.ROOT_LEVEL.getValue(),
+        // test gzip compression with the csv format
+        "gzip_compression", true));
   }
 
   /**
@@ -83,9 +85,9 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     return json;
   }
 
-  private static void addNoTypeValue(ObjectNode json, String key, String value) {
+  private static void addNoTypeValue(final ObjectNode json, final String key, final String value) {
     if (value != null && (value.matches("^\\[.*\\]$")) || value.matches("^\\{.*\\}$")) {
-      var newNode = Jsons.deserialize(value);
+      final var newNode = Jsons.deserialize(value);
       json.set(key, newNode);
     } else {
       json.put(key, value);

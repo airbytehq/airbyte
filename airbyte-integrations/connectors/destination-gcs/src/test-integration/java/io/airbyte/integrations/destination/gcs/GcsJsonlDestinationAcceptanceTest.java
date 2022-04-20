@@ -27,7 +27,10 @@ public class GcsJsonlDestinationAcceptanceTest extends GcsDestinationAcceptanceT
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.jsonNode(Map.of("format_type", outputFormat));
+    return Jsons.jsonNode(Map.of(
+        "format_type", outputFormat,
+        // test the jsonl format with compression
+        "gzip_compression", true));
   }
 
   @Override
