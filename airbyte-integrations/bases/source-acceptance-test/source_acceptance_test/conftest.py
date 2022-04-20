@@ -24,7 +24,7 @@ from airbyte_cdk.models import (
 )
 from docker import errors
 from source_acceptance_test.config import Config
-from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config, load_yaml_or_json_path
 
 
 @pytest.fixture(name="base_path")
@@ -117,7 +117,8 @@ def malformed_connector_config_fixture(connector_config) -> MutableMapping[str, 
 
 @pytest.fixture(name="connector_spec")
 def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
-    return ConnectorSpecification.parse_file(connector_spec_path)
+    spec_obj = load_yaml_or_json_path(connector_spec_path)
+    return ConnectorSpecification.parse_obj(spec_obj)
 
 
 @pytest.fixture(name="docker_runner")

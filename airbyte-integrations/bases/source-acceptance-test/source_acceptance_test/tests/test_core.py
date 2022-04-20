@@ -59,7 +59,7 @@ class TestSpec(BaseTest):
     def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
-            assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.json file"
+            assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
 
     def test_docker_env(self, actual_connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
         """Check that connector's docker image has required envs"""
