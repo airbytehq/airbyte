@@ -1,0 +1,16 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Enquire Labs Spec",
+    "type": "object",
+    "required": ["secret_key"],
+    "additionalProperties": false,
+    "properties": {
+      "secret_key": {
+        "type": "string",
+        "description": "secret key of enquire labs"
+      }
+    }
+  }
+}
