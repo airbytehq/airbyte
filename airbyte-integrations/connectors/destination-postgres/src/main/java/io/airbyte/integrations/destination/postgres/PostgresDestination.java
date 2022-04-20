@@ -25,6 +25,13 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final String DRIVER_CLASS = "org.postgresql.Driver";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
+  public static final String DATABASE_KEY = "database";
+  public static final String JDBC_URL_KEY = "jdbc_url";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String PASSWORD_KEY = "password";
+  public static final String SSL_KEY = "ssl";
+  public static final String USERNAME_KEY = "username";
+  public static final String SCHEMA_KEY = "schema";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
@@ -43,7 +50,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     if (useSsl(config)) {
       return SSL_JDBC_PARAMETERS;
     } else {
-      // No need for any parameters if the connection doesn't use SSL
+      // No need for any other default parameters if the connection doesn't use SSL
       return Collections.emptyMap();
     }
   }
@@ -52,10 +59,10 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String schema = Optional.ofNullable(config.get(SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
+    final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get(DATABASE_KEY).asText()));
+        config.get(DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
