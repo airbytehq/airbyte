@@ -2,7 +2,7 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 import { User } from "./types";
 
-class UserService extends AirbyteRequestService {
+export class UserService extends AirbyteRequestService {
   get url(): string {
     return `users`;
   }
@@ -70,5 +70,3 @@ class UserService extends AirbyteRequestService {
     return users;
   }
 }
-
-export { UserService };

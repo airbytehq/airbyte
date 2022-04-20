@@ -2,7 +2,7 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 import { CloudWorkspace, CloudWorkspaceUsage } from "./types";
 
-class CloudWorkspacesService extends AirbyteRequestService {
+export class CloudWorkspacesService extends AirbyteRequestService {
   get url() {
     return `cloud_workspaces`;
   }
@@ -65,5 +65,3 @@ class CloudWorkspacesService extends AirbyteRequestService {
     });
   }
 }
-
-export { CloudWorkspacesService };
