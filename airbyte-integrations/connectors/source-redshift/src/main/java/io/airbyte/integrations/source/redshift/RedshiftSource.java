@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -35,7 +36,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
   public RedshiftSource() {
-    super(DRIVER_CLASS, new RedshiftJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, new DefaultJdbcStreamingQueryConfig(), JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override

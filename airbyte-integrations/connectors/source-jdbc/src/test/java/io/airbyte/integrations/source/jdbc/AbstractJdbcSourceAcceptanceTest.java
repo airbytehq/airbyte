@@ -9,8 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -93,7 +93,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     static final String DRIVER_CLASS = "org.postgresql.Driver";
 
     public PostgresTestSource() {
-      super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+      super(DRIVER_CLASS, new DefaultJdbcStreamingQueryConfig(), JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override

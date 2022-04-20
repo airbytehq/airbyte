@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.Db2JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -35,13 +35,12 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
   public static final String USERNAME = "username";
   public static final String PASSWORD = "password";
-  private static Db2SourceOperations operations;
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
 
   public Db2Source() {
-    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), new Db2SourceOperations());
+    super(DRIVER_CLASS, new DefaultJdbcStreamingQueryConfig(), new Db2SourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
@@ -96,7 +95,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   }
 
   @Override
-  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
     return false;
   }
 
@@ -105,7 +104,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
         "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
   }
 
-  private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {
+  private JdbcPrivilegeDto getPrivilegeDto(final JsonNode jsonNode) {
     return JdbcPrivilegeDto.builder()
         .schemaName(jsonNode.get("OBJECTSCHEMA").asText().trim())
         .tableName(jsonNode.get("OBJECTNAME").asText())

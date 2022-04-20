@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.snowflake;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -21,7 +22,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public static final String DRIVER_CLASS = "net.snowflake.client.jdbc.SnowflakeDriver";
 
   public SnowflakeSource() {
-    super(DRIVER_CLASS, new SnowflakeJdbcStreamingQueryConfiguration(), new SnowflakeSourceOperations());
+    super(DRIVER_CLASS, new DefaultJdbcStreamingQueryConfig(), new SnowflakeSourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
