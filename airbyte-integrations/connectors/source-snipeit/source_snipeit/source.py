@@ -38,7 +38,6 @@ The approach here is not authoritative, and devs are free to use their own judge
 There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
 """
 
-
 # Source
 class SourceSnipeit(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:

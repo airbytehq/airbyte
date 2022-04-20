@@ -36,13 +36,13 @@ class SnipeitStream(HttpStream, ABC):
         self.total: int = 0
         self.offset: int = 0
 
-    # TODO: Fill in the url base. Required.
+        # NOTE: This is probably not the best idea.
+        self.stop_immediately = False
+
     url_base = "https://infinit-o.snipe-it.io/api/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
         This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
         to most other methods in this class to help you form headers, request bodies, query params, etc..
 
@@ -54,7 +54,9 @@ class SnipeitStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        if self.offset < self.total:
+        if self.stop_immediately:
+            return {}
+        elif self.offset < self.total:
             self.offset += self.limit_per_page
             return {"offset": self.offset}
         else:
@@ -64,14 +66,15 @@ class SnipeitStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {}
+        if next_page_token:
+            return {'limit': self.limit_per_page, 'offset': next_page_token.get("offset", None)}
+        else:
+            return {'limit': self.limit_per_page, 'offset': self.offset}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
         self.total = response.json().get("total", 0)

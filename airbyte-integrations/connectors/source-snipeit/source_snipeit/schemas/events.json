@@ -3,24 +3,22 @@
     "name": "events",
     "type": "object",
     "properties": {
-        "action_date": {},
-        "action_type": {},
-        "admin": {},
-        "created_at": {},
-        "days_to_next_audit": {},
-        "file": {},
-        "icon": {},
-        "id": {},
-        "item": {},
-        "location": {},
-        "log_meta": {},
-        "next_audit_date": {},
-        "note": {},
-        "signature_file": {},
-        "target": {},
+        "id": {"type": "integer"},
+        "icon": {"type": "string"},
+        "file": {"type": "string"},
+        "item": {"type": "object"},
+        "location": {"type": "string"},
+        "created_at": {"type": "object"},
         "updated_at": {
-            "datetime": {"type": "string"},
-            "formatted": {"type": "string"}
-        }
+            "type": "object",
+            "properties": {
+                "datetime": {"type": "string"},
+                "formatted": {"type": "string"}
+            }
+        },
+        "next_audit_date": {"type": "object"},
+        "days_to_next_audit": {"type": "integer"},
+        "action_type": {"type": "string"},
+        "admin": {"type": "object"}
     }
 }
