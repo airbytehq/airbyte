@@ -3,10 +3,9 @@ package io.airbyte.integrations.destination.bigquery.factory;
 import static com.google.common.base.Charsets.UTF_8;
 import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.CREDENTIALS;
 import static java.util.Objects.isNull;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.api.services.iam.v1.model.ServiceAccount;
-import com.google.api.services.iam.v1.model.ServiceAccountKey;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -17,12 +16,11 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
-import io.airbyte.integrations.destination.bigquery.oauth.BigQueryServiceAccountKeysManager;
-import io.airbyte.integrations.destination.bigquery.oauth.BigQueryServiceAccountManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +28,8 @@ public class BigQueryCredentialsFactory {
 
   private static final String AUTH_TYPE = "auth_type";
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryCredentialsFactory.class);
+
+
 
   private BigQueryCredentialsFactory() {
   }
@@ -49,7 +49,7 @@ public class BigQueryCredentialsFactory {
   }
 
   private static Credentials getOAuthClientCredentials(JsonNode config) {
-    AccessToken accessToken = new AccessToken(config.get(CREDENTIALS).get("access_token").asText(), null);
+    AccessToken accessToken = new AccessToken(config.get(CREDENTIALS).get("access_token").asText(), calculateTokenExpirationDate(config));
     String refreshToken = config.get(CREDENTIALS).get("refresh_token").asText();
     GoogleCredentials credentials =
         UserCredentials.newBuilder()
@@ -58,6 +58,7 @@ public class BigQueryCredentialsFactory {
             .setAccessToken(accessToken)
             .setRefreshToken(refreshToken)
             .build();
+
     try {
       credentials.refreshIfExpired();
     } catch (IOException e) {
@@ -86,31 +87,10 @@ public class BigQueryCredentialsFactory {
     return credentials;
   }
 
-  private static BigQuery createServiceAccountAndServiceKeyFromOAuth(JsonNode config) {
-    final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-    final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-    final String accessToken = config.get(CREDENTIALS).get("access_token").asText();
-    final String expiresIn = config.get(CREDENTIALS).get("expires_in").asText();
-    Date date = calculateTokenExpirationDate(expiresIn);
-    ServiceAccount serviceAccount = BigQueryServiceAccountManager.createServiceAccount(projectId, "testbigquery-otsukanov", accessToken, date);
-    ServiceAccountKey key = BigQueryServiceAccountKeysManager.createKey(projectId, serviceAccount.getEmail(), accessToken);
-    InputStream stream = new ByteArrayInputStream(key.decodePrivateKeyData());
-    try {
-      GoogleCredentials credentials = GoogleCredentials.fromStream(stream);
-      return bigQueryBuilder
-          .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
-          .build()
-          .getService();
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static Date calculateTokenExpirationDate(String expiresIn) {
-    Date currentTime = new Date();
-    long time = currentTime.getTime();
-    return new Date(time + Long.parseLong(expiresIn));
+  // GCP sends "expires_in" in seconds, we convert it to milliseconds and sum current time with it.
+  private static Date calculateTokenExpirationDate(JsonNode config) {
+    return new Date(System.currentTimeMillis() +
+        SECONDS.toMillis(config.get(CREDENTIALS).get("expires_in").asLong()));
   }
 
   public static boolean isOauth(JsonNode config) {

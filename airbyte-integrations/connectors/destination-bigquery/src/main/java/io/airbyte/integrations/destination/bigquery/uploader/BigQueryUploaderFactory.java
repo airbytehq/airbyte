@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import static io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory.isOauth;
 import static io.airbyte.integrations.destination.s3.avro.AvroConstants.JSON_CONVERTER;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -20,7 +19,6 @@ import com.google.cloud.bigquery.WriteChannelConfiguration;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.UploadingMethod;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.bigquery.oauth.BigQueryBucketManager;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
@@ -90,9 +88,6 @@ public class BigQueryUploaderFactory {
                                                                        final boolean isDefaultAirbyteTmpSchema)
       throws IOException {
     final GcsDestinationConfig gcsDestinationConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
-    if (isOauth(config)) {
-      BigQueryBucketManager.createBucketWithStorageClassAndLocation(config);
-    }
     final JsonNode tmpTableSchema =
         (isDefaultAirbyteTmpSchema ? null : formatter.getJsonSchema());
     final GcsAvroWriter gcsCsvWriter =
