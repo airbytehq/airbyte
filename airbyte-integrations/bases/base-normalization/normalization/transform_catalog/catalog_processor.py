@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Set
 import yaml
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from normalization.destination_type import DestinationType
+from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
@@ -35,6 +36,7 @@ class CatalogProcessor:
         self.output_directory: str = output_directory
         self.destination_type: DestinationType = destination_type
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
+        self.models_to_source: Dict[str, str] = {}
 
     def process(self, catalog_file: str, json_column_name: str, default_schema: str):
         """
@@ -72,6 +74,8 @@ class CatalogProcessor:
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
+            self.models_to_source.update(stream_processor.models_to_source)
+
             if nested_processors and len(nested_processors) > 0:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
@@ -133,7 +137,7 @@ class CatalogProcessor:
             message = f"'json_schema'.'properties' are not defined for stream {stream_name}"
             properties = get_field(get_field(stream_config, "json_schema", message), "properties", message)
 
-            from_table = "source('{}', '{}')".format(schema_name, raw_table_name)
+            from_table = dbt_macro.Source(schema_name, raw_table_name)
 
             stream_processor = StreamProcessor.create(
                 stream_name=stream_name,
@@ -163,6 +167,7 @@ class CatalogProcessor:
             for substream in children:
                 substream.tables_registry = tables_registry
                 nested_processors = substream.process()
+                self.models_to_source.update(substream.models_to_source)
                 if nested_processors:
                     substreams += nested_processors
                 for file in substream.sql_outputs:
