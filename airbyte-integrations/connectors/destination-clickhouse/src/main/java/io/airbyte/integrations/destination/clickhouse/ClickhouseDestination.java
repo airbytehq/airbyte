@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.CreateDropTableOperation;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.HashMap;
@@ -71,7 +72,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     try (final JdbcDatabase database = getDatabase(config)) {
       final NamingConventionTransformer namingResolver = getNamingResolver();
       final String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
+      new CreateDropTableOperation().attempt(outputSchema, database, namingResolver, getSqlOperations());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);

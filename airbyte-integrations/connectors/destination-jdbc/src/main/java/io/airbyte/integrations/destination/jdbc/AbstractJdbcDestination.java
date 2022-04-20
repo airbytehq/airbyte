@@ -20,7 +20,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +56,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
-          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations));
+          () -> new CreateDropTableOperation().attempt(outputSchema, database, namingResolver, sqlOperations));
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -65,22 +64,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
     }
-  }
-
-  public static void attemptSQLCreateAndDropTableOperations(final String outputSchema,
-                                                            final JdbcDatabase database,
-                                                            final NamingConventionTransformer namingResolver,
-                                                            final SqlOperations sqlOps)
-      throws Exception {
-    // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-    database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils.getDefaultSourceOperations()::rowToJson);
-
-    // verify we have write permissions on the target schema by creating a table with a random name,
-    // then dropping that table
-    final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
-    sqlOps.createSchemaIfNotExists(database, outputSchema);
-    sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
-    sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
   }
 
   protected JdbcDatabase getDatabase(final JsonNode config) {

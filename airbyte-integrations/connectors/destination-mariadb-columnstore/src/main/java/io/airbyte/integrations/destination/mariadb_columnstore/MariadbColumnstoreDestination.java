@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.CreateDropTableOperation;
 import io.airbyte.integrations.destination.mariadb_columnstore.MariadbColumnstoreSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -53,11 +54,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
       mariadbColumnstoreSqlOperations.verifyLocalFileEnabled(database);
 
-      attemptSQLCreateAndDropTableOperations(
-          outputSchema,
-          database,
-          getNamingResolver(),
-          mariadbColumnstoreSqlOperations);
+      new CreateDropTableOperation().attempt(outputSchema, database, getNamingResolver(), getSqlOperations());
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

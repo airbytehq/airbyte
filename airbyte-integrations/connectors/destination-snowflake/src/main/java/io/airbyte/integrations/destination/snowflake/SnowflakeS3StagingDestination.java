@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.CreateDropTableOperation;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
@@ -47,7 +48,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
-          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, SnowflakeS3StagingSqlOperations));
+          () -> new CreateDropTableOperation().attempt(outputSchema, database, nameTransformer, SnowflakeS3StagingSqlOperations));
       AirbyteSentry.executeWithTracing("CreateAndDropStage",
           () -> attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, SnowflakeS3StagingSqlOperations));
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);

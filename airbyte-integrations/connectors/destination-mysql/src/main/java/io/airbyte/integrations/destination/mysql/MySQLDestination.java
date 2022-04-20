@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.CreateDropTableOperation;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -61,8 +62,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
       final String outputSchema = getNamingResolver().getIdentifier(config.get(DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
-          mySQLSqlOperations);
+      new CreateDropTableOperation().attempt(outputSchema, database, getNamingResolver(), getSqlOperations());
 
       mySQLSqlOperations.verifyLocalFileEnabled(database);
 

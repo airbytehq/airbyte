@@ -9,7 +9,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.CreateDropTableOperation;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.slf4j.Logger;
@@ -57,7 +57,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
     try (final JdbcDatabase database = getDatabase(config)) {
       final var nameTransformer = getNameTransformer();
       final var outputSchema = nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
-      AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
+      new CreateDropTableOperation().attempt(outputSchema, database, nameTransformer, getSqlOperations());
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
