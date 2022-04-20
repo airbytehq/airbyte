@@ -29,6 +29,7 @@ const TransformationField: React.FC<
       {(editableItem) => (
         <TransformationForm
           transformation={editableItem ?? defaultTransformation}
+          isNewTransformation={!editableItem}
           onCancel={() => setEditableItem(null)}
           onDone={(transformation) => {
             if (isDefined(editableItemIdx)) {
