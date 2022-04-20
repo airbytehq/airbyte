@@ -3,11 +3,11 @@ import React from "react";
 
 import { getIcon } from "utils/imageUtils";
 
-type Props = {
+interface Props {
   icon?: string;
   className?: string;
   small?: boolean;
-};
+}
 
 export const Content = styled.div<{ $small?: boolean }>`
   height: 25px;
