@@ -9071,7 +9071,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.6"
+- dockerImage: "airbyte/source-zendesk-support:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
@@ -9113,6 +9113,9 @@
               credentials:
                 type: "string"
                 const: "oauth2.0"
+                enum:
+                - "oauth2.0"
+                default: "oauth2.0"
                 order: 0
               access_token:
                 type: "string"
@@ -9131,6 +9134,9 @@
               credentials:
                 type: "string"
                 const: "api_token"
+                enum:
+                - "api_token"
+                default: "api_token"
                 order: 0
               email:
                 title: "Email"
