@@ -1,10 +1,11 @@
+import { setIn } from "formik";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
-import { setIn } from "formik";
 
 import { DropDownRow } from "components";
 
+import FrequencyConfig from "config/FrequencyConfig.json";
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
@@ -12,27 +13,32 @@ import {
   SyncSchema,
   SyncSchemaStream,
 } from "core/domain/catalog";
-import { ValuesProps } from "hooks/services/useConnectionHook";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import {
   isDbtTransformation,
   isNormalizationTransformation,
   NormalizationType,
-  Operation,
   OperatorType,
   Transformation,
 } from "core/domain/connection/operation";
-import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection, ScheduleProperties } from "core/domain/connection";
-import { ConnectionNamespaceDefinition, ConnectionSchedule } from "core/domain/connection";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
+import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import { DestinationDefinitionSpecification } from "core/domain/connector";
+
+import {
+  AirbyteStreamAndConfiguration,
+  ConnectionSchedule,
+  DestinationDefinitionSpecificationRead,
+  NamespaceDefinitionType,
+  OperationRead,
+  WebBackendConnectionRead,
+} from "../../../core/request/GeneratedApi";
 
 type FormikConnectionFormValues = {
-  schedule?: ScheduleProperties | null;
+  schedule?: ConnectionSchedule | null;
   prefix: string;
   syncCatalog: SyncSchema;
-  namespaceDefinition?: ConnectionNamespaceDefinition;
+  namespaceDefinition?: NamespaceDefinitionType;
   namespaceFormat: string;
   transformations?: Transformation[];
   normalization?: NormalizationType;
@@ -44,22 +50,24 @@ const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
   [SyncMode.FullRefresh, DestinationSyncMode.Append],
   [SyncMode.Incremental, DestinationSyncMode.Append],
-  [SyncMode.Incremental, DestinationSyncMode.Dedupted],
+  [SyncMode.Incremental, DestinationSyncMode.Deduped],
 ];
 
-const DEFAULT_SCHEDULE: ScheduleProperties = {
+const DEFAULT_SCHEDULE: ConnectionSchedule = {
   units: 24,
-  timeUnit: ConnectionSchedule.Hours,
+  timeUnit: "hours",
 };
 
 function useDefaultTransformation(): Transformation {
   const workspace = useCurrentWorkspace();
   return {
+    operationId: "", // TODO: Does this need a value?
     name: "My dbt transformations",
     workspaceId: workspace.workspaceId,
     operatorConfiguration: {
       operatorType: OperatorType.Dbt,
       dbt: {
+        gitRepoUrl: "", // TODO: Does this need a value?
         dockerImage: "fishtownanalytics/dbt:0.19.1",
         dbtArguments: "run",
       },
@@ -115,7 +123,7 @@ const connectionValidationSchema = yup
                 if (!value.selected) {
                   return true;
                 }
-                if (DestinationSyncMode.Dedupted === value.destinationSyncMode) {
+                if (DestinationSyncMode.Deduped === value.destinationSyncMode) {
                   // it's possible that primaryKey array is always present
                   // however yup couldn't determine type correctly even with .required() call
                   if (value.primaryKey?.length === 0) {
@@ -164,10 +172,10 @@ function mapFormPropsToOperation(
     transformations?: Transformation[];
     normalization?: NormalizationType;
   },
-  initialOperations: Operation[] = [],
+  initialOperations: OperationRead[] = [],
   workspaceId: string
-): Operation[] {
-  const newOperations: Operation[] = [];
+): OperationRead[] {
+  const newOperations: OperationRead[] = [];
 
   if (values.normalization) {
     if (values.normalization !== NormalizationType.RAW) {
@@ -179,6 +187,7 @@ function mapFormPropsToOperation(
         newOperations.push({
           name: "Normalization",
           workspaceId,
+          operationId: "", // TODO: Is this necessary?
           operatorConfiguration: {
             operatorType: OperatorType.Normalization,
             normalization: {
@@ -197,22 +206,22 @@ function mapFormPropsToOperation(
   return newOperations;
 }
 
-function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
-  if (streamNode.stream.defaultCursorField.length) {
+function getDefaultCursorField(streamNode: SyncSchemaStream) {
+  if (streamNode.stream?.defaultCursorField?.length) {
     return streamNode.stream.defaultCursorField;
   }
-  return streamNode.config.cursorField;
+  return streamNode.config?.cursorField;
 }
 
 const useInitialSchema = (schema: SyncSchema): SyncSchema =>
   useMemo<SyncSchema>(
     () => ({
-      streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
+      streams: schema.streams.map<AirbyteStreamAndConfiguration>((apiNode, id) => {
         const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
 
         // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
         // Otherwise, it supports whatever sync modes are present.
-        const streamNode = nodeWithId.stream.supportedSyncModes?.length
+        const streamNode = nodeWithId.stream?.supportedSyncModes?.length
           ? nodeWithId
           : setIn(nodeWithId, "stream.supportedSyncModes", [SyncMode.FullRefresh]);
 
@@ -247,23 +256,26 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
     [schema.streams]
   );
 
-const getInitialTransformations = (operations: Operation[]): Transformation[] => operations.filter(isDbtTransformation);
+const getInitialTransformations = (operations?: OperationRead[]): Transformation[] =>
+  operations?.filter(isDbtTransformation) ?? [];
 
-const getInitialNormalization = (operations: Operation[], isEditMode?: boolean): NormalizationType => {
+const getInitialNormalization = (operations?: OperationRead[], isEditMode?: boolean): NormalizationType => {
   let initialNormalization =
-    operations.find(isNormalizationTransformation)?.operatorConfiguration?.normalization?.option;
+    operations?.find(isNormalizationTransformation)?.operatorConfiguration?.normalization?.option;
 
   // If no normalization was selected for already present normalization -> select Raw one
   if (!initialNormalization && isEditMode) {
-    initialNormalization = NormalizationType.RAW;
+    initialNormalization = undefined;
   }
 
   return initialNormalization ?? NormalizationType.BASIC;
 };
 
 const useInitialValues = (
-  connection: Connection | (Partial<Connection> & Pick<Connection, "syncCatalog" | "source" | "destination">),
-  destDefinition: DestinationDefinitionSpecification,
+  connection:
+    | WebBackendConnectionRead
+    | (Partial<WebBackendConnectionRead> & Pick<WebBackendConnectionRead, "syncCatalog" | "source" | "destination">),
+  destDefinition: DestinationDefinitionSpecificationRead,
   isEditMode?: boolean
 ): FormikConnectionFormValues => {
   const initialSchema = useInitialSchema(connection.syncCatalog);

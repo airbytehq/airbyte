@@ -1,10 +1,15 @@
+import { Field, FieldArray } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldArray } from "formik";
 
 import { ContentCard, H4 } from "components";
 
+import { NormalizationType, OperatorType, Transformation } from "core/domain/connection";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
 import {
@@ -14,14 +19,11 @@ import {
   useDefaultTransformation,
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
-import { Connection, NormalizationType, Operation, OperatorType, Transformation } from "core/domain/connection";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
-import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+
+import { OperationRead, WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
 
 type TransformationViewProps = {
-  connection: Connection;
+  connection: WebBackendConnectionRead;
 };
 
 const Content = styled.div`
@@ -40,7 +42,7 @@ const NoSupportedTransformationCard = styled(ContentCard)`
 `;
 
 const CustomTransformationsCard: React.FC<{
-  operations: Operation[];
+  operations?: OperationRead[];
   onSubmit: (newValue: { transformations?: Transformation[] }) => void;
 }> = ({ operations, onSubmit }) => {
   const defaultTransformation = useDefaultTransformation();
@@ -71,7 +73,7 @@ const CustomTransformationsCard: React.FC<{
 };
 
 const NormalizationCard: React.FC<{
-  operations: Operation[];
+  operations?: OperationRead[];
   onSubmit: (newValue: { normalization?: NormalizationType }) => void;
 }> = ({ operations, onSubmit }) => {
   const initialValues = useMemo(
@@ -108,9 +110,11 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
 
     const operations = values.transformations
       ? connection.operations
-          .filter((op) => op.operatorConfiguration.operatorType === OperatorType.Normalization)
+          ?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Normalization)
           .concat(newOp)
-      : newOp.concat(connection.operations.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Dbt));
+      : newOp.concat(
+          (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Dbt)
+        );
 
     return updateConnection({
       namespaceDefinition: connection.namespaceDefinition,

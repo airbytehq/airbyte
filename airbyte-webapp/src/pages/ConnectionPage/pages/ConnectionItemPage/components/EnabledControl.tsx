@@ -5,9 +5,10 @@ import styled from "styled-components";
 import { Toggle } from "components";
 import { Status } from "components/EntityTable/types";
 
-import { Connection } from "core/domain/connection";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useUpdateConnection } from "hooks/services/useConnectionHook";
+
+import { WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -27,7 +28,7 @@ const Content = styled.div`
 `;
 
 type IProps = {
-  connection: Connection;
+  connection: WebBackendConnectionRead;
   disabled?: boolean;
   frequencyText?: string;
 };

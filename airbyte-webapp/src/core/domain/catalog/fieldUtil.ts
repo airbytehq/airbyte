@@ -4,14 +4,17 @@ import { ConnectionNamespaceDefinition } from "../connection";
 import { SOURCE_NAMESPACE_TAG } from "../connector/source";
 import { SyncSchemaField } from "./models";
 
-const traverseSchemaToField = (jsonSchema: JSONSchema7Definition, key: string): SyncSchemaField[] => {
+const traverseSchemaToField = (
+  jsonSchema: JSONSchema7Definition | undefined,
+  key: string | undefined
+): SyncSchemaField[] => {
   // For the top level we should not insert an extra object
   return traverseJsonSchemaProperties(jsonSchema, key)[0].fields ?? [];
 };
 
 const traverseJsonSchemaProperties = (
-  jsonSchema: JSONSchema7Definition,
-  key: string,
+  jsonSchema: JSONSchema7Definition | undefined,
+  key: string | undefined = "",
   path: string[] = []
 ): SyncSchemaField[] => {
   if (typeof jsonSchema === "boolean") {
@@ -19,7 +22,7 @@ const traverseJsonSchemaProperties = (
   }
 
   let fields: SyncSchemaField[] | undefined;
-  if (jsonSchema.properties) {
+  if (jsonSchema?.properties) {
     fields = Object.entries(jsonSchema.properties)
       .flatMap(([k, schema]) => traverseJsonSchemaProperties(schema, k, [...path, k]))
       .flat(2);
@@ -32,9 +35,9 @@ const traverseJsonSchemaProperties = (
       key,
       fields,
       type:
-        (Array.isArray(jsonSchema.type)
-          ? jsonSchema.type.find((t) => t !== "null") ?? jsonSchema.type[0]
-          : jsonSchema.type) ?? "null",
+        (Array.isArray(jsonSchema?.type)
+          ? jsonSchema?.type.find((t) => t !== "null") ?? jsonSchema?.type[0]
+          : jsonSchema?.type) ?? "null",
     },
   ];
 };

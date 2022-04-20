@@ -9,19 +9,14 @@ import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 
-import { useListConnectionsForWorkspace } from "../../../../core/request/GeneratedApi";
-import { useCurrentWorkspace } from "../../../../services/workspaces/WorkspacesService";
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
 
-  const workspace = useCurrentWorkspace();
   const { connections } = useConnectionList();
   // I'm unsure why this returns a promise and not a react-query hook.
-  const lConns = useListConnectionsForWorkspace({ workspaceId: workspace.workspaceId });
-  console.log(lConns);
   const { hasFeature } = useFeatureService();
   const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
 

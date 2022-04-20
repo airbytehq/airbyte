@@ -1,4 +1,4 @@
-import { ScheduleProperties } from "core/domain/connection";
+import { ConnectionSchedule } from "../../core/request/GeneratedApi";
 
 type EntityTableDataItem = {
   entityId: string;
@@ -23,7 +23,7 @@ type ITableDataItem = {
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
-  schedule: ScheduleProperties | null;
+  schedule: ConnectionSchedule | undefined;
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;

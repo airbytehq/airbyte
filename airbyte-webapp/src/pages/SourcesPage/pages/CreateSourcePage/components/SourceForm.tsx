@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import useRouter from "hooks/useRouter";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { SourceDefinition } from "core/domain/connector";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import useRouter from "hooks/useRouter";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
 type IProps = {
@@ -78,7 +78,7 @@ const SourceForm: React.FC<IProps> = ({ onSubmit, sourceDefinitions, error, hasS
       availableServices={sourceDefinitions}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       hasSuccess={hasSuccess}
-      fetchingConnectorError={sourceDefinitionError}
+      fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
       errorMessage={errorMessage}
       isLoading={isLoading}
       formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}

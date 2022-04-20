@@ -1,16 +1,17 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { Destination } from "core/domain/connector";
-import { isDefined } from "utils/common";
 import { useConfig } from "config";
+import { ConnectionConfiguration } from "core/domain/connection";
+import { Destination } from "core/domain/connector";
+import { DestinationService } from "core/domain/connector/DestinationService";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { DestinationService } from "core/domain/connector/DestinationService";
+import { isDefined } from "utils/common";
 
-import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { WebBackendConnectionRead } from "../../core/request/GeneratedApi";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -105,7 +106,7 @@ const useDeleteDestination = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation(
-    (payload: { destination: Destination; connectionsWithDestination: Connection[] }) =>
+    (payload: { destination: Destination; connectionsWithDestination: WebBackendConnectionRead[] }) =>
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {

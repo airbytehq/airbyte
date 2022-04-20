@@ -1,24 +1,17 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { useConfig } from "config";
-import {
-  Connection,
-  ConnectionNamespaceDefinition,
-  ScheduleProperties,
-  WebBackendConnectionService,
-} from "core/domain/connection";
 import { SyncSchema } from "core/domain/catalog";
-import { Operation } from "core/domain/connection/operation";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { equal } from "utils/objects";
-import { Destination, Source, SourceDefinition } from "core/domain/connector";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
-import { useInitService } from "services/useInitService";
+import { ConnectionNamespaceDefinition, ScheduleProperties, WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
+import { Destination, Source, SourceDefinition } from "core/domain/connector";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useInitService } from "services/useInitService";
+import { equal } from "utils/objects";
 
-import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { OperationCreate, WebBackendConnectionRead, WebBackendConnectionUpdate } from "../../core/request/GeneratedApi";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
@@ -34,58 +27,32 @@ export type ValuesProps = {
   syncCatalog: SyncSchema;
   namespaceDefinition: ConnectionNamespaceDefinition;
   namespaceFormat?: string;
-  operations?: Operation[];
+  operations?: OperationCreate[];
 };
 
 type CreateConnectionProps = {
   values: ValuesProps;
-  source?: Source;
-  destination?: Destination;
+  source: Source;
+  destination: Destination;
   sourceDefinition?: SourceDefinition | { name: string; sourceDefinitionId: string };
   destinationDefinition?: { name: string; destinationDefinitionId: string };
 };
 
-type UpdateConnection = {
-  connectionId: string;
-  syncCatalog?: SyncSchema;
-  namespaceDefinition: ConnectionNamespaceDefinition;
-  namespaceFormat?: string;
-  status: string;
-  prefix: string;
-  schedule?: ScheduleProperties | null;
-  operations?: Operation[];
-  withRefreshedCatalog?: boolean;
-};
-
-export type ListConnection = { connections: Connection[] };
+export type ListConnection = { connections: WebBackendConnectionRead[] };
 
 function useWebConnectionService(): WebBackendConnectionService {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-
-  return useInitService(
-    () => new WebBackendConnectionService(config.apiUrl, middlewares),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config, middlewares]
-  );
+  return useInitService(() => new WebBackendConnectionService(), []);
 }
 
-function useConnectionService(): ConnectionService {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-
-  return useInitService(
-    () => new ConnectionService(config.apiUrl, middlewares),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config, middlewares]
-  );
+function useConnectionService() {
+  return useInitService(() => new ConnectionService(), []);
 }
 
 export const useConnectionLoad = (
   connectionId: string
 ): {
-  connection: Connection;
-  refreshConnectionCatalog: () => Promise<Connection>;
+  connection: WebBackendConnectionRead;
+  refreshConnectionCatalog: () => Promise<WebBackendConnectionRead>;
 } => {
   const connection = useGetConnection(connectionId);
 
@@ -103,7 +70,7 @@ export const useSyncConnection = () => {
   const service = useConnectionService();
   const analyticsService = useAnalyticsService();
 
-  return useMutation((connection: Connection) => {
+  return useMutation((connection: WebBackendConnectionRead) => {
     const frequency = FrequencyConfig.find((item) => equal(item.config, connection.schedule));
 
     analyticsService.track("Source - Action", {
@@ -125,7 +92,7 @@ export const useResetConnection = () => {
   return useMutation((connectionId: string) => service.reset(connectionId));
 };
 
-const useGetConnection = (connectionId: string, options?: { refetchInterval: number }): Connection => {
+const useGetConnection = (connectionId: string, options?: { refetchInterval: number }): WebBackendConnectionRead => {
   const service = useWebConnectionService();
 
   return useSuspenseQuery(connectionsKeys.detail(connectionId), () => service.getConnection(connectionId), options);
@@ -141,8 +108,8 @@ const useCreateConnection = () => {
     async (conn: CreateConnectionProps) => {
       const { values, source, destination, sourceDefinition, destinationDefinition } = conn;
       const response = await service.create({
-        sourceId: source?.sourceId,
-        destinationId: destination?.destinationId,
+        sourceId: source.sourceId,
+        destinationId: destination.destinationId,
         ...values,
         status: "active",
       });
@@ -193,7 +160,7 @@ const useUpdateConnection = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    (conn: UpdateConnection) => {
+    (conn: WebBackendConnectionUpdate) => {
       const withRefreshedCatalogCleaned = conn.withRefreshedCatalog
         ? { withRefreshedCatalog: conn.withRefreshedCatalog }
         : null;

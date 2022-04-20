@@ -1,21 +1,21 @@
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { Button, ContentCard } from "components";
-import LoadingSchema from "components/LoadingSchema";
-import JobItem from "components/JobItem";
 import { IDataItem } from "components/base/DropDown/components/Option";
+import JobItem from "components/JobItem";
+import LoadingSchema from "components/LoadingSchema";
 
-import ConnectionForm from "views/Connection/ConnectionForm";
-import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { LogsRequestError } from "core/request/LogsRequestError";
 import { Destination, Source } from "core/domain/connector";
-import { Connection } from "core/domain/connection";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
+import ConnectionForm from "views/Connection/ConnectionForm";
 
+import { WebBackendConnectionRead } from "../../core/request/GeneratedApi";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -37,7 +37,7 @@ type IProps = {
   additionBottomControls?: React.ReactNode;
   source: Source;
   destination: Destination;
-  afterSubmitConnection?: (connection: Connection) => void;
+  afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
   noTitles?: boolean;
 };
 
@@ -65,8 +65,8 @@ const CreateConnectionContent: React.FC<IProps> = ({
   const onSubmitConnectionStep = async (values: ValuesProps) => {
     const connection = await createConnection({
       values,
-      source: source,
-      destination: destination,
+      source,
+      destination,
       sourceDefinition: {
         name: source?.name ?? "",
         sourceDefinitionId: source?.sourceDefinitionId ?? "",

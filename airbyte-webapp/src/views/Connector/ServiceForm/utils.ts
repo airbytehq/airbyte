@@ -1,6 +1,7 @@
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 import { naturalComparator } from "utils/objects";
+
+import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 
 export function makeConnectionConfigurationPath(path: string[]): string {
   return `connectionConfiguration.${path.join(".")}`;
@@ -10,8 +11,16 @@ export function serverProvidedOauthPaths(connector?: ConnectorDefinitionSpecific
   [key: string]: { path_in_connector_config: string[] };
 } {
   return {
-    ...(connector?.advancedAuth?.oauthConfigSpecification.completeOAuthOutputSpecification?.properties ?? {}),
-    ...(connector?.advancedAuth?.oauthConfigSpecification.completeOAuthServerOutputSpecification?.properties ?? {}),
+    ...((
+      connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthOutputSpecification as
+        | { properties: Record<string, { path_in_connector_config: string[] }> }
+        | undefined
+    )?.properties ?? {}),
+    ...((
+      connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthServerOutputSpecification as
+        | { properties: Record<string, { path_in_connector_config: string[] }> }
+        | undefined
+    )?.properties ?? {}),
   };
 }
 

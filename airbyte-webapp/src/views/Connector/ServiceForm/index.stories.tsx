@@ -71,6 +71,14 @@ export const Common = Template.bind({});
 Common.args = {
   selectedConnectorDefinitionSpecification: {
     ...TempConnector,
+    destinationDefinitionId: "some-id",
+    jobInfo: {
+      id: "some-id",
+      createdAt: Date.now(),
+      endedAt: Date.now() + 1,
+      configType: "get_spec",
+      succeeded: true,
+    },
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
@@ -149,6 +157,14 @@ export const Oneof = Template.bind({});
 Oneof.args = {
   selectedConnectorDefinitionSpecification: {
     ...TempConnector,
+    destinationDefinitionId: "some-other-id",
+    jobInfo: {
+      id: "some-id",
+      createdAt: Date.now(),
+      endedAt: Date.now() + 1,
+      configType: "get_spec",
+      succeeded: true,
+    },
     connectionSpecification: JSON.parse(`{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",

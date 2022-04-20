@@ -3,12 +3,12 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ContentCard, ImageBlock } from "components";
-import { Header, Row, Cell } from "components/SimpleTableComponents";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+import { Cell, Header, Row } from "components/SimpleTableComponents";
 
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
-import { Connection } from "core/domain/connection";
 
+import { WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
 import EnabledControl from "./EnabledControl";
 
 const MainInfo = styled(ContentCard)`
@@ -33,7 +33,7 @@ const EnabledCell = styled(Cell)`
 `;
 
 type IProps = {
-  connection: Connection;
+  connection: WebBackendConnectionRead;
   frequencyText?: string;
   destinationDefinition?: DestinationDefinition;
   sourceDefinition?: SourceDefinition;

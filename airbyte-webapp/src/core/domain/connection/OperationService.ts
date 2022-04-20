@@ -1,18 +1,10 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import Status from "core/statuses";
 
-import { Operation } from "./operation";
+import { checkOperation, OperationRead } from "../../request/GeneratedApi";
 
-class OperationService extends AirbyteRequestService {
-  get url() {
-    return "operations";
-  }
-
-  public async check(operation: Operation): Promise<{ status: "succeeded" | "failed"; message: string }> {
-    const rs = await this.fetch<{
-      status: "succeeded" | "failed";
-      message: string;
-    }>(`${this.url}/check`, operation.operatorConfiguration);
+export class OperationService {
+  public async check({ operatorConfiguration }: OperationRead) {
+    const rs = await checkOperation(operatorConfiguration);
 
     if (rs.status === Status.FAILED) {
       // TODO: place proper error
@@ -22,5 +14,3 @@ class OperationService extends AirbyteRequestService {
     return rs;
   }
 }
-
-export { OperationService };

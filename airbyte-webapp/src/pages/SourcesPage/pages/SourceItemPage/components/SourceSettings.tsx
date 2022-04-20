@@ -1,15 +1,17 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
 
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { ConnectionConfiguration } from "core/domain/connection";
 import { Source } from "core/domain/connector";
-import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+
+import { WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
 
 const Content = styled.div`
   max-width: 813px;
@@ -18,7 +20,7 @@ const Content = styled.div`
 
 type IProps = {
   currentSource: Source;
-  connectionsWithSource: Connection[];
+  connectionsWithSource: WebBackendConnectionRead[];
 };
 
 const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource }) => {

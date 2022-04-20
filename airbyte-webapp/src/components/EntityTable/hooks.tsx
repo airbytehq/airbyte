@@ -1,19 +1,19 @@
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection } from "core/domain/connection";
-import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
+import { WebBackendConnectionRead } from "../../core/request/GeneratedApi";
 import { Status } from "./types";
 
 const useSyncActions = (): {
-  changeStatus: (connection: Connection) => Promise<void>;
-  syncManualConnection: (connection: Connection) => Promise<void>;
+  changeStatus: (connection: WebBackendConnectionRead) => Promise<void>;
+  syncManualConnection: (connection: WebBackendConnectionRead) => Promise<void>;
 } => {
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
   const analyticsService = useAnalyticsService();
 
-  const changeStatus = async (connection: Connection) => {
+  const changeStatus = async (connection: WebBackendConnectionRead) => {
     await updateConnection({
       connectionId: connection.connectionId,
       syncCatalog: connection.syncCatalog,
@@ -39,7 +39,7 @@ const useSyncActions = (): {
     });
   };
 
-  const syncManualConnection = async (connection: Connection) => {
+  const syncManualConnection = async (connection: WebBackendConnectionRead) => {
     await syncConnection(connection);
   };
 

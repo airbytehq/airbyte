@@ -1,7 +1,7 @@
+import intersection from "lodash/intersection";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import intersection from "lodash/intersection";
 
 import { Button, Cell, Header, Toggle } from "components";
 
@@ -16,8 +16,8 @@ import {
 } from "core/domain/catalog";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
-import { flatten, getPathType } from "../utils";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
+import { flatten, getPathType } from "../utils";
 import { pathDisplayName, PathPopout } from "./PathPopout";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 
@@ -44,7 +44,7 @@ type BulkHeaderProps = {
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {
-    const traversedFields = traverseSchemaToField(stream.jsonSchema, stream.name);
+    const traversedFields = traverseSchemaToField(stream?.jsonSchema, stream?.name);
     const flattenedFields = flatten(traversedFields);
 
     return flattenedFields.filter(SyncSchemaFieldObject.isPrimitive);
@@ -71,7 +71,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
   const availableSyncModes = useMemo(
     () =>
       SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
-        const supportableModes = intersection(selectedBatchNodes.flatMap((n) => n.stream.supportedSyncModes));
+        const supportableModes = intersection(selectedBatchNodes.flatMap((n) => n.stream?.supportedSyncModes));
         return supportableModes.includes(syncMode) && destinationSupportedSyncModes.includes(destinationSyncMode);
       }).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
@@ -88,10 +88,10 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
     return null;
   }
 
-  const pkRequired = options.destinationSyncMode === DestinationSyncMode.Dedupted;
-  const shouldDefinePk = selectedBatchNodes.every((n) => n.stream.sourceDefinedPrimaryKey.length === 0) && pkRequired;
+  const pkRequired = options.destinationSyncMode === DestinationSyncMode.Deduped;
+  const shouldDefinePk = selectedBatchNodes.every((n) => n.stream?.sourceDefinedPrimaryKey?.length === 0) && pkRequired;
   const cursorRequired = options.syncMode === SyncMode.Incremental;
-  const shouldDefineCursor = selectedBatchNodes.every((n) => !n.stream.sourceDefinedCursor) && cursorRequired;
+  const shouldDefineCursor = selectedBatchNodes.every((n) => !n.stream?.sourceDefinedCursor) && cursorRequired;
 
   const pkType = getPathType(pkRequired, shouldDefinePk);
   const cursorType = getPathType(cursorRequired, shouldDefineCursor);

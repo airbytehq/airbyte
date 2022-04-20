@@ -8,8 +8,8 @@ import { DestinationSyncMode, Path, SyncMode, SyncSchemaField, SyncSchemaStream 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
 import { Arrow as ArrowBlock } from "./components/Arrow";
-import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
 import { IndexerType, PathPopout } from "./components/PathPopout";
+import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
 import { ArrowCell, CheckboxCell, HeaderCell } from "./styles";
 
 const EmptyField = styled.span`
@@ -59,9 +59,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
   hasFields,
   onExpand,
 }) => {
-  const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config;
+  const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
 
-  const { defaultCursorField } = stream.stream;
+  const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
     () => ({
       syncMode,
@@ -83,17 +83,17 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
       </ArrowCell>
       <HeaderCell flex={0.4}>
-        <Toggle small checked={stream.config.selected} onChange={onSelectStream} />
+        <Toggle small checked={stream.config?.selected} onChange={onSelectStream} />
       </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream.namespace || ""}>
-        {stream.stream.namespace || (
+      <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
+        {stream.stream?.namespace || (
           <EmptyField>
             <FormattedMessage id="form.noNamespace" />
           </EmptyField>
         )}
       </HeaderCell>
-      <HeaderCell ellipsis title={stream.stream.name || ""}>
-        {stream.stream.name}
+      <HeaderCell ellipsis title={stream.stream?.name || ""}>
+        {stream.stream?.name}
       </HeaderCell>
       <Cell flex={1.5}>
         <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />

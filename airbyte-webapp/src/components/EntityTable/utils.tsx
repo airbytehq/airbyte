@@ -1,15 +1,20 @@
-import { Connection } from "core/domain/connection";
-import Status from "core/statuses";
 import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
+import Status from "core/statuses";
 
-import { ITableDataItem, EntityTableDataItem, Status as ConnectionStatus } from "./types";
+import {
+  DestinationDefinitionRead,
+  JobStatus,
+  SourceDefinitionRead,
+  WebBackendConnectionRead,
+} from "../../core/request/GeneratedApi";
+import { EntityTableDataItem, ITableDataItem, Status as ConnectionStatus } from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
   SoD extends S extends "source" ? Source : Destination,
   Def extends S extends "source" ? SourceDefinition : DestinationDefinition
->(entities: SoD[], connections: Connection[], definitions: Def[], type: S): EntityTableDataItem[] {
+>(entities: SoD[], connections: WebBackendConnectionRead[], definitions: Def[], type: S): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
@@ -68,9 +73,9 @@ export function getEntityTableData<
 }
 
 export const getConnectionTableData = (
-  connections: Connection[],
-  sourceDefinitions: SourceDefinition[],
-  destinationDefinitions: DestinationDefinition[],
+  connections: WebBackendConnectionRead[],
+  sourceDefinitions: SourceDefinitionRead[],
+  destinationDefinitions: DestinationDefinitionRead[],
   type: "source" | "destination" | "connection"
 ): ITableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
@@ -92,8 +97,7 @@ export const getConnectionTableData = (
       connectorName:
         type === "connection"
           ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
-          : // @ts-ignore conditional types are not supported here
-            connection[connectType]?.[`${connectType}Name`] || "",
+          : connection[connectType]?.name || "", // TODO: Is name correct here?
       lastSync: connection.latestSyncJobCreatedAt,
       enabled: connection.status === ConnectionStatus.ACTIVE,
       schedule: connection.schedule,
@@ -106,7 +110,7 @@ export const getConnectionTableData = (
   });
 };
 
-export const getConnectionSyncStatus = (status: string, lastSyncStatus: string | null): string | null => {
+export const getConnectionSyncStatus = (status: string, lastSyncStatus: JobStatus | undefined): string | null => {
   if (status === ConnectionStatus.INACTIVE) return ConnectionStatus.INACTIVE;
   if (!lastSyncStatus) return ConnectionStatus.EMPTY;
   if (lastSyncStatus === Status.FAILED) return ConnectionStatus.FAILED;

@@ -1,6 +1,7 @@
-import { ConnectionConfiguration, ConnectionSpecification } from "core/domain/connection";
 import { DestinationSyncMode, SourceDiscoverSchemaRead } from "core/domain/catalog";
+import { ConnectionConfiguration, ConnectionSpecification } from "core/domain/connection";
 
+import { DestinationDefinitionSpecificationRead, SourceDefinitionSpecificationRead } from "../../request/GeneratedApi";
 import { JobInfo } from "../job";
 
 export enum ReleaseStage {
@@ -70,7 +71,9 @@ interface ConnectorDefinitionSpecificationBase {
   advancedAuth?: AdvancedAuth;
 }
 
-export type ConnectorDefinitionSpecification = DestinationDefinitionSpecification | SourceDefinitionSpecification;
+export type ConnectorDefinitionSpecification =
+  | DestinationDefinitionSpecificationRead
+  | SourceDefinitionSpecificationRead;
 
 export interface DestinationDefinitionSpecification extends ConnectorDefinitionSpecificationBase {
   destinationDefinitionId: string;

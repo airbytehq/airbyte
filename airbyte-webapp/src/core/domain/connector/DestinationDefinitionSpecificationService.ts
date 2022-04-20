@@ -1,17 +1,7 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { getDestinationDefinitionSpecification } from "../../request/GeneratedApi";
 
-import { DestinationDefinitionSpecification } from "./types";
-
-class DestinationDefinitionSpecificationService extends AirbyteRequestService {
-  get url(): string {
-    return "destination_definition_specifications";
-  }
-
-  public get(destinationDefinitionId: string): Promise<DestinationDefinitionSpecification> {
-    return this.fetch<DestinationDefinitionSpecification>(`${this.url}/get`, {
-      destinationDefinitionId,
-    });
+export class DestinationDefinitionSpecificationService {
+  public get(destinationDefinitionId: string) {
+    return getDestinationDefinitionSpecification({ destinationDefinitionId });
   }
 }
-
-export { DestinationDefinitionSpecificationService };

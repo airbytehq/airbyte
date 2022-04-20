@@ -1,16 +1,8 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { getSourceDefinitionSpecification } from "../../request/GeneratedApi";
 
-import { SourceDefinitionSpecification } from "./types";
-
-class SourceDefinitionSpecificationService extends AirbyteRequestService {
-  get url(): string {
-    return "source_definition_specifications";
-  }
-
-  public get(sourceDefinitionId: string): Promise<SourceDefinitionSpecification> {
-    return this.fetch<SourceDefinitionSpecification>(`${this.url}/get`, {
-      sourceDefinitionId,
-    });
+class SourceDefinitionSpecificationService {
+  public get(sourceDefinitionId: string) {
+    return getSourceDefinitionSpecification({ sourceDefinitionId });
   }
 }
 

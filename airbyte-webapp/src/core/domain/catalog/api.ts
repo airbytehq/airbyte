@@ -1,5 +1,6 @@
 import { JSONSchema7 } from "json-schema";
 
+import { AirbyteStreamAndConfiguration } from "../../request/GeneratedApi";
 import { JobInfo } from "../job";
 
 export interface SourceDiscoverSchemaRead {
@@ -17,18 +18,12 @@ export enum SyncMode {
 export enum DestinationSyncMode {
   Overwrite = "overwrite",
   Append = "append",
-  Dedupted = "append_dedup",
+  Deduped = "append_dedup",
 }
 
-export type SyncSchemaStreamInner = {
-  stream: AirbyteStream;
-  config: AirbyteStreamConfiguration;
-};
+export type SyncSchemaStreamInner = AirbyteStreamAndConfiguration;
 
-export type SyncSchemaStream = {
-  stream: AirbyteStream;
-  config: AirbyteStreamConfiguration;
-
+export type SyncSchemaStream = SyncSchemaStreamInner & {
   /**
    * This field is not returned from API and is used to track unique objects
    */
@@ -55,7 +50,7 @@ export type AirbyteStreamConfiguration = {
 };
 
 export type SyncSchema = {
-  streams: SyncSchemaStream[];
+  streams: AirbyteStreamAndConfiguration[];
 };
 
 export type Path = string[];

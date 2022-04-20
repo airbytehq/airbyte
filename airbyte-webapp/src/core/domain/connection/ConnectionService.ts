@@ -1,42 +1,15 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { CommonRequestError } from "core/request/CommonRequestError";
+import { deleteConnection, resetConnection, syncConnection } from "../../request/GeneratedApi";
 
-import { Connection } from "./types";
-
-class ConnectionService extends AirbyteRequestService {
-  get url() {
-    return "connections";
+export class ConnectionService {
+  public sync(connectionId: string) {
+    return syncConnection({ connectionId });
   }
 
-  public async sync(connectionId: string): Promise<unknown> {
-    const rs = await this.fetch<Connection>(`${this.url}/sync`, {
-      connectionId,
-    });
-
-    return rs;
+  public reset(connectionId: string) {
+    return resetConnection({ connectionId });
   }
 
-  public async reset(connectionId: string): Promise<unknown> {
-    const rs = await this.fetch<Connection>(`${this.url}/reset`, {
-      connectionId,
-    });
-
-    return rs;
-  }
-
-  public async delete(connectionId: string): Promise<void> {
-    // needs proper type and refactor of CommonRequestError
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(`${this.url}/delete`, {
-      connectionId,
-    });
-
-    if (result.status === "failure") {
-      throw new CommonRequestError(result, result.message);
-    }
-
-    return result;
+  public delete(connectionId: string) {
+    return deleteConnection({ connectionId });
   }
 }
-
-export { ConnectionService };

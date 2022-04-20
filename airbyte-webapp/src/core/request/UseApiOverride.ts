@@ -1,4 +1,5 @@
 import { useConfig } from "../../config/ConfigServiceProvider";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 
 export const useApiOverride = async <T, U = unknown>({
   url,
@@ -19,7 +20,10 @@ export const useApiOverride = async <T, U = unknown>({
   // Unsure how worth it is to try to fix this replace
   const requestUrl = `${apiUrl}${url.replace("/v1/", "")}`;
 
-  // TODO: Middleware
+  const middlewares = useDefaultRequestMiddlewares();
+  for (const middleware of middlewares) {
+    headers = (await middleware({ headers })).headers;
+  }
 
   const response = await fetch(`${requestUrl}` + new URLSearchParams(params), {
     method,

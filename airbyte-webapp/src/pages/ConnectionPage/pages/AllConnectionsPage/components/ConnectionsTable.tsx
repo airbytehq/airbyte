@@ -2,16 +2,17 @@ import React, { useCallback } from "react";
 
 import { ConnectionTable } from "components/EntityTable";
 import useSyncActions from "components/EntityTable/hooks";
-import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
+import { getConnectionTableData } from "components/EntityTable/utils";
 
-import { Connection } from "core/domain/connection";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
+import { WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
+
 type IProps = {
-  connections: Connection[];
+  connections: WebBackendConnectionRead[];
 };
 
 const ConnectionsTable: React.FC<IProps> = ({ connections }) => {

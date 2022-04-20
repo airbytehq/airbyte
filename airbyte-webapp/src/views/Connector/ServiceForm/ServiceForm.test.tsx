@@ -7,6 +7,7 @@ import { AirbyteJSONSchema } from "core/jsonSchema";
 import { render } from "utils/testutils";
 import { ServiceForm } from "views/Connector/ServiceForm";
 
+import { DestinationDefinitionSpecificationRead } from "../../../core/request/GeneratedApi";
 import { ServiceFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
@@ -118,11 +119,13 @@ describe("Service Form", () => {
         <ServiceForm
           formType="source"
           onSubmit={handleSubmit}
-          selectedConnectorDefinitionSpecification={{
-            connectionSpecification: schema,
-            sourceDefinitionId: "1",
-            documentationUrl: "",
-          }}
+          selectedConnectorDefinitionSpecification={
+            {
+              connectionSpecification: schema,
+              sourceDefinitionId: "1",
+              documentationUrl: "",
+            } as unknown as DestinationDefinitionSpecificationRead
+          }
           availableServices={[]}
         />
       );
@@ -199,11 +202,13 @@ describe("Service Form", () => {
           formType="source"
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
-          selectedConnectorDefinitionSpecification={{
-            connectionSpecification: schema,
-            sourceDefinitionId: "test-service-type",
-            documentationUrl: "",
-          }}
+          selectedConnectorDefinitionSpecification={
+            {
+              connectionSpecification: schema,
+              sourceDefinitionId: "test-service-type",
+              documentationUrl: "",
+            } as unknown as DestinationDefinitionSpecificationRead
+          }
           availableServices={[]}
         />
       );

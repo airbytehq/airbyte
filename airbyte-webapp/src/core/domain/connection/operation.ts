@@ -1,3 +1,5 @@
+import { OperationRead, OperatorDbt } from "../../request/GeneratedApi";
+
 export interface Operation {
   name: string;
   id?: string;
@@ -5,7 +7,7 @@ export interface Operation {
   operatorConfiguration: DbtOperationConfiguration | NormalizationOperationConfiguration;
 }
 
-export interface Transformation extends Operation {
+export interface Transformation extends OperationRead {
   operatorConfiguration: DbtOperationConfiguration;
 }
 
@@ -14,7 +16,7 @@ export interface DbtOperationConfiguration {
   dbt: DbtConfiguration;
 }
 
-export interface Normalization extends Operation {
+export interface Normalization extends OperationRead {
   operatorType: OperatorType.Normalization;
   operatorConfiguration: NormalizationOperationConfiguration;
 }
@@ -22,16 +24,11 @@ export interface Normalization extends Operation {
 export interface NormalizationOperationConfiguration {
   operatorType: OperatorType.Normalization;
   normalization: {
-    option: NormalizationType;
+    option: undefined;
   };
 }
 
-export interface DbtConfiguration {
-  gitRepoUrl?: string;
-  gitRepoBranch?: string;
-  dockerImage: string;
-  dbtArguments: string;
-}
+export type DbtConfiguration = OperatorDbt;
 
 export enum OperatorType {
   Normalization = "normalization",
@@ -43,10 +40,10 @@ export enum NormalizationType {
   RAW = "raw",
 }
 
-export const isDbtTransformation = (op: Operation): op is Transformation => {
+export const isDbtTransformation = (op: OperationRead): op is Transformation => {
   return op.operatorConfiguration.operatorType === OperatorType.Dbt;
 };
 
-export const isNormalizationTransformation = (op: Operation): op is Normalization => {
+export const isNormalizationTransformation = (op: OperationRead): op is Normalization => {
   return op.operatorConfiguration.operatorType === OperatorType.Normalization;
 };
