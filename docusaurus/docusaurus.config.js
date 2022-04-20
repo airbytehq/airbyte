@@ -9,8 +9,9 @@ const config = {
     title: 'Airbyte Documentation',
     tagline:
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
-    // this is non-functional, just a link back to OSS docs right now
-    url: 'https://docs.airbyte.com/',
+    url: 'https://airbytehq.github.io',
+    // Assumed relative path.  If you are using airbytehq.github.io use /
+    // anything else should match the repo name
     baseUrl: '/',
     onBrokenLinks: 'warn',
     onBrokenMarkdownLinks: 'warn',
@@ -32,7 +33,7 @@ const config = {
                 docs: {
                     routeBasePath: '/',
                     sidebarPath: require.resolve('./sidebars.js'),
-                    editUrl: 'https://github.com/airbytehq/airbyte/blob/gitbook/v1/README.md',
+                    editUrl: 'https://github.com/airbytehq/airbyte/docs',
                     path: '../docs'
                 },
                 blog: false,

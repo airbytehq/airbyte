@@ -34,6 +34,7 @@
   "form.selectConnector": "Type to search for a connector",
   "form.searchName": "search by name...",
   "form.noResult": "No result",
+  "form.noConnectorFound": "No matching connector found",
   "form.sourceName.placeholder": "Your source name",
   "form.destinationName.placeholder": "Your destination name",
   "form.connectionName.placeholder": "Name",
@@ -61,6 +62,7 @@
   "form.sourceRetest": "Retest source",
   "form.destinationRetest": "Retest destination",
   "form.discardChanges": "Discard changes",
+  "form.discardChangesConfirmation": "There are unsaved changes. Are you sure you want to discard your changes?",
   "form.every": "Every {value}",
   "form.testingConnection": "Testing connection...",
   "form.successTests": "All connection tests passed!",
@@ -489,5 +491,21 @@
 
   "ui.keyValuePair": "{key}: {value}",
   "ui.keyValuePairV2": "{key} ({value})",
-  "ui.keyValuePairV3": "{key}, {value}"
+  "ui.keyValuePairV3": "{key}, {value}",
+
+  "airbyte.datatype.string": "String",
+  "airbyte.datatype.date": "Date",
+  "airbyte.datatype.timestamp_with_timezone": "Timestamp with Timezone",
+  "airbyte.datatype.timestamp_without_timezone": "Datetime",
+  "airbyte.datatype.datetime": "Datetime",
+  "airbyte.datatype.integer": "Integer",
+  "airbyte.datatype.big_integer": "Big Integer",
+  "airbyte.datatype.number": "Number",
+  "airbyte.datatype.big_number": "Big Number",
+  "airbyte.datatype.array": "Array",
+  "airbyte.datatype.object": "Object",
+  "airbyte.datatype.untyped": "Untyped",
+  "airbyte.datatype.union": "Union",
+  "airbyte.datatype.unknown": "Unknown",
+  "airbyte.datatype.boolean": "Boolean"
 }

@@ -1,5 +1,5 @@
-FROM python:3.7-slim
-# FROM python:3.7.11-alpine3.14
+FROM python:3.9-slim
+# FROM python:3.9.11-alpine3.15
 
 # Bash is installed for more convenient debugging.
 # RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
