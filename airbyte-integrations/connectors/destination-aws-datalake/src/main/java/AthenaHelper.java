@@ -84,7 +84,6 @@ public class AthenaHelper {
         // Sleep an amount of time before retrying again
         Thread.sleep(1000);
       }
-      System.out.println("The current status is: " + queryState);
     }
   }
 
