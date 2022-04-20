@@ -28,7 +28,7 @@ export const FormChangeTrackerService: React.FC = ({ children }) => {
   );
 
   const formsChanged = useMemo(
-    () => Object.values(changedFormsById ?? {}).reduce((acc, value) => acc || value, false),
+    () => Object.values(changedFormsById ?? {}).some((formChanged) => formChanged),
     [changedFormsById]
   );
 
