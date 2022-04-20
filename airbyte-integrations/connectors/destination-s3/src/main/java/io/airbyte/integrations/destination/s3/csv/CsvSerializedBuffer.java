@@ -30,13 +30,15 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
   private CSVPrinter csvPrinter;
   private CSVFormat csvFormat;
 
-  protected CsvSerializedBuffer(final BufferStorage bufferStorage, final CsvSheetGenerator csvSheetGenerator) throws Exception {
+  protected CsvSerializedBuffer(final BufferStorage bufferStorage,
+                                final CsvSheetGenerator csvSheetGenerator,
+                                final boolean compression) throws Exception {
     super(bufferStorage);
     this.csvSheetGenerator = csvSheetGenerator;
     this.csvPrinter = null;
     this.csvFormat = CSVFormat.DEFAULT;
     // we always want to compress csv files
-    withCompression(true);
+    withCompression(compression);
   }
 
   public CsvSerializedBuffer withCsvFormat(final CSVFormat csvFormat) {
@@ -71,23 +73,22 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
                                                                                                                                           final S3CsvFormatConfig config,
                                                                                                                                           final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
-      if (config != null) {
-        final CsvSheetGenerator csvSheetGenerator = CsvSheetGenerator.Factory.create(catalog.getStreams()
-            .stream()
-            .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", stream.getNamespace(), stream.getName())))
-            .getStream()
-            .getJsonSchema(),
-            config);
-        final CSVFormat csvSettings = CSVFormat.DEFAULT
-            .withQuoteMode(QuoteMode.NON_NUMERIC)
-            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
-        return new CsvSerializedBuffer(createStorageFunction.call(), csvSheetGenerator)
-            .withCsvFormat(csvSettings);
-      } else {
-        return new CsvSerializedBuffer(createStorageFunction.call(), new StagingDatabaseCsvSheetGenerator());
+      if (config == null) {
+        return new CsvSerializedBuffer(createStorageFunction.call(), new StagingDatabaseCsvSheetGenerator(), true);
       }
+
+      final CsvSheetGenerator csvSheetGenerator = CsvSheetGenerator.Factory.create(catalog.getStreams()
+          .stream()
+          .filter(s -> s.getStream().getName().equals(stream.getName()) && StringUtils.equals(s.getStream().getNamespace(), stream.getNamespace()))
+          .findFirst()
+          .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", stream.getNamespace(), stream.getName())))
+          .getStream()
+          .getJsonSchema(),
+          config);
+      final CSVFormat csvSettings = CSVFormat.DEFAULT
+          .withQuoteMode(QuoteMode.NON_NUMERIC)
+          .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
+      return new CsvSerializedBuffer(createStorageFunction.call(), csvSheetGenerator, config.isGzipCompression()).withCsvFormat(csvSettings);
     };
   }
 

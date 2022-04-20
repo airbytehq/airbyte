@@ -24,16 +24,14 @@ import java.util.concurrent.Callable;
 
 public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
-  public static final String JSONL_GZ_SUFFIX = ".jsonl.gz";
-
   private static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   private PrintWriter printWriter;
 
-  protected JsonLSerializedBuffer(final BufferStorage bufferStorage) throws Exception {
+  protected JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression) throws Exception {
     super(bufferStorage);
     // we always want to compress jsonl files
-    withCompression(true);
+    withCompression(gzipCompression);
   }
 
   @Override
@@ -63,7 +61,7 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3JsonlFormatConfig config,
                                                                                                                                           final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream,
-            final ConfiguredAirbyteCatalog catalog) -> new JsonLSerializedBuffer(createStorageFunction.call());
+            final ConfiguredAirbyteCatalog catalog) -> new JsonLSerializedBuffer(createStorageFunction.call(), config.isGzipCompression());
   }
 
 }
