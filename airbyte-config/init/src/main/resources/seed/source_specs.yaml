@@ -2801,7 +2801,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.18"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -2831,9 +2831,9 @@
         window_in_days:
           type: "integer"
           title: "Window in days (Optional)"
-          description: "The amount of days for each data-chunk beginning from start_date.\
-            \ Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364,\
-            \ as for a Year)."
+          description: "The amount of days each stream slice would consist of beginning\
+            \ from start_date. Bigger the value - faster the fetch. (Min=1, as for\
+            \ a Day; Max=364, as for a Year)."
           examples:
           - 30
           - 60

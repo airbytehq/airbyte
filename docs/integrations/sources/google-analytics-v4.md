@@ -50,7 +50,7 @@ Use the service account email address to [add a user](https://support.google.com
 
 ## Supported sync modes
 
-The Google Analytics source connector supports the following [sync modes](https://docs.airbyte.com/getting-started-with-airbyte-cloud/core-concepts#connection-sync-modes):
+The Google Analytics source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
  - Full Refresh
  - Incremental
 
@@ -63,7 +63,8 @@ The Google Analytics source connector supports the following [sync modes](https:
 * Number of requests per 100 seconds per project: 2,000
 * Number of requests per 100 seconds per user per project: 100 \(can be increased in Google API Console to 1,000\).
 
-The Google Analytics connector should not run into Google Analytics API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Talking about "requests per 100 seconds" limitations, the Google Analytics connector should not run into these limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+In order not to meet the "requests per day" limitation, try increasing the `window_in_days` value. Unfortunately, it can not be overcome programmatically.
 
 ## Supported streams
 
@@ -156,6 +157,7 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.1.19  | 2022-04-19 | [12150](https://github.com/airbytehq/airbyte/pull/12150) | Minor changes to documentation                                                               |
 | 0.1.18  | 2022-04-07 | [11803](https://github.com/airbytehq/airbyte/pull/11803) | Improved documentation                                                                       |
 | 0.1.17  | 2022-03-31 | [11512](https://github.com/airbytehq/airbyte/pull/11512) | Improved Unit and Acceptance tests coverage, fixed `read` with abnormally large state values |
 | 0.1.16  | 2022-01-26 | [9480](https://github.com/airbytehq/airbyte/pull/9480)   | Reintroduce `window_in_days` and log warning when sampling occurs                            |
