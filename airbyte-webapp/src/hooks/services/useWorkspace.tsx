@@ -1,14 +1,13 @@
 import { useMutation } from "react-query";
 
-import { useAnalyticsService } from "hooks/services/Analytics";
-import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 import { Destination, Source } from "core/domain/connector";
-import { Workspace } from "core/domain/workspace/Workspace";
-import { NotificationStatus } from "core/domain/notification/types";
-import { useConfig } from "config";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
-import { useInitService } from "services/useInitService";
 import { NotificationService } from "core/domain/notification/NotificationService";
+import { Workspace } from "core/domain/workspace/Workspace";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useInitService } from "services/useInitService";
+import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
+
+import { NotificationRead } from "../../core/request/GeneratedApi";
 
 export type WebhookPayload = {
   webhook: string;
@@ -16,12 +15,8 @@ export type WebhookPayload = {
   sendOnFailure: boolean;
 };
 
-function useGetNotificationService(): NotificationService {
-  const { apiUrl } = useConfig();
-
-  const requestAuthMiddleware = useDefaultRequestMiddlewares();
-
-  return useInitService(() => new NotificationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+function useGetNotificationService() {
+  return useInitService(() => new NotificationService(), []);
 }
 
 const useWorkspace = (): {
@@ -32,7 +27,7 @@ const useWorkspace = (): {
     securityUpdates: boolean;
   }) => Promise<Workspace>;
   updateWebhook: (data: WebhookPayload) => Promise<Workspace>;
-  testWebhook: (data: WebhookPayload) => Promise<NotificationStatus>;
+  testWebhook: (data: WebhookPayload) => Promise<NotificationRead>;
   setInitialSetupConfig: (data: {
     email: string;
     anonymousDataCollection: boolean;

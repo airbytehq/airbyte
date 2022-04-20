@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useAsyncFn } from "react-use";
+import styled from "styled-components";
 
 import { LoadingButton } from "components";
 
@@ -31,7 +31,8 @@ const LogsContent: React.FC = () => {
   const fetchLogs = useGetLogs();
 
   const downloadLogs = async (logType: LogType) => {
-    const { file } = await fetchLogs({ logType });
+    // TODO: Confirm this still works
+    const file = await fetchLogs({ logType });
     const name = `${logType}-logs.txt`;
 
     if (file) {

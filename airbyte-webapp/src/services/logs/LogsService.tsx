@@ -1,9 +1,7 @@
 import { useMutation } from "react-query";
 
-import { useConfig } from "config";
 import { GetLogsPayload, LogsService } from "core/domain/logs/LogsService";
 import { useInitService } from "services/useInitService";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
 export const logsKeys = {
   all: ["logs"] as const,
@@ -12,11 +10,7 @@ export const logsKeys = {
 };
 
 function useGetLogsService(): LogsService {
-  const { apiUrl } = useConfig();
-
-  const requestAuthMiddleware = useDefaultRequestMiddlewares();
-
-  return useInitService(() => new LogsService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+  return useInitService(() => new LogsService(), []);
 }
 
 export function useGetLogs() {

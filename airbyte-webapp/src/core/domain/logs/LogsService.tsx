@@ -1,17 +1,10 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-
-import { Logs, LogType } from "./types";
+import { getLogs, LogsRequestBody } from "../../request/GeneratedApi";
+import { LogType } from "./types";
 
 export type GetLogsPayload = { logType: LogType };
 
-class LogsService extends AirbyteRequestService {
-  get url(): string {
-    return "logs";
-  }
-
-  public get(payload: GetLogsPayload): Promise<Logs> {
-    return this.fetch<Logs>(`${this.url}/get`, payload);
+export class LogsService {
+  public get({ logType }: LogsRequestBody) {
+    return getLogs({ logType });
   }
 }
-
-export { LogsService };
