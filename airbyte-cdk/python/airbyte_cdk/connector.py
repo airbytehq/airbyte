@@ -69,14 +69,14 @@ class Connector(ABC):
         json_spec = load_optional_package_file(package, "spec.json")
 
         if yaml_spec and json_spec:
-            raise ValueError("Found multiple spec files in the package. Only one of spec.yaml or spec.json should be provided.")
+            raise RuntimeError("Found multiple spec files in the package. Only one of spec.yaml or spec.json should be provided.")
 
         if yaml_spec:
             spec_obj = yaml.load(yaml_spec, Loader=yaml.SafeLoader)
         elif json_spec:
             spec_obj = json.loads(json_spec)
         else:
-            raise ValueError("Unable to find spec.yaml or spec.json in the package.")
+            raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
 
         return ConnectorSpecification.parse_obj(spec_obj)
 

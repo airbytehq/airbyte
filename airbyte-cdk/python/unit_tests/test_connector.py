@@ -124,9 +124,9 @@ class TestConnectorSpec:
         assert connector_spec.connectionSpecification == self.CONNECTION_SPECIFICATION
 
     def test_multiple_spec_files_raises_exception(self, integration, use_yaml_spec, use_json_spec):
-        with pytest.raises(ValueError, match="spec.yaml or spec.json"):
+        with pytest.raises(RuntimeError, match="spec.yaml or spec.json"):
             integration.spec(logger)
 
     def test_no_spec_file_raises_exception(self, integration):
-        with pytest.raises(ValueError, match="Unable to find spec."):
+        with pytest.raises(FileNotFoundError, match="Unable to find spec."):
             integration.spec(logger)
