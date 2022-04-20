@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-ads",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
   "connectionSpecification": {
     "title": "Amazon Ads Spec",
     "type": "object",
@@ -12,44 +12,38 @@
         "type": "string"
       },
       "client_id": {
-        "title": "Client Id",
-        "description": "The Client ID of your Amazon developer application.",
-        "name": "Client ID",
+        "title": "Client ID",
+        "description": "The Client ID of your Amazon Ads developer application.",
         "type": "string"
       },
       "client_secret": {
         "title": "Client Secret",
-        "description": "The Client Secret of your Amazon developer application.",
-        "name": "Client secret",
+        "description": "The Client Secret of your Amazon Ads developer application.",
         "airbyte_secret": true,
         "type": "string"
       },
       "refresh_token": {
         "title": "Refresh Token",
-        "description": "Amazon  Ads Refresh Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/amazon-ads\">docs</a> for more information on how to obtain this token.",
-        "name": "Oauth refresh token",
+        "description": "Amazon Ads Refresh Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/amazon-ads\">docs</a> for more information on how to obtain this token.",
         "airbyte_secret": true,
         "type": "string"
       },
       "start_date": {
         "title": "Start Date",
-        "description": "Start date for collecting reports, should not be more than 60 days in past. In YYYY-MM-DD format",
-        "name": "Start date",
+        "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
         "examples": ["2022-10-10", "2022-10-22"],
         "type": "string"
       },
       "region": {
-        "title": "AmazonAdsRegion",
-        "description": "An enumeration.",
+        "title": "Region",
+        "description": "Region to pull data from (EU/NA/FE/SANDBOX)",
         "default": "NA",
-        "name": "Region",
         "enum": ["NA", "EU", "FE", "SANDBOX"],
         "type": "string"
       },
       "profiles": {
-        "title": "Profiles",
+        "title": "Profile IDs",
         "description": "Profile IDs you want to fetch data for.",
-        "name": "Profile Ids",
         "type": "array",
         "items": {
           "type": "integer"
@@ -59,15 +53,13 @@
         "title": "Report Wait Timeout",
         "description": "Timeout duration in minutes for Reports. Eg. 30",
         "default": 30,
-        "name": "Report Wait Timeout",
         "examples": [30, 120],
         "type": "integer"
       },
       "report_generation_max_retries": {
-        "title": "Report Generation Max Retries",
+        "title": "Report Generation Maximum Retries",
         "description": "Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
         "default": 5,
-        "name": "Report Geration Maximum Retries",
         "examples": [5, 10, 15],
         "type": "integer"
       }
