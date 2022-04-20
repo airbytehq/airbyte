@@ -181,7 +181,7 @@ public class WorkerApp {
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
-        new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs));
+        new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier));
   }
 
   private void registerSync(final WorkerFactory factory) {
