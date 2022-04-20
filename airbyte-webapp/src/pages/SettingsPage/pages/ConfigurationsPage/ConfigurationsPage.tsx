@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useAsyncFn } from "react-use";
+import styled from "styled-components";
 
 import { Button, ContentCard, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
@@ -65,7 +65,8 @@ const ConfigurationsPage: React.FC = () => {
             }
             try {
               const deploymentService = getService<DeploymentService>("DeploymentService");
-              await deploymentService.importDeployment(file);
+              // TODO: Verify this works
+              await deploymentService.importDeployment(new Blob([file]));
 
               window.location.reload();
               resolve(true);
