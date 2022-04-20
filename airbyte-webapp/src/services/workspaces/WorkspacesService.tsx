@@ -67,7 +67,7 @@ export const useWorkspaceService = (): Context => {
   return workspaceService;
 };
 
-function useWorkspaceApiService(): WorkspaceService {
+function useWorkspaceApiService() {
   return useInitService(() => new WorkspaceService(), []);
 }
 
