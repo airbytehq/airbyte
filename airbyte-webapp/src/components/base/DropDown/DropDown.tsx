@@ -18,7 +18,6 @@ type DropdownProps = Props<OptionType> & {
   withBorder?: boolean;
   fullText?: boolean;
   error?: boolean;
-  defaultValue?: unknown;
 };
 
 const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
@@ -72,7 +71,7 @@ const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
       hideSelectedOptions={false}
       {...props}
       styles={styles}
-      value={currentValue ?? props.defaultValue ?? null}
+      value={currentValue ?? null}
       components={components}
     />
   );
