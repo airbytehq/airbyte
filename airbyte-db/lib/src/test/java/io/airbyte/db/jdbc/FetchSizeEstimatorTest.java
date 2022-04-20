@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.relationaldb;
+package io.airbyte.db.jdbc;
 
 import static org.junit.jupiter.api.Assertions.*;
 

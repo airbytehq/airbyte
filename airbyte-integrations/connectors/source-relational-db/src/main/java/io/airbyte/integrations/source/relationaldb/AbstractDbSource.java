@@ -15,6 +15,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
+import io.airbyte.db.jdbc.FetchSizeEstimator;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
