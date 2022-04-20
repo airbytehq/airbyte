@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -42,24 +41,41 @@ public class PostgresDestinationTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createConfiguredAirbyteStream(
-          STREAM_NAME,
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING))));
+          CatalogHelpers.createConfiguredAirbyteStream(
+                  STREAM_NAME,
+                  SCHEMA_NAME,
+                  Field.of("id", JsonSchemaType.NUMBER),
+                  Field.of("name", JsonSchemaType.STRING))));
 
   private JsonNode config;
 
-  private static final Map<String, String> CONFIG_WITH_SSL = ImmutableMap.of(
-      "host", "localhost",
-      "port", "1337",
-      "username", "user",
-      "database", "db");
+  private static final String EXPECTED_JDBC_URL = "jdbc:postgresql://localhost:1337/db?";
 
-  private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
-      CONFIG_WITH_SSL,
-      ImmutableMap.of(
-          "ssl", "false"));
+  private JsonNode buildConfigNoJdbcParameters() {
+    return Jsons.jsonNode(ImmutableMap.of(
+            "host", "localhost",
+            "port", 1337,
+            "username", "user",
+            "database", "db"));
+  }
+
+  private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
+    return Jsons.jsonNode(ImmutableMap.of(
+            "host", "localhost",
+            "port", 1337,
+            "username", "user",
+            "database", "db",
+            "jdbc_url_params", extraParam));
+  }
+
+  private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
+    return Jsons.jsonNode(ImmutableMap.of(
+            "host", "localhost",
+            "port", 1337,
+            "username", "user",
+            "database", "db",
+            "ssl", false));
+  }
 
   @BeforeAll
   static void init() {
@@ -78,16 +94,35 @@ public class PostgresDestinationTest {
   }
 
   @Test
+  void testJdbcUrlAndConfigNoExtraParams() {
+    final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigNoJdbcParameters());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+  }
+
+  @Test
+  void testJdbcUrlEmptyExtraParams() {
+    final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+  }
+
+  @Test
+  void testJdbcUrlExtraParams() {
+    final String extraParam = "key1=value1&key2=value2&key3=value3";
+    final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+  }
+
+  @Test
   void testDefaultParamsNoSSL() {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
-        Jsons.jsonNode(CONFIG_NO_SSL));
+            buildConfigNoExtraJdbcParametersWithoutSsl());
     assertEquals(new HashMap<>(), defaultProperties);
   }
 
   @Test
   void testDefaultParamsWithSSL() {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
-        Jsons.jsonNode(CONFIG_WITH_SSL));
+            buildConfigNoJdbcParameters());
     assertEquals(PostgresDestination.SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
@@ -109,32 +144,32 @@ public class PostgresDestinationTest {
       }
     });
     consumer.accept(new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
+            .withType(Type.STATE)
+            .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
     consumer.close();
 
     final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(config);
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
-        JdbcUtils.getDefaultSourceOperations()::rowToJson);
+            connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
+            JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     assertEquals(
-        expectedRecords.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
-        actualRecords.stream().map(o -> o.get("_airbyte_data").asText()).map(Jsons::deserialize).collect(Collectors.toList()));
+            expectedRecords.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData).collect(Collectors.toList()),
+            actualRecords.stream().map(o -> o.get("_airbyte_data").asText()).map(Jsons::deserialize).collect(Collectors.toList()));
   }
 
   private List<AirbyteMessage> getNRecords(final int n) {
     return IntStream.range(0, n)
-        .boxed()
-        .map(i -> new AirbyteMessage()
-            .withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream(STREAM_NAME)
-                .withNamespace(SCHEMA_NAME)
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
-        .collect(Collectors.toList());
+            .boxed()
+            .map(i -> new AirbyteMessage()
+                    .withType(Type.RECORD)
+                    .withRecord(new AirbyteRecordMessage()
+                            .withStream(STREAM_NAME)
+                            .withNamespace(SCHEMA_NAME)
+                            .withEmittedAt(Instant.now().toEpochMilli())
+                            .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
+            .collect(Collectors.toList());
   }
 
 }
