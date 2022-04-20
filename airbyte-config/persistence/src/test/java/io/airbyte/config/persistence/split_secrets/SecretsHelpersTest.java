@@ -4,12 +4,8 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayOneOfTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.ArrayTestCase;
 import io.airbyte.config.persistence.split_secrets.test_cases.NestedObjectTestCase;
@@ -20,13 +16,11 @@ import io.airbyte.config.persistence.split_secrets.test_cases.PostgresSshKeyTest
 import io.airbyte.config.persistence.split_secrets.test_cases.SimpleTestCase;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -208,16 +202,6 @@ public class SecretsHelpersTest {
 
     assertEquals(testCase.getUpdatedPartialConfigAfterUpdate2(), updatedSplit2.getPartialConfig());
     assertEquals(testCase.getSecretMapAfterUpdate2(), updatedSplit2.getCoordinateToPayload());
-  }
-
-  @ParameterizedTest
-  @MethodSource("provideTestCases")
-  void testSecretPath(final SecretsTestCase testCase) throws IOException {
-    final JsonNode spec = testCase.getSpec().getConnectionSpecification();
-
-    final List<String> secretsPaths = SecretsHelpers.getSortedSecretPaths(spec);
-
-    Assertions.assertThat(secretsPaths).containsExactlyElementsOf(testCase.getExpectedSecretsPaths());
   }
 
 }

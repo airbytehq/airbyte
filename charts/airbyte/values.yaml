@@ -700,7 +700,7 @@ bootloader:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
     tag: 0.36.1-alpha
-  
+
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
   podAnnotations: {}
@@ -961,3 +961,19 @@ jobs:
     ##    cpu: 200m
     ##    memory: 1Gi
     limits: {}
+
+  kube:
+    ## JOB_KUBE_ANNOTATIONS
+    ## pod annotations of the sync job and the default pod annotations fallback for others jobs
+    ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
+    annotations: {}
+
+    ## JOB_KUBE_NODE_SELECTORS
+    ## pod node selector of the sync job and the default pod node selector fallback for others jobs
+    ## @params jobs.kubeSelector [object] key/value node selector applied to kube jobs
+    nodeSelector: {}
+
+    ## JOB_KUBE_TOLERATIONS
+    ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
+    ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
