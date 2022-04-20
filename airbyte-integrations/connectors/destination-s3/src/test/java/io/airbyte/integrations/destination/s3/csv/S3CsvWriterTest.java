@@ -23,6 +23,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter.Builder;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -52,7 +53,7 @@ class S3CsvWriterTest {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private static final int PART_SIZE = 7;
-  private static final S3CsvFormatConfig CSV_FORMAT_CONFIG = new S3CsvFormatConfig(null, (long) PART_SIZE, false);
+  private static final S3CsvFormatConfig CSV_FORMAT_CONFIG = new S3CsvFormatConfig(Flattening.NO, (long) PART_SIZE, false);
 
   private static final S3DestinationConfig CONFIG = S3DestinationConfig.create(
       "fake-bucket",

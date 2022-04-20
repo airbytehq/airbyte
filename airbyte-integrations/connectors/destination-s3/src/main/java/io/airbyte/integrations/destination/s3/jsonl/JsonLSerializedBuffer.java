@@ -61,7 +61,8 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3JsonlFormatConfig config,
                                                                                                                                           final Callable<BufferStorage> createStorageFunction) {
     return (final AirbyteStreamNameNamespacePair stream,
-            final ConfiguredAirbyteCatalog catalog) -> new JsonLSerializedBuffer(createStorageFunction.call(), config.isGzipCompression());
+            final ConfiguredAirbyteCatalog catalog) -> new JsonLSerializedBuffer(createStorageFunction.call(),
+                config == null || config.isGzipCompression());
   }
 
 }
