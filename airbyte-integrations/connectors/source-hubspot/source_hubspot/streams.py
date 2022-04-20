@@ -1375,4 +1375,5 @@ class Tickets(CRMObjectIncrementalStream):
 
 class Quotes(CRMObjectIncrementalStream):
     entity = "quote"
+    associations = ["deals"]
     primary_key = "id"
