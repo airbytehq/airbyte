@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.snowflake;
 
 import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
-import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
