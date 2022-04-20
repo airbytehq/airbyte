@@ -11,8 +11,6 @@ import {
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { SourceAuthService } from "core/domain/connector/SourceAuthService";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
-import { useGetService } from "core/servicesProvider";
 
 import useRouter from "../useRouter";
 import { useCurrentWorkspace } from "./useWorkspace";
@@ -51,11 +49,10 @@ export function useConnectorAuth(): {
   ) => Promise<Record<string, unknown>>;
 } {
   const { workspaceId } = useCurrentWorkspace();
-  const { apiUrl, oauthRedirectUrl } = useConfig();
-  const middlewares = useGetService<RequestMiddleware[]>("DefaultRequestMiddlewares");
+  const { oauthRedirectUrl } = useConfig();
 
   // TODO: move to separate initFacade and use refs instead
-  const sourceAuthService = useMemo(() => new SourceAuthService(apiUrl, middlewares), [apiUrl, middlewares]);
+  const sourceAuthService = useMemo(() => new SourceAuthService(), []);
   const destinationAuthService = useMemo(() => new DestinationAuthService(), []);
 
   return {
