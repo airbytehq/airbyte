@@ -5,15 +5,11 @@
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,17 +51,15 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final var accessKeyIdNode = config.get("access_key_id");
     final var secretAccessKeyNode = config.get("secret_access_key");
 
-    // Since region is a Json schema enum with an empty string default, we consider the empty string an
-    // unset field.
-    final var emptyRegion = regionNode == null || regionNode.asText().equals("");
-
-    if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
+    if (isNullOrEmpty(bucketNode) && isNullOrEmpty(regionNode) && isNullOrEmpty(accessKeyIdNode)
+        && isNullOrEmpty(secretAccessKeyNode)) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
-                  "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
+          "Please use the Amazon S3 upload mode if you are syncing a large amount of data.");
       return DestinationType.INSERT_WITH_SUPER_TMP_TYPE;
     }
 
-    if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null) {
+    if (isNullOrEmpty(bucketNode) && isNullOrEmpty(regionNode) && isNullOrEmpty(accessKeyIdNode)
+        && isNullOrEmpty(secretAccessKeyNode)) {
       throw new RuntimeException("Error: Partially missing S3 Configuration.");
     }
     return DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE;
@@ -76,6 +70,10 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     LOGGER.info("starting destination: {}", RedshiftDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", RedshiftDestination.class);
+  }
+
+  private static boolean isNullOrEmpty(JsonNode jsonNode) {
+    return jsonNode == null || jsonNode.asText().equals("");
   }
 
 }

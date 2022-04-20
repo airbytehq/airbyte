@@ -32,7 +32,6 @@ import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.Record;
 import org.jooq.Result;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -49,20 +48,20 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
   private static final String USERS_STREAM_NAME = "users_" + RandomStringUtils.randomAlphabetic(5);
 
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
-                  .withEmittedAt(NOW.toEpochMilli()));
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
+          .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
-                  .withEmittedAt(NOW.toEpochMilli()));
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
+          .withEmittedAt(NOW.toEpochMilli()));
   private static final AirbyteMessage USER_IN_THE_DB = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
-                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "Alex").put("id", "1").build()))
-                  .withEmittedAt(NOW.toEpochMilli()));
+      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+          .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "Alex").put("id", "1").build()))
+          .withEmittedAt(NOW.toEpochMilli()));
 
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
-          .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
+      .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   public JsonNode getStaticConfig() {
     return removeStagingConfigurationFromRedshift(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
@@ -77,14 +76,14 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
     return original;
   }
 
-  void setup(){
+  void setup() {
     MESSAGE_USERS1.getRecord().setNamespace(DATASET_ID);
     MESSAGE_USERS2.getRecord().setNamespace(DATASET_ID);
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-            CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, DATASET_ID,
-                            io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
-                            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.STRING))
-                    .withDestinationSyncMode(DestinationSyncMode.APPEND)));
+        CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, DATASET_ID,
+            io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
+            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.STRING))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)));
   }
 
   @Test
@@ -108,9 +107,9 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
 
     final List<JsonNode> usersActual = retrieveRecords(testDestinationEnv, USERS_STREAM_NAME, DATASET_ID, config);
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(
-            MESSAGE_USERS1.getRecord().getData(),
-            MESSAGE_USERS2.getRecord().getData(),
-            USER_IN_THE_DB.getRecord().getData());
+        MESSAGE_USERS1.getRecord().getData(),
+        MESSAGE_USERS2.getRecord().getData(),
+        USER_IN_THE_DB.getRecord().getData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
   }
@@ -119,18 +118,19 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
     // As we don't care about the previous data we just simulate the flow when previous table exists.
     database.query(q -> {
       q.fetch(String.format("CREATE SCHEMA IF NOT EXISTS %s", DATASET_ID));
-      q.fetch(String.format("CREATE TABLE IF NOT EXISTS %s.%s (%s VARCHAR PRIMARY KEY, %s VARCHAR, %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)",
-              DATASET_ID,
-              streamName,
-              JavaBaseConstants.COLUMN_NAME_AB_ID,
-              JavaBaseConstants.COLUMN_NAME_DATA,
-              JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+      q.fetch(String.format(
+          "CREATE TABLE IF NOT EXISTS %s.%s (%s VARCHAR PRIMARY KEY, %s VARCHAR, %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)",
+          DATASET_ID,
+          streamName,
+          JavaBaseConstants.COLUMN_NAME_AB_ID,
+          JavaBaseConstants.COLUMN_NAME_DATA,
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
       // Simulate existing record
       q.fetch(String.format("""
-      insert into %s.%s (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at) values  
-      ('9', '{\"id\":\"1\",\"name\":\"Alex\"}', '2022-02-09 12:02:13.322000 +00:00')""",
-              DATASET_ID,
-              streamName));
+                            insert into %s.%s (_airbyte_ab_id, _airbyte_data, _airbyte_emitted_at) values
+                            ('9', '{\"id\":\"1\",\"name\":\"Alex\"}', '2022-02-09 12:02:13.322000 +00:00')""",
+          DATASET_ID,
+          streamName));
       return null;
     });
   }
@@ -142,23 +142,26 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcc
    * @param expectedType - data type of _airbyte_data to expect
    * @return if current datatype of _airbyte_data column is expectedType.
    *
-   * PG_TABLE_DEF table Stores information about table columns.
-   * PG_TABLE_DEF only returns information about tables that are visible to the user.
+   *         PG_TABLE_DEF table Stores information about table columns. PG_TABLE_DEF only returns
+   *         information about tables that are visible to the user.
    *
-   * <a href="https://docs.aws.amazon.com/redshift/latest/dg/r_PG_TABLE_DEF.html">PG_TABLE_DEF</a>
+   *         <a href=
+   *         "https://docs.aws.amazon.com/redshift/latest/dg/r_PG_TABLE_DEF.html">PG_TABLE_DEF</a>
    *
    * @throws SQLException
    */
   private boolean isTmpTableDataColumnInExpectedType(final Database database,
-                                          final String dataSet,
-                                          final String streamName,
-                                          final String expectedType) throws SQLException {
+                                                     final String dataSet,
+                                                     final String streamName,
+                                                     final String expectedType)
+      throws SQLException {
     Result<Record> query = database.query(q -> {
       return q.fetch(String.format("""
-              set search_path to %s;
-              select type from pg_table_def where tablename = \'%s\' and "column" = \'%s\'""",
-              dataSet, streamName, JavaBaseConstants.COLUMN_NAME_DATA));
+                                   set search_path to %s;
+                                   select type from pg_table_def where tablename = \'%s\' and "column" = \'%s\'""",
+          dataSet, streamName, JavaBaseConstants.COLUMN_NAME_DATA));
     });
     return query.get(0).getValue(TYPE).toString().trim().contains(expectedType);
   }
+
 }

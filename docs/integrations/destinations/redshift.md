@@ -123,6 +123,7 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request | Subject |
 |:--------|:-----------| :-----       | :------ |
+| 0.3.32  | 2022-04-20 | [12085](https://github.com/airbytehq/airbyte/pull/12085) | Fixed bug with switching between INSERT and COPY config |
 | 0.3.31  | 2022-04-19 | [\#12064](https://github.com/airbytehq/airbyte/pull/12064) | Added option to support SUPER datatype in _airbyte_raw_** table |
 | 0.3.29  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name |                                                                   |
 | 0.3.28  | 2022-03-18 | [\#11254](https://github.com/airbytehq/airbyte/pull/11254) | Fixed missing records during S3 staging |
