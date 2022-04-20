@@ -27,6 +27,8 @@ const StreamOptions = [
 const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({ field, form }) => {
   const [, meta] = useField(field.name);
 
+  const defaultValue = StreamOptions.find((option) => (option.value = ConnectionNamespaceDefinition.Source));
+
   return (
     <ControlLabels
       nextLine
@@ -41,6 +43,7 @@ const NamespaceDefinitionField: React.FC<FieldProps<string>> = ({ field, form })
         options={StreamOptions}
         value={field.value}
         onChange={({ value }) => form.setFieldValue(field.name, value)}
+        defaultValue={defaultValue}
       />
     </ControlLabels>
   );
