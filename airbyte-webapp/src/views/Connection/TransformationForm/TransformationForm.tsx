@@ -4,9 +4,10 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
-import { getIn, useFormik } from "formik";
+import { getIn, useFormik, useFormikContext } from "formik";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
+import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { equal } from "utils/objects";
 import { Transformation } from "core/domain/connection/operation";
@@ -44,6 +45,7 @@ interface TransformationProps {
   transformation: Transformation;
   onCancel: () => void;
   onDone: (tr: Transformation) => void;
+  isNewTransformation?: boolean;
 }
 
 const validationSchema = yup.object({
@@ -77,7 +79,12 @@ function prepareLabelFields(
 // enum with only one value for the moment
 const TransformationTypes = [{ value: "custom", label: "Custom DBT" }];
 
-const TransformationForm: React.FC<TransformationProps> = ({ transformation, onCancel, onDone }) => {
+const TransformationForm: React.FC<TransformationProps> = ({
+  transformation,
+  onCancel,
+  onDone,
+  isNewTransformation,
+}) => {
   const formatMessage = useIntl().formatMessage;
   const operationService = useGetService<OperationService>("OperationService");
 
@@ -89,9 +96,11 @@ const TransformationForm: React.FC<TransformationProps> = ({ transformation, onC
       onDone(values);
     },
   });
+  const { dirty } = useFormikContext();
 
   return (
     <>
+      <FormChangeTracker changed={isNewTransformation || dirty} />
       <Content>
         <Column>
           <Label

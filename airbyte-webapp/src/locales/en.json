@@ -62,6 +62,7 @@
   "form.sourceRetest": "Retest source",
   "form.destinationRetest": "Retest destination",
   "form.discardChanges": "Discard changes",
+  "form.discardChangesConfirmation": "There are unsaved changes. Are you sure you want to discard your changes?",
   "form.every": "Every {value}",
   "form.testingConnection": "Testing connection...",
   "form.successTests": "All connection tests passed!",
