@@ -76,7 +76,7 @@ class SmartSheetAPIWrapper:
         for row in self.data.rows:
             yield self._construct_record(row)
 
-    def check_connection(self, logger: logging.Logger) -> Tuple[bool, str]:
+    def check_connection(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
         try:
             _ = self.data
         except smartsheet.exceptions.ApiError as e:
