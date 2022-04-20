@@ -3,10 +3,10 @@
 #
 
 from datetime import datetime
-from retrying import retry
 
 import nanoid
 from airbyte_cdk.models import DestinationSyncMode
+from retrying import retry
 
 from .aws import AwsHandler, LakeformationTransaction
 
@@ -65,7 +65,7 @@ class StreamWriter:
                     self._logger.debug(f"Table {self._table} was updated")
                 except Exception as e:
                     self._logger.error(f"An exception was raised:\n{repr(e)}")
-                    raise(e)
+                    raise (e)
             else:
                 self._logger.debug(f"There was no message to flush for {self._table}")
         self._messages = []

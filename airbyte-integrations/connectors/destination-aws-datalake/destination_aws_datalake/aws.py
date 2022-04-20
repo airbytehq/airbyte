@@ -3,6 +3,7 @@
 #
 
 import json
+
 import boto3
 from airbyte_cdk.destinations import Destination
 from botocore.exceptions import ClientError
@@ -118,14 +119,13 @@ class AwsHandler:
         preprocessed_type = self.preprocess_type(str_type)
         return self.COLUMNS_MAPPING.get(preprocessed_type, preprocessed_type)
 
-
     def generate_athena_schema(self, schema):
         columns = []
         for (k, v) in schema.items():
             athena_type = self.cast_to_athena(v["type"])
             if athena_type == "object":
                 properties = v["properties"]
-                type_str = ",".join([ f"{k1}:{self.cast_to_athena(v1['type'])}" for (k1, v1) in properties.items() ])
+                type_str = ",".join([f"{k1}:{self.cast_to_athena(v1['type'])}" for (k1, v1) in properties.items()])
                 columns.append({"Name": k, "Type": f"struct<{type_str}>"})
             else:
                 columns.append({"Name": k, "Type": athena_type})
@@ -255,7 +255,7 @@ class LakeformationTransaction:
     def extend_transaction(self):
         self._logger.debug("Extending Lakeformation Transaction")
         self._aws_handler.lf_client.extend_transaction(TransactionId=self.txid)
-    
+
     def describe_transaction(self):
         return self._aws_handler.lf_client.describe_transaction(TransactionId=self.txid)
 
@@ -285,4 +285,4 @@ class LakeformationTransaction:
                 self.cancel_transaction()
                 self._logger.error(f"Could not commit the transaction id = {self.txid} because of :\n{repr(e)}")
                 self._transaction = None
-                raise(e)
+                raise (e)

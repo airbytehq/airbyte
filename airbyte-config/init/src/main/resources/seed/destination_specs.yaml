@@ -188,7 +188,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-aws-datalake:0.1.0"
+- dockerImage: "airbyte/destination-aws-datalake:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/aws-datalake"
     connectionSpecification:
