@@ -1,11 +1,9 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { useConfig } from "config";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Destination } from "core/domain/connector";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
@@ -31,14 +29,7 @@ type ValuesProps = {
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
 function useDestinationService(): DestinationService {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-
-  return useInitService(
-    () => new DestinationService(config.apiUrl, middlewares),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config]
-  );
+  return useInitService(() => new DestinationService(), []);
 }
 
 type DestinationList = { destinations: Destination[] };
@@ -70,6 +61,10 @@ const useCreateDestination = () => {
   return useMutation(
     async (createDestinationPayload: { values: ValuesProps; destinationConnector?: ConnectorProps }) => {
       const { values, destinationConnector } = createDestinationPayload;
+
+      if (!destinationConnector?.destinationDefinitionId) {
+        throw new Error("No Destination Definition Provided");
+      }
 
       return service.create({
         name: values.name,

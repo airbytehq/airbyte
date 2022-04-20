@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
-import { useConfig } from "config";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Source } from "core/domain/connector";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
@@ -34,15 +32,8 @@ type ValuesProps = {
 
 type ConnectorProps = { name: string; sourceDefinitionId: string };
 
-function useSourceService(): SourceService {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-
-  return useInitService(
-    () => new SourceService(config.apiUrl, middlewares),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config]
-  );
+function useSourceService() {
+  return useInitService(() => new SourceService(), []);
 }
 
 type SourceList = { sources: Source[] };
@@ -74,6 +65,9 @@ const useCreateSource = () => {
   return useMutation(
     async (createSourcePayload: { values: ValuesProps; sourceConnector?: ConnectorProps }) => {
       const { values, sourceConnector } = createSourcePayload;
+      if (!sourceConnector?.sourceDefinitionId) {
+        throw new Error("No Source Connector Provided");
+      }
       analyticsService.track("New Source - Action", {
         action: "Test a connector",
         connector_source: sourceConnector?.name,
@@ -81,7 +75,7 @@ const useCreateSource = () => {
       });
 
       try {
-        // Try to crete source
+        // Try to create source
         const result = await service.create({
           name: values.name,
           sourceDefinitionId: sourceConnector?.sourceDefinitionId,

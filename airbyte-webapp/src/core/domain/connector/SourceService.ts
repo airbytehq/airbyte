@@ -1,88 +1,64 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import Status from "core/statuses";
-import { LogsRequestError } from "core/request/LogsRequestError";
 import { CommonRequestError } from "core/request/CommonRequestError";
 
+import {
+  checkConnectionToSource,
+  checkConnectionToSourceForUpdate,
+  createSource,
+  deleteSource,
+  discoverSchemaForSource,
+  executeSourceCheckConnection,
+  getSource,
+  listSourcesForWorkspace,
+  SourceCreate,
+  SourceUpdate,
+  updateSource,
+} from "../../request/GeneratedApi";
 import { ConnectionConfiguration } from "../connection";
-import { Scheduler, Schema, Source } from "./types";
 
-class SourceService extends AirbyteRequestService {
-  get url(): string {
-    return "sources";
-  }
-
+export class SourceService {
   public async check_connection(
     params: {
       sourceId?: string;
       connectionConfiguration?: ConnectionConfiguration;
     },
+    // @ts-expect-error This is unusable with the generated requests
     requestParams?: RequestInit
-  ): Promise<Scheduler> {
-    const url = !params.sourceId
-      ? `scheduler/${this.url}/check_connection`
-      : params.connectionConfiguration
-      ? `${this.url}/check_connection_for_update`
-      : `${this.url}/check_connection`;
-
-    // migrated from rest-hooks. Needs proper fix to `Scheduler` type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(url, params, requestParams);
-
-    // If check connection for source has status 'failed'
-    if (result.status === Status.FAILED) {
-      const jobInfo = {
-        ...result.jobInfo,
-        status: result.status,
-      };
-
-      throw new LogsRequestError(jobInfo, jobInfo, result.message);
+  ) {
+    // TODO: Fix params logic
+    if (!params.sourceId) {
+      return executeSourceCheckConnection(params as any);
+    } else if (params.connectionConfiguration) {
+      return checkConnectionToSourceForUpdate(params as any);
+    } else {
+      return checkConnectionToSource({ sourceId: params.sourceId });
     }
-
-    return result;
   }
 
-  public get(sourceId: string): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/get`, {
-      sourceId,
-    });
+  public get(sourceId: string) {
+    return getSource({ sourceId });
   }
 
-  public list(workspaceId: string): Promise<{ sources: Source[] }> {
-    return this.fetch(`${this.url}/list`, {
-      workspaceId,
-    });
+  public list(workspaceId: string) {
+    return listSourcesForWorkspace({ workspaceId });
   }
 
-  public create(body: {
-    name: string;
-    sourceDefinitionId?: string;
-    workspaceId: string;
-    connectionConfiguration: ConnectionConfiguration;
-  }): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/create`, body);
+  public create(body: SourceCreate) {
+    return createSource(body);
   }
 
-  public update(body: {
-    sourceId: string;
-    name: string;
-    connectionConfiguration: ConnectionConfiguration;
-  }): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/update`, body);
+  public update(body: SourceUpdate) {
+    return updateSource(body);
   }
 
-  public delete(sourceId: string): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/delete`, { sourceId });
+  public delete(sourceId: string) {
+    return deleteSource({ sourceId });
   }
 
-  public async discoverSchema(sourceId: string): Promise<Schema> {
-    // needs proper type and refactor of CommonRequestError
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(`${this.url}/discover_schema`, {
-      sourceId,
-    });
+  public async discoverSchema(sourceId: string) {
+    const result = await discoverSchemaForSource({ sourceId });
 
-    if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
-      // @ts-ignore address this case
+    if (!result.jobInfo?.succeeded || !result.catalog) {
+      // @ts-expect-error TODO: address this case
       const e = new CommonRequestError(result);
       // Generate error with failed status and received logs
       e._status = 400;
@@ -98,5 +74,3 @@ class SourceService extends AirbyteRequestService {
     };
   }
 }
-
-export { SourceService };

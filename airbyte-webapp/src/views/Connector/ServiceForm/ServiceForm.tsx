@@ -4,11 +4,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useToggle } from "react-use";
 
 import { FormBaseItem } from "core/form/types";
-import { ConnectorDefinition, ConnectorDefinitionSpecification, Scheduler } from "core/domain/connector";
+import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
 import { ConnectionConfiguration } from "../../../core/domain/connection";
+import { CheckConnectionRead } from "../../../core/request/GeneratedApi";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { FormRoot } from "./FormRoot";
@@ -95,7 +96,7 @@ export type ServiceFormProps = {
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
-  testConnector?: (v?: ServiceFormValues) => Promise<Scheduler>;
+  testConnector?: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {

@@ -1,18 +1,18 @@
 import { useCallback, useMemo, useRef } from "react";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
+import { useConfig } from "config";
 import {
   ConnectorDefinitionSpecification,
   ConnectorSpecification,
   DestinationGetConsentPayload,
   SourceGetConsentPayload,
 } from "core/domain/connector";
-import { useConfig } from "config";
-import { SourceAuthService } from "core/domain/connector/SourceAuthService";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
-import { useGetService } from "core/servicesProvider";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
+import { SourceAuthService } from "core/domain/connector/SourceAuthService";
+import { RequestMiddleware } from "core/request/RequestMiddleware";
+import { useGetService } from "core/servicesProvider";
 
 import useRouter from "../useRouter";
 import { useCurrentWorkspace } from "./useWorkspace";
@@ -56,7 +56,7 @@ export function useConnectorAuth(): {
 
   // TODO: move to separate initFacade and use refs instead
   const sourceAuthService = useMemo(() => new SourceAuthService(apiUrl, middlewares), [apiUrl, middlewares]);
-  const destinationAuthService = useMemo(() => new DestinationAuthService(apiUrl, middlewares), [apiUrl, middlewares]);
+  const destinationAuthService = useMemo(() => new DestinationAuthService(), []);
 
   return {
     getConsentUrl: async (

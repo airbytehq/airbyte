@@ -1,18 +1,20 @@
 import { useMemo } from "react";
 import { useMutation } from "react-query";
 
-import { Connector, Scheduler } from "core/domain/connector";
-import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useConfig } from "config";
+import { ConnectionConfiguration } from "core/domain/connection";
+import { Connector } from "core/domain/connector";
+import { DestinationService } from "core/domain/connector/DestinationService";
+import { SourceService } from "core/domain/connector/SourceService";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
 } from "services/connector/DestinationDefinitionService";
-import { DestinationService } from "core/domain/connector/DestinationService";
-import { useConfig } from "config";
+import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { SourceService } from "core/domain/connector/SourceService";
-import { ConnectionConfiguration } from "core/domain/connection";
+
+import { CheckConnectionRead } from "../../core/request/GeneratedApi";
 
 type ConnectorService = {
   hasNewVersions: boolean;
@@ -80,7 +82,7 @@ function useGetDestinationService(): DestinationService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+  return useInitService(() => new DestinationService(), [apiUrl, requestAuthMiddleware]);
 }
 
 function useGetSourceService(): SourceService {
@@ -88,7 +90,7 @@ function useGetSourceService(): SourceService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+  return useInitService(() => new SourceService(), [apiUrl, requestAuthMiddleware]);
 }
 
 type CheckConnectorParams = { signal: AbortSignal } & (
@@ -108,7 +110,7 @@ const useCheckConnector = (formType: "source" | "destination") => {
   const destinationService = useGetDestinationService();
   const sourceService = useGetSourceService();
 
-  return useMutation<Scheduler, Error, CheckConnectorParams>(async (params: CheckConnectorParams) => {
+  return useMutation<CheckConnectionRead, Error, CheckConnectorParams>(async (params: CheckConnectorParams) => {
     const payload: Record<string, unknown> = {};
 
     if ("connectionConfiguration" in params) {

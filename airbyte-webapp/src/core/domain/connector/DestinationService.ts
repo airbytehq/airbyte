@@ -1,77 +1,54 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import Status from "core/statuses";
-import { LogsRequestError } from "core/request/LogsRequestError";
 import { ConnectionConfiguration } from "core/domain/connection";
 
-import { Destination, Scheduler } from "./types";
+import {
+  checkConnectionToDestination,
+  checkConnectionToDestinationForUpdate,
+  createDestination,
+  deleteDestination,
+  DestinationCreate,
+  DestinationUpdate,
+  executeDestinationCheckConnection,
+  getDestination,
+  listDestinationsForWorkspace,
+  updateDestination,
+} from "../../request/GeneratedApi";
 
-class DestinationService extends AirbyteRequestService {
-  get url(): string {
-    return "destinations";
-  }
-
+export class DestinationService {
   public async check_connection(
     params: {
       destinationId?: string;
       connectionConfiguration?: ConnectionConfiguration;
     },
+    // @ts-expect-error This is unusable with the generated requests
     requestParams?: RequestInit
-  ): Promise<Scheduler> {
-    const url = !params.destinationId
-      ? `scheduler/${this.url}/check_connection`
-      : params.connectionConfiguration
-      ? `${this.url}/check_connection_for_update`
-      : `${this.url}/check_connection`;
-
-    // migrated from rest-hooks. Needs proper fix to `Scheduler` type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(url, params, requestParams);
-
-    // If check connection for destination has status 'failed'
-    if (result.status === Status.FAILED) {
-      const jobInfo = {
-        ...result.jobInfo,
-        status: result.status,
-      };
-
-      throw new LogsRequestError(jobInfo, jobInfo, result.message);
+  ) {
+    // TODO: Fix params logic
+    if (!params.destinationId) {
+      return executeDestinationCheckConnection(params as any);
+    } else if (params.connectionConfiguration) {
+      return checkConnectionToDestinationForUpdate(params as any);
+    } else {
+      return checkConnectionToDestination({ destinationId: params.destinationId });
     }
-
-    return result;
   }
 
-  public get(destinationId: string): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/get`, {
-      destinationId,
-    });
+  public get(destinationId: string) {
+    return getDestination({ destinationId });
   }
 
-  public list(workspaceId: string): Promise<{ destinations: Destination[] }> {
-    return this.fetch(`${this.url}/list`, {
-      workspaceId,
-    });
+  public list(workspaceId: string) {
+    return listDestinationsForWorkspace({ workspaceId });
   }
 
-  public create(body: {
-    name: string;
-    destinationDefinitionId?: string;
-    workspaceId: string;
-    connectionConfiguration: ConnectionConfiguration;
-  }): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/create`, body);
+  public create(body: DestinationCreate) {
+    return createDestination(body);
   }
 
-  public update(body: {
-    destinationId: string;
-    name: string;
-    connectionConfiguration: ConnectionConfiguration;
-  }): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/update`, body);
+  public update(body: DestinationUpdate) {
+    return updateDestination(body);
   }
 
-  public delete(destinationId: string): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/delete`, { destinationId });
+  public delete(destinationId: string) {
+    return deleteDestination({ destinationId });
   }
 }
-
-export { DestinationService };

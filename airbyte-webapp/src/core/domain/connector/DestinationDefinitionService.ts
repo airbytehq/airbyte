@@ -1,44 +1,40 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
+import {
+  createDestinationDefinition,
+  DestinationDefinitionCreate,
+  DestinationDefinitionUpdate,
+  getDestinationDefinition,
+  listDestinationDefinitionsForWorkspace,
+  updateDestinationDefinition,
+} from "../../request/GeneratedApi";
 import { DestinationDefinition } from "./types";
 
-class DestinationDefinitionService extends AirbyteRequestService {
+export class DestinationDefinitionService extends AirbyteRequestService {
   get url(): string {
     return "destination_definitions";
   }
 
-  public get(destinationDefinitionId: string): Promise<DestinationDefinition> {
-    return this.fetch<DestinationDefinition>(`${this.url}/get`, {
-      destinationDefinitionId,
-    });
+  public get(destinationDefinitionId: string) {
+    return getDestinationDefinition({ destinationDefinitionId });
   }
 
-  public list(workspaceId: string): Promise<{ destinationDefinitions: DestinationDefinition[] }> {
-    return this.fetch(`${this.url}/list`, {
-      workspaceId,
-    });
+  public list(workspaceId: string) {
+    return listDestinationDefinitionsForWorkspace({ workspaceId });
   }
 
   public listLatest(workspaceId: string): Promise<{ destinationDefinitions: DestinationDefinition[] }> {
+    // TODO: List Latest doesn't take a workspace Id.
     return this.fetch(`${this.url}/list_latest`, {
       workspaceId,
     });
   }
 
-  public update(body: { destinationDefinitionId: string; dockerImageTag: string }): Promise<DestinationDefinition> {
-    return this.fetch<DestinationDefinition>(`${this.url}/update`, body);
+  public update(body: DestinationDefinitionUpdate) {
+    return updateDestinationDefinition(body);
   }
 
-  public create(body: CreateDestinationDefinitionPayload): Promise<DestinationDefinition> {
-    return this.fetch<DestinationDefinition>(`${this.url}/create`, body);
+  public create(body: DestinationDefinitionCreate) {
+    return createDestinationDefinition(body);
   }
 }
-
-export type CreateDestinationDefinitionPayload = {
-  name: string;
-  documentationUrl: string;
-  dockerImageTag: string;
-  dockerRepository: string;
-};
-
-export { DestinationDefinitionService };

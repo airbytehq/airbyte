@@ -1,16 +1,14 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { DestinationDefinition } from "core/domain/connector";
 import { useConfig } from "config";
+import { DestinationDefinition } from "core/domain/connector";
+import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import {
-  CreateDestinationDefinitionPayload,
-  DestinationDefinitionService,
-} from "core/domain/connector/DestinationDefinitionService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
+import { DestinationDefinitionCreate, DestinationDefinitionRead } from "../../core/request/GeneratedApi";
 import { SCOPE_WORKSPACE } from "../Scope";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 
@@ -43,8 +41,8 @@ const useDestinationDefinitionList = (): {
       service.listLatest(workspace.workspaceId),
     ]);
 
-    const destinationDefinitions: DestinationDefinition[] = definition.destinationDefinitions.map(
-      (destination: DestinationDefinition) => {
+    const destinationDefinitions: DestinationDefinitionRead[] = definition.destinationDefinitions.map(
+      (destination: DestinationDefinitionRead) => {
         const withLatest = latestDefinition.destinationDefinitions.find(
           (latestDestination: DestinationDefinition) =>
             latestDestination.destinationDefinitionId === destination.destinationDefinitionId
@@ -75,13 +73,13 @@ const useCreateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
 
-  return useMutation<DestinationDefinition, Error, CreateDestinationDefinitionPayload>(
+  return useMutation<DestinationDefinitionRead, Error, DestinationDefinitionCreate>(
     (destinationDefinition) => service.create(destinationDefinition),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
           destinationDefinitionKeys.lists(),
-          (oldData: { destinationDefinitions: DestinationDefinition[] } | undefined) => ({
+          (oldData: { destinationDefinitions: DestinationDefinitionRead[] } | undefined) => ({
             destinationDefinitions: [data, ...(oldData?.destinationDefinitions ?? [])],
           })
         );
@@ -95,7 +93,7 @@ const useUpdateDestinationDefinition = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    DestinationDefinition,
+    DestinationDefinitionRead,
     Error,
     {
       destinationDefinitionId: string;
@@ -107,7 +105,7 @@ const useUpdateDestinationDefinition = () => {
 
       queryClient.setQueryData(
         destinationDefinitionKeys.lists(),
-        (oldData: { destinationDefinitions: DestinationDefinition[] } | undefined) => ({
+        (oldData: { destinationDefinitions: DestinationDefinitionRead[] } | undefined) => ({
           destinationDefinitions:
             oldData?.destinationDefinitions.map((sd) =>
               sd.destinationDefinitionId === data.destinationDefinitionId ? data : sd

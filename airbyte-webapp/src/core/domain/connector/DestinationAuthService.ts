@@ -1,23 +1,16 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import {
+  completeDestinationOAuth,
+  CompleteDestinationOAuthRequest,
+  DestinationOauthConsentRequest,
+  getDestinationOAuthConsent,
+} from "../../request/GeneratedApi";
 
-import { DestinationGetConsentPayload } from "./types";
-
-class DestinationAuthService extends AirbyteRequestService {
-  get url(): string {
-    return "destination_oauths";
+export class DestinationAuthService {
+  public getConsentUrl(body: DestinationOauthConsentRequest) {
+    return getDestinationOAuthConsent(body);
   }
 
-  public getConsentUrl(body: DestinationGetConsentPayload): Promise<{ consentUrl: string }> {
-    return this.fetch<{ consentUrl: string }>(`${this.url}/get_consent_url`, body);
-  }
-
-  public completeOauth(
-    body: DestinationGetConsentPayload & {
-      queryParams: Record<string, unknown>;
-    }
-  ): Promise<Record<string, unknown>> {
-    return this.fetch<Record<string, unknown>>(`${this.url}/complete_oauth`, body);
+  public completeOauth(body: CompleteDestinationOAuthRequest) {
+    return completeDestinationOAuth(body);
   }
 }
-
-export { DestinationAuthService };
