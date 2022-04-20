@@ -91,18 +91,20 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         final Job firstJob = jobPersistence.getFirstReplicationJob(input.getConnectionId())
             .orElseThrow(() -> new Exception("Auto-Disable Connection should not have been attempted if no replication job has been run."));
         final int numDaysSinceFirstReplicationJob = getDaysSinceTimestamp(currTimestampInSeconds, firstJob.getCreatedAtInSecond());
+        final boolean firstReplicationOlderThanMaxDisableDays = numDaysSinceFirstReplicationJob >= maxDaysOfOnlyFailedJobs;
+        final boolean noPreviousSuccess = successTimestamp.isEmpty();
 
         // disable connection if only failed jobs in the past maxDaysOfOnlyFailedJobs days
-        if (numDaysSinceFirstReplicationJob >= maxDaysOfOnlyFailedJobs && successTimestamp.isEmpty()) {
+        if (firstReplicationOlderThanMaxDisableDays && noPreviousSuccess) {
           disableConnection(input.getConnectionId(), lastJob);
           return new AutoDisableConnectionOutput(true);
         }
 
-        // sending warning for disable connection if only failed jobs in the past
-        // maxDaysOfOnlyFailedJobsBeforeWarning days
-        if (numDaysSinceFirstReplicationJob >= maxDaysOfOnlyFailedJobsBeforeWarning &&
-            (successTimestamp.isEmpty()
-                || getDaysSinceTimestamp(currTimestampInSeconds, successTimestamp.get()) >= maxDaysOfOnlyFailedJobsBeforeWarning)) {
+        final boolean firstReplicationOlderThanMaxDisableWarningDays = numDaysSinceFirstReplicationJob >= maxDaysOfOnlyFailedJobsBeforeWarning;
+        final boolean successOlderThanPrevFailureByMaxWarningDays = // set to true if no previous success is found
+            noPreviousSuccess || getDaysSinceTimestamp(currTimestampInSeconds, successTimestamp.get()) >= maxDaysOfOnlyFailedJobsBeforeWarning;
+
+        if (firstReplicationOlderThanMaxDisableWarningDays && successOlderThanPrevFailureByMaxWarningDays) {
           sendWarningIfNotPreviouslySent(successTimestamp, maxDaysOfOnlyFailedJobsBeforeWarning, firstJob, lastJob, jobs, numFailures);
         }
 
@@ -125,11 +127,13 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
     jobNotifier.autoDisableConnectionAlertWithoutCustomerioConfig(CONNECTION_DISABLED_WARNING_NOTIFICATION, lastJob);
   }
 
-  // warning should be previously sent if
-  // 1. no success found in the time span and the previous failure is at least
+  // Checks to see if warning should have been sent in the previous failure, if so skip sending of
+  // warning to avoid spam
+  // Assume warning has been sent if either of the following is true:
+  // 1. no success found in the time span and the previous failure occurred
   // maxDaysOfOnlyFailedJobsBeforeWarning days after the first job
-  // 2. success found and it is at least maxDaysOfOnlyFailedJobsBeforeWarning days after the previous
-  // failure
+  // 2. success found and the previous failure occurred maxDaysOfOnlyFailedJobsBeforeWarning days
+  // after that success
   private boolean checkIfWarningPreviouslySent(final Optional<Long> successTimestamp,
                                                final int maxDaysOfOnlyFailedJobsBeforeWarning,
                                                final Job firstJob,
@@ -145,10 +149,17 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
       prevFailedJob = jobs.get(i);
     }
 
-    return (successTimestamp.isEmpty()
-        && getDaysSinceTimestamp(prevFailedJob.getUpdatedAtInSecond(), firstJob.getUpdatedAtInSecond()) >= maxDaysOfOnlyFailedJobsBeforeWarning)
-        || (successTimestamp.isPresent()
-            && getDaysSinceTimestamp(prevFailedJob.getUpdatedAtInSecond(), successTimestamp.get()) >= maxDaysOfOnlyFailedJobsBeforeWarning);
+    final boolean successExists = successTimestamp.isPresent();
+    boolean successOlderThanPrevFailureByMaxWarningDays = false;
+    if (successExists) {
+      successOlderThanPrevFailureByMaxWarningDays =
+          getDaysSinceTimestamp(prevFailedJob.getUpdatedAtInSecond(), successTimestamp.get()) >= maxDaysOfOnlyFailedJobsBeforeWarning;
+    }
+    final boolean prevFailureOlderThanFirstJobByMaxWarningDays =
+        getDaysSinceTimestamp(prevFailedJob.getUpdatedAtInSecond(), firstJob.getUpdatedAtInSecond()) >= maxDaysOfOnlyFailedJobsBeforeWarning;
+
+    return (successExists && successOlderThanPrevFailureByMaxWarningDays)
+        || (!successExists && prevFailureOlderThanFirstJobByMaxWarningDays);
   }
 
   private int getDaysSinceTimestamp(final long currentTimestampInSeconds, final long timestampInSeconds) {
