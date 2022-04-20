@@ -13,6 +13,7 @@ from subprocess import STDOUT, check_output, run
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
+import yaml
 from airbyte_cdk.models import (
     AirbyteRecordMessage,
     AirbyteStream,
@@ -117,7 +118,16 @@ def malformed_connector_config_fixture(connector_config) -> MutableMapping[str, 
 
 @pytest.fixture(name="connector_spec")
 def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
-    return ConnectorSpecification.parse_file(connector_spec_path)
+    with open(str(connector_spec_path), "r") as file:
+        raw_spec = file.read()
+        file_ext = connector_spec_path.suffix
+        if file_ext == ".json":
+            spec_obj = json.loads(raw_spec)
+        elif file_ext == ".yaml":
+            spec_obj = yaml.load(raw_spec, Loader=yaml.SafeLoader)
+        else:
+            raise RuntimeError(f"spec_path' must be a '.yaml' or '.json' file")
+        return ConnectorSpecification.parse_obj(spec_obj)
 
 
 @pytest.fixture(name="docker_runner")
