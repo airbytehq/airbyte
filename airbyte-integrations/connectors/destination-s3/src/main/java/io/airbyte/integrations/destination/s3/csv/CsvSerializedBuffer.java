@@ -32,7 +32,8 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   protected CsvSerializedBuffer(final BufferStorage bufferStorage,
                                 final CsvSheetGenerator csvSheetGenerator,
-                                final boolean compression) throws Exception {
+                                final boolean compression)
+      throws Exception {
     super(bufferStorage);
     this.csvSheetGenerator = csvSheetGenerator;
     this.csvPrinter = null;
