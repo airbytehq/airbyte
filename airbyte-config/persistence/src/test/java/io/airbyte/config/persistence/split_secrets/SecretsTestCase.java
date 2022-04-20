@@ -10,8 +10,6 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -41,10 +39,6 @@ public interface SecretsTestCase {
     return Exceptions.toRuntime(() -> getNodeResource(getName(), "partial_config.json"));
   }
 
-  default JsonNode getSortedPartialConfig() {
-    return Exceptions.toRuntime(() -> getNodeResource(getName(), "partial_config.json"));
-  }
-
   default JsonNode getUpdateConfig() {
     return Exceptions.toRuntime(() -> getNodeResource(getName(), "update_config.json"));
   }
@@ -55,15 +49,6 @@ public interface SecretsTestCase {
 
   default JsonNode getNodeResource(final String testCase, final String fileName) throws IOException {
     return Jsons.deserialize(MoreResources.readResource(testCase + "/" + fileName));
-  }
-
-  default List<String> getExpectedSecretsPaths() throws IOException {
-    return Arrays.stream(
-        MoreResources.readResource(getName() + "/" + "expectedPaths")
-            .trim()
-            .split(";"))
-        .sorted()
-        .toList();
   }
 
 }
