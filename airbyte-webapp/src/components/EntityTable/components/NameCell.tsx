@@ -3,8 +3,8 @@ import styled from "styled-components";
 import { useIntl } from "react-intl";
 
 import StatusIcon from "components/StatusIcon";
-import ImageBlock from "components/ImageBlock";
 import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
 import { Status } from "../types";
 
@@ -36,7 +36,7 @@ const Space = styled.div`
   opacity: 0;
 `;
 
-const Image = styled(ImageBlock)`
+const Image = styled(ConnectorIcon)`
   margin-right: 6px;
 `;
 
@@ -73,7 +73,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
   return (
     <Content>
       {status ? <StatusIcon title={title} status={statusIconStatus} /> : <Space />}
-      {icon && <Image small img={img} />}
+      {icon && <Image small icon={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

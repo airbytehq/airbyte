@@ -1,7 +1,7 @@
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { DropDownRow, ImageBlock } from "components";
+import { DropDownRow } from "components";
 import PageTitle from "components/PageTitle";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
@@ -9,6 +9,7 @@ import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
 import { getIcon } from "utils/imageUtils";
 import useRouter from "hooks/useRouter";
@@ -55,7 +56,7 @@ const SourceItemPage: React.FC = () => {
         return {
           label: item.name,
           value: item.destinationId,
-          img: <ImageBlock img={destinationDef?.icon} />,
+          img: <ConnectorIcon icon={destinationDef?.icon} />,
         };
       }),
     [destinations, destinationDefinitions]

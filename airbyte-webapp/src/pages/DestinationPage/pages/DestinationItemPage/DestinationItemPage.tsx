@@ -5,7 +5,8 @@ import Placeholder, { ResourceTypes } from "components/Placeholder";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
 import HeadTitle from "components/HeadTitle";
-import { DropDownRow, ImageBlock, LoadingPage, MainPageWithScroll, PageTitle } from "components";
+import { DropDownRow, LoadingPage, MainPageWithScroll, PageTitle } from "components";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
 import { getIcon } from "utils/imageUtils";
 import useRouter from "hooks/useRouter";
@@ -55,7 +56,7 @@ const DestinationItemPage: React.FC = () => {
         return {
           label: item.name,
           value: item.sourceId,
-          img: <ImageBlock img={sourceDef?.icon} />,
+          img: <ConnectorIcon icon={sourceDef?.icon} />,
         };
       }),
     [sources, sourceDefinitions]
