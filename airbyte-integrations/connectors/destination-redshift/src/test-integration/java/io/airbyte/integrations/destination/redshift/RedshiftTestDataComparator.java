@@ -5,14 +5,19 @@
 package io.airbyte.integrations.destination.redshift;
 
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RedshiftTestDataComparator extends AdvancedTestDataComparator {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftTestDataComparator.class);
 
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
 
@@ -25,9 +30,15 @@ public class RedshiftTestDataComparator extends AdvancedTestDataComparator {
 
   @Override
   protected boolean compareDateTimeValues(String airbyteMessageValue, String destinationValue) {
-    var format = DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT);
-    LocalDateTime dateTime = LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(REDSHIFT_DATETIME_WITH_TZ_FORMAT));
-    return super.compareDateTimeValues(airbyteMessageValue, format.format(dateTime));
+    try {
+      var format = DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT);
+      LocalDateTime dateTime = LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(REDSHIFT_DATETIME_WITH_TZ_FORMAT));
+      return super.compareDateTimeValues(airbyteMessageValue, format.format(dateTime));
+    } catch (DateTimeException e) {
+      LOGGER.warn("Fail to convert values to DateTime. Try to compare as text. Airbyte value({}), Destination value ({}). Exception: {}",
+          airbyteMessageValue, destinationValue, e);
+      return compareTextValues(airbyteMessageValue, destinationValue);
+    }
   }
 
   @Override

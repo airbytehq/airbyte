@@ -5,20 +5,24 @@
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
@@ -26,11 +30,15 @@ import java.util.stream.Collectors;
  */
 public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestinationAcceptanceTest.class);
+
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
   protected JsonNode config;
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @Override
   protected String getImageName() {
@@ -111,13 +119,34 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
+  private JsonNode getJsonFromRecord(Record record) {
+    ObjectNode node = mapper.createObjectNode();
+
+    Arrays.stream(record.fields()).forEach(field -> {
+      var value = record.get(field);
+
+      switch (field.getDataType().getTypeName()) {
+        case "varchar":
+          var stringValue = (String) value;
+          if (stringValue != null && (stringValue.matches("^\\[.*\\]$") || stringValue.matches("^\\{.*\\}$"))) {
+            node.set(field.getName(), Jsons.deserialize(stringValue));
+          } else {
+            node.put(field.getName(), stringValue);
+          }
+          break;
+        default:
+          node.put(field.getName(), (value != null ? value.toString() : null));
+      }
+    });
+    return node;
+  }
+
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return getDatabase().query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .stream()
-            .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-            .map(Jsons::deserialize)
+            .map(this::getJsonFromRecord)
             .collect(Collectors.toList()));
   }
 
