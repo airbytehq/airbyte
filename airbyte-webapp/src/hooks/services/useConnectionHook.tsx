@@ -147,7 +147,7 @@ const useCreateConnection = () => {
         status: "active",
       });
 
-      const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config.selected === true).length;
+      const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config.selected).length;
 
       const frequencyData = FrequencyConfig.find((item) => equal(item.config, values.schedule));
 
