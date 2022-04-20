@@ -99,7 +99,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
           "streams": [
             {
               "name": "users",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name"],
                 "properties": {
@@ -123,7 +123,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
           "streams": [
             {
               "name": "customers",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name"],
                 "properties": {
@@ -135,7 +135,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
             },
             {
               "name": "products",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name", "features"],
                 "properties": {
