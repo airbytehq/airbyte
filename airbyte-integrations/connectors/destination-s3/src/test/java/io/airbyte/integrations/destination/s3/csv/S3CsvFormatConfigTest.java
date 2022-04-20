@@ -80,4 +80,24 @@ public class S3CsvFormatConfigTest {
     assertEquals(MB * S3DestinationConstants.DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
+  @Test
+  public void testGzipCompressionConfig() {
+    // without gzip compression config
+    final JsonNode configWithoutGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+        + "  \"format_type\": \"CSV\"\n"
+        + "}"));
+    final S3DestinationConfig s3ConfigWithoutGzipCompression = S3DestinationConfig.getS3DestinationConfig(configWithoutGzipCompression);
+    assertEquals(
+        S3DestinationConstants.DEFAULT_GZIP_COMPRESSION,
+        ((S3CsvFormatConfig) s3ConfigWithoutGzipCompression.getFormatConfig()).isGzipCompression());
+
+    // with gzip compression config
+    final JsonNode configWithGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+        + "  \"format_type\": \"CSV\",\n"
+        + "  \"gzip_compression\": false\n"
+        + "}"));
+    final S3DestinationConfig gcsConfigWithGzipCompression = S3DestinationConfig.getS3DestinationConfig(configWithGzipCompression);
+    assertFalse(((S3CsvFormatConfig) gcsConfigWithGzipCompression.getFormatConfig()).isGzipCompression());
+  }
+
 }

@@ -176,7 +176,7 @@ public class S3StreamCopierTest {
   }
 
   private void checkCsvWriterArgs(final S3CsvWriterArguments args) {
-    assertEquals(S3DestinationConfig.create(S3_CONFIG).withFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE)).get(), args.config);
+    assertEquals(S3DestinationConfig.create(S3_CONFIG).withFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE, false)).get(), args.config);
     assertEquals(CONFIGURED_STREAM, args.stream);
     assertEquals(UPLOAD_TIME, args.uploadTime);
     assertEquals(UPLOAD_THREADS, args.uploadThreads);

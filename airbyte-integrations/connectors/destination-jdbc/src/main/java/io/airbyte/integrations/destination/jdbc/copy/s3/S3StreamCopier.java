@@ -98,7 +98,7 @@ public abstract class S3StreamCopier implements StreamCopier {
       try {
         // The Flattening value is actually ignored, because we pass an explicit CsvSheetGenerator. So just
         // pass in null.
-        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, (long) s3Config.getPartSize());
+        final S3FormatConfig csvFormatConfig = new S3CsvFormatConfig(null, (long) s3Config.getPartSize(), false);
         final S3DestinationConfig writerS3Config = S3DestinationConfig.create(s3Config).withFormatConfig(csvFormatConfig).get();
         final S3CsvWriter writer = new S3CsvWriter.Builder(
             writerS3Config,

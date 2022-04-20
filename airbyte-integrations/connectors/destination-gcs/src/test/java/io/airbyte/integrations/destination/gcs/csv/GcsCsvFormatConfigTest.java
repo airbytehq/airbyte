@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.gcs.csv;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import alex.mojaki.s3upload.StreamTransferManager;
@@ -15,6 +16,7 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.util.ConfigTestUtils;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -69,8 +71,7 @@ public class GcsCsvFormatConfigTest {
         + "  \"flattening\": \"Root level flattening\"\n"
         + "}"));
 
-    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
-        .getGcsDestinationConfig(config);
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig.getGcsDestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(gcsDestinationConfig);
 
     final StreamTransferManager streamTransferManager = StreamTransferManagerHelper.getDefault(
@@ -79,6 +80,26 @@ public class GcsCsvFormatConfigTest {
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
     assertEquals(MB * S3DestinationConstants.DEFAULT_PART_SIZE_MB, partSizeBytes);
+  }
+
+  @Test
+  public void testGzipCompressionConfig() {
+    // without gzip compression config
+    final JsonNode configWithoutGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+        + "  \"format_type\": \"CSV\"\n"
+        + "}"));
+    final GcsDestinationConfig gcsConfigWithoutGzipCompression = GcsDestinationConfig.getGcsDestinationConfig(configWithoutGzipCompression);
+    assertEquals(
+        S3DestinationConstants.DEFAULT_GZIP_COMPRESSION,
+        ((S3CsvFormatConfig) gcsConfigWithoutGzipCompression.getFormatConfig()).isGzipCompression());
+
+    // with gzip compression config
+    final JsonNode configWithGzipCompression = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
+        + "  \"format_type\": \"CSV\",\n"
+        + "  \"gzip_compression\": false\n"
+        + "}"));
+    final GcsDestinationConfig gcsConfigWithGzipCompression = GcsDestinationConfig.getGcsDestinationConfig(configWithGzipCompression);
+    assertFalse(((S3CsvFormatConfig) gcsConfigWithGzipCompression.getFormatConfig()).isGzipCompression());
   }
 
 }
