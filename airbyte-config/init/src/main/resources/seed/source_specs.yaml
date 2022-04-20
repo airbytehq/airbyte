@@ -8609,7 +8609,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.2"
+- dockerImage: "airbyte/source-twilio:0.1.3"
   spec:
     documentationUrl: "https://hub.docker.com/r/airbyte/source-twilio"
     connectionSpecification:
