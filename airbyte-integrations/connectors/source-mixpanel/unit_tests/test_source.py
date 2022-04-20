@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_mixpanel.source import FunnelsList, SourceMixpanel, TokenAuthenticatorBase64
