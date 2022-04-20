@@ -105,7 +105,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
             noPreviousSuccess || getDaysSinceTimestamp(currTimestampInSeconds, successTimestamp.get()) >= maxDaysOfOnlyFailedJobsBeforeWarning;
 
         // send warning if there are only failed jobs in the past maxDaysOfOnlyFailedJobsBeforeWarning days
-        // _except_ if a warning should have already been sent in the previous failure
+        // _unless_ a warning should have already been sent in the previous failure
         if (firstReplicationOlderThanMaxDisableWarningDays && successOlderThanPrevFailureByMaxWarningDays) {
           sendWarningIfNotPreviouslySent(successTimestamp, maxDaysOfOnlyFailedJobsBeforeWarning, firstJob, lastJob, jobs, numFailures);
         }
