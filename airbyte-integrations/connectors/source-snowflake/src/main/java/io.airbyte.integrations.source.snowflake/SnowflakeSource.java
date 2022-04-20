@@ -11,6 +11,8 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,11 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "INFORMATION_SCHEMA");
+  }
+
+  @Override
+    protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+      return Collections.emptyMap();
   }
 
 }

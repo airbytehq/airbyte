@@ -10,6 +10,8 @@ import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,11 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
+  
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
   }
 
   public static void main(final String[] args) throws Exception {

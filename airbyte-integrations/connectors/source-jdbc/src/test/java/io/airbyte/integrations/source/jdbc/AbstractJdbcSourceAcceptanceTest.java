@@ -16,6 +16,8 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +29,7 @@ import org.testcontainers.utility.MountableFile;
 
 /**
  * Runs the acceptance tests in the source-jdbc test module. We want this module to run these tests
- * itself as a sanity check. The trade off here is that this class is duplicated from the one used
+ * itself as a sanity check. The trade-off here is that this class is duplicated from the one used
  * in source-postgres.
  */
 class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
@@ -115,6 +117,11 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     @Override
     public Set<String> getExcludedInternalNameSpaces() {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+    }
+
+    @Override
+    protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+      return Collections.emptyMap();
     }
 
     public static void main(final String[] args) throws Exception {

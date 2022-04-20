@@ -13,7 +13,10 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +74,11 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
         "metrics_schema",
         "performance_schema",
         "mysql");
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
   }
 
   public static void main(final String[] args) throws Exception {

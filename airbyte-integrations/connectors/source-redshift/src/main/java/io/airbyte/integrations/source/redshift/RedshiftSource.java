@@ -18,10 +18,8 @@ import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +114,11 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
               .tableName(json.get("tablename").asText())
               .build();
         }));
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
   }
 
   public static void main(final String[] args) throws Exception {

@@ -14,6 +14,8 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -116,6 +118,11 @@ class OracleStressTest extends JdbcStressTest {
     public Set<String> getExcludedInternalNameSpaces() {
       // need to add SYSTEM too but for that need create another user when creating the container.
       return Set.of("APEX_040000", "CTXSYS", "FLOWS_FILES", "HR", "MDSYS", "OUTLN", "SYS", "XDB");
+    }
+
+    @Override
+    protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+      return Collections.emptyMap();
     }
 
     public static void main(final String[] args) throws Exception {

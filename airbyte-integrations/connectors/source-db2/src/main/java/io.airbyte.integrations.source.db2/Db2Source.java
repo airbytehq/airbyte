@@ -20,9 +20,7 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -159,6 +157,11 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
   }
 
 }

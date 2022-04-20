@@ -17,6 +17,8 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -115,6 +117,11 @@ class PostgresStressTest extends JdbcStressTest {
       }
 
       return Jsons.jsonNode(configBuilder.build());
+    }
+
+    @Override
+    protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+      return Collections.emptyMap();
     }
 
     @Override

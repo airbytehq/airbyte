@@ -109,6 +109,11 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
     return Collections.singleton("system");
   }
 
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
+  }
+
   public static void main(final String[] args) throws Exception {
     final Source source = ClickHouseSource.getWrappedSource();
     LOGGER.info("starting source: {}", ClickHouseSource.class);

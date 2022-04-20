@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
@@ -40,14 +41,8 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -69,6 +64,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
   protected String quoteString;
+
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
 
   public AbstractJdbcSource(final String driverClass,
                             final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
@@ -294,12 +291,30 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         jdbcStreamingQueryConfiguration,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
+        getConnectionProperties(jdbcConfig),
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
   }
+
+  protected Map<String, String> getConnectionProperties(final JsonNode config) {
+    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
+    final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
+    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
+    return MoreMaps.merge(customProperties, defaultProperties);
+  }
+
+  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
+                                                                    final Map<String, String> defaultParameters) {
+    for (final String key : defaultParameters.keySet()) {
+      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
+        throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
+      }
+    }
+  }
+
+  protected abstract Map<String, String> getDefaultConnectionProperties(final JsonNode config);
 
 }

@@ -4,11 +4,9 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -17,8 +15,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests that the postgres spec passes JsonSchema validation. While this may seem like overkill, we
@@ -38,6 +41,34 @@ public class PostgresSpecTest {
       + "}";
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
+
+  private static final String EXPECTED_JDBC_URL = "jdbc:postgresql://localhost:1337/db?";
+
+  private JsonNode buildConfigNoJdbcParameters() {
+    return Jsons.jsonNode(ImmutableMap.of(
+            "host", "localhost",
+            "port", 1337,
+            "username", "user",
+            "database", "db"));
+  }
+
+  private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
+    return Jsons.jsonNode(ImmutableMap.of(
+            "host", "localhost",
+            "port", 1337,
+            "username", "user",
+            "database", "db",
+            "jdbc_url_params", extraParam));
+  }
+
+  private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
+    return Jsons.jsonNode(ImmutableMap.of(
+            "host", "localhost",
+            "port", 1337,
+            "username", "user",
+            "database", "db",
+            "ssl", false));
+  }
 
   @BeforeAll
   static void init() throws IOException {
@@ -110,6 +141,39 @@ public class PostgresSpecTest {
     ((ObjectNode) config.get("replication_method")).set("replication_slot", null);
 
     assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testJdbcUrlAndConfigNoExtraParams() {
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfigStatic(buildConfigNoJdbcParameters());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+  }
+
+  @Test
+  void testJdbcUrlEmptyExtraParams() {
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfigStatic(buildConfigWithExtraJdbcParameters(""));
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+  }
+
+  @Test
+  void testJdbcUrlExtraParams() {
+    final String extraParam = "key1=value1&key2=value2&key3=value3";
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfigStatic(buildConfigWithExtraJdbcParameters(extraParam));
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+  }
+
+  @Test
+  void testDefaultParamsNoSSL() {
+    final Map<String, String> defaultProperties = new PostgresSource().getDefaultConnectionProperties(
+            Jsons.jsonNode(buildConfigNoExtraJdbcParametersWithoutSsl()));
+    assertEquals(new HashMap<>(), defaultProperties);
+  }
+
+  @Test
+  void testDefaultParamsWithSSL() {
+    final Map<String, String> defaultProperties = new PostgresSource().getDefaultConnectionProperties(
+            Jsons.jsonNode(buildConfigNoJdbcParameters()));
+    assertEquals(PostgresSource.SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
 }

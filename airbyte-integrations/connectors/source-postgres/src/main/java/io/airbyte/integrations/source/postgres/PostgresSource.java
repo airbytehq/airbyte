@@ -37,10 +37,8 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +49,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
   private List<String> schemas;
+
+  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+          "ssl", "true",
+          "sslmode", "require");
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
@@ -76,12 +78,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         config.get("port").asText(),
         config.get("database").asText()));
 
-    // assume ssl if not explicitly mentioned.
-    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
-      additionalParameters.add("ssl=true");
-      additionalParameters.add("sslmode=require");
-    }
-
     if (config.has("schemas") && config.get("schemas").isArray()) {
       schemas = new ArrayList<>();
       for (final JsonNode schema : config.get("schemas")) {
@@ -101,6 +97,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (config.has("password")) {
       configBuilder.put("password", config.get("password").asText());
+    }
+
+    if (config.has("jdbc_url_params")) {
+      configBuilder.put("jdbc_url_params", config.get("jdbc_url_params").asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -357,6 +357,20 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     properties.set(CDC_DELETED_AT, stringType);
 
     return stream;
+  }
+
+  private boolean useSsl(final JsonNode config) {
+    return !config.has("ssl") || config.get("ssl").asBoolean();
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    if (useSsl(config)) {
+      return SSL_JDBC_PARAMETERS;
+    } else {
+      // No need for any parameters if the connection doesn't use SSL
+      return Collections.emptyMap();
+    }
   }
 
   public static void main(final String[] args) throws Exception {
