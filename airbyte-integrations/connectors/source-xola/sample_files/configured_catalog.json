@@ -71,7 +71,7 @@
                }
             }
       },
-        "supported_sync_mode": [
+        "supported_sync_modes": [
           "full_refresh",
           "incremental"
         ]
