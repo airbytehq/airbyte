@@ -4,24 +4,25 @@
 
 package io.airbyte.integrations.base.errors;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.MS_SQL;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.MY_SQL;
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.DEFAULT;
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.MSSQL;
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
 
+import io.airbyte.integrations.base.errors.messages.DefaultErrorMessage;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
 import io.airbyte.integrations.base.errors.messages.MsSQLErrorMessage;
 import io.airbyte.integrations.base.errors.messages.MySQLErrorMessage;
-import io.airbyte.integrations.base.errors.messages.NoImplementErrorMessage;
 import io.airbyte.integrations.base.errors.messages.PostgresErrorMessage;
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import java.util.Map;
 
 public class ErrorMessageFactory {
 
-  private final static Map<ConnectorType, ErrorMessage> MAP = Map.of(MS_SQL, new MsSQLErrorMessage(),
-      MY_SQL, new MySQLErrorMessage(),
+  private final static Map<ConnectorType, ErrorMessage> MAP = Map.of(MSSQL, new MsSQLErrorMessage(),
+      MYSQL, new MySQLErrorMessage(),
       POSTGRES, new PostgresErrorMessage(),
-      ConnectorType.DEFAULT, new NoImplementErrorMessage());
+      DEFAULT, new DefaultErrorMessage());
 
   public static ErrorMessage getErrorMessage(ConnectorType type) {
     if (MAP.containsKey(type)) {

@@ -6,8 +6,11 @@ package io.airbyte.integrations.base.errors.utils;
 
 public enum ConnectorType {
 
-  MY_SQL,
-  MS_SQL,
+  MYSQL,
+  MSSQL,
   POSTGRES,
+  ORACLE,
+  MONGO,
+  SNOWFLAKE,
   DEFAULT
 }

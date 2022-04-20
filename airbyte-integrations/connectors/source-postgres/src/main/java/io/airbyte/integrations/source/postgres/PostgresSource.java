@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -369,6 +370,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public ConnectorType getConnectorType() {
-    return ConnectorType.POSTGRES;
+    return POSTGRES;
   }
+
 }
