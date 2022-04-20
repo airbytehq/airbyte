@@ -18,7 +18,7 @@ export const ApiServices: React.FC = React.memo(({ children }) => {
     () => ({
       SourceDefinitionService: new SourceDefinitionService(config.apiUrl, middlewares),
       DestinationDefinitionService: new DestinationDefinitionService(config.apiUrl, middlewares),
-      DeploymentService: new DeploymentService(config.apiUrl, middlewares),
+      DeploymentService: new DeploymentService(),
       OperationService: new OperationService(),
       HealthService: new HealthService(config.apiUrl, middlewares),
     }),
