@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class MySqlJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
+public class MySqlJdbcStreamingQueryConfiguration extends DefaultJdbcStreamingQueryConfig {
 
   @Override
   public void accept(final Connection connection, final PreparedStatement preparedStatement) throws SQLException {

@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.source.snowflake;
 
+import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class SnowflakeJdbcStreamingQueryConfiguration implements
-    JdbcStreamingQueryConfiguration {
+public class SnowflakeJdbcStreamingQueryConfiguration extends DefaultJdbcStreamingQueryConfig {
 
   @Override
   public void accept(final Connection connection, final PreparedStatement preparedStatement)

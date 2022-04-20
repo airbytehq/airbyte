@@ -16,4 +16,8 @@ public class NoOpJdbcStreamingQueryConfiguration implements JdbcStreamingQueryCo
 
   }
 
+  @Override
+  public void setFetchSize(final int fetchSize) {
+  }
+
 }

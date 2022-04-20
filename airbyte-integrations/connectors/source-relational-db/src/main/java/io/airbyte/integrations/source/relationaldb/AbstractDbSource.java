@@ -16,6 +16,8 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
@@ -60,6 +62,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
+
+  private final FetchSizeEstimator fetchSizeEstimator = FetchSizeEstimator.getDefault();
+
+  // override the field size estimator to properly calculate the fetch size
+  protected FieldSizeEstimator<DataType> fieldSizeEstimator = new ZeroFieldSizeEstimator<>();
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
@@ -176,13 +183,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
             stream.getName());
         if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
-          LOGGER
-              .info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
+          LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
           continue;
         }
 
-        final TableInfo<CommonField<DataType>> table = tableNameToTable
-            .get(fullyQualifiedTableName);
+        final TableInfo<CommonField<DataType>> table = tableNameToTable.get(fullyQualifiedTableName);
         final AutoCloseableIterator<AirbyteMessage> tableReadIterator = createReadIterator(
             database,
             airbyteStream,
@@ -210,6 +215,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         .map(CommonField::getName)
         .filter(selectedFieldsInCatalog::contains)
         .collect(Collectors.toList());
+
+    if (database instanceof final StreamingJdbcDatabase streamingJdbcDatabase) {
+      final JdbcStreamingQueryConfiguration streamingConfig = streamingJdbcDatabase.getJdbcStreamingQueryConfiguration();
+      final long rowByteSize = table.getFields().stream().map(fieldSizeEstimator::getByteSize).reduce(0L, Long::sum);
+      final int fetchSize = fetchSizeEstimator.getFetchSize(rowByteSize);
+      LOGGER.info("Stream {}: estimated row size {} B, fetch size {} rows", streamName, rowByteSize, fetchSize);
+      streamingConfig.setFetchSize(fetchSize);
+    }
 
     final AutoCloseableIterator<AirbyteMessage> iterator;
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {

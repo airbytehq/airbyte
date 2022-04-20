@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class MssqlJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
+public class MssqlJdbcStreamingQueryConfiguration extends DefaultJdbcStreamingQueryConfig {
 
   @Override
   public void accept(final Connection connection, final PreparedStatement preparedStatement) throws SQLException {

@@ -8,7 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class OracleJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
+public class OracleJdbcStreamingQueryConfiguration extends DefaultJdbcStreamingQueryConfig {
 
   @Override
   public void accept(final Connection connection, final PreparedStatement preparedStatement) throws SQLException {

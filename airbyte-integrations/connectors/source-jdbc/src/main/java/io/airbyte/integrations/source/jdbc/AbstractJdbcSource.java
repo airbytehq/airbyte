@@ -133,14 +133,16 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 // read the column metadata Json object, and determine its type
                 .map(f -> {
                   final Datatype datatype = getFieldType(f);
+                  final String columnName = f.get(INTERNAL_COLUMN_NAME).asText();
+                  final int columnSize = f.get(INTERNAL_COLUMN_SIZE).asInt();
                   final JsonSchemaType jsonType = getType(datatype);
                   LOGGER.info("Table {} column {} (type {}[{}]) -> Json type {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
-                      f.get(INTERNAL_COLUMN_NAME).asText(),
+                      columnName,
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
-                      f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      columnSize,
                       jsonType);
-                  return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
+                  return new CommonField<Datatype>(columnName, datatype, columnSize) {};
                 })
                 .collect(Collectors.toList()))
             .build())
@@ -267,8 +269,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
                   sourceOperations.enquoteIdentifierList(connection, columnNames),
-                  sourceOperations
-                      .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
+                  sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
                   sourceOperations.enquoteIdentifier(connection, cursorField));
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);

@@ -5,15 +5,32 @@
 package io.airbyte.protocol.models;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class CommonField<T> {
 
   private final String name;
   private final T type;
 
+  // the COLUMN_SIZE returned from the JDBC getColumns query
+  // see https://docs.oracle.com/javase/8/docs/api/java/sql/DatabaseMetaData.html
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private final Optional<Integer> columnSize;
+
   public CommonField(final String name, final T type) {
     this.name = name;
     this.type = type;
+    this.columnSize = Optional.empty();
+  }
+
+  public CommonField(final String name, final T type, final int columnSize) {
+    this.name = name;
+    this.type = type;
+    if (columnSize <= 0) {
+      this.columnSize = Optional.empty();
+    } else {
+      this.columnSize = Optional.of(columnSize);
+    }
   }
 
   public String getName() {
@@ -22,6 +39,10 @@ public class CommonField<T> {
 
   public T getType() {
     return type;
+  }
+
+  public Optional<Integer> getColumnSize() {
+    return columnSize;
   }
 
   @Override
@@ -35,12 +56,13 @@ public class CommonField<T> {
 
     final CommonField<T> field = (CommonField<T>) o;
     return name.equals(field.name) &&
-        type == field.type;
+        type == field.type &&
+        columnSize.equals(field.columnSize);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, type);
+    return Objects.hash(name, type, columnSize);
   }
 
 }

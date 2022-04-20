@@ -30,6 +30,10 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
   }
 
+  public JdbcStreamingQueryConfiguration getJdbcStreamingQueryConfiguration() {
+    return jdbcStreamingQueryConfiguration;
+  }
+
   /**
    * Assuming that the {@link JdbcStreamingQueryConfiguration} is configured correctly for the JDBC
    * driver being used, this method will return data in streaming / chunked fashion. Review the

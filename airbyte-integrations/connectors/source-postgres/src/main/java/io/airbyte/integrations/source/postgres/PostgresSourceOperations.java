@@ -131,7 +131,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;

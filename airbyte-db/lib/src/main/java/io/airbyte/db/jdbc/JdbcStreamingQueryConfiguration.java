@@ -9,7 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-@FunctionalInterface
 public interface JdbcStreamingQueryConfiguration extends CheckedBiConsumer<Connection, PreparedStatement, SQLException> {
+
+  void setFetchSize(final int fetchSize);
 
 }
