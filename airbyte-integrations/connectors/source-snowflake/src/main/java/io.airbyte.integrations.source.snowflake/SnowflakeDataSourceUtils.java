@@ -51,9 +51,8 @@ public class SnowflakeDataSourceUtils {
    * @return datasource
    */
   public static HikariDataSource createDataSource(final JsonNode config) {
-    HikariConfig hikariConfig = new HikariConfig();
-    final String jdbcUrl = buildJDBCUrl(config);
-    hikariConfig.setJdbcUrl(jdbcUrl);
+    HikariDataSource dataSource = new HikariDataSource();
+    dataSource.setJdbcUrl(buildJDBCUrl(config));
 
     if (config.has("credentials")) {
       JsonNode credentials = config.get("credentials");
@@ -61,24 +60,24 @@ public class SnowflakeDataSourceUtils {
       switch (authType) {
         case OAUTH_METHOD -> {
           LOGGER.info("Authorization mode is OAuth");
-          hikariConfig.setDataSourceProperties(buildAuthProperties(config));
+          dataSource.setDataSourceProperties(buildAuthProperties(config));
           // thread to keep the refresh token up to date
           SnowflakeSource.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(
-              getRefreshTokenTask(hikariConfig),
+              getAccessTokenTask(dataSource),
               PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
         }
         case USERNAME_PASSWORD_METHOD -> {
           LOGGER.info("Authorization mode is 'Username and password'");
-          populateUsernamePasswordConfig(hikariConfig, config.get("credentials"));
+          populateUsernamePasswordConfig(dataSource, config.get("credentials"));
         }
         default -> throw new IllegalArgumentException("Unrecognized auth type: " + authType);
       }
     } else {
       LOGGER.info("Authorization mode is deprecated 'Username and password'. Please update your source configuration");
-      populateUsernamePasswordConfig(hikariConfig, config);
+      populateUsernamePasswordConfig(dataSource, config);
     }
 
-    return new HikariDataSource(hikariConfig);
+    return dataSource;
   }
 
   /**
@@ -89,12 +88,12 @@ public class SnowflakeDataSourceUtils {
   public static String getAccessTokenUsingRefreshToken(final String hostName,
                                                        final String clientId,
                                                        final String clientSecret,
-                                                       final String refreshCode)
+                                                       final String refreshToken)
       throws IOException {
     final var refreshTokenUri = String.format(REFRESH_TOKEN_URL, hostName);
     final Map<String, String> requestBody = new HashMap<>();
     requestBody.put("grant_type", "refresh_token");
-    requestBody.put("refresh_token", refreshCode);
+    requestBody.put("refresh_token", refreshToken);
 
     try {
       final BodyPublisher bodyPublisher = BodyPublishers.ofString(requestBody.keySet().stream()
@@ -119,8 +118,9 @@ public class SnowflakeDataSourceUtils {
       if (jsonResponse.has("access_token")) {
         return jsonResponse.get("access_token").asText();
       } else {
+        LOGGER.error("Failed to obtain accessToken using refresh token. " + jsonResponse);
         throw new RuntimeException(
-            "Failed to obtain accessToken using refresh token. " + jsonResponse);
+            "Failed to obtain accessToken using refresh token.");
       }
     } catch (final InterruptedException e) {
       throw new IOException("Failed to refreshToken", e);
@@ -150,17 +150,17 @@ public class SnowflakeDataSourceUtils {
     return jdbcUrl.toString();
   }
 
-  private static Runnable getRefreshTokenTask(final HikariConfig hikariConfig) {
+  private static Runnable getAccessTokenTask(final HikariDataSource dataSource) {
     return () -> {
       LOGGER.info("Refresh token process started");
-      var props = hikariConfig.getDataSourceProperties();
+      var props = dataSource.getDataSourceProperties();
       try {
         var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
             props.getProperty("client_id"), props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);
-        hikariConfig.setDataSourceProperties(props);
-        LOGGER.info("New refresh token has been obtained");
+        dataSource.setDataSourceProperties(props);
+        LOGGER.info("New access token has been obtained");
       } catch (IOException e) {
         LOGGER.error("Failed to obtain a fresh accessToken:" + e);
       }

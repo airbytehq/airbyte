@@ -15,7 +15,7 @@
             "type": "object",
             "title": "OAuth2.0",
             "order": 0,
-            "required": ["client_id", "client_secret"],
+            "required": ["client_id", "client_secret", "auth_type"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -56,7 +56,7 @@
           {
             "title": "Username and Password",
             "type": "object",
-            "required": ["username", "password"],
+            "required": ["username", "password", "auth_type"],
             "order": 1,
             "properties": {
               "auth_type": {

@@ -30,7 +30,6 @@
   "credentails" {
     "auth_type": "Client",
     "client_id": "client_id",
-    "access_token": "**********",
     "client_secret": "client_secret",
     "refresh_token": "refresh_token"
   }
