@@ -39,14 +39,14 @@ import org.junit.jupiter.api.Test;
  * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
  * contain S3 credentials by default, we remove these credentials.
  */
-public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcceptanceTest {
+class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcceptanceTest {
 
   public static final String DATASET_ID = Strings.addRandomSuffix("airbyte_tests", "_", 8);
   private static final String TYPE = "type";
   private ConfiguredAirbyteCatalog catalog;
 
   private static final Instant NOW = Instant.now();
-  private static final String USERS_STREAM_NAME = "users_" + RandomStringUtils.random(5);
+  private static final String USERS_STREAM_NAME = "users_" + RandomStringUtils.randomAlphabetic(5);
 
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
           .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
@@ -65,10 +65,10 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
           .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   public JsonNode getStaticConfig() {
-    return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
+    return removeStagingConfigurationFromRedshift(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
   }
 
-  public static JsonNode purge(final JsonNode config) {
+  public static JsonNode removeStagingConfigurationFromRedshift(final JsonNode config) {
     final var original = (ObjectNode) Jsons.clone(config);
     original.remove("s3_bucket_name");
     original.remove("s3_bucket_region");
@@ -77,7 +77,6 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
     return original;
   }
 
-  @BeforeEach
   void setup(){
     MESSAGE_USERS1.getRecord().setNamespace(DATASET_ID);
     MESSAGE_USERS2.getRecord().setNamespace(DATASET_ID);
@@ -90,6 +89,7 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestina
 
   @Test
   void testIfSuperTmpTableWasCreatedAfterVarcharTmpTable() throws Exception {
+    setup();
     Database database = getDatabase();
     String rawTableName = this.getNamingResolver().getRawTableName(USERS_STREAM_NAME);
     createTmpTableWithVarchar(database, rawTableName);
