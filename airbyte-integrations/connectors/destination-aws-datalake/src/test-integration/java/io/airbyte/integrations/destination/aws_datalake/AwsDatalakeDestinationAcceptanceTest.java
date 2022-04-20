@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.aws_datalake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -112,7 +113,7 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
   private static Object getTypedFieldValue(ColumnInfo colInfo, Datum value) {
     var typeName = colInfo.type();
     var varCharValue = value.varCharValue();
-    
+
     if (varCharValue == null)
       return null;
     var returnType = switch (typeName) {
@@ -120,11 +121,11 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
       case "varchar" -> varCharValue;
       case "boolean" -> Boolean.parseBoolean(varCharValue);
       case "integer" -> Integer.parseInt(varCharValue);
-      case "row"     -> varCharValue;
+      case "row" -> varCharValue;
       default -> null;
     };
     if (returnType == null) {
-        LOGGER.warn(String.format("Unsupported type = %s", typeName));
+      LOGGER.warn(String.format("Unsupported type = %s", typeName));
     }
     return returnType;
   }
@@ -158,26 +159,26 @@ public class AwsDatalakeDestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   private String toAthenaObject(JsonNode value) {
-      StringBuilder sb = new StringBuilder("\"{");
-      List<String> elements = new ArrayList<>();
-      var it = value.fields();
-      while (it.hasNext()) {
-          Map.Entry <String, JsonNode> f = it.next();
-          final String k = f.getKey();
-          final String v = f.getValue().asText();
-          elements.add(String.format("%s=%s", k, v));
-      }
-      sb.append(String.join(",", elements));
-      sb.append("}\"");
-      return sb.toString();
+    StringBuilder sb = new StringBuilder("\"{");
+    List<String> elements = new ArrayList<>();
+    var it = value.fields();
+    while (it.hasNext()) {
+      Map.Entry<String, JsonNode> f = it.next();
+      final String k = f.getKey();
+      final String v = f.getValue().asText();
+      elements.add(String.format("%s=%s", k, v));
+    }
+    sb.append(String.join(",", elements));
+    sb.append("}\"");
+    return sb.toString();
   }
 
   protected void assertSameValue(final String key, final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue.isObject()) {
-        assertEquals(toAthenaObject(expectedValue), actualValue.toString());
-      } else {
-        assertEquals(expectedValue, actualValue);
-      }
+      assertEquals(toAthenaObject(expectedValue), actualValue.toString());
+    } else {
+      assertEquals(expectedValue, actualValue);
+    }
   }
 
   @Override
