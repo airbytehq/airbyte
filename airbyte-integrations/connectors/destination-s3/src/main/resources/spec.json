@@ -244,6 +244,12 @@
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "gzip_compression": {
+                "type": "boolean",
+                "title": "Compress with GZIP",
+                "description": "Compress the CSV file with GZIP. The output filename will have the \".csv.gz\" extension.",
+                "default": true
               }
             }
           },
@@ -262,6 +268,12 @@
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "gzip_compression": {
+                "type": "boolean",
+                "title": "Compress with GZIP",
+                "description": "Compress the JSONL file with GZIP. The output filename will have the \".jsonl.gz\" extension.",
+                "default": true
               }
             }
           },
