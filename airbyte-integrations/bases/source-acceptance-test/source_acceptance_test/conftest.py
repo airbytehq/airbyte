@@ -126,7 +126,7 @@ def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
         elif file_ext == ".yaml":
             spec_obj = yaml.load(raw_spec, Loader=yaml.SafeLoader)
         else:
-            raise RuntimeError(f"spec_path' must be a '.yaml' or '.json' file")
+            raise RuntimeError("spec_path' must be a '.yaml' or '.json' file")
         return ConnectorSpecification.parse_obj(spec_obj)
 
 
