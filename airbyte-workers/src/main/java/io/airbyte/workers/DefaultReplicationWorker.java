@@ -295,24 +295,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
 
             if (message.getRecord() != null) {
-              // the stream this message corresponds to
-              final String messageStream = message.getRecord().getStream();
-              final JsonNode messageData = message.getRecord().getData();
-
-              // the stream name and json schema
-              final ConfiguredAirbyteStream matchingAirbyteStream = syncInput.getCatalog().getStreams().stream()
-                  .filter(s -> (s.getStream().getName().trim().equals((messageStream.trim())))).findFirst().orElse(null);;
-              final JsonNode matchingSchema = matchingAirbyteStream.getStream().getJsonSchema();
-
-              final JsonSchemaValidator validator = new JsonSchemaValidator();
-              // message schema may not be version 7, so update to correct version
-              ((ObjectNode) matchingSchema).put("$schema", "http://json-schema.org/draft-07/schema#");
-
-              final Boolean isValid = validator.validate(matchingSchema, messageData).isEmpty();
-
-              if (!isValid) {
-                LOGGER.warn("Schema is not valid. Stream schema is: {}, but message schema is: {}", matchingSchema, messageData);
-              }
+              validateMessageSchema(message, syncInput);
             }
 
             messageTracker.acceptFromSource(message);
@@ -395,6 +378,34 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
+  }
+
+  private static void validateMessageSchema (final AirbyteMessage message, final StandardSyncInput syncInput){
+    // the stream this message corresponds to
+    final String messageStream = message.getRecord().getStream();
+    final JsonNode messageData = message.getRecord().getData();
+
+    // the stream name and json schema
+    final ConfiguredAirbyteStream matchingAirbyteStream = syncInput.getCatalog().getStreams().stream()
+        .filter(s -> (s.getStream().getName().trim().equals((messageStream.trim())))).findFirst().orElse(null);
+
+    final JsonNode matchingSchema = matchingAirbyteStream.getStream().getJsonSchema();
+
+    final JsonSchemaValidator validator = new JsonSchemaValidator();
+
+    // We must choose a JSON validator version for validating the schema
+    // Rather than allowing connectors to use any version, we enforce validation using V7
+    ((ObjectNode) matchingSchema).put("$schema", "http://json-schema.org/draft-07/schema#");
+
+    final Boolean isValid = validator.validate(matchingSchema, messageData).isEmpty();
+
+    if (!isValid) {
+      warnAboutMessageSchema(matchingSchema, messageData);
+    }
+  }
+
+  private static void warnAboutMessageSchema(final JsonNode matchingSchema, final JsonNode messageData) {
+    LOGGER.warn("Schema is not valid. Stream schema is: {}, but message schema is: {}", matchingSchema, messageData);
   }
 
   @Override
