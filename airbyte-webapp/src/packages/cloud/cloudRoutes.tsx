@@ -31,7 +31,6 @@ import useFullStory from "./services/thirdParty/fullstory/useFullStory";
 import { CloudSettingsPage } from "./views/settings/CloudSettingsPage";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
 import { DefaultView } from "./views/DefaultView";
-import { ConfirmEmailPage } from "./views/auth/ConfirmEmailPage";
 import { useGetCloudWorkspace } from "./services/workspaces/WorkspacesService";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 
@@ -47,7 +46,6 @@ export const CloudRoutes = {
   Signup: "/signup",
   Login: "/login",
   ResetPassword: "/reset-password",
-  ConfirmVerifyEmail: "/confirm-verify-email",
 
   // Firebase action routes
   // These URLs come from Firebase emails, and all have the same
@@ -135,7 +133,7 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited, emailVerified } = useAuthService();
+  const { user, inited } = useAuthService();
   const config = useConfig();
   useFullStory(config.fullstory, config.fullstory.enabled, user);
 
@@ -165,15 +163,14 @@ export const Routing: React.FC = () => {
     <WorkspaceServiceProvider>
       <TrackPageAnalytics />
       <Suspense fallback={<LoadingPage />}>
+        {/* Allow email verification no matter whether the user is logged in or not */}
+        <Routes>
+          <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
+        </Routes>
+        {/* Show the login screen if the user is not logged in */}
         {!user && <Auth />}
-        {user && emailVerified && <MainViewRoutes />}
-        {user && !emailVerified && (
-          <Routes>
-            <Route path={CloudRoutes.FirebaseAction} element={<VerifyEmailAction />} />
-            <Route path={CloudRoutes.ConfirmVerifyEmail} element={<ConfirmEmailPage />} />
-            <Route path="*" element={<Navigate to={CloudRoutes.ConfirmVerifyEmail} replace />} />
-          </Routes>
-        )}
+        {/* Allow all regular routes if the user is logged in */}
+        {user && <MainViewRoutes />}
       </Suspense>
     </WorkspaceServiceProvider>
   );

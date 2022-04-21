@@ -54,39 +54,6 @@ type AuthContextApi = {
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
-const getTempSignUpStorageKey = (currentUser: FbUser): string => `${currentUser.uid}/temp-signup-data`;
-
-const TempSignUpValuesProvider = {
-  get: (
-    currentUser: FbUser
-  ): {
-    companyName: string;
-    name: string;
-    news: boolean;
-  } => {
-    try {
-      const key = getTempSignUpStorageKey(currentUser);
-
-      const storedValue = localStorage.getItem(key);
-
-      if (storedValue) {
-        return JSON.parse(storedValue);
-      }
-    } catch (err) {
-      // passthrough and return default values
-    }
-
-    return {
-      companyName: "",
-      name: currentUser.email ?? "",
-      news: false,
-    };
-  },
-  save: (currentUser: FbUser, v: { companyName: string; name: string; news: boolean }) => {
-    localStorage.setItem(getTempSignUpStorageKey(currentUser), JSON.stringify(v));
-  },
-};
-
 export const AuthenticationProvider: React.FC = ({ children }) => {
   const [state, { loggedIn, emailVerified, authInited, loggedOut }] = useTypesafeReducer<
     AuthServiceState,
@@ -99,33 +66,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
 
   const onAfterAuth = useCallback(
     async (currentUser: FbUser) => {
-      let user: User | undefined;
-
-      try {
-        user = await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
-      } catch (err) {
-        if (currentUser.email) {
-          const encodedData = TempSignUpValuesProvider.get(currentUser);
-          user = await userService.create({
-            authProvider: AuthProviders.GoogleIdentityPlatform,
-            authUserId: currentUser.uid,
-            email: currentUser.email,
-            name: encodedData.name,
-            companyName: encodedData.companyName,
-            news: encodedData.news,
-          });
-          analytics.track("Airbyte.UI.User.Created", {
-            user_id: user.userId,
-            name: user.name,
-            email: user.email,
-            ...getUtmFromStorage(),
-          });
-        }
-      }
-
-      if (user) {
-        loggedIn({ user, emailVerified: currentUser.emailVerified });
-      }
+      const user = await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
+      loggedIn({ user, emailVerified: currentUser.emailVerified });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [userService]
@@ -196,14 +138,28 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         name: string;
         news: boolean;
       }): Promise<void> {
-        const creds = await authService.signUp(form.email, form.password);
-        TempSignUpValuesProvider.save(creds.user, {
-          companyName: form.companyName,
+        // Create a user account in firebase
+        const { user: fbUser } = await authService.signUp(form.email, form.password);
+
+        // Create the Airbyte user on our server
+        const user = await userService.create({
+          authProvider: AuthProviders.GoogleIdentityPlatform,
+          authUserId: fbUser.uid,
+          email: form.email,
           name: form.name,
+          companyName: form.companyName,
           news: form.news,
         });
 
+        // Send verification mail via firebase
         await authService.sendEmailVerifiedLink();
+
+        analytics.track("Airbyte.UI.User.Created", {
+          user_id: fbUser.uid,
+          name: user.name,
+          email: user.email,
+          ...getUtmFromStorage(),
+        });
 
         if (auth.currentUser) {
           await onAfterAuth(auth.currentUser);

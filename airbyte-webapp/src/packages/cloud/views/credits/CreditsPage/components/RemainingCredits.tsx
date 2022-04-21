@@ -17,6 +17,10 @@ import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService"
 import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useConfig } from "config";
 
+interface Props {
+  selfServiceCheckoutEnabled: boolean;
+}
+
 const Block = styled.div`
   background: ${({ theme }) => theme.darkBeigeColor};
   border-radius: 8px;
@@ -55,7 +59,7 @@ function hasRecentCreditIncrease(cloudWorkspace: CloudWorkspace): boolean {
   return lastIncrement ? Date.now() - lastIncrement < 30000 : false;
 }
 
-const RemainingCredits: React.FC = () => {
+const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const retryIntervalId = useRef<number>();
   const config = useConfig();
   const currentWorkspace = useCurrentWorkspace();
@@ -118,6 +122,7 @@ const RemainingCredits: React.FC = () => {
       </CreditView>
       <Actions>
         <LoadingButton
+          disabled={!selfServiceCheckoutEnabled}
           size="xl"
           type="button"
           onClick={startStripeCheckout}
