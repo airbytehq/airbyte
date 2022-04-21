@@ -13,7 +13,7 @@ For OAuth2.0 authorization:
 * Mailchimp `client_id`
 * Mailchimp `client_secret`
 
-## Step 1: Set up Source
+## Step 1: Set up Mailchimp
 
 [Log in](https://login.mailchimp.com/) to Mailchimp account. 
 If you don't have a Mailchimp account already, you’ll need to [create](https://login.mailchimp.com/signup/) one in order to use the API. 
