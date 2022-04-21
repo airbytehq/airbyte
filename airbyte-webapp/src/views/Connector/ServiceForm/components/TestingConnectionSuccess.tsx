@@ -25,7 +25,7 @@ const Success = styled(StatusIcon)`
 
 const TestingConnectionSuccess: React.FC = () => (
   <LoadingContainer data-id="success-result">
-    <Success success />
+    <Success status="success" />
     <FormattedMessage id="form.successTests" />
   </LoadingContainer>
 );

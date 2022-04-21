@@ -21,8 +21,6 @@
               "option_title": {
                 "type": "string",
                 "const": "OAuth Credentials",
-                "enum": ["OAuth Credentials"],
-                "default": "OAuth Credentials",
                 "order": 0
               },
               "access_token": {
@@ -41,8 +39,6 @@
               "option_title": {
                 "type": "string",
                 "const": "PAT Credentials",
-                "enum": ["PAT Credentials"],
-                "default": "PAT Credentials",
                 "order": 0
               },
               "personal_access_token": {

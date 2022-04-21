@@ -16,6 +16,8 @@ import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService
 import { theme } from "packages/cloud/theme";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 
 import { AppServicesProvider } from "./services/AppServicesProvider";
 import { ConfigProvider } from "./services/ConfigProvider";
@@ -46,13 +48,17 @@ const Services: React.FC = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <NotificationServiceProvider>
-        <FeatureService>
-          <AppServicesProvider>
-            <AuthenticationProvider>
-              <IntercomProvider>{children}</IntercomProvider>
-            </AuthenticationProvider>
-          </AppServicesProvider>
-        </FeatureService>
+        <ConfirmationModalService>
+          <FormChangeTrackerService>
+            <FeatureService>
+              <AppServicesProvider>
+                <AuthenticationProvider>
+                  <IntercomProvider>{children}</IntercomProvider>
+                </AuthenticationProvider>
+              </AppServicesProvider>
+            </FeatureService>
+          </FormChangeTrackerService>
+        </ConfirmationModalService>
       </NotificationServiceProvider>
     </ApiErrorBoundary>
   </AnalyticsProvider>

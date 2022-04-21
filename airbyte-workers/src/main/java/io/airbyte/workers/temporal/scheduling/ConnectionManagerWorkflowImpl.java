@@ -13,6 +13,7 @@ import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
@@ -266,7 +267,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       if (autoDisableConnectionVersion != Workflow.DEFAULT_VERSION) {
         final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
             new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
-        runMandatoryActivity(autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
+        final AutoDisableConnectionOutput output = runMandatoryActivityWithOutput(
+            autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
+        if (output.isDisabled()) {
+          log.info("Auto-disabled for constantly failing for Connection {}", connectionId);
+        }
       }
 
       resetNewConnectionInput(connectionUpdaterInput);

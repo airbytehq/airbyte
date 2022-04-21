@@ -285,7 +285,7 @@ const useInitialValues = (
       syncCatalog: initialSchema,
       schedule: connection.schedule !== undefined ? connection.schedule : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
-      namespaceDefinition: connection.namespaceDefinition,
+      namespaceDefinition: connection.namespaceDefinition || ConnectionNamespaceDefinition.Source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 

@@ -115,7 +115,7 @@ const MainInfo: React.FC<IProps> = ({
 
   const getIcon = () => {
     if (isPartialSuccess) {
-      return <ErrorSign warning />;
+      return <ErrorSign status="warning" />;
     } else if (isFailed && !shortInfo) {
       return <ErrorSign />;
     }

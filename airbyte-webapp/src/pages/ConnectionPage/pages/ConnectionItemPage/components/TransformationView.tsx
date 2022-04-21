@@ -10,6 +10,7 @@ import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+import { FormikOnSubmit } from "types/formik";
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
 import {
@@ -43,7 +44,7 @@ const NoSupportedTransformationCard = styled(ContentCard)`
 
 const CustomTransformationsCard: React.FC<{
   operations?: OperationRead[];
-  onSubmit: (newValue: { transformations?: Transformation[] }) => void;
+  onSubmit: FormikOnSubmit<{ transformations?: Transformation[] }>;
 }> = ({ operations, onSubmit }) => {
   const defaultTransformation = useDefaultTransformation();
 
@@ -74,7 +75,7 @@ const CustomTransformationsCard: React.FC<{
 
 const NormalizationCard: React.FC<{
   operations?: OperationRead[];
-  onSubmit: (newValue: { normalization?: NormalizationType }) => void;
+  onSubmit: FormikOnSubmit<{ normalization?: NormalizationType }>;
 }> = ({ operations, onSubmit }) => {
   const initialValues = useMemo(
     () => ({
@@ -82,6 +83,7 @@ const NormalizationCard: React.FC<{
     }),
     [operations]
   );
+
   return (
     <FormCard
       form={{
@@ -105,7 +107,10 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const supportsNormalization = definition.supportsNormalization;
   const supportsDbt = hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
-  const onSubmit = async (values: { transformations?: Transformation[]; normalization?: NormalizationType }) => {
+  const onSubmit: FormikOnSubmit<{ transformations?: Transformation[]; normalization?: NormalizationType }> = async (
+    values,
+    { resetForm }
+  ) => {
     const newOp = mapFormPropsToOperation(values, connection.operations, workspace.workspaceId);
 
     const operations = values.transformations
@@ -116,7 +121,7 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
           (connection.operations ?? [])?.filter((op) => op.operatorConfiguration.operatorType === OperatorType.Dbt)
         );
 
-    return updateConnection({
+    await updateConnection({
       namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat,
       prefix: connection.prefix,
@@ -126,6 +131,16 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
       status: connection.status,
       operations: operations,
     });
+
+    const nextFormValues: typeof values = {};
+    if (values.transformations) {
+      nextFormValues.transformations = getInitialTransformations(operations);
+    }
+    if (values.normalization) {
+      nextFormValues.normalization = getInitialNormalization(operations, true);
+    }
+
+    resetForm({ values: nextFormValues });
   };
 
   return (
