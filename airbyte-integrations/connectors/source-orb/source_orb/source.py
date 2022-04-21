@@ -239,7 +239,9 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         is of the same format as the stream_state of a regular incremental stream.
         """
         current_customer_state = stream_state.get(stream_slice["customer_id"], {})
-        return super().request_params(current_customer_state, **kwargs)
+        params = super().request_params(current_customer_state, **kwargs)
+        params["entry_status"] = "committed"
+        return params
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         """
@@ -326,7 +328,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
         # Prepare request with self._session, which should
         # automatically deal with the authentication header.
-        args = {"method": "POST", "url": self.url_base + "events", "params": {"limit": self.page_size, "entry_status": "committed"}, "json": request_filter_json}
+        args = {"method": "POST", "url": self.url_base + "events", "params": {"limit": self.page_size}, "json": request_filter_json}
         prepared_request = self._session.prepare_request(requests.Request(**args))
         events_response: requests.Response = self._session.send(prepared_request)
         # Error for invalid responses
