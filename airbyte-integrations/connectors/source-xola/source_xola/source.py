@@ -97,7 +97,6 @@ class Orders(XolaStream):
         """
         should return "orders". Required.
         """
-        print("stream state ", stream_state)
         path = "orders"
         if stream_state is not None and self.cursor_field in stream_state:
             path = path + "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
@@ -163,8 +162,6 @@ class Orders(XolaStream):
             current_parsed_date = current_stream_state[self.cursor_field]
 
             print("current parsed date ", current_stream_state)
-            print("latest record ", latest_record)
-           
             
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
@@ -267,9 +264,7 @@ class Transactions(XolaStream):
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
 
-            print("current parsed date ", current_stream_state)
-            print("latest record ", latest_record)
-           
+            print("current parsed date ", current_stream_state)           
             
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
@@ -313,9 +308,7 @@ class IncrementalXolaStream(XolaStream, ABC):
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
 
-            print("current parsed date ", current_stream_state)
-            print("latest record ", latest_record)
-           
+            print("current parsed date ", current_stream_state)        
             
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
