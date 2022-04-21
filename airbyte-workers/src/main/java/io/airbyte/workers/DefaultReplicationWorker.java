@@ -4,6 +4,8 @@
 
 package io.airbyte.workers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -15,6 +17,8 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
@@ -142,7 +146,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, syncInput),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -273,7 +277,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AtomicBoolean cancelled,
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
-                                                 final Map<String, String> mdc) {
+                                                 final Map<String, String> mdc,
+                                                 final StandardSyncInput syncInput) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -288,6 +293,27 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           }
           if (messageOptional.isPresent()) {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
+
+            if (message.getRecord() != null) {
+              // the stream this message corresponds to
+              final String messageStream = message.getRecord().getStream();
+              final JsonNode messageData = message.getRecord().getData();
+
+              // the stream name and json schema
+              final ConfiguredAirbyteStream matchingAirbyteStream = syncInput.getCatalog().getStreams().stream()
+                  .filter(s -> (s.getStream().getName().trim().equals((messageStream.trim())))).findFirst().orElse(null);;
+              final JsonNode matchingSchema = matchingAirbyteStream.getStream().getJsonSchema();
+
+              final JsonSchemaValidator validator = new JsonSchemaValidator();
+              // message schema may not be version 7, so update to correct version
+              ((ObjectNode) matchingSchema).put("$schema", "http://json-schema.org/draft-07/schema#");
+
+              final Boolean isValid = validator.validate(matchingSchema, messageData).isEmpty();
+
+              if (!isValid) {
+                LOGGER.warn("Schema is not valid. Stream schema is: {}, but message schema is: {}", matchingSchema, messageData);
+              }
+            }
 
             messageTracker.acceptFromSource(message);
             try {
