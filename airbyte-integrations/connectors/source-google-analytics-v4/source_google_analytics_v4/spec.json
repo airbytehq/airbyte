@@ -23,7 +23,7 @@
       "window_in_days": {
         "type": "integer",
         "title": "Window in days (Optional)",
-        "description": "The amount of days for each data-chunk beginning from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
+        "description": "The amount of days each stream slice would consist of beginning from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year).",
         "examples": [30, 60, 90, 120, 200, 364],
         "default": 1
       },
