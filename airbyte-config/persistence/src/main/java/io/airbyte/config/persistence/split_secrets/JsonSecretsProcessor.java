@@ -6,18 +6,20 @@ package io.airbyte.config.persistence.split_secrets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.json.JsonPaths;
-import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import lombok.Builder;
+import lombok.Value;
 
 @Builder
 public class JsonSecretsProcessor {
@@ -51,39 +53,16 @@ public class JsonSecretsProcessor {
    */
   public JsonNode prepareSecretsForOutput(final JsonNode obj, final JsonNode schema) {
     if (maskSecrets) {
-      // todo (cgardens) this is not safe. should throw.
       // if schema is an object and has a properties field
-      if (!isValidJsonSchema(schema)) {
+      if (!canBeProcessed(schema)) {
         return obj;
       }
 
-      return maskAllSecrets(obj, schema);
+      final SecretKeys secretKeys = getAllSecretKeys(schema);
+      return maskAllSecrets(obj, secretKeys);
     }
 
     return obj;
-  }
-
-  /**
-   * Given a JSONSchema object and an object that conforms to that schema, obfuscate all fields in the
-   * object that are a secret.
-   *
-   * @param json - json object that conforms to the schema
-   * @param schema - jsonschema object
-   * @return json object with all secrets masked.
-   */
-  public static JsonNode maskAllSecrets(final JsonNode json, final JsonNode schema) {
-    final Set<String> pathsWithSecrets = JsonSchemas.collectJsonPathsThatMeetCondition(
-        schema,
-        node -> MoreIterators.toList(node.fields())
-            .stream()
-            .anyMatch(field -> field.getKey().equals(AIRBYTE_SECRET_FIELD)));
-
-    JsonNode copy = Jsons.clone(json);
-    for (final String path : pathsWithSecrets) {
-      copy = JsonPaths.replaceAtString(copy, path, SECRETS_MASK);
-    }
-
-    return copy;
   }
 
   /**
@@ -95,14 +74,12 @@ public class JsonSecretsProcessor {
    *
    * @param src The object potentially containing secrets
    * @param dst The object to absorb secrets into
-   * @param schema Schema of objects
-   * @return dst object with secrets absorbed from src object
+   * @param schema
+   * @return
    */
-  // todo (cgardens) - figure out how to reused JsonSchemas and JsonPaths for this traversal as well.
   public JsonNode copySecrets(final JsonNode src, final JsonNode dst, final JsonNode schema) {
     if (copySecrets) {
-      // todo (cgardens) this is not safe. should throw.
-      if (!isValidJsonSchema(schema)) {
+      if (!canBeProcessed(schema)) {
         return dst;
       }
       Preconditions.checkArgument(dst.isObject());
@@ -164,7 +141,78 @@ public class JsonSecretsProcessor {
     return obj.isObject() && obj.has(AIRBYTE_SECRET_FIELD) && obj.get(AIRBYTE_SECRET_FIELD).asBoolean();
   }
 
-  private static Optional<String> findJsonCombinationNode(final JsonNode node) {
+  protected JsonNode maskAllSecrets(final JsonNode obj, final SecretKeys secretKeys) {
+    final JsonNode copiedObj = obj.deepCopy();
+    final Queue<JsonNode> toProcess = new LinkedList<>();
+    toProcess.add(copiedObj);
+
+    while (!toProcess.isEmpty()) {
+      final JsonNode currentNode = toProcess.remove();
+      for (final String key : Jsons.keys(currentNode)) {
+        if (secretKeys.fieldSecretKey.contains(key)) {
+          ((ObjectNode) currentNode).put(key, SECRETS_MASK);
+        } else if (currentNode.get(key).isObject()) {
+          toProcess.add(currentNode.get(key));
+        } else if (currentNode.get(key).isArray()) {
+          if (secretKeys.arraySecretKey.contains(key)) {
+            final ArrayNode sanitizedArrayNode = new ArrayNode(JsonNodeFactory.instance);
+            currentNode.get(key).forEach((secret) -> sanitizedArrayNode.add(SECRETS_MASK));
+            ((ObjectNode) currentNode).put(key, sanitizedArrayNode);
+          } else {
+            final ArrayNode arrayNode = (ArrayNode) currentNode.get(key);
+            arrayNode.forEach((node) -> {
+              toProcess.add(node);
+            });
+          }
+        }
+      }
+    }
+
+    return copiedObj;
+  }
+
+  @Value
+  protected class SecretKeys {
+
+    private final Set<String> fieldSecretKey;
+    private final Set<String> arraySecretKey;
+
+  }
+
+  protected SecretKeys getAllSecretKeys(final JsonNode schema) {
+    final Set<String> fieldSecretKeys = new HashSet<>();
+    final Set<String> arraySecretKeys = new HashSet<>();
+
+    final Queue<JsonNode> toProcess = new LinkedList<>();
+    toProcess.add(schema);
+
+    while (!toProcess.isEmpty()) {
+      final JsonNode currentNode = toProcess.remove();
+      for (final String key : Jsons.keys(currentNode)) {
+        if (isArrayDefinition(currentNode.get(key))) {
+          final JsonNode arrayItems = currentNode.get(key).get(ITEMS_FIELD);
+          if (arrayItems.has(AIRBYTE_SECRET_FIELD) && arrayItems.get(AIRBYTE_SECRET_FIELD).asBoolean()) {
+            arraySecretKeys.add(key);
+          } else {
+            toProcess.add(arrayItems);
+          }
+        } else if (JsonSecretsProcessor.isSecret(currentNode.get(key))) {
+          fieldSecretKeys.add(key);
+        } else if (currentNode.get(key).isObject()) {
+          toProcess.add(currentNode.get(key));
+        } else if (currentNode.get(key).isArray()) {
+          final ArrayNode arrayNode = (ArrayNode) currentNode.get(key);
+          arrayNode.forEach((node) -> {
+            toProcess.add(node);
+          });
+        }
+      }
+    }
+
+    return new SecretKeys(fieldSecretKeys, arraySecretKeys);
+  }
+
+  public static Optional<String> findJsonCombinationNode(final JsonNode node) {
     for (final String combinationNode : List.of("allOf", "anyOf", "oneOf")) {
       if (node.has(combinationNode) && node.get(combinationNode).isArray()) {
         return Optional.of(combinationNode);
@@ -173,9 +221,15 @@ public class JsonSecretsProcessor {
     return Optional.empty();
   }
 
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-  private static boolean isValidJsonSchema(final JsonNode schema) {
+  public static boolean canBeProcessed(final JsonNode schema) {
     return schema.isObject() && schema.has(PROPERTIES_FIELD) && schema.get(PROPERTIES_FIELD).isObject();
+  }
+
+  public static boolean isArrayDefinition(final JsonNode obj) {
+    return obj.isObject()
+        && obj.has(TYPE_FIELD)
+        && obj.get(TYPE_FIELD).asText().equals(ARRAY_TYPE_FIELD)
+        && obj.has(ITEMS_FIELD);
   }
 
 }
