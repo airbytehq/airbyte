@@ -18,7 +18,6 @@ const Box = styled.div`
 `;
 
 export const InfoBox: React.FC<Props> = ({ children, className, icon }) => {
-  console.log(className);
   return (
     <Box className={className}>
       {icon && <FontAwesomeIcon size="lg" icon={icon} />}
