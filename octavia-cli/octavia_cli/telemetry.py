@@ -10,17 +10,16 @@ import analytics
 import click
 
 
-def build_user_agent(octavia_version: str, workspace_id: str) -> str:
-    """Build user-agent for the API client according to octavia version and workspace id.
+def build_user_agent(octavia_version: str) -> str:
+    """Build user-agent for the API client according to octavia version.
 
     Args:
         octavia_version (str): Current octavia version.
-        workspace_id (str): Current workspace id.
 
     Returns:
         str: the user-agent string.
     """
-    return f"octavia-cli/{octavia_version}/{workspace_id}"
+    return f"octavia-cli/{octavia_version}"
 
 
 class TelemetryClient:
@@ -75,7 +74,7 @@ class TelemetryClient:
             error (Optional[Exception], optional): The error that was raised. Defaults to None.
             extra_info_name (Optional[str], optional): Extra info name if the context was not built yet. Defaults to None.
         """
-        user_id = ctx.obj.get("WORKSPACE_ID")
+        user_id = ctx.obj.get("WORKSPACE_ID") if ctx.obj.get("ANONYMOUS_DATA_COLLECTION", True) is False else None
         anonymous_id = None if user_id else str(uuid.uuid1())
 
         segment_context = {"app": {"name": "octavia-cli", "version": ctx.obj.get("OCTAVIA_VERSION")}}
@@ -83,7 +82,7 @@ class TelemetryClient:
             "success": error is None,
             "error_type": error.__class__.__name__ if error is not None else None,
             "project_is_initialized": ctx.obj.get("PROJECT_IS_INITIALIZED"),
-            "airbyte_role": os.getenv("AIRBYTE_ROLE"),
+            "airbyter": os.getenv("AIRBYTE_ROLE") == "airbyter",
         }
         command_name = self._create_command_name(ctx, extra_info_name)
         self.segment_client.track(

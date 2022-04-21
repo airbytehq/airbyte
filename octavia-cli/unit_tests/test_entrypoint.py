@@ -5,6 +5,7 @@
 import click
 import pkg_resources
 import pytest
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 from click.testing import CliRunner
 from octavia_cli import entrypoint
 
@@ -17,21 +18,25 @@ def dumb(ctx):
 
 def test_set_context_object(mocker):
     mocker.patch.object(entrypoint, "TelemetryClient")
+    mocker.patch.object(entrypoint, "build_user_agent")
     mocker.patch.object(entrypoint, "get_api_client")
     mocker.patch.object(entrypoint, "get_workspace_id")
     mocker.patch.object(entrypoint, "build_user_agent")
     mocker.patch.object(entrypoint, "check_is_initialized")
+    mocker.patch.object(entrypoint, "get_anonymous_data_collection")
     mock_ctx = mocker.Mock(obj={})
     built_context = entrypoint.set_context_object(mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry")
     entrypoint.TelemetryClient.assert_called_with("enable_telemetry")
     mock_ctx.ensure_object.assert_called_with(dict)
-    built_context.obj == {
+    assert built_context.obj == {
         "OCTAVIA_VERSION": pkg_resources.require("octavia-cli")[0].version,
         "TELEMETRY_CLIENT": entrypoint.TelemetryClient.return_value,
         "WORKSPACE_ID": entrypoint.get_workspace_id.return_value,
         "API_CLIENT": entrypoint.get_api_client.return_value,
         "PROJECT_IS_INITIALIZED": entrypoint.check_is_initialized.return_value,
+        "ANONYMOUS_DATA_COLLECTION": entrypoint.get_anonymous_data_collection.return_value,
     }
+    entrypoint.build_user_agent.assert_called_with(built_context.obj["OCTAVIA_VERSION"])
 
 
 def test_set_context_object_error(mocker):
@@ -104,6 +109,17 @@ def test_get_workspace_id_api_defined(mocker):
     assert entrypoint.get_workspace_id(mock_api_client, None) == "api-defined-workspace-id"
     entrypoint.workspace_api.WorkspaceApi.assert_called_with(mock_api_client)
     mock_api_instance.list_workspaces.assert_called_with(_check_return_type=False)
+
+
+def test_get_anonymous_data_collection(mocker, mock_api_client):
+    mocker.patch.object(entrypoint, "workspace_api")
+    mock_api_instance = entrypoint.workspace_api.WorkspaceApi.return_value
+    assert (
+        entrypoint.get_anonymous_data_collection(mock_api_client, "my_workspace_id")
+        == mock_api_instance.get_workspace.return_value.anonymous_data_collection
+    )
+    entrypoint.workspace_api.WorkspaceApi.assert_called_with(mock_api_client)
+    mock_api_instance.get_workspace.assert_called_with(WorkspaceIdRequestBody("my_workspace_id"), _check_return_type=False)
 
 
 def test_commands_in_octavia_group():

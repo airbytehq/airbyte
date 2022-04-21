@@ -32,6 +32,7 @@ import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
@@ -386,18 +387,24 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<JobStatus> listJobStatusWithConnection(final UUID connectionId, final Set<ConfigType> configTypes, final Instant jobCreatedAtTimestamp)
+  public List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(final UUID connectionId,
+                                                                                 final Set<ConfigType> configTypes,
+                                                                                 final Instant jobCreatedAtTimestamp)
       throws IOException {
     final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC);
 
-    final String JobStatusSelect = "SELECT status FROM jobs ";
+    final String JobStatusSelect = "SELECT id, status, created_at, updated_at FROM jobs ";
     return jobDatabase.query(ctx -> ctx
         .fetch(JobStatusSelect + "WHERE " +
             "scope = ? AND " +
             "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND " +
             "created_at >= ? ORDER BY created_at DESC", connectionId.toString(), timeConvertedIntoLocalDateTime))
         .stream()
-        .map(r -> JobStatus.valueOf(r.get("status", String.class).toUpperCase()))
+        .map(r -> new JobWithStatusAndTimestamp(
+            r.get("id", Long.class),
+            JobStatus.valueOf(r.get("status", String.class).toUpperCase()),
+            r.get("created_at", Long.class) / 1000,
+            r.get("updated_at", Long.class) / 1000))
         .toList();
   }
 

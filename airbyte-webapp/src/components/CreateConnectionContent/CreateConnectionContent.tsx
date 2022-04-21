@@ -77,9 +77,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
       },
     });
 
-    if (afterSubmitConnection) {
-      afterSubmitConnection(connection);
-    }
+    return {
+      onSubmitComplete: () => {
+        afterSubmitConnection?.(connection);
+      },
+    };
   };
 
   const onSelectFrequency = (item: IDataItem | null) => {
