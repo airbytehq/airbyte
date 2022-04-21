@@ -296,6 +296,7 @@ class ConferenceParticipants(TwilioNestedStream):
     which are on conference call at the moment request is made).
     """
 
+    primary_key = ["account_sid", "conference_sid"]
     parent_stream = Conferences
     data_field = "participants"
 
