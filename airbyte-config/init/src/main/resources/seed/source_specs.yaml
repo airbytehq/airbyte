@@ -2459,7 +2459,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.27"
+- dockerImage: "airbyte/source-github:0.2.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2485,9 +2485,6 @@
               option_title:
                 type: "string"
                 const: "OAuth Credentials"
-                enum:
-                - "OAuth Credentials"
-                default: "OAuth Credentials"
                 order: 0
               access_token:
                 type: "string"
@@ -2502,9 +2499,6 @@
               option_title:
                 type: "string"
                 const: "PAT Credentials"
-                enum:
-                - "PAT Credentials"
-                default: "PAT Credentials"
                 order: 0
               personal_access_token:
                 type: "string"
@@ -4492,7 +4486,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.2.13"
+- dockerImage: "airbyte/source-mailchimp:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mailchimp"
     connectionSpecification:
@@ -4504,7 +4498,7 @@
       properties:
         credentials:
           type: "object"
-          title: "Authentication Method"
+          title: "Authentication *"
           oneOf:
           - title: "OAuth2.0"
             type: "object"
