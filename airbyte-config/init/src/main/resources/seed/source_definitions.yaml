@@ -203,7 +203,7 @@
 - name: Exchange Rates Api
   sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   dockerRepository: airbyte/source-exchange-rates
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
   icon: exchangeratesapi.svg
   sourceType: api
@@ -300,7 +300,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -771,7 +771,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.31
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
