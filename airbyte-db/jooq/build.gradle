@@ -1,18 +1,23 @@
 plugins {
     id 'java'
-    id 'nu.studer.jooq' version '6.0.1'
+    id 'nu.studer.jooq' version '7.1.1'
+}
+
+ext {
+    jooq_version = '3.13.4'
+    postgres_version = '42.3.2'
 }
 
 dependencies {
-    implementation 'org.jooq:jooq-meta:3.13.4'
-    implementation 'org.jooq:jooq:3.13.4'
-    implementation 'org.postgresql:postgresql:42.3.1'
+    implementation "org.jooq:jooq-meta:${project.ext.jooq_version}"
+    implementation "org.jooq:jooq:${project.ext.jooq_version}"
+    implementation "org.postgresql:postgresql:${project.ext.postgres_version}"
     implementation "org.flywaydb:flyway-core:7.14.0"
 
     implementation project(':airbyte-db:lib')
 
     // jOOQ code generation
-    implementation 'org.jooq:jooq-codegen:3.13.4'
+    implementation "org.jooq:jooq-codegen:${project.ext.jooq_version}"
     implementation "org.testcontainers:postgresql:1.15.3"
     // These are required because gradle might be using lower version of Jna from other
     // library transitive dependency. Can be removed if we can figure out which library is the cause.
@@ -21,21 +26,30 @@ dependencies {
     implementation 'net.java.dev.jna:jna-platform:5.8.0'
 
     // The jOOQ code generator only has access to classes added to the jooqGenerator configuration
-    jooqGenerator project(':airbyte-db:lib')
+    jooqGenerator "org.postgresql:postgresql:${project.ext.postgres_version}"
 }
 
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
 jooq {
-    version = '3.13.4'
+    version = project.ext.jooq_version
     edition = nu.studer.gradle.jooq.JooqEdition.OSS
 
     configurations {
         configsDatabase {
             generateSchemaSourceOnCompilation = true
             generationTool {
+                jdbc {
+                    driver = 'org.postgresql.Driver'
+                    url = env.DATABASE_URL
+                    user = env.DATABASE_USER
+                    password = env.DATABASE_PASSWORD
+                }
                 generator {
                     name = 'org.jooq.codegen.DefaultGenerator'
                     database {
-                        name = 'io.airbyte.db.instance.configs.ConfigsFlywayMigrationDatabase'
+                        name = 'org.jooq.meta.postgres.PostgresDatabase'
                         inputSchema = 'public'
                         excludes = 'airbyte_configs_migrations'
                     }
@@ -50,10 +64,17 @@ jooq {
         jobsDatabase {
             generateSchemaSourceOnCompilation = true
             generationTool {
+                jdbc {
+                    println env.DATABASE_URL
+                    driver = 'org.postgresql.Driver'
+                    url = env.DATABASE_URL
+                    user = env.DATABASE_USER
+                    password = env.DATABASE_PASSWORD
+                }
                 generator {
                     name = 'org.jooq.codegen.DefaultGenerator'
                     database {
-                        name = 'io.airbyte.db.instance.jobs.JobsFlywayMigrationDatabase'
+                        name = 'org.jooq.meta.postgres.PostgresDatabase'
                         inputSchema = 'public'
                         excludes = 'airbyte_jobs_migrations'
                     }
@@ -68,8 +89,8 @@ jooq {
 }
 
 sourceSets.main.java.srcDirs (
-    tasks.named('generateConfigsDatabaseJooq').flatMap { it.outputDir },
-    tasks.named('generateJobsDatabaseJooq').flatMap { it.outputDir }
+        tasks.named('generateConfigsDatabaseJooq').flatMap { it.outputDir },
+        tasks.named('generateJobsDatabaseJooq').flatMap { it.outputDir }
 )
 
 sourceSets {
