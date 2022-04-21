@@ -5,10 +5,16 @@
 
 from destination_google_sheets.auth import GoogleSheetsAuth
 
+# ----- PREPARE ENV -----
+
+
 TEST_CONFIG: dict = {
     "spreadsheet_id": "URL",
     "credentials": {"auth_type": "Client", "client_id": "CLIENT_ID", "client_secret": "CLIENT_SECRET", "refresh_token": "REFRESH_TOKEN"},
 }
+
+
+# ----- BEGIN TESTS -----
 
 
 def test_get_credentials(config: dict = TEST_CONFIG):

@@ -17,6 +17,8 @@ class WriteBuffer:
     records_buffer = []
     # Placeholder for streams metadata
     stream_info = []
+    # interval after which the records_buffer should be cleaned up for selected stream
+    flush_interval = 1000
 
     @property
     def default_missing(self) -> str:
@@ -25,14 +27,6 @@ class WriteBuffer:
         Overwrite if needed.
         """
         return ""
-
-    @property
-    def flush_interval(self) -> int:
-        """
-        Default flush interval after which the records_buffer should be cleaned up for selected stream.
-        Overwrite if needed.
-        """
-        return 1000
 
     def buffer_stream(self, configured_stream: AirbyteStream):
         """

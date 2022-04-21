@@ -14,10 +14,9 @@ from destination_google_sheets.buffer import WriteBuffer
 # ----- PREPARE ENV -----
 
 # path to configured_catalog json file
-TEST_CATALOG_PATH: str = "unit_tests/test_data/test_catalog.json"
+TEST_CATALOG_PATH: str = "unit_tests/test_data/test_buffer_catalog.json"
 # path to test records txt file
 TEST_RECORDS_PATH: str = "integration_tests/messages.txt"
-
 # reading prepared catalog with streams
 TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_file(TEST_CATALOG_PATH)
 # instance of WriteBuffer
@@ -31,8 +30,6 @@ def read_input_messages(records_path: str = TEST_RECORDS_PATH) -> Iterable[Airby
         for line in input_stream:
             yield AirbyteMessage.parse_raw(line)
 
-
-# ----- END PREPARE ENV -----
 
 # ----- BEGIN TESTS -----
 
@@ -156,6 +153,16 @@ def test_get_record_values(record, expected):
 def test_values_to_str(list_values, expected):
     actual = TEST_WRITE_BUFFER.values_to_str(list_values)
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "buffer, expected_len",
+    [(TEST_WRITE_BUFFER.records_buffer, 0), (TEST_WRITE_BUFFER.stream_info, 0)],
+    ids=["records_buffer", "stream_info"],
+)
+def test_check_buffers_are_null(buffer, expected_len):
+    buffer.clear()
+    assert len(buffer) == expected_len
 
 
 # ----- END TESTS -----
