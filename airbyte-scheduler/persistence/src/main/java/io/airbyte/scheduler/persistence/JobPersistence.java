@@ -12,6 +12,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -164,11 +165,14 @@ public interface JobPersistence {
    * @param connectionId The ID of the connection
    * @param configTypes The types of jobs
    * @param jobCreatedAtTimestamp The timestamp after which you want the jobs
-   * @return List of job statuses from a specific connection that have attempts after the provided
-   *         timestamp, sorted by jobs' createAt in descending order
+   * @return List of jobs that only include information regarding id, status, timestamps from a
+   *         specific connection that have attempts after the provided timestamp, sorted by jobs'
+   *         createAt in descending order
    * @throws IOException
    */
-  List<JobStatus> listJobStatusWithConnection(UUID connectionId, Set<JobConfig.ConfigType> configTypes, Instant jobCreatedAtTimestamp)
+  List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(UUID connectionId,
+                                                                          Set<JobConfig.ConfigType> configTypes,
+                                                                          Instant jobCreatedAtTimestamp)
       throws IOException;
 
   Optional<Job> getLastReplicationJob(UUID connectionId) throws IOException;
