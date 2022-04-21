@@ -9,5 +9,6 @@ public enum ConnectorType {
   MY_SQL,
   MS_SQL,
   POSTGRES,
+  MONGO,
   DEFAULT
 }
