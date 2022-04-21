@@ -1,12 +1,5 @@
 import { OperationRead, OperatorDbt } from "../../request/GeneratedApi";
 
-export interface Operation {
-  name: string;
-  id?: string;
-  workspaceId: string;
-  operatorConfiguration: DbtOperationConfiguration | NormalizationOperationConfiguration;
-}
-
 export interface Transformation extends OperationRead {
   operatorConfiguration: DbtOperationConfiguration;
 }
