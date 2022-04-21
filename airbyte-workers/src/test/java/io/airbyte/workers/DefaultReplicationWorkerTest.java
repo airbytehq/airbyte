@@ -74,6 +74,7 @@ class DefaultReplicationWorkerTest {
   private static final String FIELD_NAME = "favorite_color";
   private static final AirbyteMessage RECORD_MESSAGE1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
   private static final AirbyteMessage RECORD_MESSAGE2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
+  private static final AirbyteMessage RECORD_MESSAGE3 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, 3);
   private static final AirbyteMessage STATE_MESSAGE = AirbyteMessageUtils.createStateMessage("checkpoint", "1");
 
   private Path jobRoot;
@@ -84,6 +85,7 @@ class DefaultReplicationWorkerTest {
   private WorkerSourceConfig sourceConfig;
   private WorkerDestinationConfig destinationConfig;
   private AirbyteMessageTracker messageTracker;
+  private RecordSchemaValidator recordSchemaValidator;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -102,6 +104,7 @@ class DefaultReplicationWorkerTest {
     mapper = mock(NamespacingMapper.class);
     destination = mock(AirbyteDestination.class);
     messageTracker = mock(AirbyteMessageTracker.class);
+    recordSchemaValidator = mock(RecordSchemaValidator.class);
 
     when(source.isFinished()).thenReturn(false, false, false, true);
     when(destination.isFinished()).thenReturn(false, false, false, true);
@@ -110,6 +113,7 @@ class DefaultReplicationWorkerTest {
     when(mapper.mapCatalog(destinationConfig.getCatalog())).thenReturn(destinationConfig.getCatalog());
     when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
     when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
+    when(mapper.mapMessage(RECORD_MESSAGE3)).thenReturn(RECORD_MESSAGE3);
   }
 
   @AfterEach
@@ -119,13 +123,14 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void test() throws Exception {
-    final ReplicationWorker worker = new DefaultReplicationWorker(
+    final DefaultReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
         JOB_ATTEMPT,
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
     worker.run(syncInput, jobRoot);
 
@@ -135,11 +140,13 @@ class DefaultReplicationWorkerTest {
     verify(destination).accept(RECORD_MESSAGE2);
     verify(source).close();
     verify(destination).close();
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1, syncInput);
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2, syncInput);
   }
 
   @Test
-  void testSourceNonZeroExitValue() throws Exception {
-    when(source.getExitValue()).thenReturn(1);
+  void testInvalidSchema() throws Exception {
+    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(RECORD_MESSAGE2), Optional.of(RECORD_MESSAGE3));
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -147,13 +154,22 @@ class DefaultReplicationWorkerTest {
         source,
         mapper,
         destination,
-        messageTracker);
+        messageTracker,
+        recordSchemaValidator);
 
-    final ReplicationOutput output = worker.run(syncInput, jobRoot);
-    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
-    assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
+    worker.run(syncInput, jobRoot);
+
+    verify(source).start(sourceConfig, jobRoot);
+    verify(destination).start(destinationConfig, jobRoot);
+    verify(destination).accept(RECORD_MESSAGE1);
+    verify(destination).accept(RECORD_MESSAGE2);
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1, syncInput);
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2, syncInput);
+    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE3, syncInput);
+    verify(source).close();
+    verify(destination).close();
   }
-
+}
   @Test
   void testReplicationRunnableSourceFailure() throws Exception {
     final String SOURCE_ERROR_MESSAGE = "the source had a failure";

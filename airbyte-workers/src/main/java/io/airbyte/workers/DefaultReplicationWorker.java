@@ -6,6 +6,7 @@ package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -16,19 +17,24 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.MessageTracker;
+import io.airbyte.workers.RecordSchemaValidator;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -72,13 +78,24 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final ExecutorService executors;
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
+  private final RecordSchemaValidator recordSchemaValidator;
+
+  public DefaultReplicationWorker(final String jobId,
+      final int attempt,
+      final AirbyteSource source,
+      final AirbyteMapper mapper,
+      final AirbyteDestination destination,
+      final MessageTracker messageTracker) {
+    this(jobId, attempt, source, mapper, destination, messageTracker, new RecordSchemaValidator());
+  }
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
                                   final AirbyteSource source,
                                   final AirbyteMapper mapper,
                                   final AirbyteDestination destination,
-                                  final MessageTracker messageTracker) {
+                                  final MessageTracker messageTracker,
+                                  final RecordSchemaValidator recordSchemaValidator) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -86,6 +103,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.destination = destination;
     this.messageTracker = messageTracker;
     this.executors = Executors.newFixedThreadPool(2);
+    this.recordSchemaValidator = recordSchemaValidator;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -146,7 +164,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, syncInput),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, syncInput, recordSchemaValidator),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -278,7 +296,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
-                                                 final StandardSyncInput syncInput) {
+                                                 final StandardSyncInput syncInput,
+                                                 final RecordSchemaValidator recordSchemaValidator) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -295,7 +314,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
 
             if (message.getRecord() != null) {
-              validateMessageSchema(message, syncInput);
+              try {
+                recordSchemaValidator.validateSchema(message, syncInput);
+              } catch(final RecordSchemaValidationException e) {
+                LOGGER.warn(e.getMessage());
+              }
             }
 
             messageTracker.acceptFromSource(message);
@@ -378,34 +401,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
-  }
-
-  private static void validateMessageSchema (final AirbyteMessage message, final StandardSyncInput syncInput){
-    // the stream this message corresponds to
-    final String messageStream = message.getRecord().getStream();
-    final JsonNode messageData = message.getRecord().getData();
-
-    // the stream name and json schema
-    final ConfiguredAirbyteStream matchingAirbyteStream = syncInput.getCatalog().getStreams().stream()
-        .filter(s -> (s.getStream().getName().trim().equals((messageStream.trim())))).findFirst().orElse(null);
-
-    final JsonNode matchingSchema = matchingAirbyteStream.getStream().getJsonSchema();
-
-    final JsonSchemaValidator validator = new JsonSchemaValidator();
-
-    // We must choose a JSON validator version for validating the schema
-    // Rather than allowing connectors to use any version, we enforce validation using V7
-    ((ObjectNode) matchingSchema).put("$schema", "http://json-schema.org/draft-07/schema#");
-
-    final Boolean isValid = validator.validate(matchingSchema, messageData).isEmpty();
-
-    if (!isValid) {
-      warnAboutMessageSchema(matchingSchema, messageData);
-    }
-  }
-
-  private static void warnAboutMessageSchema(final JsonNode matchingSchema, final JsonNode messageData) {
-    LOGGER.warn("Schema is not valid. Stream schema is: {}, but message schema is: {}", matchingSchema, messageData);
   }
 
   @Override
