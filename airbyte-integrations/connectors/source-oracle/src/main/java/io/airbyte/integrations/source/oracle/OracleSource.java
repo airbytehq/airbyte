@@ -19,10 +19,7 @@ import io.airbyte.protocol.models.CommonField;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.JDBCType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -168,6 +165,11 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of();
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
   }
 
   public static void main(final String[] args) throws Exception {

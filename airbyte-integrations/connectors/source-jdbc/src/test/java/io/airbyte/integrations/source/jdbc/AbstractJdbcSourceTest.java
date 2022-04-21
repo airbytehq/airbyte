@@ -9,6 +9,7 @@ import io.airbyte.integrations.base.Source;
 import org.junit.jupiter.api.Test;
 
 import java.sql.JDBCType;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -133,7 +134,7 @@ public class AbstractJdbcSourceTest {
 
         @Override
         public Set<String> getExcludedInternalNameSpaces() {
-            return null;
+            return Collections.emptySet();
         }
 
     }

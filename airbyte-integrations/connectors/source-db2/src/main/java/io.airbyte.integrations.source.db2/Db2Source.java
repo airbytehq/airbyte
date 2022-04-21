@@ -33,6 +33,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
   public static final String USERNAME = "username";
   public static final String PASSWORD = "password";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   private static Db2SourceOperations operations;
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
