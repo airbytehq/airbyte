@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.map.MoreMaps;
-import io.airbyte.config.CustomerioNotificationConfiguration;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -79,8 +78,8 @@ public class JobNotifier {
     try {
       final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
       final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-      final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
-      final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
+      final String sourceConnector = sourceDefinition.getName();
+      final String destinationConnector = destinationDefinition.getName();
       final String failReason = Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
       final String jobDescription = getJobDescription(job, failReason);
       final String logUrl = connectionPageUrl + connectionId;
@@ -106,7 +105,6 @@ public class JobNotifier {
               workspaceId,
               action,
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
-
           switch (action) {
             case FAILURE_NOTIFICATION:
               if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
@@ -119,16 +117,14 @@ public class JobNotifier {
               }
               break;
             case CONNECTION_DISABLED_NOTIFICATION:
-              if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)
-                  && !notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                      logUrl)) {
+              if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                  logUrl)) {
                 LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
               }
               break;
             case CONNECTION_DISABLED_WARNING_NOTIFICATION:
-              if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)
-                  && !notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-                      logUrl)) {
+              if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                  logUrl)) {
                 LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
               }
           }
@@ -141,6 +137,12 @@ public class JobNotifier {
     }
   }
 
+  // This method allows for the alert to be sent without the customerio configuration set in the
+  // database
+  // This is only needed because there is no UI element to allow for users to create that
+  // configuration.
+  // Once that exists, this can be removed and we should be using `notifyJobByEmail`.
+  // The alert is sent to the email associated with the workspace.
   public void notifyJobByEmail(final String reason, final String action, final Job job) {
     final Notification emailNotification = new Notification();
     emailNotification.setNotificationType(NotificationType.CUSTOMERIO);
@@ -150,51 +152,6 @@ public class JobNotifier {
       notifyJob(reason, action, job, workspaceId, workspace, Collections.singletonList(emailNotification));
     } catch (final Exception e) {
       LOGGER.error("Unable to read configuration:", e);
-    }
-  }
-
-  // This method allows for the alert to be sent without the customerio configuration set in the
-  // database
-  // This is only needed because there is no UI element to allow for users to create that
-  // configuration.
-  // Once that exists, this can be removed and we should be using `notifyJobByEmail`.
-  // The alert is sent to the email associated with the workspace.
-  public void autoDisableConnectionAlertWithoutCustomerioConfig(final String action, final Job job) {
-    try {
-      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
-
-      final Notification customerioNotification = new Notification()
-          .withNotificationType(NotificationType.CUSTOMERIO)
-          .withCustomerioConfiguration(new CustomerioNotificationConfiguration());
-      final NotificationClient notificationClient = getNotificationClient(customerioNotification);
-
-      final UUID connectionId = UUID.fromString(job.getScope());
-      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
-      final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-      final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
-      final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
-      final String logUrl = connectionPageUrl + connectionId;
-      final String jobDescription = getJobDescription(job, "");
-
-      switch (action) {
-        case CONNECTION_DISABLED_NOTIFICATION:
-          if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
-            LOGGER.warn("Failed to successfully notify auto-disable connection: {}", customerioNotification);
-          }
-          break;
-        case CONNECTION_DISABLED_WARNING_NOTIFICATION:
-          if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
-              logUrl)) {
-            LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", customerioNotification);
-          }
-          break;
-        default:
-          LOGGER.error(
-              "Incorrect action supplied, this method only supports Connection Disabled Notification and Connection Disabled Warning Notification.");
-      }
-    } catch (final Exception e) {
-      LOGGER.error("Unable to send auto disable alert:", e);
     }
   }
 
@@ -215,6 +172,14 @@ public class JobNotifier {
 
   public void successJob(final Job job) {
     notifyJob(null, SUCCESS_NOTIFICATION, job);
+  }
+
+  public void autoDisableConnection(final Job job) {
+    notifyJob(null, CONNECTION_DISABLED_NOTIFICATION, job);
+  }
+
+  public void autoDisableConnectionWarning(final Job job) {
+    notifyJob(null, CONNECTION_DISABLED_WARNING_NOTIFICATION, job);
   }
 
   protected NotificationClient getNotificationClient(final Notification notification) {

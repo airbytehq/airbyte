@@ -15,7 +15,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,18 +72,39 @@ public class SlackNotificationClient extends NotificationClient {
                                           final String jobDescription,
                                           final String logUrl)
       throws IOException, InterruptedException {
-    throw new NotImplementedException();
+    final String message = renderJobData(
+        "slack/auto_disable_slack_notification_template.txt",
+        sourceConnector,
+        destinationConnector,
+        jobDescription,
+        logUrl);
+
+    final String webhookUrl = config.getWebhook();
+    if (!Strings.isEmpty(webhookUrl)) {
+      return notify(message);
+    }
+    return false;
   }
 
   @Override
-  public boolean notifyConnectionDisableWarning(
-                                                final String receiverEmail,
+  public boolean notifyConnectionDisableWarning(final String receiverEmail,
                                                 final String sourceConnector,
                                                 final String destinationConnector,
                                                 final String jobDescription,
                                                 final String logUrl)
       throws IOException, InterruptedException {
-    throw new NotImplementedException();
+    final String message = renderJobData(
+        "slack/auto_disable_warning_slack_notification_template.txt",
+        sourceConnector,
+        destinationConnector,
+        jobDescription,
+        logUrl);
+
+    final String webhookUrl = config.getWebhook();
+    if (!Strings.isEmpty(webhookUrl)) {
+      return notify(message);
+    }
+    return false;
   }
 
   private String renderJobData(final String templateFile,
