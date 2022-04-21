@@ -32,7 +32,7 @@
           "group": "internal"
         },
         {
-          "pattern": "+(config|core|hooks|locales|packages|pages|services|utils|views){/**,}",
+          "pattern": "+(config|core|hooks|locales|packages|pages|services|types|utils|views){/**,}",
           "group": "internal",
           "position": "after"
         }
