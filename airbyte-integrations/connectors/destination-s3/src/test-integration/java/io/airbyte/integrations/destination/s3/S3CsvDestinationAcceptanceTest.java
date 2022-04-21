@@ -38,8 +38,7 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
         "flattening", Flattening.ROOT_LEVEL.getValue(),
-        // test gzip compression with the csv format
-        "gzip_compression", true));
+        "gzip_compression", false));
   }
 
   /**
@@ -107,7 +106,7 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       try (final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-          final Reader in = new InputStreamReader(new GZIPInputStream(object.getObjectContent()), StandardCharsets.UTF_8)) {
+          final Reader in = getReader(object)) {
         final Iterable<CSVRecord> records = CSVFormat.DEFAULT
             .withQuoteMode(QuoteMode.NON_NUMERIC)
             .withFirstRecordAsHeader()
@@ -118,6 +117,10 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
     }
 
     return jsonRecords;
+  }
+
+  protected Reader getReader(final S3Object s3Object) throws IOException {
+    return new InputStreamReader(new GZIPInputStream(s3Object.getObjectContent()), StandardCharsets.UTF_8);
   }
 
 }

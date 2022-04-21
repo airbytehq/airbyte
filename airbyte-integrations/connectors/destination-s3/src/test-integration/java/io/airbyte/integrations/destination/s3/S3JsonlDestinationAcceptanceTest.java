@@ -27,7 +27,6 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        // test the jsonl format without compression
         "gzip_compression", false));
   }
 
@@ -42,7 +41,7 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      try (final BufferedReader reader = new BufferedReader(new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8))) {
+      try (final BufferedReader reader = getReader(object)) {
         String line;
         while ((line = reader.readLine()) != null) {
           jsonRecords.add(Jsons.deserialize(line).get(JavaBaseConstants.COLUMN_NAME_DATA));
@@ -51,6 +50,10 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
     }
 
     return jsonRecords;
+  }
+
+  protected BufferedReader getReader(final S3Object s3Object) throws IOException {
+    return new BufferedReader(new InputStreamReader(s3Object.getObjectContent(), StandardCharsets.UTF_8));
   }
 
 }

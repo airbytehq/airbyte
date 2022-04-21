@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
-import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
@@ -39,7 +38,6 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
         "flattening", Flattening.ROOT_LEVEL.getValue(),
-        // test the csv format without the compression
         "gzip_compression", false));
   }
 
@@ -108,7 +106,7 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
 
     for (final S3ObjectSummary objectSummary : objectSummaries) {
       try (final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-          final Reader in = new InputStreamReader(object.getObjectContent(), StandardCharsets.UTF_8)) {
+          final Reader in = getReader(object)) {
         final Iterable<CSVRecord> records = CSVFormat.DEFAULT
             .withQuoteMode(QuoteMode.NON_NUMERIC)
             .withFirstRecordAsHeader()
@@ -119,6 +117,10 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
     }
 
     return jsonRecords;
+  }
+
+  protected Reader getReader(final S3Object s3Object) throws IOException {
+    return new InputStreamReader(s3Object.getObjectContent(), StandardCharsets.UTF_8);
   }
 
 }
