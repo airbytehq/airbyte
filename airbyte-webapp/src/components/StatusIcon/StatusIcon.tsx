@@ -44,7 +44,6 @@ const Container = styled.div<Props>`
 
 const Badge = styled(Container)<Props>`
   background: ${(props) => props.theme[(props.status && _themeByStatus[props.status]) || "dangerColor"]};
-  box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: ${({ value }) => (value ? "15px" : "50%")};
   color: ${({ theme }) => theme.whiteColor};
   padding-top: 4px;
