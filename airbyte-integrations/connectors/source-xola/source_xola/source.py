@@ -81,7 +81,7 @@ class XolaStream(HttpStream, ABC):
 
 class Orders(XolaStream):
     primary_key = "order_id"
-    cursor_field = None
+    cursor_field = "updatedAt"
     seller_id = None
 
     def __init__(self, seller_id: str, x_api_key: str, cursor_field: str, **kwargs):
@@ -97,9 +97,11 @@ class Orders(XolaStream):
         """
         should return "orders". Required.
         """
+        print("stream state ", stream_state)
         path = "orders"
         if stream_state is not None and self.cursor_field in stream_state:
-            path += "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
+            path = path + "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
+        print("path ", path)
             
         return path
 
@@ -155,26 +157,26 @@ class Orders(XolaStream):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        if current_stream_state is not None and self.cursor_field in current_stream_state:
+        latest_record_date = latest_record[self.cursor_field]
+        print("orders stream ", current_stream_state)
+        if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
 
             print("current parsed date ", current_stream_state)
             print("latest record ", latest_record)
-            latest_record_date = latest_record[self.cursor_field]
+           
             
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
-            elif latest_record_date is not None:
-                return {self.cursor_field: latest_record_date}
             else:
-                return {self.cursor_field: 0}
+                return {self.cursor_field: latest_record_date}
         else:
-            return {self.cursor_field: 0}
+            return {self.cursor_field: latest_record_date}
 
 class Transactions(XolaStream):
     primary_key = "id"
     seller_id = None
-    cursor_field = None
+    cursor_field = "updatedAt"
 
     def __init__(self, seller_id: str, x_api_key: str, cursor_field: str, **kwargs):
         super().__init__(x_api_key, **kwargs)
@@ -260,21 +262,22 @@ class Transactions(XolaStream):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        if current_stream_state is not None and self.cursor_field in current_stream_state:
+        latest_record_date = latest_record[self.cursor_field]
+        print("transactions stream ", current_stream_state)
+        if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
-        
+
             print("current parsed date ", current_stream_state)
             print("latest record ", latest_record)
-            latest_record_date = latest_record[self.cursor_field]
+           
             
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
-            elif latest_record_date is not None:
-                return {self.cursor_field: latest_record_date}
             else:
-                return {self.cursor_field: 0}
+                return {self.cursor_field: latest_record_date}
         else:
-            return {self.cursor_field: 0}
+            return {self.cursor_field: latest_record_date}
+
 
 # Basic incremental stream
 
@@ -305,22 +308,21 @@ class IncrementalXolaStream(XolaStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        if current_stream_state is not None and self.cursor_field in current_stream_state:
+        latest_record_date = latest_record[self.cursor_field]
+        print("common stream ", current_stream_state)
+        if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
-        
+
             print("current parsed date ", current_stream_state)
             print("latest record ", latest_record)
-            latest_record_date = latest_record[self.cursor_field]
+           
             
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
-            elif latest_record_date is not None:
-                return {self.cursor_field: latest_record_date}
             else:
-                return {self.cursor_field: 0}
+                return {self.cursor_field: latest_record_date}
         else:
-            return {self.cursor_field: 0}
-
+            return {self.cursor_field: latest_record_date}
 
 # Source
 class SourceXola(AbstractSource):
@@ -356,7 +358,7 @@ class SourceXola(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        cursor_field = None
+        cursor_field = 'updatedAt'
         
         if "cursor_field" in config.keys():
             cursor_field = config['cursor_field']
