@@ -140,7 +140,6 @@ const useCreateConnection = () => {
   return useMutation(
     async (conn: CreateConnectionProps) => {
       const { values, source, destination, sourceDefinition, destinationDefinition, sourceCatalogId } = conn;
-      
       const response = await service.create({
         sourceId: source?.sourceId,
         destinationId: destination?.destinationId,
