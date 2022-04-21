@@ -100,7 +100,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
 
     if (config.has(JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put("connection_properties", config.get(JDBC_URL_PARAMS_KEY).asText());
+      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());

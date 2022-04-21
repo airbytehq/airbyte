@@ -285,13 +285,19 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
+    // Not all JDBC Sources have implemented the "jdbc_url_params" Spec input yet,
+    // some of them implement the key "connection_properties" for various custom param handling,
+    // so merge together the maps to make sure the default empty map coming from getConnectionProperties
+    // doesn't completely override the behavior that existing connections may be relying on
+    final Map<String, String> mergedJdbcParameters = MoreMaps.merge(JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"), getConnectionProperties(jdbcConfig));
+
     final JdbcDatabase database = Databases.createStreamingJdbcDatabase(
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         jdbcStreamingQueryConfiguration,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
+        mergedJdbcParameters,
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
@@ -299,6 +305,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     return database;
   }
 
+  // Get properties from JDBC_URL_PARAMS_KEY Spec input if they exist, check against any potential defaults
   protected Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
     final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
