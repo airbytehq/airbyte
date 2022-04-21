@@ -26,13 +26,15 @@ There are only 3 easy steps to do that:
 
 ![](https://lh4.googleusercontent.com/8lW_KRkw8w8q96JUJ7Snxj9MRC8toOyd7avLEj9anID53Q7Vj1bkPRSp8skV1VcIJPWsjWugX0pj0jCZ2jdaBwqhZED9E7DN5SRX_FWyRMdQu1eRojCTGm3xW2R8xYC9JE_kQtwn)
 
-3.We will ask you for the display name, the Docker repository name, tag and documentation URL for that connector.
+3.We will ask you for the display name, the Docker repository name (repository + image name), tag and documentation URL for that connector.
 
 ![](https://lh6.googleusercontent.com/UfEol2AKAR-7pKtJnzPNRoEDgOlEfoi9cA3SzB1NboENOZnniaJFfUGcCcVxYtzC8R97tnLwOh28Er5wS_aNujfXCSKUh0K7lhu7xUFYm4oiVCDlFdsdJNvgVihWp0u13ZNyzFuA)
 
 Once this is filled, you will see your connector in the UI and your team will be able to use it, **from the UI and Airbyte's API too.**
 
 Note that this new connector could just be an updated version of an existing connector that you adapted to your specific edge case. Anything is possible!
+
+When using Airbyte on Kubernetes, the repository name must be a valid Kubernetes name. That is, it must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc'). Other names will work locally on Docker but cause an error on Kubernetes (Internal Server Error: Get Spec job failed).
 
 ## Upgrading a connector
 
