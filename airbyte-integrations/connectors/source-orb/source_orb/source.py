@@ -326,7 +326,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
         # Prepare request with self._session, which should
         # automatically deal with the authentication header.
-        args = {"method": "POST", "url": self.url_base + "events", "params": {"limit": self.page_size}, "json": request_filter_json}
+        args = {"method": "POST", "url": self.url_base + "events", "params": {"limit": self.page_size, "entry_status": "committed"}, "json": request_filter_json}
         prepared_request = self._session.prepare_request(requests.Request(**args))
         events_response: requests.Response = self._session.send(prepared_request)
         # Error for invalid responses
