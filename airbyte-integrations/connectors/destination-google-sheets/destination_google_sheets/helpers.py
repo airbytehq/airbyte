@@ -6,7 +6,7 @@
 import re
 from typing import List
 
-from pygsheets import Spreadsheet, Worksheet, client
+from pygsheets import Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound
 
 
@@ -22,7 +22,7 @@ def get_spreadsheet_id(id_or_url: str) -> str:
 def connection_test_write(spreadsheet: Spreadsheet) -> bool:
     wks_name: str = "_airbyte_conn_test"
     test_data: List[str] = ["conn_test", "success"]
-    
+
     # access underlying pygsheets methods for test purposes
     spreadsheet = spreadsheet.spreadsheet
 

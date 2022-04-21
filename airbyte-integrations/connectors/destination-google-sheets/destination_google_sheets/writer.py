@@ -11,7 +11,6 @@ from .spreadsheet import GoogleSheets
 
 
 class GoogleSheetsWriter(WriteBuffer):
-    
     def __init__(self, spreadsheet: GoogleSheets):
         self.spreadsheet = spreadsheet
 
@@ -20,7 +19,7 @@ class GoogleSheetsWriter(WriteBuffer):
         Deletes all the records belonging to the input stream.
         """
         self.spreadsheet.clean_worksheet(f"{stream_name}")
-        
+
     def check_headers(self, stream_name: str):
         """
         Checks whether data headers belonging to the input stream are set.
@@ -55,11 +54,11 @@ class GoogleSheetsWriter(WriteBuffer):
         """
         values: list = []
         self.check_headers(stream_name)
-        
+
         for streams in self.records_buffer:
             if stream_name in streams:
                 values = streams[stream_name]
-                
+
         if len(values) > 0:
             stream: Worksheet = self.spreadsheet.open_worksheet(f"{stream_name}")
             self.logger.info(f"Writing data for stream: {stream_name}")
@@ -86,7 +85,7 @@ class GoogleSheetsWriter(WriteBuffer):
         """
         primary_key: str = configured_stream.primary_key[0][0]
         stream_name: str = configured_stream.stream.name
-        
+
         stream: Worksheet = self.spreadsheet.open_worksheet(f"{stream_name}")
         rows_to_remove: list = self.spreadsheet.find_duplicates(stream, primary_key)
 

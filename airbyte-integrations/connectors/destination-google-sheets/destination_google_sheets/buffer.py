@@ -44,9 +44,9 @@ class WriteBuffer:
         stream = configured_stream.stream
         stream_schema = stream.json_schema
         stream_name = stream.name
-        
-        self.records_buffer.append( { stream_name : [] } )
-        self.stream_info.append( { stream_name: sorted(list(stream_schema.get("properties").keys())), "is_set": False } )
+
+        self.records_buffer.append({stream_name: []})
+        self.stream_info.append({stream_name: sorted(list(stream_schema.get("properties").keys())), "is_set": False})
 
     def buffer_has_more_records(self) -> bool:
         """
@@ -68,17 +68,13 @@ class WriteBuffer:
         """
         for stream in self.records_buffer:
             if stream_name in stream:
-                stream[stream_name].append(
-                    self.get_record_values(
-                        self.normalize_record(stream_name, record)
-                    )
-                )
+                stream[stream_name].append(self.get_record_values(self.normalize_record(stream_name, record)))
 
     def flush_buffer(self, stream_name: str):
         """
         Cleans up the `records_buffer` values, belonging to input stream.
         """
-        [ stream[stream_name].clear() for stream in self.records_buffer if stream_name in stream ]
+        [stream[stream_name].clear() for stream in self.records_buffer if stream_name in stream]
 
     def normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:
         """
@@ -119,16 +115,16 @@ class WriteBuffer:
                 - 'key3' was dropped, because it was not declared in catalog, to keep the data structure
                     { 'id': 123, 'key1': '', 'key2': 'value',   }
                                    ^                          ^
-                                                           
+
         """
-        
+
         for stream in self.stream_info:
             if stream_name in stream:
-                    # undersetting scenario
-                [ record.update({key: self.default_missing}) for key in stream[stream_name] if key not in record.keys() ]
-                    # oversetting scenario
-                [ record.pop(key) for key in record.copy().keys() if key not in stream[stream_name] ]     
-                 
+                # undersetting scenario
+                [record.update({key: self.default_missing}) for key in stream[stream_name] if key not in record.keys()]
+                # oversetting scenario
+                [record.pop(key) for key in record.copy().keys() if key not in stream[stream_name]]
+
         return dict(sorted(record.items(), key=lambda x: x[0]))
 
     def get_record_values(self, record: Mapping) -> List[str]:

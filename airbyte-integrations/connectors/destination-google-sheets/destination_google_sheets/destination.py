@@ -11,8 +11,8 @@ from google.auth.exceptions import RefreshError
 
 from .client import GoogleSheetsClient
 from .helpers import connection_test_write, get_spreadsheet_id
-from .writer import GoogleSheetsWriter
 from .spreadsheet import GoogleSheets
+from .writer import GoogleSheetsWriter
 
 
 class DestinationGoogleSheets(Destination):
@@ -44,7 +44,7 @@ class DestinationGoogleSheets(Destination):
         Reads the input stream of messages, config, and catalog to write data to the destination.
         """
         spreadsheet_id = get_spreadsheet_id(config["spreadsheet_id"])
-        
+
         client = GoogleSheetsClient(config).authorize()
         spreadsheet = GoogleSheets(client, spreadsheet_id)
         writer = GoogleSheetsWriter(spreadsheet)
