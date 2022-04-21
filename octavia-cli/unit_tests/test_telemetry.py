@@ -8,8 +8,8 @@ from octavia_cli import telemetry
 
 
 def test_build_user_agent():
-    ua = telemetry.build_user_agent("my_octavia_version", "my_workspace_id")
-    assert ua == "octavia-cli/my_octavia_version/my_workspace_id"
+    ua = telemetry.build_user_agent("my_octavia_version")
+    assert ua == "octavia-cli/my_octavia_version"
 
 
 class TestTelemetryClient:
@@ -54,14 +54,25 @@ class TestTelemetryClient:
             assert command_name == "child_command"
 
     @pytest.mark.parametrize(
-        "workspace_id,airbyte_role,project_is_initialized,octavia_version,error, expected_success, expected_error_type",
+        "workspace_id, anonymous_data_collection, airbyte_role, project_is_initialized, octavia_version, error, expected_success, expected_error_type",
         [
-            (None, None, None, None, None, True, None),
-            ("my_workspace_id", "my_airbyte_role", True, "0.1.0", None, True, None),
-            ("my_workspace_id", "my_airbyte_role", False, "0.1.0", None, True, None),
-            ("my_workspace_id", "my_airbyte_role", False, "0.1.0", AttributeError(), False, "AttributeError"),
-            ("my_workspace_id", "my_airbyte_role", True, "0.1.0", AttributeError(), False, "AttributeError"),
-            (None, None, True, "0.1.0", AttributeError(), False, "AttributeError"),
+            (None, None, None, None, None, None, True, None),
+            (None, None, None, None, None, Exception(), False, "Exception"),
+            (None, None, None, None, None, AttributeError(), False, "AttributeError"),
+            (None, True, None, None, None, None, True, None),
+            (None, True, None, None, None, Exception(), False, "Exception"),
+            (None, True, None, None, None, AttributeError(), False, "AttributeError"),
+            ("my_workspace_id", False, None, None, None, None, True, None),
+            ("my_workspace_id", False, None, None, None, Exception(), False, "Exception"),
+            ("my_workspace_id", True, None, None, None, None, True, None),
+            ("my_workspace_id", True, None, None, None, Exception(), False, "Exception"),
+            ("my_workspace_id", True, "airbyter", None, None, None, True, None),
+            ("my_workspace_id", True, "non_airbyter", None, None, Exception(), False, "Exception"),
+            ("my_workspace_id", True, "airbyter", True, None, None, True, None),
+            ("my_workspace_id", True, "non_airbyter", False, None, Exception(), False, "Exception"),
+            ("my_workspace_id", True, "airbyter", True, None, None, True, None),
+            ("my_workspace_id", True, "non_airbyter", False, "0.1.0", Exception(), False, "Exception"),
+            ("my_workspace_id", True, "non_airbyter", False, "0.1.0", None, True, None),
         ],
     )
     def test_send_command_telemetry(
@@ -69,6 +80,7 @@ class TestTelemetryClient:
         mocker,
         telemetry_client,
         workspace_id,
+        anonymous_data_collection,
         airbyte_role,
         project_is_initialized,
         octavia_version,
@@ -79,13 +91,14 @@ class TestTelemetryClient:
         extra_info_name = "foo"
         mocker.patch.object(telemetry.os, "getenv", mocker.Mock(return_value=airbyte_role))
         mocker.patch.object(telemetry.uuid, "uuid1", mocker.Mock(return_value="MY_UUID"))
-        expected_user_id = workspace_id if workspace_id is not None else None
-        expected_anonymous_id = "MY_UUID" if workspace_id is None else None
+        expected_user_id = workspace_id if workspace_id is not None and anonymous_data_collection is False else None
+        expected_anonymous_id = "MY_UUID" if expected_user_id is None else None
         mock_ctx = mocker.Mock(
             obj={
                 "OCTAVIA_VERSION": octavia_version,
                 "PROJECT_IS_INITIALIZED": project_is_initialized,
                 "WORKSPACE_ID": workspace_id,
+                "ANONYMOUS_DATA_COLLECTION": anonymous_data_collection,
             }
         )
         expected_segment_context = {"app": {"name": "octavia-cli", "version": octavia_version}}
@@ -93,7 +106,7 @@ class TestTelemetryClient:
             "success": expected_success,
             "error_type": expected_error_type,
             "project_is_initialized": project_is_initialized,
-            "airbyte_role": airbyte_role,
+            "airbyter": airbyte_role == "airbyter",
         }
         telemetry_client.segment_client = mocker.Mock()
         telemetry_client._create_command_name = mocker.Mock(return_value="my_command")
