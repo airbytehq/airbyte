@@ -22,6 +22,9 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      {{- if and .Values.serviceAccount.create .Values.kubernetesAuth.tryServiceAccount }}
+      automountServiceAccountToken: true
+      {{- end }}
       {{- if .Values.podSweeper.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.podSweeper.nodeSelector "context" $) | nindent 8 }}
       {{- end }}
@@ -40,6 +43,16 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: KUBERNETES_AUTH_TRYSERVICEACCOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: KUBERNETES_AUTH_TRYSERVICEACCOUNT
+        - name: KUBERNETES_AUTH_TRYKUBECONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: KUBERNETES_AUTH_TRYKUBECONFIG
         {{- if .Values.podSweeper.containerSecurityContext }}
         securityContext: {{- toYaml .Values.podSweeper.containerSecurityContext | nindent 10 }}
         {{- end }}

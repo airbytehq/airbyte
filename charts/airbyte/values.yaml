@@ -27,6 +27,15 @@ serviceAccount:
   annotations: {}
   name: airbyte-admin
 
+## Kubernetes Authentication
+## Authentication method used by airbyte pods requiring cluster access, eg. worker/pod-sweeper
+## @param kubernetesAuth.tryKubeConfig if true, will try to use kube config mounted inside the pod (default: true)
+## @param kubernetesAuth.tryServiceAccount if true, will try to use serviceAccount credentials from serviceAccount.name (default: false)
+##
+kubernetesAuth:
+  tryKubeConfig: true
+  tryServiceAccount: false
+
 ## @param version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
 ## If changing the image tags below, you should probably also update this.
 version: ""
@@ -976,4 +985,9 @@ jobs:
     ## JOB_KUBE_TOLERATIONS
     ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
     ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    ## any boolean values should be quoted to ensure the value is passed through as a string, eg:
+    ## - key: airbyte-server
+    ##   operator: Equal
+    ##   value: "true"
+    ##   effect: NoSchedule
     tolerations: []
