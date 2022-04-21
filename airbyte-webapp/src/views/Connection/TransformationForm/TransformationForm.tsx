@@ -85,7 +85,6 @@ const TransformationForm: React.FC<TransformationProps> = ({ transformation, onC
     initialValues: transformation,
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      // TODO: Type this properly
       await operationService.check(values);
       onDone(values);
     },

@@ -91,7 +91,7 @@ function useGetSourceService(): SourceService {
   return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
-type CheckConnectorParams = { signal: AbortSignal } & (
+export type CheckConnectorParams = { signal: AbortSignal } & (
   | { selectedConnectorId: string }
   | {
       selectedConnectorId: string;
@@ -104,7 +104,7 @@ type CheckConnectorParams = { signal: AbortSignal } & (
     }
 );
 
-const useCheckConnector = (formType: "source" | "destination") => {
+export const useCheckConnector = (formType: "source" | "destination") => {
   const destinationService = useGetDestinationService();
   const sourceService = useGetSourceService();
 
@@ -147,6 +147,4 @@ const useCheckConnector = (formType: "source" | "destination") => {
   });
 };
 
-export { useCheckConnector };
-export type { CheckConnectorParams };
 export default useConnector;

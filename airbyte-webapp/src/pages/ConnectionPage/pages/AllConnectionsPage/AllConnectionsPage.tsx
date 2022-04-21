@@ -16,7 +16,6 @@ const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
 
   const { connections } = useConnectionList();
-  // I'm unsure why this returns a promise and not a react-query hook.
   const { hasFeature } = useFeatureService();
   const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
 

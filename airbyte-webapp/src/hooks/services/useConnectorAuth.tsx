@@ -50,10 +50,9 @@ export function useConnectorAuth(): {
   ) => Promise<Record<string, unknown>>;
 } {
   const { workspaceId } = useCurrentWorkspace();
-  const { oauthRedirectUrl } = useConfig();
+  const { apiUrl, oauthRedirectUrl } = useConfig();
 
   // TODO: move to separate initFacade and use refs instead
-  const { apiUrl } = useConfig();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   const sourceAuthService = useMemo(
