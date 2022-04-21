@@ -35,9 +35,6 @@ connectionSpecification:
               title: Credentials Title
               description: Name of the credentials set
               const: OAuth Credentials
-              enum:
-                - OAuth Credentials
-              default: OAuth Credentials
               order: 0
             client_id:
               title: Client ID
@@ -80,9 +77,6 @@ connectionSpecification:
               title: Credentials title
               description: Name of the credentials set
               const: API Key Credentials
-              enum:
-                - API Key Credentials
-              default: API Key Credentials
               order: 0
             api_key:
               title: API key
