@@ -1709,7 +1709,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-exchange-rates:0.2.5"
+- dockerImage: "airbyte/source-exchange-rates:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/exchangeratesapi"
     connectionSpecification:
@@ -3142,7 +3142,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.11"
+- dockerImage: "airbyte/source-google-sheets:0.2.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
@@ -3485,7 +3485,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.52"
+- dockerImage: "airbyte/source-hubspot:0.1.53"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -3523,9 +3523,6 @@
                 title: "Credentials Title"
                 description: "Name of the credentials set"
                 const: "OAuth Credentials"
-                enum:
-                - "OAuth Credentials"
-                default: "OAuth Credentials"
                 order: 0
               client_id:
                 title: "Client ID"
@@ -3564,9 +3561,6 @@
                 title: "Credentials title"
                 description: "Name of the credentials set"
                 const: "API Key Credentials"
-                enum:
-                - "API Key Credentials"
-                default: "API Key Credentials"
                 order: 0
               api_key:
                 title: "API key"
@@ -7357,7 +7351,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.3"
+- dockerImage: "airbyte/source-salesforce:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -8279,7 +8273,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.30"
+- dockerImage: "airbyte/source-stripe:0.1.31"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
