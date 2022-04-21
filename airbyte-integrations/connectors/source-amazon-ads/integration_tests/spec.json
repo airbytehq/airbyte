@@ -14,53 +14,61 @@
       "client_id": {
         "title": "Client ID",
         "description": "The Client ID of your Amazon Ads developer application.",
+        "order": 1,
         "type": "string"
       },
       "client_secret": {
         "title": "Client Secret",
         "description": "The Client Secret of your Amazon Ads developer application.",
         "airbyte_secret": true,
+        "order": 2,
         "type": "string"
       },
       "refresh_token": {
         "title": "Refresh Token",
         "description": "Amazon Ads Refresh Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/amazon-ads\">docs</a> for more information on how to obtain this token.",
         "airbyte_secret": true,
+        "order": 3,
         "type": "string"
       },
       "start_date": {
         "title": "Start Date",
         "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
         "examples": ["2022-10-10", "2022-10-22"],
+        "order": 4,
         "type": "string"
       },
       "region": {
-        "title": "Region",
+        "title": "Region *",
         "description": "Region to pull data from (EU/NA/FE/SANDBOX)",
         "default": "NA",
         "enum": ["NA", "EU", "FE", "SANDBOX"],
+        "order": 5,
         "type": "string"
       },
       "profiles": {
         "title": "Profile IDs",
         "description": "Profile IDs you want to fetch data for.",
+        "order": 6,
         "type": "array",
         "items": {
           "type": "integer"
         }
       },
       "report_wait_timeout": {
-        "title": "Report Wait Timeout",
+        "title": "Report Wait Timeout *",
         "description": "Timeout duration in minutes for Reports. Eg. 30",
         "default": 30,
         "examples": [30, 120],
+        "order": 7,
         "type": "integer"
       },
       "report_generation_max_retries": {
-        "title": "Report Generation Maximum Retries",
+        "title": "Report Generation Maximum Retries *",
         "description": "Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
         "default": 5,
         "examples": [5, 10, 15],
+        "order": 8,
         "type": "integer"
       }
     },

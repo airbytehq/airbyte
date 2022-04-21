@@ -24,17 +24,20 @@ class AmazonAdsConfig(BaseModel):
     client_id: str = Field(
         title="Client ID",
         description="The Client ID of your Amazon Ads developer application.",
+        order=1,
     )
     client_secret: str = Field(
         title="Client Secret",
         description="The Client Secret of your Amazon Ads developer application.",
         airbyte_secret=True,
+        order=2,
     )
 
     refresh_token: str = Field(
         title="Refresh Token",
         description='Amazon Ads Refresh Token. See the <a href="https://docs.airbyte.com/integrations/sources/amazon-ads">docs</a> for more information on how to obtain this token.',
         airbyte_secret=True,
+        order=3,
     )
 
     start_date: str = Field(
@@ -42,28 +45,34 @@ class AmazonAdsConfig(BaseModel):
         title="Start Date",
         description="The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
         examples=["2022-10-10", "2022-10-22"],
+        order=4,
     )
 
-    region: AmazonAdsRegion = Field(title="Region", description="Region to pull data from (EU/NA/FE/SANDBOX)", default=AmazonAdsRegion.NA)
+    region: AmazonAdsRegion = Field(
+        title="Region *", description="Region to pull data from (EU/NA/FE/SANDBOX)", default=AmazonAdsRegion.NA, order=5
+    )
 
     profiles: List[int] = Field(
         None,
         title="Profile IDs",
         description="Profile IDs you want to fetch data for.",
+        order=6,
     )
 
     report_wait_timeout: int = Field(
-        title="Report Wait Timeout",
+        title="Report Wait Timeout *",
         description="Timeout duration in minutes for Reports. Eg. 30",
         default=30,
         examples=[30, 120],
+        order=7,
     )
 
     report_generation_max_retries: int = Field(
-        title="Report Generation Maximum Retries",
+        title="Report Generation Maximum Retries *",
         description="Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
         default=5,
         examples=[5, 10, 15],
+        order=8,
     )
 
     @classmethod
@@ -71,8 +80,9 @@ class AmazonAdsConfig(BaseModel):
         schema = super().schema(**kwargs)
         expand_refs(schema)
         # Transform pydantic generated enum for region
-        schema["properties"]["region"] = {**schema["properties"]["region"]["allOf"][0], **schema["properties"]["region"]}
-        schema["properties"]["region"].pop("allOf")
+        if schema["properties"]["region"].get("allOf"):
+            schema["properties"]["region"] = {**schema["properties"]["region"]["allOf"][0], **schema["properties"]["region"]}
+            schema["properties"]["region"].pop("allOf")
         return schema
 
 
