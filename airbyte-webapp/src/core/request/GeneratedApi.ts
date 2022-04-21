@@ -1414,7 +1414,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
 /**
  * @summary Creates a workspace
  */
-export const createWorkspace = (workspaceCreate: WorkspaceCreate, options: SecondParameter<typeof apiOverride>) => {
+export const createWorkspace = (workspaceCreate: WorkspaceCreate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<WorkspaceRead>(
     {
       url: `/v1/workspaces/create`,
@@ -1431,7 +1431,7 @@ export const createWorkspace = (workspaceCreate: WorkspaceCreate, options: Secon
  */
 export const deleteWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -1447,7 +1447,7 @@ export const deleteWorkspace = (
 /**
  * @summary List all workspaces registered in the current Airbyte deployment
  */
-export const listWorkspaces = (options: SecondParameter<typeof apiOverride>) => {
+export const listWorkspaces = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<WorkspaceReadList>({ url: `/v1/workspaces/list`, method: "post" }, options);
 };
 
@@ -1456,7 +1456,7 @@ export const listWorkspaces = (options: SecondParameter<typeof apiOverride>) => 
  */
 export const getWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WorkspaceRead>(
     {
@@ -1472,7 +1472,7 @@ export const getWorkspace = (
 /**
  * @summary Find workspace by slug
  */
-export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody, options: SecondParameter<typeof apiOverride>) => {
+export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<WorkspaceRead>(
     {
       url: `/v1/workspaces/get_by_slug`,
@@ -1487,7 +1487,7 @@ export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody, options: Se
 /**
  * @summary Update workspace state
  */
-export const updateWorkspace = (workspaceUpdate: WorkspaceUpdate, options: SecondParameter<typeof apiOverride>) => {
+export const updateWorkspace = (workspaceUpdate: WorkspaceUpdate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<WorkspaceRead>(
     {
       url: `/v1/workspaces/update`,
@@ -1504,7 +1504,7 @@ export const updateWorkspace = (workspaceUpdate: WorkspaceUpdate, options: Secon
  */
 export const updateWorkspaceName = (
   workspaceUpdateName: WorkspaceUpdateName,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WorkspaceRead>(
     {
@@ -1522,7 +1522,7 @@ export const updateWorkspaceName = (
  */
 export const updateWorkspaceFeedback = (
   workspaceGiveFeedback: WorkspaceGiveFeedback,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -1538,7 +1538,7 @@ export const updateWorkspaceFeedback = (
 /**
  * @summary Try sending a notifications
  */
-export const tryNotificationConfig = (notification: Notification, options: SecondParameter<typeof apiOverride>) => {
+export const tryNotificationConfig = (notification: Notification, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<NotificationRead>(
     {
       url: `/v1/notifications/try`,
@@ -1555,7 +1555,7 @@ export const tryNotificationConfig = (notification: Notification, options: Secon
  */
 export const createSourceDefinition = (
   sourceDefinitionCreate: SourceDefinitionCreate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
@@ -1573,7 +1573,7 @@ export const createSourceDefinition = (
  */
 export const updateSourceDefinition = (
   sourceDefinitionUpdate: SourceDefinitionUpdate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
@@ -1589,7 +1589,7 @@ export const updateSourceDefinition = (
 /**
  * @summary List all the sourceDefinitions the current Airbyte deployment is configured to use
  */
-export const listSourceDefinitions = (options: SecondParameter<typeof apiOverride>) => {
+export const listSourceDefinitions = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list`, method: "post" }, options);
 };
 
@@ -1597,7 +1597,7 @@ export const listSourceDefinitions = (options: SecondParameter<typeof apiOverrid
  * Guaranteed to retrieve the latest information on supported sources.
  * @summary List the latest sourceDefinitions Airbyte supports
  */
-export const listLatestSourceDefinitions = (options: SecondParameter<typeof apiOverride>) => {
+export const listLatestSourceDefinitions = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list_latest`, method: "post" }, options);
 };
 
@@ -1606,7 +1606,7 @@ export const listLatestSourceDefinitions = (options: SecondParameter<typeof apiO
  */
 export const getSourceDefinition = (
   sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
@@ -1624,7 +1624,7 @@ export const getSourceDefinition = (
  */
 export const deleteSourceDefinition = (
   sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -1642,7 +1642,7 @@ export const deleteSourceDefinition = (
  */
 export const listPrivateSourceDefinitions = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<PrivateSourceDefinitionReadList>(
     {
@@ -1660,7 +1660,7 @@ export const listPrivateSourceDefinitions = (
  */
 export const listSourceDefinitionsForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionReadList>(
     {
@@ -1678,7 +1678,7 @@ export const listSourceDefinitionsForWorkspace = (
  */
 export const createCustomSourceDefinition = (
   customSourceDefinitionCreate: CustomSourceDefinitionCreate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
@@ -1696,7 +1696,7 @@ export const createCustomSourceDefinition = (
  */
 export const getSourceDefinitionForWorkspace = (
   sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
@@ -1714,7 +1714,7 @@ export const getSourceDefinitionForWorkspace = (
  */
 export const updateCustomSourceDefinition = (
   customSourceDefinitionUpdate: CustomSourceDefinitionUpdate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionRead>(
     {
@@ -1732,7 +1732,7 @@ export const updateCustomSourceDefinition = (
  */
 export const deleteCustomSourceDefinition = (
   sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -1750,7 +1750,7 @@ export const deleteCustomSourceDefinition = (
  */
 export const grantSourceDefinitionToWorkspace = (
   sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<PrivateSourceDefinitionRead>(
     {
@@ -1768,7 +1768,7 @@ export const grantSourceDefinitionToWorkspace = (
  */
 export const revokeSourceDefinitionFromWorkspace = (
   sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -1786,7 +1786,7 @@ export const revokeSourceDefinitionFromWorkspace = (
  */
 export const getSourceDefinitionSpecification = (
   sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionSpecificationRead>(
     {
@@ -1802,7 +1802,7 @@ export const getSourceDefinitionSpecification = (
 /**
  * @summary Create a source
  */
-export const createSource = (sourceCreate: SourceCreate, options: SecondParameter<typeof apiOverride>) => {
+export const createSource = (sourceCreate: SourceCreate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceRead>(
     { url: `/v1/sources/create`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceCreate },
     options
@@ -1812,7 +1812,7 @@ export const createSource = (sourceCreate: SourceCreate, options: SecondParamete
 /**
  * @summary Update a source
  */
-export const updateSource = (sourceUpdate: SourceUpdate, options: SecondParameter<typeof apiOverride>) => {
+export const updateSource = (sourceUpdate: SourceUpdate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceRead>(
     { url: `/v1/sources/update`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceUpdate },
     options
@@ -1825,7 +1825,7 @@ export const updateSource = (sourceUpdate: SourceUpdate, options: SecondParamete
  */
 export const listSourcesForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceReadList>(
     {
@@ -1841,7 +1841,7 @@ export const listSourcesForWorkspace = (
 /**
  * @summary Get source
  */
-export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceRead>(
     {
       url: `/v1/sources/get`,
@@ -1856,7 +1856,7 @@ export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options: Sec
 /**
  * @summary Search sources
  */
-export const searchSources = (sourceSearch: SourceSearch, options: SecondParameter<typeof apiOverride>) => {
+export const searchSources = (sourceSearch: SourceSearch, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceReadList>(
     { url: `/v1/sources/search`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceSearch },
     options
@@ -1866,7 +1866,10 @@ export const searchSources = (sourceSearch: SourceSearch, options: SecondParamet
 /**
  * @summary Clone source
  */
-export const cloneSource = (sourceIdRequestBody: SourceIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+export const cloneSource = (
+  sourceIdRequestBody: SourceIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
   return apiOverride<SourceRead>(
     {
       url: `/v1/sources/clone`,
@@ -1883,7 +1886,7 @@ export const cloneSource = (sourceIdRequestBody: SourceIdRequestBody, options: S
  */
 export const deleteSource = (
   sourceIdRequestBody: SourceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -1901,7 +1904,7 @@ export const deleteSource = (
  */
 export const checkConnectionToSource = (
   sourceIdRequestBody: SourceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
@@ -1919,7 +1922,7 @@ export const checkConnectionToSource = (
  */
 export const checkConnectionToSourceForUpdate = (
   sourceUpdate: SourceUpdate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
@@ -1937,7 +1940,7 @@ export const checkConnectionToSourceForUpdate = (
  */
 export const discoverSchemaForSource = (
   sourceDiscoverSchemaRequestBody: SourceDiscoverSchemaRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDiscoverSchemaRead>(
     {
@@ -1955,7 +1958,7 @@ export const discoverSchemaForSource = (
  */
 export const createDestinationDefinition = (
   destinationDefinitionCreate: DestinationDefinitionCreate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
@@ -1973,7 +1976,7 @@ export const createDestinationDefinition = (
  */
 export const updateDestinationDefinition = (
   destinationDefinitionUpdate: DestinationDefinitionUpdate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
@@ -1989,7 +1992,7 @@ export const updateDestinationDefinition = (
 /**
  * @summary List all the destinationDefinitions the current Airbyte deployment is configured to use
  */
-export const listDestinationDefinitions = (options: SecondParameter<typeof apiOverride>) => {
+export const listDestinationDefinitions = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<DestinationDefinitionReadList>(
     { url: `/v1/destination_definitions/list`, method: "post" },
     options
@@ -2000,7 +2003,7 @@ export const listDestinationDefinitions = (options: SecondParameter<typeof apiOv
  * Guaranteed to retrieve the latest information on supported destinations.
  * @summary List the latest destinationDefinitions Airbyte supports
  */
-export const listLatestDestinationDefinitions = (options: SecondParameter<typeof apiOverride>) => {
+export const listLatestDestinationDefinitions = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<DestinationDefinitionReadList>(
     { url: `/v1/destination_definitions/list_latest`, method: "post" },
     options
@@ -2012,7 +2015,7 @@ export const listLatestDestinationDefinitions = (options: SecondParameter<typeof
  */
 export const getDestinationDefinition = (
   destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
@@ -2030,7 +2033,7 @@ export const getDestinationDefinition = (
  */
 export const deleteDestinationDefinition = (
   destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -2048,7 +2051,7 @@ export const deleteDestinationDefinition = (
  */
 export const listPrivateDestinationDefinitions = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<PrivateDestinationDefinitionReadList>(
     {
@@ -2066,7 +2069,7 @@ export const listPrivateDestinationDefinitions = (
  */
 export const listDestinationDefinitionsForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionReadList>(
     {
@@ -2084,7 +2087,7 @@ export const listDestinationDefinitionsForWorkspace = (
  */
 export const createCustomDestinationDefinition = (
   customDestinationDefinitionCreate: CustomDestinationDefinitionCreate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
@@ -2102,7 +2105,7 @@ export const createCustomDestinationDefinition = (
  */
 export const getDestinationDefinitionForWorkspace = (
   destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
@@ -2120,7 +2123,7 @@ export const getDestinationDefinitionForWorkspace = (
  */
 export const updateCustomDestinationDefinition = (
   customDestinationDefinitionUpdate: CustomDestinationDefinitionUpdate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionRead>(
     {
@@ -2138,7 +2141,7 @@ export const updateCustomDestinationDefinition = (
  */
 export const deleteCustomDestinationDefinition = (
   destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -2156,7 +2159,7 @@ export const deleteCustomDestinationDefinition = (
  */
 export const grantDestinationDefinitionToWorkspace = (
   destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<PrivateDestinationDefinitionRead>(
     {
@@ -2174,7 +2177,7 @@ export const grantDestinationDefinitionToWorkspace = (
  */
 export const revokeDestinationDefinitionFromWorkspace = (
   destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -2192,7 +2195,7 @@ export const revokeDestinationDefinitionFromWorkspace = (
  */
 export const getDestinationDefinitionSpecification = (
   destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionSpecificationRead>(
     {
@@ -2210,7 +2213,7 @@ export const getDestinationDefinitionSpecification = (
  */
 export const createDestination = (
   destinationCreate: DestinationCreate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationRead>(
     {
@@ -2228,7 +2231,7 @@ export const createDestination = (
  */
 export const updateDestination = (
   destinationUpdate: DestinationUpdate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationRead>(
     {
@@ -2246,7 +2249,7 @@ export const updateDestination = (
  */
 export const listDestinationsForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationReadList>(
     {
@@ -2264,7 +2267,7 @@ export const listDestinationsForWorkspace = (
  */
 export const getDestination = (
   destinationIdRequestBody: DestinationIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationRead>(
     {
@@ -2282,7 +2285,7 @@ export const getDestination = (
  */
 export const searchDestinations = (
   destinationSearch: DestinationSearch,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationReadList>(
     {
@@ -2300,7 +2303,7 @@ export const searchDestinations = (
  */
 export const checkConnectionToDestination = (
   destinationIdRequestBody: DestinationIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
@@ -2318,7 +2321,7 @@ export const checkConnectionToDestination = (
  */
 export const checkConnectionToDestinationForUpdate = (
   destinationUpdate: DestinationUpdate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
@@ -2336,7 +2339,7 @@ export const checkConnectionToDestinationForUpdate = (
  */
 export const deleteDestination = (
   destinationIdRequestBody: DestinationIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -2354,7 +2357,7 @@ export const deleteDestination = (
  */
 export const cloneDestination = (
   destinationIdRequestBody: DestinationIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationRead>(
     {
@@ -2370,7 +2373,7 @@ export const cloneDestination = (
 /**
  * @summary Create a connection between a source and a destination
  */
-export const createConnection = (connectionCreate: ConnectionCreate, options: SecondParameter<typeof apiOverride>) => {
+export const createConnection = (connectionCreate: ConnectionCreate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<ConnectionRead>(
     {
       url: `/v1/connections/create`,
@@ -2385,7 +2388,7 @@ export const createConnection = (connectionCreate: ConnectionCreate, options: Se
 /**
  * @summary Update a connection
  */
-export const updateConnection = (connectionUpdate: ConnectionUpdate, options: SecondParameter<typeof apiOverride>) => {
+export const updateConnection = (connectionUpdate: ConnectionUpdate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<ConnectionRead>(
     {
       url: `/v1/connections/update`,
@@ -2403,7 +2406,7 @@ export const updateConnection = (connectionUpdate: ConnectionUpdate, options: Se
  */
 export const listConnectionsForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<ConnectionReadList>(
     {
@@ -2422,7 +2425,7 @@ export const listConnectionsForWorkspace = (
  */
 export const listAllConnectionsForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<ConnectionReadList>(
     {
@@ -2440,7 +2443,7 @@ export const listAllConnectionsForWorkspace = (
  */
 export const getConnection = (
   connectionIdRequestBody: ConnectionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<ConnectionRead>(
     {
@@ -2458,7 +2461,7 @@ export const getConnection = (
  */
 export const getState = (
   connectionIdRequestBody: ConnectionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<ConnectionState>(
     {
@@ -2474,7 +2477,10 @@ export const getState = (
 /**
  * @summary Search connections
  */
-export const searchConnections = (connectionSearch: ConnectionSearch, options: SecondParameter<typeof apiOverride>) => {
+export const searchConnections = (
+  connectionSearch: ConnectionSearch,
+  options?: SecondParameter<typeof apiOverride>
+) => {
   return apiOverride<ConnectionReadList>(
     {
       url: `/v1/connections/search`,
@@ -2491,7 +2497,7 @@ export const searchConnections = (connectionSearch: ConnectionSearch, options: S
  */
 export const deleteConnection = (
   connectionIdRequestBody: ConnectionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -2509,7 +2515,7 @@ export const deleteConnection = (
  */
 export const syncConnection = (
   connectionIdRequestBody: ConnectionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<JobInfoRead>(
     {
@@ -2527,7 +2533,7 @@ export const syncConnection = (
  */
 export const resetConnection = (
   connectionIdRequestBody: ConnectionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<JobInfoRead>(
     {
@@ -2545,7 +2551,7 @@ export const resetConnection = (
  */
 export const checkOperation = (
   operatorConfiguration: OperatorConfiguration,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CheckOperationRead>(
     {
@@ -2561,7 +2567,7 @@ export const checkOperation = (
 /**
  * @summary Create an operation to be applied as part of a connection pipeline
  */
-export const createOperation = (operationCreate: OperationCreate, options: SecondParameter<typeof apiOverride>) => {
+export const createOperation = (operationCreate: OperationCreate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<OperationRead>(
     {
       url: `/v1/operations/create`,
@@ -2576,7 +2582,7 @@ export const createOperation = (operationCreate: OperationCreate, options: Secon
 /**
  * @summary Update an operation
  */
-export const updateOperation = (operationUpdate: OperationUpdate, options: SecondParameter<typeof apiOverride>) => {
+export const updateOperation = (operationUpdate: OperationUpdate, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<OperationRead>(
     {
       url: `/v1/operations/update`,
@@ -2594,7 +2600,7 @@ export const updateOperation = (operationUpdate: OperationUpdate, options: Secon
  */
 export const listOperationsForConnection = (
   connectionIdRequestBody: ConnectionIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<OperationReadList>(
     {
@@ -2612,7 +2618,7 @@ export const listOperationsForConnection = (
  */
 export const getOperation = (
   operationIdRequestBody: OperationIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<OperationRead>(
     {
@@ -2630,7 +2636,7 @@ export const getOperation = (
  */
 export const deleteOperation = (
   operationIdRequestBody: OperationIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -2648,7 +2654,7 @@ export const deleteOperation = (
  */
 export const executeSourceCheckConnection = (
   sourceCoreConfig: SourceCoreConfig,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
@@ -2666,7 +2672,7 @@ export const executeSourceCheckConnection = (
  */
 export const executeSourceDiscoverSchema = (
   sourceCoreConfig: SourceCoreConfig,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDiscoverSchemaRead>(
     {
@@ -2684,7 +2690,7 @@ export const executeSourceDiscoverSchema = (
  */
 export const executeDestinationCheckConnection = (
   destinationCoreConfig: DestinationCoreConfig,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CheckConnectionRead>(
     {
@@ -2702,7 +2708,7 @@ export const executeDestinationCheckConnection = (
  */
 export const listMigrations = (
   dbMigrationRequestBody: DbMigrationRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DbMigrationReadList>(
     {
@@ -2720,7 +2726,7 @@ export const listMigrations = (
  */
 export const executeMigrations = (
   dbMigrationRequestBody: DbMigrationRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DbMigrationExecutionRead>(
     {
@@ -2739,7 +2745,7 @@ export const executeMigrations = (
  */
 export const setInstancewideSourceOauthParams = (
   setInstancewideSourceOauthParamsRequestBody: SetInstancewideSourceOauthParamsRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -2757,7 +2763,7 @@ export const setInstancewideSourceOauthParams = (
  */
 export const getSourceOAuthConsent = (
   sourceOauthConsentRequest: SourceOauthConsentRequest,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<OAuthConsentRead>(
     {
@@ -2775,7 +2781,7 @@ export const getSourceOAuthConsent = (
  */
 export const completeSourceOAuth = (
   completeSourceOauthRequest: CompleteSourceOauthRequest,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CompleteOAuthResponse>(
     {
@@ -2793,7 +2799,7 @@ export const completeSourceOAuth = (
  */
 export const getDestinationOAuthConsent = (
   destinationOauthConsentRequest: DestinationOauthConsentRequest,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<OAuthConsentRead>(
     {
@@ -2811,7 +2817,7 @@ export const getDestinationOAuthConsent = (
  */
 export const completeDestinationOAuth = (
   completeDestinationOAuthRequest: CompleteDestinationOAuthRequest,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<CompleteOAuthResponse>(
     {
@@ -2830,7 +2836,7 @@ export const completeDestinationOAuth = (
  */
 export const setInstancewideDestinationOauthParams = (
   setInstancewideDestinationOauthParamsRequestBody: SetInstancewideDestinationOauthParamsRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<void>(
     {
@@ -2848,7 +2854,7 @@ export const setInstancewideDestinationOauthParams = (
  */
 export const webBackendListConnectionsForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WebBackendConnectionReadList>(
     {
@@ -2866,7 +2872,7 @@ export const webBackendListConnectionsForWorkspace = (
  */
 export const webBackendListAllConnectionsForWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WebBackendConnectionReadList>(
     {
@@ -2884,7 +2890,7 @@ export const webBackendListAllConnectionsForWorkspace = (
  */
 export const webBackendGetConnection = (
   webBackendConnectionRequestBody: WebBackendConnectionRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WebBackendConnectionRead>(
     {
@@ -2902,7 +2908,7 @@ export const webBackendGetConnection = (
  */
 export const webBackendCreateConnection = (
   webBackendConnectionCreate: WebBackendConnectionCreate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WebBackendConnectionRead>(
     {
@@ -2920,7 +2926,7 @@ export const webBackendCreateConnection = (
  */
 export const webBackendUpdateConnection = (
   webBackendConnectionUpdate: WebBackendConnectionUpdate,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WebBackendConnectionRead>(
     {
@@ -2938,7 +2944,7 @@ export const webBackendUpdateConnection = (
  */
 export const webBackendSearchConnections = (
   webBackendConnectionSearch: WebBackendConnectionSearch,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WebBackendConnectionReadList>(
     {
@@ -2956,7 +2962,7 @@ export const webBackendSearchConnections = (
  */
 export const webBackendGetWorkspaceState = (
   webBackendWorkspaceState: WebBackendWorkspaceState,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<WebBackendWorkspaceStateResult>(
     {
@@ -2972,7 +2978,7 @@ export const webBackendGetWorkspaceState = (
 /**
  * @summary Returns recent jobs for a connection. Jobs are returned in descending order by createdAt.
  */
-export const listJobsFor = (jobListRequestBody: JobListRequestBody, options: SecondParameter<typeof apiOverride>) => {
+export const listJobsFor = (jobListRequestBody: JobListRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobReadList>(
     { url: `/v1/jobs/list`, method: "post", headers: { "Content-Type": "application/json" }, data: jobListRequestBody },
     options
@@ -2982,7 +2988,7 @@ export const listJobsFor = (jobListRequestBody: JobListRequestBody, options: Sec
 /**
  * @summary Get information about a job
  */
-export const getJobInfo = (jobIdRequestBody: JobIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+export const getJobInfo = (jobIdRequestBody: JobIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobInfoRead>(
     { url: `/v1/jobs/get`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
     options
@@ -2992,7 +2998,7 @@ export const getJobInfo = (jobIdRequestBody: JobIdRequestBody, options: SecondPa
 /**
  * @summary Cancels a job
  */
-export const cancelJob = (jobIdRequestBody: JobIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+export const cancelJob = (jobIdRequestBody: JobIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobInfoRead>(
     { url: `/v1/jobs/cancel`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
     options
@@ -3002,7 +3008,7 @@ export const cancelJob = (jobIdRequestBody: JobIdRequestBody, options: SecondPar
 /**
  * @summary Gets all information needed to debug this job
  */
-export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobDebugInfoRead>(
     {
       url: `/v1/jobs/get_debug_info`,
@@ -3017,14 +3023,14 @@ export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody, options: Sec
 /**
  * @summary Health Check
  */
-export const getHealthCheck = (options: SecondParameter<typeof apiOverride>) => {
+export const getHealthCheck = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<HealthCheckRead>({ url: `/v1/health`, method: "get" }, options);
 };
 
 /**
  * @summary Get logs
  */
-export const getLogs = (logsRequestBody: LogsRequestBody, options: SecondParameter<typeof apiOverride>) => {
+export const getLogs = (logsRequestBody: LogsRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<Blob>(
     {
       url: `/v1/logs/get`,
@@ -3040,21 +3046,21 @@ export const getLogs = (logsRequestBody: LogsRequestBody, options: SecondParamet
 /**
  * @summary Returns the openapi specification
  */
-export const getOpenApiSpec = (options: SecondParameter<typeof apiOverride>) => {
+export const getOpenApiSpec = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<Blob>({ url: `/v1/openapi`, method: "get", responseType: "blob" }, options);
 };
 
 /**
  * @summary Export Airbyte Configuration and Data Archive
  */
-export const exportArchive = (options: SecondParameter<typeof apiOverride>) => {
+export const exportArchive = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<AirbyteArchive>({ url: `/v1/deployment/export`, method: "post" }, options);
 };
 
 /**
  * @summary Import Airbyte Configuration and Data Archive
  */
-export const importArchive = (airbyteArchive: AirbyteArchive, options: SecondParameter<typeof apiOverride>) => {
+export const importArchive = (airbyteArchive: AirbyteArchive, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<ImportRead>(
     {
       url: `/v1/deployment/import`,
@@ -3071,7 +3077,7 @@ export const importArchive = (airbyteArchive: AirbyteArchive, options: SecondPar
  */
 export const exportWorkspace = (
   workspaceIdRequestBody: WorkspaceIdRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<AirbyteArchive>(
     {
@@ -3087,7 +3093,10 @@ export const exportWorkspace = (
 /**
  * @summary Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
  */
-export const uploadArchiveResource = (airbyteArchive: AirbyteArchive, options: SecondParameter<typeof apiOverride>) => {
+export const uploadArchiveResource = (
+  airbyteArchive: AirbyteArchive,
+  options?: SecondParameter<typeof apiOverride>
+) => {
   return apiOverride<UploadRead>(
     {
       url: `/v1/deployment/upload_archive_resource`,
@@ -3105,7 +3114,7 @@ export const uploadArchiveResource = (airbyteArchive: AirbyteArchive, options: S
  */
 export const importIntoWorkspace = (
   importRequestBody: ImportRequestBody,
-  options: SecondParameter<typeof apiOverride>
+  options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<ImportRead>(
     {
