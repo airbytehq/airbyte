@@ -99,6 +99,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       configBuilder.put("password", config.get("password").asText());
     }
 
+    // Check for optional params
     if (config.has(JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY).asText());
     }
