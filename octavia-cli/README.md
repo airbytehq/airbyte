@@ -358,12 +358,12 @@ The telemetry sends data about:
 * Success or failure of the command run and the error type (not the error payload).
 * The current Airbyte workspace id if the user has not set the *anonymous data collection* on their Airbyte instance.
 
-You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment to `False` or using the `--disable-telemetry` flag.
+You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment variable to `False` or using the `--disable-telemetry` flag.
 
 ## Changelog
 
 | Version | Date       | Description       | PR                                                       |
 |---------|------------|-------------------|----------------------------------------------------------|
-| 0.36.1  | 2022-04-15 | Improve telemetry | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.36.2  | 2022-04-15 | Improve telemetry | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
 | 0.35.68 | 2022-04-12 | Add telemetry     | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
 | 0.35.61 | 2022-04-07 | Alpha release     | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
