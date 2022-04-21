@@ -21,6 +21,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.Test;
 
 public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -79,6 +82,26 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new OracleTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
                                                      final String streamName,
                                                      final String namespace)
@@ -92,19 +115,6 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     final JsonNode invalidConfig = getConfig();
     ((ObjectNode) invalidConfig).put("password", "wrong password");
     return invalidConfig;
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)

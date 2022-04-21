@@ -6,7 +6,7 @@ import * as yup from "yup";
 
 import ContentCard from "components/ContentCard";
 import { Button, ControlLabels, DropDown } from "components";
-import ImageBlock from "components/ImageBlock";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
@@ -56,7 +56,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
         return {
           label: item.name,
           value: item.sourceId,
-          img: <ImageBlock img={sourceDef?.icon} />,
+          img: <ConnectorIcon icon={sourceDef?.icon} />,
         };
       });
     } else {
@@ -67,7 +67,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
         return {
           label: item.name,
           value: item.destinationId,
-          img: <ImageBlock img={destinationDef?.icon} />,
+          img: <ConnectorIcon icon={destinationDef?.icon} />,
         };
       });
     }
