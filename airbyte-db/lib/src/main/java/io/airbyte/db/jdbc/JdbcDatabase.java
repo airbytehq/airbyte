@@ -44,7 +44,9 @@ public abstract class JdbcDatabase extends SqlDatabase {
 
   @Override
   public void execute(final String sql) throws SQLException {
-    execute(connection -> connection.createStatement().execute(sql));
+    execute(connection -> {
+      connection.createStatement().execute(sql);
+    });
   }
 
   public void executeWithinTransaction(final List<String> queries) throws SQLException {
