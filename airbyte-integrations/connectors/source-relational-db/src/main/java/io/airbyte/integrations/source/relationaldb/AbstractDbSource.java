@@ -74,10 +74,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     } catch (final ConnectionWrapperErrorException ex) {
       LOGGER.info("Exception while checking connection: ", ex);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
-              .getErrorMessage(ex.getCustomErrorCode(), ex);
+          .getErrorMessage(ex.getCustomErrorCode(), ex);
       return new AirbyteConnectionStatus()
-              .withStatus(Status.FAILED)
-              .withMessage(messages);
+          .withStatus(Status.FAILED)
+          .withMessage(messages);
     } catch (final Exception e) {
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
