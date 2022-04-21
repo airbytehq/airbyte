@@ -1044,6 +1044,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
+            .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
             .set(CONNECTION.CREATED_AT, timestamp)
             .set(CONNECTION.UPDATED_AT, timestamp)
             .execute();

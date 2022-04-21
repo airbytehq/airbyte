@@ -380,6 +380,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
+    connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
 
     return connectionCreate;
   }
