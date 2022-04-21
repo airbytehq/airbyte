@@ -11,7 +11,7 @@ export class LogsRequestError extends CommonRequestError {
     this._status = 400;
   }
 
-  static extractJobInfo(error: any): JobWithAttemptsRead | null {
+  static extractJobInfo(error: unknown): JobWithAttemptsRead | null {
     if (!error) {
       return null;
     }
@@ -19,6 +19,6 @@ export class LogsRequestError extends CommonRequestError {
   }
 }
 
-export function isLogsRequestError(error: { __type?: string }): error is LogsRequestError {
-  return error.__type === "common.errorWithLogs";
+export function isLogsRequestError(error: unknown): error is LogsRequestError {
+  return (error as LogsRequestError).__type === "common.errorWithLogs";
 }
