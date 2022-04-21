@@ -21,16 +21,26 @@ export class DestinationService extends AirbyteRequestService {
       destinationId?: string;
       connectionConfiguration?: ConnectionConfiguration;
     },
-    // @ts-expect-error This is unusable with the generated requests
     requestParams?: RequestInit
   ) {
-    // TODO: Fix params logic
     if (!params.destinationId) {
-      return executeDestinationCheckConnection(params as DestinationCoreConfig, this.requestOptions);
+      return executeDestinationCheckConnection(params as DestinationCoreConfig, {
+        ...this.requestOptions,
+        signal: requestParams?.signal,
+      });
     } else if (params.connectionConfiguration) {
-      return checkConnectionToDestinationForUpdate(params as DestinationUpdate, this.requestOptions);
+      return checkConnectionToDestinationForUpdate(params as DestinationUpdate, {
+        ...this.requestOptions,
+        signal: requestParams?.signal,
+      });
     } else {
-      return checkConnectionToDestination({ destinationId: params.destinationId }, this.requestOptions);
+      return checkConnectionToDestination(
+        { destinationId: params.destinationId },
+        {
+          ...this.requestOptions,
+          signal: requestParams?.signal,
+        }
+      );
     }
   }
 
