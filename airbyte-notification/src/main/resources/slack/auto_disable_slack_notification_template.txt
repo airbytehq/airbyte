@@ -1,5 +1,3 @@
-Your connection from %s to %s was disabled because it failed consecutively 100 times or that there were only failed jobs in the past 14 days.
+Your connection from %s to %s was automatically disabled because it failed 100 times consecutively or has been failing for 14 days in a row.
 
-Please address the failing issues and re-enable the connection.
-
-The most recent attempted %s You can access its logs here: %s
+Please address the failing issues to ensure your syncs continue to run. The most recent attempted %s You can access its logs here: %s.

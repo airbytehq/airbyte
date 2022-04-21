@@ -75,13 +75,16 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
 
         if (numFailures == 0) {
           return new AutoDisableConnectionOutput(false);
-        } else if (numFailures == configs.getMaxFailedJobsInARowBeforeConnectionDisable()) {
+        } else if (numFailures >= configs.getMaxFailedJobsInARowBeforeConnectionDisable()) {
           // disable connection if max consecutive failed jobs limit has been hit
           disableConnection(input.getConnectionId(), lastJob);
           return new AutoDisableConnectionOutput(true);
         } else if (numFailures == maxFailedJobsInARowBeforeConnectionDisableWarning) {
           // warn if number of consecutive failures hits 50% of MaxFailedJobsInARow
-          jobNotifier.autoDisableConnectionAlertWithoutCustomerioConfig(CONNECTION_DISABLED_WARNING_NOTIFICATION, lastJob);
+          jobNotifier.autoDisableConnectionWarning(lastJob);
+          // explicitly send to email if customer.io api key is set, since email notification cannot be set by
+          // configs through UI yet
+          jobNotifier.notifyJobByEmail(null, CONNECTION_DISABLED_WARNING_NOTIFICATION, lastJob);
           return new AutoDisableConnectionOutput(false);
         }
 
@@ -126,7 +129,10 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
     if (numFailures > 1 && checkIfWarningPreviouslySent(successTimestamp, maxDaysOfOnlyFailedJobsBeforeWarning, firstJob, jobs)) {
       return;
     }
-    jobNotifier.autoDisableConnectionAlertWithoutCustomerioConfig(CONNECTION_DISABLED_WARNING_NOTIFICATION, lastJob);
+    jobNotifier.autoDisableConnectionWarning(lastJob);
+    // explicitly send to email if customer.io api key is set, since email notification cannot be set by
+    // configs through UI yet
+    jobNotifier.notifyJobByEmail(null, CONNECTION_DISABLED_WARNING_NOTIFICATION, lastJob);
   }
 
   // Checks to see if warning should have been sent in the previous failure, if so skip sending of
@@ -173,7 +179,10 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
     standardSync.setStatus(Status.INACTIVE);
     configRepository.writeStandardSync(standardSync);
 
-    jobNotifier.autoDisableConnectionAlertWithoutCustomerioConfig(CONNECTION_DISABLED_NOTIFICATION, lastJob);
+    jobNotifier.autoDisableConnection(lastJob);
+    // explicitly send to email if customer.io api key is set, since email notification cannot be set by
+    // configs through UI yet
+    jobNotifier.notifyJobByEmail(null, CONNECTION_DISABLED_NOTIFICATION, lastJob);
   }
 
 }
