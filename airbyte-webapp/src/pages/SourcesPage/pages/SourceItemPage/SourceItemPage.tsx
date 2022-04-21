@@ -63,8 +63,8 @@ const SourceItemPage: React.FC = () => {
   );
 
   const onSelectStep = (id: string) => {
-    const path = id === StepsTypes.OVERVIEW ? "/" : `/${id.toLowerCase()}`;
-    push(`/source/${source.sourceId}${path}`);
+    const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
+    push(path);
   };
 
   const onSelect = (data: DropDownRow.IDataItem) => {
