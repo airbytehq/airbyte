@@ -9,9 +9,11 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import { useInitService } from "services/useInitService";
 import { equal } from "utils/objects";
 
+import { useConfig } from "../../config";
 import { OperationCreate, WebBackendConnectionRead, WebBackendConnectionUpdate } from "../../core/request/GeneratedApi";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
@@ -40,12 +42,19 @@ type CreateConnectionProps = {
 
 export type ListConnection = { connections: WebBackendConnectionRead[] };
 
-function useWebConnectionService(): WebBackendConnectionService {
-  return useInitService(() => new WebBackendConnectionService(), []);
+function useWebConnectionService() {
+  const config = useConfig();
+  const middlewares = useDefaultRequestMiddlewares();
+  return useInitService(
+    () => new WebBackendConnectionService(config.apiUrl, middlewares),
+    [config.apiUrl, middlewares]
+  );
 }
 
 function useConnectionService() {
-  return useInitService(() => new ConnectionService(), []);
+  const config = useConfig();
+  const middlewares = useDefaultRequestMiddlewares();
+  return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
 }
 
 export const useConnectionLoad = (

@@ -16,11 +16,11 @@ export class DestinationDefinitionService extends AirbyteRequestService {
   }
 
   public get(destinationDefinitionId: string) {
-    return getDestinationDefinition({ destinationDefinitionId });
+    return getDestinationDefinition({ destinationDefinitionId }, this.requestOptions);
   }
 
   public list(workspaceId: string) {
-    return listDestinationDefinitionsForWorkspace({ workspaceId });
+    return listDestinationDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
   public listLatest(workspaceId: string): Promise<{ destinationDefinitions: DestinationDefinition[] }> {
@@ -31,10 +31,10 @@ export class DestinationDefinitionService extends AirbyteRequestService {
   }
 
   public update(body: DestinationDefinitionUpdate) {
-    return updateDestinationDefinition(body);
+    return updateDestinationDefinition(body, this.requestOptions);
   }
 
   public create(body: DestinationDefinitionCreate) {
-    return createDestinationDefinition(body);
+    return createDestinationDefinition(body, this.requestOptions);
   }
 }

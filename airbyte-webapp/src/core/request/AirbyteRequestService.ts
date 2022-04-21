@@ -5,7 +5,14 @@ import { RequestMiddleware } from "./RequestMiddleware";
 import { VersionError } from "./VersionError";
 
 abstract class AirbyteRequestService {
-  constructor(protected rootUrl: string, private middlewares: RequestMiddleware[] = []) {}
+  constructor(private rootUrl: string, private middlewares: RequestMiddleware[] = []) {}
+
+  protected get requestOptions() {
+    return {
+      config: { apiUrl: this.rootUrl },
+      middlewares: this.middlewares,
+    };
+  }
 
   /** Perform network request */
   public async fetch<T = Response>(url: string, body?: unknown, options?: Partial<RequestInit>): Promise<T> {

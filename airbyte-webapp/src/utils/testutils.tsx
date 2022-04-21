@@ -7,7 +7,7 @@ import { ThemeProvider } from "styled-components";
 
 import en from "locales/en.json";
 import { FeatureService } from "hooks/services/Feature";
-import { configContext, defaultConfig } from "config";
+import { ConfigContext, defaultConfig } from "config";
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test
@@ -26,11 +26,11 @@ export async function render(
   function Wrapper({ children }: WrapperProps) {
     return (
       <TestWrapper>
-        <configContext.Provider value={{ config: defaultConfig }}>
+        <ConfigContext.Provider value={{ config: defaultConfig }}>
           <FeatureService>
             <MemoryRouter>{children}</MemoryRouter>
           </FeatureService>
-        </configContext.Provider>
+        </ConfigContext.Provider>
       </TestWrapper>
     );
   }

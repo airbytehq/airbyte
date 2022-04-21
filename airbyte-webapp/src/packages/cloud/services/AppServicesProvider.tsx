@@ -54,7 +54,6 @@ const ServiceOverrides: React.FC = React.memo(({ children }) => {
   useInjectServices(inject);
 
   const registeredMiddlewares = useGetService("DefaultRequestMiddlewares");
-  console.log({ registeredMiddlewares });
 
   return <ApiServices>{registeredMiddlewares ? <>{children}</> : <LoadingPage />}</ApiServices>;
 });

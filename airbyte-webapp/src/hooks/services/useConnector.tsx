@@ -79,18 +79,16 @@ const useConnector = (): ConnectorService => {
 
 function useGetDestinationService(): DestinationService {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new DestinationService(), [apiUrl, requestAuthMiddleware]);
+  return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
 function useGetSourceService(): SourceService {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new SourceService(), [apiUrl, requestAuthMiddleware]);
+  return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
 type CheckConnectorParams = { signal: AbortSignal } & (

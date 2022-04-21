@@ -16,11 +16,11 @@ export class SourceDefinitionService extends AirbyteRequestService {
   }
 
   public get(sourceDefinitionId: string) {
-    return getSourceDefinition({ sourceDefinitionId });
+    return getSourceDefinition({ sourceDefinitionId }, this.requestOptions);
   }
 
   public list(workspaceId: string) {
-    return listSourceDefinitionsForWorkspace({ workspaceId });
+    return listSourceDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
   public listLatest(workspaceId: string): Promise<{ sourceDefinitions: SourceDefinitionRead[] }> {
@@ -31,10 +31,10 @@ export class SourceDefinitionService extends AirbyteRequestService {
   }
 
   public update(body: SourceDefinitionUpdate) {
-    return updateSourceDefinition(body);
+    return updateSourceDefinition(body, this.requestOptions);
   }
 
   public create(body: SourceDefinitionCreate) {
-    return createSourceDefinition(body);
+    return createSourceDefinition(body, this.requestOptions);
   }
 }

@@ -12,6 +12,7 @@ import { DestinationAuthService } from "core/domain/connector/DestinationAuthSer
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { SourceAuthService } from "core/domain/connector/SourceAuthService";
 
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import useRouter from "../useRouter";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -52,8 +53,17 @@ export function useConnectorAuth(): {
   const { oauthRedirectUrl } = useConfig();
 
   // TODO: move to separate initFacade and use refs instead
-  const sourceAuthService = useMemo(() => new SourceAuthService(), []);
-  const destinationAuthService = useMemo(() => new DestinationAuthService(), []);
+  const { apiUrl } = useConfig();
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+
+  const sourceAuthService = useMemo(
+    () => new SourceAuthService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
+  const destinationAuthService = useMemo(
+    () => new DestinationAuthService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
 
   return {
     getConsentUrl: async (

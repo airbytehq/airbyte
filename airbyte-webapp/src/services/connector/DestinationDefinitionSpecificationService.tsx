@@ -15,12 +15,14 @@ export const destinationDefinitionSpecificationKeys = {
   detail: (id: string | number) => [...destinationDefinitionSpecificationKeys.all, "details", id] as const,
 };
 
-function useGetService(): DestinationDefinitionSpecificationService {
+function useGetService() {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(() => new DestinationDefinitionSpecificationService(), [apiUrl, requestAuthMiddleware]);
+  return useInitService(
+    () => new DestinationDefinitionSpecificationService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
 }
 
 export const useGetDestinationDefinitionSpecification = (id: string): DestinationDefinitionSpecificationRead => {

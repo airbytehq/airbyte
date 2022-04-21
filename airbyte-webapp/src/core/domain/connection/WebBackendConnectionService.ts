@@ -1,3 +1,4 @@
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   WebBackendConnectionCreate,
   WebBackendConnectionUpdate,
@@ -7,20 +8,20 @@ import {
   webBackendUpdateConnection,
 } from "../../request/GeneratedApi";
 
-export class WebBackendConnectionService {
+export class WebBackendConnectionService extends AirbyteRequestService {
   public getConnection(connectionId: string, withRefreshedCatalog?: boolean) {
-    return webBackendGetConnection({ connectionId, withRefreshedCatalog });
+    return webBackendGetConnection({ connectionId, withRefreshedCatalog }, this.requestOptions);
   }
 
   public list(workspaceId: string) {
-    return webBackendListConnectionsForWorkspace({ workspaceId });
+    return webBackendListConnectionsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
   public update(payload: WebBackendConnectionUpdate) {
-    return webBackendUpdateConnection(payload);
+    return webBackendUpdateConnection(payload, this.requestOptions);
   }
 
   public create(payload: WebBackendConnectionCreate) {
-    return webBackendCreateConnection(payload);
+    return webBackendCreateConnection(payload, this.requestOptions);
   }
 }

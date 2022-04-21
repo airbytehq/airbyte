@@ -10,9 +10,11 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { useConfig } from "../../config";
 import { WebBackendConnectionRead } from "../../core/request/GeneratedApi";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -33,7 +35,9 @@ type ValuesProps = {
 type ConnectorProps = { name: string; sourceDefinitionId: string };
 
 function useSourceService() {
-  return useInitService(() => new SourceService(), []);
+  const { apiUrl } = useConfig();
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
 type SourceList = { sources: Source[] };

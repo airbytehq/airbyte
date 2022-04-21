@@ -23,7 +23,7 @@ Change Management:
 
  * OpenAPI spec version: 1.0.0
  */
-import { apiOverride } from "./useApiOverride";
+import { apiOverride } from "./apiOverride";
 /**
  * Input failed validation
  */
@@ -1408,953 +1408,1329 @@ export interface SourceSearch {
   sourceName?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
+
 /**
  * @summary Creates a workspace
  */
-export const createWorkspace = (workspaceCreate: WorkspaceCreate) => {
-  return apiOverride<WorkspaceRead>({
-    url: `/v1/workspaces/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceCreate,
-  });
+export const createWorkspace = (workspaceCreate: WorkspaceCreate, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<WorkspaceRead>(
+    {
+      url: `/v1/workspaces/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Deletes a workspace
  */
-export const deleteWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<void>({
-    url: `/v1/workspaces/delete`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const deleteWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/workspaces/delete`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary List all workspaces registered in the current Airbyte deployment
  */
-export const listWorkspaces = () => {
-  return apiOverride<WorkspaceReadList>({ url: `/v1/workspaces/list`, method: "post" });
+export const listWorkspaces = (options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<WorkspaceReadList>({ url: `/v1/workspaces/list`, method: "post" }, options);
 };
 
 /**
  * @summary Find workspace by ID
  */
-export const getWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<WorkspaceRead>({
-    url: `/v1/workspaces/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const getWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WorkspaceRead>(
+    {
+      url: `/v1/workspaces/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Find workspace by slug
  */
-export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody) => {
-  return apiOverride<WorkspaceRead>({
-    url: `/v1/workspaces/get_by_slug`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: slugRequestBody,
-  });
+export const getWorkspaceBySlug = (slugRequestBody: SlugRequestBody, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<WorkspaceRead>(
+    {
+      url: `/v1/workspaces/get_by_slug`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: slugRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update workspace state
  */
-export const updateWorkspace = (workspaceUpdate: WorkspaceUpdate) => {
-  return apiOverride<WorkspaceRead>({
-    url: `/v1/workspaces/update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceUpdate,
-  });
+export const updateWorkspace = (workspaceUpdate: WorkspaceUpdate, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<WorkspaceRead>(
+    {
+      url: `/v1/workspaces/update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update workspace name
  */
-export const updateWorkspaceName = (workspaceUpdateName: WorkspaceUpdateName) => {
-  return apiOverride<WorkspaceRead>({
-    url: `/v1/workspaces/update_name`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceUpdateName,
-  });
+export const updateWorkspaceName = (
+  workspaceUpdateName: WorkspaceUpdateName,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WorkspaceRead>(
+    {
+      url: `/v1/workspaces/update_name`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceUpdateName,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update workspace feedback state
  */
-export const updateWorkspaceFeedback = (workspaceGiveFeedback: WorkspaceGiveFeedback) => {
-  return apiOverride<void>({
-    url: `/v1/workspaces/tag_feedback_status_as_done`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceGiveFeedback,
-  });
+export const updateWorkspaceFeedback = (
+  workspaceGiveFeedback: WorkspaceGiveFeedback,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/workspaces/tag_feedback_status_as_done`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceGiveFeedback,
+    },
+    options
+  );
 };
 
 /**
  * @summary Try sending a notifications
  */
-export const tryNotificationConfig = (notification: Notification) => {
-  return apiOverride<NotificationRead>({
-    url: `/v1/notifications/try`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: notification,
-  });
+export const tryNotificationConfig = (notification: Notification, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<NotificationRead>(
+    {
+      url: `/v1/notifications/try`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: notification,
+    },
+    options
+  );
 };
 
 /**
  * @summary Creates a sourceDefinition
  */
-export const createSourceDefinition = (sourceDefinitionCreate: SourceDefinitionCreate) => {
-  return apiOverride<SourceDefinitionRead>({
-    url: `/v1/source_definitions/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionCreate,
-  });
+export const createSourceDefinition = (
+  sourceDefinitionCreate: SourceDefinitionCreate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDefinitionRead>(
+    {
+      url: `/v1/source_definitions/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update a sourceDefinition
  */
-export const updateSourceDefinition = (sourceDefinitionUpdate: SourceDefinitionUpdate) => {
-  return apiOverride<SourceDefinitionRead>({
-    url: `/v1/source_definitions/update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionUpdate,
-  });
+export const updateSourceDefinition = (
+  sourceDefinitionUpdate: SourceDefinitionUpdate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDefinitionRead>(
+    {
+      url: `/v1/source_definitions/update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary List all the sourceDefinitions the current Airbyte deployment is configured to use
  */
-export const listSourceDefinitions = () => {
-  return apiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list`, method: "post" });
+export const listSourceDefinitions = (options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list`, method: "post" }, options);
 };
 
 /**
  * Guaranteed to retrieve the latest information on supported sources.
  * @summary List the latest sourceDefinitions Airbyte supports
  */
-export const listLatestSourceDefinitions = () => {
-  return apiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list_latest`, method: "post" });
+export const listLatestSourceDefinitions = (options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<SourceDefinitionReadList>({ url: `/v1/source_definitions/list_latest`, method: "post" }, options);
 };
 
 /**
  * @summary Get source
  */
-export const getSourceDefinition = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
-  return apiOverride<SourceDefinitionRead>({
-    url: `/v1/source_definitions/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionIdRequestBody,
-  });
+export const getSourceDefinition = (
+  sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDefinitionRead>(
+    {
+      url: `/v1/source_definitions/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Delete a source definition
  */
-export const deleteSourceDefinition = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
-  return apiOverride<void>({
-    url: `/v1/source_definitions/delete`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionIdRequestBody,
-  });
+export const deleteSourceDefinition = (
+  sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/source_definitions/delete`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary List all private, non-custom sourceDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used by admins to view and modify a given workspace's grants.
  */
-export const listPrivateSourceDefinitions = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<PrivateSourceDefinitionReadList>({
-    url: `/v1/source_definitions/list_private`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const listPrivateSourceDefinitions = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<PrivateSourceDefinitionReadList>(
+    {
+      url: `/v1/source_definitions/list_private`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary List all the sourceDefinitions the given workspace is configured to use
  */
-export const listSourceDefinitionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<SourceDefinitionReadList>({
-    url: `/v1/source_definitions/list_for_workspace`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const listSourceDefinitionsForWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDefinitionReadList>(
+    {
+      url: `/v1/source_definitions/list_for_workspace`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Creates a custom sourceDefinition for the given workspace
  */
-export const createCustomSourceDefinition = (customSourceDefinitionCreate: CustomSourceDefinitionCreate) => {
-  return apiOverride<SourceDefinitionRead>({
-    url: `/v1/source_definitions/create_custom`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: customSourceDefinitionCreate,
-  });
+export const createCustomSourceDefinition = (
+  customSourceDefinitionCreate: CustomSourceDefinitionCreate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDefinitionRead>(
+    {
+      url: `/v1/source_definitions/create_custom`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: customSourceDefinitionCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Get a sourceDefinition that is configured for the given workspace
  */
 export const getSourceDefinitionForWorkspace = (
-  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId
+  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<SourceDefinitionRead>({
-    url: `/v1/source_definitions/get_for_workspace`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionIdWithWorkspaceId,
-  });
+  return apiOverride<SourceDefinitionRead>(
+    {
+      url: `/v1/source_definitions/get_for_workspace`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionIdWithWorkspaceId,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update a custom sourceDefinition for the given workspace
  */
-export const updateCustomSourceDefinition = (customSourceDefinitionUpdate: CustomSourceDefinitionUpdate) => {
-  return apiOverride<SourceDefinitionRead>({
-    url: `/v1/source_definitions/update_custom`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: customSourceDefinitionUpdate,
-  });
+export const updateCustomSourceDefinition = (
+  customSourceDefinitionUpdate: CustomSourceDefinitionUpdate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDefinitionRead>(
+    {
+      url: `/v1/source_definitions/update_custom`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: customSourceDefinitionUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Delete a custom source definition for the given workspace
  */
-export const deleteCustomSourceDefinition = (sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId) => {
-  return apiOverride<void>({
-    url: `/v1/source_definitions/delete_custom`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionIdWithWorkspaceId,
-  });
+export const deleteCustomSourceDefinition = (
+  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/source_definitions/delete_custom`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionIdWithWorkspaceId,
+    },
+    options
+  );
 };
 
 /**
  * @summary grant a private, non-custom sourceDefinition to a given workspace
  */
 export const grantSourceDefinitionToWorkspace = (
-  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId
+  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<PrivateSourceDefinitionRead>({
-    url: `/v1/source_definitions/grant_definition`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionIdWithWorkspaceId,
-  });
+  return apiOverride<PrivateSourceDefinitionRead>(
+    {
+      url: `/v1/source_definitions/grant_definition`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionIdWithWorkspaceId,
+    },
+    options
+  );
 };
 
 /**
  * @summary revoke a grant to a private, non-custom sourceDefinition from a given workspace
  */
 export const revokeSourceDefinitionFromWorkspace = (
-  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId
+  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<void>({
-    url: `/v1/source_definitions/revoke_definition`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionIdWithWorkspaceId,
-  });
+  return apiOverride<void>(
+    {
+      url: `/v1/source_definitions/revoke_definition`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionIdWithWorkspaceId,
+    },
+    options
+  );
 };
 
 /**
  * @summary Get specification for a SourceDefinition.
  */
-export const getSourceDefinitionSpecification = (sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody) => {
-  return apiOverride<SourceDefinitionSpecificationRead>({
-    url: `/v1/source_definition_specifications/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDefinitionIdRequestBody,
-  });
+export const getSourceDefinitionSpecification = (
+  sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDefinitionSpecificationRead>(
+    {
+      url: `/v1/source_definition_specifications/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDefinitionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Create a source
  */
-export const createSource = (sourceCreate: SourceCreate) => {
-  return apiOverride<SourceRead>({
-    url: `/v1/sources/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceCreate,
-  });
+export const createSource = (sourceCreate: SourceCreate, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<SourceRead>(
+    { url: `/v1/sources/create`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceCreate },
+    options
+  );
 };
 
 /**
  * @summary Update a source
  */
-export const updateSource = (sourceUpdate: SourceUpdate) => {
-  return apiOverride<SourceRead>({
-    url: `/v1/sources/update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceUpdate,
-  });
+export const updateSource = (sourceUpdate: SourceUpdate, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<SourceRead>(
+    { url: `/v1/sources/update`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceUpdate },
+    options
+  );
 };
 
 /**
  * List sources for workspace. Does not return deleted sources.
  * @summary List sources for workspace
  */
-export const listSourcesForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<SourceReadList>({
-    url: `/v1/sources/list`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const listSourcesForWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceReadList>(
+    {
+      url: `/v1/sources/list`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Get source
  */
-export const getSource = (sourceIdRequestBody: SourceIdRequestBody) => {
-  return apiOverride<SourceRead>({
-    url: `/v1/sources/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceIdRequestBody,
-  });
+export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<SourceRead>(
+    {
+      url: `/v1/sources/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Search sources
  */
-export const searchSources = (sourceSearch: SourceSearch) => {
-  return apiOverride<SourceReadList>({
-    url: `/v1/sources/search`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceSearch,
-  });
+export const searchSources = (sourceSearch: SourceSearch, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<SourceReadList>(
+    { url: `/v1/sources/search`, method: "post", headers: { "Content-Type": "application/json" }, data: sourceSearch },
+    options
+  );
 };
 
 /**
  * @summary Clone source
  */
-export const cloneSource = (sourceIdRequestBody: SourceIdRequestBody) => {
-  return apiOverride<SourceRead>({
-    url: `/v1/sources/clone`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceIdRequestBody,
-  });
+export const cloneSource = (sourceIdRequestBody: SourceIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<SourceRead>(
+    {
+      url: `/v1/sources/clone`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Delete a source
  */
-export const deleteSource = (sourceIdRequestBody: SourceIdRequestBody) => {
-  return apiOverride<void>({
-    url: `/v1/sources/delete`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceIdRequestBody,
-  });
+export const deleteSource = (
+  sourceIdRequestBody: SourceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/sources/delete`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Check connection to the source
  */
-export const checkConnectionToSource = (sourceIdRequestBody: SourceIdRequestBody) => {
-  return apiOverride<CheckConnectionRead>({
-    url: `/v1/sources/check_connection`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceIdRequestBody,
-  });
+export const checkConnectionToSource = (
+  sourceIdRequestBody: SourceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CheckConnectionRead>(
+    {
+      url: `/v1/sources/check_connection`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Check connection for a proposed update to a source
  */
-export const checkConnectionToSourceForUpdate = (sourceUpdate: SourceUpdate) => {
-  return apiOverride<CheckConnectionRead>({
-    url: `/v1/sources/check_connection_for_update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceUpdate,
-  });
+export const checkConnectionToSourceForUpdate = (
+  sourceUpdate: SourceUpdate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CheckConnectionRead>(
+    {
+      url: `/v1/sources/check_connection_for_update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Discover the schema catalog of the source
  */
-export const discoverSchemaForSource = (sourceDiscoverSchemaRequestBody: SourceDiscoverSchemaRequestBody) => {
-  return apiOverride<SourceDiscoverSchemaRead>({
-    url: `/v1/sources/discover_schema`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceDiscoverSchemaRequestBody,
-  });
+export const discoverSchemaForSource = (
+  sourceDiscoverSchemaRequestBody: SourceDiscoverSchemaRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDiscoverSchemaRead>(
+    {
+      url: `/v1/sources/discover_schema`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceDiscoverSchemaRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Creates a destinationsDefinition
  */
-export const createDestinationDefinition = (destinationDefinitionCreate: DestinationDefinitionCreate) => {
-  return apiOverride<DestinationDefinitionRead>({
-    url: `/v1/destination_definitions/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionCreate,
-  });
+export const createDestinationDefinition = (
+  destinationDefinitionCreate: DestinationDefinitionCreate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationDefinitionRead>(
+    {
+      url: `/v1/destination_definitions/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update destinationDefinition
  */
-export const updateDestinationDefinition = (destinationDefinitionUpdate: DestinationDefinitionUpdate) => {
-  return apiOverride<DestinationDefinitionRead>({
-    url: `/v1/destination_definitions/update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionUpdate,
-  });
+export const updateDestinationDefinition = (
+  destinationDefinitionUpdate: DestinationDefinitionUpdate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationDefinitionRead>(
+    {
+      url: `/v1/destination_definitions/update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary List all the destinationDefinitions the current Airbyte deployment is configured to use
  */
-export const listDestinationDefinitions = () => {
-  return apiOverride<DestinationDefinitionReadList>({ url: `/v1/destination_definitions/list`, method: "post" });
+export const listDestinationDefinitions = (options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<DestinationDefinitionReadList>(
+    { url: `/v1/destination_definitions/list`, method: "post" },
+    options
+  );
 };
 
 /**
  * Guaranteed to retrieve the latest information on supported destinations.
  * @summary List the latest destinationDefinitions Airbyte supports
  */
-export const listLatestDestinationDefinitions = () => {
-  return apiOverride<DestinationDefinitionReadList>({ url: `/v1/destination_definitions/list_latest`, method: "post" });
+export const listLatestDestinationDefinitions = (options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<DestinationDefinitionReadList>(
+    { url: `/v1/destination_definitions/list_latest`, method: "post" },
+    options
+  );
 };
 
 /**
  * @summary Get destinationDefinition
  */
-export const getDestinationDefinition = (destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody) => {
-  return apiOverride<DestinationDefinitionRead>({
-    url: `/v1/destination_definitions/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionIdRequestBody,
-  });
+export const getDestinationDefinition = (
+  destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationDefinitionRead>(
+    {
+      url: `/v1/destination_definitions/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Delete a destination definition
  */
-export const deleteDestinationDefinition = (destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody) => {
-  return apiOverride<void>({
-    url: `/v1/destination_definitions/delete`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionIdRequestBody,
-  });
+export const deleteDestinationDefinition = (
+  destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/destination_definitions/delete`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary List all private, non-custom destinationDefinitions, and for each indicate whether the given workspace has a grant for using the definition. Used by admins to view and modify a given workspace's grants.
  */
-export const listPrivateDestinationDefinitions = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<PrivateDestinationDefinitionReadList>({
-    url: `/v1/destination_definitions/list_private`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const listPrivateDestinationDefinitions = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<PrivateDestinationDefinitionReadList>(
+    {
+      url: `/v1/destination_definitions/list_private`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary List all the destinationDefinitions the given workspace is configured to use
  */
-export const listDestinationDefinitionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<DestinationDefinitionReadList>({
-    url: `/v1/destination_definitions/list_for_workspace`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const listDestinationDefinitionsForWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationDefinitionReadList>(
+    {
+      url: `/v1/destination_definitions/list_for_workspace`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Creates a custom destinationDefinition for the given workspace
  */
 export const createCustomDestinationDefinition = (
-  customDestinationDefinitionCreate: CustomDestinationDefinitionCreate
+  customDestinationDefinitionCreate: CustomDestinationDefinitionCreate,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<DestinationDefinitionRead>({
-    url: `/v1/destination_definitions/create_custom`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: customDestinationDefinitionCreate,
-  });
+  return apiOverride<DestinationDefinitionRead>(
+    {
+      url: `/v1/destination_definitions/create_custom`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: customDestinationDefinitionCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Get a destinationDefinition that is configured for the given workspace
  */
 export const getDestinationDefinitionForWorkspace = (
-  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId
+  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<DestinationDefinitionRead>({
-    url: `/v1/destination_definitions/get_for_workspace`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionIdWithWorkspaceId,
-  });
+  return apiOverride<DestinationDefinitionRead>(
+    {
+      url: `/v1/destination_definitions/get_for_workspace`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionIdWithWorkspaceId,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update a custom destinationDefinition for the given workspace
  */
 export const updateCustomDestinationDefinition = (
-  customDestinationDefinitionUpdate: CustomDestinationDefinitionUpdate
+  customDestinationDefinitionUpdate: CustomDestinationDefinitionUpdate,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<DestinationDefinitionRead>({
-    url: `/v1/destination_definitions/update_custom`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: customDestinationDefinitionUpdate,
-  });
+  return apiOverride<DestinationDefinitionRead>(
+    {
+      url: `/v1/destination_definitions/update_custom`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: customDestinationDefinitionUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Delete a custom destination definition for the given workspace
  */
 export const deleteCustomDestinationDefinition = (
-  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId
+  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<void>({
-    url: `/v1/destination_definitions/delete_custom`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionIdWithWorkspaceId,
-  });
+  return apiOverride<void>(
+    {
+      url: `/v1/destination_definitions/delete_custom`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionIdWithWorkspaceId,
+    },
+    options
+  );
 };
 
 /**
  * @summary grant a private, non-custom destinationDefinition to a given workspace
  */
 export const grantDestinationDefinitionToWorkspace = (
-  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId
+  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<PrivateDestinationDefinitionRead>({
-    url: `/v1/destination_definitions/grant_definition`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionIdWithWorkspaceId,
-  });
+  return apiOverride<PrivateDestinationDefinitionRead>(
+    {
+      url: `/v1/destination_definitions/grant_definition`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionIdWithWorkspaceId,
+    },
+    options
+  );
 };
 
 /**
  * @summary revoke a grant to a private, non-custom destinationDefinition from a given workspace
  */
 export const revokeDestinationDefinitionFromWorkspace = (
-  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId
+  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<void>({
-    url: `/v1/destination_definitions/revoke_definition`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionIdWithWorkspaceId,
-  });
+  return apiOverride<void>(
+    {
+      url: `/v1/destination_definitions/revoke_definition`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionIdWithWorkspaceId,
+    },
+    options
+  );
 };
 
 /**
  * @summary Get specification for a destinationDefinition
  */
 export const getDestinationDefinitionSpecification = (
-  destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody
+  destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<DestinationDefinitionSpecificationRead>({
-    url: `/v1/destination_definition_specifications/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationDefinitionIdRequestBody,
-  });
+  return apiOverride<DestinationDefinitionSpecificationRead>(
+    {
+      url: `/v1/destination_definition_specifications/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationDefinitionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Create a destination
  */
-export const createDestination = (destinationCreate: DestinationCreate) => {
-  return apiOverride<DestinationRead>({
-    url: `/v1/destinations/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationCreate,
-  });
+export const createDestination = (
+  destinationCreate: DestinationCreate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationRead>(
+    {
+      url: `/v1/destinations/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update a destination
  */
-export const updateDestination = (destinationUpdate: DestinationUpdate) => {
-  return apiOverride<DestinationRead>({
-    url: `/v1/destinations/update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationUpdate,
-  });
+export const updateDestination = (
+  destinationUpdate: DestinationUpdate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationRead>(
+    {
+      url: `/v1/destinations/update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary List configured destinations for a workspace
  */
-export const listDestinationsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<DestinationReadList>({
-    url: `/v1/destinations/list`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const listDestinationsForWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationReadList>(
+    {
+      url: `/v1/destinations/list`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Get configured destination
  */
-export const getDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
-  return apiOverride<DestinationRead>({
-    url: `/v1/destinations/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationIdRequestBody,
-  });
+export const getDestination = (
+  destinationIdRequestBody: DestinationIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationRead>(
+    {
+      url: `/v1/destinations/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Search destinations
  */
-export const searchDestinations = (destinationSearch: DestinationSearch) => {
-  return apiOverride<DestinationReadList>({
-    url: `/v1/destinations/search`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationSearch,
-  });
+export const searchDestinations = (
+  destinationSearch: DestinationSearch,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationReadList>(
+    {
+      url: `/v1/destinations/search`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationSearch,
+    },
+    options
+  );
 };
 
 /**
  * @summary Check connection to the destination
  */
-export const checkConnectionToDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
-  return apiOverride<CheckConnectionRead>({
-    url: `/v1/destinations/check_connection`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationIdRequestBody,
-  });
+export const checkConnectionToDestination = (
+  destinationIdRequestBody: DestinationIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CheckConnectionRead>(
+    {
+      url: `/v1/destinations/check_connection`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Check connection for a proposed update to a destination
  */
-export const checkConnectionToDestinationForUpdate = (destinationUpdate: DestinationUpdate) => {
-  return apiOverride<CheckConnectionRead>({
-    url: `/v1/destinations/check_connection_for_update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationUpdate,
-  });
+export const checkConnectionToDestinationForUpdate = (
+  destinationUpdate: DestinationUpdate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CheckConnectionRead>(
+    {
+      url: `/v1/destinations/check_connection_for_update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Delete the destination
  */
-export const deleteDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
-  return apiOverride<void>({
-    url: `/v1/destinations/delete`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationIdRequestBody,
-  });
+export const deleteDestination = (
+  destinationIdRequestBody: DestinationIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/destinations/delete`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Clone destination
  */
-export const cloneDestination = (destinationIdRequestBody: DestinationIdRequestBody) => {
-  return apiOverride<DestinationRead>({
-    url: `/v1/destinations/clone`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationIdRequestBody,
-  });
+export const cloneDestination = (
+  destinationIdRequestBody: DestinationIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationRead>(
+    {
+      url: `/v1/destinations/clone`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Create a connection between a source and a destination
  */
-export const createConnection = (connectionCreate: ConnectionCreate) => {
-  return apiOverride<ConnectionRead>({
-    url: `/v1/connections/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionCreate,
-  });
+export const createConnection = (connectionCreate: ConnectionCreate, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<ConnectionRead>(
+    {
+      url: `/v1/connections/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update a connection
  */
-export const updateConnection = (connectionUpdate: ConnectionUpdate) => {
-  return apiOverride<ConnectionRead>({
-    url: `/v1/connections/update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionUpdate,
-  });
+export const updateConnection = (connectionUpdate: ConnectionUpdate, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<ConnectionRead>(
+    {
+      url: `/v1/connections/update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionUpdate,
+    },
+    options
+  );
 };
 
 /**
  * List connections for workspace. Does not return deleted connections.
  * @summary Returns all connections for a workspace.
  */
-export const listConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<ConnectionReadList>({
-    url: `/v1/connections/list`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const listConnectionsForWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<ConnectionReadList>(
+    {
+      url: `/v1/connections/list`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * List connections for workspace, including deleted connections.
  * @summary Returns all connections for a workspace, including deleted connections.
  */
-export const listAllConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<ConnectionReadList>({
-    url: `/v1/connections/list_all`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const listAllConnectionsForWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<ConnectionReadList>(
+    {
+      url: `/v1/connections/list_all`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Get a connection
  */
-export const getConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return apiOverride<ConnectionRead>({
-    url: `/v1/connections/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionIdRequestBody,
-  });
+export const getConnection = (
+  connectionIdRequestBody: ConnectionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<ConnectionRead>(
+    {
+      url: `/v1/connections/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Fetch the current state for a connection.
  */
-export const getState = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return apiOverride<ConnectionState>({
-    url: `/v1/state/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionIdRequestBody,
-  });
+export const getState = (
+  connectionIdRequestBody: ConnectionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<ConnectionState>(
+    {
+      url: `/v1/state/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Search connections
  */
-export const searchConnections = (connectionSearch: ConnectionSearch) => {
-  return apiOverride<ConnectionReadList>({
-    url: `/v1/connections/search`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionSearch,
-  });
+export const searchConnections = (connectionSearch: ConnectionSearch, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<ConnectionReadList>(
+    {
+      url: `/v1/connections/search`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionSearch,
+    },
+    options
+  );
 };
 
 /**
  * @summary Delete a connection
  */
-export const deleteConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return apiOverride<void>({
-    url: `/v1/connections/delete`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionIdRequestBody,
-  });
+export const deleteConnection = (
+  connectionIdRequestBody: ConnectionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/connections/delete`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Trigger a manual sync of the connection
  */
-export const syncConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return apiOverride<JobInfoRead>({
-    url: `/v1/connections/sync`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionIdRequestBody,
-  });
+export const syncConnection = (
+  connectionIdRequestBody: ConnectionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<JobInfoRead>(
+    {
+      url: `/v1/connections/sync`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Reset the data for the connection. Deletes data generated by the connection in the destination. Resets any cursors back to initial state.
  */
-export const resetConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return apiOverride<JobInfoRead>({
-    url: `/v1/connections/reset`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionIdRequestBody,
-  });
+export const resetConnection = (
+  connectionIdRequestBody: ConnectionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<JobInfoRead>(
+    {
+      url: `/v1/connections/reset`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Check if an operation to be created is valid
  */
-export const checkOperation = (operatorConfiguration: OperatorConfiguration) => {
-  return apiOverride<CheckOperationRead>({
-    url: `/v1/operations/check`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: operatorConfiguration,
-  });
+export const checkOperation = (
+  operatorConfiguration: OperatorConfiguration,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CheckOperationRead>(
+    {
+      url: `/v1/operations/check`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: operatorConfiguration,
+    },
+    options
+  );
 };
 
 /**
  * @summary Create an operation to be applied as part of a connection pipeline
  */
-export const createOperation = (operationCreate: OperationCreate) => {
-  return apiOverride<OperationRead>({
-    url: `/v1/operations/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: operationCreate,
-  });
+export const createOperation = (operationCreate: OperationCreate, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<OperationRead>(
+    {
+      url: `/v1/operations/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: operationCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update an operation
  */
-export const updateOperation = (operationUpdate: OperationUpdate) => {
-  return apiOverride<OperationRead>({
-    url: `/v1/operations/update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: operationUpdate,
-  });
+export const updateOperation = (operationUpdate: OperationUpdate, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<OperationRead>(
+    {
+      url: `/v1/operations/update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: operationUpdate,
+    },
+    options
+  );
 };
 
 /**
  * List operations for connection.
  * @summary Returns all operations for a connection.
  */
-export const listOperationsForConnection = (connectionIdRequestBody: ConnectionIdRequestBody) => {
-  return apiOverride<OperationReadList>({
-    url: `/v1/operations/list`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: connectionIdRequestBody,
-  });
+export const listOperationsForConnection = (
+  connectionIdRequestBody: ConnectionIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<OperationReadList>(
+    {
+      url: `/v1/operations/list`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Returns an operation
  */
-export const getOperation = (operationIdRequestBody: OperationIdRequestBody) => {
-  return apiOverride<OperationRead>({
-    url: `/v1/operations/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: operationIdRequestBody,
-  });
+export const getOperation = (
+  operationIdRequestBody: OperationIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<OperationRead>(
+    {
+      url: `/v1/operations/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: operationIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Delete an operation
  */
-export const deleteOperation = (operationIdRequestBody: OperationIdRequestBody) => {
-  return apiOverride<void>({
-    url: `/v1/operations/delete`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: operationIdRequestBody,
-  });
+export const deleteOperation = (
+  operationIdRequestBody: OperationIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<void>(
+    {
+      url: `/v1/operations/delete`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: operationIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Run check connection for a given source configuration
  */
-export const executeSourceCheckConnection = (sourceCoreConfig: SourceCoreConfig) => {
-  return apiOverride<CheckConnectionRead>({
-    url: `/v1/scheduler/sources/check_connection`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceCoreConfig,
-  });
+export const executeSourceCheckConnection = (
+  sourceCoreConfig: SourceCoreConfig,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CheckConnectionRead>(
+    {
+      url: `/v1/scheduler/sources/check_connection`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceCoreConfig,
+    },
+    options
+  );
 };
 
 /**
  * @summary Run discover schema for a given source a source configuration
  */
-export const executeSourceDiscoverSchema = (sourceCoreConfig: SourceCoreConfig) => {
-  return apiOverride<SourceDiscoverSchemaRead>({
-    url: `/v1/scheduler/sources/discover_schema`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceCoreConfig,
-  });
+export const executeSourceDiscoverSchema = (
+  sourceCoreConfig: SourceCoreConfig,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceDiscoverSchemaRead>(
+    {
+      url: `/v1/scheduler/sources/discover_schema`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceCoreConfig,
+    },
+    options
+  );
 };
 
 /**
  * @summary Run check connection for a given destination configuration
  */
-export const executeDestinationCheckConnection = (destinationCoreConfig: DestinationCoreConfig) => {
-  return apiOverride<CheckConnectionRead>({
-    url: `/v1/scheduler/destinations/check_connection`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationCoreConfig,
-  });
+export const executeDestinationCheckConnection = (
+  destinationCoreConfig: DestinationCoreConfig,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CheckConnectionRead>(
+    {
+      url: `/v1/scheduler/destinations/check_connection`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationCoreConfig,
+    },
+    options
+  );
 };
 
 /**
  * @summary List all database migrations
  */
-export const listMigrations = (dbMigrationRequestBody: DbMigrationRequestBody) => {
-  return apiOverride<DbMigrationReadList>({
-    url: `/v1/db_migrations/list`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: dbMigrationRequestBody,
-  });
+export const listMigrations = (
+  dbMigrationRequestBody: DbMigrationRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DbMigrationReadList>(
+    {
+      url: `/v1/db_migrations/list`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: dbMigrationRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Migrate the database to the latest version
  */
-export const executeMigrations = (dbMigrationRequestBody: DbMigrationRequestBody) => {
-  return apiOverride<DbMigrationExecutionRead>({
-    url: `/v1/db_migrations/migrate`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: dbMigrationRequestBody,
-  });
+export const executeMigrations = (
+  dbMigrationRequestBody: DbMigrationRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DbMigrationExecutionRead>(
+    {
+      url: `/v1/db_migrations/migrate`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: dbMigrationRequestBody,
+    },
+    options
+  );
 };
 
 /**
@@ -2362,62 +2738,90 @@ export const executeMigrations = (dbMigrationRequestBody: DbMigrationRequestBody
 
  */
 export const setInstancewideSourceOauthParams = (
-  setInstancewideSourceOauthParamsRequestBody: SetInstancewideSourceOauthParamsRequestBody
+  setInstancewideSourceOauthParamsRequestBody: SetInstancewideSourceOauthParamsRequestBody,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<void>({
-    url: `/v1/source_oauths/oauth_params/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: setInstancewideSourceOauthParamsRequestBody,
-  });
+  return apiOverride<void>(
+    {
+      url: `/v1/source_oauths/oauth_params/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: setInstancewideSourceOauthParamsRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Given a source connector definition ID, return the URL to the consent screen where to redirect the user to.
  */
-export const getSourceOAuthConsent = (sourceOauthConsentRequest: SourceOauthConsentRequest) => {
-  return apiOverride<OAuthConsentRead>({
-    url: `/v1/source_oauths/get_consent_url`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: sourceOauthConsentRequest,
-  });
+export const getSourceOAuthConsent = (
+  sourceOauthConsentRequest: SourceOauthConsentRequest,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<OAuthConsentRead>(
+    {
+      url: `/v1/source_oauths/get_consent_url`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceOauthConsentRequest,
+    },
+    options
+  );
 };
 
 /**
  * @summary Given a source def ID generate an access/refresh token etc.
  */
-export const completeSourceOAuth = (completeSourceOauthRequest: CompleteSourceOauthRequest) => {
-  return apiOverride<CompleteOAuthResponse>({
-    url: `/v1/source_oauths/complete_oauth`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: completeSourceOauthRequest,
-  });
+export const completeSourceOAuth = (
+  completeSourceOauthRequest: CompleteSourceOauthRequest,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CompleteOAuthResponse>(
+    {
+      url: `/v1/source_oauths/complete_oauth`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: completeSourceOauthRequest,
+    },
+    options
+  );
 };
 
 /**
  * @summary Given a destination connector definition ID, return the URL to the consent screen where to redirect the user to.
  */
-export const getDestinationOAuthConsent = (destinationOauthConsentRequest: DestinationOauthConsentRequest) => {
-  return apiOverride<OAuthConsentRead>({
-    url: `/v1/destination_oauths/get_consent_url`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: destinationOauthConsentRequest,
-  });
+export const getDestinationOAuthConsent = (
+  destinationOauthConsentRequest: DestinationOauthConsentRequest,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<OAuthConsentRead>(
+    {
+      url: `/v1/destination_oauths/get_consent_url`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationOauthConsentRequest,
+    },
+    options
+  );
 };
 
 /**
  * @summary Given a destination def ID generate an access/refresh token etc.
  */
-export const completeDestinationOAuth = (completeDestinationOAuthRequest: CompleteDestinationOAuthRequest) => {
-  return apiOverride<CompleteOAuthResponse>({
-    url: `/v1/destination_oauths/complete_oauth`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: completeDestinationOAuthRequest,
-  });
+export const completeDestinationOAuth = (
+  completeDestinationOAuthRequest: CompleteDestinationOAuthRequest,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<CompleteOAuthResponse>(
+    {
+      url: `/v1/destination_oauths/complete_oauth`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: completeDestinationOAuthRequest,
+    },
+    options
+  );
 };
 
 /**
@@ -2425,229 +2829,293 @@ export const completeDestinationOAuth = (completeDestinationOAuthRequest: Comple
 
  */
 export const setInstancewideDestinationOauthParams = (
-  setInstancewideDestinationOauthParamsRequestBody: SetInstancewideDestinationOauthParamsRequestBody
+  setInstancewideDestinationOauthParamsRequestBody: SetInstancewideDestinationOauthParamsRequestBody,
+  options: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<void>({
-    url: `/v1/destination_oauths/oauth_params/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: setInstancewideDestinationOauthParamsRequestBody,
-  });
+  return apiOverride<void>(
+    {
+      url: `/v1/destination_oauths/oauth_params/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: setInstancewideDestinationOauthParamsRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Returns all non-deleted connections for a workspace.
  */
-export const webBackendListConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<WebBackendConnectionReadList>({
-    url: `/v1/web_backend/connections/list`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const webBackendListConnectionsForWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendConnectionReadList>(
+    {
+      url: `/v1/web_backend/connections/list`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Returns all connections for a workspace.
  */
-export const webBackendListAllConnectionsForWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<WebBackendConnectionReadList>({
-    url: `/v1/web_backend/connections/list_all`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const webBackendListAllConnectionsForWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendConnectionReadList>(
+    {
+      url: `/v1/web_backend/connections/list_all`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Get a connection
  */
-export const webBackendGetConnection = (webBackendConnectionRequestBody: WebBackendConnectionRequestBody) => {
-  return apiOverride<WebBackendConnectionRead>({
-    url: `/v1/web_backend/connections/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: webBackendConnectionRequestBody,
-  });
+export const webBackendGetConnection = (
+  webBackendConnectionRequestBody: WebBackendConnectionRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendConnectionRead>(
+    {
+      url: `/v1/web_backend/connections/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: webBackendConnectionRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Create a connection
  */
-export const webBackendCreateConnection = (webBackendConnectionCreate: WebBackendConnectionCreate) => {
-  return apiOverride<WebBackendConnectionRead>({
-    url: `/v1/web_backend/connections/create`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: webBackendConnectionCreate,
-  });
+export const webBackendCreateConnection = (
+  webBackendConnectionCreate: WebBackendConnectionCreate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendConnectionRead>(
+    {
+      url: `/v1/web_backend/connections/create`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: webBackendConnectionCreate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Update a connection
  */
-export const webBackendUpdateConnection = (webBackendConnectionUpdate: WebBackendConnectionUpdate) => {
-  return apiOverride<WebBackendConnectionRead>({
-    url: `/v1/web_backend/connections/update`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: webBackendConnectionUpdate,
-  });
+export const webBackendUpdateConnection = (
+  webBackendConnectionUpdate: WebBackendConnectionUpdate,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendConnectionRead>(
+    {
+      url: `/v1/web_backend/connections/update`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: webBackendConnectionUpdate,
+    },
+    options
+  );
 };
 
 /**
  * @summary Search connections
  */
-export const webBackendSearchConnections = (webBackendConnectionSearch: WebBackendConnectionSearch) => {
-  return apiOverride<WebBackendConnectionReadList>({
-    url: `/v1/web_backend/connections/search`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: webBackendConnectionSearch,
-  });
+export const webBackendSearchConnections = (
+  webBackendConnectionSearch: WebBackendConnectionSearch,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendConnectionReadList>(
+    {
+      url: `/v1/web_backend/connections/search`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: webBackendConnectionSearch,
+    },
+    options
+  );
 };
 
 /**
  * @summary Returns the current state of a workspace
  */
-export const webBackendGetWorkspaceState = (webBackendWorkspaceState: WebBackendWorkspaceState) => {
-  return apiOverride<WebBackendWorkspaceStateResult>({
-    url: `/v1/web_backend/workspace/state`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: webBackendWorkspaceState,
-  });
+export const webBackendGetWorkspaceState = (
+  webBackendWorkspaceState: WebBackendWorkspaceState,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendWorkspaceStateResult>(
+    {
+      url: `/v1/web_backend/workspace/state`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: webBackendWorkspaceState,
+    },
+    options
+  );
 };
 
 /**
  * @summary Returns recent jobs for a connection. Jobs are returned in descending order by createdAt.
  */
-export const listJobsFor = (jobListRequestBody: JobListRequestBody) => {
-  return apiOverride<JobReadList>({
-    url: `/v1/jobs/list`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: jobListRequestBody,
-  });
+export const listJobsFor = (jobListRequestBody: JobListRequestBody, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<JobReadList>(
+    { url: `/v1/jobs/list`, method: "post", headers: { "Content-Type": "application/json" }, data: jobListRequestBody },
+    options
+  );
 };
 
 /**
  * @summary Get information about a job
  */
-export const getJobInfo = (jobIdRequestBody: JobIdRequestBody) => {
-  return apiOverride<JobInfoRead>({
-    url: `/v1/jobs/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: jobIdRequestBody,
-  });
+export const getJobInfo = (jobIdRequestBody: JobIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<JobInfoRead>(
+    { url: `/v1/jobs/get`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
+    options
+  );
 };
 
 /**
  * @summary Cancels a job
  */
-export const cancelJob = (jobIdRequestBody: JobIdRequestBody) => {
-  return apiOverride<JobInfoRead>({
-    url: `/v1/jobs/cancel`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: jobIdRequestBody,
-  });
+export const cancelJob = (jobIdRequestBody: JobIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<JobInfoRead>(
+    { url: `/v1/jobs/cancel`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
+    options
+  );
 };
 
 /**
  * @summary Gets all information needed to debug this job
  */
-export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody) => {
-  return apiOverride<JobDebugInfoRead>({
-    url: `/v1/jobs/get_debug_info`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: jobIdRequestBody,
-  });
+export const getJobDebugInfo = (jobIdRequestBody: JobIdRequestBody, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<JobDebugInfoRead>(
+    {
+      url: `/v1/jobs/get_debug_info`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: jobIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Health Check
  */
-export const getHealthCheck = () => {
-  return apiOverride<HealthCheckRead>({ url: `/v1/health`, method: "get" });
+export const getHealthCheck = (options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<HealthCheckRead>({ url: `/v1/health`, method: "get" }, options);
 };
 
 /**
  * @summary Get logs
  */
-export const getLogs = (logsRequestBody: LogsRequestBody) => {
-  return apiOverride<Blob>({
-    url: `/v1/logs/get`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: logsRequestBody,
-    responseType: "blob",
-  });
+export const getLogs = (logsRequestBody: LogsRequestBody, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<Blob>(
+    {
+      url: `/v1/logs/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: logsRequestBody,
+      responseType: "blob",
+    },
+    options
+  );
 };
 
 /**
  * @summary Returns the openapi specification
  */
-export const getOpenApiSpec = () => {
-  return apiOverride<Blob>({ url: `/v1/openapi`, method: "get", responseType: "blob" });
+export const getOpenApiSpec = (options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<Blob>({ url: `/v1/openapi`, method: "get", responseType: "blob" }, options);
 };
 
 /**
  * @summary Export Airbyte Configuration and Data Archive
  */
-export const exportArchive = () => {
-  return apiOverride<AirbyteArchive>({ url: `/v1/deployment/export`, method: "post" });
+export const exportArchive = (options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<AirbyteArchive>({ url: `/v1/deployment/export`, method: "post" }, options);
 };
 
 /**
  * @summary Import Airbyte Configuration and Data Archive
  */
-export const importArchive = (airbyteArchive: AirbyteArchive) => {
-  return apiOverride<ImportRead>({
-    url: `/v1/deployment/import`,
-    method: "post",
-    headers: { "Content-Type": "application/x-gzip" },
-    data: airbyteArchive,
-  });
+export const importArchive = (airbyteArchive: AirbyteArchive, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<ImportRead>(
+    {
+      url: `/v1/deployment/import`,
+      method: "post",
+      headers: { "Content-Type": "application/x-gzip" },
+      data: airbyteArchive,
+    },
+    options
+  );
 };
 
 /**
  * @summary Export Airbyte Workspace Configuration
  */
-export const exportWorkspace = (workspaceIdRequestBody: WorkspaceIdRequestBody) => {
-  return apiOverride<AirbyteArchive>({
-    url: `/v1/deployment/export_workspace`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: workspaceIdRequestBody,
-  });
+export const exportWorkspace = (
+  workspaceIdRequestBody: WorkspaceIdRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<AirbyteArchive>(
+    {
+      url: `/v1/deployment/export_workspace`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: workspaceIdRequestBody,
+    },
+    options
+  );
 };
 
 /**
  * @summary Upload a GZIP archive tarball and stage it in the server's cache as a temporary resource
  */
-export const uploadArchiveResource = (airbyteArchive: AirbyteArchive) => {
-  return apiOverride<UploadRead>({
-    url: `/v1/deployment/upload_archive_resource`,
-    method: "post",
-    headers: { "Content-Type": "application/x-gzip" },
-    data: airbyteArchive,
-  });
+export const uploadArchiveResource = (airbyteArchive: AirbyteArchive, options: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<UploadRead>(
+    {
+      url: `/v1/deployment/upload_archive_resource`,
+      method: "post",
+      headers: { "Content-Type": "application/x-gzip" },
+      data: airbyteArchive,
+    },
+    options
+  );
 };
 
 /**
  * @summary Import Airbyte Configuration into Workspace (this operation might change ids of imported configurations). Note, in order to use this api endpoint, you might need to upload a temporary archive resource with 'deployment/upload_archive_resource' first
 
  */
-export const importIntoWorkspace = (importRequestBody: ImportRequestBody) => {
-  return apiOverride<ImportRead>({
-    url: `/v1/deployment/import_into_workspace`,
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    data: importRequestBody,
-  });
+export const importIntoWorkspace = (
+  importRequestBody: ImportRequestBody,
+  options: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<ImportRead>(
+    {
+      url: `/v1/deployment/import_into_workspace`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: importRequestBody,
+    },
+    options
+  );
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

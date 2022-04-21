@@ -7,7 +7,7 @@ export default defineConfig({
       target: "./src/core/request/GeneratedApi.ts",
       override: {
         mutator: {
-          path: "./src/core/request/useApiOverride.ts",
+          path: "./src/core/request/apiOverride.ts",
           name: "apiOverride",
         },
       },

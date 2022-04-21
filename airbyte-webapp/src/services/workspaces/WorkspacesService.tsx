@@ -5,9 +5,11 @@ import { Workspace, WorkspaceService } from "core/domain/workspace";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
+import { useConfig } from "../../config";
 import { WorkspaceUpdate } from "../../core/request/GeneratedApi";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
+import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
 import { useInitService } from "../useInitService";
 
 export const workspaceKeys = {
@@ -68,7 +70,9 @@ export const useWorkspaceService = (): Context => {
 };
 
 function useWorkspaceApiService() {
-  return useInitService(() => new WorkspaceService(), []);
+  const config = useConfig();
+  const middlewares = useDefaultRequestMiddlewares();
+  return useInitService(() => new WorkspaceService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
 }
 
 export const useCurrentWorkspaceId = () => {

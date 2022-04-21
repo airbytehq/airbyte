@@ -77,5 +77,3 @@ export function useGetService<T>(serviceToken: string): T {
 
   return useMemo(() => registeredServices[serviceToken], [registeredServices, serviceToken]);
 }
-
-//

@@ -1,3 +1,4 @@
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   completeSourceOAuth,
   CompleteSourceOauthRequest,
@@ -5,12 +6,12 @@ import {
   SourceOauthConsentRequest,
 } from "../../request/GeneratedApi";
 
-export class SourceAuthService {
+export class SourceAuthService extends AirbyteRequestService {
   public getConsentUrl(body: SourceOauthConsentRequest) {
-    return getSourceOAuthConsent(body);
+    return getSourceOAuthConsent(body, this.requestOptions);
   }
 
   public completeOauth(body: CompleteSourceOauthRequest) {
-    return completeSourceOAuth(body);
+    return completeSourceOAuth(body, this.requestOptions);
   }
 }

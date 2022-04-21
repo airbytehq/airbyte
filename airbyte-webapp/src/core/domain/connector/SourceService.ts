@@ -1,5 +1,6 @@
 import { CommonRequestError } from "core/request/CommonRequestError";
 
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   checkConnectionToSource,
   checkConnectionToSourceForUpdate,
@@ -9,53 +10,61 @@ import {
   executeSourceCheckConnection,
   getSource,
   listSourcesForWorkspace,
+  SourceCoreConfig,
   SourceCreate,
   SourceUpdate,
   updateSource,
 } from "../../request/GeneratedApi";
 import { ConnectionConfiguration } from "../connection";
 
-export class SourceService {
+export class SourceService extends AirbyteRequestService {
   public async check_connection(
     params: {
       sourceId?: string;
       connectionConfiguration?: ConnectionConfiguration;
     },
-    // @ts-expect-error This is unusable with the generated requests
     requestParams?: RequestInit
   ) {
-    // TODO: Fix params logic
     if (!params.sourceId) {
-      return executeSourceCheckConnection(params as any);
+      return executeSourceCheckConnection(params as SourceCoreConfig, {
+        ...this.requestOptions,
+        signal: requestParams?.signal,
+      });
     } else if (params.connectionConfiguration) {
-      return checkConnectionToSourceForUpdate(params as any);
+      return checkConnectionToSourceForUpdate(params as SourceUpdate, {
+        ...this.requestOptions,
+        signal: requestParams?.signal,
+      });
     } else {
-      return checkConnectionToSource({ sourceId: params.sourceId });
+      return checkConnectionToSource(
+        { sourceId: params.sourceId },
+        { ...this.requestOptions, signal: requestParams?.signal }
+      );
     }
   }
 
   public get(sourceId: string) {
-    return getSource({ sourceId });
+    return getSource({ sourceId }, this.requestOptions);
   }
 
   public list(workspaceId: string) {
-    return listSourcesForWorkspace({ workspaceId });
+    return listSourcesForWorkspace({ workspaceId }, this.requestOptions);
   }
 
   public create(body: SourceCreate) {
-    return createSource(body);
+    return createSource(body, this.requestOptions);
   }
 
   public update(body: SourceUpdate) {
-    return updateSource(body);
+    return updateSource(body, this.requestOptions);
   }
 
   public delete(sourceId: string) {
-    return deleteSource({ sourceId });
+    return deleteSource({ sourceId }, this.requestOptions);
   }
 
   public async discoverSchema(sourceId: string) {
-    const result = await discoverSchemaForSource({ sourceId });
+    const result = await discoverSchemaForSource({ sourceId }, this.requestOptions);
 
     if (!result.jobInfo?.succeeded || !result.catalog) {
       // @ts-expect-error TODO: address this case
