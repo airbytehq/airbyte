@@ -334,7 +334,7 @@ public class AcceptanceTests {
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
     final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(destinationDefinitionId));
+        .getDestinationDefinitionSpecification(new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(destinationDefinitionId).workspaceId(UUID.randomUUID()));
     assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
@@ -345,7 +345,7 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testFailedGet404() {
     final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(UUID.randomUUID())));
+        .getDestinationDefinitionSpecification(new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID())));
     assertEquals(404, e.getCode());
   }
 
@@ -356,7 +356,7 @@ public class AcceptanceTests {
   public void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = getPostgresSourceDefinitionId();
     final SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
-        .getSourceDefinitionSpecification(new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(sourceDefId));
+        .getSourceDefinitionSpecification(new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(sourceDefId).workspaceId(UUID.randomUUID()));
     assertEquals(sourceDefId, spec.getSourceDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
