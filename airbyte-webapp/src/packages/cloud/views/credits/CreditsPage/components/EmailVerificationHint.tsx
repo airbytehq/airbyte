@@ -42,6 +42,7 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
   const onResendVerificationMail = async () => {
     try {
       await sendEmailVerification();
+      setIsEmailResend(true);
     } catch (error) {
       switch (error.code) {
         case AuthErrorCodes.NETWORK_REQUEST_FAILED:
@@ -72,7 +73,6 @@ export const EmailVerificationHint: React.FC<Props> = ({ className }) => {
           });
       }
     }
-    setIsEmailResend(true);
   };
 
   return (
