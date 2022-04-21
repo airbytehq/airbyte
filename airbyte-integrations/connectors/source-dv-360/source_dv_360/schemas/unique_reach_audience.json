@@ -15,18 +15,21 @@
       ]
     },
     "age": {
+      "description": "required",
       "type": [
         "null",
         "string"
       ]
     },
     "country": {
+      "description": "required",
       "type": [
         "null",
         "string"
       ]
     },
     "gender": {
+      "description": "required",
       "type": [
         "null",
         "string"

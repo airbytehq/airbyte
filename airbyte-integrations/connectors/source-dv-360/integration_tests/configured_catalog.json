@@ -4,32 +4,49 @@
       "stream": {
         "name": "standard",
         "json_schema": {
-          "date": {
-            "type": [
-              "null",
-              "string"
-            ]
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "partner_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "partner": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "clicks": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
           },
-          "partner_id": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "clicks": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["date"]
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ],
+          "source_defined_cursor": false,
+          "default_cursor_field": [
+            "date"
+          ]
+        }
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["date"]
+      "cursor_field": [
+        "date"
+      ]
     },
     {
       "stream": {
@@ -50,6 +67,12 @@
                 "string"
               ]
             },
+            "partner": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
             "cookie_reach_impression_reach": {
               "type": [
                 "null",
@@ -58,111 +81,86 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
         "source_defined_cursor": false,
-        "default_cursor_field": ["date"]
+        "default_cursor_field": [
+          "date"
+        ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["date"]
-    },
-    {
-      "stream": {
-        "name": "floodlight",
-        "json_schema": {
-          "date": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "partner_id": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "floodlight_impressions": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["date"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["date"]
+      "cursor_field": [
+        "date"
+      ]
     },
     {
       "stream": {
         "name": "unique_reach_audience",
         "json_schema": {
-          "date": {
-            "type": [
-              "null",
-              "string"
-            ]
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "partner_id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "partner": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "country": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "age": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "gender": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "viewable_impressions": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
           },
-          "partner_id": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "viewable_impressions": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["date"]
+          "supported_sync_modes": [
+            "full_refresh",
+            "incremental"
+          ],
+          "source_defined_cursor": false,
+          "default_cursor_field": [
+            "date"
+          ]
+        }
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["date"]
-    },
-    {
-      "stream": {
-        "name": "floodlight",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["date"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["date"]
-    },
-    {
-      "stream": {
-        "name": "unique_reach_audience",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["date"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["date"]
-    },
-    {
-      "stream": {
-        "name": "audience_composition",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["date"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["date"]
+      "cursor_field": [
+        "date"
+      ]
     }
   ]
 }

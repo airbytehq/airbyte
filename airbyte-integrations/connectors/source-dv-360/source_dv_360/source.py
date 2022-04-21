@@ -62,7 +62,7 @@ class SourceDV360(AbstractSource):
             request= dbm_service.queries().listqueries().execute()
             return True, None
         except Exception as err:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Unable to connect to Google Ads API with the provided credentials - {repr(err)}")
+            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(err)}"
 
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

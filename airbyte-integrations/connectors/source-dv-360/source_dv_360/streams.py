@@ -234,7 +234,9 @@ class DBMStream(Stream, ABC):
       data = self.buffer_reader(csv_response) # Remove the unnecessary rows that do not have data
       reader = csv.DictReader(data, fieldnames=header) #convert csv data into dict rows to be yielded by the generator
       for row in reader:
-        yield row
+        #sometimes the report comes with an additional line for the some of the KPIs, which should be discarded
+        if row["partner_id"] != "":
+          yield row
 
 
   def buffer_reader(self, buffer:io.StringIO):
@@ -313,25 +315,25 @@ class DBMIncrementalStream(DBMStream, ABC):
     start_date = stream_slice.get("start_date"), end_date = stream_slice.get("end_date"), partner_id = self._partner_id)
     return query
 
-class AudienceComposition(DBMStream):
+class AudienceComposition(DBMIncrementalStream):
   """
   Audience Composition stream
   """
   primary_key = None
 
-class Floodlight(DBMStream):
+class Floodlight(DBMIncrementalStream):
   """
   Floodlight stream
   """
   primary_key = None
 
-class Standard(DBMStream):
+class Standard(DBMIncrementalStream):
   """
   Standard stream
   """
   primary_key = None
 
-class UniqueReachAudience(DBMStream):
+class UniqueReachAudience(DBMIncrementalStream):
   """
   Unique Reach Audience stream
   """
