@@ -51,7 +51,7 @@ jooq {
                     database {
                         name = 'org.jooq.meta.postgres.PostgresDatabase'
                         inputSchema = 'public'
-                        excludes = 'airbyte_configs_migrations'
+                        excludes = 'airbyte_.*_migrations|attempt.*|.*job.*|airbyte_metadata'
                     }
                     target {
                         packageName = 'io.airbyte.db.instance.configs.jooq'
@@ -65,7 +65,6 @@ jooq {
             generateSchemaSourceOnCompilation = true
             generationTool {
                 jdbc {
-                    println env.DATABASE_URL
                     driver = 'org.postgresql.Driver'
                     url = env.DATABASE_URL
                     user = env.DATABASE_USER
@@ -76,7 +75,7 @@ jooq {
                     database {
                         name = 'org.jooq.meta.postgres.PostgresDatabase'
                         inputSchema = 'public'
-                        excludes = 'airbyte_jobs_migrations'
+                        excludes = 'airbyte_.*_migrations|.*actor.*|connection.*|namespace.*|operat.*|release.*|source.*|status_type|state|workspace'
                     }
                     target {
                         packageName = 'io.airbyte.db.instance.jobs.jooq'
