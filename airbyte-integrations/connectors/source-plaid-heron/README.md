@@ -1,6 +1,8 @@
 # Plaid Heron Source
 
 This is the repository for the Plaid Heron source connector, written in Python.
+It takes transaction stream from Plaid, pass it to get transactions categorised and then save categorised transaction 
+along with individual stream of category.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/plaid-heron).
 
 ## Local development

@@ -9,41 +9,49 @@
       "access_token": {
         "type": "string",
         "title": "Access Token",
-        "description": "The end-user's Link access token."
+        "description": "The end-user's Link access token.",
+        "order": 4
       },
       "api_key": {
         "title": "API Key",
         "type": "string",
         "description": "The Plaid API key to use to hit the API.",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 0
       },
       "client_id": {
         "title": "Client ID",
         "type": "string",
-        "description": "The Plaid client id"
+        "description": "The Plaid client id",
+        "order": 1
       },
       "plaid_env": {
         "title": "Plaid Environment",
         "type": "string",
         "enum": ["sandbox", "development", "production"],
-        "description": "The Plaid environment"
+        "description": "The Plaid environment",
+        "order": 2
       },
       "start_date": {
         "title": "Start Date",
         "type": "string",
         "description": "The date from which you'd like to replicate data for Plaid in the format YYYY-MM-DD. All data generated after this date will be replicated.",
         "examples": ["2021-03-01"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 3
       },
       "heron_username": {
         "title": "Heron Username",
         "type": "string",
-        "description": "Username for heron account"
+        "description": "Username for heron account",
+        "order": 5
       },
       "heron_password": {
         "title": "Heron Password",
         "type": "string",
-        "description": "Password for heron account"
+        "airbyte_secret": true,
+        "description": "Password for heron account",
+        "order": 6
       }
     }
   }

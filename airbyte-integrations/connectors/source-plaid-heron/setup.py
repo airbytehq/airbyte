@@ -17,9 +17,10 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_plaid_heron",
-    description="Source implementation for Plaid Heron.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    description="Source implementation for Plaid Heron. Plaid transactions are passed to Heron "
+                "for categorisation and Category stream addition",
+    author="Ahmed Buksh",
+    author_email="ahmed.buksh@cogentlabs.co",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},

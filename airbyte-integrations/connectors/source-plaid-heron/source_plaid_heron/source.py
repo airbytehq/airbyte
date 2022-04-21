@@ -34,8 +34,8 @@ class PlaidHeronStream(Stream):
                 "secret": config["api_key"]
             }
         )
-        api_client = plaid.ApiClient(plaid_config)
-        self.client = plaid_api.PlaidApi(api_client)
+        plaid_api_client = plaid.ApiClient(plaid_config)
+        self.plaid_client = plaid_api.PlaidApi(plaid_api_client)
         self.access_token = config["access_token"]
         self.start_date = datetime.datetime.strptime(
             config.get("start_date"), "%Y-%m-%d"
@@ -43,7 +43,7 @@ class PlaidHeronStream(Stream):
         self.heron_auth_token = base64.b64encode(
             f"{config['heron_username']}:{config['heron_password']}".encode()
         )
-        self.headers = {
+        self.heron_auth_headers = {
             "Authorization": f"Basic {self.heron_auth_token.decode()}",
             "Content-Type": "application/json"
         }
@@ -67,7 +67,7 @@ class CategoryStream(PlaidHeronStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        response = requests.request("GET", self.api_url, headers=self.headers)
+        response = requests.request("GET", self.api_url, headers=self.heron_auth_headers)
         parsed_categories = []
         for category in json.loads(response.text).get("categories", []):
             parsed_categories.append({
@@ -93,7 +93,7 @@ class BalanceStream(PlaidHeronStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        balance_response = self.client.accounts_balance_get(AccountsBalanceGetRequest(access_token=self.access_token))
+        balance_response = self.plaid_client.accounts_balance_get(AccountsBalanceGetRequest(access_token=self.access_token))
         for balance in balance_response["accounts"]:
             message_dict = balance["balances"].to_dict()
             message_dict["account_id"] = balance["account_id"]
@@ -124,7 +124,7 @@ class IncrementalTransactionStream(PlaidHeronStream):
         options = TransactionsGetRequestOptions()
         options.offset = offset
 
-        return self.client.transactions_get(
+        return self.plaid_client.transactions_get(
             TransactionsGetRequest(access_token=self.access_token, start_date=start_date, end_date=end_date, options=options)
         )
 
@@ -190,7 +190,7 @@ class IncrementalTransactionStream(PlaidHeronStream):
         response = requests.request(
             "POST",
             "https://app.herondata.io/api/transactions",
-            headers=self.headers,
+            headers=self.heron_auth_headers,
             data=json.dumps(transactions)
         )
         categorised_transactions = {}
@@ -205,8 +205,8 @@ class SourcePlaidHeron(AbstractSource):
             plaid_config = plaid.Configuration(
                 host=SPEC_ENV_TO_PLAID_ENV[config["plaid_env"]], api_key={"clientId": config["client_id"], "secret": config["api_key"]}
             )
-            api_client = plaid.ApiClient(plaid_config)
-            client = plaid_api.PlaidApi(api_client)
+            plaid_api_client = plaid.ApiClient(plaid_config)
+            client = plaid_api.PlaidApi(plaid_api_client)
             try:
                 request = AccountsBalanceGetRequest(access_token=config["access_token"])
                 client.accounts_balance_get(request)

@@ -46,7 +46,8 @@
             "transaction_id",
             "category",
             "date",
-            "transaction_type"
+            "transaction_type",
+            "heron_category"
           ],
           "properties": {
             "account_id": { "type": "string" },
@@ -84,6 +85,16 @@
                 "ppd_id": { "type": ["string", "null"] },
                 "reason": { "type": ["string", "null"] },
                 "reference_number": { "type": ["string", "null"] }
+              }
+            },
+            "heron_category": {
+              "type": ["object", "null"],
+              "properties": {
+                "annotator": { "type": ["string", "null"] },
+                "confidence": { "type": ["float", "null"] },
+                "heron_id": { "type": ["string", "null"] },
+                "label": { "type": ["string", "null"] },
+                "model_version": { "type": ["string", "null"] }
               }
             },
             "account_owner": { "type": ["string", "null"] },
