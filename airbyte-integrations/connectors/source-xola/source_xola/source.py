@@ -174,10 +174,12 @@ class Orders(XolaStream):
 class Transactions(XolaStream):
     primary_key = "id"
     seller_id = None
+    cursor_field = None
 
-    def __init__(self, seller_id: str, x_api_key: str, **kwargs):
+    def __init__(self, seller_id: str, x_api_key: str, cursor_field: str, **kwargs):
         super().__init__(x_api_key, **kwargs)
         self.seller_id = seller_id
+        self.cursor_field = cursor_field
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
@@ -186,7 +188,11 @@ class Transactions(XolaStream):
         """
         should return "orders". Required.
         """
-        return "transactions"
+        path = "transactions"
+        if stream_state is not None and self.cursor_field in stream_state:
+            path += "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
+        return path
+    
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
@@ -248,6 +254,27 @@ class Transactions(XolaStream):
             modified_response.append(resp)
         return modified_response
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+           Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+        if current_stream_state is not None and self.cursor_field in current_stream_state:
+            current_parsed_date = current_stream_state[self.cursor_field]
+        
+            print("current parsed date ", current_stream_state)
+            print("latest record ", latest_record)
+            latest_record_date = latest_record[self.cursor_field]
+            
+            if current_parsed_date is not None:
+                return {self.cursor_field: max(current_parsed_date, latest_record_date)}
+            elif latest_record_date is not None:
+                return {self.cursor_field: latest_record_date}
+            else:
+                return {self.cursor_field: 0}
+        else:
+            return {self.cursor_field: 0}
 
 # Basic incremental stream
 
@@ -270,7 +297,7 @@ class IncrementalXolaStream(XolaStream, ABC):
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
         :return str: The name of the cursor field.
         """
-        return [""]
+        return ["updatedAt"]
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
             Mapping[str, Any]:
@@ -278,7 +305,21 @@ class IncrementalXolaStream(XolaStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        return None
+        if current_stream_state is not None and self.cursor_field in current_stream_state:
+            current_parsed_date = current_stream_state[self.cursor_field]
+        
+            print("current parsed date ", current_stream_state)
+            print("latest record ", latest_record)
+            latest_record_date = latest_record[self.cursor_field]
+            
+            if current_parsed_date is not None:
+                return {self.cursor_field: max(current_parsed_date, latest_record_date)}
+            elif latest_record_date is not None:
+                return {self.cursor_field: latest_record_date}
+            else:
+                return {self.cursor_field: 0}
+        else:
+            return {self.cursor_field: 0}
 
 
 # Source
@@ -323,6 +364,6 @@ class SourceXola(AbstractSource):
         return [
             Orders(x_api_key=config['x-api-key'],
                    seller_id=config['seller-id'],
-                   cursor_field=cursor_field)
-            # Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+                   cursor_field=cursor_field),
+            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'],cursor_field=cursor_field)
         ]
