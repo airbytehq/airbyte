@@ -334,7 +334,8 @@ public class AcceptanceTests {
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
     final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(destinationDefinitionId).workspaceId(UUID.randomUUID()));
+        .getDestinationDefinitionSpecification(
+            new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(destinationDefinitionId).workspaceId(UUID.randomUUID()));
     assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
@@ -345,7 +346,8 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testFailedGet404() {
     final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID())));
+        .getDestinationDefinitionSpecification(
+            new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID())));
     assertEquals(404, e.getCode());
   }
 
