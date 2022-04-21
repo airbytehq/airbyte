@@ -9,9 +9,10 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from google.auth.exceptions import RefreshError
 
-from .client import GoogleSpreadsheetsClient
-from .helpers import connection_test_write
-from .writer import GoogleSpreadsheetsWriter
+from .client import GoogleSheetsClient
+from .helpers import connection_test_write, get_spreadsheet_id
+from .writer import GoogleSheetsWriter
+from .spreadsheet import GoogleSheets
 
 
 class DestinationGoogleSheets(Destination):
@@ -22,12 +23,13 @@ class DestinationGoogleSheets(Destination):
             Checks whether target spreadsheet_id is available using provided credentials.
         Returns:
             :: Status.SUCCEEDED - if creadentials are valid, token is refreshed, target spreadsheet is available.
-            :: Status.FAILED - if could not obtain fresh token, target spreadsheet is not available or other exception occured (with message).
+            :: Status.FAILED - if could not obtain new token, target spreadsheet is not available or other exception occured (with message).
         """
-
+        spreadsheet_id = get_spreadsheet_id(config["spreadsheet_id"])
         try:
-            client = GoogleSpreadsheetsClient(config).client
-            if connection_test_write(client) is True:
+            client = GoogleSheetsClient(config).authorize()
+            spreadsheet = GoogleSheets(client, spreadsheet_id)
+            if connection_test_write(spreadsheet) is True:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except RefreshError as token_err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{token_err}")
@@ -41,7 +43,11 @@ class DestinationGoogleSheets(Destination):
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
         """
-        writer = GoogleSpreadsheetsWriter(GoogleSpreadsheetsClient(config))
+        spreadsheet_id = get_spreadsheet_id(config["spreadsheet_id"])
+        
+        client = GoogleSheetsClient(config).authorize()
+        spreadsheet = GoogleSheets(client, spreadsheet_id)
+        writer = GoogleSheetsWriter(spreadsheet)
 
         for configured_stream in configured_catalog.streams:
             writer.buffer_stream(configured_stream)

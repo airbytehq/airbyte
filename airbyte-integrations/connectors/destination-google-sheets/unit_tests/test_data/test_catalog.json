@@ -10,31 +10,13 @@
                 "id": {
                   "type": ["null", "string"]
                 },
-                "str": {
-                  "type": ["null", "string"]
-                },
-                "num": {
-                  "type": ["null", "number"]
+                "key1": {
+                  "type": ["null", "numeric"]
                 },
                 "list": {
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
-                  }
-                },
-                "dict": {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "type": ["null", "string"]
-                  }
-                },
-                "double_list": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "type": ["null", "array"],
-                      "items": {
-                        "type": ["null", "string"]
-                      }
                   }
                 }
           }
@@ -53,36 +35,18 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "str": {
-              "type": ["null", "string"]
-            },
-            "num": {
-              "type": ["null", "number"]
-            },
-            "list": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "string"]
-              }
-            },
-            "dict": {
-              "type": ["null", "object"],
-              "properties": {
-                "type": ["null", "string"]
-              }
-            },
-            "double_list": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "array"],
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "key1": {
+                  "type": ["null", "numeric"]
+                },
+                "list": {
+                  "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
                   }
-              }
-            }
+                }
           }
         },
         "supported_sync_modes": ["full_refresh"],
@@ -102,31 +66,13 @@
             "id": {
               "type": ["null", "string"]
             },
-            "str": {
-              "type": ["null", "string"]
-            },
-            "num": {
-              "type": ["null", "number"]
+            "key1": {
+              "type": ["null", "numeric"]
             },
             "list": {
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
-              }
-            },
-            "dict": {
-              "type": ["null", "object"],
-              "properties": {
-                "type": ["null", "string"]
-              }
-            },
-            "double_list": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "array"],
-                  "items": {
-                    "type": ["null", "string"]
-                  }
               }
             }
           }

@@ -17,7 +17,7 @@ SCOPES = [
 ]
 
 
-class GoogleSpreadsheetsAuth:
+class GoogleSheetsAuth:
     @staticmethod
     def get_authenticated_google_credentials(credentials: Dict[str, str], scopes: List[str] = SCOPES) -> client_account.Credentials:
         if credentials.get("auth_type") == "Client":

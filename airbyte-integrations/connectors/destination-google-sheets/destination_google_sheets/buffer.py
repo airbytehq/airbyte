@@ -11,17 +11,12 @@ from airbyte_cdk.models import AirbyteStream
 
 class WriteBuffer:
 
+    # Default instance of AirbyteLogger
+    logger = AirbyteLogger()
     # Buffer for input records
     records_buffer = []
     # Placeholder for streams metadata
     stream_info = []
-
-    @property
-    def logger(self) -> AirbyteLogger:
-        """
-        Default instance of AirbyteLogger
-        """
-        return AirbyteLogger()
 
     @property
     def default_missing(self) -> str:
@@ -46,14 +41,12 @@ class WriteBuffer:
         Particulary, creates the data structure for `records_stream`.
         Populates `stream_info` placeholder with stream metadata information.
         """
-        if configured_stream:
-            self.records_buffer.append({configured_stream.stream.name: []})
-            self.stream_info.append(
-                {
-                    configured_stream.stream.name: sorted(list(configured_stream.stream.json_schema.get("properties").keys())),
-                    "is_set": False,
-                }
-            )
+        stream = configured_stream.stream
+        stream_schema = stream.json_schema
+        stream_name = stream.name
+        
+        self.records_buffer.append( { stream_name : [] } )
+        self.stream_info.append( { stream_name: sorted(list(stream_schema.get("properties").keys())), "is_set": False } )
 
     def buffer_has_more_records(self) -> bool:
         """
@@ -63,7 +56,6 @@ class WriteBuffer:
             stream_name = list(stream.keys())[0]
             if stream_name in stream:
                 result = True if len(stream[stream_name]) > 0 else False
-                
         return result
 
     def add_to_buffer(self, stream_name: str, record: Mapping):
@@ -86,9 +78,7 @@ class WriteBuffer:
         """
         Cleans up the `records_buffer` values, belonging to input stream.
         """
-        for stream in self.records_buffer:
-            if stream_name in stream:
-                stream[stream_name].clear()
+        [ stream[stream_name].clear() for stream in self.records_buffer if stream_name in stream ]
 
     def normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:
         """
@@ -103,39 +93,42 @@ class WriteBuffer:
         EXAMPLE:
         - UnderSetting:
             * Catalog:
-                - has 3 entities
-                    ['id', 'key1', 'key2']
+                - has 3 entities:
+                    [ 'id', 'key1', 'key2' ]
+                              ^
             * Input record:
-                - missing 1 entity compare to catalog
-                    [ {'id': 123}, {'key2': 'value'}]
+                - missing 1 entity, compare to catalog
+                    { 'id': 123,    'key2': 'value' }
+                                  ^
             * Result:
                 - 'key1' has been added to the record, because it was declared in catalog, to keep the data structure.
-                    { {'id': 123}, {'key1': ''}, {'key2': 'value2'} }
-
+                    {'id': 123, 'key1': '', {'key2': 'value'} }
+                                  ^
         - OverSetting:
             * Catalog:
-                - has 3 entities
-                    ['id', 'key1', 'key2']
+                - has 3 entities:
+                    [ 'id', 'key1', 'key2',   ]
+                                            ^
             * Input record:
-                - has 1 more enitity compare to catalog, and doesn't have 'key1'.
-                    [ {'id': 123}, {'key2': 'value'}, {'key3': 'value'} ]
+                - doesn't have entity 'key1'
+                - has 1 more enitity, compare to catalog 'key3'
+                    { 'id': 123,     ,'key2': 'value', 'key3': 'value' }
+                                  ^                      ^
             * Result:
-                - 'key3' was dropped, because it was not declared in catalog, to keep the data structure.
-                    { {'id': 123}, {'key1': ''}, {'key2': 'value2'} }
+                - 'key1' was added, because it expected be the part of the record, to keep the data structure
+                - 'key3' was dropped, because it was not declared in catalog, to keep the data structure
+                    { 'id': 123, 'key1': '', 'key2': 'value',   }
+                                   ^                          ^
+                                                           
         """
+        
         for stream in self.stream_info:
             if stream_name in stream:
-                
-                # undersetting scenario
-                for key in stream[stream_name]:
-                    if key not in record.keys():
-                        record.update({key: self.default_missing})
-                        
-                # oversetting scenario
-                for key in record.copy().keys():
-                    if key not in stream[stream_name]:
-                        record.pop(key)
-                        
+                    # undersetting scenario
+                [ record.update({key: self.default_missing}) for key in stream[stream_name] if key not in record.keys() ]
+                    # oversetting scenario
+                [ record.pop(key) for key in record.copy().keys() if key not in stream[stream_name] ]     
+                 
         return dict(sorted(record.items(), key=lambda x: x[0]))
 
     def get_record_values(self, record: Mapping) -> List[str]:

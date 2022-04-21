@@ -3,24 +3,23 @@
 #
 
 
-from typing import List
-
 from airbyte_cdk.models import AirbyteStream
 from pygsheets import Worksheet
 
 from .buffer import WriteBuffer
-from .client import GoogleSpreadsheetsClient
+from .spreadsheet import GoogleSheets
 
 
-class GoogleSpreadsheetsWriter(WriteBuffer):
-    def __init__(self, client: GoogleSpreadsheetsClient):
-        self.client = client
+class GoogleSheetsWriter(WriteBuffer):
+    
+    def __init__(self, spreadsheet: GoogleSheets):
+        self.spreadsheet = spreadsheet
 
     def delete_stream_entries(self, stream_name: str):
         """
         Deletes all the records belonging to the input stream.
         """
-        self.client.clean_worksheet(f"{stream_name}")
+        self.spreadsheet.clean_worksheet(f"{stream_name}")
         
     def check_headers(self, stream_name: str):
         """
@@ -29,7 +28,7 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         for streams in self.stream_info:
             if stream_name in streams:
                 if not streams["is_set"]:
-                    self.client.set_headers(stream_name, streams[stream_name])
+                    self.spreadsheet.set_headers(stream_name, streams[stream_name])
                     streams["is_set"] = True
 
     def queue_write_operation(self, stream_name: str):
@@ -62,7 +61,7 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
                 values = streams[stream_name]
                 
         if len(values) > 0:
-            stream: Worksheet = self.client.open_worksheet(f"{stream_name}")
+            stream: Worksheet = self.spreadsheet.open_worksheet(f"{stream_name}")
             self.logger.info(f"Writing data for stream: {stream_name}")
             stream.append_table(values, start="A2", dimension="ROWS")
         else:
@@ -88,12 +87,12 @@ class GoogleSpreadsheetsWriter(WriteBuffer):
         primary_key: str = configured_stream.primary_key[0][0]
         stream_name: str = configured_stream.stream.name
         
-        stream: Worksheet = self.client.open_worksheet(f"{stream_name}")
-        rows_to_remove: list = self.client.find_duplicates(stream, primary_key)
+        stream: Worksheet = self.spreadsheet.open_worksheet(f"{stream_name}")
+        rows_to_remove: list = self.spreadsheet.find_duplicates(stream, primary_key)
 
         if len(rows_to_remove) > 0:
             self.logger.info(f"Duplicated records are found for stream: {stream_name}, resolving...")
-            self.client.remove_duplicates(stream, rows_to_remove)
+            self.spreadsheet.remove_duplicates(stream, rows_to_remove)
             self.logger.info(f"Finished deduplicating records for stream: {stream_name}")
         else:
             print(f"No duplicated records found for stream: {stream_name}")
