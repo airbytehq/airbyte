@@ -2,19 +2,19 @@ import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import { cancelJob, getJobDebugInfo, getJobInfo, JobListRequestBody, listJobsFor } from "../../request/GeneratedApi";
 
 export class JobsService extends AirbyteRequestService {
-  public async list(listParams: JobListRequestBody) {
+  public list(listParams: JobListRequestBody) {
     return listJobsFor(listParams, this.requestOptions);
   }
 
-  public async get(id: number) {
+  public get(id: number) {
     return getJobInfo({ id }, this.requestOptions);
   }
 
-  public async cancel(id: number) {
+  public cancel(id: number) {
     return cancelJob({ id }, this.requestOptions);
   }
 
-  public async getDebugInfo(id: number) {
+  public getDebugInfo(id: number) {
     return getJobDebugInfo({ id }, this.requestOptions);
   }
 }
