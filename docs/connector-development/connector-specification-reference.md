@@ -80,19 +80,28 @@ this will display a multi-line textbox in the UI like the following screenshot: 
 ### Hiding inputs in the UI
 In some rare cases, a connector may wish to expose an input that is not available in the UI, but is still potentially configurable when running the connector outside of Airbyte, or via the UI. For example, exposing a very technical configuration like the page size of an outgoing HTTP requests may only be relevant to power users, and therefore shouldn't be available via the UI but might make sense to expose via the API. 
 
-In this case, use the `hidden: true` keyword to hide that field from the UI. E.g: 
+In this case, use the `"airbyte_hidden": true` keyword to hide that field from the UI. E.g: 
 
 ```
-{
-  "first_name": {
-    "type": "string"
-  }, 
-  "secret_name": {
-    "type": "string", 
-    "hidden": true
-  }
+{ 
+
+"first_name": {
+  "type": "string",
+  "title": "First Name"
+}, 
+"secret_name": {
+  "type": "string", 
+  "title": "You can't see me!!!",
+  "airbyte_hidden": true
+}
+
 }
 ```
+
+Results in the following form: 
+
+<img width="586" alt="Screen Shot 2022-04-21 at 2 40 33 PM" src="https://user-images.githubusercontent.com/6246757/164556606-48a53725-f075-4c3f-88fb-68920e78cc32.png">
+
 
 ### Using `oneOf`s
 
