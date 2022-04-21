@@ -45,7 +45,7 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  const clickRow = (source: ITableDataItem) => push(`../../${RoutePaths.Connections}/${source.connectionId}`);
+  const clickRow = (source: ITableDataItem) => push(`../../../${RoutePaths.Connections}/${source.connectionId}`);
 
   return (
     <ConnectionTable

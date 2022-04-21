@@ -15,7 +15,7 @@ const SourcesPage: React.FC = () => (
     <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
     <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
     <Route
-      path=":id"
+      path=":id/*"
       element={
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <SourceItemPage />

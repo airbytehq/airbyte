@@ -3,10 +3,13 @@ import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import { useToggle } from "react-use";
 
+import { FormChangeTracker } from "components/FormChangeTracker";
+
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 import { FormBaseItem } from "core/form/types";
 import { ConnectorDefinition, ConnectorDefinitionSpecification, Scheduler } from "core/domain/connector";
 import { isDefined } from "utils/common";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 
 import { ConnectionConfiguration } from "../../../core/domain/connection";
 import {
@@ -36,7 +39,7 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{
   schema: JSONSchema7;
 }> = ({ schema }) => {
   const { widgetsInfo } = useServiceForm();
-  const { values, setFieldValue } = useFormikContext<ServiceFormValues>();
+  const { values, resetForm } = useFormikContext<ServiceFormValues>();
 
   const valueRef = useRef<ConnectionConfiguration>();
   valueRef.current = values.connectionConfiguration;
@@ -53,7 +56,12 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{
       .filter(([k, v]) => isDefined(v.default) && !isDefined(getIn(constPatchedValues, k)))
       .reduce((acc, [k, v]) => setIn(acc, k, v.default), constPatchedValues);
 
-    setFieldValue("connectionConfiguration", defaultPatchedValues);
+    resetForm({
+      values: {
+        ...values,
+        connectionConfiguration: defaultPatchedValues,
+      },
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema]);
@@ -99,6 +107,9 @@ export type ServiceFormProps = {
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
+  const formId = useUniqueFormId();
+  const { clearFormChange } = useFormChangeTrackerService();
+
   const [isOpenRequestModal, toggleOpenRequestModal] = useToggle(false);
   const [initialRequestName, setInitialRequestName] = useState<string>();
   const {
@@ -178,12 +189,13 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   const onFormSubmit = useCallback(
-    async (values) => {
+    async (values: ServiceFormValues) => {
       const valuesToSend = getValues(values);
+      await onSubmit(valuesToSend);
 
-      return onSubmit(valuesToSend);
+      clearFormChange(formId);
     },
-    [getValues, onSubmit]
+    [clearFormChange, formId, getValues, onSubmit]
   );
 
   return (
@@ -194,7 +206,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}
     >
-      {() => (
+      {({ dirty }) => (
         <ServiceFormContextProvider
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
@@ -207,6 +219,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         >
           {!props.isEditMode && <SetDefaultName />}
           <FormikPatch />
+          <FormChangeTracker changed={dirty} formId={formId} />
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} />
           <FormRoot
             {...props}
