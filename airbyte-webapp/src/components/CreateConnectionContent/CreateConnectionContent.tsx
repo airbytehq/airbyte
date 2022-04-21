@@ -51,15 +51,16 @@ const CreateConnectionContent: React.FC<IProps> = ({
   const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
 
-  const { schema, isLoading, schemaErrorStatus, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
+  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
 
   const connection = useMemo(
     () => ({
       syncCatalog: schema,
       destination,
       source,
+      catalogId,
     }),
-    [schema, destination, source]
+    [schema, destination, source, catalogId]
   );
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
@@ -75,6 +76,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
         name: destination?.name ?? "",
         destinationDefinitionId: destination?.destinationDefinitionId ?? "",
       },
+      sourceCatalogId: catalogId,
     });
 
     return {
