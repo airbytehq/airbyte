@@ -6,7 +6,7 @@ import { ControlLabels, DropDown } from "components";
 
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
-const StreamOptions = [
+export const StreamOptions = [
   {
     value: ConnectionNamespaceDefinition.Source,
     label: <FormattedMessage id="connectionForm.sourceFormat" />,
