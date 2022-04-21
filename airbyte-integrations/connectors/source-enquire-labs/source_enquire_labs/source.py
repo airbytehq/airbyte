@@ -100,6 +100,39 @@ class QuestionStream(EnquireLabsStream):
         return "questions"
 
 
+class QuestionResponseStream(EnquireLabsStream):
+    def __init__(self, secret_key, before, after, limit, since, until, question_id, **kwargs):
+        super().__init__(secret_key=secret_key, **kwargs)
+        self.before = before
+        self.after = after
+        self.limit = limit
+        self.since = since
+        self.until = until
+        self.question_id = question_id
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return "responses"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        return {
+            "before": self.before,
+            "after": self.after,
+            "limit": self.limit,
+            "since": self.since,
+            "until": self.until,
+            "question_id": self.question_id
+        }
+
+
 class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
@@ -165,4 +198,13 @@ class SourceEnquireLabs(AbstractSource):
         # TODO remove the authenticator if not required.
         auth = TokenAuthenticator(token=config.get("secret_key"))  # Oauth2Authenticator is also available if you need oauth support
 
-        return [QuestionStream(secret_key=config["secret_key"])]
+        args = {
+            "secret_key": config["secret_key"],
+            "before": config.get("before"),
+            "after": config.get("after"),
+            "limit": config.get("limit"),
+            "since": config.get("since"),
+            "until": config.get("until"),
+            "question_id": config.get("question_id")
+        }
+        return [QuestionStream(secret_key=config["secret_key"]), QuestionResponseStream(**args)]
