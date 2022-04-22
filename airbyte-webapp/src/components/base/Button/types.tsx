@@ -6,4 +6,5 @@ export type IProps = {
   iconOnly?: boolean;
   wasActive?: boolean;
   clickable?: boolean;
+  size?: "m" | "xl";
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;

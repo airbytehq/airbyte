@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.process;
 
-import com.google.common.collect.MoreCollectors;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -16,7 +15,6 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
-import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.LocalObjectReference;
@@ -33,6 +31,7 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.PodResource;
+import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +47,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -114,14 +114,17 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String STDOUT_PIPE_FILE = PIPES_DIR + "/stdout";
   private static final String STDERR_PIPE_FILE = PIPES_DIR + "/stderr";
   public static final String CONFIG_DIR = "/config";
+  public static final String TMP_DIR = "/tmp";
   private static final String TERMINATION_DIR = "/termination";
   private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
   private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
   public static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
 
-  // 143 is the typical SIGTERM exit code.
-  private static final int KILLED_EXIT_CODE = 143;
   private static final int STDIN_REMOTE_PORT = 9001;
+
+  // 143 is the typical SIGTERM exit code.
+  // Used when the process is destroyed and the exit code can't be retrieved.
+  private static final int KILLED_EXIT_CODE = 143;
 
   // init container should fail if no new data copied into the init container within
   // INIT_RETRY_TIMEOUT_MINUTES
@@ -131,26 +134,20 @@ public class KubePodProcess extends Process implements KubePod {
 
   private final KubernetesClient fabricClient;
   private final Pod podDefinition;
-  // Necessary since it is not possible to retrieve the pod's actual exit code upon termination. This
-  // is because the Kube API server does not keep
-  // terminated pod history like it does for successful pods.
-  // This variable should be set in functions where the pod is forcefully terminated. See
-  // getReturnCode() for more info.
-  private final AtomicBoolean wasKilled = new AtomicBoolean(false);
+
   private final AtomicBoolean wasClosed = new AtomicBoolean(false);
 
   private final OutputStream stdin;
   private InputStream stdout;
   private InputStream stderr;
-  private Integer returnCode = null;
-  private Long lastStatusCheck = null;
 
   private final ServerSocket stdoutServerSocket;
-  private final Duration statusCheckInterval;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
   private final int stderrLocalPort;
   private final ExecutorService executorService;
+  private final CompletableFuture<Integer> exitCodeFuture;
+  private final SharedIndexInformer<Pod> podInformer;
 
   public static String getPodIP(final KubernetesClient client, final String podName, final String podNamespace) {
     final var pod = client.pods().inNamespace(podNamespace).withName(podName).get();
@@ -304,19 +301,11 @@ public class KubePodProcess extends Process implements KubePod {
    * heavy-handed compared to the 10 lines here.
    */
   private static void waitForInitPodToRun(final KubernetesClient client, final Pod podDefinition) throws InterruptedException {
+    // todo: this could use the watcher instead of waitUntilConditions
     LOGGER.info("Waiting for init container to be ready before copying files...");
     final PodResource<Pod> pod =
         client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName());
-    try {
-      pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
-    } catch (final InterruptedException e) {
-      LOGGER.error("Init pod not found after 5 minutes");
-      LOGGER.error("Pod search executed in namespace {} for pod name {} resulted in: {}",
-          podDefinition.getMetadata().getNamespace(),
-          podDefinition.getMetadata().getName(),
-          pod.get().toString());
-      throw e;
-    }
+    pod.waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
     LOGGER.info("Init container present..");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
@@ -356,11 +345,11 @@ public class KubePodProcess extends Process implements KubePod {
   public KubePodProcess(final boolean isOrchestrator,
                         final String processRunnerHost,
                         final KubernetesClient fabricClient,
-                        final Duration statusCheckInterval,
                         final String podName,
                         final String namespace,
                         final String image,
                         final String imagePullPolicy,
+                        final String sidecarImagePullPolicy,
                         final int stdoutLocalPort,
                         final int stderrLocalPort,
                         final String kubeHeartbeatUrl,
@@ -370,8 +359,9 @@ public class KubePodProcess extends Process implements KubePod {
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
                         final List<TolerationPOJO> tolerations,
-                        final Optional<Map<String, String>> nodeSelectors,
+                        final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
+                        final Map<String, String> annotations,
                         final String socatImage,
                         final String busyboxImage,
                         final String curlImage,
@@ -380,7 +370,6 @@ public class KubePodProcess extends Process implements KubePod {
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
-    this.statusCheckInterval = statusCheckInterval;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
     this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
@@ -426,13 +415,24 @@ public class KubePodProcess extends Process implements KubePod {
         .withMountPath(TERMINATION_DIR)
         .build();
 
+    final Volume tmpVolume = new VolumeBuilder()
+        .withName("tmp")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build();
+
+    final VolumeMount tmpVolumeMount = new VolumeMountBuilder()
+        .withName("tmp")
+        .withMountPath(TMP_DIR)
+        .build();
+
     final Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount), busyboxImage);
     final Container main = getMain(
         image,
         imagePullPolicy,
         usesStdin,
         entrypointOverride,
-        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
+        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount, tmpVolumeMount),
         resourceRequirements,
         internalToExternalPorts,
         envMap,
@@ -445,6 +445,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", "socat -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final Container relayStdout = new ContainerBuilder()
@@ -453,6 +454,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final Container relayStderr = new ContainerBuilder()
@@ -461,6 +463,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh", "-c", String.format("cat %s | socat -d - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
@@ -477,6 +480,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
         .withResources(sidecarResources)
+        .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
     final List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
@@ -487,6 +491,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withNewMetadata()
         .withName(podName)
         .withLabels(labels)
+        .withAnnotations(annotations)
         .endMetadata()
         .withNewSpec();
 
@@ -496,17 +501,42 @@ public class KubePodProcess extends Process implements KubePod {
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
         .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
-        .withNodeSelector(nodeSelectors.orElse(null))
+        .withNodeSelector(nodeSelectors)
         .withRestartPolicy("Never")
         .withInitContainers(init)
         .withContainers(containers)
-        .withVolumes(pipeVolume, configVolume, terminationVolume)
+        .withVolumes(pipeVolume, configVolume, terminationVolume, tmpVolume)
         .endSpec()
         .build();
 
-    LOGGER.info("Creating pod...");
+    LOGGER.info("Creating pod {}...", pod.getMetadata().getName());
     val start = System.currentTimeMillis();
+
     this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
+
+    // We want to create a watch before the init container runs. Then we can guarantee
+    // that we're checking for updates across the full lifecycle of the main container.
+    // This is safe only because we are blocking the init pod until we copy files onto it.
+    // See the ExitCodeWatcher comments for more info.
+    exitCodeFuture = new CompletableFuture<>();
+    podInformer = fabricClient.pods()
+        .inNamespace(namespace)
+        .withName(pod.getMetadata().getName())
+        .inform();
+    podInformer.addEventHandler(new ExitCodeWatcher(
+        pod.getMetadata().getName(),
+        namespace,
+        exitCodeFuture::complete,
+        () -> {
+          LOGGER.info(prependPodInfo(
+              String.format(
+                  "Exit code watcher failed to retrieve the exit code. Defaulting to %s. This is expected if the job was cancelled.",
+                  KILLED_EXIT_CODE),
+              namespace,
+              podName));
+
+          exitCodeFuture.complete(KILLED_EXIT_CODE);
+        }));
 
     waitForInitPodToRun(fabricClient, podDefinition);
 
@@ -523,7 +553,7 @@ public class KubePodProcess extends Process implements KubePod {
     // container got stuck somehow.
     fabricClient.resource(podDefinition).waitUntilCondition(p -> {
       final boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
-      return isReady || isTerminal(p);
+      return isReady || KubePodResourceHelper.isTerminal(p);
     }, 20, TimeUnit.MINUTES);
     DogStatsDMetricSingleton.recordTimeGlobal(MetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, System.currentTimeMillis() - start);
 
@@ -592,20 +622,22 @@ public class KubePodProcess extends Process implements KubePod {
   }
 
   /**
-   * Immediately terminates the Kube Pod backing this process and cleans up IO resources.
+   * Waits for the Kube Pod backing this process and returns the exit value after closing resources.
    */
   @Override
   public int waitFor() throws InterruptedException {
-    final Pod refreshedPod =
-        fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
-    fabricClient.resource(refreshedPod).waitUntilCondition(KubePodProcess::isTerminal, 10, TimeUnit.DAYS);
-    wasKilled.set(true);
+    try {
+      exitCodeFuture.get();
+    } catch (final ExecutionException e) {
+      throw new RuntimeException(e);
+    }
+
     return exitValue();
   }
 
   /**
-   * Intended to gracefully clean up after a completed Kube Pod. This should only be called if the
-   * process is successful.
+   * Waits for the Kube Pod backing this process and returns the exit value until a timeout. Closes
+   * resources if and only if the timeout is not reached.
    */
   @Override
   public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
@@ -623,7 +655,7 @@ public class KubePodProcess extends Process implements KubePod {
     LOGGER.info(prependPodInfo("Destroying Kube process.", podNamespace, podName));
     try {
       fabricClient.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
-      wasKilled.set(true);
+      exitCodeFuture.complete(KILLED_EXIT_CODE);
     } finally {
       close();
       LOGGER.info(prependPodInfo("Destroyed Kube process.", podNamespace, podName));
@@ -658,106 +690,55 @@ public class KubePodProcess extends Process implements KubePod {
     if (this.stdin != null) {
       Exceptions.swallow(this.stdin::close);
     }
+
     if (this.stdout != null) {
       Exceptions.swallow(this.stdout::close);
     }
+
     if (this.stderr != null) {
       Exceptions.swallow(this.stderr::close);
     }
+
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
+    Exceptions.swallow(this.podInformer::close);
     Exceptions.swallow(this.executorService::shutdownNow);
 
     KubePortManagerSingleton.getInstance().offer(stdoutLocalPort);
     KubePortManagerSingleton.getInstance().offer(stderrLocalPort);
 
-    LOGGER.debug(prependPodInfo("Closed", podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName()));
+    LOGGER.info(prependPodInfo("Closed all resources for pod", podDefinition.getMetadata().getNamespace(), podDefinition.getMetadata().getName()));
   }
 
-  public static boolean isTerminal(final Pod pod) {
-    if (pod.getStatus() != null) {
-      // Check if "main" container has terminated, as that defines whether the parent process has
-      // terminated.
-      final ContainerStatus mainContainerStatus = pod.getStatus()
-          .getContainerStatuses()
-          .stream()
-          .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
-          .collect(MoreCollectors.onlyElement());
-
-      return mainContainerStatus.getState() != null && mainContainerStatus.getState().getTerminated() != null;
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * This method hits the Kube Api server to retrieve statuses. Most of the complexity here is
-   * minimising the api calls for performance.
-   */
-  private int getReturnCode(final Pod pod) {
-    if (returnCode != null) {
-      return returnCode;
-    }
-
-    final String podName = pod.getMetadata().getName();
-    final String podNamespace = pod.getMetadata().getNamespace();
-
-    // If there is no return code (see above) and we have checked the status recently, assume the pod is
-    // still running. We do this to avoid overloading the Kube Api server.
-    if (lastStatusCheck != null && System.currentTimeMillis() - lastStatusCheck < statusCheckInterval.toMillis()) {
-      throw new IllegalThreadStateException(prependPodInfo("Kube pod process has not exited yet. (cached)", podNamespace, podName));
-    }
-
-    final Pod refreshedPod = fabricClient.pods().inNamespace(podNamespace).withName(podName).get();
-    if (refreshedPod == null) {
-      if (wasKilled.get()) {
-        LOGGER.info(prependPodInfo(
-            String.format("Unable to find pod to retrieve exit value. Defaulting to  value %s. This is expected if the job was cancelled.",
-                KILLED_EXIT_CODE),
-            podNamespace, podName));
-        return KILLED_EXIT_CODE;
+  private int getReturnCode() {
+    if (exitCodeFuture.isDone()) {
+      try {
+        return exitCodeFuture.get();
+      } catch (final InterruptedException | ExecutionException e) {
+        throw new RuntimeException(
+            prependPodInfo("Cannot find pod %s : %s while trying to retrieve exit code. This probably means the pod was not correctly created.",
+                podDefinition.getMetadata().getNamespace(),
+                podDefinition.getMetadata().getName()));
       }
-      // If the pod cannot be found and was not killed, it either means 1) the pod was not created
-      // properly 2) this method is incorrectly called.
-      throw new RuntimeException(
-          prependPodInfo("Cannot find pod %s : %s while trying to retrieve exit code. This probably means the pod was not correctly created.",
-              podNamespace, podName));
+    } else {
+      throw new IllegalThreadStateException(prependPodInfo("Main container in kube pod has not terminated yet.",
+          podDefinition.getMetadata().getNamespace(),
+          podDefinition.getMetadata().getName()));
     }
-
-    if (!isTerminal(refreshedPod)) {
-      lastStatusCheck = System.currentTimeMillis();
-      throw new IllegalThreadStateException(prependPodInfo("Kube pod process has not exited yet.", podNamespace, podName));
-    }
-
-    final ContainerStatus mainContainerStatus = refreshedPod.getStatus().getContainerStatuses()
-        .stream()
-        .filter(containerStatus -> containerStatus.getName().equals(MAIN_CONTAINER_NAME))
-        .collect(MoreCollectors.onlyElement());
-
-    if (mainContainerStatus.getState() == null || mainContainerStatus.getState().getTerminated() == null) {
-      throw new IllegalThreadStateException(prependPodInfo("Main container in kube pod has not terminated yet.", podNamespace, podName));
-    }
-
-    returnCode = mainContainerStatus.getState().getTerminated().getExitCode();
-
-    LOGGER.info(prependPodInfo(String.format("Exit code for pod is %s", returnCode), podNamespace, podName));
-    return returnCode;
   }
 
   @Override
   public int exitValue() {
     // getReturnCode throws IllegalThreadException if the Kube pod has not exited;
     // close() is only called if the Kube pod has terminated.
-    final var returnCode = getReturnCode(podDefinition);
+    final var returnCode = getReturnCode();
     // The OS traditionally handles process resource clean up. Therefore an exit code of 0, also
     // indicates that all kernel resources were shut down.
     // Because this is a custom implementation, manually close all the resources.
     // Further, since the local resources are used to talk to Kubernetes resources, shut local resources
     // down after Kubernetes resources are shut down, regardless of Kube termination status.
     close();
-    LOGGER.info(prependPodInfo("Closed all resources for pod",
-        podDefinition.getMetadata().getNamespace(),
-        podDefinition.getMetadata().getName()));
+
     return returnCode;
   }
 
@@ -782,7 +763,7 @@ public class KubePodProcess extends Process implements KubePod {
           .withRequests(requestMap)
           .withLimits(limitMap);
     }
-    return null;
+    return new ResourceRequirementsBuilder();
   }
 
   private static String prependPodInfo(final String message, final String podNamespace, final String podName) {

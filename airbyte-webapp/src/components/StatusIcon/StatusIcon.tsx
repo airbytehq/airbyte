@@ -1,47 +1,39 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faTimes,
-  faBan,
-  faExclamationTriangle,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes, faBan, faExclamationTriangle, IconDefinition } from "@fortawesome/free-solid-svg-icons";
 
-import PauseIcon from "./components/Pause";
+import PauseIcon from "./PauseIcon";
 
-type IProps = {
-  success?: boolean;
-  warning?: boolean;
-  title?: string;
-  inactive?: boolean;
-  empty?: boolean;
+export type StatusIconStatus = "empty" | "inactive" | "success" | "warning";
+
+interface Props {
   className?: string;
+  status?: StatusIconStatus;
+  title?: string;
   big?: boolean;
   value?: string | number;
+}
+
+const getBadgeWidth = (props: Props) => (props.big ? (props.value ? 57 : 40) : props.value ? 37 : 20);
+
+const _iconByStatus: Partial<Record<StatusIconStatus, IconDefinition | undefined>> = {
+  empty: faBan,
+  success: faCheck,
+  warning: faExclamationTriangle,
 };
 
-const getWidth = (props: IProps) => {
-  if (props.big) {
-    return props.value ? 57 : 40;
-  }
-
-  return props.value ? 37 : 20;
+const _themeByStatus: Record<StatusIconStatus, string> = {
+  empty: "attentionColor",
+  inactive: "lightTextColor",
+  success: "successColor",
+  warning: "warningColor",
 };
 
-const Badge = styled.div<IProps>`
-  width: ${(props) => getWidth(props)}px;
+const Badge = styled.div<Props>`
+  width: ${(props) => getBadgeWidth(props)}px;
   height: ${({ big }) => (big ? 40 : 20)}px;
-  background: ${(props) =>
-    props.success
-      ? props.theme.successColor
-      : props.inactive
-      ? props.theme.lightTextColor
-      : props.empty
-      ? props.theme.attentionColor
-      : props.warning
-      ? props.theme.warningColor
-      : props.theme.dangerColor};
+  background: ${(props) => props.theme[(props.status && _themeByStatus[props.status]) || "dangerColor"]};
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: ${({ value }) => (value ? "15px" : "50%")};
   margin-right: 10px;
@@ -61,21 +53,17 @@ const Value = styled.span`
   vertical-align: top;
 `;
 
-const StatusIcon: React.FC<IProps> = (props) => (
-  <Badge {...props}>
-    {props.success ? (
-      <FontAwesomeIcon icon={faCheck} title={props.title} />
-    ) : props.inactive ? (
-      <PauseIcon />
-    ) : props.empty ? (
-      <FontAwesomeIcon icon={faBan} title={props.title} />
-    ) : props.warning ? (
-      <FontAwesomeIcon icon={faExclamationTriangle} title={props.title} />
-    ) : (
-      <FontAwesomeIcon icon={faTimes} title={props.title} />
-    )}
-    {props.value && <Value>{props.value}</Value>}
-  </Badge>
-);
+const StatusIcon: React.FC<Props> = ({ title, status, ...props }) => {
+  return (
+    <Badge {...props} status={status}>
+      {status === "inactive" ? (
+        <PauseIcon title={title} />
+      ) : (
+        <FontAwesomeIcon icon={(status && _iconByStatus[status]) || faTimes} title={title} />
+      )}
+      {props.value && <Value>{props.value}</Value>}
+    </Badge>
+  );
+};
 
 export default StatusIcon;

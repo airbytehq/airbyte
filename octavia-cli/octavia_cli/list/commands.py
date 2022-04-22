@@ -5,6 +5,7 @@
 from typing import List
 
 import click
+from octavia_cli.base_commands import OctaviaCommand
 
 from .listings import Connections, DestinationConnectorsDefinitions, Destinations, SourceConnectorsDefinitions, Sources
 
@@ -15,7 +16,7 @@ def _list(ctx: click.Context):  # pragma: no cover
     pass
 
 
-@click.group("connectors", help="Latest information on supported sources and destinations connectors.")
+@click.group("connectors", help="List sources and destinations connectors available on your Airbyte instance.")
 @click.pass_context
 def connectors(ctx: click.Context):  # pragma: no cover
     pass
@@ -27,7 +28,7 @@ def workspace(ctx: click.Context):  # pragma: no cover
     pass
 
 
-@connectors.command(name="sources", help="Latest information on supported sources.")
+@connectors.command(cls=OctaviaCommand, name="sources", help="List all the source connectors currently available on your Airbyte instance.")
 @click.pass_context
 def sources_connectors(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
@@ -35,7 +36,9 @@ def sources_connectors(ctx: click.Context):
     click.echo(definitions)
 
 
-@connectors.command(name="destinations", help="Latest information on supported destinations.")
+@connectors.command(
+    cls=OctaviaCommand, name="destinations", help="List all the destination connectors currently available on your Airbyte instance"
+)
 @click.pass_context
 def destinations_connectors(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
@@ -43,7 +46,7 @@ def destinations_connectors(ctx: click.Context):
     click.echo(definitions)
 
 
-@workspace.command(help="List existing sources in a workspace.")
+@workspace.command(cls=OctaviaCommand, help="List existing sources in a workspace.")
 @click.pass_context
 def sources(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
@@ -52,7 +55,7 @@ def sources(ctx: click.Context):
     click.echo(sources)
 
 
-@workspace.command(help="List existing destinations in a workspace.")
+@workspace.command(cls=OctaviaCommand, help="List existing destinations in a workspace.")
 @click.pass_context
 def destinations(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]
@@ -61,7 +64,7 @@ def destinations(ctx: click.Context):
     click.echo(destinations)
 
 
-@workspace.command(help="List existing connections in a workspace.")
+@workspace.command(cls=OctaviaCommand, help="List existing connections in a workspace.")
 @click.pass_context
 def connections(ctx: click.Context):
     api_client = ctx.obj["API_CLIENT"]

@@ -40,6 +40,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -183,7 +184,8 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     credentials =
         ServiceAccountCredentials
-            .fromStream(new ByteArrayInputStream(configJson.get(CONFIG_CREDS).asText().getBytes()));
+            .fromStream(new ByteArrayInputStream(configJson.get(CONFIG_CREDS).asText().getBytes(
+                StandardCharsets.UTF_8)));
     // create topic
     topicName = TopicName.of(projectId, topicId);
     topicAdminClient = TopicAdminClient

@@ -41,7 +41,6 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -164,7 +163,7 @@ class BigQueryDenormalizedGcsDestinationTest {
 
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
         .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
-    this.s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    this.s3Client = gcsDestinationConfig.getS3Client();
 
     tornDown = false;
     Runtime.getRuntime()
@@ -237,6 +236,7 @@ class BigQueryDenormalizedGcsDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(message);
     consumer.close();
 
@@ -258,6 +258,7 @@ class BigQueryDenormalizedGcsDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS3);
     consumer.close();
 
@@ -294,6 +295,7 @@ class BigQueryDenormalizedGcsDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS4);
     consumer.close();
 
@@ -318,6 +320,7 @@ class BigQueryDenormalizedGcsDestinationTest {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
+    consumer.start();
     consumer.accept(MESSAGE_USERS5);
     consumer.accept(MESSAGE_USERS6);
     consumer.accept(EMPTY_MESSAGE);

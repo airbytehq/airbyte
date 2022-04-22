@@ -22,15 +22,10 @@ type TryAfterErrorBlockProps = {
   additionControl?: React.ReactNode;
 };
 
-const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({
-  message,
-  onClick,
-}) => (
+const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClick }) => (
   <Block>
-    <StatusIcon success={false} big />
-    <Title center>
-      {message || <FormattedMessage id="form.schemaFailed" />}
-    </Title>
+    <StatusIcon big />
+    <Title center>{message || <FormattedMessage id="form.schemaFailed" />}</Title>
     <AgainButton onClick={onClick} danger>
       <FormattedMessage id="form.tryAgain" />
     </AgainButton>

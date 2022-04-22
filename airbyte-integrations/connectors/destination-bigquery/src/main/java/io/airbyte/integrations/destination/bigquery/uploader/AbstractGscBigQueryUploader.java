@@ -17,7 +17,6 @@ import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GcsS3Helper;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.util.List;
@@ -46,20 +45,20 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
   }
 
   @Override
-  public void postProcessAction(boolean hasFailed) throws Exception {
+  public void postProcessAction(final boolean hasFailed) {
     if (!isKeepFilesInGcs) {
       deleteGcsFiles();
     }
   }
 
   @Override
-  protected void uploadData(Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) throws Exception {
+  protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
     LOGGER.info("Uploading data to the tmp table {}.", tmpTable.getTable());
     uploadDataFromFileToTmpTable();
     super.uploadData(outputRecordCollector, lastStateMessage);
   }
 
-  protected void uploadDataFromFileToTmpTable() throws Exception {
+  protected void uploadDataFromFileToTmpTable() {
     try {
       final String fileLocation = this.writer.getFileLocation();
 
@@ -68,7 +67,7 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
       LOGGER.info(String.format("Started copying data from %s GCS " + getFileTypeName() + " file to %s tmp BigQuery table with schema: \n %s",
           fileLocation, tmpTable, recordFormatter.getBigQuerySchema()));
 
-      LoadJobConfiguration configuration = getLoadConfiguration();
+      final LoadJobConfiguration configuration = getLoadConfiguration();
 
       // For more information on Job see:
       // https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html
@@ -80,9 +79,9 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
       // Blocks until this load table job completes its execution, either failing or succeeding.
       BigQueryUtils.waitForJobFinish(loadJob);
 
-      LOGGER.info("Table is successfully overwritten by " + getFileTypeName() + " file loaded from GCS");
+      LOGGER.info("Table is successfully overwritten by file loaded from GCS: {}", getFileTypeName());
     } catch (final BigQueryException | InterruptedException e) {
-      LOGGER.error("Column not added during load append \n" + e.toString());
+      LOGGER.error("Column not added during load append", e);
       throw new RuntimeException("Column not added during load append \n" + e.toString());
     }
   }
@@ -96,7 +95,7 @@ public abstract class AbstractGscBigQueryUploader<T extends DestinationFileWrite
   private void deleteGcsFiles() {
     LOGGER.info("Deleting file {}", writer.getFileLocation());
     final GcsDestinationConfig gcsDestinationConfig = this.gcsDestinationConfig;
-    final AmazonS3 s3Client = GcsS3Helper.getGcsS3Client(gcsDestinationConfig);
+    final AmazonS3 s3Client = gcsDestinationConfig.getS3Client();
 
     final String gcsBucketName = gcsDestinationConfig.getBucketName();
     final String gcs_bucket_path = gcsDestinationConfig.getBucketPath();

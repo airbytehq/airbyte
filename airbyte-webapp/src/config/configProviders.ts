@@ -1,13 +1,13 @@
 import merge from "lodash/merge";
-import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
+
 import { isDefined } from "utils/common";
+
+import { ConfigProvider, DeepPartial, ValueProvider } from "./types";
 
 const windowConfigProvider: ConfigProvider = async () => {
   return {
     segment: {
-      enabled: isDefined(window.TRACKING_STRATEGY)
-        ? window.TRACKING_STRATEGY === "segment"
-        : undefined,
+      enabled: isDefined(window.TRACKING_STRATEGY) ? window.TRACKING_STRATEGY === "segment" : undefined,
       token: window.SEGMENT_TOKEN,
     },
     apiUrl: window.API_URL,
@@ -30,10 +30,7 @@ const envConfigProvider: ConfigProvider = async () => {
   };
 };
 
-async function applyProviders<T>(
-  defaultValue: T,
-  providers: ValueProvider<T>
-): Promise<T> {
+async function applyProviders<T>(defaultValue: T, providers: ValueProvider<T>): Promise<T> {
   let value: DeepPartial<T> = {};
 
   for (const provider of providers) {

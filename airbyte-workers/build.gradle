@@ -11,7 +11,7 @@ configurations {
 }
 
 dependencies {
-    implementation 'io.fabric8:kubernetes-client:5.3.1'
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'org.apache.commons:commons-lang3:3.11'
@@ -76,7 +76,7 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("worker",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("worker", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)
 

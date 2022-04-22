@@ -7,69 +7,57 @@ package io.airbyte.integrations.destination.s3;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 /**
  * Write configuration POJO for blob storage destinations
  */
 public class WriteConfig {
 
-  private final String streamName;
-
   private final String namespace;
-
-  private final String outputNamespace;
-  private final String outputBucket;
+  private final String streamName;
+  private final String outputBucketPath;
+  private final String pathFormat;
+  private final String fullOutputPath;
   private final DestinationSyncMode syncMode;
-  private final DateTime writeDatetime;
   private final List<String> storedFiles;
 
-  public WriteConfig(final String streamName,
-                     final String namespace,
-                     final String outputNamespace,
-                     final String outputBucket,
+  public WriteConfig(final String namespace,
+                     final String streamName,
+                     final String outputBucketPath,
+                     final String pathFormat,
+                     final String fullOutputPath,
                      final DestinationSyncMode syncMode) {
-    this(streamName, namespace, outputNamespace, outputBucket, syncMode, DateTime.now(DateTimeZone.UTC));
-  }
-
-  public WriteConfig(final String streamName,
-                     final String namespace,
-                     final String outputNamespace,
-                     final String outputBucket,
-                     final DestinationSyncMode syncMode,
-                     final DateTime writeDatetime) {
-    this.streamName = streamName;
     this.namespace = namespace;
-    this.outputNamespace = outputNamespace;
-    this.outputBucket = outputBucket;
+    this.streamName = streamName;
+    this.outputBucketPath = outputBucketPath;
+    this.pathFormat = pathFormat;
+    this.fullOutputPath = fullOutputPath;
     this.syncMode = syncMode;
     this.storedFiles = new ArrayList<>();
-    this.writeDatetime = writeDatetime;
-  }
-
-  public String getStreamName() {
-    return streamName;
   }
 
   public String getNamespace() {
     return namespace;
   }
 
-  public String getOutputNamespace() {
-    return outputNamespace;
+  public String getStreamName() {
+    return streamName;
   }
 
-  public String getOutputBucket() {
-    return outputBucket;
+  public String getOutputBucketPath() {
+    return outputBucketPath;
+  }
+
+  public String getPathFormat() {
+    return pathFormat;
+  }
+
+  public String getFullOutputPath() {
+    return fullOutputPath;
   }
 
   public DestinationSyncMode getSyncMode() {
     return syncMode;
-  }
-
-  public DateTime getWriteDatetime() {
-    return writeDatetime;
   }
 
   public List<String> getStoredFiles() {
@@ -89,8 +77,9 @@ public class WriteConfig {
     return "WriteConfig{" +
         "streamName=" + streamName +
         ", namespace=" + namespace +
-        ", outputNamespace=" + outputNamespace +
-        ", outputBucket=" + outputBucket +
+        ", outputBucketPath=" + outputBucketPath +
+        ", pathFormat=" + pathFormat +
+        ", fullOutputPath=" + fullOutputPath +
         ", syncMode=" + syncMode +
         '}';
   }
