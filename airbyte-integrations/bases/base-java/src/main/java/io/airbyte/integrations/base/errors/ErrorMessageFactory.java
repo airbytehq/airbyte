@@ -12,16 +12,16 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
 import io.airbyte.integrations.base.errors.messages.DefaultErrorMessage;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
 import io.airbyte.integrations.base.errors.messages.MongoDBErrorMessage;
-import io.airbyte.integrations.base.errors.messages.MsSQLErrorMessage;
-import io.airbyte.integrations.base.errors.messages.MySQLErrorMessage;
+import io.airbyte.integrations.base.errors.messages.MssqlErrorMessage;
+import io.airbyte.integrations.base.errors.messages.MysqlErrorMessage;
 import io.airbyte.integrations.base.errors.messages.PostgresErrorMessage;
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import java.util.Map;
 
 public class ErrorMessageFactory {
 
-  private final static Map<ConnectorType, ErrorMessage> MAP = Map.of(MSSQL, new MsSQLErrorMessage(),
-      MYSQL, new MySQLErrorMessage(),
+  private final static Map<ConnectorType, ErrorMessage> MAP = Map.of(MSSQL, new MssqlErrorMessage(),
+      MYSQL, new MysqlErrorMessage(),
       POSTGRES, new PostgresErrorMessage(),
       MONGO, new MongoDBErrorMessage(),
       ConnectorType.DEFAULT, new DefaultErrorMessage());

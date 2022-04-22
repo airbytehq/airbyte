@@ -10,7 +10,7 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.MSSQL;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 
-public class MsSQLErrorMessage implements ErrorMessage {
+public class MssqlErrorMessage implements ErrorMessage {
 
   static {
     CONSTANTS.put("S0001", INCORRECT_USERNAME_OR_PASSWORD);
