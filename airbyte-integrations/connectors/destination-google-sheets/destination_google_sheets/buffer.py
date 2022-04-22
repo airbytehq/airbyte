@@ -42,16 +42,6 @@ class WriteBuffer:
         self.records_buffer.append({stream_name: []})
         self.stream_info.append({stream_name: sorted(list(stream_schema.get("properties").keys())), "is_set": False})
 
-    def buffer_has_more_records(self) -> bool:
-        """
-        Check whether `records_buffer` has any values that are still need to be written.
-        """
-        for stream in self.records_buffer:
-            stream_name = list(stream.keys())[0]
-            if stream_name in stream:
-                result = True if len(stream[stream_name]) > 0 else False
-        return result
-
     def add_to_buffer(self, stream_name: str, record: Mapping):
         """
         Populates input records to `records_buffer`.

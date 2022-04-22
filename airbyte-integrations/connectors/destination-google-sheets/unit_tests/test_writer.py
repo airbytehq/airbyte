@@ -4,28 +4,16 @@
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from destination_google_sheets.client import GoogleSheetsClient
-from destination_google_sheets.helpers import get_spreadsheet_id
-from destination_google_sheets.spreadsheet import GoogleSheets
 from destination_google_sheets.writer import GoogleSheetsWriter
-from pygsheets.client import Client as pygsheets_client
-from unit_tests.test_spreadsheet import get_config
+from unit_tests.test_spreadsheet import TEST_SPREADSHEET
 
 # ----- PREPARE ENV -----
 
 
-# using real config from secrets/config_oauth.json
-TEST_CONFIG: dict = get_config()
-# client instance
-TEST_CLIENT: pygsheets_client = GoogleSheetsClient(TEST_CONFIG).authorize()
 # path to configured_catalog json file
 TEST_CATALOG_PATH: str = "unit_tests/test_data/test_writer_catalog.json"
 # reading prepared catalog with streams
 TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_file(TEST_CATALOG_PATH)
-# # get test spreadsheet_id
-TEST_SPREADSHEET_ID: str = get_spreadsheet_id(TEST_CONFIG.get("spreadsheet_id"))
-# define test Spreadsheet class
-TEST_SPREADSHEET: GoogleSheets = GoogleSheets(TEST_CLIENT, TEST_SPREADSHEET_ID)
 # define test writer
 TEST_WRITER: GoogleSheetsWriter = GoogleSheetsWriter(TEST_SPREADSHEET)
 # set flush buffer interval

@@ -7,7 +7,7 @@ import json
 from typing import Any, Mapping
 
 from destination_google_sheets.client import GoogleSheetsClient
-from destination_google_sheets.helpers import connection_test_write, get_spreadsheet_id
+from destination_google_sheets.helpers import ConnectionTest, get_spreadsheet_id
 from destination_google_sheets.spreadsheet import GoogleSheets
 from pygsheets.client import Client as pygsheets_client
 
@@ -38,8 +38,8 @@ TEST_STREAM: str = "test_stream"
 
 
 def test_connection_test_write():
-    """TEST FOR TEST CONNECTION"""
-    assert connection_test_write(TEST_SPREADSHEET)
+    check_result = ConnectionTest(TEST_SPREADSHEET).result
+    assert check_result is True
 
 
 def test_get_spreadsheet_id(config: dict = TEST_CONFIG):

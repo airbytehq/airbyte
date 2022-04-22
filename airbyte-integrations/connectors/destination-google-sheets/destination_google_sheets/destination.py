@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 from google.auth.exceptions import RefreshError
 
 from .client import GoogleSheetsClient
-from .helpers import connection_test_write, get_spreadsheet_id
+from .helpers import ConnectionTest, get_spreadsheet_id
 from .spreadsheet import GoogleSheets
 from .writer import GoogleSheetsWriter
 
@@ -29,7 +29,8 @@ class DestinationGoogleSheets(Destination):
         try:
             client = GoogleSheetsClient(config).authorize()
             spreadsheet = GoogleSheets(client, spreadsheet_id)
-            if connection_test_write(spreadsheet) is True:
+            check_result = ConnectionTest(spreadsheet).result
+            if check_result:
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except RefreshError as token_err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{token_err}")
@@ -64,9 +65,8 @@ class DestinationGoogleSheets(Destination):
             else:
                 continue
 
-        # if there are any records left
-        if writer.buffer_has_more_records():
-            writer.write_whats_left()
+        # if there are any records left in buffer
+        writer.write_whats_left()
 
         # deduplicating records for `append_dedup` sync-mode
         for configured_stream in configured_catalog.streams:

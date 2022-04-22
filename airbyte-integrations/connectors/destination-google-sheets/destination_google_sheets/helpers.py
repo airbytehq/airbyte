@@ -19,36 +19,42 @@ def get_spreadsheet_id(id_or_url: str) -> str:
         return id_or_url
 
 
-def connection_test_write(spreadsheet: Spreadsheet) -> bool:
-    wks_name: str = "_airbyte_conn_test"
-    test_data: List[str] = ["conn_test", "success"]
+class ConnectionTest:
 
-    # access underlying pygsheets methods for test purposes
-    spreadsheet = spreadsheet.spreadsheet
+    """
+    Performs connection test write operation to ensure the target spreadsheet is available for writing.
+    Initiating the class itself, performs the connection test and stores the result in ConnectionTest.result property.
+    """
 
-    def add_test_wks(spreadsheet: Spreadsheet, name: str = wks_name) -> Worksheet:
-        spreadsheet.add_worksheet(name, rows=2, cols=1)
-        return spreadsheet.worksheet_by_title(name)
+    def __init__(self, spreadsheet: Spreadsheet):
+        self.spreadsheet = spreadsheet
+        self.wks_name: str = "_airbyte_conn_test"
+        self.test_data: List[str] = ["conn_test", "success"]
+        self.result = self.perform_connection_test()
 
-    def populate_test_wks(wks: Worksheet) -> Worksheet:
-        wks.append_table(test_data, dimension="COLUMNS")
+    def add_test_wks(self) -> Worksheet:
+        self.spreadsheet.spreadsheet.add_worksheet(self.wks_name, rows=2, cols=1)
+        return self.spreadsheet.open_worksheet(self.wks_name)
+
+    def remove_test_wks(self):
+        wks = self.spreadsheet.open_worksheet(self.wks_name)
+        self.spreadsheet.spreadsheet.del_worksheet(wks)
+
+    def populate_test_wks(self, wks: Worksheet) -> Worksheet:
+        wks.append_table(self.test_data, dimension="COLUMNS")
         return wks
 
-    def check_values(wks: Worksheet) -> bool:
+    def check_values(self, wks: Worksheet) -> bool:
         value = wks.get_value("A2")
-        return True if value == test_data[1] else False
+        return True if value == self.test_data[1] else False
 
-    def remove_test_wks(spreadsheet: Spreadsheet, name: str = wks_name):
-        wks = spreadsheet.worksheet_by_title(name)
-        spreadsheet.del_worksheet(wks)
-
-    try:
-        if spreadsheet.worksheets("title", wks_name):
-            remove_test_wks(spreadsheet)
-        result: bool = check_values(populate_test_wks(add_test_wks(spreadsheet)))
-    except WorksheetNotFound:
-        result: bool = check_values(populate_test_wks(add_test_wks(spreadsheet)))
-    finally:
-        remove_test_wks(spreadsheet)
-
-    return result
+    def perform_connection_test(self) -> bool:
+        try:
+            if self.spreadsheet.spreadsheet.worksheets("title", self.wks_name):
+                self.remove_test_wks()
+            result: bool = self.check_values(self.populate_test_wks(self.add_test_wks()))
+        except WorksheetNotFound:
+            result: bool = self.check_values(self.populate_test_wks(self.add_test_wks()))
+        finally:
+            self.remove_test_wks()
+        return result

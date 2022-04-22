@@ -24,7 +24,7 @@ TEST_WRITE_BUFFER: WriteBuffer = WriteBuffer()
 
 
 # reading input messages from file
-def read_input_messages(records_path: str = TEST_RECORDS_PATH) -> Iterable[AirbyteMessage]:
+def read_input_messages(records_path: str) -> Iterable[AirbyteMessage]:
     with open(records_path, "rb") as f:
         input_stream = io.TextIOWrapper(f, encoding="utf-8")
         for line in input_stream:
@@ -67,7 +67,7 @@ def test_buffer_stream(buffer, stream_name):
             assert stream_name in stream
 
 
-def test_add_to_buffer(input_messages=read_input_messages()):
+def test_add_to_buffer(input_messages=read_input_messages(TEST_RECORDS_PATH)):
     for message in input_messages:
         if message.type == Type.RECORD:
             record = message.record
