@@ -164,8 +164,9 @@ public class WorkerApp {
     final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
+    final var taskQueue = dataPlaneName + "-" + TemporalJobType.CONNECTION_UPDATER.toString();
     final Worker connectionUpdaterWorker =
-        factory.newWorker(TemporalJobType.CONNECTION_UPDATER.toString(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+        factory.newWorker(taskQueue, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     connectionUpdaterWorker.registerWorkflowImplementationTypes(ConnectionManagerWorkflowImpl.class);
     connectionUpdaterWorker.registerActivitiesImplementations(
         new GenerateInputActivityImpl(
