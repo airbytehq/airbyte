@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 
 import HeadTitle from "components/HeadTitle";
 
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import { Content, SettingsCard } from "../SettingsComponents";
 import AccountForm from "./components/AccountForm";

@@ -1,10 +1,15 @@
+import { Field, FieldArray } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldArray } from "formik";
 
 import { ContentCard, H4 } from "components";
 
+import { Connection, NormalizationType, Operation, OperatorType, Transformation } from "core/domain/connection";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormikOnSubmit } from "types/formik";
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
@@ -15,11 +20,6 @@ import {
   useDefaultTransformation,
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
-import { Connection, NormalizationType, Operation, OperatorType, Transformation } from "core/domain/connection";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
-import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 
 type TransformationViewProps = {
   connection: Connection;

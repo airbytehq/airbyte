@@ -1,5 +1,5 @@
-import React from "react";
 import { FieldProps, useField } from "formik";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ControlLabels, DropDown } from "components";

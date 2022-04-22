@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 
 import { Button, DropDownRow, H3, H5 } from "components";
 import { Popout } from "components/base/Popout/Popout";
