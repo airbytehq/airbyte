@@ -34,6 +34,7 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestination;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
@@ -138,12 +139,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .toList();
 
       if (!missingPermissions.isEmpty()) {
-        LOGGER.error("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
+        LOGGER.warn("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
+        // if user or service account has a conditional binding for processing handling in the GCS bucket,
+        // testIamPermissions will not work properly, so we use the standard check method of GCS destination
+        final GcsDestination gcsDestination = new GcsDestination();
+        final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
+        return gcsDestination.check(gcsJsonNodeConfig);
 
-        return new AirbyteConnectionStatus()
-            .withStatus(AirbyteConnectionStatus.Status.FAILED)
-            .withMessage("Could not connect to the Gcs bucket with the provided configuration. "
-                + "Missing permissions: " + missingPermissions);
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
 

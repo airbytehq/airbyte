@@ -6,7 +6,7 @@
 import os
 import re
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
@@ -377,7 +377,7 @@ class StreamProcessor(object):
                     children.append(stream_processor)
         return children
 
-    def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         if self.destination_type == DestinationType.ORACLE:
             table_alias = ""
         else:
@@ -460,7 +460,7 @@ where 1 = 1
 
         return f"{json_extract} as {column_name}"
 
-    def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         template = Template(
             """
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
@@ -494,7 +494,7 @@ where 1 = 1
     def cast_property_types(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [self.cast_property_type(field, column_names[field][0], column_names[field][1]) for field in column_names]
 
-    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> str:
+    def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:
         definition = self.properties[property_name]
         if "type" not in definition:
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
@@ -563,7 +563,7 @@ where 1 = 1
             return f"cast({column_name} as {sql_type}) as {column_name}"
 
     @staticmethod
-    def generate_mysql_date_format_statement(column_name: str) -> str:
+    def generate_mysql_date_format_statement(column_name: str) -> Any:
         template = Template(
             """
         case when {{column_name}} = '' then NULL
@@ -574,7 +574,7 @@ where 1 = 1
         return template.render(column_name=column_name)
 
     @staticmethod
-    def generate_snowflake_timestamp_statement(column_name: str) -> str:
+    def generate_snowflake_timestamp_statement(column_name: str) -> Any:
         """
         Generates snowflake DB specific timestamp case when statement
         """
@@ -600,7 +600,7 @@ where 1 = 1
         )
         return template.render(formats=formats, column_name=column_name)
 
-    def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
 
         template = Template(
             """
@@ -667,7 +667,7 @@ where 1 = 1
 
         return col
 
-    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
         cursor_field = self.get_cursor_field(column_names)
         order_null = f"is null asc,\n            {cursor_field} desc"
         if self.destination_type.value == DestinationType.ORACLE.value:
@@ -993,7 +993,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
             else:
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
-    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> str:
+    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> Any:
         template = Template(
             """
 -- Final base SQL model
@@ -1034,7 +1034,7 @@ where 1 = 1
     def is_incremental_mode(destination_sync_mode: DestinationSyncMode) -> bool:
         return destination_sync_mode.value in [DestinationSyncMode.append.value, DestinationSyncMode.append_dedup.value]
 
-    def add_incremental_clause(self, sql_query: str) -> str:
+    def add_incremental_clause(self, sql_query: str) -> Any:
         template = Template(
             """
 {{ sql_query }}

@@ -18,5 +18,5 @@ ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,addr
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.1.0
+LABEL io.airbyte.version=1.1.1
 LABEL io.airbyte.name=airbyte/destination-bigquery

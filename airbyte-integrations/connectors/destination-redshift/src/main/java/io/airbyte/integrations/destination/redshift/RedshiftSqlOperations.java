@@ -5,16 +5,13 @@
 package io.airbyte.integrations.destination.redshift;
 
 import static io.airbyte.db.jdbc.JdbcUtils.getDefaultSourceOperations;
-import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.nio.charset.StandardCharsets;
@@ -26,28 +23,29 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOperations {
+public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   private static final String SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT = """
-         select tablename, schemaname
-         from pg_table_def
-         where tablename in (
-             select tablename as tablename
-             from pg_table_def
-             where schemaname = '%1$s'
-               and tablename like '%%airbyte_raw%%'
-               and "column" in ('%2$s', '%3$s', '%4$s')
-             group by tablename
-             having count(*) = 3)
-           and schemaname = '%1$s'
-           and type <> 'super'
-         and "column" = '_airbyte_data';
-      """;
+                                                                                       select tablename, schemaname
+                                                                                       from pg_table_def
+                                                                                       where tablename in (
+                                                                                           select tablename as tablename
+                                                                                           from pg_table_def
+                                                                                           where schemaname = '%1$s'
+                                                                                             and tablename like '%%airbyte_raw%%'
+                                                                                             and "column" in ('%2$s', '%3$s', '%4$s')
+                                                                                           group by tablename
+                                                                                           having count(*) = 3)
+                                                                                         and schemaname = '%1$s'
+                                                                                         and type <> 'super'
+                                                                                       and "column" = '_airbyte_data';
+                                                                                    """;
 
-  private static final String ALTER_TMP_TABLES_WITH_NOT_SUPER_TYPE_TO_SUPER_TYPE = """
+  private static final String ALTER_TMP_TABLES_WITH_NOT_SUPER_TYPE_TO_SUPER_TYPE =
+      """
       ALTER TABLE %1$s ADD COLUMN %2$s_super super;
       ALTER TABLE %1$s ADD COLUMN %3$s_reserve TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
       UPDATE %1$s SET %2$s_super = JSON_PARSE(%2$s);
@@ -71,9 +69,9 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-      final List<AirbyteRecordMessage> records,
-      final String schemaName,
-      final String tmpTableName)
+                                    final List<AirbyteRecordMessage> records,
+                                    final String schemaName,
+                                    final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
@@ -100,33 +98,35 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
   }
 
   /**
-   * In case of redshift we need to discover all tables with not super type and update them after to SUPER type. This would be done once.
+   * In case of redshift we need to discover all tables with not super type and update them after to
+   * SUPER type. This would be done once.
    *
-   * @param database         - Database object for interacting with a JDBC connection.
-   * @param writeConfigsList - list of write configs.
+   * @param database - Database object for interacting with a JDBC connection.
+   * @param writeConfigSet - list of write configs.
    */
+
   @Override
-  public void onDestinationStartOperations(final JdbcDatabase database, final List<WriteConfig> writeConfigsList) {
-    LOGGER.info("Executing specific logic for Redshift Destination DB engine...");
-    Set<String> schemas = writeConfigsList.stream().map(WriteConfig::getOutputSchemaName).collect(toSet());
-    List<String> schemaAndTableWithNotSuperType = schemas
+  public void onDestinationCloseOperations(final JdbcDatabase database, final Set<String> writeConfigSet) {
+    LOGGER.info("Executing operations for Redshift Destination DB engine...");
+    List<String> schemaAndTableWithNotSuperType = writeConfigSet
         .stream()
         .flatMap(schemaName -> discoverNotSuperTables(database, schemaName).stream())
         .toList();
     if (!schemaAndTableWithNotSuperType.isEmpty()) {
       updateVarcharDataColumnToSuperDataColumn(database, schemaAndTableWithNotSuperType);
     }
+    LOGGER.info("Executing operations for Redshift Destination DB engine completed.");
   }
 
   /**
-   * @param database   - Database object for interacting with a JDBC connection.
+   * @param database - Database object for interacting with a JDBC connection.
    * @param schemaName - schema to update.
    */
   private List<String> discoverNotSuperTables(final JdbcDatabase database,
-      final String schemaName) {
+                                              final String schemaName) {
     List<String> schemaAndTableWithNotSuperType = new ArrayList<>();
     try {
-      LOGGER.info("Selecting table types...");
+      LOGGER.info("Discovering NOT SUPER table types...");
       database.execute(String.format("set search_path to %s", schemaName));
       final List<JsonNode> tablesNameWithoutSuperDatatype = database.bufferedResultSetQuery(
           conn -> conn.createStatement().executeQuery(String.format(SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT,
@@ -138,29 +138,28 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
       if (tablesNameWithoutSuperDatatype.isEmpty()) {
         return Collections.emptyList();
       } else {
-        tablesNameWithoutSuperDatatype.forEach(e ->
-            schemaAndTableWithNotSuperType.add(e.get("schemaname").textValue() + "." + e.get("tablename").textValue()));
+        tablesNameWithoutSuperDatatype
+            .forEach(e -> schemaAndTableWithNotSuperType.add(e.get("schemaname").textValue() + "." + e.get("tablename").textValue()));
         return schemaAndTableWithNotSuperType;
       }
     } catch (SQLException e) {
       LOGGER.error("Error during discoverNotSuperTables() appears: ", e);
-    } catch (Exception e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
-    return Collections.emptyList();
   }
 
   /**
    * We prepare one query for all tables with not super type for updating.
    *
-   * @param database                       - Database object for interacting with a JDBC connection.
+   * @param database - Database object for interacting with a JDBC connection.
    * @param schemaAndTableWithNotSuperType - list of tables with not super type.
    */
   private void updateVarcharDataColumnToSuperDataColumn(final JdbcDatabase database, final List<String> schemaAndTableWithNotSuperType) {
-    LOGGER.info("Updating VARCHAR data column to super...");
+    LOGGER.info("Updating VARCHAR data column to SUPER...");
     StringBuilder finalSqlStatement = new StringBuilder();
     // To keep the previous data, we need to add next columns: _airbyte_data, _airbyte_emitted_at
-    // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at column recreated to keep
+    // We do such workflow because we can't directly CAST VARCHAR to SUPER column. _airbyte_emitted_at
+    // column recreated to keep
     // the COLUMN order. This order is required to INSERT the values in correct way.
     schemaAndTableWithNotSuperType.forEach(schemaAndTable -> {
       LOGGER.info("Altering table {} column _airbyte_data to SUPER.", schemaAndTable);
@@ -173,7 +172,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations implements SqlOpera
       database.execute(finalSqlStatement.toString());
     } catch (SQLException e) {
       LOGGER.error("Error during updateVarcharDataColumnToSuperDataColumn() appears: ", e);
+      throw new RuntimeException(e);
     }
   }
-}
 
+}
