@@ -21,7 +21,13 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.HashMap;
+
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
+
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -106,4 +112,33 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         null);
   }
 
+  @Test
+  public void testCheckIncorrectUsername() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("username", "");
+    testCheckErrorMessageConnection(conf, INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectPassword() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("password", "");
+    testCheckErrorMessageConnection(conf, INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectHost() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("host", "localhost2");
+    testCheckErrorMessageConnection(conf, INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectPort() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("post", "0000");
+    testCheckErrorMessageConnection(conf, INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectDataBase() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("database", "wrongdatabase");
+    testCheckErrorMessageConnection(conf, INCORRECT_DB_NAME.getValue());
+  }
 }

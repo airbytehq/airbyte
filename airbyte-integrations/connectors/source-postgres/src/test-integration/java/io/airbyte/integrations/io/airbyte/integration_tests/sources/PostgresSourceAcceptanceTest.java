@@ -5,6 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -24,7 +25,12 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 
 public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -132,4 +138,33 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
+  @Test
+  public void testCheckIncorrectUsername() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("username", "");
+    testCheckErrorMessageConnection(conf, INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectPassword() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("password", "");
+    testCheckErrorMessageConnection(conf, INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectHost() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("host", "localhost2");
+    testCheckErrorMessageConnection(conf, INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectPort() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("post", "0000");
+    testCheckErrorMessageConnection(conf, INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectDataBase() throws Exception {
+    JsonNode conf = ((ObjectNode) config).put("database", "wrongdatabase");
+    testCheckErrorMessageConnection(conf, INCORRECT_DB_NAME.getValue());
+  }
 }
