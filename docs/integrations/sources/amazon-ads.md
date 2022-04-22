@@ -59,11 +59,11 @@ Information about expected report generation waiting time you may find [here](ht
 * client\_id
 * client\_secret
 * refresh\_token
-* profiles
 * region
-* start\_date \(optional\)
 * report\_wait\_timeout
 * report\_generation\_max\_retries
+* start\_date \(optional\)
+* profiles \(optional\)
 
 More how to get client\_id and client\_secret you can find on [AWS docs](https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app).
 
