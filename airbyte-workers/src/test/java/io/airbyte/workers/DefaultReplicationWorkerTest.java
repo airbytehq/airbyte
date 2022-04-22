@@ -169,7 +169,7 @@ class DefaultReplicationWorkerTest {
     verify(source).close();
     verify(destination).close();
   }
-}
+
   @Test
   void testReplicationRunnableSourceFailure() throws Exception {
     final String SOURCE_ERROR_MESSAGE = "the source had a failure";
