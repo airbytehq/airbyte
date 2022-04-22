@@ -1,19 +1,19 @@
-import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
-import Status from "core/statuses";
-
 import {
+  ConnectionStatus,
   DestinationDefinitionRead,
+  DestinationRead,
   JobStatus,
   SourceDefinitionRead,
+  SourceRead,
   WebBackendConnectionRead,
 } from "../../core/request/GeneratedApi";
-import { EntityTableDataItem, ITableDataItem, Status as ConnectionStatus } from "./types";
+import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
-  SoD extends S extends "source" ? Source : Destination,
-  Def extends S extends "source" ? SourceDefinition : DestinationDefinition
+  SoD extends S extends "source" ? SourceRead : DestinationRead,
+  Def extends S extends "source" ? SourceDefinitionRead : DestinationDefinitionRead
 >(entities: SoD[], connections: WebBackendConnectionRead[], definitions: Def[], type: S): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
 
@@ -99,7 +99,7 @@ export const getConnectionTableData = (
           ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
           : connection[connectType]?.name || "", // TODO: Is name correct here?
       lastSync: connection.latestSyncJobCreatedAt,
-      enabled: connection.status === ConnectionStatus.ACTIVE,
+      enabled: connection.status === ConnectionStatus.active,
       schedule: connection.schedule,
       status: connection.status,
       isSyncing: connection.isSyncing,
@@ -110,10 +110,25 @@ export const getConnectionTableData = (
   });
 };
 
-export const getConnectionSyncStatus = (status: string, lastSyncStatus: JobStatus | undefined): string | null => {
-  if (status === ConnectionStatus.INACTIVE) return ConnectionStatus.INACTIVE;
-  if (!lastSyncStatus) return ConnectionStatus.EMPTY;
-  if (lastSyncStatus === Status.FAILED) return ConnectionStatus.FAILED;
+export const getConnectionSyncStatus = (
+  status: ConnectionStatus,
+  lastSyncJobStatus: JobStatus | undefined
+): ConnectionSyncStatus => {
+  if (status === ConnectionStatus.inactive) return ConnectionSyncStatus.INACTIVE;
 
-  return ConnectionStatus.ACTIVE;
+  switch (lastSyncJobStatus) {
+    case JobStatus.succeeded:
+      return ConnectionSyncStatus.ACTIVE;
+
+    case JobStatus.failed:
+    case JobStatus.cancelled:
+      return ConnectionSyncStatus.FAILED;
+
+    case JobStatus.pending:
+    case JobStatus.running:
+      return ConnectionSyncStatus.PENDING;
+
+    default:
+      return ConnectionSyncStatus.EMPTY;
+  }
 };

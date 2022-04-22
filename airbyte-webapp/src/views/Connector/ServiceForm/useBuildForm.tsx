@@ -5,6 +5,7 @@ import merge from "lodash/merge";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnySchema } from "yup";
 
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
 import { buildPathInitialState } from "core/form/uiWidget";
 import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
@@ -12,7 +13,6 @@ import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
-import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 import { DestinationDefinitionSpecificationRead } from "../../../core/request/GeneratedApi";
 import { ServiceFormValues } from "./types";
 

@@ -4,8 +4,8 @@ import isEmpty from "lodash/isEmpty";
 import merge from "lodash/merge";
 import pick from "lodash/pick";
 
-import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { useRunOauthFlow } from "hooks/services/useConnectorAuth";
 
 import { isSourceDefinitionSpecification } from "../../../../../../core/domain/connector/source";
 import { useServiceForm } from "../../../serviceFormContext";

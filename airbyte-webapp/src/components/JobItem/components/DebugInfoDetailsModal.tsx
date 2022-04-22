@@ -2,8 +2,8 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "components/Modal";
 import { Button } from "components";
+import Modal from "components/Modal";
 
 import { JobDebugRead } from "../../../core/request/GeneratedApi";
 

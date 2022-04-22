@@ -1,6 +1,6 @@
 import { ConnectionConfiguration } from "core/domain/connection";
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
-import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   checkConnectionToDestination,
   checkConnectionToDestinationForUpdate,

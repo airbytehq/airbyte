@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-import ShowVideo from "./components/ShowVideo";
 import PlayButton from "./components/PlayButton";
+import ShowVideo from "./components/ShowVideo";
 
 type VideoItemProps = {
   small?: boolean;

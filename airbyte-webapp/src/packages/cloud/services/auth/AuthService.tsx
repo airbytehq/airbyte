@@ -1,17 +1,17 @@
+import { User as FbUser } from "firebase/auth";
 import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
-import { User as FbUser } from "firebase/auth";
 import { useEffectOnce } from "react-use";
 
-import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
-import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
+import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
+import { User } from "packages/cloud/lib/domain/users";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
-import { useAnalyticsService } from "hooks/services/Analytics";
-import { getUtmFromStorage } from "utils/utmStorage";
 import { useInitService } from "services/useInitService";
+import { getUtmFromStorage } from "utils/utmStorage";
 
 import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
 

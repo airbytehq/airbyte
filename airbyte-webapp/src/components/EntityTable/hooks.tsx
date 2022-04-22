@@ -2,8 +2,7 @@ import FrequencyConfig from "config/FrequencyConfig.json";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
-import { WebBackendConnectionRead } from "../../core/request/GeneratedApi";
-import { Status } from "./types";
+import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/GeneratedApi";
 
 const useSyncActions = (): {
   changeStatus: (connection: WebBackendConnectionRead) => Promise<void>;
@@ -22,7 +21,7 @@ const useSyncActions = (): {
       namespaceDefinition: connection.namespaceDefinition,
       namespaceFormat: connection.namespaceFormat,
       operations: connection.operations,
-      status: connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
+      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
     });
 
     const frequency = FrequencyConfig.find(

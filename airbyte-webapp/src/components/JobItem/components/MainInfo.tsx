@@ -4,8 +4,8 @@ import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 import styled from "styled-components";
 
-import { Cell, Row } from "components/SimpleTableComponents";
 import { Button, StatusIcon } from "components";
+import { Cell, Row } from "components/SimpleTableComponents";
 
 import { AttemptRead, JobInfoRead, JobStatus, JobWithAttemptsRead } from "../../../core/request/GeneratedApi";
 import { useCancelJob } from "../../../services/job/JobService";

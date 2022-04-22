@@ -4,6 +4,7 @@ import { useConfig } from "config";
 import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
 import { DestinationDefinitionSpecificationRead } from "../../core/request/GeneratedApi";
@@ -27,15 +28,17 @@ function useGetService() {
 
 export const useGetDestinationDefinitionSpecification = (id: string): DestinationDefinitionSpecificationRead => {
   const service = useGetService();
+  const { workspaceId } = useCurrentWorkspace();
 
-  return useSuspenseQuery(destinationDefinitionSpecificationKeys.detail(id), () => service.get(id));
+  return useSuspenseQuery(destinationDefinitionSpecificationKeys.detail(id), () => service.get(id, workspaceId));
 };
 
 export const useGetDestinationDefinitionSpecificationAsync = (id: string | null) => {
   const service = useGetService();
+  const { workspaceId } = useCurrentWorkspace();
 
   const escapedId = id ?? "";
-  return useQuery(destinationDefinitionSpecificationKeys.detail(escapedId), () => service.get(escapedId), {
+  return useQuery(destinationDefinitionSpecificationKeys.detail(escapedId), () => service.get(escapedId, workspaceId), {
     enabled: isDefined(id),
   });
 };

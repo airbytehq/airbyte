@@ -1,6 +1,6 @@
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { CommonRequestError } from "core/request/CommonRequestError";
 
-import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   checkConnectionToSource,
   checkConnectionToSourceForUpdate,

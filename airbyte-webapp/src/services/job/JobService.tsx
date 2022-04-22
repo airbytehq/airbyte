@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "react-query";
 
+import { useConfig } from "config";
 import { JobsService } from "core/domain/job/JobsService";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
-import { useConfig } from "../../config";
 import { JobInfoRead, JobListRequestBody } from "../../core/request/GeneratedApi";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
-import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
 
 export const jobsKeys = {
   all: ["jobs"] as const,

@@ -7,7 +7,9 @@ import { ThemeProvider } from "styled-components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureService } from "hooks/services/Feature";
+import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import NotificationServiceProvider from "hooks/services/Notification";
 import en from "locales/en.json";
 import { Routing } from "packages/cloud/cloudRoutes";
@@ -16,8 +18,6 @@ import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService
 import { theme } from "packages/cloud/theme";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
-import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 
 import { AppServicesProvider } from "./services/AppServicesProvider";
 import { ConfigProvider } from "./services/ConfigProvider";

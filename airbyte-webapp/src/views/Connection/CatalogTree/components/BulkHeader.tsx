@@ -5,7 +5,6 @@ import styled from "styled-components";
 
 import { Button, Cell, Header, Toggle } from "components";
 
-import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import {
   DestinationSyncMode,
   SyncMode,
@@ -14,6 +13,7 @@ import {
   SyncSchemaStream,
   traverseSchemaToField,
 } from "core/domain/catalog";
+import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";

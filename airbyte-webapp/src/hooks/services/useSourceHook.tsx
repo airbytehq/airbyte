@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
+import { useConfig } from "config";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Source } from "core/domain/connector";
@@ -10,7 +11,6 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { useConfig } from "../../config";
 import { WebBackendConnectionRead } from "../../core/request/GeneratedApi";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
