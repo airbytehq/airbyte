@@ -13,7 +13,6 @@ import {
   SyncSchema,
   SyncSchemaStream,
 } from "core/domain/catalog";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import {
   isDbtTransformation,
   isNormalizationTransformation,
@@ -87,13 +86,13 @@ const connectionValidationSchema = yup
     namespaceDefinition: yup
       .string()
       .oneOf([
-        ConnectionNamespaceDefinition.Source,
-        ConnectionNamespaceDefinition.Destination,
-        ConnectionNamespaceDefinition.CustomFormat,
+        NamespaceDefinitionType.source,
+        NamespaceDefinitionType.destination,
+        NamespaceDefinitionType.customformat,
       ])
       .required("form.empty.error"),
     namespaceFormat: yup.string().when("namespaceDefinition", {
-      is: ConnectionNamespaceDefinition.CustomFormat,
+      is: NamespaceDefinitionType.customformat,
       then: yup.string().required("form.empty.error"),
     }),
     prefix: yup.string(),
@@ -285,7 +284,7 @@ const useInitialValues = (
       syncCatalog: initialSchema,
       schedule: connection.schedule !== undefined ? connection.schedule : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
-      namespaceDefinition: connection.namespaceDefinition || ConnectionNamespaceDefinition.Source,
+      namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 

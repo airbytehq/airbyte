@@ -15,11 +15,11 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
+import { NamespaceDefinitionType } from "../../../core/request/GeneratedApi";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
@@ -42,7 +42,7 @@ type TreeViewRowProps = {
   streamNode: SyncSchemaStream;
   errors: FormikErrors<ConnectionFormValues>;
   destinationSupportedSyncModes: DestinationSyncMode[];
-  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceDefinition: NamespaceDefinitionType;
   namespaceFormat: string;
   prefix: string;
   updateStream: (id: string, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;

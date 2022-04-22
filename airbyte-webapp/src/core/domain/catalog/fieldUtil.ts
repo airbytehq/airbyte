@@ -1,6 +1,6 @@
 import { JSONSchema7Definition } from "json-schema";
 
-import { ConnectionNamespaceDefinition } from "../connection";
+import { NamespaceDefinitionType } from "../../request/GeneratedApi";
 import { SOURCE_NAMESPACE_TAG } from "../connector/source";
 import { SyncSchemaField } from "./models";
 
@@ -42,30 +42,29 @@ const traverseJsonSchemaProperties = (
   ];
 };
 
-type NamespaceOptions =
-  | {
-      namespaceDefinition: ConnectionNamespaceDefinition.Source | ConnectionNamespaceDefinition.Destination;
-      sourceNamespace?: string;
-    }
-  | {
-      namespaceDefinition: ConnectionNamespaceDefinition.CustomFormat;
-      namespaceFormat: string;
-      sourceNamespace?: string;
-    };
+type NamespaceOptions = {
+  namespaceDefinition: NamespaceDefinitionType;
+  sourceNamespace?: string;
+};
+type NamespaceOptionsCustomFormat = {
+  namespaceDefinition: typeof NamespaceDefinitionType.customformat;
+  namespaceFormat: string;
+  sourceNamespace?: string;
+};
 
-function getDestinationNamespace(opt: NamespaceOptions): string {
+function getDestinationNamespace(opt: NamespaceOptions | NamespaceOptionsCustomFormat) {
   const destinationSetting = "<destination schema>";
   switch (opt.namespaceDefinition) {
-    case ConnectionNamespaceDefinition.Source:
+    case NamespaceDefinitionType.source:
       return opt.sourceNamespace ?? destinationSetting;
-    case ConnectionNamespaceDefinition.Destination:
+    case NamespaceDefinitionType.destination:
       return destinationSetting;
-    case ConnectionNamespaceDefinition.CustomFormat:
+    case NamespaceDefinitionType.customformat:
+    default: // Default is never hit, but typescript prefers it declared
       if (!opt.sourceNamespace?.trim()) {
         return destinationSetting;
       }
-
-      return opt.namespaceFormat.replace(SOURCE_NAMESPACE_TAG, opt.sourceNamespace);
+      return (opt as NamespaceOptionsCustomFormat).namespaceFormat.replace(SOURCE_NAMESPACE_TAG, opt.sourceNamespace);
   }
 }
 

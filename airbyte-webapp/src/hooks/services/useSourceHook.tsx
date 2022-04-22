@@ -175,12 +175,12 @@ const useDiscoverSchema = (
   isLoading: boolean;
   schema: SyncSchema;
   schemaErrorStatus: { status: number; response: JobInfo } | null;
-  catalogId: string;
+  catalogId: string | undefined;
   onDiscoverSchema: () => Promise<void>;
 } => {
   const service = useSourceService();
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
-  const [catalogId, setCatalogId] = useState<string>("");
+  const [catalogId, setCatalogId] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(false);
   const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
     status: number;

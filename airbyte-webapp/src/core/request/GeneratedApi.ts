@@ -878,6 +878,7 @@ export interface WebBackendConnectionCreate {
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
   operations?: OperationCreate[];
+  sourceCatalogId?: string;
 }
 
 export interface ConnectionCreate {
@@ -895,6 +896,7 @@ export interface ConnectionCreate {
   schedule?: ConnectionSchedule;
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
+  sourceCatalogId?: string;
 }
 
 export interface DbMigrationRequestBody {
@@ -1125,6 +1127,7 @@ export type DestinationDefinitionId = string;
 export interface SourceDiscoverSchemaRead {
   catalog?: AirbyteCatalog;
   jobInfo: SynchronousJobRead;
+  catalogId?: string;
 }
 
 export interface SourceReadList {

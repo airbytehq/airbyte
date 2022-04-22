@@ -8,14 +8,17 @@ import { FormChangeTracker } from "components/FormChangeTracker";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 
-import { ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { equal } from "utils/objects";
 
-import { WebBackendConnectionRead } from "../../../core/request/GeneratedApi";
+import {
+  ConnectionSchedule,
+  NamespaceDefinitionType,
+  WebBackendConnectionRead,
+} from "../../../core/request/GeneratedApi";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
@@ -181,7 +184,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           <FormChangeTracker changed={dirty} formId={formId} />
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
-              {({ field, meta }: FieldProps<ScheduleProperties>) => (
+              {({ field, meta }: FieldProps<ConnectionSchedule>) => (
                 <ConnectorLabel
                   nextLine
                   error={!!meta.error && meta.touched}
@@ -232,7 +235,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 )}
               </Field>
             </FlexRow>
-            {values.namespaceDefinition === ConnectionNamespaceDefinition.CustomFormat && (
+            {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
                   <NamespaceFormatLabel
