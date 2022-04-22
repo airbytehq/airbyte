@@ -1,0 +1,16 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Junip Reviews Spec",
+    "type": "object",
+    "required": ["junip_store_key"],
+    "additionalProperties": false,
+    "properties": {
+      "junip_store_key": {
+        "type": "string",
+        "description": "junip store key"
+      }
+    }
+  }
+}
