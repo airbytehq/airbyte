@@ -6,6 +6,7 @@ import { SyncSchema } from "core/domain/catalog";
 import {
   Connection,
   ConnectionNamespaceDefinition,
+  ConnectionStatus,
   ScheduleProperties,
   WebBackendConnectionService,
 } from "core/domain/connection";
@@ -51,7 +52,7 @@ type UpdateConnection = {
   syncCatalog?: SyncSchema;
   namespaceDefinition: ConnectionNamespaceDefinition;
   namespaceFormat?: string;
-  status: string;
+  status: ConnectionStatus;
   prefix: string;
   schedule?: ScheduleProperties | null;
   operations?: Operation[];
