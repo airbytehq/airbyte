@@ -101,11 +101,8 @@ class QuestionStream(EnquireLabsStream):
 
 
 class QuestionResponseStream(EnquireLabsStream):
-    def __init__(self, secret_key, before, after, limit, since, until, question_id, **kwargs):
+    def __init__(self, secret_key, since, until, question_id, **kwargs):
         super().__init__(secret_key=secret_key, **kwargs)
-        self.before = before
-        self.after = after
-        self.limit = limit
         self.since = since
         self.until = until
         self.question_id = question_id
@@ -122,15 +119,20 @@ class QuestionResponseStream(EnquireLabsStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
-        return {
-            "before": self.before,
-            "after": self.after,
-            "limit": self.limit,
+        params = {
             "since": self.since,
             "until": self.until,
             "question_id": self.question_id
         }
+        params.update(next_page_token)
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        decoded_response = response.json()
+        if decoded_response.get("next"):
+            return {"after": decoded_response.get("data").get("response_id")}
+
+        return None
 
 
 class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
@@ -200,9 +202,6 @@ class SourceEnquireLabs(AbstractSource):
 
         args = {
             "secret_key": config["secret_key"],
-            "before": config.get("before"),
-            "after": config.get("after"),
-            "limit": config.get("limit"),
             "since": config.get("since"),
             "until": config.get("until"),
             "question_id": config.get("question_id")

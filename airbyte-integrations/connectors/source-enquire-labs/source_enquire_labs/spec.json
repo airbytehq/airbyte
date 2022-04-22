@@ -11,18 +11,6 @@
         "type": "string",
         "description": "secret key of enquire labs"
       },
-      "before": {
-        "type": "string",
-        "description": "Response ID, used as a cursor in pagination. Use this to fetch the page before the response."
-      },
-      "after": {
-        "type": "string",
-        "description": "Response ID, used as a cursor in pagination. Use this to fetch the page after the response."
-      },
-      "limit": {
-        "type": "integer",
-        "description": "The number of responses to fetch per request. The maximum is 100."
-      },
       "since": {
         "type": "string",
         "description": "Use this ISO8601 formatted timestamp to fetch responses that are newer than the supplied value",
