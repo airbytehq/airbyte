@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 
-from source_typeform.source import TypeformStream, Forms, Responses
+from source_typeform.source import TypeformStream, Forms, Responses, Webhooks, Images, Workspaces, Themes
 
 logger = AirbyteLogger()
 
@@ -64,3 +64,45 @@ def test_stream_responses_unconfigured(requests_mock, config_without_forms, form
     merged_records = merge_records(stream, SyncMode.incremental)
 
     assert len(merged_records) == 8
+
+
+def test_stream_webhooks(requests_mock, config, forms_response, webhooks_response):
+    requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms/u6nXL7/webhooks", webhooks_response)
+    requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms/k9xNV4/webhooks", webhooks_response)
+    requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "forms?page_size=200&page=1", forms_response)
+
+    stream = Webhooks(authenticator=MagicMock(), **config)
+
+    merged_records = merge_records(stream, SyncMode.full_refresh)
+
+    assert len(merged_records) == 2
+
+
+def test_stream_workspaces(requests_mock, config, workspaces_response):
+    requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "workspaces?page=1&page_size=200", workspaces_response)
+
+    stream = Workspaces(authenticator=MagicMock(), **config)
+
+    merged_records = merge_records(stream, SyncMode.full_refresh)
+
+    assert len(merged_records) == 2
+
+
+def test_stream_images(requests_mock, config, images_response):
+    requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "images", images_response)
+
+    stream = Images(authenticator=MagicMock(), **config)
+
+    merged_records = merge_records(stream, SyncMode.full_refresh)
+
+    assert len(merged_records) == 2
+
+
+def test_stream_themes(requests_mock, config, themes_response):
+    requests_mock.register_uri("GET", TYPEFORM_BASE_URL + "themes?page=1&page_size=200", themes_response)
+
+    stream = Themes(authenticator=MagicMock(), **config)
+
+    merged_records = merge_records(stream, SyncMode.full_refresh)
+
+    assert len(merged_records) == 2

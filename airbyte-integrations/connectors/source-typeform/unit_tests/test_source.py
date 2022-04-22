@@ -56,4 +56,4 @@ def test_check_connection_incomplete(config):
 def test_streams(config):
     streams = SourceTypeform().streams(config)
 
-    assert len(streams) == 2
+    assert len(streams) == 6

@@ -765,6 +765,159 @@ def response_response():
 
 
 @pytest.fixture
+def webhooks_response():
+    return setup_response(200, {
+        "items": [
+            {
+                "created_at": "2016-11-21T12:23:28Z",
+                "enabled": True,
+                "form_id": "abc123",
+                "id": "yRtagDm8AT",
+                "tag": "phoenix",
+                "updated_at": "2016-11-21T12:23:28Z",
+                "url": "https://test.com",
+                "verify_ssl": True
+            }
+        ]
+    })
+
+
+@pytest.fixture
+def images_response():
+    return setup_response(200, [
+        {
+            "file_name": "file_name1",
+            "id": "id1",
+            "src": "src1"
+        },
+        {
+            "file_name": "file_name2",
+            "id": "id2",
+            "src": "src2"
+        }
+    ])
+
+@pytest.fixture
+def workspaces_response():
+    return setup_response(200, {
+        "items": [
+            {
+                "forms": [
+                    {
+                        "count": 12,
+                        "href": "https://api.typeform.com/workspaces/a1b2c3/forms"
+                    }
+                ],
+                "id": "a1b2c3",
+                "name": "My Workspace1",
+                "self": [
+                    {
+                        "href": "https://api.typeform.com/workspaces/a1b2c3"
+                    }
+                ],
+                "shared": False
+            },
+            {
+                "forms": [
+                    {
+                        "count": 10,
+                        "href": "https://api.typeform.com/workspaces/a1b2c3/forms"
+                    }
+                ],
+                "id": "a1b2c3d4",
+                "name": "My Workspace2",
+                "self": [
+                    {
+                        "href": "https://api.typeform.com/workspaces/a1b2c3"
+                    }
+                ],
+                "shared": True
+            }
+        ],
+        "page_count": 1,
+        "total_items": 2
+    })
+
+
+@pytest.fixture
+def themes_response():
+    return setup_response(200, {
+        "items": [
+            {
+                "background": [
+                    {
+                        "brightness": 12,
+                        "href": "https://api.typeform.com/workspaces/a1b2c3/forms",
+                        "layout": "fullscreen"
+                    }
+                ],
+                "colors": [
+                    {
+                        "answer": "answer1",
+                        "background": "background1",
+                        "button": "button1",
+                        "question": "question1"
+                    }
+                ],
+                "fields": [
+                    {
+                        "alignment": "left",
+                        "font_size": "medium"
+                    }
+                ],
+                "font": "Helvetica Neue",
+                "has_transparent_button": True,
+                "id": "a1b2c3",
+                "name": "name1",
+                "screens": [
+                    {
+                        "alignment": "left",
+                        "font_size": "medium"
+                    }
+                ],
+                "visibility": "public"
+            },
+            {
+                "background": [
+                    {
+                        "brightness": 13,
+                        "href": "https://api.typeform.com/workspaces/a1b2c3/forms",
+                        "layout": "fullscreen"
+                    }
+                ],
+                "colors": [
+                    {
+                        "answer": "answer2",
+                        "background": "background2",
+                        "button": "button2",
+                        "question": "question2"
+                    }
+                ],
+                "fields": [
+                    {
+                        "alignment": "left",
+                        "font_size": "medium"
+                    }
+                ],
+                "font": "Helvetica Neue",
+                "has_transparent_button": True,
+                "id": "a1b2c3",
+                "name": "name1",
+                "screens": [
+                    {
+                        "alignment": "left",
+                        "font_size": "medium"
+                    }
+                ],
+                "visibility": "public"
+            }
+        ],
+        "page_count": 1,
+        "total_items": 2
+    })
+
+
+@pytest.fixture
 def empty_response_ok():
     return setup_response(200, {})
 
