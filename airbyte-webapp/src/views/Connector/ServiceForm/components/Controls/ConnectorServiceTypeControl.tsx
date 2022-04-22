@@ -13,6 +13,7 @@ import {
   ItemView as SingleValueView,
 } from "components/base/DropDown/components/SingleValue";
 import { ConnectorIcon } from "components/ConnectorIcon";
+import { GAIcon } from "components/icons/GAIcon";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { FormBaseItem } from "core/form/types";
@@ -111,12 +112,21 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...prop
   </>
 );
 
-const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) =>
-  releaseStage && releaseStage !== ReleaseStage.GENERALLY_AVAILABLE ? (
+const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) => {
+  if (!releaseStage) {
+    return null;
+  }
+
+  if (releaseStage === ReleaseStage.GENERALLY_AVAILABLE) {
+    return <GAIcon />;
+  }
+
+  return (
     <Stage>
       <FormattedMessage id={`connector.releaseStage.${releaseStage}`} defaultMessage={releaseStage} />
     </Stage>
-  ) : null;
+  );
+};
 
 const Option: React.FC<OptionProps> = (props) => {
   return (
