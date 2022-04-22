@@ -13,6 +13,8 @@ from airbyte_cdk.sources.streams import Stream
 
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from source_shipstation.streams import Customers, Fulfillments, Products, Orders, Stores, Warehouses
+
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -33,6 +35,8 @@ There are additional required TODOs in the files within the integration_tests fo
 
 # Source
 class SourceShipstation(AbstractSource):
+
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -44,8 +48,7 @@ class SourceShipstation(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        print(config)
-        response = requests.get('https://ssapi.shipstation.com/users', auth=HTTPBasicAuth(config['username'], config['password']))
+        response = requests.get('https://ssapi.shipstation.com/users', auth=HTTPBasicAuth(config['api_key'], config['api_secret']))
         try:
             response.raise_for_status()
         except HTTPError as e:
@@ -60,5 +63,6 @@ class SourceShipstation(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        auth = HTTPBasicAuth(username=config["api_key"], password=config['api_secret'])
+        return [Customers(authenticator=auth), Fulfillments(authenticator=auth), Products(authenticator=auth),
+                Orders(authenticator=auth), Stores(authenticator=auth), Warehouses(authenticator=auth)]

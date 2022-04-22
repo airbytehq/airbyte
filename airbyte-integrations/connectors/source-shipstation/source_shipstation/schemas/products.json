@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "aliases": {
+      "type": ["string", "null"]
+    },
+    "productId": {
+      "type": "integer"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "price": {
+      "type": "integer"
+    },
+    "defaultCost": {
+      "type": "integer"
+    },
+    "length": {
+      "type": "integer"
+    },
+    "width": {
+      "type": "integer"
+    },
+    "height": {
+      "type": "integer"
+    },
+    "weightOz": {
+      "type": "integer"
+    },
+    "internalNotes": {
+      "type": "null"
+    },
+    "fulfillmentSku": {
+      "type": "string"
+    },
+    "createDate": {
+      "type": "string"
+    },
+    "modifyDate": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "productCategory": {
+      "type": "object",
+      "properties": {
+        "categoryId": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "productType": {
+      "type": "null"
+    },
+    "warehouseLocation": {
+      "type": "string"
+    },
+    "defaultCarrierCode": {
+      "type": "string"
+    },
+    "defaultServiceCode": {
+      "type": "string"
+    },
+    "defaultPackageCode": {
+      "type": "string"
+    },
+    "defaultIntlCarrierCode": {
+      "type": "string"
+    },
+    "defaultIntlServiceCode": {
+      "type": "string"
+    },
+    "defaultIntlPackageCode": {
+      "type": "string"
+    },
+    "defaultConfirmation": {
+      "type": "string"
+    },
+    "defaultIntlConfirmation": {
+      "type": "string"
+    },
+    "customsDescription": {
+      "type": "null"
+    },
+    "customsValue": {
+      "type": "null"
+    },
+    "customsTariffNo": {
+      "type": "null"
+    },
+    "customsCountryCode": {
+      "type": "null"
+    },
+    "noCustoms": {
+      "type": "null"
+    },
+    "tags": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "tagId": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tagId",
+            "name"
+          ]
+        }
+      ]
+    }
+  },
+  "required": []
+}
