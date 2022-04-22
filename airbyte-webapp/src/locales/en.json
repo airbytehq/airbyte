@@ -335,6 +335,7 @@
   "connection.transfer": "Transfer",
   "connection.linkCopied": "Link copied!",
   "connection.copyLogLink": "Copy link to log",
+  "connection.connectionDeletedView": "This connection has been deleted.  This view is for reference only.  No changes or syncs can be completed.",
 
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",

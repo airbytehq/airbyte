@@ -11,7 +11,7 @@ import LoadingSchema from "components/LoadingSchema";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { ConnectionNamespaceDefinition, ConnectionStatus } from "core/domain/connection";
 import {
   useConnectionLoad,
   useResetConnection,
@@ -143,7 +143,7 @@ const ReplicationView: React.FC<IProps> = ({ onAfterSaveSchema, connectionId }) 
       <Card>
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
-            mode={connection?.status !== "deprecated" ? "edit" : "readonly"}
+            mode={connection?.status !== ConnectionStatus.DEPRECATED ? "edit" : "readonly"}
             connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}

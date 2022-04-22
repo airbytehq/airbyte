@@ -2,9 +2,11 @@ import React, { Suspense } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
+import { ErrorBanner } from "components/base/Banner/ErrorBanner";
 import HeadTitle from "components/HeadTitle";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
+import { ConnectionStatus } from "core/domain/connection";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetConnection } from "hooks/services/useConnectionHook";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
@@ -42,7 +44,7 @@ const ConnectionItemPage: React.FC = () => {
     });
   };
 
-  const isDeprecated = connection.status === "deprecated";
+  const isConnectionDeleted = connection.status === ConnectionStatus.DEPRECATED;
 
   return (
     <MainPageWithScroll
@@ -61,13 +63,13 @@ const ConnectionItemPage: React.FC = () => {
         />
       }
       pageTitle={<ConnectionPageTitle source={source} destination={destination} currentStep={currentStep} />}
+      error={
+        isConnectionDeleted ? (
+          <ErrorBanner errorType="connectionDeleted" id={"connection.connectionDeletedView"} />
+        ) : null
+      }
     >
       <Suspense fallback={<LoadingPage />}>
-        {isDeprecated && (
-          <div>
-            <p>this one is deleted</p>
-          </div>
-        )}
         <Routes>
           <Route
             path={ConnectionSettingsRoutes.STATUS}

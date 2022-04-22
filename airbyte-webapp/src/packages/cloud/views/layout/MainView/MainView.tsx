@@ -11,7 +11,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-import { CreditsProblemBanner } from "./components/CreditsProblemBanner";
+import { ErrorBanner } from "../../../../../components/base/Banner/ErrorBanner";
 import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 
 const MainContainer = styled.div`
@@ -51,7 +51,9 @@ const MainView: React.FC = (props) => {
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar />
         <Content>
-          {cloudWorkspace.creditStatus && showBanner && <CreditsProblemBanner status={cloudWorkspace.creditStatus} />}
+          {cloudWorkspace.creditStatus && showBanner && (
+            <ErrorBanner errorType="credits" id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`} />
+          )}
           <DataBlock hasBanner={showBanner}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
               <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>
