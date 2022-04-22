@@ -26,6 +26,7 @@ class AmazonAdsConfig(BaseModel):
         description="The Client ID of your Amazon Ads developer application.",
         order=1,
     )
+
     client_secret: str = Field(
         title="Client Secret",
         description="The Client Secret of your Amazon Ads developer application.",
@@ -40,23 +41,11 @@ class AmazonAdsConfig(BaseModel):
         order=3,
     )
 
-    start_date: str = Field(
-        None,
-        title="Start Date",
-        description="The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
-        examples=["2022-10-10", "2022-10-22"],
-        order=4,
-    )
-
     region: AmazonAdsRegion = Field(
-        title="Region *", description="Region to pull data from (EU/NA/FE/SANDBOX)", default=AmazonAdsRegion.NA, order=5
-    )
-
-    profiles: List[int] = Field(
-        None,
-        title="Profile IDs",
-        description="Profile IDs you want to fetch data for.",
-        order=6,
+        title="Region *",
+        description='Region to pull data from (EU/NA/FE/SANDBOX). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a> for more details.',
+        default=AmazonAdsRegion.NA,
+        order=4,
     )
 
     report_wait_timeout: int = Field(
@@ -64,7 +53,7 @@ class AmazonAdsConfig(BaseModel):
         description="Timeout duration in minutes for Reports. Eg. 30",
         default=30,
         examples=[30, 120],
-        order=7,
+        order=5,
     )
 
     report_generation_max_retries: int = Field(
@@ -72,6 +61,21 @@ class AmazonAdsConfig(BaseModel):
         description="Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
         default=5,
         examples=[5, 10, 15],
+        order=6,
+    )
+
+    start_date: str = Field(
+        None,
+        title="Start Date (Optional)",
+        description="The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
+        examples=["2022-10-10", "2022-10-22"],
+        order=7,
+    )
+
+    profiles: List[int] = Field(
+        None,
+        title="Profile IDs (Optional)",
+        description='Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a> for more details.',
         order=8,
     )
 
