@@ -4,12 +4,12 @@ import { FormattedMessage } from "react-intl";
 import { ContentCard } from "components";
 import JobItem from "components/JobItem";
 
-import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
+import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
 import { JobInfo } from "core/domain/job/Job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalytics } from "hooks/services/Analytics";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useTestConnector } from "./useTestConnector";
 

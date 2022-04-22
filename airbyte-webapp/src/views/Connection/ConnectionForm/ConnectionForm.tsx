@@ -1,24 +1,25 @@
+import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
 
 import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
+import { FormChangeTracker } from "components/FormChangeTracker";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
-import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { equal } from "utils/objects";
+import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
-import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
-import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { equal } from "utils/objects";
 
-import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import CreateControls from "./components/CreateControls";
-import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
+import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
+import { OperationsSection } from "./components/OperationsSection";
+import SchemaField from "./components/SyncCatalogField";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
@@ -27,7 +28,6 @@ import {
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
-import { OperationsSection } from "./components/OperationsSection";
 
 const EditLaterMessage = styled(Label)`
   margin: -20px 0 29px;

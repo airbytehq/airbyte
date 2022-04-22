@@ -1,10 +1,11 @@
+import { setIn } from "formik";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
-import { setIn } from "formik";
 
 import { DropDownRow } from "components";
 
+import FrequencyConfig from "config/FrequencyConfig.json";
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
@@ -12,7 +13,8 @@ import {
   SyncSchema,
   SyncSchemaStream,
 } from "core/domain/catalog";
-import { ValuesProps } from "hooks/services/useConnectionHook";
+import { Connection, ScheduleProperties } from "core/domain/connection";
+import { ConnectionNamespaceDefinition, ConnectionSchedule } from "core/domain/connection";
 import {
   isDbtTransformation,
   isNormalizationTransformation,
@@ -21,12 +23,10 @@ import {
   OperatorType,
   Transformation,
 } from "core/domain/connection/operation";
-import FrequencyConfig from "config/FrequencyConfig.json";
-import { Connection, ScheduleProperties } from "core/domain/connection";
-import { ConnectionNamespaceDefinition, ConnectionSchedule } from "core/domain/connection";
-import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { DestinationDefinitionSpecification } from "core/domain/connector";
+import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
+import { ValuesProps } from "hooks/services/useConnectionHook";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -273,7 +273,7 @@ const useInitialValues = (
       syncCatalog: initialSchema,
       schedule: connection.schedule !== undefined ? connection.schedule : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
-      namespaceDefinition: connection.namespaceDefinition,
+      namespaceDefinition: connection.namespaceDefinition || ConnectionNamespaceDefinition.Source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
     };
 

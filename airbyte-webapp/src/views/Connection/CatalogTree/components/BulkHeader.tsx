@@ -1,11 +1,10 @@
+import intersection from "lodash/intersection";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import intersection from "lodash/intersection";
 
 import { Button, Cell, Header, Toggle } from "components";
 
-import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import {
   DestinationSyncMode,
   SyncMode,
@@ -14,10 +13,11 @@ import {
   SyncSchemaStream,
   traverseSchemaToField,
 } from "core/domain/catalog";
+import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
-import { flatten, getPathType } from "../utils";
 import { ArrowCell, CheckboxCell, HeaderCell } from "../styles";
+import { flatten, getPathType } from "../utils";
 import { pathDisplayName, PathPopout } from "./PathPopout";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
 

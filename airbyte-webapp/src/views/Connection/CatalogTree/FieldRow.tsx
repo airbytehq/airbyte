@@ -3,9 +3,9 @@ import styled from "styled-components";
 
 import { Cell, CheckBox, RadioButton } from "components";
 
+import { useTranslateDataType } from "../../../utils/useTranslateDataType";
 import DataTypeCell from "./components/DataTypeCell";
 import { NameContainer } from "./styles";
-import { useTranslateDataType } from "../../../utils/useTranslateDataType";
 
 interface FieldRowProps {
   name: string;

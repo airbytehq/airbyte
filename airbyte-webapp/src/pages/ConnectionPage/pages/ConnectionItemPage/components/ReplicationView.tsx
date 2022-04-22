@@ -1,17 +1,17 @@
+import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FormikHelpers } from "formik";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { useAsyncFn } from "react-use";
-import { FormikHelpers } from "formik";
+import styled from "styled-components";
 
 import { Button, Card } from "components";
+import LoadingSchema from "components/LoadingSchema";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
-import LoadingSchema from "components/LoadingSchema";
 
-import ConnectionForm from "views/Connection/ConnectionForm";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import {
   useConnectionLoad,
   useResetConnection,
@@ -19,7 +19,7 @@ import {
   ValuesProps,
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import ConnectionForm from "views/Connection/ConnectionForm";
 
 type IProps = {
   onAfterSaveSchema: () => void;
