@@ -34,8 +34,8 @@ This Source is capable of syncing the following Streams:
 ### Requirements
 
 * `auth_token` - Sentry Authentication Token with the necessary permissions \(described below\)
-* `organization` - Organization Slug. You can check it at https://sentry.io/settings/<your-organization>/
-* `project` - The name of the Project you wanto sync. You can list it from https://sentry.io/settings/<your-organization>/projects/
+* `organization` - Organization Slug. You can check it at https://sentry.io/settings/$YOUR_ORG_HERE/
+* `project` - The name of the Project you wanto sync. You can list it from https://sentry.io/settings/$YOUR_ORG_HERE/projects/
 * `hostname` - Host name of Sentry API server. For self-hosted, specify your host name here. Otherwise, leave it empty. \(default: sentry.io\)
 
 ### Setup guide
@@ -46,4 +46,5 @@ You can find or create authentication tokens within [Sentry](https://sentry.io/s
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
 | 0.1.0 | 2021-10-12 | [6975](https://github.com/airbytehq/airbyte/pull/6975) | New Source: Sentry |

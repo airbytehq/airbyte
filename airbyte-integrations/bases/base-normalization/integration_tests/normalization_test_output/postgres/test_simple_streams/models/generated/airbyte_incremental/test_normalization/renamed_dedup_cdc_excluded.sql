@@ -9,6 +9,7 @@
 select
     _airbyte_unique_key,
     {{ adapter.quote('id') }},
+    _ab_cdc_updated_at,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at,

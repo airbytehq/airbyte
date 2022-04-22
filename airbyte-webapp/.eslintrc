@@ -4,14 +4,13 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:jest/recommended",
     "prettier",
-    "prettier/react",
-    "prettier/@typescript-eslint",
     "plugin:prettier/recommended"
   ],
   "plugins": [
     "react",
     "@typescript-eslint",
-    "prettier"
+    "prettier",
+    "unused-imports"
   ],
   "parserOptions": {
     "ecmaVersion": 2020,
@@ -22,6 +21,23 @@
   },
   "rules": {
     "prettier/prettier": "error",
+    "unused-imports/no-unused-imports": "error",
+    "import/order": ["error", {
+      "newlines-between": "always",
+      "groups": ["type", "builtin", "external", "internal", ["parent", "sibling"], "index"],
+      "pathGroupsExcludedImportTypes": ["builtin"],
+      "pathGroups": [
+        {
+          "pattern": "components{/**,}",
+          "group": "internal"
+        },
+        {
+          "pattern": "+(config|core|hooks|locales|packages|pages|services|types|utils|views){/**,}",
+          "group": "internal",
+          "position": "after"
+        }
+      ]
+    }],
     "@typescript-eslint/ban-ts-comment": [
       "warn",
       {
@@ -33,5 +49,13 @@
       "warn"
     ]
   },
-  "parser": "@typescript-eslint/parser"
+  "parser": "@typescript-eslint/parser",
+  "overrides": [
+    {
+      "files": ["scripts/**/*"],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off"
+      }
+    }
+  ]
 }

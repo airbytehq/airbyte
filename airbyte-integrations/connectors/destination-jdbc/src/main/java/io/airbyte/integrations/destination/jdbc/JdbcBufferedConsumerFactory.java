@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
+import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+import static java.util.stream.Collectors.toSet;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
@@ -15,7 +18,9 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
+import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -43,8 +48,6 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
-  private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 1024 / 4; // 256mib
-
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                               final JdbcDatabase database,
                                               final SqlOperations sqlOperations,
@@ -56,11 +59,10 @@ public class JdbcBufferedConsumerFactory {
     return new BufferedStreamConsumer(
         outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
-        recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
+        new InMemoryRecordBufferingStrategy(recordWriterFunction(database, sqlOperations, writeConfigs, catalog), DEFAULT_MAX_BATCH_SIZE_BYTES),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        sqlOperations::isValidData,
-        MAX_BATCH_SIZE_BYTES);
+        sqlOperations::isValidData);
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -85,7 +87,7 @@ public class JdbcBufferedConsumerFactory {
 
       final String defaultSchemaName = schemaRequired ? namingResolver.getIdentifier(config.get("schema").asText())
           : namingResolver.getIdentifier(config.get("database").asText());
-      final String outputSchema = getOutputSchema(abStream, defaultSchemaName);
+      final String outputSchema = getOutputSchema(abStream, defaultSchemaName, namingResolver);
 
       final String streamName = abStream.getName();
       final String tableName = namingResolver.getRawTableName(streamName);
@@ -106,12 +108,12 @@ public class JdbcBufferedConsumerFactory {
    * The logic here matches the logic in the catalog_process.py for Normalization. Any modifications
    * need to be reflected there and vice versa.
    */
-  private static String getOutputSchema(final AirbyteStream stream, final String defaultDestSchema) {
-    final String sourceSchema = stream.getNamespace();
-    if (sourceSchema != null) {
-      return sourceSchema;
-    }
-    return defaultDestSchema;
+  private static String getOutputSchema(final AirbyteStream stream,
+                                        final String defaultDestSchema,
+                                        final NamingConventionTransformer namingResolver) {
+    return stream.getNamespace() != null
+        ? namingResolver.getNamespace(stream.getNamespace())
+        : namingResolver.getNamespace(defaultDestSchema);
   }
 
   private static OnStartFunction onStartFunction(final JdbcDatabase database,
@@ -132,10 +134,10 @@ public class JdbcBufferedConsumerFactory {
     };
   }
 
-  private static RecordWriter recordWriterFunction(final JdbcDatabase database,
-                                                   final SqlOperations sqlOperations,
-                                                   final List<WriteConfig> writeConfigs,
-                                                   final ConfiguredAirbyteCatalog catalog) {
+  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final JdbcDatabase database,
+                                                                         final SqlOperations sqlOperations,
+                                                                         final List<WriteConfig> writeConfigs,
+                                                                         final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
         .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 
@@ -157,6 +159,7 @@ public class JdbcBufferedConsumerFactory {
       // copy data
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
+        sqlOperations.onDestinationCloseOperations(database, writeConfigs.stream().map(WriteConfig::getOutputSchemaName).collect(toSet()));
         LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {
           final String schemaName = writeConfig.getOutputSchemaName();

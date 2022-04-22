@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.persistence;
 
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
@@ -11,6 +12,7 @@ import io.airbyte.config.StandardSyncOperation;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 public interface JobCreator {
 
@@ -29,7 +31,9 @@ public interface JobCreator {
                                StandardSync standardSync,
                                String sourceDockerImage,
                                String destinationDockerImage,
-                               List<StandardSyncOperation> standardSyncOperations)
+                               List<StandardSyncOperation> standardSyncOperations,
+                               @Nullable ActorDefinitionResourceRequirements sourceResourceReqs,
+                               @Nullable ActorDefinitionResourceRequirements destinationResourceReqs)
       throws IOException;
 
   /**

@@ -3,9 +3,7 @@
 #
 
 import boto3.session
-from botocore.client import Config
-
-from .source import SourceFilesAbstract
+from botocore.client import BaseClient, Config
 
 
 def make_s3_resource(provider: dict, session: boto3.session.Session, config: Config = None) -> object:
@@ -20,7 +18,7 @@ def make_s3_resource(provider: dict, session: boto3.session.Session, config: Con
     return session.resource("s3", **client_kv_args)
 
 
-def make_s3_client(provider: dict, session: boto3.session.Session = None, config: Config = None) -> object:
+def make_s3_client(provider: dict, session: boto3.session.Session = None, config: Config = None) -> BaseClient:
     """
     Construct boto3 client with specified config and remote endpoint
     :param provider provider configuration from connector configuration.
@@ -54,4 +52,4 @@ def _get_s3_client_args(provider: dict, config: Config) -> dict:
     return client_kv_args
 
 
-__all__ = ["SourceFilesAbstract", "make_s3_client", "make_s3_resource"]
+__all__ = ["make_s3_client", "make_s3_resource"]

@@ -178,6 +178,11 @@ class LoginsAPI(ActivitiesAPI):
     application_name = "login"
 
 
+class MeetAPI(ActivitiesAPI):
+    name = "Meet"
+    application_name = "meet"
+
+
 class MobileAPI(ActivitiesAPI):
     name = "Mobile"
     application_name = "mobile"

@@ -1,6 +1,6 @@
 
 
-      create or replace transient table "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE"  as
+      create or replace  table "AIRBYTE_DATABASE".TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE"  as
       (select * from(
             
 -- Final base SQL model

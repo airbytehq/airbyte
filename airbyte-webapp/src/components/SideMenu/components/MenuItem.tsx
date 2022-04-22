@@ -5,7 +5,7 @@ type IProps = {
   name: string | React.ReactNode;
   isActive?: boolean;
   count?: number;
-  testId?: string;
+  id?: string;
   onClick: () => void;
 };
 
@@ -16,14 +16,12 @@ const Item = styled.div<{
   padding: 6px 8px 7px;
   border-radius: 4px;
   cursor: pointer;
-  background: ${({ theme, isActive }) =>
-    isActive ? theme.primaryColor12 : "none"};
+  background: ${({ theme, isActive }) => (isActive ? theme.primaryColor12 : "none")};
   font-style: normal;
   font-weight: ${({ isActive }) => (isActive ? "bold" : "500")};
   font-size: 12px;
   line-height: 15px;
-  color: ${({ theme, isActive }) =>
-    isActive ? theme.primaryColor : theme.greyColor60};
+  color: ${({ theme, isActive }) => (isActive ? theme.primaryColor : theme.greyColor60)};
 `;
 
 const Counter = styled.div`
@@ -40,15 +38,9 @@ const Counter = styled.div`
   margin-left: 5px;
 `;
 
-const MenuItem: React.FC<IProps> = ({
-  count,
-  isActive,
-  name,
-  testId,
-  onClick,
-}) => {
+const MenuItem: React.FC<IProps> = ({ count, isActive, name, id, onClick }) => {
   return (
-    <Item data-testid={testId} isActive={isActive} onClick={onClick}>
+    <Item data-testid={id} isActive={isActive} onClick={onClick}>
       {name}
       {count ? <Counter>{count}</Counter> : null}
     </Item>

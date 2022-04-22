@@ -1,4 +1,4 @@
-FROM python:3.7-slim as base
+FROM python:3.9-slim as base
 
 # build and load all requirements
 FROM base as builder
@@ -34,5 +34,5 @@ COPY source_retently ./source_retently
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.2
 LABEL io.airbyte.name=airbyte/source-retently

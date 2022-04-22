@@ -248,7 +248,6 @@ PAGE_FIELDS = ",".join(
         # "insights_exports",    Tried accessing nonexisting field (insights_exports) on node type (Page)
         "instagram_accounts",
         "likes",
-        "live_encoders",
         "live_videos",
         "locations",
         "nativeoffers",

@@ -10,5 +10,6 @@ public enum TemporalJobType {
   DISCOVER_SCHEMA,
   SYNC,
   RESET_CONNECTION,
+  CONNECTION_UPDATER,
   REPLICATE
 }

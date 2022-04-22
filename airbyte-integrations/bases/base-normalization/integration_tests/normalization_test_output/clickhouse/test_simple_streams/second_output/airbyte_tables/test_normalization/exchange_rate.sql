@@ -14,16 +14,17 @@
 with __dbt__cte__exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: test_normalization._airbyte_raw_exchange_rate
 select
-    JSONExtractRaw(_airbyte_data, 'id') as id,
-    JSONExtractRaw(_airbyte_data, 'currency') as currency,
-    JSONExtractRaw(_airbyte_data, 'date') as date,
-    JSONExtractRaw(_airbyte_data, 'timestamp_col') as timestamp_col,
-    JSONExtractRaw(_airbyte_data, 'HKD@spéçiäl & characters') as "HKD@spéçiäl & characters",
-    JSONExtractRaw(_airbyte_data, 'HKD_special___characters') as HKD_special___characters,
-    JSONExtractRaw(_airbyte_data, 'NZD') as NZD,
-    JSONExtractRaw(_airbyte_data, 'USD') as USD,
-    JSONExtractRaw(_airbyte_data, 'column`_''with\"_quotes') as "column`_'with""_quotes",
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'id') as id,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'currency') as currency,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'date') as date,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'timestamp_col') as timestamp_col,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'HKD@spéçiäl & characters') as "HKD@spéçiäl & characters",
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'HKD_special___characters') as HKD_special___characters,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'NZD') as NZD,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'USD') as USD,
+    JSONExtractRaw(assumeNotNull(_airbyte_data), 'column`_''with\"_quotes') as "column`_'with""_quotes",
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at
@@ -33,6 +34,7 @@ where 1 = 1
 ),  __dbt__cte__exchange_rate_ab2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: __dbt__cte__exchange_rate_ab1
 select
     accurateCastOrNull(id, '
     BIGINT
@@ -60,6 +62,7 @@ where 1 = 1
 ),  __dbt__cte__exchange_rate_ab3 as (
 
 -- SQL model to build a hash column based on the values of this record
+-- depends_on: __dbt__cte__exchange_rate_ab2
 select
     assumeNotNull(hex(MD5(
             
@@ -95,6 +98,7 @@ from __dbt__cte__exchange_rate_ab2 tmp
 -- exchange_rate
 where 1 = 1
 )-- Final base SQL model
+-- depends_on: __dbt__cte__exchange_rate_ab3
 select
     id,
     currency,

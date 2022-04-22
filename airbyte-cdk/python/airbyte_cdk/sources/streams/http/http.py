@@ -7,6 +7,7 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from urllib.error import HTTPError
 from urllib.parse import urljoin
 
 import requests
@@ -33,13 +34,13 @@ class HttpStream(Stream, ABC):
     """
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
-    page_size = None  # Use this variable to define page size for API http requests with pagination support
+    page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         self._session = requests.Session()
 
-        self._authenticator = NoAuth()
+        self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
         elif authenticator:
@@ -107,7 +108,7 @@ class HttpStream(Stream, ABC):
         return 5
 
     @property
-    def retry_factor(self) -> int:
+    def retry_factor(self) -> float:
         """
         Override if needed. Specifies factor for backoff policy.
         """
@@ -130,6 +131,7 @@ class HttpStream(Stream, ABC):
     @abstractmethod
     def path(
         self,
+        *,
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -206,6 +208,7 @@ class HttpStream(Stream, ABC):
     def parse_response(
         self,
         response: requests.Response,
+        *,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -214,6 +217,9 @@ class HttpStream(Stream, ABC):
         Parses the raw response object into a list of records.
         By default, this returns an iterable containing the input. Override to parse differently.
         :param response:
+        :param stream_state:
+        :param stream_slice:
+        :param next_page_token:
         :return: An iterable containing the parsed response
         """
 
@@ -236,6 +242,7 @@ class HttpStream(Stream, ABC):
 
         This method is called only if should_backoff() returns True for the input request.
 
+        :param response:
         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
         to the default backoff behavior (e.g using an exponential algorithm).
         """
@@ -288,8 +295,11 @@ class HttpStream(Stream, ABC):
                 raise DefaultBackoffException(request=request, response=response)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
-            response.raise_for_status()
-
+            try:
+                response.raise_for_status()
+            except HTTPError as exc:
+                self.logger.error(response.text)
+                raise exc
         return response
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
@@ -310,11 +320,11 @@ class HttpStream(Stream, ABC):
             max_tries: The maximum number of attempts to make before giving
                 up ...The default value of None means there is no limit to
                 the number of tries.
-        This implies that if max_tries is excplicitly set to None there is no
+        This implies that if max_tries is explicitly set to None there is no
         limit to retry attempts, otherwise it is limited number of tries. But
         this is not true for current version of backoff packages (1.8.0). Setting
-        max_tries to 0 or negative number would result in endless retry atempts.
-        Add this condition to avoid an endless loop if it hasnt been set
+        max_tries to 0 or negative number would result in endless retry attempts.
+        Add this condition to avoid an endless loop if it hasn't been set
         explicitly (i.e. max_retries is not None).
         """
         if max_tries is not None:

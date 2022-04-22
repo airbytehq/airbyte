@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
+
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
 export type NotificationsFormProps = {
@@ -36,11 +37,7 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
     <>
       <Subtitle>
         <FormattedMessage id="settings.emailNotifications" />
-        <FeedbackBlock
-          errorMessage={errorMessage}
-          successMessage={successMessage}
-          isLoading={isLoading}
-        />
+        <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} isLoading={isLoading} />
       </Subtitle>
       <FormItem>
         <LabeledToggle

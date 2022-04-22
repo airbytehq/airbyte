@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   confirmPasswordReset,
+  updateProfile,
   applyActionCode,
   sendEmailVerification,
   EmailAuthProvider,
@@ -26,10 +27,7 @@ interface AuthService {
 
   signUp(email: string, password: string): Promise<UserCredential>;
 
-  reauthenticate(
-    email: string,
-    passwordPassword: string
-  ): Promise<UserCredential>;
+  reauthenticate(email: string, passwordPassword: string): Promise<UserCredential>;
 
   updatePassword(newPassword: string): Promise<void>;
 
@@ -54,45 +52,49 @@ export class GoogleAuthService implements AuthService {
   }
 
   async login(email: string, password: string): Promise<UserCredential> {
-    return signInWithEmailAndPassword(this.auth, email, password).catch(
-      (err) => {
-        switch (err.code) {
-          case AuthErrorCodes.INVALID_EMAIL:
-            throw new FieldError("email", ErrorCodes.Invalid);
-          case AuthErrorCodes.USER_CANCELLED:
-            throw new FieldError("email", "disabled");
-          case AuthErrorCodes.USER_DELETED:
-            throw new FieldError("email", "notfound");
-          case AuthErrorCodes.INVALID_PASSWORD:
-            throw new FieldError("password", ErrorCodes.Invalid);
-        }
-
-        throw err;
+    return signInWithEmailAndPassword(this.auth, email, password).catch((err) => {
+      switch (err.code) {
+        case AuthErrorCodes.INVALID_EMAIL:
+          throw new FieldError("email", ErrorCodes.Invalid);
+        case AuthErrorCodes.USER_CANCELLED:
+        case AuthErrorCodes.USER_DISABLED:
+          throw new FieldError("email", "disabled");
+        case AuthErrorCodes.USER_DELETED:
+          throw new FieldError("email", "notfound");
+        case AuthErrorCodes.INVALID_PASSWORD:
+          throw new FieldError("password", ErrorCodes.Invalid);
       }
-    );
+
+      throw err;
+    });
   }
 
   async signUp(email: string, password: string): Promise<UserCredential> {
-    return createUserWithEmailAndPassword(this.auth, email, password).catch(
-      (err) => {
-        switch (err.code) {
-          case AuthErrorCodes.EMAIL_EXISTS:
-            throw new FieldError("email", ErrorCodes.Duplicate);
-          case AuthErrorCodes.INVALID_EMAIL:
-            throw new FieldError("email", ErrorCodes.Invalid);
-          case AuthErrorCodes.WEAK_PASSWORD:
-            throw new FieldError("password", ErrorCodes.Validation);
-        }
-
-        throw err;
+    if (password.length < 12) {
+      throw new FieldError("password", "signup.password.minLength");
+    }
+    return createUserWithEmailAndPassword(this.auth, email, password).catch((err) => {
+      switch (err.code) {
+        case AuthErrorCodes.EMAIL_EXISTS:
+          throw new FieldError("email", ErrorCodes.Duplicate);
+        case AuthErrorCodes.INVALID_EMAIL:
+          throw new FieldError("email", ErrorCodes.Invalid);
+        case AuthErrorCodes.WEAK_PASSWORD:
+          throw new FieldError("password", ErrorCodes.Validation);
       }
-    );
+
+      throw err;
+    });
   }
 
-  async reauthenticate(
-    email: string,
-    password: string
-  ): Promise<UserCredential> {
+  async updateProfile(displayName: string): Promise<void> {
+    if (this.auth.currentUser === null) {
+      throw new Error("Not able to update profile for not loggedIn user!");
+    }
+    return updateProfile(this.auth.currentUser, { displayName });
+  }
+
+  async reauthenticate(email: string, password: string): Promise<UserCredential> {
     if (this.auth.currentUser === null) {
       throw new Error("You must log in first to reauthenticate!");
     }
@@ -117,11 +119,11 @@ export class GoogleAuthService implements AuthService {
         await updateEmail(user, email);
       } catch (e) {
         switch (e.code) {
-          case "auth/invalid-email":
+          case AuthErrorCodes.INVALID_EMAIL:
             throw new FieldError("email", ErrorCodes.Invalid);
-          case "auth/email-already-in-use":
+          case AuthErrorCodes.EMAIL_EXISTS:
             throw new FieldError("email", ErrorCodes.Duplicate);
-          case "auth/requires-recent-login":
+          case AuthErrorCodes.CREDENTIAL_TOO_OLD_LOGIN_AGAIN:
             throw new Error("auth/requires-recent-login");
         }
       }

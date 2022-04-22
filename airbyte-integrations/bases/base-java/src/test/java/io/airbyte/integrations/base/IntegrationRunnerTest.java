@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.base;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -35,16 +37,30 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.ThreadUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class IntegrationRunnerTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunnerTest.class);
 
   private static final String CONFIG_FILE_NAME = "config.json";
   private static final String CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json";
@@ -82,6 +98,12 @@ class IntegrationRunnerTest {
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
     statePath = IOs.writeFile(configDir, STATE_FILE_NAME, Jsons.serialize(STATE));
+
+    final String testName = Thread.currentThread().getName();
+    ThreadUtils.getAllThreads()
+        .stream()
+        .filter(runningThread -> !runningThread.isDaemon())
+        .forEach(runningThread -> runningThread.setName(testName));
   }
 
   @Test
@@ -239,16 +261,15 @@ class IntegrationRunnerTest {
             .withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n"
         + Jsons.serialize(message2) + "\n"
-        + Jsons.serialize(stateMessage)).getBytes()));
+        + Jsons.serialize(stateMessage)).getBytes(StandardCharsets.UTF_8)));
 
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
-    IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
-
-    final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-    inOrder.verify(airbyteMessageConsumerMock).accept(message1);
-    inOrder.verify(airbyteMessageConsumerMock).accept(message2);
-    inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
-    inOrder.verify(airbyteMessageConsumerMock).close();
+    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
+      IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
+      final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message2);
+      inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
+    }
   }
 
   @Test
@@ -265,17 +286,95 @@ class IntegrationRunnerTest {
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes()));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes(StandardCharsets.UTF_8)));
 
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
-    doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
+    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
+      doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
+      assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+      final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+      inOrder.verifyNoMoreInteractions();
+    }
+  }
 
-    assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
+  @Test
+  void testInterruptOrphanThreadFailure() {
+    final String testName = Thread.currentThread().getName();
+    final List<Exception> caughtExceptions = new ArrayList<>();
+    startSleepingThread(caughtExceptions, false);
+    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
+        () -> {
+          throw new IOException("random error");
+        },
+        Assertions::fail,
+        3, TimeUnit.SECONDS,
+        10, TimeUnit.SECONDS));
+    try {
+      TimeUnit.SECONDS.sleep(15);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
+    final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
+        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .collect(Collectors.toList());
+    // all threads should be interrupted
+    assertEquals(List.of(), runningThreads);
+    assertEquals(1, caughtExceptions.size());
+  }
 
-    final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-    inOrder.verify(airbyteMessageConsumerMock).accept(message1);
-    inOrder.verify(airbyteMessageConsumerMock).close();
-    inOrder.verifyNoMoreInteractions();
+  @Test
+  void testNoInterruptOrphanThreadFailure() {
+    final String testName = Thread.currentThread().getName();
+    final List<Exception> caughtExceptions = new ArrayList<>();
+    final AtomicBoolean exitCalled = new AtomicBoolean(false);
+    startSleepingThread(caughtExceptions, true);
+    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
+        () -> {
+          throw new IOException("random error");
+        },
+        () -> exitCalled.set(true),
+        3, TimeUnit.SECONDS,
+        10, TimeUnit.SECONDS));
+    try {
+      TimeUnit.SECONDS.sleep(15);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
+    }
+    final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
+        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .collect(Collectors.toList());
+    // a thread that refuses to be interrupted should remain
+    assertEquals(1, runningThreads.size());
+    assertEquals(1, caughtExceptions.size());
+    assertTrue(exitCalled.get());
+  }
+
+  private void startSleepingThread(final List<Exception> caughtExceptions, final boolean ignoreInterrupt) {
+    final ExecutorService executorService = Executors.newFixedThreadPool(1);
+    executorService.submit(() -> {
+      for (int tries = 0; tries < 3; tries++) {
+        try {
+          TimeUnit.MINUTES.sleep(5);
+        } catch (final Exception e) {
+          LOGGER.info("Caught Exception", e);
+          caughtExceptions.add(e);
+          if (!ignoreInterrupt) {
+            executorService.shutdownNow();
+            break;
+          }
+        }
+      }
+    });
+  }
+
+  @Test
+  void testParseConnectorImage() {
+    assertEquals("unknown", IntegrationRunner.parseConnectorVersion(null));
+    assertEquals("unknown", IntegrationRunner.parseConnectorVersion(""));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:1.0.1-alpha"));
+    assertEquals("dev", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:dev"));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha"));
+    assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion(":1.0.1-alpha"));
   }
 
 }

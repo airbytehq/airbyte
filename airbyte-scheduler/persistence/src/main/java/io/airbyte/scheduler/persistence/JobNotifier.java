@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.config.CustomerioNotificationConfiguration;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -23,7 +24,10 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +37,8 @@ public class JobNotifier {
 
   public static final String FAILURE_NOTIFICATION = "Failure Notification";
   public static final String SUCCESS_NOTIFICATION = "Success Notification";
+  public static final String CONNECTION_DISABLED_WARNING_NOTIFICATION = "Connection Disabled Warning Notification";
+  public static final String CONNECTION_DISABLED_NOTIFICATION = "Connection Disabled Notification";
 
   private final String connectionPageUrl;
   private final ConfigRepository configRepository;
@@ -54,31 +60,34 @@ public class JobNotifier {
   }
 
   private void notifyJob(final String reason, final String action, final Job job) {
+    try {
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+      notifyJob(reason, action, job, workspaceId, workspace, workspace.getNotifications());
+    } catch (final Exception e) {
+      LOGGER.error("Unable to read configuration:", e);
+    }
+  }
+
+  private void notifyJob(final String reason,
+                         final String action,
+                         final Job job,
+                         final UUID workspaceId,
+                         final StandardWorkspace workspace,
+                         final List<Notification> notifications) {
     final UUID connectionId = UUID.fromString(job.getScope());
     try {
       final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
       final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-      final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
-      final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
-      final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
-      final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
-      final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
-      final String durationString = formatDurationPart(duration.toDaysPart(), "day")
-          + formatDurationPart(duration.toHoursPart(), "hour")
-          + formatDurationPart(duration.toMinutesPart(), "minute")
-          + formatDurationPart(duration.toSecondsPart(), "second");
       final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
       final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
       final String failReason = Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
-      final String jobDescription =
-          String.format("sync started on %s, running for%s%s.", formatter.format(jobStartedDate), durationString, failReason);
+      final String jobDescription = getJobDescription(job, failReason);
       final String logUrl = connectionPageUrl + connectionId;
-      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
       final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
-      for (final Notification notification : workspace.getNotifications()) {
+      for (final Notification notification : notifications) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
           final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
@@ -87,6 +96,8 @@ public class JobNotifier {
               notification.getSlackConfiguration().getWebhook().contains("hooks.slack.com")) {
             // flag as slack if the webhook URL is also pointing to slack
             notificationMetadata.put("notification_type", NotificationType.SLACK);
+          } else if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
+            notificationMetadata.put("notification_type", NotificationType.CUSTOMERIO);
           } else {
             // Slack Notification type could be "hacked" and re-used for custom webhooks
             notificationMetadata.put("notification_type", "N/A");
@@ -95,14 +106,31 @@ public class JobNotifier {
               workspaceId,
               action,
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
-          if (FAILURE_NOTIFICATION.equals(action)) {
-            if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-              LOGGER.warn("Failed to successfully notify failure: {}", notification);
-            }
-          } else if (SUCCESS_NOTIFICATION.equals(action)) {
-            if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
-              LOGGER.warn("Failed to successfully notify success: {}", notification);
-            }
+
+          switch (action) {
+            case FAILURE_NOTIFICATION:
+              if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+                LOGGER.warn("Failed to successfully notify failure: {}", notification);
+              }
+              break;
+            case SUCCESS_NOTIFICATION:
+              if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
+                LOGGER.warn("Failed to successfully notify success: {}", notification);
+              }
+              break;
+            case CONNECTION_DISABLED_NOTIFICATION:
+              if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)
+                  && !notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                      logUrl)) {
+                LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
+              }
+              break;
+            case CONNECTION_DISABLED_WARNING_NOTIFICATION:
+              if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)
+                  && !notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+                      logUrl)) {
+                LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
+              }
           }
         } catch (final Exception e) {
           LOGGER.error("Failed to notify: {} due to an exception", notification, e);
@@ -111,6 +139,74 @@ public class JobNotifier {
     } catch (final Exception e) {
       LOGGER.error("Unable to read configuration:", e);
     }
+  }
+
+  public void notifyJobByEmail(final String reason, final String action, final Job job) {
+    final Notification emailNotification = new Notification();
+    emailNotification.setNotificationType(NotificationType.CUSTOMERIO);
+    try {
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+      notifyJob(reason, action, job, workspaceId, workspace, Collections.singletonList(emailNotification));
+    } catch (final Exception e) {
+      LOGGER.error("Unable to read configuration:", e);
+    }
+  }
+
+  // This method allows for the alert to be sent without the customerio configuration set in the
+  // database
+  // This is only needed because there is no UI element to allow for users to create that
+  // configuration.
+  // Once that exists, this can be removed and we should be using `notifyJobByEmail`.
+  // The alert is sent to the email associated with the workspace.
+  public void autoDisableConnectionAlertWithoutCustomerioConfig(final String action, final Job job) {
+    try {
+      final UUID workspaceId = workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(job.getId());
+      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+
+      final Notification customerioNotification = new Notification()
+          .withNotificationType(NotificationType.CUSTOMERIO)
+          .withCustomerioConfiguration(new CustomerioNotificationConfiguration());
+      final NotificationClient notificationClient = getNotificationClient(customerioNotification);
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+      final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+      final String sourceConnector = String.format("%s version %s", sourceDefinition.getName(), sourceDefinition.getDockerImageTag());
+      final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
+      final String logUrl = connectionPageUrl + connectionId;
+      final String jobDescription = getJobDescription(job, "");
+
+      switch (action) {
+        case CONNECTION_DISABLED_NOTIFICATION:
+          if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription, logUrl)) {
+            LOGGER.warn("Failed to successfully notify auto-disable connection: {}", customerioNotification);
+          }
+          break;
+        case CONNECTION_DISABLED_WARNING_NOTIFICATION:
+          if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
+              logUrl)) {
+            LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", customerioNotification);
+          }
+          break;
+        default:
+          LOGGER.error(
+              "Incorrect action supplied, this method only supports Connection Disabled Notification and Connection Disabled Warning Notification.");
+      }
+    } catch (final Exception e) {
+      LOGGER.error("Unable to send auto disable alert:", e);
+    }
+  }
+
+  private String getJobDescription(final Job job, final String reason) {
+    final Instant jobStartedDate = Instant.ofEpochSecond(job.getStartedAtInSecond().orElse(job.getCreatedAtInSecond()));
+    final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
+    final Instant jobUpdatedDate = Instant.ofEpochSecond(job.getUpdatedAtInSecond());
+    final Instant adjustedJobUpdatedDate = jobUpdatedDate.equals(jobStartedDate) ? Instant.now() : jobUpdatedDate;
+    final Duration duration = Duration.between(jobStartedDate, adjustedJobUpdatedDate);
+    final String durationString = DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
+
+    return String.format("sync started on %s, running for %s%s.", formatter.format(jobStartedDate), durationString, reason);
   }
 
   public void failJob(final String reason, final Job job) {

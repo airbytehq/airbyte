@@ -9,17 +9,13 @@ import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.db.Database;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,8 +37,6 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
 
-  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
-
   private final JobRunConfig jobRunConfig;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
@@ -52,9 +46,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final Consumer<Path> mdcSetter;
   private final CancellationHandler cancellationHandler;
   private final Supplier<String> workflowIdProvider;
-  private final String databaseUser;
-  private final String databasePassword;
-  private final String databaseUrl;
+  private final JobPersistence jobPersistence;
   private final String airbyteVersion;
 
   public TemporalAttemptExecution(final Path workspaceRoot,
@@ -64,9 +56,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                                   final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                                   final Supplier<INPUT> inputSupplier,
                                   final CancellationHandler cancellationHandler,
-                                  final String databaseUser,
-                                  final String databasePassword,
-                                  final String databaseUrl,
+                                  final JobPersistence jobPersistence,
                                   final String airbyteVersion) {
     this(
         workspaceRoot, workerEnvironment, logConfigs,
@@ -74,7 +64,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         workerSupplier,
         inputSupplier,
         (path -> LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, path)),
-        cancellationHandler, databaseUser, databasePassword, databaseUrl,
+        cancellationHandler,
+        jobPersistence,
         () -> Activity.getExecutionContext().getInfo().getWorkflowId(), airbyteVersion);
   }
 
@@ -87,9 +78,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            final Supplier<INPUT> inputSupplier,
                            final Consumer<Path> mdcSetter,
                            final CancellationHandler cancellationHandler,
-                           final String databaseUser,
-                           final String databasePassword,
-                           final String databaseUrl,
+                           final JobPersistence jobPersistence,
                            final Supplier<String> workflowIdProvider,
                            final String airbyteVersion) {
     this.jobRunConfig = jobRunConfig;
@@ -103,9 +92,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     this.cancellationHandler = cancellationHandler;
     this.workflowIdProvider = workflowIdProvider;
 
-    this.databaseUser = databaseUser;
-    this.databasePassword = databasePassword;
-    this.databaseUrl = databaseUrl;
+    this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -123,7 +110,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
       // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection per
       // workflow. See https://github.com/airbytehq/airbyte/issues/5936.
-      saveWorkflowIdForCancellation(databaseUser, databasePassword, databaseUrl);
+      saveWorkflowIdForCancellation(jobPersistence);
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
@@ -135,7 +122,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       cancellationChecker.run();
 
       workerThread.start();
-      scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+      scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, TemporalUtils.SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       try {
         // block and wait for the output
@@ -149,18 +136,12 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     }
   }
 
-  private void saveWorkflowIdForCancellation(final String databaseUser, final String databasePassword, final String databaseUrl) throws IOException {
+  private void saveWorkflowIdForCancellation(final JobPersistence jobPersistence) throws IOException {
     // If the jobId is not a number, it means the job is a synchronous job. No attempt is created for
     // it, and it cannot be cancelled, so do not save the workflowId. See
     // SynchronousSchedulerClient.java
     // for info.
     if (NumberUtils.isCreatable(jobRunConfig.getJobId())) {
-      final Database jobDatabase = new JobsDatabaseInstance(
-          databaseUser,
-          databasePassword,
-          databaseUrl)
-              .getInitialized();
-      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
       final String workflowId = workflowIdProvider.get();
       jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
     }

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "traffic": {
+      "type": ["null", "integer"]
+    },
+    "traffic_max": {
+      "type": ["null", "integer"]
+    },
+    "traffic_volume": {
+      "type": ["null", "string"]
+    },
+    "max_potential": {
+      "type": ["null", "integer"]
+    },
+    "se_position": {
+      "type": ["null", "string"]
+    },
+    "kd": {
+      "type": ["null", "string"]
+    },
+    "keyword": {
+      "type": ["null", "string"]
+    }
+  }
+}

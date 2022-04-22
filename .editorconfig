@@ -1,0 +1,149 @@
+root = true
+
+[{*.bash,*.sh,*.zsh}]
+indent_size = 2
+tab_width = 2
+ij_shell_binary_ops_start_line = false
+ij_shell_keep_column_alignment_padding = false
+ij_shell_minify_program = false
+ij_shell_redirect_followed_by_space = false
+ij_shell_switch_cases_indented = false
+ij_shell_use_unix_line_separator = true
+
+[{*.har,*.jsb2,*.jsb3,*.json,.babelrc,.eslintrc,.stylelintrc,bowerrc,jest.config}]
+indent_size = 2
+ij_json_keep_blank_lines_in_code = 0
+ij_json_keep_indents_on_empty_lines = false
+ij_json_keep_line_breaks = true
+ij_json_space_after_colon = true
+ij_json_space_after_comma = true
+ij_json_space_before_colon = true
+ij_json_space_before_comma = false
+ij_json_spaces_within_braces = false
+ij_json_spaces_within_brackets = false
+ij_json_wrap_long_lines = false
+
+[{*.markdown,*.md}]
+ij_markdown_force_one_space_after_blockquote_symbol = true
+ij_markdown_force_one_space_after_header_symbol = true
+ij_markdown_force_one_space_after_list_bullet = true
+ij_markdown_force_one_space_between_words = true
+ij_markdown_keep_indents_on_empty_lines = false
+ij_markdown_max_lines_around_block_elements = 1
+ij_markdown_max_lines_around_header = 1
+ij_markdown_max_lines_between_paragraphs = 1
+ij_markdown_min_lines_around_block_elements = 1
+ij_markdown_min_lines_around_header = 1
+ij_markdown_min_lines_between_paragraphs = 1
+
+[{*.py,*.pyw,Tiltfile}]
+charset = utf-8
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+max_line_length = 140
+tab_width = 4
+ij_continuation_indent_size = 8
+ij_formatter_off_tag = @formatter:off
+ij_formatter_on_tag = @formatter:on
+ij_formatter_tags_enabled = false
+ij_smart_tabs = false
+ij_visual_guides = none
+ij_wrap_on_typing = false
+
+ij_python_align_collections_and_comprehensions = true
+ij_python_align_multiline_imports = true
+ij_python_align_multiline_parameters = true
+ij_python_align_multiline_parameters_in_calls = true
+ij_python_blank_line_at_file_end = true
+ij_python_blank_lines_after_imports = 1
+ij_python_blank_lines_after_local_imports = 0
+ij_python_blank_lines_around_class = 1
+ij_python_blank_lines_around_method = 1
+ij_python_blank_lines_around_top_level_classes_functions = 2
+ij_python_blank_lines_before_first_method = 0
+ij_python_call_parameters_new_line_after_left_paren = false
+ij_python_call_parameters_right_paren_on_new_line = false
+ij_python_call_parameters_wrap = normal
+ij_python_dict_alignment = 0
+ij_python_dict_new_line_after_left_brace = false
+ij_python_dict_new_line_before_right_brace = false
+ij_python_dict_wrapping = 1
+ij_python_from_import_new_line_after_left_parenthesis = false
+ij_python_from_import_new_line_before_right_parenthesis = false
+ij_python_from_import_parentheses_force_if_multiline = false
+ij_python_from_import_trailing_comma_if_multiline = false
+ij_python_from_import_wrapping = 1
+ij_python_hang_closing_brackets = false
+ij_python_keep_blank_lines_in_code = 1
+ij_python_keep_blank_lines_in_declarations = 1
+ij_python_keep_indents_on_empty_lines = false
+ij_python_keep_line_breaks = true
+ij_python_method_parameters_new_line_after_left_paren = false
+ij_python_method_parameters_right_paren_on_new_line = false
+ij_python_method_parameters_wrap = normal
+ij_python_new_line_after_colon = false
+ij_python_new_line_after_colon_multi_clause = true
+ij_python_optimize_imports_always_split_from_imports = false
+ij_python_optimize_imports_case_insensitive_order = false
+ij_python_optimize_imports_join_from_imports_with_same_source = false
+ij_python_optimize_imports_sort_by_type_first = true
+ij_python_optimize_imports_sort_imports = true
+ij_python_optimize_imports_sort_names_in_from_imports = false
+ij_python_space_after_comma = true
+ij_python_space_after_number_sign = true
+ij_python_space_after_py_colon = true
+ij_python_space_before_backslash = true
+ij_python_space_before_comma = false
+ij_python_space_before_for_semicolon = false
+ij_python_space_before_lbracket = false
+ij_python_space_before_method_call_parentheses = false
+ij_python_space_before_method_parentheses = false
+ij_python_space_before_number_sign = true
+ij_python_space_before_py_colon = false
+ij_python_space_within_empty_method_call_parentheses = false
+ij_python_space_within_empty_method_parentheses = false
+ij_python_spaces_around_additive_operators = true
+ij_python_spaces_around_assignment_operators = true
+ij_python_spaces_around_bitwise_operators = true
+ij_python_spaces_around_eq_in_keyword_argument = false
+ij_python_spaces_around_eq_in_named_parameter = false
+ij_python_spaces_around_equality_operators = true
+ij_python_spaces_around_multiplicative_operators = true
+ij_python_spaces_around_power_operator = true
+ij_python_spaces_around_relational_operators = true
+ij_python_spaces_around_shift_operators = true
+ij_python_spaces_within_braces = false
+ij_python_spaces_within_brackets = false
+ij_python_spaces_within_method_call_parentheses = false
+ij_python_spaces_within_method_parentheses = false
+ij_python_use_continuation_indent_for_arguments = false
+ij_python_use_continuation_indent_for_collection_and_comprehensions = false
+ij_python_use_continuation_indent_for_parameters = true
+ij_python_wrap_long_lines = false
+
+[{*.toml,Cargo.lock,Cargo.toml.orig,Gopkg.lock,Pipfile,poetry.lock}]
+ij_toml_keep_indents_on_empty_lines = false
+
+[{*.yaml,*.yml}]
+indent_size = 2
+ij_yaml_align_values_properties = do_not_align
+ij_yaml_autoinsert_sequence_marker = true
+ij_yaml_block_mapping_on_new_line = false
+ij_yaml_indent_sequence_value = true
+ij_yaml_keep_indents_on_empty_lines = false
+ij_yaml_keep_line_breaks = true
+ij_yaml_sequence_on_new_line = false
+ij_yaml_space_before_colon = false
+ij_yaml_spaces_within_braces = true
+ij_yaml_spaces_within_brackets = true
+
+# don't interfere with prettier default formatting for webapp
+# see https://prettier.io/docs/en/api.html#prettierresolveconfigfilepath--options
+# for options that we're disabling
+[/airbyte-webapp/**]
+end_of_line = unset
+indent_style = unset
+indent_size = unset
+tab_width = unset
+max_line_length = unset

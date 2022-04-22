@@ -23,7 +23,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -80,8 +80,8 @@ public class MqttRecordConsumerTest {
         CatalogHelpers.createConfiguredAirbyteStream(
             streamName,
             namespace,
-            Field.of("id", JsonSchemaPrimitive.NUMBER),
-            Field.of("name", JsonSchemaPrimitive.STRING))));
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING))));
     final MqttRecordConsumer consumer = new MqttRecordConsumer(config, catalog, mock(Consumer.class));
     final List<AirbyteMessage> expectedRecords = getNRecords(10, streamName, namespace);
 
@@ -135,13 +135,13 @@ public class MqttRecordConsumerTest {
     private final ConfiguredAirbyteStream stream1 = CatalogHelpers.createConfiguredAirbyteStream(
         SCHEMA_NAME1,
         STREAM_NAME1,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING));
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("name", JsonSchemaType.STRING));
     private final ConfiguredAirbyteStream stream2 = CatalogHelpers.createConfiguredAirbyteStream(
         SCHEMA_NAME2,
         STREAM_NAME2,
-        Field.of("id", JsonSchemaPrimitive.NUMBER),
-        Field.of("name", JsonSchemaPrimitive.STRING));
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("name", JsonSchemaType.STRING));
 
     @Override
     public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {

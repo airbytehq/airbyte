@@ -16,21 +16,7 @@ from .streams import SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 class SourceSurveymonkey(AbstractSource):
 
-    SCOPES = {
-        "collectors_read",
-        "contacts_read",
-        "groups_read",
-        "library_read",
-        "responses_read",
-        "responses_read_detail",
-        "roles_read",
-        "surveys_read",
-        "users_read",
-        "webhooks_read",
-        "workgroups_members_read",
-        "workgroups_read",
-        "workgroups_shares_read",
-    }
+    SCOPES = {"responses_read_detail", "surveys_read", "users_read"}
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         url = "https://api.surveymonkey.com/v3/users/me"
@@ -45,7 +31,8 @@ class SourceSurveymonkey(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self.get_authenticator(config)
         start_date = pendulum.parse(config["start_date"])
-        args = {"authenticator": authenticator, "start_date": start_date}
+        survey_ids = config.get("survey_ids", [])
+        args = {"authenticator": authenticator, "start_date": start_date, "survey_ids": survey_ids}
         return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args)]
 
     @staticmethod

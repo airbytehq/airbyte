@@ -1,27 +1,22 @@
 import React, { useMemo } from "react";
-import styled from "styled-components";
 
 import JobItem from "components/JobItem";
-import { Job } from "core/resources/Job";
+
+import { JobListItem } from "core/domain/job/Job";
 
 type IProps = {
-  jobs: Job[];
+  jobs: JobListItem[];
 };
 
-const Content = styled.div``;
-
 const JobsList: React.FC<IProps> = ({ jobs }) => {
-  const sortJobs = useMemo(
-    () => jobs.sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)),
-    [jobs]
-  );
+  const sortJobs = useMemo(() => jobs.sort((a, b) => (a.job.createdAt > b.job.createdAt ? -1 : 1)), [jobs]);
 
   return (
-    <Content>
+    <div>
       {sortJobs.map((item) => (
-        <JobItem key={item.job.id} job={item.job} attempts={item.attempts} />
+        <JobItem key={item.job.id} job={item} />
       ))}
-    </Content>
+    </div>
   );
 };
 

@@ -3,7 +3,7 @@
 #
 
 from functools import reduce
-from typing import Any, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 
 def all_key_pairs_dot_notation(dict_obj: Mapping) -> Mapping[str, Any]:
@@ -12,7 +12,7 @@ def all_key_pairs_dot_notation(dict_obj: Mapping) -> Mapping[str, Any]:
     keys are prefixed with the list of keys passed in as prefix.
     """
 
-    def _all_key_pairs_dot_notation(_dict_obj: Mapping, prefix: List[str] = []) -> Mapping[str, Any]:
+    def _all_key_pairs_dot_notation(_dict_obj: Mapping, prefix: List[str] = []) -> Iterable[Tuple[str, Any]]:
         for key, value in _dict_obj.items():
             if isinstance(value, dict):
                 prefix.append(str(key))

@@ -6,7 +6,12 @@
       "type": ["null", "integer"]
     },
     "history_created_date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "history_created_time": {
+      "type": "string",
+      "format": "date-time"
     },
     "query_model": {
       "type": ["null", "string"]

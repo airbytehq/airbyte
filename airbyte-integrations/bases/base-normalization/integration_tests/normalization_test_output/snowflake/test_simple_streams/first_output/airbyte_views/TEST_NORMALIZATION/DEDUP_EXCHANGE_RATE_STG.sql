@@ -1,5 +1,7 @@
 
-  create or replace  view "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_STG"  as (
+  create or replace  view "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_STG" 
+  
+   as (
     
 with __dbt__cte__DEDUP_EXCHANGE_RATE_AB1 as (
 

@@ -14,8 +14,10 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
+import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -33,6 +35,12 @@ import java.util.function.Consumer;
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
 
+  private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
+
+  public RedshiftCopyS3Destination(RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
+    this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -43,7 +51,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
         getDatabase(config),
         getSqlOperations(),
         getNameTransformer(),
-        new S3CopyConfig(S3CopyConfig.shouldPurgeStagingData(config), getS3DestinationConfig(config)),
+        S3CopyConfig.getS3CopyConfig(config),
         catalog,
         new RedshiftStreamCopierFactory(),
         getConfiguredSchema(config));
@@ -51,7 +59,8 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
   public void checkPersistence(final JsonNode config) throws Exception {
-    S3Destination.attemptS3WriteAndDelete(getS3DestinationConfig(config), "");
+    final S3DestinationConfig s3Config = getS3DestinationConfig(config);
+    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(getNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
   }
 
   @Override
@@ -64,9 +73,8 @@ public class RedshiftCopyS3Destination extends CopyDestination {
     return getJdbcDatabase(config);
   }
 
-  @Override
   public SqlOperations getSqlOperations() {
-    return new RedshiftSqlOperations();
+    return new RedshiftSqlOperations(redshiftDataTmpTableMode);
   }
 
   private String getConfiguredSchema(final JsonNode config) {

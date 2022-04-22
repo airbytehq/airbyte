@@ -4,37 +4,44 @@
 
 from typing import List
 
-from pydantic import BaseModel, Field
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
+from pydantic import BaseModel, Extra, Field
 from source_amazon_ads.constants import AmazonAdsRegion
 
 
 class AmazonAdsConfig(BaseModel):
     class Config:
         title = "Amazon Ads Spec"
+        # ignore extra attributes during model initialization
+        # https://pydantic-docs.helpmanual.io/usage/model_config/
+        extra = Extra.ignore
+        # it's default, but better to be more explicit
+        schema_extra = {"additionalProperties": True}
+
+    auth_type: str = Field(default="oauth2.0", const=True, order=0)
 
     client_id: str = Field(
         name="Client ID",
-        description='Oauth client id <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">How to create your Login with Amazon</a>',
+        description=(
+            'Oauth client id <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">'
+            "How to create your Login with Amazon</a>"
+        ),
     )
     client_secret: str = Field(
         name="Client secret",
-        description='Oauth client secret <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">How to create your Login with Amazon</a>',
+        description=(
+            'Oauth client secret <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">'
+            "How to create your Login with Amazon</a>"
+        ),
         airbyte_secret=True,
     )
 
-    # Amazon docs don't describe which of the below scopes to use under what circumstances so
-    # we default to the first but allow the user to override it
-    scope: str = Field(
-        "advertising::campaign_management",
-        name="Client scope",
-        examples=[
-            "cpc_advertising:campaign_management",
-        ],
-        description="By default its advertising::campaign_management, but customers may need to set scope to cpc_advertising:campaign_management.",
-    )
     refresh_token: str = Field(
         name="Oauth refresh token",
-        description='Oauth 2.0 refresh_token, <a href="https://developer.amazon.com/docs/login-with-amazon/conceptual-overview.html">read details here</a>',
+        description=(
+            'Oauth 2.0 refresh_token, <a href="https://developer.amazon.com/docs/login-with-amazon/conceptual-overview.html">'
+            "read details here</a>"
+        ),
         airbyte_secret=True,
     )
 
@@ -53,17 +60,53 @@ class AmazonAdsConfig(BaseModel):
         description="profile Ids you want to fetch data for",
     )
 
+    report_wait_timeout: int = Field(
+        name="Report Wait Timeout",
+        description="Timeout duration in minutes for Reports. Eg. 30",
+        default=30,
+        examples=[30, 120],
+    )
+
+    report_generation_max_retries: int = Field(
+        name="Report Geration Maximum Retries",
+        description="Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
+        default=5,
+        examples=[5, 10, 15],
+    )
+
     @classmethod
-    def schema(cls, **kvargs):
-        schema = super().schema(**kvargs)
-        # We are using internal _host parameter to set API host to sandbox
-        # environment for SAT but dont want it to be visible for end users,
-        # filter out it from the jsonschema output
-        schema["properties"] = {name: desc for name, desc in schema["properties"].items() if not name.startswith("_")}
+    def schema(cls, **kwargs):
+        schema = super().schema(**kwargs)
         # Transform pydantic generated enum for region
-        schema["definitions"]["AmazonAdsRegion"].pop("description")
-        schema["properties"]["region"].update(schema["definitions"]["AmazonAdsRegion"])
-        schema["properties"]["region"].pop("allOf", None)
-        schema["properties"]["region"].pop("$ref", None)
-        del schema["definitions"]
+        definitions = schema.pop("definitions", None)
+        if definitions:
+            schema["properties"]["region"].update(definitions["AmazonAdsRegion"])
+            schema["properties"]["region"].pop("allOf", None)
         return schema
+
+
+advanced_auth = AdvancedAuth(
+    auth_flow_type=AuthFlowType.oauth2_0,
+    predicate_key=["auth_type"],
+    predicate_value="oauth2.0",
+    oauth_config_specification=OAuthConfigSpecification(
+        complete_oauth_output_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {"refresh_token": {"type": "string", "path_in_connector_config": ["refresh_token"]}},
+        },
+        complete_oauth_server_input_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+        },
+        complete_oauth_server_output_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+            },
+        },
+    ),
+)

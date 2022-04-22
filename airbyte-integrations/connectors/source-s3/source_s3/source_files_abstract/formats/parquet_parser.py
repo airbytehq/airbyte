@@ -33,7 +33,7 @@ class ParquetParser(AbstractFileParser):
 
     is_binary = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
         # adds default values if necessary attributes are skipped.
@@ -45,14 +45,12 @@ class ParquetParser(AbstractFileParser):
     def _select_options(self, *names: List[str]) -> dict:
         return {name: self._format[name] for name in names}
 
-    def _init_reader(self, file: BinaryIO) -> ParquetFile:
+    def _init_reader(self, file: Union[TextIO, BinaryIO]) -> ParquetFile:
         """Generates a new parquet reader
         Doc: https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
 
         """
-        options = self._select_options(
-            "buffer_size",
-        )
+        options = self._select_options("buffer_size")  # type: ignore[arg-type]
         # Source is a file path and enabling memory_map can improve performance in some environments.
         options["memory_map"] = True
         return pq.ParquetFile(file, **options)
@@ -116,11 +114,11 @@ class ParquetParser(AbstractFileParser):
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
             raise OSError("empty Parquet file")
 
-        args = self._select_options("columns", "batch_size")
-        num_row_groups = list(range(reader.num_row_groups))
+        args = self._select_options("columns", "batch_size")  # type: ignore[arg-type]
+        self.logger.debug(f"Found the {reader.num_row_groups} Parquet groups")
 
         # load batches per page
-        for num_row_group in num_row_groups:
+        for num_row_group in range(reader.num_row_groups):
             args["row_groups"] = [num_row_group]
             for batch in reader.iter_batches(**args):
                 # this gives us a dist of lists where each nested list holds ordered values for a single column

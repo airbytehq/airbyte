@@ -4,6 +4,7 @@
 
 package io.airbyte.workers;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -60,7 +62,7 @@ class DefaultNormalizationWorkerTest {
     final DefaultNormalizationWorker normalizationWorker =
         new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner, WorkerEnvironment.DOCKER);
 
-    normalizationWorker.run(normalizationInput, jobRoot);
+    final NormalizationSummary normalizationOutput = normalizationWorker.run(normalizationInput, jobRoot);
 
     verify(normalizationRunner).start();
     verify(normalizationRunner).normalize(
@@ -70,6 +72,8 @@ class DefaultNormalizationWorkerTest {
         normalizationInput.getDestinationConfiguration(),
         normalizationInput.getCatalog(), workerConfigs.getResourceRequirements());
     verify(normalizationRunner).close();
+    assertNotNull(normalizationOutput.getStartTime());
+    assertNotNull(normalizationOutput.getEndTime());
   }
 
 }

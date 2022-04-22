@@ -21,9 +21,11 @@ Docker and Python with the versions listed in the [tech stack section](../../und
 * Step 7: Write unit tests or integration tests
 * Step 8: Update the docs \(in `docs/integrations/destinations/<destination-name>.md`\)
 
-{% hint style="info" %}
+:::info
+
 If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have, or ask us on [slack](https://slack.airbyte.io). Also reference the KvDB python destination implementation if you want to see an example of a working destination.
-{% endhint %}
+
+:::
 
 ## Explaining Each Step
 
@@ -79,9 +81,11 @@ The destination interface is described in detail in the [Airbyte Specification](
 
 The generated files fill in a lot of information for you and have docstrings describing what you need to do to implement each method. The next few steps are just implementing that interface.
 
-{% hint style="info" %}
+:::info
+
 All logging should be done through the `self.logger` object available in the `Destination` class. Otherwise, logs will not be shown properly in the Airbyte UI.
-{% endhint %}
+
+:::
 
 Everyone develops differently but here are 3 ways that we recommend iterating on a destination. Consider using whichever one matches your style.
 

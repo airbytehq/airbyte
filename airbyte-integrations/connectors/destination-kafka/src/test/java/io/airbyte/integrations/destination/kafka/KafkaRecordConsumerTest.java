@@ -22,7 +22,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +50,8 @@ public class KafkaRecordConsumerTest {
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaPrimitive.NUMBER),
-          Field.of("name", JsonSchemaPrimitive.STRING))));
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("name", JsonSchemaType.STRING))));
 
   private static final StandardNameTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
