@@ -79,20 +79,20 @@ class XolaStream(HttpStream, ABC):
         }
         return headers
     
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
-        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+    #def read_records(
+    #    self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    #) -> Iterable[Mapping[str, Any]]:
+    #    slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
+    #    yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
     
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
-        if stream_state:
-            for record in records_slice:
-                if record[self.cursor_field] > stream_state.get(self.cursor_field):
-                    yield record
-        else:
-            yield from records_slice
+    #def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+    #    if stream_state:
+    #        for record in records_slice:
+    #            if record[self.cursor_field] > stream_state.get(self.cursor_field):
+    #                yield record
+    #    else:
+    #        yield from records_slice
 
 class Orders(XolaStream):
     primary_key = "order_id"
@@ -112,12 +112,7 @@ class Orders(XolaStream):
         """
         should return "orders". Required.
         """
-        path = "orders"
-        #if stream_state is not None and self.cursor_field in stream_state:
-        #    path = path + "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
-        print("path ", path)
-            
-        return path
+        return "orders"
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
@@ -130,6 +125,10 @@ class Orders(XolaStream):
         if next_page_token:
             for key in next_page_token.keys():
                 params[key] = next_page_token[key]
+        
+        if(self.cursor_field in stream_state.keys()): 
+            params[self.cursor_field + '[gt]'] = stream_state[self.cursor_field]
+        
         params['seller'] = self.seller_id
         return params
 
@@ -172,11 +171,8 @@ class Orders(XolaStream):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         latest_record_date = latest_record[self.cursor_field]
-        print("orders stream ", current_stream_state)
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
-
-            print("current parsed date ", current_stream_state)
             
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
@@ -202,11 +198,7 @@ class Transactions(XolaStream):
         """
         should return "orders". Required.
         """
-        path = "transactions"
-        #if stream_state is not None and self.cursor_field in stream_state:
-        #    path += "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
-        return path
-    
+        return "transactions"
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
@@ -219,6 +211,10 @@ class Transactions(XolaStream):
         if next_page_token:
             for key in next_page_token.keys():
                 params[key] = next_page_token[key]
+                
+        if(self.cursor_field in stream_state.keys()):
+            params[self.cursor_field + '[gt]'] = stream_state[self.cursor_field]
+        
         params['seller'] = self.seller_id
         return params
 
@@ -275,12 +271,9 @@ class Transactions(XolaStream):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         latest_record_date = latest_record[self.cursor_field]
-        print("transactions stream ", current_stream_state)
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
 
-            print("current parsed date ", current_stream_state)           
-            
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
             else:
@@ -290,8 +283,6 @@ class Transactions(XolaStream):
 
 
 # Basic incremental stream
-
-
 class IncrementalXolaStream(XolaStream, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
@@ -319,11 +310,8 @@ class IncrementalXolaStream(XolaStream, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         latest_record_date = latest_record[self.cursor_field]
-        print("common stream ", current_stream_state)
         if current_stream_state is not None and self.cursor_field in current_stream_state.keys():
             current_parsed_date = current_stream_state[self.cursor_field]
-
-            print("current parsed date ", current_stream_state)        
             
             if current_parsed_date is not None:
                 return {self.cursor_field: max(current_parsed_date, latest_record_date)}
