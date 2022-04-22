@@ -6,12 +6,12 @@
 import pytest
 from destination_google_sheets.client import GoogleSheetsClient
 from pygsheets.client import Client as pygsheets_client
-from unit_tests.test_helpers import TEST_CONFIG
+from integration_tests.test_helpers import TEST_CONFIG
 
 # ----- PREPARE ENV -----
 
 # path to configured_catalog json file
-TEST_CATALOG_PATH: str = "unit_tests/test_data/test_catalog.json"
+TEST_CATALOG_PATH: str = "integration_tests/test_data/test_catalog.json"
 # client instance
 TEST_CLIENT: pygsheets_client = GoogleSheetsClient(TEST_CONFIG)
 # authorized client

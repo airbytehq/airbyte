@@ -9,9 +9,9 @@ from io import StringIO
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from destination_google_sheets.destination import DestinationGoogleSheets
-from unit_tests.test_helpers import TEST_CONFIG
-from unit_tests.test_buffer import read_input_messages
-from unit_tests.test_writer import TEST_CATALOG, TEST_SPREADSHEET, TEST_STREAM
+from integration_tests.test_helpers import TEST_CONFIG
+from integration_tests.test_buffer import read_input_messages
+from integration_tests.test_writer import TEST_CATALOG, TEST_SPREADSHEET, TEST_STREAM
 
 # ----- PREPARE ENV -----
 
@@ -35,7 +35,7 @@ class CaptureStdOut(list):
 # define instance
 TEST_DESTINATION = DestinationGoogleSheets()
 # path to test records txt file
-TEST_RECORDS_PATH: str = "unit_tests/test_data/test_destination_messages.txt"
+TEST_RECORDS_PATH: str = "integration_tests/test_data/test_destination_messages.txt"
 
 # ----- BEGIN TESTS -----
 

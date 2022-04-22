@@ -14,9 +14,9 @@ from destination_google_sheets.buffer import WriteBuffer
 # ----- PREPARE ENV -----
 
 # path to configured_catalog json file
-TEST_CATALOG_PATH: str = "unit_tests/test_data/test_buffer_catalog.json"
+TEST_CATALOG_PATH: str = "integration_tests/test_data/test_buffer_catalog.json"
 # path to test records txt file
-TEST_RECORDS_PATH: str = "integration_tests/messages.txt"
+TEST_RECORDS_PATH: str = "integration_tests/test_data/messages.txt"
 # reading prepared catalog with streams
 TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_file(TEST_CATALOG_PATH)
 # instance of WriteBuffer

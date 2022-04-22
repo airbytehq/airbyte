@@ -5,13 +5,13 @@
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_google_sheets.writer import GoogleSheetsWriter
-from unit_tests.test_spreadsheet import TEST_SPREADSHEET
+from integration_tests.test_spreadsheet import TEST_SPREADSHEET
 
 # ----- PREPARE ENV -----
 
 
 # path to configured_catalog json file
-TEST_CATALOG_PATH: str = "unit_tests/test_data/test_writer_catalog.json"
+TEST_CATALOG_PATH: str = "integration_tests/test_data/test_writer_catalog.json"
 # reading prepared catalog with streams
 TEST_CATALOG: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_file(TEST_CATALOG_PATH)
 # define test writer

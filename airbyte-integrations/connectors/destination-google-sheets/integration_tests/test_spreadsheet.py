@@ -7,7 +7,7 @@ from destination_google_sheets.client import GoogleSheetsClient
 from destination_google_sheets.helpers import get_spreadsheet_id
 from destination_google_sheets.spreadsheet import GoogleSheets
 from pygsheets.client import Client as pygsheets_client
-from unit_tests.test_helpers import TEST_CONFIG
+from integration_tests.test_helpers import TEST_CONFIG
 
 # ----- PREPARE ENV -----
 
