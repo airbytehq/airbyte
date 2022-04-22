@@ -4,7 +4,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
 import { useConfig } from "config";
-import { TrackPageAnalytics, useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { useNotificationService } from "hooks/services/Notification";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
@@ -15,6 +15,7 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/GeneratedApi";
+import { useTrackPageAnalytics } from "../hooks/services/Analytics/useTrackPageAnalytics";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
@@ -50,12 +51,12 @@ const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   );
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(workspace.workspaceId);
+  useTrackPageAnalytics();
 };
 
 const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
   return (
     <MainView>
-      <TrackPageAnalytics />
       <Routes>
         <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />

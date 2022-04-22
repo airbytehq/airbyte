@@ -1,13 +1,14 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 import useRouter from "hooks/useRouter";
 
 import { getPageName } from "./pageNameUtils";
 import { useAnalyticsService } from "./useAnalyticsService";
 
-export const TrackPageAnalytics: React.FC = () => {
+export const useTrackPageAnalytics = () => {
   const { pathname } = useRouter();
   const analyticsService = useAnalyticsService();
+
   useEffect(() => {
     const pathWithoutWorkspaceId = pathname.split("/").splice(2).join(".");
     const pageName = getPageName(pathWithoutWorkspaceId);
@@ -15,6 +16,4 @@ export const TrackPageAnalytics: React.FC = () => {
       analyticsService.page(pageName);
     }
   }, [analyticsService, pathname]);
-
-  return null;
 };
