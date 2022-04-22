@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
-import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
@@ -37,7 +36,8 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        "flattening", Flattening.ROOT_LEVEL.getValue()));
+        "flattening", Flattening.ROOT_LEVEL.getValue(),
+        "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
   }
 
   /**
@@ -119,7 +119,7 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
   }
 
   protected Reader getReader(final S3Object s3Object) throws IOException {
-    return new InputStreamReader(new GZIPInputStream(s3Object.getObjectContent()), StandardCharsets.UTF_8);
+    return new InputStreamReader(s3Object.getObjectContent(), StandardCharsets.UTF_8);
   }
 
 }

@@ -22,7 +22,6 @@ public final class S3DestinationConstants {
   public static final String COMPRESSION_ARG_NAME = "compression";
   public static final String COMPRESSION_TYPE_ARG_NAME = "compression_type";
   public static final CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.GZIP;
-  public static final boolean DEFAULT_GZIP_COMPRESSION = true;
 
   private S3DestinationConstants() {}
 

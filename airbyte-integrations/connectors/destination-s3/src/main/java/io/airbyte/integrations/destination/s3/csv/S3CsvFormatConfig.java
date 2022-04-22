@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.s3.csv;
 
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_TYPE_ARG_NAME;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.PART_SIZE_MB_ARG_NAME;
 
@@ -15,6 +14,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
+import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
 import java.util.Objects;
 
 public class S3CsvFormatConfig implements S3FormatConfig {
@@ -60,7 +60,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
             ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
             : S3DestinationConstants.DEFAULT_PART_SIZE_MB,
         formatConfig.has(COMPRESSION_ARG_NAME)
-            ? parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
+            ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
             : DEFAULT_COMPRESSION_TYPE);
   }
 
@@ -93,23 +93,12 @@ public class S3CsvFormatConfig implements S3FormatConfig {
     return compressionType;
   }
 
-  static CompressionType parseCompressionType(final JsonNode compressionConfig) {
-    if (compressionConfig == null || compressionConfig.isNull()) {
-      return DEFAULT_COMPRESSION_TYPE;
-    }
-    final String compressionType = compressionConfig.get(COMPRESSION_TYPE_ARG_NAME).asText();
-    if (compressionType.toUpperCase().equals(CompressionType.GZIP.name())) {
-      return CompressionType.GZIP;
-    } else {
-      return CompressionType.NO_COMPRESSION;
-    }
-  }
-
   @Override
   public String toString() {
     return "S3CsvFormatConfig{" +
         "flattening=" + flattening +
         ", partSize=" + partSize +
+        ", compression=" + compressionType.name() +
         '}';
   }
 
@@ -122,12 +111,14 @@ public class S3CsvFormatConfig implements S3FormatConfig {
       return false;
     }
     final S3CsvFormatConfig that = (S3CsvFormatConfig) o;
-    return flattening == that.flattening && Objects.equals(partSize, that.partSize);
+    return flattening == that.flattening
+        && Objects.equals(partSize, that.partSize)
+        && Objects.equals(compressionType, that.compressionType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(flattening, partSize);
+    return Objects.hash(flattening, partSize, compressionType);
   }
 
 }

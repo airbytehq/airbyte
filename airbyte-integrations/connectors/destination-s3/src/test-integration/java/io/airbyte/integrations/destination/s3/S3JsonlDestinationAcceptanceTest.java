@@ -27,7 +27,7 @@ public class S3JsonlDestinationAcceptanceTest extends S3DestinationAcceptanceTes
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        "gzip_compression", false));
+        "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
   }
 
   @Override

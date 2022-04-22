@@ -14,6 +14,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.OutputStream;
@@ -60,9 +62,13 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
   public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3JsonlFormatConfig config,
                                                                                                                                           final Callable<BufferStorage> createStorageFunction) {
-    return (final AirbyteStreamNameNamespacePair stream,
-            final ConfiguredAirbyteCatalog catalog) -> new JsonLSerializedBuffer(createStorageFunction.call(),
-                config == null || config.isGzipCompression());
+    return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
+      final CompressionType compressionType = config == null
+          ? S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+          : config.getCompressionType();
+      return new JsonLSerializedBuffer(createStorageFunction.call(), compressionType != CompressionType.NO_COMPRESSION);
+    };
+
   }
 
 }
