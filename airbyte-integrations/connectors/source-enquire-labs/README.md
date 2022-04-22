@@ -60,7 +60,7 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-enquire-labs:dev
+docker build . -t ghilman17/source-enquires-labs:0.1
 ```
 
 You can also build the connector image via Gradle:
