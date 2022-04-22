@@ -83,24 +83,21 @@ In some rare cases, a connector may wish to expose an input that is not availabl
 In this case, use the `"airbyte_hidden": true` keyword to hide that field from the UI. E.g: 
 
 ```
-{ 
-
-"first_name": {
-  "type": "string",
-  "title": "First Name"
-}, 
-"secret_name": {
-  "type": "string", 
-  "title": "You can't see me!!!",
-  "airbyte_hidden": true
-}
-
+{
+  "first_name": {
+    "type": "string",
+    "title": "First Name"
+  },
+  "secret_name": {
+    "type": "string",
+    "title": "You can't see me!!!",
+    "airbyte_hidden": true
+  }
 }
 ```
 
 Results in the following form: 
-
-<img width="586" alt="Screen Shot 2022-04-21 at 2 40 33 PM" src="https://user-images.githubusercontent.com/6246757/164556606-48a53725-f075-4c3f-88fb-68920e78cc32.png">
+<img width="622" alt="Screen Shot 2022-04-21 at 5 12 51 PM" src="https://user-images.githubusercontent.com/6246757/164570635-cf0c2783-9981-422e-a7a0-c6fd664259fd.png">
 
 
 ### Using `oneOf`s
