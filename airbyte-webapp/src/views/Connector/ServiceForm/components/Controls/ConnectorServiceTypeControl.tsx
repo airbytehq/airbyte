@@ -1,6 +1,6 @@
+import { useField } from "formik";
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useField } from "formik";
 import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
 import styled from "styled-components";
@@ -15,10 +15,10 @@ import {
 import { ConnectorIcon } from "components/ConnectorIcon";
 import { GAIcon } from "components/icons/GAIcon";
 
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { FormBaseItem } from "core/form/types";
 import { Connector, ConnectorDefinition, ReleaseStage } from "core/domain/connector";
+import { FormBaseItem } from "core/form/types";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { naturalComparator } from "utils/objects";
 
 import { WarningMessage } from "../WarningMessage";

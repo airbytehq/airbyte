@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
-import styled from "styled-components";
 import { useIntl } from "react-intl";
+import styled from "styled-components";
 
+import { ConnectorIcon } from "components/ConnectorIcon";
 import StatusIcon from "components/StatusIcon";
 import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
-import { ConnectorIcon } from "components/ConnectorIcon";
 
 import { Status } from "../types";
 

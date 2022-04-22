@@ -1,5 +1,5 @@
-import React from "react";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
+import React from "react";
 
 import Button from "../Button";
 import { Popout } from "./Popout";
