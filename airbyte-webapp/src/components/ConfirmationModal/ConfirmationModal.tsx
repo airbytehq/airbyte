@@ -1,9 +1,9 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-import Modal from "components/Modal";
 import { Button } from "components/base/Button";
+import Modal from "components/Modal";
 
 const Content = styled.div`
   width: 585px;

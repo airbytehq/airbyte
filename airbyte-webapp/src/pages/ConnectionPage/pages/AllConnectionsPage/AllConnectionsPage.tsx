@@ -5,9 +5,9 @@ import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 
-import useRouter from "hooks/useRouter";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";

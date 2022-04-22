@@ -16,9 +16,9 @@ import {
   AuthErrorCodes,
 } from "firebase/auth";
 
+import { Provider } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { ErrorCodes } from "packages/cloud/services/auth/types";
-import { Provider } from "config";
 
 interface AuthService {
   login(email: string, password: string): Promise<UserCredential>;

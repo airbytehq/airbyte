@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
-import styled from "styled-components";
-import { FormattedMessage } from "react-intl";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useMemo } from "react";
+import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Popout } from "components";
 

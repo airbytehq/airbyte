@@ -1,21 +1,21 @@
+import { faStar } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-regular-svg-icons";
-import styled from "styled-components";
 import { useSearchParams } from "react-router-dom";
 import { useEffectOnce } from "react-use";
+import styled from "styled-components";
 
 import { Button, LoadingButton } from "components";
 
+import { useConfig } from "config";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
 import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
-import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
-import { useConfig } from "config";
 
 interface Props {
   selfServiceCheckoutEnabled: boolean;

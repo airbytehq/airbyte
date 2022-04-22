@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
 import { Button, H5 } from "components";
+import ContentCard from "components/ContentCard";
 
 import DeleteModal from "./components/DeleteModal";
 

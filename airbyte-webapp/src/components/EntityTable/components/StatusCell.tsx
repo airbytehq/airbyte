@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useAsyncFn } from "react-use";
+import styled from "styled-components";
 
 import { LoadingButton, Toggle } from "components";
 

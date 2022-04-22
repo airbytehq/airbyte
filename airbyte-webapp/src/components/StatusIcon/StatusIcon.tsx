@@ -1,10 +1,10 @@
+import { faBan, faCheck, faExclamationTriangle, faTimes, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTimes, faBan, faExclamationTriangle, IconDefinition } from "@fortawesome/free-solid-svg-icons";
 
-import PauseIcon from "./PauseIcon";
 import CircleLoader from "./CircleLoader";
+import PauseIcon from "./PauseIcon";
 
 export type StatusIconStatus = "empty" | "inactive" | "success" | "warning" | "loading";
 

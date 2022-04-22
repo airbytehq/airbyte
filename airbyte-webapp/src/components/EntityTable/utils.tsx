@@ -1,8 +1,8 @@
 import { Connection, ConnectionStatus } from "core/domain/connection";
-import Status from "core/statuses";
 import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
+import Status from "core/statuses";
 
-import { ITableDataItem, EntityTableDataItem, Status as ConnectionSyncStatus } from "./types";
+import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<

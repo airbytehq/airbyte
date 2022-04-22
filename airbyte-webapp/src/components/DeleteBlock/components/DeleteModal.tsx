@@ -1,10 +1,10 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useMutation } from "react-query";
+import styled from "styled-components";
 
-import Modal from "components/Modal";
 import { Button, LoadingButton } from "components";
+import Modal from "components/Modal";
 export type IProps = {
   onClose: () => void;
   onSubmit: () => Promise<unknown>;

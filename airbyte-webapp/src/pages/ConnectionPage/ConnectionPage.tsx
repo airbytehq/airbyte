@@ -3,13 +3,13 @@ import { Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
 
-import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { RoutePaths } from "../routePaths";
+import AllConnectionsPage from "./pages/AllConnectionsPage";
 import ConnectionItemPage from "./pages/ConnectionItemPage";
 import CreationFormPage from "./pages/CreationFormPage";
-import AllConnectionsPage from "./pages/AllConnectionsPage";
 
 const ConnectionPage: React.FC = () => (
   <Suspense fallback={<LoadingPage />}>

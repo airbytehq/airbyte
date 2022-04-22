@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-import BaseClearView from "components/BaseClearView";
 import { H4, ContentCard } from "components";
+import BaseClearView from "components/BaseClearView";
 
 const Content = styled(ContentCard)`
   width: 100%;

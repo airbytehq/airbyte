@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 
 import useRouter from "hooks/useRouter";
 
-import { useAnalyticsService } from "./useAnalyticsService";
 import { getPageName } from "./pageNameUtils";
+import { useAnalyticsService } from "./useAnalyticsService";
 
 export const TrackPageAnalytics: React.FC = () => {
   const { pathname } = useRouter();

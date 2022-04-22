@@ -1,20 +1,20 @@
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
 
 import { Connection } from "core/domain/connection";
-import { useListJobs } from "services/job/JobService";
+import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useListJobs } from "services/job/JobService";
 
 import JobsList from "./JobsList";
 import StatusMainInfo from "./StatusMainInfo";

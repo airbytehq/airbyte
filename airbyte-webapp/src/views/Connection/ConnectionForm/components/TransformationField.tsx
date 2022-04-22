@@ -1,12 +1,12 @@
+import { ArrayHelpers, FormikProps } from "formik";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { ArrayHelpers, FormikProps } from "formik";
 
 import ArrayOfObjectsEditor from "components/ArrayOfObjectsEditor";
 
-import TransformationForm from "views/Connection/TransformationForm";
 import { Transformation } from "core/domain/connection/operation";
 import { isDefined } from "utils/common";
+import TransformationForm from "views/Connection/TransformationForm";
 
 const TransformationField: React.FC<
   ArrayHelpers & {

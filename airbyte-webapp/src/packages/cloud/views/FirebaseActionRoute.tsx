@@ -1,13 +1,13 @@
 import React from "react";
-import { useAsync } from "react-use";
-import { useNavigate } from "react-router-dom";
 import { useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
+import { useAsync } from "react-use";
 
 import LoadingPage from "components/LoadingPage";
 
+import { useNotificationService } from "hooks/services/Notification";
 import useRouter from "hooks/useRouter";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { useNotificationService } from "hooks/services/Notification";
 
 import { ResetPasswordConfirmPage } from "./auth/ConfirmPasswordResetPage";
 

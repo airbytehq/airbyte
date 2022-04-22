@@ -2,12 +2,12 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, MainPageWithScroll } from "components";
-import PageTitle from "components/PageTitle";
 import HeadTitle from "components/HeadTitle";
+import PageTitle from "components/PageTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 
-import useRouter from "hooks/useRouter";
 import { useDestinationList } from "hooks/services/useDestinationHook";
+import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import DestinationsTable from "./components/DestinationsTable";

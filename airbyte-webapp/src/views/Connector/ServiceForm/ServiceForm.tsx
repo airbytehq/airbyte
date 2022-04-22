@@ -1,17 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToggle } from "react-use";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import RequestConnectorModal from "views/Connector/RequestConnectorModal";
-import { FormBaseItem } from "core/form/types";
 import { ConnectorDefinition, ConnectorDefinitionSpecification, Scheduler } from "core/domain/connector";
-import { isDefined } from "utils/common";
+import { FormBaseItem } from "core/form/types";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { isDefined } from "utils/common";
+import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
 import { ConnectionConfiguration } from "../../../core/domain/connection";
+import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
+import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
+import { FormRoot } from "./FormRoot";
+import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
+import { ServiceFormValues } from "./types";
 import {
   useBuildForm,
   useBuildInitialSchema,
@@ -19,11 +24,6 @@ import {
   useConstructValidationSchema,
   usePatchFormik,
 } from "./useBuildForm";
-import { ServiceFormValues } from "./types";
-import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
-import { FormRoot } from "./FormRoot";
-import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
-import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 
 const FormikPatch: React.FC = () => {
   usePatchFormik();

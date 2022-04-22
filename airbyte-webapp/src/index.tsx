@@ -1,7 +1,7 @@
-import { lazy, Suspense } from "react";
-import ReactDOM from "react-dom";
 import * as Sentry from "@sentry/react";
 import { Integrations } from "@sentry/tracing";
+import { lazy, Suspense } from "react";
+import ReactDOM from "react-dom";
 
 // We do not follow default config approach since we want to init sentry asap
 Sentry.init({

@@ -1,10 +1,10 @@
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
+import { JobDetails, JobListItem, JobDebugInfoDetails } from "core/domain/job/Job";
+import { JobsService, ListParams } from "core/domain/job/JobsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { JobsService, ListParams } from "core/domain/job/JobsService";
-import { JobDetails, JobListItem, JobDebugInfoDetails } from "core/domain/job/Job";
 
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 

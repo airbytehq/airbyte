@@ -1,14 +1,14 @@
 import { useMutation } from "react-query";
 
-import { useAnalyticsService } from "hooks/services/Analytics";
-import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
-import { Destination, Source } from "core/domain/connector";
-import { Workspace } from "core/domain/workspace/Workspace";
-import { NotificationStatus } from "core/domain/notification/types";
 import { useConfig } from "config";
+import { Destination, Source } from "core/domain/connector";
+import { NotificationService } from "core/domain/notification/NotificationService";
+import { NotificationStatus } from "core/domain/notification/types";
+import { Workspace } from "core/domain/workspace/Workspace";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { NotificationService } from "core/domain/notification/NotificationService";
+import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
 
 export type WebhookPayload = {
   webhook: string;

@@ -8,8 +8,8 @@ import { DestinationSyncMode, Path, SyncMode, SyncSchemaField, SyncSchemaStream 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
 import { Arrow as ArrowBlock } from "./components/Arrow";
-import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
 import { IndexerType, PathPopout } from "./components/PathPopout";
+import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
 import { ArrowCell, CheckboxCell, HeaderCell } from "./styles";
 
 const EmptyField = styled.span`

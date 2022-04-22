@@ -1,12 +1,12 @@
+import { FieldProps } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { FieldProps } from "formik";
 
 import { LabeledRadioButton, Link } from "components";
 
-import { NormalizationType } from "core/domain/connection/operation";
 import { useConfig } from "config";
+import { NormalizationType } from "core/domain/connection/operation";
 
 const Normalization = styled.div`
   margin: 16px 0;

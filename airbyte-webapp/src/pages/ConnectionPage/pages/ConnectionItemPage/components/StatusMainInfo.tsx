@@ -3,12 +3,12 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ContentCard } from "components";
-import { Header, Row, Cell } from "components/SimpleTableComponents";
-import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { ConnectorIcon } from "components/ConnectorIcon";
+import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+import { Header, Row, Cell } from "components/SimpleTableComponents";
 
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { Connection } from "core/domain/connection";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
 import EnabledControl from "./EnabledControl";
 

@@ -1,11 +1,11 @@
+import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-import { Cell, Row } from "components/SimpleTableComponents";
 import { Button, StatusIcon } from "components";
+import { Cell, Row } from "components/SimpleTableComponents";
 
 import { Attempt, JobInfo, JobMeta as JobApiItem } from "core/domain/job/Job";
 import Status from "core/statuses";

@@ -2,8 +2,8 @@ import React, { useCallback } from "react";
 
 import { ConnectionTable } from "components/EntityTable";
 import useSyncActions from "components/EntityTable/hooks";
-import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
+import { getConnectionTableData } from "components/EntityTable/utils";
 
 import { Connection } from "core/domain/connection";
 import useRouter from "hooks/useRouter";

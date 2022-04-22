@@ -1,6 +1,6 @@
 import React from "react";
-import styled, { keyframes } from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled, { keyframes } from "styled-components";
 
 type ProgressBarProps = {
   runTime?: number;

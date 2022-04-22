@@ -1,6 +1,6 @@
+import { uniqueId } from "lodash";
 import { useCallback, useMemo } from "react";
 import { createGlobalState } from "react-use";
-import { uniqueId } from "lodash";
 
 import { FormChangeTrackerServiceApi } from "./types";
 

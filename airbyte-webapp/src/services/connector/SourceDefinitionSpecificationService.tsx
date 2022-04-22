@@ -1,10 +1,10 @@
 import { QueryObserverResult, useQuery } from "react-query";
 
-import { SourceDefinitionSpecification } from "core/domain/connector";
 import { useConfig } from "config";
+import { SourceDefinitionSpecification } from "core/domain/connector";
+import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 

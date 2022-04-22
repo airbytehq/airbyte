@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { SourceDefinition } from "core/domain/connector";
 import { useConfig } from "config";
+import { SourceDefinition } from "core/domain/connector";
+import { CreateSourceDefinitionPayload, SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { CreateSourceDefinitionPayload, SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 

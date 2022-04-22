@@ -1,11 +1,11 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Link } from "components/Link";
 
-import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 
 const Container = styled.div`
   height: 30px;
