@@ -17,6 +17,7 @@ import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
+import io.airbyte.db.exception.ConnectionWrapperErrorException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,8 +28,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import io.airbyte.db.exception.ConnectionWrapperErrorException;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;

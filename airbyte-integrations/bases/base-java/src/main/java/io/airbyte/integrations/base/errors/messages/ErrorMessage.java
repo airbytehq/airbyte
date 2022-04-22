@@ -11,7 +11,7 @@ import java.util.Map;
 
 public interface ErrorMessage {
 
-  final static Map<String, ConnectionErrorType> CONSTANTS = new HashMap<>();
+  Map<String, ConnectionErrorType> CONSTANTS = new HashMap<>();
 
   ConnectorType getConnectorType();
 
