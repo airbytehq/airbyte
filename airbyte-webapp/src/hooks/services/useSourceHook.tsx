@@ -175,10 +175,12 @@ const useDiscoverSchema = (
   isLoading: boolean;
   schema: SyncSchema;
   schemaErrorStatus: { status: number; response: JobInfo } | null;
+  catalogId: string;
   onDiscoverSchema: () => Promise<void>;
 } => {
   const service = useSourceService();
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
+  const [catalogId, setCatalogId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
     status: number;
@@ -191,6 +193,7 @@ const useDiscoverSchema = (
     try {
       const data = await service.discoverSchema(sourceId || "");
       setSchema(data.catalog);
+      setCatalogId(data.catalogId);
     } catch (e) {
       setSchemaErrorStatus(e);
     } finally {
@@ -207,7 +210,7 @@ const useDiscoverSchema = (
     })();
   }, [onDiscoverSchema, sourceId]);
 
-  return { schemaErrorStatus, isLoading, schema, onDiscoverSchema };
+  return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };
 };
 
 export { useSourceList, useGetSource, useCreateSource, useDeleteSource, useUpdateSource, useDiscoverSchema };

@@ -38,6 +38,7 @@ type CreateConnectionProps = {
   destination: Destination;
   sourceDefinition?: SourceDefinition | { name: string; sourceDefinitionId: string };
   destinationDefinition?: { name: string; destinationDefinitionId: string };
+  sourceCatalogId: string;
 };
 
 export type ListConnection = { connections: WebBackendConnectionRead[] };
@@ -114,13 +115,13 @@ const useCreateConnection = () => {
 
   return useMutation(
     async (conn: CreateConnectionProps) => {
-      const { values, source, destination, sourceDefinition, destinationDefinition } = conn;
-
+      const { values, source, destination, sourceDefinition, destinationDefinition, sourceCatalogId } = conn;
       const response = await service.create({
         sourceId: source.sourceId,
         destinationId: destination.destinationId,
         ...values,
         status: "active",
+        sourceCatalogId: sourceCatalogId,
       });
 
       const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config?.selected).length;

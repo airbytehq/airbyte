@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.36.1-alpha",
+  "version": "0.36.2-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -16,10 +16,10 @@
     "generate-client": "orval && eslint --fix ./src/core/request/GeneratedApi.ts && prettier ./src/core/request/GeneratedApi.ts --write"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.36",
-    "@fortawesome/free-brands-svg-icons": "^5.15.4",
-    "@fortawesome/free-regular-svg-icons": "^5.15.4",
-    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/free-brands-svg-icons": "^6.1.1",
+    "@fortawesome/free-regular-svg-icons": "^6.1.1",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.1.17",
     "@fullstory/browser": "^1.5.1",
     "@sentry/react": "^6.19.6",
