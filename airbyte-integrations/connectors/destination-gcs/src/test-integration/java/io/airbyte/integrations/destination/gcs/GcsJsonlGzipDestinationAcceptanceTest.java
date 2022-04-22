@@ -23,9 +23,8 @@ public class GcsJsonlGzipDestinationAcceptanceTest extends GcsJsonlDestinationAc
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.jsonNode(Map.of(
-        "format_type", outputFormat,
-        "gzip_compression", true));
+    // config without compression defaults to GZIP
+    return Jsons.jsonNode(Map.of("format_type", outputFormat));
   }
 
   protected BufferedReader getReader(final S3Object s3Object) throws IOException {

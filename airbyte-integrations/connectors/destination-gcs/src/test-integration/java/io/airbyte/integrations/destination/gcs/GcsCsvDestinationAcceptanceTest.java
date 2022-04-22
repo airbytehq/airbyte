@@ -37,7 +37,8 @@ public class GcsCsvDestinationAcceptanceTest extends GcsDestinationAcceptanceTes
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        "flattening", Flattening.ROOT_LEVEL.getValue()));
+        "flattening", Flattening.ROOT_LEVEL.getValue(),
+        "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
   }
 
   /**
