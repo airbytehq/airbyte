@@ -401,8 +401,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // SOURCE SPECIFICATION
 
   @Override
-  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
-    return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody));
+  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
+    return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdWithWorkspaceId));
   }
 
   // OAUTH
@@ -599,8 +599,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(
-                                                                                      final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
-    return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdRequestBody));
+                                                                                      final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
+    return execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdWithWorkspaceId));
   }
 
   // DESTINATION IMPLEMENTATION
