@@ -328,6 +328,7 @@
   "connection.failedSync": "Failed sync",
   "connection.successSync": "Succeeded sync",
   "connection.noSyncData": "Sync was not started",
+  "connection.pendingSync": "Sync is pending or running",
   "connection.refreshSchema": "Refresh schema",
   "connection.replication": "Replication",
   "connection.streams": "Streams",
