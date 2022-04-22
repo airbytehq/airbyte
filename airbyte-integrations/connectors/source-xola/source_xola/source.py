@@ -3,6 +3,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Dict
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -77,7 +78,21 @@ class XolaStream(HttpStream, ABC):
             "sort": "-id"
         }
         return headers
+    
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
+        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
+    
+    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+        if stream_state:
+            for record in records_slice:
+                if record[self.cursor_field] > stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records_slice
 
 class Orders(XolaStream):
     primary_key = "order_id"
@@ -98,8 +113,8 @@ class Orders(XolaStream):
         should return "orders". Required.
         """
         path = "orders"
-        if stream_state is not None and self.cursor_field in stream_state:
-            path = path + "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
+        #if stream_state is not None and self.cursor_field in stream_state:
+        #    path = path + "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
         print("path ", path)
             
         return path
@@ -188,8 +203,8 @@ class Transactions(XolaStream):
         should return "orders". Required.
         """
         path = "transactions"
-        if stream_state is not None and self.cursor_field in stream_state:
-            path += "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
+        #if stream_state is not None and self.cursor_field in stream_state:
+        #    path += "?" + self.cursor_field + "=" + stream_state[self.cursor_field]
         return path
     
 
