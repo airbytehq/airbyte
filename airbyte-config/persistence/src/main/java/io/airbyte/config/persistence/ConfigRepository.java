@@ -870,9 +870,9 @@ public class ConfigRepository {
       throws IOException {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     final UUID fetchEventID = UUID.randomUUID();
-    database.transaction(ctx -> {
+    return database.transaction(ctx -> {
       final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
-      return ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+      ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
           .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorId)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID, catalogId)
@@ -880,9 +880,8 @@ public class ConfigRepository {
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION, connectorVersion)
           .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp)
           .set(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, timestamp).execute();
+      return catalogId;
     });
-
-    return fetchEventID;
   }
 
   public int countConnectionsForWorkspace(final UUID workspaceId) throws IOException {
