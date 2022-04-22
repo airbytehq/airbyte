@@ -10,7 +10,7 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 
-public class MySQLErrorMessage implements ErrorMessage {
+public class MysqlErrorMessage implements ErrorMessage {
 
   static {
     CONSTANTS.put("28000", INCORRECT_USERNAME_OR_PASSWORD);

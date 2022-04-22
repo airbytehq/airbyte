@@ -134,10 +134,14 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   protected StandardCheckConnectionOutput runCheck() throws Exception {
+    return runCheck(getConfig());
+  }
+
+  protected StandardCheckConnectionOutput runCheck(JsonNode config) throws Exception {
     return new DefaultCheckConnectionWorker(
-        workerConfigs,
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
-            .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
+            workerConfigs,
+            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
   protected AirbyteCatalog runDiscover() throws Exception {

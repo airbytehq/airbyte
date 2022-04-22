@@ -30,7 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -284,6 +289,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
         .filter(m -> m.getType() == Type.RECORD)
         .map(AirbyteMessage::getRecord)
         .collect(Collectors.toList());
+  }
+
+  protected void testCheckErrorMessageConnection(JsonNode config, String errorMessage) throws Exception {
+    assertEquals(Status.FAILED, runCheck(config).getStatus(), errorMessage);
   }
 
   protected ConfiguredAirbyteCatalog withSourceDefinedCursors(final ConfiguredAirbyteCatalog catalog) {
