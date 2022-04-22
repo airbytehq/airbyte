@@ -12,8 +12,7 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.mark.parametrize(
-    "definition_type, definition_id",
-    "resource_name",
+    ("definition_type, definition_id, resource_name"),
     [
         ("source", "6371b14b-bc68-4236-bfbd-468e8df8e968", "test_generate_source"),
         ("destination", "22f6c74f-5699-40ff-833c-4a879ea40133", "test_generate_destination"),
