@@ -2,16 +2,21 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import random
 import string
+import tempfile
 import time
 from functools import partial
+from pathlib import Path
 from typing import Iterable
 from unittest.mock import Mock
 
 import docker
 import pytest
+import yaml
 from docker.errors import ContainerError, NotFound
+from source_acceptance_test.utils.common import load_yaml_or_json_path
 from source_acceptance_test.utils.compare import make_hashable
 from source_acceptance_test.utils.connector_runner import ConnectorRunner
 
@@ -310,3 +315,34 @@ def test_not_found_container():
 
     with pytest.raises(NotFound):
         list(ConnectorRunner.read(new_container, command=cmd))
+
+
+class TestLoadYamlOrJsonPath:
+    VALID_SPEC = {
+        "documentationUrl": "https://google.com",
+        "connectionSpecification": {
+            "type": "object",
+            "required": ["api_token"],
+            "additionalProperties": False,
+            "properties": {"api_token": {"type": "string"}},
+        },
+    }
+
+    def test_load_json(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".json") as f:
+            f.write(json.dumps(self.VALID_SPEC))
+            f.flush()
+            actual = load_yaml_or_json_path(Path(f.name))
+            assert self.VALID_SPEC == actual
+
+    def test_load_yaml(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml") as f:
+            f.write(yaml.dump(self.VALID_SPEC))
+            f.flush()
+            actual = load_yaml_or_json_path(Path(f.name))
+            assert self.VALID_SPEC == actual
+
+    def test_load_other(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".txt") as f:
+            with pytest.raises(RuntimeError):
+                load_yaml_or_json_path(Path(f.name))
