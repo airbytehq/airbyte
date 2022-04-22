@@ -77,6 +77,30 @@ By default, string inputs in the UI can lose their linebreaks. In order to accep
 
 this will display a multi-line textbox in the UI like the following screenshot: ![Screen Shot 2021-08-04 at 11 13 09 PM](https://user-images.githubusercontent.com/6246757/128300404-1dc35323-bceb-4f93-9b81-b23cc4beb670.png)
 
+### Hiding inputs in the UI
+In some rare cases, a connector may wish to expose an input that is not available in the UI, but is still potentially configurable when running the connector outside of Airbyte, or via the UI. For example, exposing a very technical configuration like the page size of an outgoing HTTP requests may only be relevant to power users, and therefore shouldn't be available via the UI but might make sense to expose via the API. 
+
+In this case, use the `"airbyte_hidden": true` keyword to hide that field from the UI. E.g: 
+
+```
+{
+  "first_name": {
+    "type": "string",
+    "title": "First Name"
+  },
+  "secret_name": {
+    "type": "string",
+    "title": "You can't see me!!!",
+    "airbyte_hidden": true
+  }
+}
+```
+
+![hidden fields](../.gitbook/assets/spec_reference_hidden_field_screenshot.png)
+
+Results in the following form: 
+
+
 ### Using `oneOf`s
 
 In some cases, a connector needs to accept one out of many options. For example, a connector might need to know the compression codec of the file it will read, which will render in the Airbyte UI as a list of the available codecs. In JSONSchema, this can be expressed using the [oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
