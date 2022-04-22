@@ -47,6 +47,11 @@ cmd_build() {
     echo "Skipping integration tests..."
   else
     echo "Running integration tests..."
+
+    if test "$path" == "airbyte-integrations/bases/base-normalization"; then
+      ./gradlew --no-daemon --scan airbyteDocker
+    fi
+
     ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
@@ -117,7 +122,7 @@ cmd_publish() {
     docker push "$versioned_image"
     docker push "$latest_image"
   fi
-  
+
   # Checking if the image was successfully registered on DockerHub
   # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
   sleep 5
