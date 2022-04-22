@@ -6,6 +6,7 @@
 from typing import Dict
 
 import pygsheets
+from airbyte_cdk import AirbyteLogger
 from google.auth.transport.requests import Request
 from google.oauth2 import credentials as client_account
 from pygsheets.client import Client as pygsheets_client
@@ -19,6 +20,9 @@ SCOPES = [
 
 
 class GoogleSheetsClient:
+
+    logger = AirbyteLogger()
+
     def __init__(self, config: Dict):
         self.config = config
         self.retries = 100  # max number of backoff retries
@@ -26,13 +30,19 @@ class GoogleSheetsClient:
     def authorize(self) -> pygsheets_client:
         input_creds = self.config.get("credentials")
         auth_creds = client_account.Credentials.from_authorized_user_info(info=input_creds)
-        client = pygsheets.authorize(custom_credentials=auth_creds, scopes=SCOPES)
-
-        # obtain new access_token using refresh_token
-        client.oauth.refresh(Request())
+        client = pygsheets.authorize(custom_credentials=auth_creds)
 
         # Increase max number of retries if Rate Limit is reached. Error: <HttpError 429>
         client.drive.retries = self.retries  # for google drive api
         client.sheet.retries = self.retries  # for google sheets api
+
+        # check if token is expired and refresh it
+        if client.oauth.expired:
+            self.logger.warn("The token is expired. Refreshing...")
+            client.oauth.refresh(Request())
+            if not client.oauth.expired:
+                self.logger.info("Successfully refreshed token")
+            else:
+                self.logger.fatal("The token is expired and could not be refreshed, please check the credentials are still valid!")
 
         return client

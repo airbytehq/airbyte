@@ -5,8 +5,8 @@
 
 import pytest
 from destination_google_sheets.client import GoogleSheetsClient
-from pygsheets.client import Client as pygsheets_client
 from integration_tests.test_helpers import TEST_CONFIG
+from pygsheets.client import Client as pygsheets_client
 
 # ----- PREPARE ENV -----
 
