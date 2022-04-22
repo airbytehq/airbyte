@@ -1288,7 +1288,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.2.3"
+- dockerImage: "airbyte/destination-gcs:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -1560,6 +1560,31 @@
                 default: 5
                 examples:
                 - 5
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".csv.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
           - title: "JSON Lines: newline-delimited JSON"
             required:
             - "format_type"
@@ -1579,6 +1604,29 @@
                 default: 5
                 examples:
                 - 5
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".jsonl.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
           - title: "Parquet: Columnar Storage"
             required:
             - "format_type"
@@ -3596,7 +3644,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.2"
+- dockerImage: "airbyte/destination-s3:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3838,6 +3886,31 @@
                 default: 5
                 examples:
                 - 5
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".csv.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
           - title: "JSON Lines: newline-delimited JSON"
             required:
             - "format_type"
@@ -3857,6 +3930,29 @@
                 default: 5
                 examples:
                 - 5
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".jsonl.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
           - title: "Parquet: Columnar Storage"
             required:
             - "format_type"
