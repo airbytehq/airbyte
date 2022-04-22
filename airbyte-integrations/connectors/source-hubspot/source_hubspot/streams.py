@@ -145,7 +145,7 @@ class API:
         elif credentials_title == "API Key Credentials":
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
-            raise Exception("No supported `credentials_title` specified. See spec.json for references")
+            raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
 
         self._session.headers = {
             "Content-Type": "application/json",
