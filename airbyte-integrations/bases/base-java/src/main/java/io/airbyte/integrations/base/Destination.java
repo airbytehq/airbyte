@@ -6,6 +6,7 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -31,6 +32,10 @@ public interface Destination extends Integration {
 
   static void defaultOutputRecordCollector(final AirbyteMessage message) {
     System.out.println(Jsons.serialize(message));
+  }
+
+  default ConnectorType getConnectorType() {
+    return ConnectorType.DEFAULT;
   }
 
 }
