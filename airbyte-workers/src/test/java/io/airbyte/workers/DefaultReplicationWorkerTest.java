@@ -123,7 +123,7 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void test() throws Exception {
-    final DefaultReplicationWorker worker = new DefaultReplicationWorker(
+    final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
         JOB_ATTEMPT,
         source,
