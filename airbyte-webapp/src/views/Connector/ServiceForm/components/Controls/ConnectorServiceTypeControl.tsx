@@ -113,7 +113,9 @@ const ConnectorList: React.FC<MenuWithRequestButtonProps> = ({ children, ...prop
 );
 
 const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) => {
-  if (!releaseStage) return null;
+  if (!releaseStage) {
+    return null;
+  }
 
   if (releaseStage === ReleaseStage.GENERALLY_AVAILABLE) {
     return <GAIcon />;
