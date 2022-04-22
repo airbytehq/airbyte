@@ -22,7 +22,7 @@ public class GcsCsvGzipDestinationAcceptanceTest extends GcsCsvDestinationAccept
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
         "flattening", Flattening.ROOT_LEVEL.getValue(),
-        "gzip_compression", true));
+        "compression", Jsons.jsonNode(Map.of("compression_type", "GZIP"))));
   }
 
   protected Reader getReader(final S3Object s3Object) throws IOException {

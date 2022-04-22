@@ -9,6 +9,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
@@ -89,7 +90,8 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
       final CSVFormat csvSettings = CSVFormat.DEFAULT
           .withQuoteMode(QuoteMode.NON_NUMERIC)
           .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
-      return new CsvSerializedBuffer(createStorageFunction.call(), csvSheetGenerator, config.isGzipCompression()).withCsvFormat(csvSettings);
+      final boolean compression = config.getCompressionType() != CompressionType.NO_COMPRESSION;
+      return new CsvSerializedBuffer(createStorageFunction.call(), csvSheetGenerator, compression).withCsvFormat(csvSettings);
     };
   }
 

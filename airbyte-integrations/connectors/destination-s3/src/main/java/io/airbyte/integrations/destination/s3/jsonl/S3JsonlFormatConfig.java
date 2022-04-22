@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.s3.jsonl;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.GZIP_COMPRESSION_ARG_NAME;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.PART_SIZE_MB_ARG_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,8 +24,8 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
     this.partSize = formatConfig.has(PART_SIZE_MB_ARG_NAME)
         ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
         : S3DestinationConstants.DEFAULT_PART_SIZE_MB;
-    this.gzipCompression = formatConfig.has(GZIP_COMPRESSION_ARG_NAME)
-        ? formatConfig.get(GZIP_COMPRESSION_ARG_NAME).asBoolean()
+    this.gzipCompression = formatConfig.has(COMPRESSION_ARG_NAME)
+        ? formatConfig.get(COMPRESSION_ARG_NAME).asBoolean()
         : S3DestinationConstants.DEFAULT_GZIP_COMPRESSION;
   }
 

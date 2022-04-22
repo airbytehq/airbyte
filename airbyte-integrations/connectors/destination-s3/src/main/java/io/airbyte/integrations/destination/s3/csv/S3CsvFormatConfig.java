@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.destination.s3.csv;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.GZIP_COMPRESSION_ARG_NAME;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_TYPE_ARG_NAME;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.PART_SIZE_MB_ARG_NAME;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -12,11 +14,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import java.util.Objects;
 
 public class S3CsvFormatConfig implements S3FormatConfig {
 
-  public static final String CSV_GZ_SUFFIX = ".csv.gz";
   public static final String CSV_SUFFIX = ".csv";
 
   public enum Flattening {
@@ -49,7 +51,7 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   private final Flattening flattening;
   private final Long partSize;
-  private final boolean gzipCompression;
+  private final CompressionType compressionType;
 
   public S3CsvFormatConfig(final JsonNode formatConfig) {
     this(
@@ -57,15 +59,15 @@ public class S3CsvFormatConfig implements S3FormatConfig {
         formatConfig.has(PART_SIZE_MB_ARG_NAME)
             ? formatConfig.get(PART_SIZE_MB_ARG_NAME).asLong()
             : S3DestinationConstants.DEFAULT_PART_SIZE_MB,
-        formatConfig.has(GZIP_COMPRESSION_ARG_NAME)
-            ? formatConfig.get(GZIP_COMPRESSION_ARG_NAME).asBoolean()
-            : S3DestinationConstants.DEFAULT_GZIP_COMPRESSION);
+        formatConfig.has(COMPRESSION_ARG_NAME)
+            ? parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
+            : DEFAULT_COMPRESSION_TYPE);
   }
 
-  public S3CsvFormatConfig(final Flattening flattening, final Long partSize, final boolean gzipCompression) {
+  public S3CsvFormatConfig(final Flattening flattening, final Long partSize, final CompressionType compressionType) {
     this.flattening = flattening;
     this.partSize = partSize;
-    this.gzipCompression = gzipCompression;
+    this.compressionType = compressionType;
   }
 
   @Override
@@ -84,11 +86,23 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
   @Override
   public String getFileExtension() {
-    return gzipCompression ? CSV_GZ_SUFFIX : CSV_SUFFIX;
+    return CSV_SUFFIX + compressionType.getFileExtension();
   }
 
-  public boolean isGzipCompression() {
-    return gzipCompression;
+  public CompressionType getCompressionType() {
+    return compressionType;
+  }
+
+  static CompressionType parseCompressionType(final JsonNode compressionConfig) {
+    if (compressionConfig == null || compressionConfig.isNull()) {
+      return DEFAULT_COMPRESSION_TYPE;
+    }
+    final String compressionType = compressionConfig.get(COMPRESSION_TYPE_ARG_NAME).asText();
+    if (compressionType.toUpperCase().equals(CompressionType.GZIP.name())) {
+      return CompressionType.GZIP;
+    } else {
+      return CompressionType.NO_COMPRESSION;
+    }
   }
 
   @Override

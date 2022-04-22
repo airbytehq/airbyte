@@ -37,8 +37,7 @@ public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest 
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        "flattening", Flattening.ROOT_LEVEL.getValue(),
-        "gzip_compression", false));
+        "flattening", Flattening.ROOT_LEVEL.getValue()));
   }
 
   /**

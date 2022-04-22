@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 
 public final class S3DestinationConstants {
@@ -18,7 +19,9 @@ public final class S3DestinationConstants {
   public static final String DEFAULT_PATH_FORMAT = "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_";
 
   // gzip compression for CSV and JSONL
-  public static final String GZIP_COMPRESSION_ARG_NAME = "gzip_compression";
+  public static final String COMPRESSION_ARG_NAME = "compression";
+  public static final String COMPRESSION_TYPE_ARG_NAME = "compression_type";
+  public static final CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.GZIP;
   public static final boolean DEFAULT_GZIP_COMPRESSION = true;
 
   private S3DestinationConstants() {}
