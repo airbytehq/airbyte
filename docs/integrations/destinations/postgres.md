@@ -11,6 +11,16 @@ To use the Postgres destination, you'll need:
 Airbyte Cloud only supports connecting to your Postgres instances with SSL or TLS encryption. TLS is
 used by default. Other than that, you can proceed with the open-source instructions below.
 
+You should now have all the requirements needed to configure Postgres as a destination in the UI.
+You'll need the following information to configure the Postgres destination:
+
+* **Host**
+* **Port**
+* **Username**
+* **Password**
+* **Default Schema Name**
+* **Database**
+
 #### Configure Network Access
 
 Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you
@@ -40,18 +50,6 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 You will need to choose an existing database or create a new database that will be used to store
 synced data from Airbyte.
-
-### Setup the Postgres Destination in Airbyte
-
-You should now have all the requirements needed to configure Postgres as a destination in the UI.
-You'll need the following information to configure the Postgres destination:
-
-* **Host**
-* **Port**
-* **Username**
-* **Password**
-* **Default Schema Name**
-* **Database**
 
 ## Naming Conventions
 
