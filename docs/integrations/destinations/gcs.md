@@ -137,7 +137,7 @@ With root level normalization, the output CSV is:
 | :--- | :--- | :--- | :--- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | 123 | `{ "first": "John", "last": "Doe" }` |
 
-Output CSV files can be compressed using GZIP compression. When the files are compressed, the file extension will be `.csv.gz`.
+Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.csv.gz`).
 
 ### JSON Lines \(JSONL\)
 
@@ -179,7 +179,7 @@ They will be like this in the output file:
 { "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
-Output JSONL files can be compressed using GZIP compression. When the files are compressed, the file extension will be `.jsonl.gz`.
+Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.jsonl.gz`).
 
 ### Parquet
 
