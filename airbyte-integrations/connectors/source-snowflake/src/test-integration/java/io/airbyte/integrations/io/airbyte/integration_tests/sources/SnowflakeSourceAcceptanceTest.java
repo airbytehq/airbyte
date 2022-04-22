@@ -4,7 +4,10 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -26,6 +29,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Test;
 
 public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -131,6 +135,17 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
         Map.of("role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
             "database", config.get("database").asText()));
+  }
+
+  @Test
+  public void testBackwardCompatibilityAfterAddingOauth() throws Exception {
+    final JsonNode deprecatedStyleConfig = Jsons.clone(config);
+    final JsonNode password = deprecatedStyleConfig.get("credentials").get("password");
+
+    ((ObjectNode) deprecatedStyleConfig).remove("credentials");
+    ((ObjectNode) deprecatedStyleConfig).set("password", password);
+
+    assertEquals("SUCCEEDED", runCheckAndGetStatusAsString(deprecatedStyleConfig).toUpperCase());
   }
 
 }

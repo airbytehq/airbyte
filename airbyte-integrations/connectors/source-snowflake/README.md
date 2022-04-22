@@ -14,6 +14,7 @@
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
   "credentails" {
+    "auth_type": "username/password",
     "username": "AIRBYTE_USER",
     "password": "SOMEPASSWORD"
   }
@@ -28,7 +29,7 @@
   "database": "AIRBYTE_DATABASE",
   "schema": "AIRBYTE_SCHEMA",
   "credentails" {
-    "auth_type": "Client",
+    "auth_type": "OAuth",
     "client_id": "client_id",
     "client_secret": "client_secret",
     "refresh_token": "refresh_token"
