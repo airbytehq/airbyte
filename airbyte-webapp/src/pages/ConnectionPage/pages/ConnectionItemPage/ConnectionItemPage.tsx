@@ -65,27 +65,25 @@ const ConnectionItemPage: React.FC = () => {
       <Suspense fallback={<LoadingPage />}>
         {isDeprecated && (
           <div>
-            <p>this one is deprecated</p>
+            <p>this one is deleted</p>
           </div>
         )}
-        <fieldset disabled={isDeprecated} style={{ border: 0 }}>
-          <Routes>
-            <Route
-              path={ConnectionSettingsRoutes.STATUS}
-              element={<StatusView connection={connection} frequencyText={frequency?.text} />}
-            />
-            <Route
-              path={ConnectionSettingsRoutes.REPLICATION}
-              element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
-            />
-            <Route
-              path={ConnectionSettingsRoutes.TRANSFORMATION}
-              element={<TransformationView connection={connection} />}
-            />
-            <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
-            <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} />} />
-          </Routes>
-        </fieldset>
+        <Routes>
+          <Route
+            path={ConnectionSettingsRoutes.STATUS}
+            element={<StatusView connection={connection} frequencyText={frequency?.text} />}
+          />
+          <Route
+            path={ConnectionSettingsRoutes.REPLICATION}
+            element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
+          />
+          <Route
+            path={ConnectionSettingsRoutes.TRANSFORMATION}
+            element={<TransformationView connection={connection} />}
+          />
+          <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} />} />
+        </Routes>
       </Suspense>
     </MainPageWithScroll>
   );

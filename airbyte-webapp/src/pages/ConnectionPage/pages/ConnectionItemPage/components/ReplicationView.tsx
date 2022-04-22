@@ -143,7 +143,7 @@ const ReplicationView: React.FC<IProps> = ({ onAfterSaveSchema, connectionId }) 
       <Card>
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
-            isEditMode
+            mode={connection?.status !== "deprecated" ? "edit" : "readonly"}
             connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}

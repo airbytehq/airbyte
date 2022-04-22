@@ -115,6 +115,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
       ) : (
         <Suspense fallback={<LoadingSchema />}>
           <ConnectionForm
+            mode="create"
             connection={connection}
             additionBottomControls={additionBottomControls}
             onDropDownSelect={onSelectFrequency}

@@ -95,7 +95,7 @@ interface ConnectionFormProps {
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   editSchemeMode?: boolean;
-  isEditMode?: boolean;
+  mode: "create" | "edit" | "readonly";
   additionalSchemaControl?: React.ReactNode;
 
   connection: Connection | (Partial<Connection> & Pick<Connection, "syncCatalog" | "source" | "destination">);
@@ -107,7 +107,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onCancel,
   className,
   onDropDownSelect,
-  isEditMode,
+  mode,
   successMessage,
   additionBottomControls,
   editSchemeMode,
@@ -123,7 +123,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const formatMessage = useIntl().formatMessage;
 
-  const initialValues = useInitialValues(connection, destDefinition, isEditMode);
+  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
 
   const workspace = useCurrentWorkspace();
   const onFormSubmit = useCallback(
@@ -141,7 +141,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         formikHelpers.resetForm({ values });
         clearFormChange(formId);
 
-        const requiresReset = isEditMode && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
+        const requiresReset =
+          mode === "edit" && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
         }
@@ -157,7 +158,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       onSubmit,
       clearFormChange,
       formId,
-      isEditMode,
+      mode,
       initialValues.syncCatalog,
       editSchemeMode,
     ]
@@ -255,7 +256,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               additionalControl={additionalSchemaControl}
               component={SchemaField}
             />
-            {isEditMode ? (
+            {mode === "edit" && (
               <EditControls
                 isSubmitting={isSubmitting}
                 dirty={dirty}
@@ -271,7 +272,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 }
                 editSchemeMode={editSchemeMode}
               />
-            ) : (
+            )}
+            {mode === "create" && (
               <>
                 <OperationsSection destDefinition={destDefinition} />
                 <EditLaterMessage message={<FormattedMessage id="form.dataSync.message" />} />
