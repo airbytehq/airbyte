@@ -47,7 +47,7 @@ public class GcsCredentialConfigs {
             .setRefreshToken(refreshToken)
             .build();
     try {
-      credentials.refreshIfExpired();
+      credentials.refreshAccessToken();
     } catch (IOException e) {
       LOGGER.error("Error appears when refresh the token...", e);
       throw new RuntimeException(e);

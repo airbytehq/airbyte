@@ -14,11 +14,10 @@ import com.amazonaws.handlers.RequestHandler2;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.UserCredentials;
 import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfigs;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
+import io.airbyte.integrations.destination.gcs.signer.CustomGCPSigner;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
@@ -74,9 +73,9 @@ public class GcsDestinationConfig extends S3DestinationConfig {
             .build();
       }
       case OAUTH2 -> {
-        SignerFactory.registerSigner("io.airbyte.integrations.destination.s3.signer.CustomGCPSigner", io.airbyte.integrations.destination.s3.signer.CustomGCPSigner.class);
+        SignerFactory.registerSigner("io.airbyte.integrations.destination.gcs.signer.CustomGCPSigner", CustomGCPSigner.class);
         ClientConfiguration clientConfig = new ClientConfiguration();
-        clientConfig.setSignerOverride("io.airbyte.integrations.destination.s3.signer.CustomGCPSigner");
+        clientConfig.setSignerOverride("io.airbyte.integrations.destination.gcs.signer.CustomGCPSigner");
         final GCPSessionCredentials googleCredentials = (GCPSessionCredentials) credentialConfig;
         return AmazonS3ClientBuilder.standard().withClientConfiguration(clientConfig)
             .withEndpointConfiguration(

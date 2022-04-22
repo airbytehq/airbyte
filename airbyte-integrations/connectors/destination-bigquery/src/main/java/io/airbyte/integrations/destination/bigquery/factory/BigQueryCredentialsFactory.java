@@ -18,9 +18,7 @@ import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +26,6 @@ public class BigQueryCredentialsFactory {
 
   private static final String AUTH_TYPE = "auth_type";
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryCredentialsFactory.class);
-
 
 
   private BigQueryCredentialsFactory() {
@@ -58,9 +55,8 @@ public class BigQueryCredentialsFactory {
             .setAccessToken(accessToken)
             .setRefreshToken(refreshToken)
             .build();
-
     try {
-      credentials.refreshIfExpired();
+      credentials.refreshAccessToken();
     } catch (IOException e) {
       LOGGER.error("Error appears when refresh the token...", e);
       throw new RuntimeException(e);
@@ -96,6 +92,6 @@ public class BigQueryCredentialsFactory {
   public static boolean isOauth(JsonNode config) {
     return config.has(CREDENTIALS)
         && config.get(CREDENTIALS).has(AUTH_TYPE)
-        && "Client".contains(config.get(CREDENTIALS).get(AUTH_TYPE).asText());
+        && "oauth2.0".contains(config.get(CREDENTIALS).get(AUTH_TYPE).asText());
   }
 }

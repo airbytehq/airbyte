@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.s3.signer;
+package io.airbyte.integrations.destination.gcs.signer;
 
 import com.amazonaws.SignableRequest;
 import com.amazonaws.auth.AWS4Signer;

@@ -58,11 +58,11 @@
             "properties": {
               "auth_type": {
                 "type": "string",
-                "const": "Client",
+                "const": "oauth2.0",
                 "enum": [
-                  "Client"
+                  "oauth2.0"
                 ],
-                "default": "Client",
+                "default": "oauth2.0",
                 "order": 0
               },
               "access_token": {
@@ -283,7 +283,7 @@
       "credentials",
       "auth_type"
     ],
-    "predicate_value": "Client",
+    "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",

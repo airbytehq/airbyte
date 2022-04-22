@@ -7,8 +7,7 @@ import io.airbyte.integrations.destination.s3.credential.S3CredentialConfig;
 import java.io.IOException;
 import java.util.Optional;
 
-public class GCPSessionCredentials implements AWSSessionCredentials, GcsCredentialConfig {
-  private final GoogleCredentials credentials;
+public record GCPSessionCredentials(GoogleCredentials credentials) implements AWSSessionCredentials, GcsCredentialConfig {
 
   @Override
   public Optional<S3CredentialConfig> getS3CredentialConfig() {
@@ -18,10 +17,6 @@ public class GCPSessionCredentials implements AWSSessionCredentials, GcsCredenti
   @Override
   public GcsCredentialType getCredentialType() {
     return GcsCredentialType.OAUTH2;
-  }
-
-  public GCPSessionCredentials(GoogleCredentials credentials) {
-    this.credentials = credentials;
   }
 
   private String getGCPToken() {

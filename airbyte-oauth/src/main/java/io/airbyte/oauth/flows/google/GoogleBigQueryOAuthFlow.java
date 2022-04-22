@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 public class GoogleBigQueryOAuthFlow extends GoogleOAuthFlow {
 
   @VisibleForTesting
-  static final String SCOPE_URL = "https://www.googleapis.com/auth/cloud-platform";
+  static final String SCOPE_URL = "https://www.googleapis.com/auth/bigquery https://www.googleapis.com/auth/devstorage.read_write";
 
   public GoogleBigQueryOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
