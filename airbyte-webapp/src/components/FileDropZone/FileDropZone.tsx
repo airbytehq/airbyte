@@ -1,8 +1,8 @@
+import { faFile } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { DropzoneOptions, useDropzone } from "react-dropzone";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile } from "@fortawesome/free-regular-svg-icons";
 
 const Content = styled.div<{ hasFiles: boolean }>`
   width: 100%;
