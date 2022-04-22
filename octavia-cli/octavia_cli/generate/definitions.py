@@ -15,7 +15,9 @@ from airbyte_api_client.api import (
 )
 from airbyte_api_client.exceptions import ApiException
 from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
+from airbyte_api_client.model.destination_definition_id_with_workspace_id import DestinationDefinitionIdWithWorkspaceId
 from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
+from airbyte_api_client.model.source_definition_id_with_workspace_id import SourceDefinitionIdWithWorkspaceId
 
 
 class DefinitionNotFoundError(click.ClickException):
@@ -100,11 +102,6 @@ class SourceDefinition(BaseDefinition):
         return {"source_definition_id_request_body": SourceDefinitionIdRequestBody(self.id)}
 
 
-class SourceDefinitionSpecification(SourceDefinition):
-    api = source_definition_specification_api.SourceDefinitionSpecificationApi
-    get_function_name = "get_source_definition_specification"
-
-
 class DestinationDefinition(BaseDefinition):
     api = destination_definition_api.DestinationDefinitionApi
     type = "destination"
@@ -115,20 +112,41 @@ class DestinationDefinition(BaseDefinition):
         return {"destination_definition_id_request_body": DestinationDefinitionIdRequestBody(self.id)}
 
 
-class DestinationDefinitionSpecification(DestinationDefinition):
+class DefinitionSpecification(BaseDefinition):
+    def __init__(self, api_client: airbyte_api_client.ApiClient, workspace_id: str, id: str) -> None:
+        self.workspace_id = workspace_id
+        super().__init__(api_client, id)
+
+
+class SourceDefinitionSpecification(DefinitionSpecification):
+    api = source_definition_specification_api.SourceDefinitionSpecificationApi
+    type = "source"
+    get_function_name = "get_source_definition_specification"
+
+    @property
+    def _get_fn_kwargs(self) -> dict:
+        return {"source_definition_id_with_workspace_id": SourceDefinitionIdWithWorkspaceId(self.id, self.workspace_id)}
+
+
+class DestinationDefinitionSpecification(DefinitionSpecification):
     api = destination_definition_specification_api.DestinationDefinitionSpecificationApi
+    type = "destination"
     get_function_name = "get_destination_definition_specification"
+
+    @property
+    def _get_fn_kwargs(self) -> dict:
+        return {"destination_definition_id_with_workspace_id": DestinationDefinitionIdWithWorkspaceId(self.id, self.workspace_id)}
 
 
 def factory(
-    definition_type: str, api_client: airbyte_api_client.ApiClient, definition_id: str
+    definition_type: str, api_client: airbyte_api_client.ApiClient, workspace_id: str, definition_id: str
 ) -> Union[SourceDefinition, DestinationDefinition]:
     if definition_type == "source":
         definition = SourceDefinition(api_client, definition_id)
-        specification = SourceDefinitionSpecification(api_client, definition_id)
+        specification = SourceDefinitionSpecification(api_client, workspace_id, definition_id)
     elif definition_type == "destination":
         definition = DestinationDefinition(api_client, definition_id)
-        specification = DestinationDefinitionSpecification(api_client, definition_id)
+        specification = DestinationDefinitionSpecification(api_client, workspace_id, definition_id)
     else:
         raise ValueError(f"{definition_type} does not exist")
     definition.specification = specification
