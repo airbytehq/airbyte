@@ -106,6 +106,9 @@
         },
         "feedback_summaries": {
           "type": ["null", "string"]
+        },
+        "streams": {
+          "type": ["null", "string"]
         }
       }
     }

@@ -8,17 +8,20 @@ import static com.mongodb.client.model.Filters.gt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
+import io.airbyte.db.exception.ConnectionWrapperErrorException;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
@@ -86,12 +89,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public List<CheckedConsumer<MongoDatabase, Exception>> getCheckOperations(final JsonNode config)
-      throws Exception {
+  public List<CheckedConsumer<MongoDatabase, Exception>> getCheckOperations(final JsonNode config) {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
       if (getAuthorizedCollections(database).isEmpty()) {
-        throw new Exception("Unable to execute any operation on the source!");
+        throw new ConnectionWrapperErrorException("", "Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
       }
@@ -143,17 +145,26 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
      * find or any other action, on the database resource, the command lists all collections in the
      * database.
      */
-    Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
-        .append("authorizedCollections", true)
-        .append("nameOnly", true))
-        .append("filter", "{ 'type': 'collection' }");
-    return document.toBsonDocument()
-        .get("cursor").asDocument()
-        .getArray("firstBatch")
-        .stream()
-        .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-        .collect(Collectors.toSet());
-
+    try {
+      Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+                      .append("authorizedCollections", true)
+                      .append("nameOnly", true))
+              .append("filter", "{ 'type': 'collection' }");
+      return document.toBsonDocument()
+              .get("cursor").asDocument()
+              .getArray("firstBatch")
+              .stream()
+              .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+              .collect(Collectors.toSet());
+    } catch (Exception e) {
+      try {
+        var mongoException = (MongoCommandException) e.getCause();
+        String code = String.valueOf(mongoException.getCode());
+        throw new ConnectionWrapperErrorException(code, e.getMessage());
+      } catch (Exception ex) {
+        throw new ConnectionWrapperErrorException("", e.getMessage());
+      }
+    }
   }
 
   @Override
@@ -241,4 +252,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     return connectionStrBuilder.toString();
   }
 
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.MONGO;
+  }
 }

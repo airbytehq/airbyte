@@ -4,13 +4,14 @@
 
 package io.airbyte.integrations.base.errors;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.DEFAULT;
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.MONGO;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.MSSQL;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
 
 import io.airbyte.integrations.base.errors.messages.DefaultErrorMessage;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
+import io.airbyte.integrations.base.errors.messages.MongoDBErrorMessage;
 import io.airbyte.integrations.base.errors.messages.MsSQLErrorMessage;
 import io.airbyte.integrations.base.errors.messages.MySQLErrorMessage;
 import io.airbyte.integrations.base.errors.messages.PostgresErrorMessage;
@@ -22,7 +23,8 @@ public class ErrorMessageFactory {
   private final static Map<ConnectorType, ErrorMessage> MAP = Map.of(MSSQL, new MsSQLErrorMessage(),
       MYSQL, new MySQLErrorMessage(),
       POSTGRES, new PostgresErrorMessage(),
-      DEFAULT, new DefaultErrorMessage());
+      MONGO, new MongoDBErrorMessage(),
+      ConnectorType.DEFAULT, new DefaultErrorMessage());
 
   public static ErrorMessage getErrorMessage(ConnectorType type) {
     if (MAP.containsKey(type)) {
