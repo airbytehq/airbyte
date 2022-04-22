@@ -27,8 +27,8 @@ function upgradeSchemaLegacyAuth(
     (spec?.rootObject ?? []) as (string | number)[],
     (schema) => {
       // Very hacky way to allow placing button within section
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (schema as any).is_auth = true;
+      // @ts-expect-error json schema
+      schema.is_auth = true;
       const schemaWithoutPaths = removeNestedPaths(schema, spec?.oauthFlowInitParameters ?? [], false);
 
       const schemaWithoutOutputPats = removeNestedPaths(
