@@ -96,8 +96,9 @@ In this case, use the `"airbyte_hidden": true` keyword to hide that field from t
 }
 ```
 
+![hidden fields](../.gitbook/assets/spec_reference_hidden_field_screenshot.png)
+
 Results in the following form: 
-<img width="622" alt="Screen Shot 2022-04-21 at 5 12 51 PM" src="https://user-images.githubusercontent.com/6246757/164570635-cf0c2783-9981-422e-a7a0-c6fd664259fd.png">
 
 
 ### Using `oneOf`s
