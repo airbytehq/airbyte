@@ -1,7 +1,8 @@
-import React, { Suspense, useMemo, useState } from "react";
+import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
+import { Route, Routes } from "react-router-dom";
 
-import { DropDownRow, ImageBlock } from "components";
+import { DropDownRow } from "components";
 import PageTitle from "components/PageTitle";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
@@ -9,6 +10,7 @@ import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import HeadTitle from "components/HeadTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
 import { getIcon } from "utils/imageUtils";
 import useRouter from "hooks/useRouter";
@@ -23,9 +25,8 @@ import SourceSettings from "./components/SourceSettings";
 import SourceConnectionTable from "./components/SourceConnectionTable";
 
 const SourceItemPage: React.FC = () => {
-  const { query, push } = useRouter<{ id: string }>();
-  const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
-  const onSelectStep = (id: string) => setCurrentStep(id);
+  const { query, params, push } = useRouter<{ id: string }, { id: string; "*": string }>();
+  const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 
   const { destinations } = useDestinationList();
 
@@ -55,11 +56,16 @@ const SourceItemPage: React.FC = () => {
         return {
           label: item.name,
           value: item.destinationId,
-          img: <ImageBlock img={destinationDef?.icon} />,
+          img: <ConnectorIcon icon={destinationDef?.icon} />,
         };
       }),
     [destinations, destinationDefinitions]
   );
+
+  const onSelectStep = (id: string) => {
+    const path = id === StepsTypes.OVERVIEW ? "/" : `/${id.toLowerCase()}`;
+    push(`/source/${source.sourceId}${path}`);
+  };
 
   const onSelect = (data: DropDownRow.IDataItem) => {
     const path = `../${RoutePaths.ConnectionNew}`;
@@ -74,31 +80,6 @@ const SourceItemPage: React.FC = () => {
     push(path, { state });
   };
 
-  const renderContent = () => {
-    if (currentStep === StepsTypes.SETTINGS) {
-      return <SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />;
-    }
-
-    return (
-      <>
-        <TableItemTitle
-          type="destination"
-          dropDownData={destinationsDropDownData}
-          onSelect={onSelect}
-          entity={source.sourceName}
-          entityName={source.name}
-          entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
-          releaseStage={sourceDefinition.releaseStage}
-        />
-        {connectionsWithSource.length ? (
-          <SourceConnectionTable connections={connectionsWithSource} />
-        ) : (
-          <Placeholder resource={ResourceTypes.Destinations} />
-        )}
-      </>
-    );
-  };
-
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />}
@@ -110,7 +91,35 @@ const SourceItemPage: React.FC = () => {
         />
       }
     >
-      <Suspense fallback={<LoadingPage />}>{renderContent()}</Suspense>
+      <Suspense fallback={<LoadingPage />}>
+        <Routes>
+          <Route
+            path="/settings"
+            element={<SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />}
+          />
+          <Route
+            index
+            element={
+              <>
+                <TableItemTitle
+                  type="destination"
+                  dropDownData={destinationsDropDownData}
+                  onSelect={onSelect}
+                  entity={source.sourceName}
+                  entityName={source.name}
+                  entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
+                  releaseStage={sourceDefinition.releaseStage}
+                />
+                {connectionsWithSource.length ? (
+                  <SourceConnectionTable connections={connectionsWithSource} />
+                ) : (
+                  <Placeholder resource={ResourceTypes.Destinations} />
+                )}
+              </>
+            }
+          ></Route>
+        </Routes>
+      </Suspense>
     </MainPageWithScroll>
   );
 };
