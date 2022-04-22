@@ -6,7 +6,7 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-from .streams import ProductListStream
+from .streams import Products, ProductOverviews, ProductReviews, Stores, StoreReviews
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -144,5 +144,14 @@ class SourceJunipReviews(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        args = {
+            "junip_store_key": config.get("junip_store_key")
+        }
 
-        return [ProductListStream(junip_store_key=config.get("junip_store_key"))]
+        return [
+            Products(**args),
+            ProductOverviews(**args),
+            ProductReviews(**args),
+            Stores(**args),
+            StoreReviews(**args)
+        ]
