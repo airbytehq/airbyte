@@ -1,16 +1,16 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
+import styled from "styled-components";
 
 import Table from "components/Table";
 
-import LastSyncCell from "./components/LastSyncCell";
-import ConnectorCell from "./components/ConnectorCell";
-import NameCell from "./components/NameCell";
-import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
-import { EntityTableDataItem } from "./types";
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
+import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
+import ConnectorCell from "./components/ConnectorCell";
+import LastSyncCell from "./components/LastSyncCell";
+import NameCell from "./components/NameCell";
+import { EntityTableDataItem } from "./types";
 
 const Content = styled.div`
   margin: 0 32px 0 27px;

@@ -1,10 +1,10 @@
+import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled, { keyframes } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 
-import { IProps } from "./types";
 import Button from "./Button";
+import { IProps } from "./types";
 
 export const SpinAnimation = keyframes`
   0% {

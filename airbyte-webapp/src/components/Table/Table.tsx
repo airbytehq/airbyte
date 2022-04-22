@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
-import styled from "styled-components";
 import { Cell, Column, ColumnInstance, SortingRule, useSortBy, useTable } from "react-table";
+import styled from "styled-components";
 
 import { Card } from "components";
 
