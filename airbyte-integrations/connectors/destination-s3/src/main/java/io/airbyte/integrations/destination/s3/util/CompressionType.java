@@ -11,8 +11,8 @@ public enum CompressionType {
 
   private final String fileExtension;
 
-  CompressionType(final String compressionExtension) {
-    this.fileExtension = compressionExtension;
+  CompressionType(final String fileExtension) {
+    this.fileExtension = fileExtension;
   }
 
   public String getFileExtension() {
