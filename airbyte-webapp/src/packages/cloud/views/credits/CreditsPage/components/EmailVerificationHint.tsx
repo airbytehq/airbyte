@@ -1,13 +1,13 @@
-import { useState } from "react";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
 import { AuthErrorCodes } from "firebase/auth";
+import { useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 
 import { InfoBox } from "components/InfoBox";
 
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useNotificationService } from "hooks/services/Notification";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 interface Props {
   className?: string;

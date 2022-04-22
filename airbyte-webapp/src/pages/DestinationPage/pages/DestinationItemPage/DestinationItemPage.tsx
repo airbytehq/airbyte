@@ -2,24 +2,24 @@ import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { Route, Routes } from "react-router-dom";
 
-import Placeholder, { ResourceTypes } from "components/Placeholder";
+import { DropDownRow, LoadingPage, MainPageWithScroll, PageTitle } from "components";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
-import HeadTitle from "components/HeadTitle";
-import { DropDownRow, LoadingPage, MainPageWithScroll, PageTitle } from "components";
 import { ConnectorIcon } from "components/ConnectorIcon";
+import HeadTitle from "components/HeadTitle";
+import Placeholder, { ResourceTypes } from "components/Placeholder";
 
-import { getIcon } from "utils/imageUtils";
+import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useSourceList } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
-import { useConnectionList } from "hooks/services/useConnectionHook";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceList } from "hooks/services/useSourceHook";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { getIcon } from "utils/imageUtils";
 
 import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
-import DestinationSettings from "./components/DestinationSettings";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
+import DestinationSettings from "./components/DestinationSettings";
 
 const DestinationItemPage: React.FC = () => {
   const { params, push } = useRouter<unknown, { id: string; "*": string }>();
