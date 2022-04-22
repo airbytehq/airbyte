@@ -38,8 +38,8 @@ const DestinationItemPage: React.FC = () => {
   const onClickBack = () => push("..");
 
   const onSelectStep = (id: string) => {
-    const path = id === StepsTypes.OVERVIEW ? "/" : `/${id.toLowerCase()}`;
-    push(`/destination/${destination.destinationId}${path}`);
+    const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
+    push(path);
   };
 
   const breadcrumbsData = [
