@@ -1,12 +1,12 @@
 import { QueryObserverResult, useQuery } from "react-query";
 
-import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { useConfig } from "config";
+import { DestinationDefinitionSpecification } from "core/domain/connector";
+import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
-import { isDefined } from "utils/common";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { isDefined } from "utils/common";
 
 import { SCOPE_WORKSPACE } from "../Scope";
 import { useSuspenseQuery } from "./useSuspenseQuery";

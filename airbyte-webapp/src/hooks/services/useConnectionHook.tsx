@@ -1,24 +1,24 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
 import { useConfig } from "config";
+import FrequencyConfig from "config/FrequencyConfig.json";
+import { SyncSchema } from "core/domain/catalog";
 import {
   Connection,
   ConnectionNamespaceDefinition,
   ScheduleProperties,
   WebBackendConnectionService,
 } from "core/domain/connection";
-import { SyncSchema } from "core/domain/catalog";
+import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { Operation } from "core/domain/connection/operation";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { equal } from "utils/objects";
 import { Destination, Source, SourceDefinition } from "core/domain/connector";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { ConnectionService } from "core/domain/connection/ConnectionService";
+import { equal } from "utils/objects";
 
-import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {

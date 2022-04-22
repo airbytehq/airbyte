@@ -1,6 +1,6 @@
 import { Connection } from "core/domain/connection";
-import Status from "core/statuses";
 import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
+import Status from "core/statuses";
 
 import { ITableDataItem, EntityTableDataItem, Status as ConnectionStatus } from "./types";
 

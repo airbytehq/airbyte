@@ -1,7 +1,7 @@
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { Connection } from "core/domain/connection";
-import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
 import { Status } from "./types";
 

@@ -6,8 +6,8 @@ import { Toggle } from "components";
 import { Status } from "components/EntityTable/types";
 
 import { Connection } from "core/domain/connection";
-import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useUpdateConnection } from "hooks/services/useConnectionHook";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
