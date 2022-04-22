@@ -367,6 +367,8 @@ public interface Configs {
    */
   String getJobKubeNamespace();
 
+  String getDataPlaneName();
+
   // Logging/Monitoring/Tracking
   /**
    * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are

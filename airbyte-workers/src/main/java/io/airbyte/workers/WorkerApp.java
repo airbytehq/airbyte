@@ -95,6 +95,7 @@ public class WorkerApp {
   // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
 
+  private final String dataPlaneName;
   private final Path workspaceRoot;
   private final ProcessFactory defaultProcessFactory;
   private final ProcessFactory specProcessFactory;
@@ -197,13 +198,15 @@ public class WorkerApp {
 
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
 
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    final var taskQueue = dataPlaneName + "-" + TemporalJobType.SYNC.name();
+    final Worker syncWorker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
   }
 
   private void registerDiscover(final WorkerFactory factory) {
-    final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(), getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
+    final var taskQueue = dataPlaneName + "-" + TemporalJobType.DISCOVER_SCHEMA.name();
+    final Worker discoverWorker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkers.getMaxDiscoverWorkers()));
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflowImpl.class);
     discoverWorker
         .registerActivitiesImplementations(
@@ -213,8 +216,9 @@ public class WorkerApp {
   }
 
   private void registerCheckConnection(final WorkerFactory factory) {
+    final var taskQueue = dataPlaneName + "-" + TemporalJobType.CHECK_CONNECTION.name();
     final Worker checkConnectionWorker =
-        factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(), getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
+        factory.newWorker(taskQueue, getWorkerOptions(maxWorkers.getMaxCheckWorkers()));
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflowImpl.class);
     checkConnectionWorker
         .registerActivitiesImplementations(
@@ -223,7 +227,8 @@ public class WorkerApp {
   }
 
   private void registerGetSpec(final WorkerFactory factory) {
-    final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name(), getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
+    final var taskQueue = dataPlaneName + "-" + TemporalJobType.GET_SPEC.name();
+    final Worker specWorker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkers.getMaxSpecWorkers()));
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
     specWorker.registerActivitiesImplementations(
         new SpecActivityImpl(specWorkerConfigs, specProcessFactory, workspaceRoot, workerEnvironment, logConfigs, jobPersistence,
@@ -426,6 +431,7 @@ public class WorkerApp {
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
     new WorkerApp(
+        configs.getDataPlaneName(),
         workspaceRoot,
         defaultProcessFactory,
         specProcessFactory,
