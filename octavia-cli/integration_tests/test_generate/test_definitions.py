@@ -21,11 +21,13 @@ pytestmark = pytest.mark.integration
 def test_generate_source_or_destination(
     octavia_tmp_project_directory, api_client, workspace_id, definition_type, definition_id, resource_name
 ):
+    current_path = os.getcwd()
+    os.chdir(octavia_tmp_project_directory)
     generate_source_or_destination(definition_type, api_client, workspace_id, definition_id, resource_name)
-    relative_output_path = f"{definition_type}s/{resource_name}/configuration.yaml"
-    absolute_output_path = os.path.join(octavia_tmp_project_directory, relative_output_path)
-    with open(absolute_output_path, "r") as f:
+    expected_output_path = f"{definition_type}s/{resource_name}/configuration.yaml"
+    with open(expected_output_path, "r") as f:
         parsed_yaml = yaml.safe_load(f)
         assert parsed_yaml["resource_name"] == resource_name
-        assert parsed_yaml["defintion_type"] == definition_type
+        assert parsed_yaml["definition_type"] == definition_type
         assert parsed_yaml["definition_id"] == definition_id
+    os.chdir(current_path)
