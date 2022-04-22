@@ -1788,7 +1788,7 @@ export const revokeSourceDefinitionFromWorkspace = (
  * @summary Get specification for a SourceDefinition.
  */
 export const getSourceDefinitionSpecification = (
-  sourceDefinitionIdRequestBody: SourceDefinitionIdRequestBody,
+  sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,
   options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceDefinitionSpecificationRead>(
@@ -1796,7 +1796,7 @@ export const getSourceDefinitionSpecification = (
       url: `/v1/source_definition_specifications/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
-      data: sourceDefinitionIdRequestBody,
+      data: sourceDefinitionIdWithWorkspaceId,
     },
     options
   );
@@ -2197,7 +2197,7 @@ export const revokeDestinationDefinitionFromWorkspace = (
  * @summary Get specification for a destinationDefinition
  */
 export const getDestinationDefinitionSpecification = (
-  destinationDefinitionIdRequestBody: DestinationDefinitionIdRequestBody,
+  destinationDefinitionIdWithWorkspaceId: DestinationDefinitionIdWithWorkspaceId,
   options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationDefinitionSpecificationRead>(
@@ -2205,7 +2205,7 @@ export const getDestinationDefinitionSpecification = (
       url: `/v1/destination_definition_specifications/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
-      data: destinationDefinitionIdRequestBody,
+      data: destinationDefinitionIdWithWorkspaceId,
     },
     options
   );
