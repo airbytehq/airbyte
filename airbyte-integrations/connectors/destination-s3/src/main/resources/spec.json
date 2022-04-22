@@ -244,6 +244,35 @@
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "compression": {
+                "title": "Compression",
+                "type": "object",
+                "description": "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".csv.gz\").",
+                "oneOf": [
+                  {
+                    "title": "No Compression",
+                    "requires": ["compression_type"],
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["No Compression"],
+                        "default": "No Compression"
+                      }
+                    }
+                  },
+                  {
+                    "title": "GZIP",
+                    "requires": ["compression_type"],
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["GZIP"],
+                        "default": "GZIP"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -262,6 +291,35 @@
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "compression": {
+                "title": "Compression",
+                "type": "object",
+                "description": "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+                "oneOf": [
+                  {
+                    "title": "No Compression",
+                    "requires": "compression_type",
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["No Compression"],
+                        "default": "No Compression"
+                      }
+                    }
+                  },
+                  {
+                    "title": "GZIP",
+                    "requires": "compression_type",
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["GZIP"],
+                        "default": "GZIP"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
