@@ -83,6 +83,15 @@
     },
     {
       "stream": {
+        "name": "form_submissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "line_items",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -110,6 +119,15 @@
     },
     {
       "stream": {
+        "name": "property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "quotes",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -120,6 +138,15 @@
     {
       "stream": {
         "name": "tickets",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ticket_pipelines",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

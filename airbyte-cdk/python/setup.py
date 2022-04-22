@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.46",
+    version="0.1.55",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -33,8 +33,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
         # Python Version Support
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
     keywords="airbyte connector-development-kit cdk",
@@ -46,7 +44,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
         "backoff",
-        "dpath==2.0.1",
+        "dpath~=2.0.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
         "pendulum",
@@ -57,9 +55,16 @@ setup(
         "vcrpy",
         "Deprecated~=1.2",
     ],
-    python_requires=">=3.7.0",
+    python_requires=">=3.9",
     extras_require={
-        "dev": ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "requests-mock", "pytest-httpserver"],
+        "dev": [
+            "MyPy~=0.812",
+            "pytest",
+            "pytest-cov",
+            "pytest-mock",
+            "requests-mock",
+            "pytest-httpserver",
+        ],
         "sphinx-docs": [
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",

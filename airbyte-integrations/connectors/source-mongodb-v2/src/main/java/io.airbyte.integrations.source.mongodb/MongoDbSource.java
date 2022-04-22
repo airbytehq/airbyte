@@ -22,7 +22,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -90,7 +90,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
-      if (database.getCollectionNames().isEmpty()) {
+      if (getAuthorizedCollections(database).isEmpty()) {
         throw new Exception("Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
@@ -100,7 +100,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected JsonSchemaPrimitive getType(final BsonType fieldType) {
+  protected JsonSchemaType getType(final BsonType fieldType) {
     return MongoUtils.getType(fieldType);
   }
 
@@ -114,7 +114,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       throws Exception {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
-    for (final String collectionName : database.getCollectionNames()) {
+    for (final String collectionName : getAuthorizedCollections(database)) {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
       final Map<String, BsonType> uniqueFields = MongoUtils.getUniqueFields(collection);
 
@@ -133,6 +133,27 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       tableInfos.add(tableInfo);
     }
     return tableInfos;
+  }
+
+  private Set<String> getAuthorizedCollections(MongoDatabase database) {
+    /*
+     * db.runCommand ({listCollections: 1.0, authorizedCollections: true, nameOnly: true }) the command
+     * returns only those collections for which the user has privileges. For example, if a user has find
+     * action on specific collections, the command returns only those collections; or, if a user has
+     * find or any other action, on the database resource, the command lists all collections in the
+     * database.
+     */
+    Document document = database.getDatabase().runCommand(new Document("listCollections", 1)
+        .append("authorizedCollections", true)
+        .append("nameOnly", true))
+        .append("filter", "{ 'type': 'collection' }");
+    return document.toBsonDocument()
+        .get("cursor").asDocument()
+        .getArray("firstBatch")
+        .stream()
+        .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+        .collect(Collectors.toSet());
+
   }
 
   @Override

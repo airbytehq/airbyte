@@ -5,9 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1.42",
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.42"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "requests-mock==1.9.3", "timeout-decorator==0.5.0"]
 
@@ -19,7 +17,5 @@ setup(
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
+    extras_require={"tests": TEST_REQUIREMENTS},
 )

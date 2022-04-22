@@ -50,6 +50,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
+  private List<String> schemas;
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
@@ -79,6 +80,17 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     if (!config.has("ssl") || config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
+    }
+
+    if (config.has("schemas") && config.get("schemas").isArray()) {
+      schemas = new ArrayList<>();
+      for (final JsonNode schema : config.get("schemas")) {
+        schemas.add(schema.asText());
+      }
+    }
+
+    if (schemas != null && !schemas.isEmpty()) {
+      additionalParameters.add("currentSchema=" + String.join(",", schemas));
     }
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
@@ -117,6 +129,25 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+    if (schemas != null && !schemas.isEmpty()) {
+      // process explicitly selected (from UI) schemas
+      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+      for (String schema : schemas) {
+        LOGGER.debug("Discovering schema: {}", schema);
+        internals.addAll(super.discoverInternal(database, schema));
+      }
+      for (TableInfo<CommonField<JDBCType>> info : internals) {
+        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
+      }
+      return internals;
+    } else {
+      LOGGER.info("No schemas explicitly set on UI to process, so will process all of existing schemas in DB");
+      return super.discoverInternal(database);
+    }
+  }
+
+  @Override
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
       throws Exception {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
@@ -124,7 +155,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (isCdc(config)) {
       checkOperations.add(database -> {
-        final List<JsonNode> matchingSlots = database.query(connection -> {
+        final List<JsonNode> matchingSlots = database.unsafeQuery(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
           final PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("replication_method").get("replication_slot").asText());
@@ -146,7 +177,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       });
 
       checkOperations.add(database -> {
-        final List<JsonNode> matchingPublications = database.query(connection -> {
+        final List<JsonNode> matchingPublications = database.unsafeQuery(connection -> {
           final PreparedStatement ps = connection
               .prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
           ps.setString(1, config.get("replication_method").get("publication").asText());
@@ -243,7 +274,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
                                                                 final String schema)
       throws SQLException {
-    return database.query(connection -> {
+    return database.unsafeQuery(connection -> {
       final PreparedStatement ps = connection.prepareStatement(
           """
                  SELECT DISTINCT table_catalog,
@@ -269,18 +300,21 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                  Unnest(COALESCE(relacl::text[], Format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl,
                         Regexp_split_to_array(acl, '=|/') s
                  WHERE  r.rolname = ?
-                 AND    nspname = 'public'
+                 AND    (
+                               nspname = 'public'
+                          OR   nspname = ?)
                         -- 'm' means Materialized View
                  AND    c.relkind = 'm'
                  AND    (
                                -- all grants
                                c.relacl IS NULL
                                -- read grant
-                        OR     s[2] = 'r');
+                          OR     s[2] = 'r');
           """);
       final String username = database.getDatabaseConfig().get("username").asText();
       ps.setString(1, username);
       ps.setString(2, username);
+      ps.setString(3, username);
       return ps;
     }, sourceOperations::rowToJson)
         .collect(toSet())
@@ -290,6 +324,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
             .tableName(e.get("table_name").asText())
             .build())
         .collect(toSet());
+  }
+
+  @Override
+  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+    return false;
   }
 
   /*

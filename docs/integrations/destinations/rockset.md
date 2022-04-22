@@ -7,7 +7,7 @@
 | Full Refresh Sync | ✅ |
 | Incremental - Append Sync | ✅ |
 | Incremental - Deduped History | ❌ |
-| Namespaces | ❌ | 
+| Namespaces | ❌ |
 
 
 ## Troubleshooting
@@ -30,5 +30,6 @@
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.0 | 2021-11-15 | [\#8006](https://github.com/airbytehq/airbyte/pull/8006) | Initial release|
 

@@ -1,14 +1,13 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
-import { useFetcher } from "rest-hooks";
 import { useAsyncFn } from "react-use";
 
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import useConnector from "hooks/services/useConnector";
-import ConnectorsView from "./components/ConnectorsView";
-import { useSourceDefinitionList } from "hooks/services/useSourceDefinition";
-import { useSourceList } from "hooks/services/useSourceHook";
 import { SourceDefinition } from "core/domain/connector";
+import useConnector from "hooks/services/useConnector";
+import { useSourceList } from "hooks/services/useSourceHook";
+import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
+
+import ConnectorsView from "./components/ConnectorsView";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
@@ -18,26 +17,20 @@ const SourcesPage: React.FC = () => {
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
-  const updateSourceDefinition = useFetcher(
-    SourceDefinitionResource.updateShape()
-  );
+  const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
 
   const { hasNewSourceVersion, updateAllSourceVersions } = useConnector();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
-        await updateSourceDefinition(
-          {},
-          {
-            sourceDefinitionId: id,
-            dockerImageTag: version,
-          }
-        );
+        await updateSourceDefinition({
+          sourceDefinitionId: id,
+          dockerImageTag: version,
+        });
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        const messageId =
-          e.status === 422 ? "form.imageCannotFound" : "form.someError";
+        const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
@@ -51,8 +44,7 @@ const SourcesPage: React.FC = () => {
     const sourceDefinitionMap = new Map<string, SourceDefinition>();
     sources.forEach((source) => {
       const sourceDefinition = sourceDefinitions.find(
-        (sourceDefinition) =>
-          sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
+        (sourceDefinition) => sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
       );
 
       if (sourceDefinition) {

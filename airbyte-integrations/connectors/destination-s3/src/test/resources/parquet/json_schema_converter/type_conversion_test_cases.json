@@ -201,7 +201,7 @@
     ]
   },
   {
-    "fieldName": "array_field_without_items_type",
+    "fieldName": "array_field_without_items",
     "jsonFieldSchema": {
       "type": "array"
     },
@@ -212,5 +212,24 @@
         "items": ["null", "string"]
       }
     ]
+  },
+  {
+    "fieldName": "array_field_with_empty_items",
+    "jsonFieldSchema": {
+      "type": "array",
+      "items": {}
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
+  },
+  {
+    "fieldName": "field_without_type",
+    "jsonFieldSchema": {},
+    "avroFieldType": ["null", "string"]
   }
 ]

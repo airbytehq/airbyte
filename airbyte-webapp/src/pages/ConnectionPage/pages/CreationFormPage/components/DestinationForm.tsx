@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { useResource } from "rest-hooks";
-
-import useRouter from "hooks/useRouter";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import useDestination from "hooks/services/useDestinationHook";
 
 // TODO: create separate component for source and destinations forms
-import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { ConnectionConfiguration } from "core/domain/connection";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCreateDestination } from "hooks/services/useDestinationHook";
+import useRouter from "hooks/useRouter";
+import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 type IProps = {
   afterSubmit: () => void;
@@ -16,50 +13,35 @@ type IProps = {
 
 const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
-  const { workspace } = useWorkspace();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState(null);
 
-  const { destinationDefinitions } = useResource(
-    DestinationDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
-  const { createDestination } = useDestination();
+  const { destinationDefinitions } = useDestinationDefinitionList();
+  const { mutateAsync: createDestination } = useCreateDestination();
 
   const onSubmitDestinationForm = async (values: {
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    setErrorStatusRequest(null);
-
-    const connector = destinationDefinitions.find(
-      (item) => item.destinationDefinitionId === values.serviceType
-    );
-    try {
-      const result = await createDestination({
-        values,
-        destinationConnector: connector,
-      });
-      setSuccessRequest(true);
-      setTimeout(() => {
-        setSuccessRequest(false);
-        push(
-          {},
-          {
-            state: {
-              ...(location.state as Record<string, unknown>),
-              destinationId: result.destinationId,
-            },
-          }
-        );
-        afterSubmit();
-      }, 2000);
-    } catch (e) {
-      setErrorStatusRequest(e);
-    }
+    const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === values.serviceType);
+    const result = await createDestination({
+      values,
+      destinationConnector: connector,
+    });
+    setSuccessRequest(true);
+    setTimeout(() => {
+      setSuccessRequest(false);
+      push(
+        {},
+        {
+          state: {
+            ...(location.state as Record<string, unknown>),
+            destinationId: result.destinationId,
+          },
+        }
+      );
+      afterSubmit();
+    }, 2000);
   };
 
   return (
@@ -67,7 +49,6 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
       onSubmit={onSubmitDestinationForm}
       destinationDefinitions={destinationDefinitions}
       hasSuccess={successRequest}
-      error={errorStatusRequest}
     />
   );
 };

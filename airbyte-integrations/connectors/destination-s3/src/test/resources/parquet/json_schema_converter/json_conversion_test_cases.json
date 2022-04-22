@@ -1512,5 +1512,98 @@
       ],
       "_airbyte_additional_properties": null
     }
+  },
+  {
+    "schemaName": "array_field_with_empty_items",
+    "namespace": "namespace20",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "array_field": {
+          "type": "array",
+          "items": {}
+        }
+      }
+    },
+    "jsonObject": {
+      "array_field": [1234, true, "false", 0.001]
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_field_with_empty_items",
+      "namespace": "namespace20",
+      "fields": [
+        {
+          "name": "array_field",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": ["null", "string"]
+            }
+          ],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "array_field": ["1234", "true", "false", "0.001"],
+      "_airbyte_additional_properties": null
+    }
+  },
+  {
+    "schemaName": "namespace_with_special_characters",
+    "namespace": "namespace_with:spécial:characters",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "jsonObject": {
+      "node_id": "abc123"
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "namespace_with_special_characters",
+      "namespace": "namespace_with_special_characters",
+      "fields": [
+        {
+          "name": "node_id",
+          "type": ["null", "string"],
+          "default": null
+        },
+        {
+          "name": "_airbyte_additional_properties",
+          "type": [
+            "null",
+            {
+              "type": "map",
+              "values": "string"
+            }
+          ],
+          "default": null
+        }
+      ]
+    },
+    "avroObject": {
+      "node_id": "abc123",
+      "_airbyte_additional_properties": null
+    }
   }
 ]

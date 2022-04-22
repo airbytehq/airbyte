@@ -142,6 +142,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     path_prefix = f"reports/{REPORTS_API_VERSION}"
     sleep_seconds = 30
     data_field = "payload"
+    result_key = None
 
     def __init__(
         self,
@@ -224,7 +225,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         return {
             "reportType": self.name,
             "marketplaceIds": [self.marketplace_id],
-            "createdSince": replication_start_date.strftime(DATE_TIME_FORMAT),
+            "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
 
     def _create_report(
@@ -288,8 +289,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         document_records = self.parse_document(document)
         yield from document_records
 
-    @staticmethod
-    def parse_document(document):
+    def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Mapping[str, Any]:
@@ -319,6 +319,8 @@ class ReportsAmazonSPStream(Stream, ABC):
             seconds_waited = (pendulum.now("utc") - start_time).seconds
             is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
             is_done = report_payload.get("processingStatus") == "DONE"
+            is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
+            is_fatal = report_payload.get("processingStatus") == "FATAL"
             time.sleep(self.sleep_seconds)
 
         if is_done:
@@ -332,8 +334,12 @@ class ReportsAmazonSPStream(Stream, ABC):
             )
             response = self._send_request(request)
             yield from self.parse_response(response)
+        elif is_fatal:
+            raise Exception(f"The report for stream '{self.name}' was aborted due to a fatal error")
+        elif is_cancelled:
+            logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
-            logger.warn(f"There are no report document related in stream `{self.name}`. Report body {report_payload}")
+            raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
 
 
 class MerchantListingsReports(ReportsAmazonSPStream):
@@ -384,21 +390,22 @@ class FbaShipmentsReports(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
 
 
+class FbaReplacementsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/200453300
+    """
+
+    name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
+
+
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
-class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
-    """
-
-    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
-
-    @staticmethod
-    def parse_document(document):
+class BrandAnalyticsStream(ReportsAmazonSPStream):
+    def parse_document(self, document):
         parsed = json_lib.loads(document)
-        return parsed.get("dataByDepartmentAndSearchTerm", {})
+        return parsed.get(self.result_key, [])
 
     def _report_data(
         self,
@@ -450,6 +457,35 @@ class BrandAnalyticsSearchTermsReports(ReportsAmazonSPStream):
                 "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
                 "reportOptions": report_options,
             }
+
+
+class BrandAnalyticsMarketBasketReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsSearchTermsReports(BrandAnalyticsStream):
+    """
+    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
+    """
+
+    name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+    result_key = "dataByDepartmentAndSearchTerm"
+
+
+class BrandAnalyticsRepeatPurchaseReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsAlternatePurchaseReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
+    result_key = "dataByAsin"
+
+
+class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
+    name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
+    result_key = "dataByAsin"
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
@@ -582,6 +618,15 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         return reader
 
 
+class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
+    """
+
+    name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
+    cursor_field = "last-updated-date"
+
+
 class Orders(IncrementalAmazonSPStream):
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md
@@ -620,7 +665,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     """
 
     name = "VendorDirectFulfillmentShipping"
-    primary_key = [["labelData", "packageIdentifier"]]
+    primary_key = None
     replication_start_date_field = "createdAfter"
     next_page_token_field = "nextToken"
     page_size_field = "limit"

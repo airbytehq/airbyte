@@ -22,6 +22,12 @@ public interface NamingConventionTransformer {
   String getIdentifier(String name);
 
   /**
+   * Handle naming conversions of an input name to output a valid namespace for the desired
+   * destination.
+   */
+  String getNamespace(String namespace);
+
+  /**
    * Same as getIdentifier but returns also the name of the table for storing raw data
    *
    * @param name of the identifier to check proper naming conventions
@@ -44,5 +50,9 @@ public interface NamingConventionTransformer {
    */
   @Deprecated
   String getTmpTableName(String name);
+
+  String convertStreamName(final String input);
+
+  String applyDefaultCase(final String input);
 
 }

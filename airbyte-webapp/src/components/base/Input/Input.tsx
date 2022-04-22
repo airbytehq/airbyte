@@ -1,8 +1,8 @@
+import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import styled from "styled-components";
 import { Theme } from "theme";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 
 import Button from "../Button";
 
@@ -31,9 +31,7 @@ const InputComponent = styled.input<InputProps>`
   font-size: 14px;
   line-height: 20px;
   font-weight: normal;
-  border: 1px solid
-    ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor0};
+  border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
   background: ${(props) => getBackgroundColor(props)};
   color: ${({ theme }) => theme.textColor};
   caret-color: ${({ theme }) => theme.primaryColor};
@@ -43,15 +41,12 @@ const InputComponent = styled.input<InputProps>`
   }
 
   &:hover {
-    background: ${({ theme, light }) =>
-      light ? theme.whiteColor : theme.greyColor20};
-    border-color: ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor20};
+    background: ${({ theme, light }) => (light ? theme.whiteColor : theme.greyColor20)};
+    border-color: ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor20)};
   }
 
   &:focus {
-    background: ${({ theme, light }) =>
-      light ? theme.whiteColor : theme.primaryColor12};
+    background: ${({ theme, light }) => (light ? theme.whiteColor : theme.primaryColor12)};
     border-color: ${({ theme }) => theme.primaryColor};
   }
 
@@ -78,16 +73,9 @@ const Input: React.FC<InputProps> = (props) => {
   if (props.type === "password") {
     return (
       <Container>
-        <InputComponent
-          {...props}
-          type={isContentVisible ? "text" : "password"}
-        />
+        <InputComponent {...props} type={isContentVisible ? "text" : "password"} />
         {props.disabled ? null : (
-          <VisibilityButton
-            iconOnly
-            onClick={() => setIsContentVisible(!isContentVisible)}
-            type="button"
-          >
+          <VisibilityButton iconOnly onClick={() => setIsContentVisible(!isContentVisible)} type="button">
             <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} />
           </VisibilityButton>
         )}

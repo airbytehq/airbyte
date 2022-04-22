@@ -43,11 +43,12 @@
 {%- endmacro %}
 
 {% macro redshift__format_json_path(json_path_list) -%}
+    {%- set quote = '"' if redshift_super_type() else "'" -%}
     {%- set str_list = [] -%}
     {%- for json_path in json_path_list -%}
-        {%- if str_list.append(json_path.replace("'", "''")) -%} {%- endif -%}
+        {%- if str_list.append(json_path.replace(quote, quote + quote)) -%} {%- endif -%}
     {%- endfor -%}
-    {{ "'" ~ str_list|join("','") ~ "'" }}
+    {{ quote ~ str_list|join(quote + "," + quote) ~ quote }}
 {%- endmacro %}
 
 {% macro snowflake__format_json_path(json_path_list) -%}
@@ -114,11 +115,14 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    {%- if from_table|string() == '' %}
+    {%- if from_table|string() != '' -%}
+    {%- set json_column = from_table|string() + "." + json_column|string() -%}
+    {%- endif -%}
+    {%- if redshift_super_type() -%}
+        case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
+    {%- else -%}
         case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
-    {% else %}
-        case when json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
-    {% endif -%}
+    {%- endif -%}
 {%- endmacro %}
 
 {% macro snowflake__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
@@ -135,9 +139,9 @@
 
 {% macro clickhouse__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
     {%- if from_table|string() == '' %}
-        JSONExtractRaw({{ json_column }}, {{ format_json_path(json_path_list) }})
+        JSONExtractRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
     {% else %}
-        JSONExtractRaw({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }})
+        JSONExtractRaw(assumeNotNull({{ from_table }}.{{ json_column }}), {{ format_json_path(json_path_list) }})
     {% endif -%}
 {%- endmacro %}
 
@@ -168,7 +172,11 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
+    {%- if redshift_super_type() -%}
+    case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
+    {%- else -%}
     case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
+    {%- endif -%}
 {%- endmacro %}
 
 {% macro snowflake__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
@@ -180,7 +188,7 @@
 {%- endmacro %}
 
 {% macro clickhouse__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
-    JSONExtractRaw({{ json_column }}, {{ format_json_path(json_path_list) }})
+    JSONExtractRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_array -------------------------------------------------     #}
@@ -210,7 +218,11 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
+    {%- if redshift_super_type() -%}
+    {{ json_column }}.{{ format_json_path(json_path_list) }}
+    {%- else -%}
     json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true)
+    {%- endif -%}
 {%- endmacro %}
 
 {% macro snowflake__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
@@ -222,5 +234,5 @@
 {%- endmacro %}
 
 {% macro clickhouse__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
-    JSONExtractArrayRaw({{ json_column }}, {{ format_json_path(json_path_list) }})
+    JSONExtractArrayRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}

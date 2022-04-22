@@ -2,8 +2,9 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "components/Modal";
 import { Button } from "components";
+import Modal from "components/Modal";
+
 import { ModalTypes } from "./types";
 
 export type IProps = {

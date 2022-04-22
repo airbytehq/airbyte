@@ -13,6 +13,9 @@ Cypress.Commands.add("createTestConnection", (sourceName, destinationName) => {
 
   cy.get("div[data-testid='schedule']").click();
   cy.get("div[data-testid='manual']").click();
+
+  cy.get("div[data-testid='namespaceDefinition']").click();
+  cy.get("div[data-testid='namespaceDefinition-source']").click();
   cy.submitButtonClick();
 
   cy.wait("@createConnection");

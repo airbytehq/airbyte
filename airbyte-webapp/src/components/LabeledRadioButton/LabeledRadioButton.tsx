@@ -21,8 +21,7 @@ const Label = styled.label<{ disabled?: boolean }>`
   font-size: 15px;
   line-height: 18px;
   font-weight: 500;
-  color: ${({ theme, disabled }) =>
-    disabled ? theme.greyColor40 : theme.darkPrimaryColor};
+  color: ${({ theme, disabled }) => (disabled ? theme.greyColor40 : theme.darkPrimaryColor)};
   cursor: ${({ disabled }) => (disabled ? "auto" : "pointer")};
 `;
 
@@ -40,10 +39,7 @@ const AdditionMessage = styled.span`
 const LabeledRadioButton: React.FC<IProps> = (props) => (
   <ControlContainer className={props.className}>
     <RadioButton {...props} id={`radiobutton-${props.id || props.name}`} />
-    <Label
-      disabled={props.disabled}
-      htmlFor={`radiobutton-${props.id || props.name}`}
-    >
+    <Label disabled={props.disabled} htmlFor={`radiobutton-${props.id || props.name}`}>
       {props.label}
       <AdditionMessage>{props.message}</AdditionMessage>
     </Label>

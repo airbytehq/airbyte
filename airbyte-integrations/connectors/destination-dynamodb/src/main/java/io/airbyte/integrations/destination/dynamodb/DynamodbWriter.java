@@ -46,7 +46,7 @@ public class DynamodbWriter {
     this.dynamodb = new DynamoDB(amazonDynamodb);
     this.configuredStream = configuredStream;
     this.uploadTimestamp = uploadTimestamp;
-    this.outputTableName = DynamodbOutputTableHelper.getOutputTableName(config.getTableName(), configuredStream.getStream());
+    this.outputTableName = DynamodbOutputTableHelper.getOutputTableName(config.getTableNamePrefix(), configuredStream.getStream());
 
     final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
     if (syncMode == null) {

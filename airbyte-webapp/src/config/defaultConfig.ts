@@ -1,7 +1,8 @@
-import { Config } from "./types";
-import { uiConfig } from "./uiConfig";
 import { Feature } from "hooks/services/Feature";
 import { FeatureItem } from "hooks/services/Feature/types";
+
+import { Config } from "./types";
+import { uiConfig } from "./uiConfig";
 
 const features: Feature[] = [
   {
@@ -12,6 +13,12 @@ const features: Feature[] = [
   },
   {
     id: FeatureItem.AllowUpdateConnectors,
+  },
+  {
+    id: FeatureItem.AllowCreateConnection,
+  },
+  {
+    id: FeatureItem.AllowSync,
   },
 ];
 

@@ -19,6 +19,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
@@ -31,6 +32,7 @@ import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
@@ -99,6 +101,7 @@ public class DefaultJobPersistence implements JobPersistence {
           + "attempts.log_path AS log_path,\n"
           + "attempts.output AS attempt_output,\n"
           + "attempts.status AS attempt_status,\n"
+          + "attempts.failure_summary AS attempt_failure_summary,\n"
           + "attempts.created_at AS attempt_created_at,\n"
           + "attempts.updated_at AS attempt_updated_at,\n"
           + "attempts.ended_at AS attempt_ended_at\n"
@@ -323,6 +326,18 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public void writeAttemptFailureSummary(final long jobId, final int attemptNumber, final AttemptFailureSummary failureSummary) throws IOException {
+    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+
+    jobDatabase.transaction(
+        ctx -> ctx.update(ATTEMPTS)
+            .set(ATTEMPTS.FAILURE_SUMMARY, JSONB.valueOf(Jsons.serialize(failureSummary)))
+            .set(ATTEMPTS.UPDATED_AT, now)
+            .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
+            .execute());
+  }
+
+  @Override
   public Job getJob(final long jobId) throws IOException {
     return jobDatabase.query(ctx -> getJob(ctx, jobId));
   }
@@ -372,6 +387,28 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(final UUID connectionId,
+                                                                                 final Set<ConfigType> configTypes,
+                                                                                 final Instant jobCreatedAtTimestamp)
+      throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC);
+
+    final String JobStatusSelect = "SELECT id, status, created_at, updated_at FROM jobs ";
+    return jobDatabase.query(ctx -> ctx
+        .fetch(JobStatusSelect + "WHERE " +
+            "scope = ? AND " +
+            "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "created_at >= ? ORDER BY created_at DESC", connectionId.toString(), timeConvertedIntoLocalDateTime))
+        .stream()
+        .map(r -> new JobWithStatusAndTimestamp(
+            r.get("id", Long.class),
+            JobStatus.valueOf(r.get("status", String.class).toUpperCase()),
+            r.get("created_at", Long.class) / 1000,
+            r.get("updated_at", Long.class) / 1000))
+        .toList();
+  }
+
+  @Override
   public Optional<Job> getLastReplicationJob(final UUID connectionId) throws IOException {
     return jobDatabase.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
@@ -379,6 +416,21 @@ public class DefaultJobPersistence implements JobPersistence {
             "scope = ? AND " +
             "CAST(jobs.status AS VARCHAR) <> ? " +
             "ORDER BY jobs.created_at DESC LIMIT 1",
+            connectionId.toString(),
+            Sqls.toSqlName(JobStatus.CANCELLED))
+        .stream()
+        .findFirst()
+        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
+  }
+
+  @Override
+  public Optional<Job> getFirstReplicationJob(final UUID connectionId) throws IOException {
+    return jobDatabase.query(ctx -> ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
+            "scope = ? AND " +
+            "CAST(jobs.status AS VARCHAR) <> ? " +
+            "ORDER BY jobs.created_at ASC LIMIT 1",
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()
@@ -441,6 +493,8 @@ public class DefaultJobPersistence implements JobPersistence {
         Path.of(record.get("log_path", String.class)),
         record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        record.get("attempt_failure_summary", String.class) == null ? null
+            : Jsons.deserialize(record.get("attempt_failure_summary", String.class), AttemptFailureSummary.class),
         getEpoch(record, "attempt_created_at"),
         getEpoch(record, "attempt_updated_at"),
         Optional.ofNullable(record.get("attempt_ended_at"))

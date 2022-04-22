@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
 import Spinner from "components/Spinner";
@@ -39,14 +39,7 @@ const SpinnerContainer = styled.div`
   top: 10px;
 `;
 
-const EditControls: React.FC<IProps> = ({
-  isSubmitting,
-  isValid,
-  dirty,
-  resetForm,
-  successMessage,
-  errorMessage,
-}) => {
+const EditControls: React.FC<IProps> = ({ isSubmitting, isValid, dirty, resetForm, successMessage, errorMessage }) => {
   const showStatusMessage = () => {
     if (isSubmitting) {
       return (
@@ -70,12 +63,7 @@ const EditControls: React.FC<IProps> = ({
         <FormattedMessage id="form.saveChanges" />
       </Button>
       <ButtonContainer>
-        <Button
-          type="button"
-          secondary
-          disabled={isSubmitting || !dirty}
-          onClick={resetForm}
-        >
+        <Button type="button" secondary disabled={isSubmitting || !dirty} onClick={resetForm}>
           <FormattedMessage id={`form.cancel`} />
         </Button>
       </ButtonContainer>

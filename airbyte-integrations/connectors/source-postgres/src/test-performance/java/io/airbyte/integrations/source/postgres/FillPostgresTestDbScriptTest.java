@@ -13,7 +13,6 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestData {
@@ -34,7 +33,7 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
   }
 
   @Override
-  protected Database setupDatabase(String dbName) throws Exception {
+  protected Database setupDatabase(final String dbName) throws Exception {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
@@ -71,10 +70,9 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
    * - a number of streams to read in configured airbyte Catalog. Each stream\table in DB should be
    * names like "test_0", "test_1",..., test_n.
    */
-  @BeforeAll
-  public static void beforeAll() {
-    AbstractSourceFillDbWithTestData.testArgs = Stream.of(
-        Arguments.of("postgres", "\"your_schema_name\"", 100, 2, 240, 1000));
+  @Override
+  protected Stream<Arguments> provideParameters() {
+    return Stream.of(Arguments.of("postgres", "\"your_schema_name\"", 100, 2, 240, 1000));
   }
 
 }

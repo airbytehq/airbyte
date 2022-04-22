@@ -1,11 +1,12 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useAsyncFn } from "react-use";
+import styled from "styled-components";
 
 import { LoadingButton, Toggle } from "components";
 
 type IProps = {
+  allowSync?: boolean;
   enabled?: boolean;
   isSyncing?: boolean;
   isManual?: boolean;
@@ -22,21 +23,11 @@ const ProgressMessage = styled.div`
   padding: 7px 0;
 `;
 
-const StatusCell: React.FC<IProps> = ({
-  enabled,
-  isManual,
-  id,
-  onChangeStatus,
-  isSyncing,
-  onSync,
-}) => {
-  const [{ loading }, OnLaunch] = useAsyncFn(
-    async (event: React.SyntheticEvent) => {
-      event.stopPropagation();
-      await onSync(id);
-    },
-    []
-  );
+const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, onChangeStatus, isSyncing, onSync, allowSync }) => {
+  const [{ loading }, OnLaunch] = useAsyncFn(async (event: React.SyntheticEvent) => {
+    event.stopPropagation();
+    await onSync(id);
+  }, []);
 
   const OnToggleClick = (event: React.SyntheticEvent) => {
     event.stopPropagation();
@@ -44,7 +35,7 @@ const StatusCell: React.FC<IProps> = ({
   };
 
   if (!isManual) {
-    return <Toggle checked={enabled} onChange={OnToggleClick} />;
+    return <Toggle checked={enabled} onChange={OnToggleClick} disabled={!allowSync} />;
   }
 
   if (isSyncing) {
@@ -56,7 +47,7 @@ const StatusCell: React.FC<IProps> = ({
   }
 
   return (
-    <SmallButton onClick={OnLaunch} isLoading={loading}>
+    <SmallButton onClick={OnLaunch} isLoading={loading} disabled={!allowSync}>
       <FormattedMessage id="tables.launch" />
     </SmallButton>
   );

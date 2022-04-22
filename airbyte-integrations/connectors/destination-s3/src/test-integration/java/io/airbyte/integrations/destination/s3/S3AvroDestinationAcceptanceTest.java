@@ -12,8 +12,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
@@ -28,10 +30,12 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"Avro\",\n"
-        + "  \"compression_codec\": { \"codec\": \"no compression\", \"compression_level\": 5, \"include_checksum\": true }\n"
-        + "}");
+    return Jsons.jsonNode(Map.of(
+        "format_type", "Avro",
+        "compression_codec", Map.of(
+            "codec", "zstandard",
+            "compression_level", 5,
+            "include_checksum", true)));
   }
 
   @Override
@@ -62,6 +66,11 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new S3AvroParquetTestDataComparator();
   }
 
 }

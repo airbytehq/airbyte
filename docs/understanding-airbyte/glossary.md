@@ -30,6 +30,10 @@ A **Full Refresh Sync** will attempt to retrieve all data from the source every 
 
 An **Incremental Sync** will only retrieve new data from the source when a sync occurs. The first sync will always attempt to retrieve all the data. If the [destination supports it](https://discuss.airbyte.io/t/what-destinations-support-the-incremental-deduped-sync-mode/89), you can have your data deduplicated. Simply put, this just means that if you sync an updated version of a record you've already synced, it will remove the old record.
 
+### Partial Success
+
+A **Partial Success** indicates that some records were successfully committed to the destination during a sync, even when the overall sync status was reported as a failure. 
+
 ### Raw Tables
 
 Airbyte spits out tables with the prefix `_airbyte_raw_`. This is your replicated data, but the prefix indicates that it's not normalized. If you select basic normalization, Airbyte will create renamed versions without the prefix.
@@ -38,24 +42,30 @@ Airbyte spits out tables with the prefix `_airbyte_raw_`. This is your replicate
 
 ### AirbyteCatalog
 
-{% hint style="info" %}
+:::info
+
 This is only relevant for individuals who want to create a connector.
-{% endhint %}
+
+:::
 
 This refers to how you define the data that you can retrieve from a Source. For example, if you want to retrieve information from an API, the data that you can receive needs to be defined clearly so that Airbyte can have a clear expectation of what endpoints are supported and what the objects that the streams return look like. This is represented as a sort of schema that Airbyte can interpret. Learn more [here](beginners-guide-to-catalog.md).
 
 ### Airbyte Specification
 
-{% hint style="info" %}
+:::info
+
 This is only relevant for individuals who want to create a connector.
-{% endhint %}
+
+:::
 
 This refers to the functions that a Source or Destination must implement to successfully retrieve data and load it, respectively. Implementing these functions using the Airbyte Specification makes a Source or Destination work correctly. Learn more [here](airbyte-specification.md).
 
 ### Temporal
 
-{% hint style="info" %}
+:::info
+
 This is only relevant for individuals who want to learn about or contribute to our underlying platform.
-{% endhint %}
+
+:::
 
 [Temporal](https://temporal.io) is a development kit that lets you create workflows, parallelize them, and handle failures/retries gracefully. We use it to reliably schedule each step of the ELT process, and a Temporal service is always deployed with each Airbyte installation.

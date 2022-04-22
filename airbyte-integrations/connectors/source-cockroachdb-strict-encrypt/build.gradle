@@ -6,7 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.cockroachdb.CockroachDbSourceStrictEncrypt'
-    applicationDefaultJvmArgs = ['-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {

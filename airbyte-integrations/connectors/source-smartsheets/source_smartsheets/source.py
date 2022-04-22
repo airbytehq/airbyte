@@ -5,7 +5,7 @@
 
 import json
 from datetime import datetime
-from typing import Dict, Generator
+from typing import Dict, Generator, List
 
 import smartsheet
 from airbyte_cdk import AirbyteLogger
@@ -19,8 +19,6 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
-
-# helpers
 from airbyte_cdk.sources import Source
 
 
@@ -30,14 +28,17 @@ def get_prop(col_type: str) -> Dict[str, any]:
         "DATE": {"type": "string", "format": "date"},
         "DATETIME": {"type": "string", "format": "date-time"},
     }
-    if col_type in props.keys():
-        return props[col_type]
-    else:  # assume string
-        return props["TEXT_NUMBER"]
+    return props.get(col_type, {"type": "string"})
 
 
-def get_json_schema(sheet: Dict) -> Dict:
-    column_info = {i["title"]: get_prop(i["type"]) for i in sheet["columns"]}
+def construct_record(sheet_columns: List[Dict], row_cells: List[Dict]) -> Dict:
+    # convert all data to string as it is only expected format in schema
+    values_column_map = {cell["columnId"]: str(cell.get("value", "")) for cell in row_cells}
+    return {column["title"]: values_column_map[column["id"]] for column in sheet_columns}
+
+
+def get_json_schema(sheet_columns: List[Dict]) -> Dict:
+    column_info = {column["title"]: get_prop(column["type"]) for column in sheet_columns}
     json_schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -46,7 +47,6 @@ def get_json_schema(sheet: Dict) -> Dict:
     return json_schema
 
 
-# main class definition
 class SourceSmartsheets(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         try:
@@ -77,11 +77,11 @@ class SourceSmartsheets(Source):
         try:
             sheet = smartsheet_client.Sheets.get_sheet(spreadsheet_id)
             sheet = json.loads(str(sheet))  # make it subscriptable
-            sheet_json_schema = get_json_schema(sheet)
-
+            sheet_json_schema = get_json_schema(sheet["columns"])
             logger.info(f"Running discovery on sheet: {sheet['name']} with {spreadsheet_id}")
 
             stream = AirbyteStream(name=sheet["name"], json_schema=sheet_json_schema)
+            stream.supported_sync_modes = ["full_refresh"]
             streams.append(stream)
 
         except Exception as e:
@@ -99,15 +99,6 @@ class SourceSmartsheets(Source):
 
         for configured_stream in catalog.streams:
             stream = configured_stream.stream
-            properties = stream.json_schema["properties"]
-            if isinstance(properties, list):
-                columns = tuple(key for dct in properties for key in dct.keys())
-            elif isinstance(properties, dict):
-                columns = tuple(i for i in properties.keys())
-            else:
-                logger.error("Could not read properties from the JSONschema in this stream")
-            name = stream.name
-
             try:
                 sheet = smartsheet_client.Sheets.get_sheet(spreadsheet_id)
                 sheet = json.loads(str(sheet))  # make it subscriptable
@@ -115,18 +106,16 @@ class SourceSmartsheets(Source):
                 logger.info(f"Row count: {sheet['totalRowCount']}")
 
                 for row in sheet["rows"]:
-                    values = tuple(i["value"] if "value" in i else "" for i in row["cells"])
                     try:
-                        data = dict(zip(columns, values))
-
+                        record = construct_record(sheet["columns"], row["cells"])
                         yield AirbyteMessage(
                             type=Type.RECORD,
-                            record=AirbyteRecordMessage(stream=name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                            record=AirbyteRecordMessage(stream=stream.name, data=record, emitted_at=int(datetime.now().timestamp()) * 1000),
                         )
                     except Exception as e:
                         logger.error(f"Unable to encode row into an AirbyteMessage with the following error: {e}")
 
             except Exception as e:
-                logger.error(f"Could not read smartsheet: {name}")
+                logger.error(f"Could not read smartsheet: {stream.name}")
                 raise e
         logger.info(f"Finished syncing spreadsheet with ID: {spreadsheet_id}")

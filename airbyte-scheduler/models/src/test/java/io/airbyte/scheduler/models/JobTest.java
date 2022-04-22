@@ -4,7 +4,10 @@
 
 package io.airbyte.scheduler.models;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +42,7 @@ class JobTest {
 
   private static Job jobWithAttemptWithStatus(final AttemptStatus... attemptStatuses) {
     final List<Attempt> attempts = Arrays.stream(attemptStatuses)
-        .map(attemptStatus -> new Attempt(1L, 1L, null, null, attemptStatus, 0L, 0L, null))
+        .map(attemptStatus -> new Attempt(1L, 1L, null, null, attemptStatus, null, 0L, 0L, null))
         .collect(Collectors.toList());
     return new Job(1L, null, null, null, attempts, null, 0L, 0L, 0L);
   }

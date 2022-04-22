@@ -4,8 +4,10 @@
 
 package io.airbyte.container_orchestrator;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultNormalizationWorker;
@@ -13,9 +15,11 @@ import io.airbyte.workers.NormalizationWorker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.sync.ReplicationLauncherWorker;
 import java.nio.file.Path;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -42,12 +46,13 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
   }
 
   @Override
-  public void runJob() throws Exception {
-    final JobRunConfig jobRunConfig = readJobRunConfig();
+  public Optional<String> runJob() throws Exception {
+    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
     final NormalizationInput normalizationInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG, IntegrationLauncherConfig.class);
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
 
     log.info("Setting up normalization worker...");
     final NormalizationWorker normalizationWorker = new DefaultNormalizationWorker(
@@ -62,8 +67,9 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
 
     log.info("Running normalization worker...");
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
-    normalizationWorker.run(normalizationInput, jobRoot);
+    final NormalizationSummary normalizationSummary = normalizationWorker.run(normalizationInput, jobRoot);
 
+    return Optional.of(Jsons.serialize(normalizationSummary));
   }
 
 }

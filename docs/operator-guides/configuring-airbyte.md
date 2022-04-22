@@ -46,7 +46,7 @@ The following variables are relevant to both Docker and Kubernetes.
 #### Secrets
 1. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
 2. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
-3. `SECRET_PERSISTENCE_TYPE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support. Undefined behavior will result if this is turned on and then off.
+3. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support. Undefined behavior will result if this is turned on and then off.
 
 #### Database
 1. `DATABASE_USER` - Define the Jobs Database user.
@@ -80,6 +80,7 @@ The following variables are relevant to both Docker and Kubernetes.
 2. `MAX_CHECK_WORKERS` - Define the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
 3. `MAX_SYNC_WORKERS` - Define the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
 4. `MAX_DISCOVER_WORKERS` - Define the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
+5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md) 
 
 #### Scheduler
 1. `SUBMITTER_NUM_THREADS` - Define the maximum number of concurrent jobs the Scheduler schedules. Defaults to 5.
@@ -95,13 +96,26 @@ The following variables are relevant to both Docker and Kubernetes.
 ### Kubernetes-Only
 #### Jobs
 1. `JOB_KUBE_TOLERATIONS` - Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration contains k=v pairs mentioning some/all of key, effect, operator and value and separated by `,`.
-2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each kv-pair is separated by a `,`.
-3. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Define the Job pod connector image pull policy.
-4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Define the Job pod connector image pull secret. Useful when hosting private images.
-5. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
-6. `JOB_KUBE_BUSYBOX_IMAGE` - Define the Job pod busybox image.
-7. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
-8. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
+2. `JOB_KUBE_NODE_SELECTORS` - Define one or more Job pod node selectors. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod node selectors of the sync job and the default pod node selectors fallback for others jobs.
+3. `JOB_KUBE_ANNOTATIONS` - Define one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod annotations of the sync job and the default pod annotations fallback for others jobs.
+4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Define the Job pod connector image pull policy.
+5. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Define the Job pod connector image pull secret. Useful when hosting private images.
+6. `JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY` - Define the image pull policy on the sidecar containers in the Job pod. Useful when there are cluster policies enforcing to always pull.
+7. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
+8. `JOB_KUBE_BUSYBOX_IMAGE` - Define the Job pod busybox image.
+9. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
+10. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
+
+#### Jobs specific
+
+A job specific variable overwrites the default sync job variable defined above.
+
+1. `SPEC_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+2. `CHECK_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2` 
+3. `DISCOVER_JOB_KUBE_NODE_SELECTORS` - Define one or more pod node selectors for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+4. `SPEC_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the spec job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+5. `CHECK_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the check job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
+6. `DISCOVER_JOB_KUBE_ANNOTATIONS` - Define one or more pod annotations for the discover job. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`
 
 #### Worker
 1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.

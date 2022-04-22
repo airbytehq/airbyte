@@ -8,8 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -30,11 +33,17 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.JobInformation;
+import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,6 +55,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class TemporalClientTest {
 
@@ -196,6 +206,32 @@ class TemporalClientTest {
       verify(workflowClient).newWorkflowStub(SyncWorkflow.class, TemporalUtils.getWorkflowOptions(TemporalJobType.SYNC));
     }
 
+    @Test
+    public void testSynchronousResetConnection() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final long jobId1 = 1L;
+      final long jobId2 = 2L;
+      final long jobId3 = 3L;
+
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
+          new JobInformation(jobId1, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId3, 0),
+          new JobInformation(jobId3, 0));
+
+      doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
+
+      when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
+
+      verify(mConnectionManagerWorkflow).resetConnection();
+
+      assertEquals(manualSyncSubmissionResult.getJobId().get(), jobId3);
+    }
+
   }
 
   @Nested
@@ -209,10 +245,12 @@ class TemporalClientTest {
       final UUID migratedId = UUID.randomUUID();
 
       doReturn(false)
-          .when(temporalClient).isWorkflowRunning(TemporalClient.getConnectionManagerName(nonMigratedId));
+          .when(temporalClient).isInRunningWorkflowCache(TemporalClient.getConnectionManagerName(nonMigratedId));
       doReturn(true)
-          .when(temporalClient).isWorkflowRunning(TemporalClient.getConnectionManagerName(migratedId));
+          .when(temporalClient).isInRunningWorkflowCache(TemporalClient.getConnectionManagerName(migratedId));
 
+      doNothing()
+          .when(temporalClient).refreshRunningWorkflow();
       doNothing()
           .when(temporalClient).submitConnectionUpdaterAsync(nonMigratedId);
 
@@ -220,6 +258,99 @@ class TemporalClientTest {
 
       verify(temporalClient, times(1)).submitConnectionUpdaterAsync(nonMigratedId);
       verify(temporalClient, times(0)).submitConnectionUpdaterAsync(migratedId);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Test delete connection method.")
+  class DeleteConnection {
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test delete connection method.")
+    void testDeleteConnection() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+
+      doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
+      when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final JobSyncConfig syncConfig = new JobSyncConfig()
+          .withSourceDockerImage(IMAGE_NAME1)
+          .withSourceDockerImage(IMAGE_NAME2)
+          .withSourceConfiguration(Jsons.emptyObject())
+          .withDestinationConfiguration(Jsons.emptyObject())
+          .withOperationSequence(List.of())
+          .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
+
+      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
+      temporalClient.deleteConnection(CONNECTION_ID);
+
+      verify(workflowClient, Mockito.never()).newSignalWithStartRequest();
+      verify(mConnectionManagerWorkflow).deleteConnection();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test delete connection method when workflow is in an unexpected state")
+    void testDeleteConnectionInUnexpectedState() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final BatchRequest mBatchRequest = mock(BatchRequest.class);
+
+      doThrow(new IllegalStateException("Force illegal state")).when(temporalClient).getConnectionUpdateWorkflow(CONNECTION_ID);
+      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mConnectionManagerWorkflow);
+      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
+
+      temporalClient.deleteConnection(CONNECTION_ID);
+
+      // this is only called when getting existing workflow
+      verify(workflowClient, Mockito.never()).newWorkflowStub(any(), anyString());
+
+      verify(workflowClient).newSignalWithStartRequest();
+      verify(workflowClient).signalWithStart(mBatchRequest);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Test update connection behavior")
+  class UpdateConnection {
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test update connection when workflow is running")
+    void testUpdateConnection() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+
+      when(mWorkflowState.isRunning()).thenReturn(true);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
+
+      temporalClient.update(CONNECTION_ID);
+
+      verify(mConnectionManagerWorkflow, Mockito.times(1)).connectionUpdated();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test update connection method starts a new workflow when workflow is in an unexpected state")
+    void testUpdateConnectionInUnexpectedState() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final BatchRequest mBatchRequest = mock(BatchRequest.class);
+
+      when(mConnectionManagerWorkflow.getState()).thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
+      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mConnectionManagerWorkflow);
+      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
+      doNothing().when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+
+      temporalClient.update(CONNECTION_ID);
+
+      // this is only called when updating an existing workflow
+      verify(mConnectionManagerWorkflow, Mockito.never()).connectionUpdated();
+
+      verify(temporalClient, Mockito.times(1)).submitConnectionUpdaterAsync(CONNECTION_ID);
     }
 
   }

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.standardtest.source;
 
-import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -13,6 +13,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerConfigs;
@@ -65,10 +66,15 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected List<String> getRegexTests() throws IOException {
-    return Streams.stream(runExecutable(Command.GET_REGEX_TESTS).withArray("tests").elements())
-        .map(JsonNode::textValue)
-        .collect(toList());
+  protected void assertFullRefreshMessages(final List<AirbyteMessage> allMessages) throws IOException {
+    final List<String> regexTests = Streams.stream(runExecutable(Command.GET_REGEX_TESTS).withArray("tests").elements())
+        .map(JsonNode::textValue).toList();
+    final List<String> stringMessages = allMessages.stream().map(Jsons::serialize).toList();
+    LOGGER.info("Running " + regexTests.size() + " regex tests...");
+    regexTests.forEach(regex -> {
+      LOGGER.info("Looking for [" + regex + "]");
+      assertTrue(stringMessages.stream().anyMatch(line -> line.matches(regex)), "Failed to find regex: " + regex);
+    });
   }
 
   @Override

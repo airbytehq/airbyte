@@ -38,10 +38,12 @@
           "type": ["null", "string"]
         },
         "closedate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "createdate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "days_to_close": {
           "type": ["null", "string"]
@@ -107,7 +109,8 @@
           "type": ["null", "string"]
         },
         "hs_createdate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_9567448": {
           "type": ["null", "string"]
@@ -116,28 +119,36 @@
           "type": ["null", "string"]
         },
         "hs_date_entered_appointmentscheduled": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_closedlost": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_closedwon": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_contractsent": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_customclosedwonstage": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_decisionmakerboughtin": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_presentationscheduled": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_entered_qualifiedtobuy": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_exited_9567448": {
           "type": ["null", "string"]
@@ -146,28 +157,36 @@
           "type": ["null", "string"]
         },
         "hs_date_exited_appointmentscheduled": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_exited_closedlost": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_exited_closedwon": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_exited_contractsent": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_exited_customclosedwonstage": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_exited_decisionmakerboughtin": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_exited_presentationscheduled": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_date_exited_qualifiedtobuy": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_deal_amount_calculation_preference": {
           "type": ["null", "string"]
@@ -191,7 +210,8 @@
           "type": ["null", "string"]
         },
         "hs_lastmodifieddate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hs_latest_meeting_activity": {
           "type": ["null", "string"]
@@ -278,7 +298,8 @@
           "type": ["null", "string"]
         },
         "hubspot_owner_assigneddate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hubspot_owner_id": {
           "type": ["null", "string"]
@@ -323,7 +344,7 @@
     "companies": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "integer"]
+        "type": ["null", "string"]
       }
     },
     "contacts": {

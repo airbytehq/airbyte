@@ -1,26 +1,23 @@
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useResource } from "rest-hooks";
 
-import { Button } from "components";
-import LoadingSchema from "components/LoadingSchema";
-import ContentCard from "components/ContentCard";
-import { JobsLogItem } from "components/JobItem";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-
-import useConnection, { ValuesProps } from "hooks/services/useConnectionHook";
-import { useDiscoverSchema } from "hooks/services/useSchemaHook";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { Button, ContentCard } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { Destination, Source } from "core/domain/connector";
+import JobItem from "components/JobItem";
+import LoadingSchema from "components/LoadingSchema";
+
 import { Connection } from "core/domain/connection";
+import { Destination, Source } from "core/domain/connector";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
+import ConnectionForm from "views/Connection/ConnectionForm";
+
+import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
+import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -51,65 +48,20 @@ const CreateConnectionContent: React.FC<IProps> = ({
   additionBottomControls,
   noTitles,
 }) => {
-  const { createConnection } = useConnection();
+  const { mutateAsync: createConnection } = useCreateConnection();
   const analyticsService = useAnalyticsService();
 
-  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: source.sourceDefinitionId,
-  });
-
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    {
-      destinationDefinitionId: destination.destinationDefinitionId,
-    }
-  );
-
-  const {
-    schema,
-    isLoading,
-    schemaErrorStatus,
-    onDiscoverSchema,
-  } = useDiscoverSchema(source?.sourceId);
+  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
 
   const connection = useMemo(
     () => ({
       syncCatalog: schema,
       destination,
       source,
+      catalogId,
     }),
-    [schema, destination, source]
+    [schema, destination, source, catalogId]
   );
-
-  if (isLoading) {
-    return (
-      <ContentCard
-        title={
-          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
-        }
-      >
-        <LoadingSchema />
-      </ContentCard>
-    );
-  }
-
-  if (schemaErrorStatus) {
-    return (
-      <ContentCard
-        title={
-          noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
-        }
-      >
-        <TryAfterErrorBlock
-          onClick={onDiscoverSchema}
-          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
-        />
-        <JobsLogItem
-          jobInfo={LogsRequestError.extractJobInfo(schemaErrorStatus)}
-        />
-      </ContentCard>
-    );
-  }
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
     const connection = await createConnection({
@@ -124,11 +76,14 @@ const CreateConnectionContent: React.FC<IProps> = ({
         name: destination?.name ?? "",
         destinationDefinitionId: destination?.destinationDefinitionId ?? "",
       },
+      sourceCatalogId: catalogId,
     });
 
-    if (afterSubmitConnection) {
-      afterSubmitConnection(connection);
-    }
+    return {
+      onSubmitComplete: () => {
+        afterSubmitConnection?.(connection);
+      },
+    };
   };
 
   const onSelectFrequency = (item: IDataItem | null) => {
@@ -142,28 +97,39 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
   };
 
-  return (
-    <ContentCard
-      title={
-        noTitles ? null : <FormattedMessage id="onboarding.setConnection" />
-      }
-    >
-      <Suspense fallback={<LoadingSchema />}>
-        <ConnectionForm
-          connection={connection}
-          additionBottomControls={additionBottomControls}
-          onDropDownSelect={onSelectFrequency}
-          additionalSchemaControl={
-            <Button onClick={onDiscoverSchema} type="button">
-              <TryArrow icon={faRedoAlt} />
-              <FormattedMessage id="connection.refreshSchema" />
-            </Button>
-          }
-          onSubmit={onSubmitConnectionStep}
-          sourceIcon={sourceDefinition?.icon}
-          destinationIcon={destinationDefinition?.icon}
+  if (schemaErrorStatus) {
+    const jobInfo = LogsRequestError.extractJobInfo(schemaErrorStatus);
+    return (
+      <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
+        <TryAfterErrorBlock
+          onClick={onDiscoverSchema}
+          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
         />
-      </Suspense>
+        {jobInfo && <JobItem jobInfo={jobInfo} />}
+      </ContentCard>
+    );
+  }
+
+  return (
+    <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
+      {isLoading ? (
+        <LoadingSchema />
+      ) : (
+        <Suspense fallback={<LoadingSchema />}>
+          <ConnectionForm
+            connection={connection}
+            additionBottomControls={additionBottomControls}
+            onDropDownSelect={onSelectFrequency}
+            additionalSchemaControl={
+              <Button onClick={onDiscoverSchema} type="button">
+                <TryArrow icon={faRedoAlt} />
+                <FormattedMessage id="connection.refreshSchema" />
+              </Button>
+            }
+            onSubmit={onSubmitConnectionStep}
+          />
+        </Suspense>
+      )}
     </ContentCard>
   );
 };

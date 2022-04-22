@@ -78,6 +78,7 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.7 | 2022-01-24 | [\#9609](https://github.com/airbytehq/airbyte/pull/9609) | Migrate to native CDK and fixing of intergration tests |
 | 0.2.6 | 2021-12-07 | [\#8578](https://github.com/airbytehq/airbyte/pull/8578) | Updated titles and descriptions |
 | 0.2.5 | 2021-10-27 | [\#7284](https://github.com/airbytehq/airbyte/pull/7284) | Migrate Looker source to CDK structure, add SAT testing. |
 | 0.2.4 | 2021-06-25 | [\#3911](https://github.com/airbytehq/airbyte/pull/3911) | Added `run_look` endpoint. |

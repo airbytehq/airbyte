@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import pathlib
 
 from setuptools import find_packages, setup
@@ -14,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="octavia-cli",
-    version="0.1.0",
+    version="0.36.2",
     description="A command line interface to manage Airbyte configurations",
     long_description=README,
     author="Airbyte",
@@ -39,11 +40,19 @@ setup(
         "Source": "https://github.com/airbytehq/airbyte",
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
-    packages=find_packages(exclude=("tests", "docs")),
-    install_requires=["click~=8.0.3"],
-    python_requires=">=3.8.12",
+    packages=find_packages(exclude=("unit_tests", "integration_tests", "docs")),
+    package_data={"octavia_cli.generate": ["templates/*.j2"]},
+    install_requires=[
+        "click~=8.0.3",
+        f"airbyte_api_client @ file://{os.getcwd()}/build/airbyte_api_client",
+        "jinja2~=3.0.3",
+        "deepdiff~=5.7.0",
+        "pyyaml~=6.0",
+        "analytics-python~=1.4.0",
+    ],
+    python_requires=">=3.9.11",
     extras_require={
-        "dev": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
+        "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "requests-mock", "pre-commit"],
         "sphinx-docs": [
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",

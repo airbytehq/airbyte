@@ -19,7 +19,7 @@ import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -115,25 +115,25 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
   }
 
   @Override
-  public JsonSchemaPrimitive getJsonType(final StandardSQLTypeName bigQueryType) {
+  public JsonSchemaType getJsonType(final StandardSQLTypeName bigQueryType) {
     return switch (bigQueryType) {
-      case BOOL -> JsonSchemaPrimitive.BOOLEAN;
-      case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaPrimitive.NUMBER;
-      case STRING, BYTES, TIMESTAMP, DATE, TIME, DATETIME -> JsonSchemaPrimitive.STRING;
-      case ARRAY -> JsonSchemaPrimitive.ARRAY;
-      case STRUCT -> JsonSchemaPrimitive.OBJECT;
-      default -> JsonSchemaPrimitive.STRING;
+      case BOOL -> JsonSchemaType.BOOLEAN;
+      case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaType.NUMBER;
+      case STRING, BYTES, TIMESTAMP, DATE, TIME, DATETIME -> JsonSchemaType.STRING;
+      case ARRAY -> JsonSchemaType.ARRAY;
+      case STRUCT -> JsonSchemaType.OBJECT;
+      default -> JsonSchemaType.STRING;
     };
   }
 
   private String getFormattedValue(final StandardSQLTypeName paramType, final String paramValue) {
     try {
       return switch (paramType) {
-        case DATE -> BIG_QUERY_DATE_FORMAT.format(DataTypeUtils.DATE_FORMAT.parse(paramValue));
+        case DATE -> BIG_QUERY_DATE_FORMAT.format(DataTypeUtils.getDateFormat().parse(paramValue));
         case DATETIME -> BIG_QUERY_DATETIME_FORMAT
-            .format(DataTypeUtils.DATE_FORMAT.parse(paramValue));
+            .format(DataTypeUtils.getDateFormat().parse(paramValue));
         case TIMESTAMP -> BIG_QUERY_TIMESTAMP_FORMAT
-            .format(DataTypeUtils.DATE_FORMAT.parse(paramValue));
+            .format(DataTypeUtils.getDateFormat().parse(paramValue));
         default -> paramValue;
       };
     } catch (final ParseException e) {

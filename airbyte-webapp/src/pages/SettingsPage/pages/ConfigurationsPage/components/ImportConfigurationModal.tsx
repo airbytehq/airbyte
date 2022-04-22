@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "components/Modal";
 import { Button } from "components";
 import FileDropZone from "components/FileDropZone";
+import Modal from "components/Modal";
 
 export type IProps = {
   onClose: () => void;
@@ -61,20 +61,11 @@ const DropZoneMainText = () => (
   </div>
 );
 
-const ImportConfigurationModal: React.FC<IProps> = ({
-  onClose,
-  onSubmit,
-  isLoading,
-  error,
-  cleanError,
-}) => {
+const ImportConfigurationModal: React.FC<IProps> = ({ onClose, onSubmit, isLoading, error, cleanError }) => {
   const [usersFile, setUsersFile] = useState<File | null>(null);
 
   return (
-    <Modal
-      onClose={onClose}
-      title={<FormattedMessage id="admin.importConfiguration" />}
-    >
+    <Modal onClose={onClose} title={<FormattedMessage id="admin.importConfiguration" />}>
       <Content>
         <FileDropZone
           mainText={<DropZoneMainText />}
@@ -92,17 +83,12 @@ const ImportConfigurationModal: React.FC<IProps> = ({
           <FormattedMessage id="admin.reloadAfterSuccess" />
         </Note>
         <Bottom>
-          <Error>
-            {error ? <FormattedMessage id="form.someError" /> : null}
-          </Error>
+          <Error>{error ? <FormattedMessage id="form.someError" /> : null}</Error>
           <div>
             <ButtonWithMargin onClick={onClose} secondary disabled={isLoading}>
               <FormattedMessage id="form.cancel" />
             </ButtonWithMargin>
-            <Button
-              onClick={() => onSubmit(usersFile)}
-              disabled={!usersFile || isLoading}
-            >
+            <Button onClick={() => onSubmit(usersFile)} disabled={!usersFile || isLoading}>
               <FormattedMessage id="form.submit" />
             </Button>
           </div>

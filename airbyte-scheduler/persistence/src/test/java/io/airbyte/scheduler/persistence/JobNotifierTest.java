@@ -88,8 +88,8 @@ class JobNotifierTest {
     jobNotifier.failJob("JobNotifierTest was running", job);
     final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withZone(ZoneId.systemDefault());
     verify(notificationClient).notifyJobFailure(
-        "source-test version 0.1.0",
-        "destination-test version 0.1.0",
+        "source-test",
+        "destination-test",
         String.format("sync started on %s, running for 1 day 10 hours 17 minutes 36 seconds, as the JobNotifierTest was running.",
             formatter.format(Instant.ofEpochSecond(job.getStartedAtInSecond().get()))),
         "http://localhost:8000/connections/" + job.getScope());
@@ -99,9 +99,11 @@ class JobNotifierTest {
     metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
     metadata.put("connector_source", "source-test");
     metadata.put("connector_source_version", TEST_DOCKER_TAG);
+    metadata.put("connector_source_docker_repository", sourceDefinition.getDockerRepository());
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
     metadata.put("connector_destination", "destination-test");
     metadata.put("connector_destination_version", TEST_DOCKER_TAG);
+    metadata.put("connector_destination_docker_repository", destinationDefinition.getDockerRepository());
     metadata.put("notification_type", NotificationType.SLACK);
     verify(trackingClient).track(WORKSPACE_ID, JobNotifier.FAILURE_NOTIFICATION, metadata.build());
   }
