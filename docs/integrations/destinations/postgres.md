@@ -82,8 +82,9 @@ Therefore, Airbyte Postgres destination will create tables and schemas using the
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject                                                                                             |
-|:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request | Subject                                                                                             |
+|:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------|
+| 0.3.18  | 2022-04-12 | [11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                   |
 | 0.3.17  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                   |
 | 0.3.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.3.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
