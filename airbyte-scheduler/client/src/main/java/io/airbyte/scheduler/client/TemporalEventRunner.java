@@ -5,7 +5,7 @@
 package io.airbyte.scheduler.client;
 
 import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -19,19 +19,19 @@ public class TemporalEventRunner implements EventRunner {
     temporalClient.submitConnectionUpdaterAsync(connectionId);
   }
 
-  public ManualSyncSubmissionResult startNewManualSync(final UUID connectionId) {
+  public ManualOperationResult startNewManualSync(final UUID connectionId) {
     return temporalClient.startNewManualSync(connectionId);
   }
 
-  public ManualSyncSubmissionResult startNewCancelation(final UUID connectionId) {
-    return temporalClient.startNewCancelation(connectionId);
+  public ManualOperationResult startNewCancelation(final UUID connectionId) {
+    return temporalClient.startNewCancellation(connectionId);
   }
 
-  public ManualSyncSubmissionResult resetConnection(final UUID connectionId) {
+  public ManualOperationResult resetConnection(final UUID connectionId) {
     return temporalClient.resetConnection(connectionId);
   }
 
-  public ManualSyncSubmissionResult synchronousResetConnection(final UUID connectionId) {
+  public ManualOperationResult synchronousResetConnection(final UUID connectionId) {
     return temporalClient.synchronousResetConnection(connectionId);
   }
 

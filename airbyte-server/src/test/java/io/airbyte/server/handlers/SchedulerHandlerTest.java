@@ -85,7 +85,7 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.URI;
@@ -720,14 +720,14 @@ class SchedulerHandlerTest {
     final UUID connectionId = UUID.randomUUID();
 
     final long jobId = 123L;
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = ManualSyncSubmissionResult
+    final ManualOperationResult manualOperationResult = ManualOperationResult
         .builder()
         .failingReason(Optional.empty())
         .jobId(Optional.of(jobId))
         .build();
 
     when(eventRunner.startNewManualSync(connectionId))
-        .thenReturn(manualSyncSubmissionResult);
+        .thenReturn(manualOperationResult);
 
     doReturn(new JobInfoRead())
         .when(jobConverter).getJobInfoRead(any());

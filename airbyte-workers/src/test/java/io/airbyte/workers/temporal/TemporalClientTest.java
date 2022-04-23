@@ -33,7 +33,7 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -225,11 +225,11 @@ class TemporalClientTest {
 
       when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
 
-      final ManualSyncSubmissionResult manualSyncSubmissionResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
+      final ManualOperationResult manualOperationResult = temporalClient.synchronousResetConnection(CONNECTION_ID);
 
       verify(mConnectionManagerWorkflow).resetConnection();
 
-      assertEquals(manualSyncSubmissionResult.getJobId().get(), jobId3);
+      assertEquals(manualOperationResult.getJobId().get(), jobId3);
     }
 
   }
