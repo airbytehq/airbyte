@@ -82,7 +82,6 @@ Therefore, Airbyte Postgres destination will create tables and schemas using the
 
 ## Changelog
 
-
 | Version | Date       | Pull Request | Subject                                                                                             |
 |:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------|
 | 0.3.18  | 2022-04-12 | [11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                   |
