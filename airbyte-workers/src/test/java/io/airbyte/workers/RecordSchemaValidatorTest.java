@@ -1,7 +1,5 @@
 package io.airbyte.workers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -15,8 +13,7 @@ import static org.mockito.Mockito.mock;
 
 public class RecordSchemaValidatorTest {
   private StandardSyncInput syncInput;
-  private JsonNode expectedSchema;
-  private static final String STREAM_NAME = "user_preferences";
+  private static final String STREAM_NAME = "favorite_color_pipeuser_preferences";
   private static final String FIELD_NAME = "favorite_color";
   private static final AirbyteMessage VALID_RECORD = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
   private static final AirbyteMessage INVALID_RECORD = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, 3);

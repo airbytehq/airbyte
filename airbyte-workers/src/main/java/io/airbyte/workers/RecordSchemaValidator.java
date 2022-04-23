@@ -15,10 +15,11 @@ public class RecordSchemaValidator {
     // the stream this message corresponds to
     final String messageStream = message.getRecord().getStream();
     final JsonNode messageData = message.getRecord().getData();
+    final String streamPrefix = syncInput.getPrefix();
 
     // the stream name and json schema
     final ConfiguredAirbyteStream matchingAirbyteStream = syncInput.getCatalog().getStreams().stream()
-        .filter(s -> (s.getStream().getName().trim().equals((messageStream.trim())))).findFirst().orElse(null);
+        .filter(s -> (String.format(streamPrefix + s.getStream().getName().trim()).equals((messageStream.trim())))).findFirst().orElse(null);
 
     final JsonNode matchingSchema = matchingAirbyteStream.getStream().getJsonSchema();
 
