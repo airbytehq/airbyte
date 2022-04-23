@@ -15,4 +15,7 @@ public class DatabricksConstants {
       "delta.autoOptimize.optimizeWrite = true",
       "delta.autoOptimize.autoCompact = true");
 
+  private DatabricksConstants() {
+  }
+
 }
