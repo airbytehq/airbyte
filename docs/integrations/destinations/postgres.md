@@ -14,12 +14,14 @@ used by default. Other than that, you can proceed with the open-source instructi
 You should now have all the requirements needed to configure Postgres as a destination in the UI.
 You'll need the following information to configure the Postgres destination:
 
-* **Host**
-* **Port**
+* **Host** - The host name of the server.
+* **Port** - The port number the server is listening on. Defaults to the PostgreSQL™ standard port number (5432).
 * **Username**
 * **Password**
-* **Default Schema Name**
-* **Database**
+* **Default Schema Name** - Specify the schema (or several schema separated by commas) to be set in the search-path. This schema will be used to resolve unqualified object names used in statements over this connection.
+* **Database** - The database name. The default is to connect to a database with the same name as the user name.
+
+[Refer to this guide for more details](https://jdbc.postgresql.org/documentation/head/connect.html)
 
 #### Configure Network Access
 
