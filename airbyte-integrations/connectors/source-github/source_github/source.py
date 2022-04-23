@@ -179,6 +179,7 @@ class SourceGithub(AbstractSource):
         page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
         organization_args = {"authenticator": authenticator, "organizations": organizations}
+        organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
         repository_args = {"authenticator": authenticator, "repositories": repositories, "page_size_for_large_streams": page_size}
         repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
 
@@ -214,7 +215,7 @@ class SourceGithub(AbstractSource):
             PullRequestStats(parent=pull_requests_stream, **repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            Repositories(**organization_args),
+            Repositories(**organization_args_with_start_date),
             ReviewComments(**repository_args_with_start_date),
             Reviews(parent=pull_requests_stream, **repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),

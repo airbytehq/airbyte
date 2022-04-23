@@ -191,9 +191,15 @@ class SemiIncrementalMixin:
     # supporting this.
     is_sorted_descending = False
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
+
+    @property
+    def __slice_key(self):
+        if hasattr(self, "repositories"):
+            return "repository"
+        return "organization"
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -206,18 +212,18 @@ class SemiIncrementalMixin:
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
         """
-        repository = latest_record["repository"]
+        slice_value = latest_record[self.__slice_key]
         updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(repository, {}).get(self.cursor_field)
+        stream_state_value = current_stream_state.get(slice_value, {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {})[self.cursor_field] = updated_state
+        current_stream_state.setdefault(slice_value, {})[self.cursor_field] = updated_state
         return current_stream_state
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
-            repository = stream_slice["repository"]
-            stream_state_value = stream_state.get(repository, {}).get(self.cursor_field)
+            slice_value = stream_slice[self.__slice_key]
+            stream_state_value = stream_state.get(slice_value, {}).get(self.cursor_field)
             if stream_state_value:
                 return max(self._start_date, stream_state_value)
         return self._start_date
@@ -323,10 +329,16 @@ class Organizations(GithubStream):
         return record
 
 
-class Repositories(Organizations):
+class Repositories(SemiIncrementalMixin, Organizations):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
     """
+
+    is_sorted_descending = True
+    stream_base_params = {
+        "sort": "updated",
+        "direction": "desc",
+    }
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/repos"

@@ -157,20 +157,27 @@ def test_stream_repositories_404():
 
     assert read_full_refresh(stream) == []
     assert len(responses.calls) == 1
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
 
 
 @responses.activate
 def test_stream_repositories_read():
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Repositories(**organization_args)
-    responses.add("GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1}, {"id": 2}])
-    responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3}])
+    updated_at = "2020-01-01T00:00:00Z"
+    responses.add(
+        "GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}]
+    )
+    responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3, "updated_at": updated_at}])
     records = read_full_refresh(stream)
-    assert records == [{"id": 1, "organization": "org1"}, {"id": 2, "organization": "org1"}, {"id": 3, "organization": "org2"}]
+    assert records == [
+        {"id": 1, "organization": "org1", "updated_at": updated_at},
+        {"id": 2, "organization": "org1", "updated_at": updated_at},
+        {"id": 3, "organization": "org2", "updated_at": updated_at},
+    ]
     assert len(responses.calls) == 2
-    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=100"
-    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=100"
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org1/repos?per_page=100&sort=updated&direction=desc"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
 
 
 @responses.activate
