@@ -6,6 +6,7 @@
 import sys
 from io import StringIO
 
+import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from destination_google_sheets.destination import DestinationGoogleSheets
@@ -46,12 +47,18 @@ def test_check():
     assert actual == expected
 
 
-def test_write():
+@pytest.mark.parametrize(
+    "expected, raised",
+    [
+        ('{"type": "LOG", "log": {"level": "INFO", "message": "Auth session is expired. Refreshing..."}}', False),
+        ('{"type": "LOG", "log": {"level": "INFO", "message": "Successfully refreshed auth session"}}', False),
+        ('{"type": "LOG", "log": {"level": "INFO", "message": "Writing data for stream: stream_1"}}', True),
+        ("No duplicated records found for stream: stream_1", True),
+    ],
+    ids=["token needs refresh", "token refreshed", "writing stream", "no dups found for stream"],
+)
+def test_write(expected, raised):
 
-    expected = [
-        '{"type": "LOG", "log": {"level": "INFO", "message": "Writing data for stream: stream_1"}}',
-        "No duplicated records found for stream: stream_1",
-    ]
     # clean worksheet after previous test
     TEST_SPREADSHEET.clean_worksheet(TEST_STREAM)
 
@@ -62,7 +69,8 @@ def test_write():
                 config=TEST_CONFIG, configured_catalog=TEST_CATALOG, input_messages=read_input_messages(TEST_RECORDS_PATH)
             )
         )
-    assert output == expected
+
+    assert True if not raised else any(msg == expected for msg in output)
 
     # clean wks after the test
     test_wks = TEST_SPREADSHEET.open_worksheet(TEST_STREAM)

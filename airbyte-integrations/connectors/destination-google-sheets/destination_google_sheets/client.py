@@ -38,10 +38,10 @@ class GoogleSheetsClient:
 
         # check if token is expired and refresh it
         if client.oauth.expired:
-            self.logger.warn("The token is expired. Refreshing...")
+            self.logger.info("Auth session is expired. Refreshing...")
             client.oauth.refresh(Request())
             if not client.oauth.expired:
-                self.logger.info("Successfully refreshed token")
+                self.logger.info("Successfully refreshed auth session")
             else:
                 self.logger.fatal("The token is expired and could not be refreshed, please check the credentials are still valid!")
 
