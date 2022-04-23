@@ -221,7 +221,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         airbyteMessageIterator = getIncrementalStream(database, airbyteStream, selectedDatabaseFields, table, cursorOptional.get(), emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
-        airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
+        airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, cursorField, emittedAt);
       }
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils
@@ -291,6 +291,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                        final Instant emittedAt) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(), table.getName());
+    return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
+  }
+
+  protected AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(final Database database,
+                                                                       final String streamName,
+                                                                       final String namespace,
+                                                                       final List<String> selectedDatabaseFields,
+                                                                       final TableInfo<CommonField<DataType>> table,
+                                                                       final String cursorField,
+                                                                       final Instant emittedAt) {
+    final AutoCloseableIterator<JsonNode> queryStream =
+        queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(), table.getName(), cursorField);
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
@@ -465,6 +477,22 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         final List<String> columnNames,
                                                                         final String schemaName,
                                                                         final String tableName);
+
+  /**
+   * Read all data from a table.
+   *
+   * @param database source database
+   * @param columnNames interested column names
+   * @param schemaName table namespace
+   * @param tableName target table
+   * @param cursorField cursor field name
+   * @return iterator with read data
+   */
+  public abstract AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
+                                                                        final List<String> columnNames,
+                                                                        final String schemaName,
+                                                                        final String tableName,
+                                                                        final String cursorField);
 
   /**
    * Read incremental data from a table. Incremental read should returns only records where cursor

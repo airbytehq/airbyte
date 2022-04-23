@@ -38,6 +38,20 @@ public abstract class AbstractRelationalDbSource<DataType, Database extends SqlD
         getFullTableName(schemaName, tableName)));
   }
 
+  @Override
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final Database database,
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName,
+                                                               final String cursorField) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+    String order = String.format("ORDER BY %s", getIdentifierWithQuoting(cursorField));
+    return queryTable(database, String.format("SELECT %s FROM %s %s",
+        enquoteIdentifierList(columnNames),
+        getFullTableName(schemaName, tableName),
+        order));
+  }
+
   protected String getIdentifierWithQuoting(final String identifier) {
     return getQuoteString() + identifier + getQuoteString();
   }

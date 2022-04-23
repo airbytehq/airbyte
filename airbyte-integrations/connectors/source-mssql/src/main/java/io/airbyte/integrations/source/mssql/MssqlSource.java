@@ -58,6 +58,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final List<String> PORT_KEY = List.of("port");
   private static final String HIERARCHYID = "hierarchyid";
 
+  private String limit_per_read = "0";
+
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
   }
@@ -85,6 +87,27 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(JdbcDatabase database,
+                                                               List<String> columnNames,
+                                                               String schemaName,
+                                                               String tableName,
+                                                               String cursorField) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+
+    List<String> newIdentifiersList = getWrappedColumn(database,
+        columnNames,
+        schemaName, tableName, "\"");
+    String limit = !this.limit_per_read.equals("0") ? String.format("TOP %s", this.limit_per_read) : "";
+    String order = !this.limit_per_read.equals("0") ? String.format("ORDER BY %s", getIdentifierWithQuoting(cursorField)) : "";
+    String preparedSqlQuery = String
+        .format("SELECT %s %s FROM %s %s", limit, String.join(",", newIdentifiersList),
+            getFullTableName(schemaName, tableName), order);
+
+    LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
+    return queryTable(database, preparedSqlQuery);
+  }
+
+  @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
                                                                List<String> columnNames,
                                                                String schemaName,
@@ -93,6 +116,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                JDBCType cursorFieldType,
                                                                String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    String limit = !this.limit_per_read.equals("0") ? String.format("TOP %s", this.limit_per_read) : "";
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
@@ -104,7 +128,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               List<String> newColumnNames = getWrappedColumn(database,
                   columnNames, schemaName, tableName, identifierQuoteString);
 
-              final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
+              final String sql = String.format("SELECT %s %s FROM %s WHERE %s > ?",
+                  limit,
                   String.join(",", newColumnNames),
                   sourceOperations
                       .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
@@ -196,6 +221,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     if (mssqlConfig.has(JDBC_URL_PARAMS_KEY)) {
       configBuilder.put("connection_properties", mssqlConfig.get(JDBC_URL_PARAMS_KEY));
+    }
+
+    if (mssqlConfig.has("limit_per_read")) {
+      this.limit_per_read = mssqlConfig.get("limit_per_read").asText();
     }
 
     return Jsons.jsonNode(configBuilder.build());

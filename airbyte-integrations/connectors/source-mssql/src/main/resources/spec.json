@@ -111,6 +111,16 @@
         "default": "STANDARD",
         "enum": ["STANDARD", "CDC"],
         "order": 8
+      },
+      "limit_per_read": {
+        "description": "Maximum number of records to sync per single read.",
+        "title": "Limit per read",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9223372036854775807,
+        "examples": ["1000000"],
+        "default": 0,
+        "order": 9
       }
     }
   }
