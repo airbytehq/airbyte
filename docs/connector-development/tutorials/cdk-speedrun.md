@@ -6,11 +6,11 @@ This is a blazing fast guide to building an HTTP source connector. Think of it a
 
 If you are a visual learner and want to see a video version of this guide going over each part in detail, check it out below.
 
-{% embed url="https://www.youtube.com/watch?v=kJ3hLoNfz_E" caption="A speedy CDK overview." %}
+[A speedy CDK overview.](https://www.youtube.com/watch?v=kJ3hLoNfz_E)
 
 ## Dependencies
 
-1. Python &gt;= 3.7
+1. Python &gt;= 3.9
 2. Docker
 3. NodeJS
 

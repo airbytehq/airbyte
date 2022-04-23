@@ -147,7 +147,6 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
 
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
-        def postgresImage = System.getenv('POSTGRES_IMAGE') ?: isArm64 ? 'arm64v8/postgres:13-alpine' : 'amd64/postgres:13-alpine'
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
         inputDir = file("$projectDir/build/docker")
@@ -156,7 +155,6 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
         buildArgs.put('JDK_VERSION', jdkVersion)
         buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
         buildArgs.put('ALPINE_IMAGE', alpineImage)
-        buildArgs.put('POSTGRES_IMAGE', postgresImage)
         buildArgs.put('VERSION', buildVersion)
     })
 }
@@ -322,6 +320,8 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
         testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
+
+        testImplementation 'org.junit-pioneer:junit-pioneer:1.6.2'
 
         // adds owasp plugin
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'

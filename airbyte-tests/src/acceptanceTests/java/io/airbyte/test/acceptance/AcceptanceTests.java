@@ -42,6 +42,7 @@ import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.client.model.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.DestinationDefinitionRead;
 import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
@@ -64,6 +65,7 @@ import io.airbyte.api.client.model.OperatorType;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceDefinitionCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.SourceDefinitionRead;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.SourceDiscoverSchemaRequestBody;
@@ -127,21 +129,34 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+/**
+ * We order tests such that earlier tests test more basic behavior that is relied upon in later
+ * tests. e.g. We test that we can create a destination before we test whether we can sync data to
+ * it.
+ * <p>
+ * Many of the tests here are disabled for Kubernetes. This is because they are already run as part
+ * of the Docker acceptance tests and there is little value re-running on Kubernetes, especially
+ * operations take much longer due to Kubernetes pod spin up times. We run a subset to sanity check
+ * basic Airbyte Kubernetes Sync features.
+ * <p>
+ * Some tests here use the {@link RetryingTest} annotation instead of the more common {@link Test}
+ * to allow multiple tries for a test to pass. This is because these tests sometimes fail
+ * transiently, and we haven't been able to fix that yet.
+ * <p>
+ * However, in general we should prefer using {@code @Test} instead and only resort to using
+ * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
+ * to using {@code @Test} if possible.
+ * <p>
+ * For this class we currently use {@code @RetryingTest} for all tests that can run on k8s.
+ */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
-// We order tests such that earlier tests test more basic behavior that is relied upon in later
-// tests.
-// e.g. We test that we can create a destination before we test whether we can sync data to it.
-//
-// Many of the tests here are disabled for Kubernetes. This is because they are already run
-// as part of the Docker acceptance tests and there is little value re-running on Kubernetes,
-// especially operations take much longer due to Kubernetes pod spin up times.
-// We run a subset to sanity check basic Airbyte Kubernetes Sync features.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
@@ -319,7 +334,8 @@ public class AcceptanceTests {
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
     final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinitionId));
+        .getDestinationDefinitionSpecification(
+            new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(destinationDefinitionId).workspaceId(UUID.randomUUID()));
     assertEquals(destinationDefinitionId, spec.getDestinationDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
@@ -330,7 +346,8 @@ public class AcceptanceTests {
                                  matches = "true")
   public void testFailedGet404() {
     final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
-        .getDestinationDefinitionSpecification(new DestinationDefinitionIdRequestBody().destinationDefinitionId(UUID.randomUUID())));
+        .getDestinationDefinitionSpecification(
+            new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID())));
     assertEquals(404, e.getCode());
   }
 
@@ -341,7 +358,7 @@ public class AcceptanceTests {
   public void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = getPostgresSourceDefinitionId();
     final SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
-        .getSourceDefinitionSpecification(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefId));
+        .getSourceDefinitionSpecification(new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(sourceDefId).workspaceId(UUID.randomUUID()));
     assertEquals(sourceDefId, spec.getSourceDefinitionId());
     assertNotNull(spec.getConnectionSpecification());
   }
@@ -420,7 +437,7 @@ public class AcceptanceTests {
         checkConnectionRead.getMessage());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -481,7 +498,7 @@ public class AcceptanceTests {
     assertEquals(name, createdConnection.getName());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(7)
   public void testManualSync() throws Exception {
     final String connectionName = "test-connection";
@@ -499,7 +516,7 @@ public class AcceptanceTests {
     assertSourceAndDestinationDbInSync(false);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(8)
   public void testCancelSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
@@ -534,7 +551,7 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(9)
   public void testIncrementalSync() throws Exception {
     LOGGER.info("Starting testIncrementalSync()");
@@ -739,7 +756,7 @@ public class AcceptanceTests {
     assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(14)
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
@@ -803,7 +820,7 @@ public class AcceptanceTests {
     assertEquals(0, connectionState.getState().get("column1").asInt() % 5);
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(15)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
@@ -827,7 +844,7 @@ public class AcceptanceTests {
   }
 
   // verify that when the worker uses backpressure from pipes that no records are lost.
-  @Test
+  @RetryingTest(3)
   @Order(16)
   public void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
@@ -890,7 +907,7 @@ public class AcceptanceTests {
   // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
   // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
-  @Test
+  @RetryingTest(3)
   @Order(17)
   @Disabled
   public void testFailureTimeout() throws Exception {
@@ -948,7 +965,7 @@ public class AcceptanceTests {
     }
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(18)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
@@ -1018,7 +1035,7 @@ public class AcceptanceTests {
     }
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(19)
   @EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
                                 matches = "true")
@@ -1047,7 +1064,7 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.getJob().getStatus());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(20)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
@@ -1091,7 +1108,7 @@ public class AcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(21)
   @Timeout(value = 5,
            unit = TimeUnit.MINUTES)
@@ -1152,7 +1169,7 @@ public class AcceptanceTests {
     assertEquals(JobStatus.CANCELLED, resp.get().getJob().getStatus());
   }
 
-  @Test
+  @RetryingTest(3)
   @Order(22)
   public void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";

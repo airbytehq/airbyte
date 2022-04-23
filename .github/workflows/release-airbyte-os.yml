@@ -66,7 +66,7 @@ jobs:
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
+          python-version: "3.9"
       - name: Release Airbyte
         id: release_airbyte
         env:
@@ -79,7 +79,6 @@ jobs:
 
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
-  # - Plaform build requires Python 3.7, Octavia Build requires 3.8
   releaseOctavia:
     runs-on: ubuntu-latest
     environment: more-secrets
@@ -95,11 +94,9 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "16.13.0"
-      # octavia-cli build requires Python 3.8.
-      # We use 3.8 in this project because 3.7 is not supported on Apple M1.
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.9"
       - name: Release Octavia
         id: release_octavia
         env:
@@ -121,7 +118,7 @@ jobs:
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
+          python-version: "3.9"
       - name: Bump version
         id: bump_version
         env:
