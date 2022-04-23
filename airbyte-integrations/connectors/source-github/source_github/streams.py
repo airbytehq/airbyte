@@ -172,7 +172,7 @@ class GithubStream(HttpStream, ABC):
         return record
 
 
-class SemiIncrementalGithubStream(GithubStream):
+class SemiIncrementalMixin:
     """
     Semi incremental streams are also incremental but with one difference, they:
       - read all records;
@@ -239,7 +239,7 @@ class SemiIncrementalGithubStream(GithubStream):
                 break
 
 
-class IncrementalGithubStream(SemiIncrementalGithubStream):
+class IncrementalMixin(SemiIncrementalMixin):
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         since_params = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
@@ -376,7 +376,7 @@ class Users(Organizations):
 # Below are semi incremental streams
 
 
-class Releases(SemiIncrementalGithubStream):
+class Releases(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-releases
     """
@@ -394,7 +394,7 @@ class Releases(SemiIncrementalGithubStream):
         return record
 
 
-class Events(SemiIncrementalGithubStream):
+class Events(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/activity#list-repository-events
     """
@@ -402,7 +402,7 @@ class Events(SemiIncrementalGithubStream):
     cursor_field = "created_at"
 
 
-class PullRequests(SemiIncrementalGithubStream):
+class PullRequests(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     """
@@ -449,7 +449,7 @@ class PullRequests(SemiIncrementalGithubStream):
         return not self._first_read
 
 
-class CommitComments(SemiIncrementalGithubStream):
+class CommitComments(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
     """
@@ -458,7 +458,7 @@ class CommitComments(SemiIncrementalGithubStream):
         return f"repos/{stream_slice['repository']}/comments"
 
 
-class IssueMilestones(SemiIncrementalGithubStream):
+class IssueMilestones(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
     """
@@ -474,7 +474,7 @@ class IssueMilestones(SemiIncrementalGithubStream):
         return f"repos/{stream_slice['repository']}/milestones"
 
 
-class Stargazers(SemiIncrementalGithubStream):
+class Stargazers(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/activity#list-stargazers
     """
@@ -500,7 +500,7 @@ class Stargazers(SemiIncrementalGithubStream):
         return record
 
 
-class Projects(SemiIncrementalGithubStream):
+class Projects(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
     """
@@ -518,7 +518,7 @@ class Projects(SemiIncrementalGithubStream):
         return {**base_headers, **headers}
 
 
-class IssueEvents(SemiIncrementalGithubStream):
+class IssueEvents(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository
     """
@@ -532,7 +532,7 @@ class IssueEvents(SemiIncrementalGithubStream):
 # Below are incremental streams
 
 
-class Comments(IncrementalGithubStream):
+class Comments(IncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
     """
@@ -543,7 +543,7 @@ class Comments(IncrementalGithubStream):
         return f"repos/{stream_slice['repository']}/issues/comments"
 
 
-class Commits(IncrementalGithubStream):
+class Commits(IncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/repos#list-commits
 
@@ -559,7 +559,7 @@ class Commits(IncrementalGithubStream):
         self.default_branches = default_branches
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super(IncrementalGithubStream, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         params["since"] = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         params["sha"] = stream_slice["branch"]
         return params
@@ -616,7 +616,7 @@ class Commits(IncrementalGithubStream):
         return self._start_date
 
 
-class Issues(IncrementalGithubStream):
+class Issues(IncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/issues#list-repository-issues
     """
@@ -630,7 +630,7 @@ class Issues(IncrementalGithubStream):
     }
 
 
-class ReviewComments(IncrementalGithubStream):
+class ReviewComments(IncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
     """
@@ -644,7 +644,7 @@ class ReviewComments(IncrementalGithubStream):
 # Pull request substreams
 
 
-class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
+class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream):
     use_cache = False
 
     def __init__(self, parent: PullRequests, **kwargs):
@@ -675,9 +675,9 @@ class PullRequestSubstream(HttpSubStream, SemiIncrementalGithubStream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         """
         We've already determined the list of pull requests to run the stream against.
-        Skip the start_point_map and cursor_field logic in SemiIncrementalGithubStream.read_records.
+        Skip the start_point_map and cursor_field logic in SemiIncrementalMixin.read_records.
         """
-        yield from super(SemiIncrementalGithubStream, self).read_records(
+        yield from super(SemiIncrementalMixin, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         )
 
@@ -827,7 +827,7 @@ class PullRequestCommentReactions(ReactionStream):
     parent_entity = ReviewComments
 
 
-class Deployments(SemiIncrementalGithubStream):
+class Deployments(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/reference/deployments#list-deployments
     """
