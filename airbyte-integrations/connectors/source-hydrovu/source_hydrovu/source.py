@@ -150,17 +150,17 @@ class Readings(Locations):
 
         records = locations.read_records('full-refresh')
 
-        print ("-------------------------")
-        print ("-------------------------")
+        #print ("-------------------------")
+        #print ("-------------------------")
 
-        for r in records:
-            print (r['id'])
+        #for r in records:
+        #    print (r['id'])
 
-        print ("-------------------------")
-        print ("-------------------------")
+        #print ("-------------------------")
+        #print ("-------------------------")
 
 
-        #self._pages = (r for r in sorted(r['id'] for r in records))
+        self._pages = (r for r in sorted(r['id'] for r in records))
 
 
     def path(
@@ -171,9 +171,27 @@ class Readings(Locations):
         should return "customers". Required.
         """
         #return "locations/list"
-        return "readings/list"
+        #return "readings/list"
+        return "locations/4538855792574464/data"
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        try:
+            #print ("555-------------------------")
+            
+            r = next(self._pages)
+        
+            print ("-------------------------")
+            print ("-------------------------")
 
+            #print (r['id'])
+            #print (r)
+
+            print ("-------------------------")
+            print ("-------------------------")
+
+            return r
+        except StopIteration:
+            pass
 
 
 class myOauth2Authenticator(Oauth2Authenticator):

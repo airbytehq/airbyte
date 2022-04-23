@@ -2,15 +2,18 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": {
-      "type": ["null", "string"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "signup_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "readings": {
+      "type":  "array",
+      "items": {
+	"type": "object",
+        "timestamp": {
+          "type": "integer"
+        },
+        "value": {
+          "type": "number"
+        }
+      }
     }
   }
 }
+
