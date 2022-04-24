@@ -172,7 +172,21 @@ class Readings(Locations):
         """
         #return "locations/list"
         #return "readings/list"
-        return "locations/4538855792574464/data"
+        
+        #return "locations/4538855792574464/data"
+
+        location_id = stream_slice['id']
+
+        #print ("location_id")
+        #print (location_id)
+
+
+        return f"locations/{location_id}/data" 
+
+        #return f"locations/{self._pages}/data"
+      
+
+
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
@@ -192,6 +206,35 @@ class Readings(Locations):
             return r
         except StopIteration:
             pass
+
+
+
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        if not next_page_token:
+            next_page_token = next(self._pages)
+
+        self._active_page = next_page_token
+        
+        #td = datetime.timedelta(days=1)
+        
+        params = {'id': next_page_token}
+
+        #params = {'id': next_page_token,
+        #          'start': 0,
+        #          'end': int((datetime.datetime.now() - td).timestamp() * 1000)}
+
+        self._request_params_hook(params)
+        return params
+
+
+
+
+
 
 
 class myOauth2Authenticator(Oauth2Authenticator):
