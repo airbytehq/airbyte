@@ -14,7 +14,7 @@ from source_snipeit.full_refresh_streams import SnipeitStream
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(SnipeitStream, "path", "v0/example_endpoint")
-    mocker.patch.object(SnipeitStream, "primary_key", "test_primary_key")
+    mocker.patch.object(SnipeitStream, "primary_key", "id")
     mocker.patch.object(SnipeitStream, "__abstractmethods__", set())
 
 
@@ -39,7 +39,7 @@ def test_parse_response(patch_base_class):
     # TODO: replace this with your input parameters
     fake_response = MagicMock()
     fake_response.json = MagicMock(return_value={"total": 1, "rows": [{"test": "working"}]})
-    inputs = {"response": fake_response}
+    inputs = {"response": fake_response, "stream_state": None}
     # TODO: replace this with your expected parced object
     expected_parsed_object = {"test": "working"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object

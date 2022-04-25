@@ -40,7 +40,7 @@ There are additional required TODOs in the files within the integration_tests fo
 
 # Source
 class SourceSnipeit(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
 

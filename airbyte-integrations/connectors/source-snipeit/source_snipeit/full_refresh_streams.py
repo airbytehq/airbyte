@@ -63,7 +63,7 @@ class SnipeitStream(HttpStream, ABC):
             return {}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
         Usually contains common params e.g. pagination size etc.
@@ -73,7 +73,7 @@ class SnipeitStream(HttpStream, ABC):
         else:
             return {'limit': self.limit_per_page, 'offset': self.offset}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
         """

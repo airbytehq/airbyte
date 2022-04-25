@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, Iterable, MutableMapping, Mapping, Optional
+from typing import Any, Iterable, MutableMapping, Mapping, Tuple
 
 import requests
 import arrow
@@ -20,8 +20,14 @@ class Events(SnipeitStream, ABC):
             records = {}
             records[current_stream_state[self.cursor_field]] = arrow.get(current_stream_state[self.cursor_field])
             records[latest_record["updated_at"]["datetime"]] = arrow.get(latest_record["updated_at"]["datetime"])
-            latest_record = max(records.items(), key=lambda x: x[1])
-            return {self.cursor_field: latest_record[0]}
+            # NOTE: This was originally the key function in the max() call below
+            #       I moved it out here to keep mypy happy.
+            def __key_function(item: Tuple) -> Any:
+                return item[1]
+            # NOTE: mypy complains about records.items() not having the right type for max() but it works just fine
+            #       in runtime regardless.
+            latest_record = max(records.items(), key=__key_function)[0]   # type: ignore[arg-type]
+            return {self.cursor_field: latest_record}
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

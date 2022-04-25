@@ -11,10 +11,10 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
-  # basic_read:
-  #   - config_path: "secrets/config.json"
-  #     configured_catalog_path: "catalogs/configured_catalog.json"
-  #     empty_streams: []
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "catalogs/configured_catalog.json"
+      empty_streams: []
 # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
 #      expect_records:
 #        path: "integration_tests/expected_records.txt"
