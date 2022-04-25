@@ -102,10 +102,11 @@ public class SecretsRepositoryReader {
     final WorkspaceServiceAccount workspaceServiceAccount = configRepository.getWorkspaceServiceAccountNoSecrets(workspaceId);
 
     final JsonNode jsonCredential =
-        workspaceServiceAccount.getJsonCredential() != null ? secretsHydrator.simpleHydrate(workspaceServiceAccount.getJsonCredential()) : null;
+        workspaceServiceAccount.getJsonCredential() != null ? secretsHydrator.hydrateSecretCoordinate(workspaceServiceAccount.getJsonCredential())
+            : null;
 
     final JsonNode hmacKey =
-        workspaceServiceAccount.getHmacKey() != null ? secretsHydrator.simpleHydrate(workspaceServiceAccount.getHmacKey()) : null;
+        workspaceServiceAccount.getHmacKey() != null ? secretsHydrator.hydrateSecretCoordinate(workspaceServiceAccount.getHmacKey()) : null;
 
     return Jsons.clone(workspaceServiceAccount).withJsonCredential(jsonCredential).withHmacKey(hmacKey);
   }

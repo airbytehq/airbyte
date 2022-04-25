@@ -278,6 +278,8 @@ public class SecretsRepositoryWriter {
       final WorkspaceServiceAccount clonedWorkspaceServiceAccount = Jsons.clone(workspaceServiceAccount);
       final Optional<WorkspaceServiceAccount> optionalWorkspaceServiceAccount = getOptionalWorkspaceServiceAccount(
           workspaceServiceAccount.getWorkspaceId());
+      // Convert the JSON key of Service Account into secret co-oridnate. Ref :
+      // https://cloud.google.com/iam/docs/service-accounts#key-types
       if (workspaceServiceAccount.getJsonCredential() != null) {
         final SecretCoordinateToPayload jsonCredSecretCoordinateToPayload =
             SecretsHelpers.convertServiceAccountCredsToSecret(workspaceServiceAccount.getJsonCredential().toPrettyString(),
@@ -289,7 +291,8 @@ public class SecretsRepositoryWriter {
         longLivedSecretPersistence.get().write(jsonCredSecretCoordinateToPayload.secretCoordinate(), jsonCredSecretCoordinateToPayload.payload());
         clonedWorkspaceServiceAccount.setJsonCredential(jsonCredSecretCoordinateToPayload.secretCoordinateForDB());
       }
-
+      // Convert the HMAC key of Service Account into secret co-oridnate. Ref :
+      // https://cloud.google.com/storage/docs/authentication/hmackeys
       if (workspaceServiceAccount.getHmacKey() != null) {
         final SecretCoordinateToPayload hmackKeySecretCoordinateToPayload =
             SecretsHelpers.convertServiceAccountCredsToSecret(workspaceServiceAccount.getHmacKey().toString(),

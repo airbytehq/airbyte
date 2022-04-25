@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.config.persistence.MockData.HMAC_SECRET_PAYLOAD_1;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -29,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -134,8 +134,6 @@ class SecretsRepositoryReaderTest {
 
     final String jsonSecretPayload = MockData.MOCK_SERVICE_ACCOUNT_1;
 
-    final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
-        Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
     final SecretCoordinate secretCoordinateHmac = new SecretCoordinate(
         "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
 
@@ -149,13 +147,13 @@ class SecretsRepositoryReaderTest {
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636"))
             .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
-    doReturn(Optional.of(hmacSecretPayload.toString())).when(secretPersistence).read(secretCoordinateHmac);
+    doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(secretCoordinateHmac);
 
     doReturn(Optional.of(jsonSecretPayload)).when(secretPersistence).read(secretCoordinateJson);
 
     final WorkspaceServiceAccount actual = secretsRepositoryReader.getWorkspaceServiceAccountWithSecrets(workspaceId);
     final WorkspaceServiceAccount expected = new WorkspaceServiceAccount().withWorkspaceId(workspaceId)
-        .withJsonCredential(Jsons.deserialize(jsonSecretPayload)).withHmacKey(hmacSecretPayload)
+        .withJsonCredential(Jsons.deserialize(jsonSecretPayload)).withHmacKey(HMAC_SECRET_PAYLOAD_1)
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
         .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
     assertEquals(expected, actual);
@@ -171,9 +169,6 @@ class SecretsRepositoryReaderTest {
 
     final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
 
-    final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
-        Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
-
     final SecretCoordinate secretCoordinateHmac = new SecretCoordinate(
         "service_account_hmac_13fb9a84-6bfa-4801-8f5e-ce717677babf_secret_e86e2eab-af9b-42a3-b074-b923b4fa617e", 1);
 
@@ -183,11 +178,11 @@ class SecretsRepositoryReaderTest {
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636"))
             .when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
-    doReturn(Optional.of(hmacSecretPayload.toString())).when(secretPersistence).read(secretCoordinateHmac);
+    doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(secretCoordinateHmac);
 
     final WorkspaceServiceAccount actual = secretsRepositoryReader.getWorkspaceServiceAccountWithSecrets(workspaceId);
     final WorkspaceServiceAccount expected = new WorkspaceServiceAccount().withWorkspaceId(workspaceId)
-        .withHmacKey(hmacSecretPayload)
+        .withHmacKey(HMAC_SECRET_PAYLOAD_1)
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
         .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
     assertEquals(expected, actual);
@@ -222,11 +217,6 @@ class SecretsRepositoryReaderTest {
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
         .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com");
     assertEquals(expected, actual);
-  }
-
-  private Map<String, String> sortMap(Map<String, String> originalMap) {
-    return originalMap.entrySet().stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> newValue, TreeMap::new));
   }
 
 }

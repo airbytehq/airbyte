@@ -4,6 +4,8 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.config.persistence.MockData.HMAC_SECRET_PAYLOAD_1;
+import static io.airbyte.config.persistence.MockData.HMAC_SECRET_PAYLOAD_2;
 import static io.airbyte.config.persistence.MockData.MOCK_SERVICE_ACCOUNT_1;
 import static io.airbyte.config.persistence.MockData.MOCK_SERVICE_ACCOUNT_2;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -226,12 +227,9 @@ class SecretsRepositoryWriterTest {
     final UUID workspaceId = UUID.randomUUID();
 
     final String jsonSecretPayload = MOCK_SERVICE_ACCOUNT_1;
-    final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
-        Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
-
     final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount()
         .withWorkspaceId(workspaceId)
-        .withHmacKey(hmacSecretPayload)
+        .withHmacKey(HMAC_SECRET_PAYLOAD_1)
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
         .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
         .withJsonCredential(Jsons.deserialize(jsonSecretPayload));
@@ -265,7 +263,7 @@ class SecretsRepositoryWriterTest {
     assertNotNull(hmacSecretCoordinate);
 
     assertEquals(jsonSecretPayload, jsonPayloadInPersistence);
-    assertEquals(hmacSecretPayload.toString(), hmacPayloadInPersistence);
+    assertEquals(HMAC_SECRET_PAYLOAD_1.toString(), hmacPayloadInPersistence);
 
     verify(configRepository).writeWorkspaceServiceAccountNoSecrets(
         Jsons.clone(workspaceServiceAccount.withJsonCredential(Jsons.jsonNode(Map.of("_secret", jsonSecretCoordinate.getFullCoordinate())))
@@ -282,10 +280,8 @@ class SecretsRepositoryWriterTest {
     final UUID workspaceId = UUID.fromString("13fb9a84-6bfa-4801-8f5e-ce717677babf");
 
     final String jsonSecretPayload = MOCK_SERVICE_ACCOUNT_1;
-    final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
-        Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
-
-    final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withHmacKey(hmacSecretPayload)
+    final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount().withWorkspaceId(workspaceId).withHmacKey(
+        HMAC_SECRET_PAYLOAD_1)
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
         .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
         .withJsonCredential(Jsons.deserialize(jsonSecretPayload));
@@ -303,7 +299,7 @@ class SecretsRepositoryWriterTest {
     doReturn(cloned).when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
     doReturn(Optional.of(jsonSecretPayload)).when(secretPersistence).read(jsonSecretCoordinate);
-    doReturn(Optional.of(hmacSecretPayload.toString())).when(secretPersistence).read(hmacSecretCoordinate);
+    doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(hmacSecretCoordinate);
     secretsRepositoryWriter.writeServiceAccountJsonCredentials(workspaceServiceAccount);
 
     ArgumentCaptor<SecretCoordinate> coordinates = ArgumentCaptor.forClass(SecretCoordinate.class);
@@ -316,9 +312,9 @@ class SecretsRepositoryWriterTest {
 
     List<String> actualPayload = payloads.getAllValues();
     assertEquals(2, actualPayload.size());
-    assertThat(actualPayload, containsInAnyOrder(jsonSecretPayload, hmacSecretPayload.toString()));
+    assertThat(actualPayload, containsInAnyOrder(jsonSecretPayload, HMAC_SECRET_PAYLOAD_1.toString()));
 
-    verify(secretPersistence).write(hmacSecretCoordinate, hmacSecretPayload.toString());
+    verify(secretPersistence).write(hmacSecretCoordinate, HMAC_SECRET_PAYLOAD_1.toString());
     verify(configRepository).writeWorkspaceServiceAccountNoSecrets(
         cloned);
   }
@@ -335,14 +331,9 @@ class SecretsRepositoryWriterTest {
     final String jsonSecretOldPayload = MOCK_SERVICE_ACCOUNT_1;
     final String jsonSecretNewPayload = MOCK_SERVICE_ACCOUNT_2;
 
-    final JsonNode hmacSecretOldPayload = Jsons.jsonNode(sortMap(
-        Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
-    final JsonNode hmacSecretNewPayload = Jsons.jsonNode(sortMap(
-        Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEX", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeX")));
-
     final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount()
         .withWorkspaceId(workspaceId)
-        .withHmacKey(hmacSecretNewPayload)
+        .withHmacKey(HMAC_SECRET_PAYLOAD_2)
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
         .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
         .withJsonCredential(Jsons.deserialize(jsonSecretNewPayload));
@@ -359,7 +350,7 @@ class SecretsRepositoryWriterTest {
 
     doReturn(cloned).when(configRepository).getWorkspaceServiceAccountNoSecrets(workspaceId);
 
-    doReturn(Optional.of(hmacSecretOldPayload.toString())).when(secretPersistence).read(hmacSecretOldCoordinate);
+    doReturn(Optional.of(HMAC_SECRET_PAYLOAD_1.toString())).when(secretPersistence).read(hmacSecretOldCoordinate);
     doReturn(Optional.of(jsonSecretOldPayload)).when(secretPersistence).read(jsonSecretOldCoordinate);
 
     secretsRepositoryWriter.writeServiceAccountJsonCredentials(workspaceServiceAccount);
@@ -380,16 +371,11 @@ class SecretsRepositoryWriterTest {
 
     List<String> actualPayload = payloads.getAllValues();
     assertEquals(2, actualPayload.size());
-    assertThat(actualPayload, containsInAnyOrder(jsonSecretNewPayload, hmacSecretNewPayload.toString()));
+    assertThat(actualPayload, containsInAnyOrder(jsonSecretNewPayload, HMAC_SECRET_PAYLOAD_2.toString()));
 
     verify(configRepository).writeWorkspaceServiceAccountNoSecrets(Jsons.clone(workspaceServiceAccount).withJsonCredential(Jsons.jsonNode(
         Map.of("_secret", jsonSecretNewCoordinate.getFullCoordinate()))).withHmacKey(Jsons.jsonNode(
             Map.of("_secret", hmacSecretNewCoordinate.getFullCoordinate()))));
-  }
-
-  private Map<String, String> sortMap(Map<String, String> originalMap) {
-    return originalMap.entrySet().stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> newValue, TreeMap::new));
   }
 
 }

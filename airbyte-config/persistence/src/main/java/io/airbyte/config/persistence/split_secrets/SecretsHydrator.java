@@ -20,12 +20,11 @@ public interface SecretsHydrator {
   JsonNode hydrate(JsonNode partialConfig);
 
   /**
-   * Takes in the secret coordinate in form of a JSON and fetches the secret from the store without
-   * any special transformations
+   * Takes in the secret coordinate in form of a JSON and fetches the secret from the store
    *
    * @param secretCoordinate The co-ordinate of the secret in the store in JSON format
    * @return original secret value
    */
-  JsonNode simpleHydrate(final JsonNode secretCoordinate);
+  JsonNode hydrateSecretCoordinate(final JsonNode secretCoordinate);
 
 }

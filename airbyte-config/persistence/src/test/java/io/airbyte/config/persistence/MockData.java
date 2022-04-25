@@ -119,6 +119,11 @@ public class MockData {
       + "  \"client_x509_cert_url\" : \"https://www.blah.com/blah/v1/blah/a123/a1e5ac98-7531-48e1-943b-b46636%40random-gcp-project.abc.abcdefghijklmno.com\"\n"
       + "}";
 
+  public static final JsonNode HMAC_SECRET_PAYLOAD_1 = Jsons.jsonNode(sortMap(
+      Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
+  public static final JsonNode HMAC_SECRET_PAYLOAD_2 = Jsons.jsonNode(sortMap(
+      Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEX", "secret", "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeX")));
+
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
 
   public static List<StandardWorkspace> standardWorkspaces() {
@@ -578,17 +583,12 @@ public class MockData {
   }
 
   public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {
-    final String jsonSecretPayload = MOCK_SERVICE_ACCOUNT_1;
-    final JsonNode hmacSecretPayload = Jsons.jsonNode(sortMap(
-        Map.of("access_id", "ABCD1A1ABCDEFG1ABCDEFGH1ABC12ABCDEF1ABCDE1ABCDE1ABCDE12ABCDEF", "secret",
-            "AB1AbcDEF//ABCDeFGHijKlmNOpqR1ABC1aBCDeF")));
-
     final WorkspaceServiceAccount workspaceServiceAccount = new WorkspaceServiceAccount()
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withHmacKey(hmacSecretPayload)
+        .withHmacKey(HMAC_SECRET_PAYLOAD_1)
         .withServiceAccountId("a1e5ac98-7531-48e1-943b-b46636")
         .withServiceAccountEmail("a1e5ac98-7531-48e1-943b-b46636@random-gcp-project.abc.abcdefghijklmno.com")
-        .withJsonCredential(Jsons.deserialize(jsonSecretPayload));
+        .withJsonCredential(Jsons.deserialize(MOCK_SERVICE_ACCOUNT_1));
 
     return Arrays.asList(workspaceServiceAccount);
   }
