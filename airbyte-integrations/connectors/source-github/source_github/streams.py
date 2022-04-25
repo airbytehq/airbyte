@@ -656,7 +656,7 @@ class ReviewComments(IncrementalMixin, GithubStream):
 # Pull request substreams
 
 
-class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream):
+class PullRequestSubstream(HttpSubStream, SemiIncrementalMixin, GithubStream, ABC):
     use_cache = False
 
     def __init__(self, parent: PullRequests, **kwargs):
@@ -781,13 +781,15 @@ class PullRequestCommits(GithubStream):
 class ReactionStream(GithubStream, ABC):
 
     parent_key = "id"
+    copy_parent_key = "comment_id"
     use_cache = False
+    cursor_field = "created_at"
 
-    def __init__(self, **kwargs):
-        self._stream_kwargs = deepcopy(kwargs)
-        self._parent_stream = self.parent_entity(**kwargs)
-        kwargs.pop("start_date", None)
+    def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
+        kwargs["start_date"] = start_date
+        self._parent_stream = self.parent_entity(**kwargs)
+        self._start_date = start_date
 
     @property
     @abstractmethod
@@ -798,12 +800,50 @@ class ReactionStream(GithubStream, ABC):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         parent_path = self._parent_stream.path(stream_slice=stream_slice, **kwargs)
-        return f"{parent_path}/{stream_slice[self.parent_key]}/reactions"
+        return f"{parent_path}/{stream_slice[self.copy_parent_key]}/reactions"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for stream_slice in super().stream_slices(**kwargs):
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                yield {self.parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
+                yield {self.copy_parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        repository = latest_record["repository"]
+        parent_id = str(latest_record[self.copy_parent_key])
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(parent_id, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(parent_id, {})[self.cursor_field] = updated_state
+        return current_stream_state
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        if stream_state:
+            repository = stream_slice["repository"]
+            parent_id = str(stream_slice[self.copy_parent_key])
+            stream_state_value = stream_state.get(repository, {}).get(parent_id, {}).get(self.cursor_field)
+            if stream_state_value:
+                return max(self._start_date, stream_state_value)
+        return self._start_date
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        starting_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        for record in super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            if record[self.cursor_field] > starting_point:
+                yield record
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record, stream_slice)
+        record[self.copy_parent_key] = stream_slice[self.copy_parent_key]
+        return record
 
 
 class CommitCommentReactions(ReactionStream):
@@ -829,6 +869,7 @@ class IssueReactions(ReactionStream):
 
     parent_entity = Issues
     parent_key = "number"
+    copy_parent_key = "issue_number"
 
 
 class PullRequestCommentReactions(ReactionStream):
