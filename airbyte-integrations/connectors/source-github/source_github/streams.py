@@ -987,7 +987,7 @@ class ProjectCards(GithubStream):
         return record
 
 
-class Workflows(GithubStream):
+class Workflows(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
     API documentation: https://docs.github.com/en/rest/reference/actions#workflows
@@ -999,7 +999,7 @@ class Workflows(GithubStream):
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         response = response.json().get("workflows")
         for record in response:
-            yield record
+            yield self.transform(record=record, stream_slice=stream_slice)
 
 
 class WorkflowRuns(GithubStream):

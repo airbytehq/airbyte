@@ -18,10 +18,12 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": "string",
+      "format": "date-time"
     },
     "url": {
       "type": ["null", "string"]
@@ -31,6 +33,9 @@
     },
     "badge_url": {
       "type": ["null", "string"]
+    },
+    "repository": {
+      "type": "string"
     }
   }
 }
