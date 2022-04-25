@@ -17,7 +17,7 @@ import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.DestinationCoreConfig;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationSyncMode;
@@ -27,7 +27,7 @@ import io.airbyte.api.model.JobIdRequestBody;
 import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.LogRead;
 import io.airbyte.api.model.SourceCoreConfig;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
@@ -262,12 +262,16 @@ public class SchedulerHandler {
         Charsets.UTF_8)).toString();
     final String connectorVersion = sourceDef.getDockerImageTag();
     final Optional<ActorCatalog> currentCatalog =
-        configRepository.getSourceCatalog(discoverSchemaRequestBody.getSourceId(), configHash, connectorVersion);
+        configRepository.getActorCatalog(discoverSchemaRequestBody.getSourceId(), connectorVersion, configHash);
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
       final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
-      configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), configHash, connectorVersion);
-      return discoverJobToOutput(response);
+      final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
+      if (response.isSuccess()) {
+        final UUID catalogId = configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
+        returnValue.catalogId(catalogId);
+      }
+      return returnValue;
     }
     final AirbyteCatalog airbyteCatalog = Jsons.object(currentCatalog.get().getCatalog(), AirbyteCatalog.class);
     final SynchronousJobRead emptyJob = new SynchronousJobRead()
@@ -280,7 +284,8 @@ public class SchedulerHandler {
         .succeeded(true);
     return new SourceDiscoverSchemaRead()
         .catalog(CatalogConverter.toApi(airbyteCatalog))
-        .jobInfo(emptyJob);
+        .jobInfo(emptyJob)
+        .catalogId(currentCatalog.get().getId());
   }
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(final SourceCoreConfig sourceCreate)
@@ -311,9 +316,9 @@ public class SchedulerHandler {
     return sourceDiscoverSchemaRead;
   }
 
-  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
+  public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final UUID sourceDefinitionId = sourceDefinitionIdRequestBody.getSourceDefinitionId();
+    final UUID sourceDefinitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
     final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final ConnectorSpecification spec = source.getSpec();
     final SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
@@ -332,9 +337,9 @@ public class SchedulerHandler {
   }
 
   public DestinationDefinitionSpecificationRead getDestinationSpecification(
-                                                                            final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
+                                                                            final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final UUID destinationDefinitionId = destinationDefinitionIdRequestBody.getDestinationDefinitionId();
+    final UUID destinationDefinitionId = destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId();
     final StandardDestinationDefinition destination = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     final ConnectorSpecification spec = destination.getSpec();
 

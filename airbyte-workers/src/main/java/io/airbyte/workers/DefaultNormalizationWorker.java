@@ -74,6 +74,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
         .withStartTime(startTime)
         .withEndTime(endTime);
 
+    LOGGER.info("Normalization summary: {}", summary);
+
     return summary;
   }
 

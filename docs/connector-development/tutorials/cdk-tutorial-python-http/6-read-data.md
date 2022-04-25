@@ -137,6 +137,7 @@ Let's also add this parameter to the constructor and declare the `cursor_field`:
 
 ```python
 from datetime import datetime, timedelta
+from airbyte_cdk.sources.streams import IncrementalMixin
 
 
 class ExchangeRates(HttpStream, IncrementalMixin):
@@ -176,7 +177,7 @@ Update internal state `cursor_value` inside `read_records` method
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             if self._cursor_value:
-                latest_record_date = datetime.strptime(latest_record[self.cursor_field], '%Y-%m-%d')
+                latest_record_date = datetime.strptime(record[self.cursor_field], '%Y-%m-%d')
                 self._cursor_value = max(self._cursor_value, latest_record_date)
             yield record
 
