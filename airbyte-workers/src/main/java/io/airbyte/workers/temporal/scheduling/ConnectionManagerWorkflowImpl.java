@@ -63,7 +63,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public static final long NON_RUNNING_JOB_ID = -1;
   public static final int NON_RUNNING_ATTEMPT_ID = -1;
 
-  private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 1;
+  private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 2;
   private static final int AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION = 1;
 
   private static final String RENAME_ATTEMPT_ID_TO_NUMBER_TAG = "rename_attempt_id_to_number";
@@ -164,7 +164,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       reportJobStarting();
       StandardSyncOutput standardSyncOutput = null;
       try {
-        standardSyncOutput = runChildWorkflow(jobInputs);
+        var dataplaneLabel = "";
+        final int taskQueueChangeVersion =
+            Workflow.getVersion("task_queue_change_from_connection_updater_to_sync", Workflow.DEFAULT_VERSION, TASK_QUEUE_CHANGE_CURRENT_VERSION);
+        if (taskQueueChangeVersion == 2) {
+          if (connectionUpdaterInput.getDataplaneLabel() != null) {
+            dataplaneLabel = connectionUpdaterInput.getDataplaneLabel();
+          }
+        }
+
+        standardSyncOutput = runChildWorkflow(jobInputs, dataplaneLabel);
 
         workflowState.setFailed(getFailStatus(standardSyncOutput));
 
@@ -540,14 +549,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * since the latter is a long running workflow, in the future, using a different Node pool would
    * make sense.
    */
-  private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs) {
+  private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs, final String dataplaneLabel) {
     final int taskQueueChangeVersion =
         Workflow.getVersion("task_queue_change_from_connection_updater_to_sync", Workflow.DEFAULT_VERSION, TASK_QUEUE_CHANGE_CURRENT_VERSION);
 
     String taskQueue = TemporalJobType.SYNC.name();
 
-    if (taskQueueChangeVersion < TASK_QUEUE_CHANGE_CURRENT_VERSION) {
+    if (taskQueueChangeVersion == 1) {
       taskQueue = TemporalJobType.CONNECTION_UPDATER.name();
+    } else if (taskQueueChangeVersion == 2) {
+      taskQueue = dataplaneLabel + "-" + TemporalJobType.CONNECTION_UPDATER.name();
     }
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()

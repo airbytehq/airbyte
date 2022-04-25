@@ -228,6 +228,7 @@ public class TemporalClient {
         .workflowState(null)
         .resetConnection(false)
         .fromJobResetFailure(false)
+        .dataplaneLabel("test-queue")
         .build();
 
     signalRequest.add(connectionManagerWorkflow::run, input);

@@ -40,4 +40,10 @@ public class ConnectionUpdaterInput {
   private boolean resetConnection;
   private boolean fromJobResetFailure = false;
 
+  /**
+   * Nullable for backward compatibility reasons.
+   */
+  @Nullable
+  private String dataplaneLabel;
+
 }
