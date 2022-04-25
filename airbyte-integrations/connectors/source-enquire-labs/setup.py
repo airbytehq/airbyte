@@ -18,8 +18,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_enquire_labs",
     description="Source implementation for Enquire Labs.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Ghilman Randhawa",
+    author_email="ghilman.randhawa@cogentlabs.co",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
