@@ -9,7 +9,8 @@
     "properties": {
       "junip_store_key": {
         "type": "string",
-        "description": "junip store key"
+        "description": "junip store key",
+        "airbyte_secret": true
       }
     }
   }

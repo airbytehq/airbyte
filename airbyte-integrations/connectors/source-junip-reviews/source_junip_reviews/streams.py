@@ -11,18 +11,24 @@ class JunipReviewsStream(HttpStream, ABC):
     url_base = "https://api.juniphq.com/v1/"
     primary_key = None
 
-    def __init__(self, junip_store_key,**kwargs):
+    def __init__(self, junip_store_key, **kwargs):
         super().__init__(**kwargs)
         self.junip_store_key = junip_store_key
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()
+        """
+        This method used to do pagination strategy
 
-        if decoded_response.get("after") is not None:
-            return {
+        Returns: Next page token
+        """
+        decoded_response = response.json()
+        page_token = None
+
+        if decoded_response.get("after"):
+            page_token = {
                 "page[after]": decoded_response.get("after")
             }
-        return None
+        return page_token
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -47,7 +53,6 @@ class JunipReviewsStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
         return [response.json()]

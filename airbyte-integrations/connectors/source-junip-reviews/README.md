@@ -1,7 +1,7 @@
 # Junip Reviews Source
 
 This is the repository for the Junip Reviews source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/junip-reviews).
+For information about how to use this connector within Airbyte, see [the documentation](https://junip.co/docs/api/).
 
 ## Local development
 
