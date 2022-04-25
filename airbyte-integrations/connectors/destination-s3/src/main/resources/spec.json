@@ -18,15 +18,15 @@
     "properties": {
       "access_key_id": {
         "type": "string",
-        "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket.",
-        "title": "S3 Key Id *",
+        "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket.",
+        "title": "S3 Key ID *",
         "airbyte_secret": true,
         "examples": ["A012345678910EXAMPLE"],
         "order": 0
       },
       "secret_access_key": {
         "type": "string",
-        "description": "The corresponding secret to the access key id",
+        "description": "The corresponding secret to the access key ID",
         "title": "S3 Access Key *",
         "airbyte_secret": true,
         "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
