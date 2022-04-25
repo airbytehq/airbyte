@@ -77,6 +77,7 @@ public class MockData {
   private static final UUID CONNECTION_ID_3 = UUID.randomUUID();
   private static final UUID CONNECTION_ID_4 = UUID.randomUUID();
   private static final UUID CONNECTION_ID_5 = UUID.randomUUID();
+  private static final UUID CONNECTION_ID_6 = UUID.randomUUID();
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
   private static final UUID SOURCE_OAUTH_PARAMETER_ID_2 = UUID.randomUUID();
   private static final UUID DESTINATION_OAUTH_PARAMETER_ID_1 = UUID.randomUUID();
@@ -465,7 +466,23 @@ public class MockData {
         .withResourceRequirements(resourceRequirements)
         .withStatus(Status.ACTIVE)
         .withSchedule(schedule);
-    return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5);
+
+    final StandardSync standardSync6 = new StandardSync()
+        .withOperationIds(Arrays.asList())
+        .withConnectionId(CONNECTION_ID_6)
+        .withSourceId(SOURCE_ID_3)
+        .withDestinationId(DESTINATION_ID_3)
+        .withCatalog(getConfiguredCatalog())
+        .withName("standard-sync-6")
+        .withManual(true)
+        .withNamespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
+        .withNamespaceFormat("")
+        .withPrefix("")
+        .withResourceRequirements(resourceRequirements)
+        .withStatus(Status.DEPRECATED)
+        .withSchedule(schedule);
+
+    return Arrays.asList(standardSync1, standardSync2, standardSync3, standardSync4, standardSync5, standardSync6);
   }
 
   private static ConfiguredAirbyteCatalog getConfiguredCatalog() {

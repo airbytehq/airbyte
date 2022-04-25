@@ -5,8 +5,6 @@
 package io.airbyte.integrations.destination.redshift;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.jackson.MoreMappers;
@@ -37,4 +35,5 @@ public class RedshiftDestinationTest {
     final var stubConfig = mapper.createObjectNode();
     assertEquals(DestinationType.INSERT_WITH_SUPER_TMP_TYPE, RedshiftDestination.determineUploadMode(stubConfig));
   }
+
 }

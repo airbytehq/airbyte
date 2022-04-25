@@ -1,4 +1,4 @@
-# Change Data Capture \(CDC\)
+# Change Data Capture (CDC)
 
 ## What is log-based incremental replication?
 

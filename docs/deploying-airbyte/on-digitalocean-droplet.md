@@ -1,4 +1,4 @@
-# On DigitalOcean \(Droplet\)
+# On DigitalOcean (Droplet)
 
 The instructions have been tested on `DigitalOcean Droplet ($5)`. 
 
