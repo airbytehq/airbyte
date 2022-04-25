@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Button, H2 } from "components/base";
 
 interface Props {
-  resourceType: "connection" | "destination" | "source";
+  resourceType: "connections" | "destinations" | "sources";
   onCreateClick: () => void;
   allowCreate?: boolean;
 }
@@ -58,27 +58,34 @@ export const BowtieImg = styled.img`
 `;
 
 export const EmptyListPage: React.FC<Props> = ({ resourceType, onCreateClick, allowCreate }) => {
-  const messageId = useMemo(
-    () => `${resourceType}.new${resourceType.substring(0, 1).toUpperCase() + resourceType.substring(1)}`,
-    [resourceType]
-  );
+  const { headingMessageId, buttonMessageId } = useMemo(() => {
+    const singularResourceType = resourceType.substring(0, resourceType.length - 1);
+    const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
+
+    const headingMessageId = `${baseMessageId}.description`;
+    const buttonMessageId = `${baseMessageId}.new${
+      singularResourceType.substring(0, 1).toUpperCase() + singularResourceType.substring(1)
+    }`;
+
+    return { headingMessageId, buttonMessageId };
+  }, [resourceType]);
 
   return (
     <Container>
       <Heading>
-        <FormattedMessage id={`${resourceType}.description`} />
+        <FormattedMessage id={headingMessageId} />
       </Heading>
       <IllustrationContainer>
-        {resourceType !== "destination" && (
-          <BowtieImg src="/images/bowtie-half.svg" alt="Left Bowtie" className="empty-list-bowtie--right" />
+        {resourceType !== "destinations" && (
+          <BowtieImg src="/images/bowtie-half.svg" alt="Left Bowtie" className="empty-list-bowtie--left" />
         )}
-        {resourceType !== "source" && (
-          <BowtieImg src="/images/bowtie-half.svg" alt="Right Bowtie" className="empty-list-bowtie--left" />
+        {resourceType !== "sources" && (
+          <BowtieImg src="/images/bowtie-half.svg" alt="Right Bowtie" className="empty-list-bowtie--right" />
         )}
         <OctaviaImg src={`/images/octavia/empty-${resourceType}.png`} alt="Octavia" resource={resourceType} />
       </IllustrationContainer>
       <Button onClick={onCreateClick} disabled={!allowCreate} size="xl">
-        <FormattedMessage id={messageId} />
+        <FormattedMessage id={buttonMessageId} />
       </Button>
     </Container>
   );

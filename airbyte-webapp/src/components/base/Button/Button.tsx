@@ -103,7 +103,7 @@ const Button = styled.button<IProps>`
   outline: none;
   border-radius: 4px;
   padding: ${(props) => getPadding(props)};
-  font-weight: ${(props) => (props.size === "xl" ? 300 : 500)};
+  font-weight: ${(props) => (props.size === "xl" ? 600 : 500)};
   font-size: ${(props) => getFontSize(props)}px;
   /* TODO: should try to get rid of line-height altogether */
   line-height: ${(props) => (props.size === "xl" ? "initial" : "15px")};

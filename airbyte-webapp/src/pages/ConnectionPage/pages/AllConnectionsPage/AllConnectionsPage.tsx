@@ -40,7 +40,7 @@ const AllConnectionsPage: React.FC = () => {
           <ConnectionsTable connections={connections} />
         </MainPageWithScroll>
       ) : (
-        <EmptyListPage resourceType="connection" onCreateClick={onCreateClick} allowCreate={allowCreateConnection} />
+        <EmptyListPage resourceType="connections" onCreateClick={onCreateClick} allowCreate={allowCreateConnection} />
       )}
     </Suspense>
   );
