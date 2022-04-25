@@ -15,6 +15,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,6 +167,26 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {}
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new MSSQLTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
 
   @AfterAll
   static void cleanUp() {

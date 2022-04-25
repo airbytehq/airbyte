@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -91,12 +92,18 @@ public class AdvancedTestDataComparator implements TestDataComparator {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
     } else if (expectedValue.isArray() && actualValue.isArray()) {
       return compareArrays(expectedValue, actualValue);
+    } else if (expectedValue.isArray() && isQuotedArray(actualValue)) {
+      return compareArrays(expectedValue, Jsons.deserialize(actualValue.asText()));
     } else if (expectedValue.isObject() && actualValue.isObject()) {
       compareObjects(expectedValue, actualValue);
       return true;
     } else {
       return compareString(expectedValue, actualValue);
     }
+  }
+
+  protected boolean isQuotedArray(JsonNode actualValue) {
+    return actualValue.isTextual() && actualValue.asText().matches("^\\[.*\\]$");
   }
 
   protected boolean compareString(final JsonNode expectedValue, final JsonNode actualValue) {
