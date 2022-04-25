@@ -5,8 +5,11 @@ connector_image: airbyte/source-tiktok-marketing:dev
 tests:
   spec:
     - spec_path: "integration_tests/spec.json"
+
   connection:
     - config_path: "secrets/prod_config.json"
+      status: "succeed"
+    - config_path: "secrets/prod_config_day.json"
       status: "succeed"
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -22,30 +25,60 @@ tests:
       status: "failed"
     - config_path: "integration_tests/invalid_config_oauth.json"
       status: "failed"
+
   discovery:
-    - config_path: "secrets/config.json"
+    - config_path: "secrets/prod_config_day.json"
     - config_path: "secrets/prod_config.json"
+    - config_path: "secrets/config.json"
     - config_path: "secrets/new_config_prod.json"
     - config_path: "secrets/config_oauth.json"
+
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: [ "ads" , "ads_reports", "ad_groups_reports", "campaigns_reports" ]
+    # DAY granularity:
+    - config_path: "secrets/prod_config_day.json"
+      configured_catalog_path: "integration_tests/streams_all.json"
+      timeout_seconds: 1200
+    # LIFETIME granularity:
     - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/configured_prod_catalog.json"
-    - config_path: "secrets/new_config_prod.json"
-      configured_catalog_path: "integration_tests/configured_prod_catalog.json"
-    - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_prod_catalog.json"
+      configured_catalog_path: "integration_tests/streams_lifetime.json"
+      timeout_seconds: 1200
+
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    # LIFETIME granularity: does not support incremental sync
+    # DAY granularity:
+    - config_path: "secrets/prod_config_day.json"
+      configured_catalog_path: "integration_tests/streams_all_incremental.json"
       future_state_path: "integration_tests/abnormal_state.json"
-    - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/configured_prod_catalog.json"
+      timeout_seconds: 600
+      cursor_paths:
+        ads_reports: [ "dimensions", "stat_time_day" ]
+        advertisers_reports: [ "dimensions", "stat_time_day" ]
+        campaigns_reports: [ "dimensions", "stat_time_day" ]
+        ad_groups_reports: [ "dimensions", "stat_time_day" ]
+
+    # audience report streams have unexpected and inexplicable test failure caused by problem with schema (KeyError: 'properties'),
+    # It happens ONLY when incremental tests are run together with discovery tests.
+    # Error can't be reproduced by running test manually or ONLY incremental tests
+    - config_path: "secrets/prod_config_day.json"
+      configured_catalog_path: "integration_tests/streams_audience_incremental.json"
       future_state_path: "integration_tests/abnormal_state.json"
+      timeout_seconds: 600
+      cursor_paths:
+        ad_group_audience_reports: [ "dimensions", "stat_time_day" ]
+        ads_audience_reports: [ "dimensions", "stat_time_day" ]
+        advertisers_audience_reports: [ "dimensions", "stat_time_day" ]
+        campaigns_audience_reports_by_country: [ "dimensions", "stat_time_day" ]
+
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    # DAY granularity:
+    - config_path: "secrets/prod_config_day.json"
+      configured_catalog_path: "integration_tests/streams_all.json"
+      timeout_seconds: 6000
+      ignored_fields:  # Important: sometimes some streams does not return the same records in subsequent syncs
+        "ad_groups": ["dayparting", "enable_search_result", "display_mode", "schedule_infos", "feed_type", "status" ]
+    # LIFETIME granularity:
     - config_path: "secrets/prod_config.json"
-      configured_catalog_path: "integration_tests/configured_prod_catalog.json"
+      configured_catalog_path: "integration_tests/streams_lifetime.json"
+      timeout_seconds: 600
+      ignored_fields:  # Important: sometimes some streams does not return the same records in subsequent syncs
+        "ad_groups": ["dayparting", "enable_search_result", "display_mode", "schedule_infos", "feed_type", "status" ]
