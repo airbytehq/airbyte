@@ -120,11 +120,12 @@ describe("Service Form", () => {
           formType="source"
           onSubmit={handleSubmit}
           selectedConnectorDefinitionSpecification={
+            // @ts-expect-error Partial objects for testing
             {
               connectionSpecification: schema,
               sourceDefinitionId: "1",
               documentationUrl: "",
-            } as unknown as DestinationDefinitionSpecificationRead
+            } as DestinationDefinitionSpecificationRead
           }
           availableServices={[]}
         />
@@ -203,11 +204,12 @@ describe("Service Form", () => {
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
           selectedConnectorDefinitionSpecification={
+            // @ts-expect-error Partial objects for testing
             {
               connectionSpecification: schema,
               sourceDefinitionId: "test-service-type",
               documentationUrl: "",
-            } as unknown as DestinationDefinitionSpecificationRead
+            } as DestinationDefinitionSpecificationRead
           }
           availableServices={[]}
         />
