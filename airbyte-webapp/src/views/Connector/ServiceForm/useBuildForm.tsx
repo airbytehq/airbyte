@@ -1,17 +1,17 @@
-import { AnySchema } from "yup";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import flatten from "flat";
 import { useFormikContext } from "formik";
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
-import flatten from "flat";
 import merge from "lodash/merge";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnySchema } from "yup";
 
+import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
+import { buildPathInitialState } from "core/form/uiWidget";
+import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
-import { buildPathInitialState } from "core/form/uiWidget";
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
-import { applyFuncAt, removeNestedPaths } from "core/jsonSchema";
 
 import { ServiceFormValues } from "./types";
 

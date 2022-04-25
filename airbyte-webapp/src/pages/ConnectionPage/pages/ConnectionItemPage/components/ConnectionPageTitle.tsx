@@ -1,8 +1,8 @@
-import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { H6, Link } from "components";
 import StepsMenu from "components/StepsMenu";
@@ -10,8 +10,8 @@ import StepsMenu from "components/StepsMenu";
 import { Source, Destination } from "core/domain/connector/types";
 import useRouter from "hooks/useRouter";
 
-import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import { RoutePaths } from "../../../../routePaths";
+import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
 type IProps = {
   source: Source;

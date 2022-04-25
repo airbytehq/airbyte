@@ -1,20 +1,20 @@
 import React, { useMemo } from "react";
-import styled from "styled-components";
 import { useIntl } from "react-intl";
+import styled from "styled-components";
 
+import { ConnectorIcon } from "components/ConnectorIcon";
 import StatusIcon from "components/StatusIcon";
 import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
-import { ConnectorIcon } from "components/ConnectorIcon";
 
 import { Status } from "../types";
 
-type IProps = {
+interface Props {
   value: string;
   enabled?: boolean;
   status?: string | null;
   icon?: boolean;
   img?: string;
-};
+}
 
 const Content = styled.div`
   display: flex;
@@ -40,7 +40,7 @@ const Image = styled(ConnectorIcon)`
   margin-right: 6px;
 `;
 
-const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
+const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
   const formatMessage = useIntl().formatMessage;
   const statusIconStatus = useMemo<StatusIconStatus | undefined>(
     () =>
@@ -50,6 +50,8 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
         ? "success"
         : status === Status.INACTIVE
         ? "inactive"
+        : status === Status.PENDING
+        ? "loading"
         : undefined,
     [status]
   );
@@ -65,6 +67,10 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
       : status === Status.ACTIVE
       ? formatMessage({
           id: "connection.successSync",
+        })
+      : status === Status.PENDING
+      ? formatMessage({
+          id: "connection.pendingSync",
         })
       : formatMessage({
           id: "connection.failedSync",

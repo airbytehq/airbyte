@@ -1,11 +1,12 @@
+import { faBan, faCheck, faExclamationTriangle, faTimes, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTimes, faBan, faExclamationTriangle, IconDefinition } from "@fortawesome/free-solid-svg-icons";
 
+import CircleLoader from "./CircleLoader";
 import PauseIcon from "./PauseIcon";
 
-export type StatusIconStatus = "empty" | "inactive" | "success" | "warning";
+export type StatusIconStatus = "empty" | "inactive" | "success" | "warning" | "loading";
 
 interface Props {
   className?: string;
@@ -23,27 +24,29 @@ const _iconByStatus: Partial<Record<StatusIconStatus, IconDefinition | undefined
   warning: faExclamationTriangle,
 };
 
-const _themeByStatus: Record<StatusIconStatus, string> = {
+const _themeByStatus: Partial<Record<StatusIconStatus, string>> = {
   empty: "attentionColor",
   inactive: "lightTextColor",
   success: "successColor",
   warning: "warningColor",
 };
 
-const Badge = styled.div<Props>`
+const Container = styled.div<Props>`
   width: ${(props) => getBadgeWidth(props)}px;
   height: ${({ big }) => (big ? 40 : 20)}px;
-  background: ${(props) => props.theme[(props.status && _themeByStatus[props.status]) || "dangerColor"]};
-  box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
-  border-radius: ${({ value }) => (value ? "15px" : "50%")};
   margin-right: 10px;
-  padding-top: 4px;
-  color: ${({ theme }) => theme.whiteColor};
   font-size: ${({ big }) => (big ? 24 : 12)}px;
   line-height: ${({ big }) => (big ? 33 : 12)}px;
   text-align: center;
   display: inline-block;
   vertical-align: top;
+`;
+
+const Badge = styled(Container)<Props>`
+  background: ${(props) => props.theme[(props.status && _themeByStatus[props.status]) || "dangerColor"]};
+  border-radius: ${({ value }) => (value ? "15px" : "50%")};
+  color: ${({ theme }) => theme.whiteColor};
+  padding-top: 4px;
 `;
 
 const Value = styled.span`
@@ -54,6 +57,17 @@ const Value = styled.span`
 `;
 
 const StatusIcon: React.FC<Props> = ({ title, status, ...props }) => {
+  const valueElement = props.value ? <Value>{props.value}</Value> : null;
+
+  if (status === "loading") {
+    return (
+      <Container>
+        <CircleLoader title={title} />
+        {valueElement}
+      </Container>
+    );
+  }
+
   return (
     <Badge {...props} status={status}>
       {status === "inactive" ? (
@@ -61,7 +75,7 @@ const StatusIcon: React.FC<Props> = ({ title, status, ...props }) => {
       ) : (
         <FontAwesomeIcon icon={(status && _iconByStatus[status]) || faTimes} title={title} />
       )}
-      {props.value && <Value>{props.value}</Value>}
+      {valueElement}
     </Badge>
   );
 };
