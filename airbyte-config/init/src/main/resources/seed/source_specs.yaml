@@ -8335,7 +8335,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.5"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -8377,8 +8377,6 @@
                 title: "Auth Type"
                 const: "oauth2.0"
                 order: 0
-                enum:
-                - "oauth2.0"
                 type: "string"
               app_id:
                 title: "App ID"
@@ -8406,8 +8404,6 @@
                 title: "Auth Type"
                 const: "prod_access_token"
                 order: 0
-                enum:
-                - "prod_access_token"
                 type: "string"
               app_id:
                 title: "App ID"
@@ -8434,8 +8430,6 @@
                 title: "Auth Type"
                 const: "sandbox_access_token"
                 order: 0
-                enum:
-                - "sandbox_access_token"
                 type: "string"
               advertiser_id:
                 title: "Advertiser ID"
