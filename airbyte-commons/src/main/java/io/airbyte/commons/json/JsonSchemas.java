@@ -37,6 +37,7 @@ public class JsonSchemas {
 
   // all JSONSchema types.
   private static final String ARRAY_TYPE = "array";
+  private static final String ENUM_TYPE = "enum";
   private static final String OBJECT_TYPE = "object";
   private static final String STRING_TYPE = "string";
   private static final String NUMBER_TYPE = "number";
@@ -219,6 +220,9 @@ public class JsonSchemas {
       } else {
         return List.of(jsonNode.get(JSON_SCHEMA_TYPE_KEY).asText());
       }
+    }
+    if (jsonNode.has(ENUM_TYPE)) {
+      return List.of(ENUM_TYPE);
     }
     return Collections.emptyList();
   }
