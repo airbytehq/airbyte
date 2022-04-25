@@ -44,7 +44,7 @@ class EnquireLabsStream(HttpStream, ABC):
             next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
-        override this function to add header in your request
+        Override this function to add header in your request
 
         Returns:
             dict: object of headers
@@ -90,6 +90,9 @@ class QuestionResponseStream(EnquireLabsStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        """
+        This method use to add query params in requested URL
+        """
         params = {
             "since": self.since,
             "until": self.until,
@@ -115,7 +118,6 @@ class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
     @property
     def cursor_field(self) -> str:
         """
-        TODO
         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
 
@@ -152,19 +154,16 @@ class SourceEnquireLabs(AbstractSource):
         }
         try:
             response = requests.request("GET", url, headers=headers, data=payload)
-            return True, None
+            connection = True, None
         except Exception as e:
-            return False, e
+            connection = False, e
+
+        return connection
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token=config.get("secret_key"))  # Oauth2Authenticator is also available if you need oauth support
-
         args = {
             "secret_key": config["secret_key"],
             "since": config.get("since"),
