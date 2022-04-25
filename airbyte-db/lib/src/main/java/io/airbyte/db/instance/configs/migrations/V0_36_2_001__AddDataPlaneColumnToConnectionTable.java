@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.configs.migrations;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;
@@ -21,7 +25,7 @@ public class V0_36_2_001__AddDataPlaneColumnToConnectionTable extends BaseJavaMi
     // old migration may not compile if there is any generated code.
     final DSLContext ctx = DSL.using(context.getConnection());
     ctx.alterTable("connection").addColumn(DSL.field("dataplane_label", SQLDataType.VARCHAR(256).nullable(true)))
-      .execute();
+        .execute();
   }
 
 }
