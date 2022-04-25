@@ -557,7 +557,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     if (taskQueueChangeVersion == 1) {
       taskQueue = TemporalJobType.CONNECTION_UPDATER.name();
-    } else if (taskQueueChangeVersion == 2) {
+    } else if (taskQueueChangeVersion == 2 && !dataplaneLabel.isEmpty()) {
       taskQueue = dataplaneLabel + "-" + TemporalJobType.CONNECTION_UPDATER.name();
     }
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
