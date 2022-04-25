@@ -60,7 +60,6 @@ const ConnectionPageTitle: React.FC<Props> = ({ source, destination, connection,
       name: <FormattedMessage id={"connectionForm.transformation.title"} />,
     },
   ];
-  console.log(connection);
 
   connection.status !== ConnectionStatus.DEPRECATED &&
     steps.push({

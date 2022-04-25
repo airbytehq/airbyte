@@ -48,7 +48,6 @@ const StatusMainInfo: React.FC<IProps> = ({
   sourceDefinition,
   allowSync,
 }) => {
-  console.log(connection);
   return (
     <MainInfo>
       <Header>

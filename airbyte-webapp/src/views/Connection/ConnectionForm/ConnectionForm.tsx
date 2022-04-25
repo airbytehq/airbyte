@@ -8,12 +8,7 @@ import { FormChangeTracker } from "components/FormChangeTracker";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 
-import {
-  Connection,
-  ConnectionNamespaceDefinition,
-  ConnectionStatus,
-  ScheduleProperties,
-} from "core/domain/connection";
+import { Connection, ConnectionNamespaceDefinition, ScheduleProperties } from "core/domain/connection";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
@@ -188,10 +183,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
-          <fieldset
-            disabled={connection.status === ConnectionStatus.DEPRECATED}
-            style={{ border: "0", pointerEvents: "none" }}
-          >
+          <fieldset disabled={mode === "readonly"} style={{ border: "0", pointerEvents: "none" }}>
             <FormChangeTracker changed={dirty} formId={formId} />
             <Section title={<FormattedMessage id="connection.transfer" />}>
               <Field name="schedule">
