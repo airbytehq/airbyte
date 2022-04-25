@@ -12,5 +12,6 @@ public enum ConnectorType {
   ORACLE,
   MONGO,
   SNOWFLAKE,
+  REDSHIFT,
   DEFAULT
 }

@@ -8,6 +8,7 @@ import static io.airbyte.integrations.base.errors.utils.ConnectorType.MONGO;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.MSSQL;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.REDSHIFT;
 
 import io.airbyte.integrations.base.errors.messages.DefaultErrorMessage;
 import io.airbyte.integrations.base.errors.messages.ErrorMessage;
@@ -15,6 +16,7 @@ import io.airbyte.integrations.base.errors.messages.MongoDBErrorMessage;
 import io.airbyte.integrations.base.errors.messages.MssqlErrorMessage;
 import io.airbyte.integrations.base.errors.messages.MysqlErrorMessage;
 import io.airbyte.integrations.base.errors.messages.PostgresErrorMessage;
+import io.airbyte.integrations.base.errors.messages.RedshiftErrorMessage;
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import java.util.Map;
 
@@ -24,6 +26,7 @@ public class ErrorMessageFactory {
       MYSQL, new MysqlErrorMessage(),
       POSTGRES, new PostgresErrorMessage(),
       MONGO, new MongoDBErrorMessage(),
+      REDSHIFT, new RedshiftErrorMessage(),
       ConnectorType.DEFAULT, new DefaultErrorMessage());
 
   public static ErrorMessage getErrorMessage(ConnectorType type) {
