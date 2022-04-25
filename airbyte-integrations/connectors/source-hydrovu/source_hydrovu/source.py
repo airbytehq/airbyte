@@ -128,18 +128,30 @@ class Locations(HydroVuStream):
 
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        print ("0===================")
+        print(response.json())
+        print ("1===================")
         def format_record(r):
+
+            print ("r0------------------")
+            print (r)
+            print ("r1------------------")
+
+
             gps = r['gps']
             del r['gps']
             r['latitude'] = gps['latitude']
             r['longitude'] = gps['longitude']
             return r
 
+
+
+
         yield from (format_record(r) for r in response.json())
 
 
 
-class Readings(Locations):
+class Readings(HydroVuStream):
     primary_key = 'id'
 
 
@@ -148,7 +160,9 @@ class Readings(Locations):
 
         locations = Locations(authenticator=auth)
 
-        records = locations.read_records('full-refresh')
+        records = list(locations.read_records('full-refresh'))
+        #records = locations.read_records('full-refresh')
+
 
         #print ("-------------------------")
         #print ("-------------------------")
@@ -160,7 +174,7 @@ class Readings(Locations):
         #print ("-------------------------")
 
 
-        self._pages = (r for r in sorted(r['id'] for r in records))
+        self._pages = (location for location in sorted(location['id'] for location in records))
 
 
     def path(
@@ -175,13 +189,18 @@ class Readings(Locations):
         
         #return "locations/4538855792574464/data"
 
-        location_id = stream_slice['id']
+        #location_id = stream_slice['id']
 
         #print ("location_id")
         #print (location_id)
 
+        location_id = next(self._pages)
+        
+        #location_id = r['id']
 
-        return f"locations/{location_id}/data" 
+        return f"locations/{location_id}/data"
+        
+        #return f"locations/{r}/data"
 
         #return f"locations/{self._pages}/data"
       
@@ -192,7 +211,7 @@ class Readings(Locations):
         try:
             #print ("555-------------------------")
             
-            r = next(self._pages)
+            #r = next(self._pages)
         
             print ("-------------------------")
             print ("-------------------------")
@@ -203,13 +222,13 @@ class Readings(Locations):
             print ("-------------------------")
             print ("-------------------------")
 
-            return r
+            #return r
         except StopIteration:
             pass
 
 
 
-
+    '''
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
             next_page_token: Mapping[str, Any] = None
@@ -230,7 +249,71 @@ class Readings(Locations):
 
         self._request_params_hook(params)
         return params
+    '''
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        print ("2===================")
+        print(response.json())
+        
+        print ("3===================")
+        
+
+        #parse response.json into an iterable list of timestamps, values, and other params and yield that iterable list
+
+        response_json = response.json() 
+
+        yield response_json #works from original response
+
+
+
+
+        #locationId = 
+
+
+
+
+        '''
+        records = response.json()
+        if records:
+            for r in records:
+                #r['monitoring_point_id'] = self._active_page
+            
+                print ("r2------------------")
+                print (r)
+                print ("r3------------------")
+       
+                if "parameters" in r:
+                    print ("param---------")
+
+
+            yield from records
+        '''
+
+
+
+
+        '''
+        def format_record(r):
+
+            print ("r2------------------")
+            print (r)
+            print ("r3------------------")
+    
+            
+
+            #gps = r['gps']
+            #del r['gps']
+            #r['latitude'] = gps['latitude']
+            #r['longitude'] = gps['longitude']
+            
+
+
+            return r
+        '''
+
+
+
+        #yield from (format_record(r) for r in response.json())
 
 
 
