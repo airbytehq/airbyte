@@ -74,7 +74,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
   );
 
   const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
-  console.log(sortingData);
+
   const columns = React.useMemo(
     () => [
       {
