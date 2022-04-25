@@ -17,7 +17,7 @@ class OauthCredSpec(BaseModel):
     class Config:
         title = "OAuth2.0"
 
-    auth_type: str = Field(default="oauth2.0", const=True, order=0, enum=["oauth2.0"])
+    auth_type: str = Field(default="oauth2.0", const=True, order=0)
 
     app_id: str = Field(title="App ID", description="The App ID applied by the developer.", airbyte_secret=True)
 
@@ -30,7 +30,7 @@ class SandboxEnvSpec(BaseModel):
     class Config:
         title = "Sandbox Access Token"
 
-    auth_type: str = Field(default="sandbox_access_token", const=True, order=0, enum=["sandbox_access_token"])
+    auth_type: str = Field(default="sandbox_access_token", const=True, order=0)
 
     # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     advertiser_id: str = Field(
@@ -44,7 +44,7 @@ class ProductionEnvSpec(BaseModel):
     class Config:
         title = "Production Access Token"
 
-    auth_type: str = Field(default="prod_access_token", const=True, order=0, enum=["prod_access_token"])
+    auth_type: str = Field(default="prod_access_token", const=True, order=0)
 
     # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     app_id: str = Field(description="The App ID applied by the developer.", title="App ID")
