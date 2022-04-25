@@ -235,6 +235,11 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         Request params are based on the specific slice (i.e. customer_id) we are requesting for,
         and so we need to pull out relevant slice state from the stream state.
 
+        Ledger entries can either be `pending` or `committed`.
+        We're filtering to only return `committed` ledger entries, which are entries that are older than the
+        reporting grace period (12 hours) and are considered finalized.
+        `pending` entries can change during the reporting grace period, so we don't want to export those entries.
+
         Note that the user of super() here implies that the state for a specific slice of this stream
         is of the same format as the stream_state of a regular incremental stream.
         """
@@ -275,7 +280,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         nested_per_unit_cost_basis = ledger_entry_record["credit_block"]["per_unit_cost_basis"]
         del ledger_entry_record["credit_block"]
         ledger_entry_record["block_expiry_date"] = nested_expiry_date
-        ledger_entry_record["per_unit_cost_basis"] = nested_per_unit_cost_basis
+        ledger_entry_record["credit_block_per_unit_cost_basis"] = nested_per_unit_cost_basis
 
         return ledger_entry_record
 

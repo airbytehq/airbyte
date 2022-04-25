@@ -32,7 +32,7 @@
     "customer_id": {
       "type": "string"
     },
-    "per_unit_cost_basis": {
+    "credit_block_per_unit_cost_basis": {
       "type": ["null", "string"]
     },
     "description": {
@@ -47,7 +47,7 @@
     "created_at",
     "customer_id",
     "entry_type",
-    "per_unit_cost_basis",
+    "credit_block_per_unit_cost_basis",
     "description"
   ]
 }
