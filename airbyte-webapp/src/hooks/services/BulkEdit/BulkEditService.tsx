@@ -1,6 +1,6 @@
+import { setIn } from "formik";
 import React, { useContext, useMemo, useState } from "react";
 import { useSet } from "react-use";
-import { setIn } from "formik";
 
 import { AirbyteStreamConfiguration, SyncSchemaStream } from "core/domain/catalog";
 

@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button, H4, StatusIcon } from "components";
 
@@ -24,7 +24,7 @@ type TryAfterErrorBlockProps = {
 
 const TryAfterErrorBlock: React.FC<TryAfterErrorBlockProps> = ({ message, onClick }) => (
   <Block>
-    <StatusIcon success={false} big />
+    <StatusIcon big />
     <Title center>{message || <FormattedMessage id="form.schemaFailed" />}</Title>
     <AgainButton onClick={onClick} danger>
       <FormattedMessage id="form.tryAgain" />
