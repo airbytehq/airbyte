@@ -166,8 +166,8 @@ create table "public"."workspace_service_account"(
   "workspace_id" uuid not null,
   "service_account_id" varchar(31) not null,
   "service_account_email" varchar(256) not null,
-  "json_credential" jsonb null,
-  "hmac_key" jsonb null,
+  "json_credential" jsonb not null,
+  "hmac_key" jsonb not null,
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
   constraint "workspace_service_account_pkey"
