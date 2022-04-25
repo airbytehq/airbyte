@@ -160,7 +160,7 @@ def test_credits_ledger_entries_stream_slices(mocker):
 def test_credits_ledger_entries_request_params(mocker, current_stream_state, current_stream_slice, next_page_token):
     stream = CreditsLedgerEntries()
     inputs = {"stream_state": current_stream_state, "stream_slice": current_stream_slice, "next_page_token": next_page_token}
-    expected_params = dict(limit=CreditsLedgerEntries.page_size)
+    expected_params = dict(limit=CreditsLedgerEntries.page_size, entry_status="committed")
     current_slice_state = current_stream_state.get(current_stream_slice["customer_id"], {})
     if current_slice_state.get("created_at"):
         expected_params["created_at[gte]"] = current_slice_state["created_at"]
