@@ -25,6 +25,13 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final String DRIVER_CLASS = "org.postgresql.Driver";
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
+  public static final String DATABASE_KEY = "database";
+  public static final String JDBC_URL_KEY = "jdbc_url";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String PASSWORD_KEY = "password";
+  public static final String SSL_KEY = "ssl";
+  public static final String USERNAME_KEY = "username";
+  public static final String SCHEMA_KEY = "schema";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
@@ -55,21 +62,26 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText());
+        config.get(DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl)
-        .put("schema", schema);
+        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
+        .put(JDBC_URL_KEY, jdbcUrl)
+        .put(SCHEMA_KEY, schema);
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(PASSWORD_KEY)) {
+      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
     }
+
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY).asText());
+    }
+
     return Jsons.jsonNode(configBuilder.build());
   }
 
   private boolean useSsl(final JsonNode config) {
-    return !config.has("ssl") || config.get("ssl").asBoolean();
+    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
   }
 
   public static void main(final String[] args) throws Exception {
