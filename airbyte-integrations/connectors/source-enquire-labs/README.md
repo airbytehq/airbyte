@@ -1,7 +1,7 @@
 # Enquire Labs Source
 
 This is the repository for the Enquire Labs source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/enquire-labs).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.enquirelabs.com/docs).
 
 ## Local development
 
@@ -73,9 +73,9 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-enquire-labs:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-enquire-labs:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-enquire-labs:dev discover --config /secrets/config.json
+docker run --rm ghilman17/source-enquires-labs:0.1 spec
+docker run --rm -v $(pwd)/secrets:/secrets ghilman17/source-enquires-labs:0.1 check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets ghilman17/source-enquires-labs:0.1 discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-enquire-labs:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing

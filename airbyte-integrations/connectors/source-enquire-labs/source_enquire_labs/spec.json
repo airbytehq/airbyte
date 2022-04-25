@@ -9,7 +9,8 @@
     "properties": {
       "secret_key": {
         "type": "string",
-        "description": "secret key of enquire labs"
+        "description": "secret key of enquire labs",
+        "airbyte_secret": true
       },
       "since": {
         "type": "string",
