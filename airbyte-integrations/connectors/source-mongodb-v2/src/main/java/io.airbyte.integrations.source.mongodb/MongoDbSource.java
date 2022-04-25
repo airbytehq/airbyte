@@ -161,6 +161,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
         var mongoException = (MongoCommandException) e.getCause();
         String code = String.valueOf(mongoException.getCode());
         throw new ConnectionWrapperErrorException(code, e.getMessage());
+      } catch (ConnectionWrapperErrorException ex) {
+        throw ex;
       } catch (Exception ex) {
         throw new ConnectionWrapperErrorException("", e.getMessage());
       }
