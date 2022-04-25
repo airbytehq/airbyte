@@ -35,6 +35,8 @@ data:
   JOB_MAIN_CONTAINER_MEMORY_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).memory | default "" | quote }}
   JOB_MAIN_CONTAINER_MEMORY_REQUEST: {{ ((.Values.jobs.resources | default dict).requests | default dict).memory | default "" | quote }}
   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.29.15.001"
+  KUBERNETES_AUTH_TRYKUBECONFIG: {{ .Values.kubernetesAuth.tryKubeConfig | quote }}
+  KUBERNETES_AUTH_TRYSERVICEACCOUNT: {{ .Values.kubernetesAuth.tryServiceAccount | quote }}
   LOCAL_ROOT: /tmp/airbyte_local
   RUN_DATABASE_MIGRATION_ON_STARTUP: "true"
   S3_LOG_BUCKET: {{ .Values.logs.s3.bucket | quote }}
