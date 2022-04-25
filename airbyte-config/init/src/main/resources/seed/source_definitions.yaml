@@ -695,7 +695,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.4
+  dockerImageTag: 1.0.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -798,7 +798,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api

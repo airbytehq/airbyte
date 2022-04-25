@@ -84,7 +84,7 @@ const ConnectionItemPage: React.FC = () => {
             element={<TransformationView connection={connection} />}
           />
           <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
-          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} />} />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace={true} />} />
         </Routes>
       </Suspense>
     </MainPageWithScroll>

@@ -1,0 +1,11 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "advertiser_id": {
+      "type": "integer"
+    },
+    "advertiser_name": {
+      "type": "string"
+    }
+  }
+}
