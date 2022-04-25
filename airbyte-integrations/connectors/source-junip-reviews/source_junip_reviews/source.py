@@ -13,28 +13,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 
-class IncrementalJunipReviewsStream(JunipReviewsStream, ABC):
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
-
-
 class SourceJunipReviews(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
