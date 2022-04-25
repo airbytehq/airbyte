@@ -2,17 +2,17 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 // import useConnector from "hooks/services/useConnector";
-import { PageConfig, SettingsRoute } from "pages/SettingsPage/SettingsPage";
+import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
+import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
+import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
+import SettingsPage from "pages/SettingsPage";
 import {
   DestinationsPage as SettingsDestinationPage,
   SourcesPage as SettingsSourcesPage,
 } from "pages/SettingsPage/pages/ConnectorsPage";
-import SettingsPage from "pages/SettingsPage";
 // import ConfigurationsPage from "pages/SettingsPage/pages/ConfigurationsPage";
 import NotificationPage from "pages/SettingsPage/pages/NotificationPage";
-import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
-import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
-import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
+import { PageConfig, SettingsRoute } from "pages/SettingsPage/SettingsPage";
 
 const CloudSettingsRoutes = {
   Configuration: SettingsRoute.Configuration,

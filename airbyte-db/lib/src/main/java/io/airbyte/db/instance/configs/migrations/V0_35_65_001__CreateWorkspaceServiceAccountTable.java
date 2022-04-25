@@ -39,8 +39,8 @@ public class V0_35_65_001__CreateWorkspaceServiceAccountTable extends BaseJavaMi
     final Field<UUID> workspaceId = DSL.field("workspace_id", SQLDataType.UUID.nullable(false));
     final Field<String> serviceAccountId = DSL.field("service_account_id", SQLDataType.VARCHAR(31).nullable(false));
     final Field<String> serviceAccountEmail = DSL.field("service_account_email", SQLDataType.VARCHAR(256).nullable(false));
-    final Field<JSONB> jsonCredential = DSL.field("json_credential", SQLDataType.JSONB.nullable(true));
-    final Field<JSONB> hmacKey = DSL.field("hmac_key", SQLDataType.JSONB.nullable(true));
+    final Field<JSONB> jsonCredential = DSL.field("json_credential", SQLDataType.JSONB.nullable(false));
+    final Field<JSONB> hmacKey = DSL.field("hmac_key", SQLDataType.JSONB.nullable(false));
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
     final Field<OffsetDateTime> updatedAt =

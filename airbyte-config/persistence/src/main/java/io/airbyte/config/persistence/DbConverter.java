@@ -4,6 +4,7 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
@@ -12,6 +13,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE_SERVICE_ACCOU
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -138,6 +140,13 @@ public class DbConverter {
         .withConfiguration(Jsons.deserialize(record.get(ACTOR_OAUTH_PARAMETER.CONFIGURATION).data()))
         .withWorkspaceId(record.get(ACTOR_OAUTH_PARAMETER.WORKSPACE_ID))
         .withSourceDefinitionId(record.get(ACTOR_OAUTH_PARAMETER.ACTOR_DEFINITION_ID));
+  }
+
+  public static ActorCatalog buildActorCatalog(final Record record) {
+    return new ActorCatalog()
+        .withId(record.get(ACTOR_CATALOG.ID))
+        .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
+        .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
   }
 
   public static WorkspaceServiceAccount buildWorkspaceServiceAccount(final Record record) {

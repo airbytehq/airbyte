@@ -37,6 +37,7 @@ Feel free to share your use cases with the community in [#octavia-cli](https://a
 - [Install](#install)
 - [Commands reference](#commands-reference)
 - [Contributing](#contributing)
+- [Telemetry](#telemetry)
 - [Changelog](#changelog)
 
 ## Workflow
@@ -104,7 +105,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.35.66-alpha
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.36.3-alpha
 ```
 
 ### Using `docker-compose`
@@ -137,10 +138,11 @@ docker-compose run octavia-cli <command>`
 
 ### `octavia` command flags
 
-| **Flag**         | **Description**       | **Env Variable**       | **Default**                                            |
-|------------------|-----------------------|------------------------|--------------------------------------------------------|
-| `--airbyte-url`  | Airbyte instance URL. | `AIRBYTE_URL`          | `http://localhost:8000`                                |
-| `--workspace-id` | Airbyte workspace id. | `AIRBYTE_WORKSPACE_ID` | The first workspace id found on your Airbyte instance. |
+| **Flag**                                 | **Description**                                  | **Env Variable**           | **Default**                                            |
+|------------------------------------------|--------------------------------------------------|----------------------------|--------------------------------------------------------|
+| `--airbyte-url`                          | Airbyte instance URL.                            | `AIRBYTE_URL`              | `http://localhost:8000`                                |
+| `--workspace-id`                         | Airbyte workspace id.                            | `AIRBYTE_WORKSPACE_ID`     | The first workspace id found on your Airbyte instance. |
+| `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data. | `OCTAVIA_ENABLE_TELEMETRY` | True                                                   |
 
 ### `octavia` subcommands
 
@@ -348,8 +350,20 @@ $ octavia apply
 6. Run the unittest suite: `pytest --cov=octavia_cli`.
 7. Make sure the build passes (step 0) before opening a PR.
 
+## Telemetry
+This CLI has some telemetry tooling to send Airbyte some data about the usage of this tool.
+We will use this data to improve the CLI and measure its adoption.
+The telemetry sends data about:
+* Which command was run (not the arguments or options used).
+* Success or failure of the command run and the error type (not the error payload).
+* The current Airbyte workspace id if the user has not set the *anonymous data collection* on their Airbyte instance.
+
+You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment variable to `False` or using the `--disable-telemetry` flag.
+
 ## Changelog
 
-| Version | Date       | Description      | PR                                                       |
-|---------|------------|------------------|----------------------------------------------------------|
-| 0.35.61 | 2022-04-07 | Alpha release    | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
+| Version | Date       | Description       | PR                                                       |
+|---------|------------|-------------------|----------------------------------------------------------|
+| 0.36.2  | 2022-04-15 | Improve telemetry | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.68 | 2022-04-12 | Add telemetry     | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.61 | 2022-04-07 | Alpha release     | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|

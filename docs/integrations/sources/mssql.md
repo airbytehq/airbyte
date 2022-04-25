@@ -1,4 +1,4 @@
-# Microsoft SQL Server \(MSSQL\)
+# Microsoft SQL Server (MSSQL)
 
 ## Features
 

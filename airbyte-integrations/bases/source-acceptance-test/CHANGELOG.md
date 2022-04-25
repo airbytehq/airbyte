@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.50
+Added support for passing a `.yaml` file as `spec_path`.
+
 ## 0.1.49
 Fixed schema parsing when a JSONschema `type` was not present - we now assume `object` if the `type` is not present.
 

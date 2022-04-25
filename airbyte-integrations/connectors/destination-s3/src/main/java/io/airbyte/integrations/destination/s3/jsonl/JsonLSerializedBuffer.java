@@ -14,6 +14,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.record_buffer.BaseSerializedBuffer;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.OutputStream;
@@ -24,16 +26,14 @@ import java.util.concurrent.Callable;
 
 public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
-  public static final String JSONL_GZ_SUFFIX = ".jsonl.gz";
-
   private static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   private PrintWriter printWriter;
 
-  protected JsonLSerializedBuffer(final BufferStorage bufferStorage) throws Exception {
+  protected JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression) throws Exception {
     super(bufferStorage);
     // we always want to compress jsonl files
-    withCompression(true);
+    withCompression(gzipCompression);
   }
 
   @Override
@@ -62,8 +62,13 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
   public static CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> createFunction(final S3JsonlFormatConfig config,
                                                                                                                                           final Callable<BufferStorage> createStorageFunction) {
-    return (final AirbyteStreamNameNamespacePair stream,
-            final ConfiguredAirbyteCatalog catalog) -> new JsonLSerializedBuffer(createStorageFunction.call());
+    return (final AirbyteStreamNameNamespacePair stream, final ConfiguredAirbyteCatalog catalog) -> {
+      final CompressionType compressionType = config == null
+          ? S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
+          : config.getCompressionType();
+      return new JsonLSerializedBuffer(createStorageFunction.call(), compressionType != CompressionType.NO_COMPRESSION);
+    };
+
   }
 
 }

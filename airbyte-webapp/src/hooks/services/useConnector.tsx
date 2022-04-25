@@ -1,18 +1,18 @@
 import { useMemo } from "react";
 import { useMutation } from "react-query";
 
+import { useConfig } from "config";
+import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector, Scheduler } from "core/domain/connector";
-import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
+import { DestinationService } from "core/domain/connector/DestinationService";
+import { SourceService } from "core/domain/connector/SourceService";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
 } from "services/connector/DestinationDefinitionService";
-import { DestinationService } from "core/domain/connector/DestinationService";
-import { useConfig } from "config";
+import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { SourceService } from "core/domain/connector/SourceService";
-import { ConnectionConfiguration } from "core/domain/connection";
 
 type ConnectorService = {
   hasNewVersions: boolean;
