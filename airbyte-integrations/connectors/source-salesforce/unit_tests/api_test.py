@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+
 import csv
 import io
 import re
@@ -71,7 +72,7 @@ def test_stream_has_no_state_bulk_api_should_be_used(stream_config, stream_api):
     assert isinstance(stream, BulkSalesforceStream)
 
 
-@pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 193434])
+@pytest.mark.parametrize("item_number", [0, 15, 2000, 2324, 3000])
 def test_bulk_sync_pagination(item_number, stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     test_ids = [i for i in range(1, item_number)]
@@ -203,12 +204,12 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", f"{job_full_url}/results", content=b"\x00")
-        res = list(stream.download_data(url=job_full_url))
+        res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
         assert res == []
 
         m.register_uri("GET", f"{job_full_url}/results", content=b'"Id","IsDeleted"\n\x00"0014W000027f6UwQAI","false"\n\x00\x00')
-        res = list(stream.download_data(url=job_full_url))
-        assert res == [(1, {"Id": "0014W000027f6UwQAI", "IsDeleted": "false"})]
+        res = list(stream.read_with_chunks(stream.download_data(url=job_full_url)))
+        assert res == [(1, {"Id": "0014W000027f6UwQAI", "IsDeleted": False})]
 
 
 def test_check_connection_rate_limit(stream_config):
@@ -406,9 +407,9 @@ def test_csv_reader_dialect_unix():
     url = "https://fake-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
 
     data = [
-        {"Id": "1", "Name": '"first_name" "last_name"'},
-        {"Id": "2", "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
-        {"Id": "3", "Name": "first_name last_name"},
+        {"Id": 1, "Name": '"first_name" "last_name"'},
+        {"Id": 2, "Name": "'" + 'first_name"\n' + "'" + 'last_name\n"'},
+        {"Id": 3, "Name": "first_name last_name"},
     ]
 
     with io.StringIO("", newline="") as csvfile:
@@ -420,7 +421,7 @@ def test_csv_reader_dialect_unix():
 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", url + "/results", text=text)
-        result = [dict(i[1]) for i in stream.download_data(url)]
+        result = [dict(i[1]) for i in stream.read_with_chunks(stream.download_data(url))]
         assert result == data
 
 
@@ -428,16 +429,16 @@ def test_csv_reader_dialect_unix():
     "stream_names,catalog_stream_names,",
     (
         (
-            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
             None,
         ),
         (
             ["stream_1", "stream_2"],
-            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
         ),
         (
-            ["stream_1", "stream_2", "stream_3"],
-            ["stream_1"],
+            ["stream_1", "stream_2", "stream_3", "Describe"],
+            ["stream_1", "Describe"],
         ),
     ),
 )
@@ -481,7 +482,7 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                         "flag1": True,
                         "queryable": True,
                     }
-                    for stream_name in stream_names
+                    for stream_name in stream_names if stream_name != "Describe"
                 ],
             },
         )
@@ -490,7 +491,8 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
     assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
 
     for stream in streams:
-        assert stream.sobject_options == {"flag1": True, "queryable": True}
+        if stream.name != "Describe":
+            assert stream.sobject_options == {"flag1": True, "queryable": True}
     return
 
 

@@ -261,7 +261,7 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
     return run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json")
 
 
-def run_destination_process(destination_type: DestinationType, test_root_dir: str, message_file: str, catalog_file: str):
+def run_destination_process(destination_type: DestinationType, test_root_dir: str, message_file: str, catalog_file: str, docker_tag="dev"):
     commands = [
         "docker",
         "run",
@@ -272,7 +272,7 @@ def run_destination_process(destination_type: DestinationType, test_root_dir: st
         "--network",
         "host",
         "-i",
-        f"airbyte/destination-{destination_type.value.lower()}:dev",
+        f"airbyte/destination-{destination_type.value.lower()}:{docker_tag}",
         "write",
         "--config",
         "/data/destination_config.json",
@@ -494,3 +494,42 @@ def to_lower_identifier(input: re.Match) -> str:
         return f"{input.group(1)}{input.group(2).lower()}{input.group(3)}"
     else:
         raise Exception(f"Unexpected number of groups in {input}")
+
+
+def test_redshift_normalization_migration(tmp_path, setup_test_path):
+    destination_type = DestinationType.REDSHIFT
+    base_dir = pathlib.Path(os.path.realpath(os.path.join(__file__, "../..")))
+    resources_dir = base_dir / "integration_tests/resources/redshift_normalization_migration"
+    catalog_file = base_dir / resources_dir / "destination_catalog.json"
+    messages_file1 = base_dir / resources_dir / "messages1.txt"
+    messages_file2 = base_dir / resources_dir / "messages2.txt"
+    dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql"
+
+    shutil.copytree(base_dir / "dbt-project-template", tmp_path, dirs_exist_ok=True)
+    shutil.copytree(base_dir / "dbt-project-template-redshift", tmp_path, dirs_exist_ok=True)
+    shutil.copy(catalog_file, tmp_path / "destination_catalog.json")
+
+    (tmp_path / "tests").mkdir()
+    shutil.copy(dbt_test_sql, tmp_path / "tests/test_pokemon_super.sql")
+
+    destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, tmp_path, random_schema=True)
+    with open(tmp_path / "destination_config.json", "w") as f:
+        f.write(json.dumps(destination_config))
+
+    transform_catalog = TransformCatalog()
+    transform_catalog.config = {
+        "integration_type": destination_type.value,
+        "schema": destination_config["schema"],
+        "catalog": [catalog_file],
+        "output_path": os.path.join(tmp_path, "models", "generated"),
+        "json_column": "_airbyte_data",
+        "profile_config_dir": tmp_path,
+    }
+    transform_catalog.process_catalog()
+
+    run_destination_process(destination_type, tmp_path, messages_file1, "destination_catalog.json", docker_tag="0.3.29")
+    dbt_test_utils.dbt_check(destination_type, tmp_path)
+    dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=True)
+    run_destination_process(destination_type, tmp_path, messages_file2, "destination_catalog.json", docker_tag="dev")
+    dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=False)
+    dbt_test(destination_type, tmp_path)
