@@ -170,6 +170,30 @@ def test_credits_ledger_entries_request_params(mocker, current_stream_state, cur
     assert stream.request_params(**inputs) == expected_params
 
 
+def test_credits_ledger_entries_transform_record(mocker):
+    stream = CreditsLedgerEntries()
+    ledger_entry_record = {
+        "event_id": "foo-event-id",
+        "entry_type": "decrement",
+        "customer": {
+            "id": "foo-customer-id",
+        },
+        "credit_block": {
+            "expiry_date": "2023-01-25T12:00:00+00:00",
+            "per_unit_cost_basis": "2.50"
+        }
+    }
+
+    # Validate that calling transform record unwraps nested customer and credit block fields.
+    assert stream.transform_record(ledger_entry_record) == {
+            "event_id": "foo-event-id",
+            "entry_type": "decrement",
+            "customer_id": "foo-customer-id",
+            "block_expiry_date": "2023-01-25T12:00:00+00:00",
+            "credit_block_per_unit_cost_basis": "2.50"
+        }
+
+
 @responses.activate
 def test_credits_ledger_entries_no_matching_events(mocker):
     stream = CreditsLedgerEntries(string_event_properties_keys=["ping"])
