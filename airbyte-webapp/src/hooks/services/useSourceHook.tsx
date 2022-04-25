@@ -1,19 +1,19 @@
-import { useMutation, useQueryClient } from "react-query";
 import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
 
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { Source } from "core/domain/connector";
 import { useConfig } from "config";
+import { SyncSchema } from "core/domain/catalog";
+import { Connection, ConnectionConfiguration } from "core/domain/connection";
+import { Source } from "core/domain/connector";
+import { SourceService } from "core/domain/connector/SourceService";
+import { JobInfo } from "core/domain/job";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { SourceService } from "core/domain/connector/SourceService";
 import { isDefined } from "utils/common";
-import { SyncSchema } from "core/domain/catalog";
-import { JobInfo } from "core/domain/job";
 
-import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -175,10 +175,12 @@ const useDiscoverSchema = (
   isLoading: boolean;
   schema: SyncSchema;
   schemaErrorStatus: { status: number; response: JobInfo } | null;
+  catalogId: string;
   onDiscoverSchema: () => Promise<void>;
 } => {
   const service = useSourceService();
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
+  const [catalogId, setCatalogId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
     status: number;
@@ -191,6 +193,7 @@ const useDiscoverSchema = (
     try {
       const data = await service.discoverSchema(sourceId || "");
       setSchema(data.catalog);
+      setCatalogId(data.catalogId);
     } catch (e) {
       setSchemaErrorStatus(e);
     } finally {
@@ -207,7 +210,7 @@ const useDiscoverSchema = (
     })();
   }, [onDiscoverSchema, sourceId]);
 
-  return { schemaErrorStatus, isLoading, schema, onDiscoverSchema };
+  return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };
 };
 
 export { useSourceList, useGetSource, useCreateSource, useDeleteSource, useUpdateSource, useDiscoverSchema };

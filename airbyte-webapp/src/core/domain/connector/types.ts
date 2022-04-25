@@ -1,5 +1,5 @@
-import { ConnectionConfiguration, ConnectionSpecification } from "core/domain/connection";
 import { DestinationSyncMode, SourceDiscoverSchemaRead } from "core/domain/catalog";
+import { ConnectionConfiguration, ConnectionSpecification } from "core/domain/connection";
 
 import { JobInfo } from "../job";
 
