@@ -134,7 +134,7 @@ def test_random_items(prepared_prod_args):
     "config, stream_len",
     [
         (PROD_CONFIG_FILE, 10),
-        (SANDBOX_CONFIG_FILE, 9),
+        (SANDBOX_CONFIG_FILE, 8),
         (PROD_CONFIG_DAY_FILE, 13),
     ],
 )

@@ -10,20 +10,20 @@ This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connec
 
 ### Streams information
 
-| Stream                            | Granularities     | Key         | Incremental    | Schema                                                                                        |
-|:----------------------------------|-------------------|-------------|:---------------|-----------------------------------------------------------------------------------------------|
-| Advertisers                       |                   | id          | No             | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708503202263042)                |
-| AdGroups                          | LIFETIME,DAY,HOUR | adgroup_id  | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708503489590273)                |
-| Ads                               | LIFETIME,DAY,HOUR | ad_id       | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708572923161602)                |
-| Campaigns                         | LIFETIME,DAY,HOUR | campaign_id | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708582970809346)                |
-| AdsReports                        | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
-| AdvertisersReports                | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
-| AdGroupsReports                   | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
-| CampaignsReports                  | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
-| AdvertisersAudienceReports        | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
-| AdGroupAudienceReports            | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
-| AdsAudienceReports                | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
-| CampaignsAudienceReportsByCountry | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
+| Stream                            | Environment  | Granularities     | Key         | Incremental    | Schema                                                                                        |
+|:----------------------------------|--------------|-------------------|-------------|:---------------|-----------------------------------------------------------------------------------------------|
+| Advertisers                       | Prod,Sandbox | LIFETIME,DAY,HOUR | id          | No             | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708503202263042)                |
+| AdGroups                          | Prod,Sandbox | LIFETIME,DAY,HOUR | adgroup_id  | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708503489590273)                |
+| Ads                               | Prod,Sandbox | LIFETIME,DAY,HOUR | ad_id       | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708572923161602)                |
+| Campaigns                         | Prod,Sandbox | LIFETIME,DAY,HOUR | campaign_id | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708582970809346)                |
+| AdsReports                        | Prod,Sandbox | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
+| AdvertisersReports                | Prod         | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
+| AdGroupsReports                   | Prod,Sandbox | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
+| CampaignsReports                  | Prod,Sandbox | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
+| AdvertisersAudienceReports        | Prod         | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
+| AdGroupAudienceReports            | Prod,Sandbox | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
+| AdsAudienceReports                | Prod,Sandbox | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
+| CampaignsAudienceReportsByCountry | Prod,Sandbox | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
