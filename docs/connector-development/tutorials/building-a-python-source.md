@@ -161,7 +161,7 @@ Each source contains a specification that describes what inputs it needs in orde
 
 For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-specification.md).
 
-The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.yaml` (or, alternatively, `spec.json`) in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.yaml` you should be done with this step.
+The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.yaml` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.yaml` you should be done with this step.
 
 ### Step 5: Implement `check`
 
