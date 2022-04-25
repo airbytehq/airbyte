@@ -17,8 +17,8 @@ else
   exit 1
 fi
 
-# if a file exists there, source it. otherwise complain
-if test $(git remote get-url origin | grep --quiet "git@github.com"); then
+# if a string
+if test $(git remote get-url origin | grep --quiet "http://"); then
   echo -e "$red_text""This program requires a ssh-based github repo""$default_text"
   echo -e "$red_text""https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account""$default_text"
   echo -e "$red_text""You will need to change your remote to continue.  Yell @topher for help""$default_text"
