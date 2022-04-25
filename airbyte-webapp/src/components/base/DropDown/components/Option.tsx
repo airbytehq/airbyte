@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { components, OptionProps, OptionTypeBase } from "react-select";
+import styled from "styled-components";
 
 import CheckBox from "components/base/CheckBox";
 

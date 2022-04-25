@@ -34,6 +34,7 @@ enum Status {
   INACTIVE = "inactive",
   FAILED = "failed",
   EMPTY = "empty",
+  PENDING = "pending",
 }
 
 enum SortOrderEnum {

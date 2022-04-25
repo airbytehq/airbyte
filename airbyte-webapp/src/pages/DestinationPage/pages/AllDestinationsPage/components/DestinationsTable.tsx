@@ -1,12 +1,12 @@
 import React from "react";
 
 import { ImplementationTable } from "components/EntityTable";
-import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
+import { getEntityTableData } from "components/EntityTable/utils";
 
-import useRouter from "hooks/useRouter";
-import { useConnectionList } from "hooks/services/useConnectionHook";
 import { Destination } from "core/domain/connector";
+import { useConnectionList } from "hooks/services/useConnectionHook";
+import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 type IProps = {
