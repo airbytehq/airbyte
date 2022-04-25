@@ -24,6 +24,7 @@ LINK_REGEX = re.compile(r'<(.*?)>;\s*rel="next"')
 class FreshdeskStream(HttpStream, ABC):
     """Basic stream API that allows to iterate over entities"""
     call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
+    result_return_limit = 100
     primary_key = "id"
 
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
@@ -62,14 +63,17 @@ class FreshdeskStream(HttpStream, ABC):
             match = LINK_REGEX.search(link_header)
             next_url = match.group(1)
             params = parse.parse_qs(parse.urlparse(next_url).query)
-            return {"per_page": params['per_page'][0], "page": params['page'][0]}
+            return self.parse_link_params(link_query_params=params)
         except Exception as e:
             raise KeyError(f"error parsing next_page token: {e}")
+    
+    def parse_link_params(self, link_query_params: Mapping[str, List[str]]) -> Mapping[str, Any]:
+        return {"per_page": link_query_params['per_page'][0], "page": link_query_params['page'][0]}
     
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"per_page": 100}
+        params = {"per_page": self.result_return_limit}
         if next_page_token and "page" in next_page_token:
             params["page"] = next_page_token["page"]
         return params
@@ -99,6 +103,8 @@ class FreshdeskStream(HttpStream, ABC):
 
 class IncrementalFreshdeskStream(FreshdeskStream, ABC):
 
+    state_filter = "updated_since"  # Name of filter that corresponds to the state
+
     @property
     def cursor_field(self) -> str:
         return "updated_at"
@@ -111,7 +117,7 @@ class IncrementalFreshdeskStream(FreshdeskStream, ABC):
             current_stream_state_date = pendulum.parse(current_stream_state_date)
         latest_record_date = pendulum.parse(latest_record.get("updated_at")) if latest_record.get("updated_at") else self.start_date
 
-        return {"updated_at": max(current_stream_state_date, latest_record_date)}
+        return {"updated_at": max(current_stream_state_date, latest_record_date).strftime("%Y-%m-%dT%H:%M:%SZ")}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -168,7 +174,6 @@ class TimeEntries(FreshdeskStream):
 
 
 class Tickets(IncrementalFreshdeskStream):
-    state_filter = "updated_since"
     ticket_paginate_limit = 300
 
     def path(self, **kwargs) -> str:
@@ -178,8 +183,18 @@ class Tickets(IncrementalFreshdeskStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params.update({
+            "order_type": "asc",  # ASC order, to get the old records first
+            "order_by": "updated_at",
+        })
         if next_page_token and "updated_since" in next_page_token:
             params["updated_since"] = next_page_token["updated_since"]
+        return params
+    
+    def parse_link_params(self, link_query_params: Mapping[str, List[str]]) -> Mapping[str, Any]:
+        params = super().parse_link_params(link_query_params)
+        if "updated_since" in link_query_params:
+            params["updated_since"] = link_query_params["updated_since"][0]
         return params
     
     def read_records(
@@ -200,7 +215,6 @@ class Tickets(IncrementalFreshdeskStream):
         pagination_complete = False
 
         next_page_token = None
-        page = 1
         with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
             while not pagination_complete:
                 request_headers = self.request_headers(
@@ -219,15 +233,13 @@ class Tickets(IncrementalFreshdeskStream):
 
                 next_page_token = self.next_page_token(response)
                 # checkpoint & switch the pagination
-                if page == self.ticket_paginate_limit and next_page_token:
+                if next_page_token and int(next_page_token["page"]) > self.ticket_paginate_limit:
                     # get last_record from latest batch, pos. -1, because of ACS order of records
                     last_record_updated_at = tickets[-1]["updated_at"]
-                    page = 0  # reset page counter
                     last_record_updated_at = pendulum.parse(last_record_updated_at)
                     # updating request parameters with last_record state
                     next_page_token["updated_since"] = last_record_updated_at
-                # Increment page
-                page += 1
+                    del next_page_token["page"]
 
                 if not next_page_token:
                     pagination_complete = True
