@@ -5,8 +5,7 @@ import { FormattedMessage } from "react-intl";
 import { ControlLabels, DropDown } from "components";
 
 import { NamespaceDefinitionType } from "../../../../core/request/GeneratedApi";
-
-import { LeftFieldCol, RightFieldCol, FlexRow } from "../ConnectionForm";
+import { FlexRow, LeftFieldCol, RightFieldCol } from "../ConnectionForm";
 
 export const StreamOptions = [
   {
