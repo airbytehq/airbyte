@@ -28,8 +28,7 @@ class JunipReviewsStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
+        This method is for add query params in request URL
         """
         params = {}
 
@@ -41,7 +40,9 @@ class JunipReviewsStream(HttpStream, ABC):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-
+        """
+        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        """
         return {"Junip_Store_key": self.junip_store_key}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
