@@ -55,7 +55,9 @@ class BaseSchemaModel(BaseModel):
         schema.pop("definitions", None)  # remove definitions created by $ref
         return schema
 
-    object: str
+class TimeStampBaseSchemaModel(BaseSchemaModel):
+    updated_at: datetime
+    created_at: datetime
 
 
 class Address(BaseSchemaModel):
@@ -68,53 +70,43 @@ class Address(BaseSchemaModel):
     address_source: Optional[str]
 
 
-class Customer(BaseSchemaModel):
+class Customer(TimeStampBaseSchemaModel):
     id: int
     first_name: str
     last_name: str
     email: str
-    updated_at: datetime
-    created_at: datetime
     platform_type: str
     list_type: str
     folder: Optional[str]
     address: Optional[list[Address]]
 
 
-class Category(BaseSchemaModel):
+class Category(TimeStampBaseSchemaModel):
     id: int
     name: str
-    updated_at: datetime
-    created_at: datetime
 
-class Image(BaseSchemaModel):
+class Image(TimeStampBaseSchemaModel):
     id: int
     src: str
-    updated_at: datetime
-    created_at: datetime
 
 
-class Variant(BaseSchemaModel):
+class Variant(TimeStampBaseSchemaModel):
     id: int
     name: str
     sku: str
     weight_unit: str
     image_url: str
-    updated_at: datetime
-    created_at: datetime
     price: float
     cost: float
 
 
-class Product(BaseSchemaModel):
+class Product(TimeStampBaseSchemaModel):
     id: int
     name: str
     handle: str
     description: str
     type: str
     vendor: str
-    updated_at: datetime
-    created_at: datetime
     url: str
     tags: str
     categories: Optional[list[Category]]
