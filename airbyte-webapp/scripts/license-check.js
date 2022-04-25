@@ -60,6 +60,7 @@ const IGNORED_PACKAGES = [`airbyte-webapp@${version}`];
 const LICENSE_OVERWRITES = {
   "glob-to-regexp@0.3.0": "BSD-3-Clause",
   "trim@0.0.1": "MIT",
+  "backslash@0.2.0": "MIT",
 };
 
 const checkLicenses = promisify(checker.init);
@@ -82,10 +83,8 @@ function validateLicenes(licenses, allowedLicenes, usedOverwrites) {
       console.log(`Guessed license for package ${pkg}: ${license}`);
     }
     if (!license || !allowedLicenes.includes(license)) {
-      if (pkg !== "backslash@0.2.0") {
-        licensesValid = false;
-        console.error(`Package ${pkg} has incompatible license: ${license}`);
-      }
+      licensesValid = false;
+      console.error(`Package ${pkg} has incompatible license: ${license}`);
     }
   }
 
