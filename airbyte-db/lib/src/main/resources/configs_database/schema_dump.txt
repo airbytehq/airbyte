@@ -101,6 +101,7 @@ create table "public"."connection"(
   "created_at" timestamptz(35) not null default null,
   "updated_at" timestamptz(35) not null default null,
   "source_catalog_id" uuid null,
+  "dataplane_label" varchar(256) null,
   constraint "connection_pkey"
     primary key ("id")
 );

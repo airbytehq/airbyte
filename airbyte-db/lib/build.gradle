@@ -13,6 +13,7 @@ dependencies {
     implementation project(':airbyte-config:models')
     implementation "org.flywaydb:flyway-core:7.14.0"
     implementation "org.testcontainers:postgresql:1.15.3"
+
     // These are required because gradle might be using lower version of Jna from other
     // library transitive dependency. Can be removed if we can figure out which library is the cause.
     // Refer: https://github.com/testcontainers/testcontainers-java/issues/3834#issuecomment-825409079
