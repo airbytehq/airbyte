@@ -57,7 +57,12 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
 
   const sortData = useCallback(
     (a, b) => {
-      const result = a[`${sortBy}Name`].toLowerCase().localeCompare(b[`${sortBy}Name`].toLowerCase());
+      let result;
+      if (sortBy === "lastSync") {
+        result = b[sortBy] - a[sortBy];
+      } else {
+        result = a[`${sortBy}Name`].toLowerCase().localeCompare(b[`${sortBy}Name`].toLowerCase());
+      }
 
       if (sortOrder === SortOrderEnum.DESC) {
         return -1 * result;
@@ -69,7 +74,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
   );
 
   const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
-
+  console.log(sortingData);
   const columns = React.useMemo(
     () => [
       {
@@ -129,7 +134,16 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         ),
       },
       {
-        Header: <FormattedMessage id="tables.lastSync" />,
+        Header: (
+          <>
+            <FormattedMessage id="tables.lastSync" />
+            <SortButton
+              wasActive={sortBy === "lastSync"}
+              lowToLarge={sortOrder === SortOrderEnum.ASC}
+              onClick={() => onSortClick("lastSync")}
+            />
+          </>
+        ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <LastSyncCell timeInSecond={cell.value} enabled={row.original.enabled} />
