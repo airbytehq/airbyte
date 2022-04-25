@@ -8,32 +8,24 @@ The TikTok Marketing source supports both Full Refresh and Incremental syncs. Yo
 
 This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
-### Output schema
+### Streams information
 
-Several output streams are available from this source:
-
-* [Advertisers](https://business-api.tiktok.com/marketing_api/docs?id=1708503202263042) \(Full Refresh\)
-* [Campaigns](https://business-api.tiktok.com/marketing_api/docs?id=1708582970809346) \(Incremental\)
-* [Ad Groups](https://business-api.tiktok.com/marketing_api/docs?id=1708503489590273)\(Incremental\)
-* [Ads](https://business-api.tiktok.com/marketing_api/docs?id=1708572923161602)\(Incremental\)
+| Stream                            | Granularities     | Key         | Incremental    | Schema                                                                                        |
+|:----------------------------------|-------------------|-------------|:---------------|-----------------------------------------------------------------------------------------------|
+| Advertisers                       |                   | id          | No             | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708503202263042)                |
+| AdGroups                          | LIFETIME,DAY,HOUR | adgroup_id  | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708503489590273)                |
+| Ads                               | LIFETIME,DAY,HOUR | ad_id       | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708572923161602)                |
+| Campaigns                         | LIFETIME,DAY,HOUR | campaign_id | Yes (DAY,HOUR) | [Link](https://business-api.tiktok.com/marketing_api/docs?id=1708582970809346)                |
+| AdsReports                        | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
+| AdvertisersReports                | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
+| AdGroupsReports                   | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
+| CampaignsReports                  | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [BasicReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957200780290)    |
+| AdvertisersAudienceReports        | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
+| AdGroupAudienceReports            | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
+| AdsAudienceReports                | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
+| CampaignsAudienceReportsByCountry | DAY,HOUR          | None        | Yes (DAY,HOUR) | [AudienceReportsLink](https://business-api.tiktok.com/marketing_api/docs?id=1707957217727489) |
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
-
-| Stream                            | Granularities     | Key         | Incremental    |
-|:----------------------------------|-------------------|-------------|:---------------|
-| Advertisers                       |                   | id          | No             |
-| AdGroups                          | LIFETIME,DAY,HOUR | adgroup_id  | Yes (DAY,HOUR) |
-| Ads                               | LIFETIME,DAY,HOUR | ad_id       | Yes (DAY,HOUR) |
-| Campaigns                         | LIFETIME,DAY,HOUR | campaign_id | Yes (DAY,HOUR) |
-| AdsReports                        | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| AdvertisersReports                | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| AdGroupsReports                   | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| CampaignsReports                  | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| AdvertisersAudienceReports        | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| AdGroupAudienceReports            | DAY,HOUR          | None        | Yes (DAY,HOUR) |
-| AdsAudienceReports                | DAY,HOUR          | None        | Yes (DAY,HOUR) |
-| CampaignsAudienceReportsByCountry | DAY,HOUR          | None        | Yes (DAY,HOUR) |
-
 
 ### Features
 
