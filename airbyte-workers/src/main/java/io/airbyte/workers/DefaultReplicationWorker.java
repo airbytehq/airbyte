@@ -4,9 +4,6 @@
 
 package io.airbyte.workers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
@@ -17,24 +14,17 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.validation.json.JsonSchemaValidator;
-import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.MessageTracker;
-import io.airbyte.workers.RecordSchemaValidator;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -81,11 +71,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final RecordSchemaValidator recordSchemaValidator;
 
   public DefaultReplicationWorker(final String jobId,
-      final int attempt,
-      final AirbyteSource source,
-      final AirbyteMapper mapper,
-      final AirbyteDestination destination,
-      final MessageTracker messageTracker) {
+                                  final int attempt,
+                                  final AirbyteSource source,
+                                  final AirbyteMapper mapper,
+                                  final AirbyteDestination destination,
+                                  final MessageTracker messageTracker) {
     this(jobId, attempt, source, mapper, destination, messageTracker, new RecordSchemaValidator());
   }
 
@@ -316,7 +306,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             if (message.getRecord() != null) {
               try {
                 recordSchemaValidator.validateSchema(message, syncInput);
-              } catch(final RecordSchemaValidationException e) {
+              } catch (final RecordSchemaValidationException e) {
                 LOGGER.warn(e.getMessage());
               }
             }

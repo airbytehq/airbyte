@@ -1,4 +1,11 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
@@ -7,11 +14,9 @@ import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-
 
 public class RecordSchemaValidatorTest {
+
   private StandardSyncInput syncInput;
   private static final String STREAM_NAME = "favorite_color_pipeuser_preferences";
   private static final String FIELD_NAME = "favorite_color";
@@ -35,4 +40,5 @@ public class RecordSchemaValidatorTest {
     final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator();
     assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD, syncInput));
   }
+
 }
