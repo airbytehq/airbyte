@@ -258,7 +258,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.27
+  dockerImageTag: 0.2.28
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -438,7 +438,7 @@
 - name: Mailchimp
   sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
@@ -812,7 +812,7 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api
