@@ -1,8 +1,10 @@
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { ReleaseStage } from "core/domain/connector";
+import { GAIcon } from "components/icons/GAIcon";
 import ToolTip from "components/ToolTip";
+
+import { ReleaseStage } from "core/domain/connector";
 
 const Stage = styled.div<{ $small: boolean }>`
   display: inline-block;
@@ -24,28 +26,23 @@ interface Props {
   tooltip?: boolean;
 }
 
-export const ReleaseStageBadge: React.FC<Props> = ({
-  stage,
-  small,
-  tooltip = true,
-}) => {
-  if (
-    !stage ||
-    stage === ReleaseStage.GENERALLY_AVAILABLE ||
-    stage === ReleaseStage.CUSTOM
-  ) {
+export const ReleaseStageBadge: React.FC<Props> = ({ stage, small, tooltip = true }) => {
+  if (!stage || stage === ReleaseStage.CUSTOM) {
     return null;
   }
 
-  const badge = (
-    <Stage $small={!!small}>
-      <FormattedMessage id={`component.releaseStageBadge.${stage}.title`} />
-    </Stage>
-  );
+  const badge =
+    stage === ReleaseStage.GENERALLY_AVAILABLE ? (
+      <GAIcon />
+    ) : (
+      <Stage $small={!!small}>
+        <FormattedMessage id={`connector.releaseStage.${stage}`} />
+      </Stage>
+    );
 
   return tooltip ? (
     <ToolTip control={badge} cursor="help">
-      <FormattedMessage id={`component.releaseStageBadge.${stage}.tooltip`} />
+      <FormattedMessage id={`connector.releaseStage.${stage}.description`} />
     </ToolTip>
   ) : (
     badge

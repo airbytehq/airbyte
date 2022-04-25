@@ -1,24 +1,27 @@
+import GlobalStyle from "global-styles";
 import React, { Suspense } from "react";
-import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { BrowserRouter as Router } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
 
-import en from "locales/en.json";
-import cloudLocales from "packages/cloud/locales/en.json";
-import GlobalStyle from "global-styles";
-import { theme } from "packages/cloud/theme";
-
-import { Routing } from "packages/cloud/cloudRoutes";
-import LoadingPage from "components/LoadingPage";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
-import NotificationServiceProvider from "hooks/services/Notification";
-import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import LoadingPage from "components/LoadingPage";
+
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureService } from "hooks/services/Feature";
+import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import NotificationServiceProvider from "hooks/services/Notification";
+import en from "locales/en.json";
+import { Routing } from "packages/cloud/cloudRoutes";
+import cloudLocales from "packages/cloud/locales/en.json";
 import { AuthenticationProvider } from "packages/cloud/services/auth/AuthService";
-import { AppServicesProvider } from "./services/AppServicesProvider";
-import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
-import { ConfigProvider } from "./services/ConfigProvider";
+import { theme } from "packages/cloud/theme";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
+
+import { AppServicesProvider } from "./services/AppServicesProvider";
+import { ConfigProvider } from "./services/ConfigProvider";
+import { IntercomProvider } from "./services/thirdParty/intercom/IntercomProvider";
 
 const messages = Object.assign({}, en, cloudLocales);
 
@@ -45,13 +48,17 @@ const Services: React.FC = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <NotificationServiceProvider>
-        <FeatureService>
-          <AppServicesProvider>
-            <AuthenticationProvider>
-              <IntercomProvider>{children}</IntercomProvider>
-            </AuthenticationProvider>
-          </AppServicesProvider>
-        </FeatureService>
+        <ConfirmationModalService>
+          <FormChangeTrackerService>
+            <FeatureService>
+              <AppServicesProvider>
+                <AuthenticationProvider>
+                  <IntercomProvider>{children}</IntercomProvider>
+                </AuthenticationProvider>
+              </AppServicesProvider>
+            </FeatureService>
+          </FormChangeTrackerService>
+        </ConfirmationModalService>
       </NotificationServiceProvider>
     </ApiErrorBoundary>
   </AnalyticsProvider>

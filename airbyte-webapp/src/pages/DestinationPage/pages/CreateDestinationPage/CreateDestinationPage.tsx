@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import PageTitle from "components/PageTitle";
-import DestinationForm from "./components/DestinationForm";
-import useRouter from "hooks/useRouter";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import PageTitle from "components/PageTitle";
+
+import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
+import useRouter from "hooks/useRouter";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+
+import DestinationForm from "./components/DestinationForm";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
@@ -22,9 +24,7 @@ const CreateDestinationPage: React.FC = () => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = destinationDefinitions.find(
-      (item) => item.destinationDefinitionId === values.serviceType
-    );
+    const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === values.serviceType);
     const result = await createDestination({
       values,
       destinationConnector: connector,
@@ -39,10 +39,7 @@ const CreateDestinationPage: React.FC = () => {
   return (
     <>
       <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
-      <PageTitle
-        withLine
-        title={<FormattedMessage id="destinations.newDestinationTitle" />}
-      />
+      <PageTitle withLine title={<FormattedMessage id="destinations.newDestinationTitle" />} />
       <FormPageContent>
         <DestinationForm
           onSubmit={onSubmitDestinationForm}

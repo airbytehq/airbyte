@@ -1,25 +1,21 @@
-import React, { useCallback, useMemo, useState } from "react";
 import { FieldProps } from "formik";
+import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { useConfig } from "config";
-
-import type { DestinationSyncMode } from "core/domain/catalog";
-import { SyncSchemaStream } from "core/domain/catalog";
-
 import { CheckBox } from "components";
 import { Cell, Header } from "components/SimpleTableComponents";
-import CatalogTree from "views/Connection/CatalogTree";
-import Search from "./Search";
+
+import { useConfig } from "config";
+import type { DestinationSyncMode } from "core/domain/catalog";
+import { SyncSchemaStream } from "core/domain/catalog";
+import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import { naturalComparatorBy } from "utils/objects";
-import InformationToolTip from "./InformationToolTip";
+import CatalogTree from "views/Connection/CatalogTree";
 
 import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
-import {
-  BatchEditProvider,
-  useBulkEdit,
-} from "hooks/services/BulkEdit/BulkEditService";
+import InformationToolTip from "./InformationToolTip";
+import Search from "./Search";
 
 const TreeViewContainer = styled.div`
   margin-bottom: 29px;
@@ -195,16 +191,12 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   );
 
   const onChangeStream = useCallback(
-    (newValue: SyncSchemaStream) =>
-      onChangeSchema(
-        streams.map((str) => (str.id === newValue.id ? newValue : str))
-      ),
+    (newValue: SyncSchemaStream) => onChangeSchema(streams.map((str) => (str.id === newValue.id ? newValue : str))),
     [streams, onChangeSchema]
   );
 
   const sortedSchema = useMemo(
-    () =>
-      streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
+    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
     [streams]
   );
 
@@ -212,10 +204,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
     const filters: Array<(s: SyncSchemaStream) => boolean> = [
       (_: SyncSchemaStream) => true,
       searchString
-        ? (stream: SyncSchemaStream) =>
-            stream.stream.name
-              .toLowerCase()
-              .includes(searchString.toLowerCase())
+        ? (stream: SyncSchemaStream) => stream.stream.name.toLowerCase().includes(searchString.toLowerCase())
         : null,
     ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
 
@@ -232,9 +221,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
       <StreamsContent>
         <CatalogHeader />
         <CatalogSubheader />
-        <BulkHeader
-          destinationSupportedSyncModes={destinationSupportedSyncModes}
-        />
+        <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
         <TreeViewContainer>
           <CatalogTree
             streams={filteredStreams}

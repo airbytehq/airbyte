@@ -1,7 +1,7 @@
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 type ArrowProps = {
   isItemHasChildren?: boolean;
@@ -25,20 +25,10 @@ const ArrowView = styled(FontAwesomeIcon)<{ $isOpen?: boolean }>`
   cursor: pointer;
 `;
 
-const Arrow: React.FC<ArrowProps> = ({
-  isItemHasChildren,
-  isItemOpen,
-  onExpand,
-}) => {
+const Arrow: React.FC<ArrowProps> = ({ isItemHasChildren, isItemOpen, onExpand }) => {
   return (
     <ArrowContainer>
-      {(isItemHasChildren || !onExpand) && (
-        <ArrowView
-          icon={faChevronRight}
-          onClick={onExpand}
-          $isOpen={isItemOpen}
-        />
-      )}
+      {(isItemHasChildren || !onExpand) && <ArrowView icon={faChevronRight} onClick={onExpand} $isOpen={isItemOpen} />}
     </ArrowContainer>
   );
 };

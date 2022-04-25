@@ -533,7 +533,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceDefinitionIdRequestBody"
+              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "200":
@@ -1055,7 +1055,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationDefinitionIdRequestBody"
+              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
         required: true
       responses:
         "200":
@@ -2784,6 +2784,9 @@ components:
           $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+        catalogId:
+          type: string
+          format: uuid
     SourceSearch:
       type: object
       properties:
@@ -3134,6 +3137,9 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        sourceCatalogId:
+          type: string
+          format: uuid
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3175,6 +3181,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OperationCreate"
+        sourceCatalogId:
+          type: string
+          format: uuid
     ConnectionUpdate:
       type: object
       required:
@@ -3976,11 +3985,11 @@ components:
       additionalProperties: false
       properties:
         default:
-          "$ref": "#/definitions/ResourceRequirements"
+          "$ref": "#/components/schemas/ResourceRequirements"
         jobSpecific:
           type: array
           items:
-            "$ref": "#/definitions/JobTypeResourceLimit"
+            "$ref": "#/components/schemas/JobTypeResourceLimit"
     JobTypeResourceLimit:
       description: sets resource requirements for a specific job type for an actor definition. these values override the default, if both are set.
       type: object
@@ -3990,9 +3999,9 @@ components:
         - resourceRequirements
       properties:
         jobType:
-          "$ref": "#/definitions/JobType"
+          "$ref": "#/components/schemas/JobType"
         resourceRequirements:
-          "$ref": "#/definitions/ResourceRequirements"
+          "$ref": "#/components/schemas/ResourceRequirements"
     JobType:
       description: enum that describes the different types of jobs that the platform runs.
       type: string

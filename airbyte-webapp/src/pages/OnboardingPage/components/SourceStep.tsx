@@ -2,16 +2,17 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useCreateSource } from "hooks/services/useSourceHook";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
-import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
-import { useCreateSource } from "hooks/services/useSourceHook";
-import { JobInfo } from "core/domain/job";
 
 type IProps = {
   onSuccess: () => void;
@@ -20,9 +21,7 @@ type IProps = {
 
 const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   const { sourceDefinitions } = useSourceDefinitionList();
-  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
-    null
-  );
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(null);
   const [successRequest, setSuccessRequest] = useState(false);
   const [error, setError] = useState<{
     status: number;
@@ -34,13 +33,10 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
 
   const analyticsService = useAnalyticsService();
 
-  const getSourceDefinitionById = (id: string) =>
-    sourceDefinitions.find((item) => item.sourceDefinitionId === id);
+  const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
-  const {
-    data: sourceDefinitionSpecification,
-    isLoading,
-  } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
+  const { data: sourceDefinitionSpecification, isLoading } =
+    useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -92,9 +88,7 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
           <FormattedMessage
             id="onboarding.createFirstSource"
             values={{
-              name: (name: React.ReactNode) => (
-                <HighlightedText>{name}</HighlightedText>
-              ),
+              name: (name: React.ReactNode) => <HighlightedText>{name}</HighlightedText>,
             }}
           />
         }

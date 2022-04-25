@@ -1,4 +1,5 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+
 import { Workspace, WorkspaceState } from "./Workspace";
 
 class WorkspaceService extends AirbyteRequestService {

@@ -1,18 +1,13 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Field, FieldProps, Form, Formik } from "formik";
 import styled from "styled-components";
 
-import {
-  Content,
-  SettingsCard,
-} from "pages/SettingsPage/pages/SettingsComponents";
 import { LabeledInput, LoadingButton } from "components";
-import {
-  useAuthService,
-  useCurrentUser,
-} from "packages/cloud/services/auth/AuthService";
+
+import { useAuthService, useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { RowFieldItem } from "packages/cloud/views/auth/components/FormComponents";
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import { EmailSection, PasswordSection } from "./components";
 
@@ -45,20 +40,14 @@ const AccountSettingsView: React.FC = () => {
                     {({ field, meta }: FieldProps<string>) => (
                       <LabeledInput
                         {...field}
-                        label={
-                          <FormattedMessage id="settings.accountSettings.fullName" />
-                        }
+                        label={<FormattedMessage id="settings.accountSettings.fullName" />}
                         disabled={true}
                         placeholder={formatMessage({
                           id: "settings.accountSettings.fullName.placeholder",
                         })}
                         type="text"
                         error={!!meta.error && meta.touched}
-                        message={
-                          meta.touched &&
-                          meta.error &&
-                          formatMessage({ id: meta.error })
-                        }
+                        message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                       />
                     )}
                   </Field>
@@ -74,11 +63,7 @@ const AccountSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.accountSettings.logoutLabel" />
-            <LoadingButton
-              danger
-              onClick={() => logout()}
-              data-testid="button.signout"
-            >
+            <LoadingButton danger onClick={() => logout()} data-testid="button.signout">
               <FormattedMessage id="settings.accountSettings.logoutText" />
             </LoadingButton>
           </Header>

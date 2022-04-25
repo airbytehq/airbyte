@@ -1,10 +1,13 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
-import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
+
 import HeadTitle from "components/HeadTitle";
-import AccountForm from "./components/AccountForm";
+
+import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
 import { Content, SettingsCard } from "../SettingsComponents";
+import AccountForm from "./components/AccountForm";
 
 const AccountPage: React.FC = () => {
   const workspace = useCurrentWorkspace();
@@ -21,9 +24,7 @@ const AccountPage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle
-        titles={[{ id: "sidebar.settings" }, { id: "settings.account" }]}
-      />
+      <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "settings.account" }]} />
       <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
         <Content>
           <AccountForm

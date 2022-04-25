@@ -1,25 +1,27 @@
 import React, { Suspense, useState } from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import { useEffectOnce } from "react-use";
+import styled from "styled-components";
 
 import { Button } from "components";
 import HeadTitle from "components/HeadTitle";
-import useGetStepsConfig from "./useStepsConfig";
-import SourceStep from "./components/SourceStep";
-import DestinationStep from "./components/DestinationStep";
-import ConnectionStep from "./components/ConnectionStep";
-import WelcomeStep from "./components/WelcomeStep";
-import FinalStep from "./components/FinalStep";
-import LetterLine from "./components/LetterLine";
-import { StepType } from "./types";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import StepsCounter from "./components/StepsCounter";
 import LoadingPage from "components/LoadingPage";
+
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
-import { RoutePaths } from "../routePaths";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
-import { useEffectOnce } from "react-use";
+
+import { RoutePaths } from "../routePaths";
+import ConnectionStep from "./components/ConnectionStep";
+import DestinationStep from "./components/DestinationStep";
+import FinalStep from "./components/FinalStep";
+import LetterLine from "./components/LetterLine";
+import SourceStep from "./components/SourceStep";
+import StepsCounter from "./components/StepsCounter";
+import WelcomeStep from "./components/WelcomeStep";
+import { StepType } from "./types";
+import useGetStepsConfig from "./useStepsConfig";
 
 const Content = styled.div<{ big?: boolean; medium?: boolean }>`
   width: 100%;
@@ -58,11 +60,7 @@ const OnboardingPage: React.FC = () => {
   });
 
   const { finishOnboarding } = useWorkspace();
-  const {
-    hasConnections,
-    hasDestinations,
-    hasSources,
-  } = useCurrentWorkspaceState();
+  const { hasConnections, hasDestinations, hasSources } = useCurrentWorkspaceState();
 
   const [animateExit, setAnimateExit] = useState(false);
 
@@ -91,18 +89,14 @@ const OnboardingPage: React.FC = () => {
       ) : null}
       <Content
         big={currentStep === StepType.SET_UP_CONNECTION}
-        medium={
-          currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl
-        }
+        medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl}
       >
         <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
         <StepsCounter steps={steps} currentStep={currentStep} />
 
         <Suspense fallback={<LoadingPage />}>
           {currentStep === StepType.INSTRUCTION && (
-            <WelcomeStep
-              onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)}
-            />
+            <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
           )}
           {currentStep === StepType.CREATE_SOURCE && (
             <SourceStep

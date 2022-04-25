@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 
-import useRouter from "hooks/useRouter";
-
 // TODO: create separate component for source and destinations forms
-import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useCreateSource } from "hooks/services/useSourceHook";
+import useRouter from "hooks/useRouter";
+import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
 type IProps = {
   afterSubmit: () => void;
@@ -23,9 +22,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = sourceDefinitions.find(
-      (item) => item.sourceDefinitionId === values.serviceType
-    );
+    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
     const result = await createSource({ values, sourceConnector: connector });
     setSuccessRequest(true);
     setTimeout(() => {
@@ -43,13 +40,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     }, 2000);
   };
 
-  return (
-    <SourceForm
-      onSubmit={onSubmitSourceStep}
-      sourceDefinitions={sourceDefinitions}
-      hasSuccess={successRequest}
-    />
-  );
+  return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
 };
 
 export default SourceFormComponent;

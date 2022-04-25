@@ -6,11 +6,7 @@
     "prettier",
     "plugin:prettier/recommended"
   ],
-  "plugins": [
-    "react",
-    "@typescript-eslint",
-    "prettier"
-  ],
+  "plugins": ["react", "@typescript-eslint", "prettier", "unused-imports"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -20,6 +16,30 @@
   },
   "rules": {
     "prettier/prettier": "error",
+    "unused-imports/no-unused-imports": "error",
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always",
+        "groups": ["type", "builtin", "external", "internal", ["parent", "sibling"], "index"],
+        "pathGroupsExcludedImportTypes": ["builtin"],
+        "pathGroups": [
+          {
+            "pattern": "components{/**,}",
+            "group": "internal"
+          },
+          {
+            "pattern": "+(config|core|hooks|locales|packages|pages|services|types|utils|views){/**,}",
+            "group": "internal",
+            "position": "after"
+          }
+        ],
+        "alphabetize": {
+          "order": "asc" /* sort in ascending order. Options: ['ignore', 'asc', 'desc'] */,
+          "caseInsensitive": true /* ignore case. Options: [true, false] */
+        }
+      }
+    ],
     "@typescript-eslint/ban-ts-comment": [
       "warn",
       {
@@ -27,9 +47,7 @@
         "ts-expect-error": "allow-with-description"
       }
     ],
-    "@typescript-eslint/ban-types": [
-      "warn"
-    ]
+    "@typescript-eslint/ban-types": ["warn"]
   },
   "parser": "@typescript-eslint/parser",
   "overrides": [

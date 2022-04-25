@@ -1,31 +1,27 @@
-import {
-  QueryObserverSuccessResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
 import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
 
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { Source } from "core/domain/connector";
-import { connectionsKeys, ListConnection } from "./useConnectionHook";
-import { useCurrentWorkspace } from "./useWorkspace";
 import { useConfig } from "config";
+import { SyncSchema } from "core/domain/catalog";
+import { Connection, ConnectionConfiguration } from "core/domain/connection";
+import { Source } from "core/domain/connector";
+import { SourceService } from "core/domain/connector/SourceService";
+import { JobInfo } from "core/domain/job";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { SourceService } from "core/domain/connector/SourceService";
 import { isDefined } from "utils/common";
-import { SyncSchema } from "core/domain/catalog";
-import { JobInfo } from "core/domain/job";
+
+import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 export const sourcesKeys = {
   all: [SCOPE_WORKSPACE, "sources"] as const,
   lists: () => [...sourcesKeys.all, "list"] as const,
   list: (filters: string) => [...sourcesKeys.lists(), { filters }] as const,
-  detail: (sourceId: string) =>
-    [...sourcesKeys.all, "details", sourceId] as const,
+  detail: (sourceId: string) => [...sourcesKeys.all, "details", sourceId] as const,
 };
 
 type ValuesProps = {
@@ -54,9 +50,7 @@ const useSourceList = (): SourceList => {
   const workspace = useCurrentWorkspace();
   const service = useSourceService();
 
-  return (useQuery(sourcesKeys.lists(), () =>
-    service.list(workspace.workspaceId)
-  ) as QueryObserverSuccessResult<SourceList>).data;
+  return useSuspenseQuery(sourcesKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
 const useGetSource = <T extends string | undefined | null>(
@@ -64,13 +58,9 @@ const useGetSource = <T extends string | undefined | null>(
 ): T extends string ? Source : Source | undefined => {
   const service = useSourceService();
 
-  return (useQuery(
-    sourcesKeys.detail(sourceId ?? ""),
-    () => service.get(sourceId ?? ""),
-    {
-      enabled: isDefined(sourceId),
-    }
-  ) as QueryObserverSuccessResult<Source>).data;
+  return useSuspenseQuery(sourcesKeys.detail(sourceId ?? ""), () => service.get(sourceId ?? ""), {
+    enabled: isDefined(sourceId),
+  });
 };
 
 const useCreateSource = () => {
@@ -81,10 +71,7 @@ const useCreateSource = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation(
-    async (createSourcePayload: {
-      values: ValuesProps;
-      sourceConnector?: ConnectorProps;
-    }) => {
+    async (createSourcePayload: { values: ValuesProps; sourceConnector?: ConnectorProps }) => {
       const { values, sourceConnector } = createSourcePayload;
       analyticsService.track("New Source - Action", {
         action: "Test a connector",
@@ -119,12 +106,9 @@ const useCreateSource = () => {
     },
     {
       onSuccess: (data) => {
-        queryClient.setQueryData(
-          sourcesKeys.lists(),
-          (lst: SourceList | undefined) => ({
-            sources: [data, ...(lst?.sources ?? [])],
-          })
-        );
+        queryClient.setQueryData(sourcesKeys.lists(), (lst: SourceList | undefined) => ({
+          sources: [data, ...(lst?.sources ?? [])],
+        }));
       },
     }
   );
@@ -136,8 +120,7 @@ const useDeleteSource = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation(
-    (payload: { source: Source; connectionsWithSource: Connection[] }) =>
-      service.delete(payload.source.sourceId),
+    (payload: { source: Source; connectionsWithSource: Connection[] }) => service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {
         analyticsService.track("Source - Action", {
@@ -151,27 +134,16 @@ const useDeleteSource = () => {
           sourcesKeys.lists(),
           (lst: SourceList | undefined) =>
             ({
-              sources:
-                lst?.sources.filter(
-                  (conn) => conn.sourceId !== ctx.source.sourceId
-                ) ?? [],
+              sources: lst?.sources.filter((conn) => conn.sourceId !== ctx.source.sourceId) ?? [],
             } as SourceList)
         );
 
         // To delete connections with current source from local store
-        const connectionIds = ctx.connectionsWithSource.map(
-          (item) => item.connectionId
-        );
+        const connectionIds = ctx.connectionsWithSource.map((item) => item.connectionId);
 
-        queryClient.setQueryData(
-          connectionsKeys.lists(),
-          (ls: ListConnection | undefined) => ({
-            connections:
-              ls?.connections.filter((c) =>
-                connectionIds.includes(c.connectionId)
-              ) ?? [],
-          })
-        );
+        queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
+          connections: ls?.connections.filter((c) => connectionIds.includes(c.connectionId)) ?? [],
+        }));
       },
     }
   );
@@ -186,8 +158,7 @@ const useUpdateSource = () => {
       return service.update({
         name: updateSourcePayload.values.name,
         sourceId: updateSourcePayload.sourceId,
-        connectionConfiguration:
-          updateSourcePayload.values.connectionConfiguration,
+        connectionConfiguration: updateSourcePayload.values.connectionConfiguration,
       });
     },
     {
@@ -204,10 +175,12 @@ const useDiscoverSchema = (
   isLoading: boolean;
   schema: SyncSchema;
   schemaErrorStatus: { status: number; response: JobInfo } | null;
+  catalogId: string;
   onDiscoverSchema: () => Promise<void>;
 } => {
   const service = useSourceService();
   const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
+  const [catalogId, setCatalogId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
     status: number;
@@ -220,6 +193,7 @@ const useDiscoverSchema = (
     try {
       const data = await service.discoverSchema(sourceId || "");
       setSchema(data.catalog);
+      setCatalogId(data.catalogId);
     } catch (e) {
       setSchemaErrorStatus(e);
     } finally {
@@ -236,14 +210,7 @@ const useDiscoverSchema = (
     })();
   }, [onDiscoverSchema, sourceId]);
 
-  return { schemaErrorStatus, isLoading, schema, onDiscoverSchema };
+  return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };
 };
 
-export {
-  useSourceList,
-  useGetSource,
-  useCreateSource,
-  useDeleteSource,
-  useUpdateSource,
-  useDiscoverSchema,
-};
+export { useSourceList, useGetSource, useCreateSource, useDeleteSource, useUpdateSource, useDiscoverSchema };

@@ -2,11 +2,13 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import TitlesBlock from "./TitlesBlock";
-import HighlightedText from "./HighlightedText";
-import VideoItem from "./VideoItem";
 import { BigButton } from "components/CenteredPageComponents";
+
 import { useConfig } from "config";
+
+import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
+import VideoItem from "./VideoItem";
 
 type WelcomeStepProps = {
   onNextStep: () => void;

@@ -15,7 +15,7 @@ from source_zendesk_support.streams import (
     DATETIME_FORMAT,
     END_OF_STREAM_KEY,
     BaseSourceZendeskSupportStream,
-    SourceZendeskTicketExportStream,
+    SourceZendeskIncrementalExportStream,
     TicketComments,
     Tickets,
 )
@@ -41,7 +41,7 @@ STREAM_RESPONSE: dict = {
                     "type": "Comment",
                     "author_id": 10,
                     "body": "test_comment",
-                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br></div>',
+                    "html_body": '<div class="zd-comment" dir="auto">test_comment<br/></div>',
                     "plain_body": "test_comment",
                     "public": True,
                     "attachments": [],
@@ -86,10 +86,11 @@ def test_str2unixtime():
     output = BaseSourceZendeskSupportStream.str2unixtime(DATETIME_STR)
     assert output == expected
 
+
 def test_check_start_time_param():
     expected = 1626936955
     start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
-    output = SourceZendeskTicketExportStream.check_start_time_param(start_time)
+    output = SourceZendeskIncrementalExportStream.check_start_time_param(start_time)
     assert output == expected
 
 

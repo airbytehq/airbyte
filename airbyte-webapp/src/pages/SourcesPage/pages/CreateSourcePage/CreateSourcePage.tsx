@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import PageTitle from "components/PageTitle";
-import SourceForm from "./components/SourceForm";
-import useRouter from "hooks/useRouter";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { ConnectionConfiguration } from "core/domain/connection";
 import HeadTitle from "components/HeadTitle";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import PageTitle from "components/PageTitle";
+
+import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
+import useRouter from "hooks/useRouter";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+
+import SourceForm from "./components/SourceForm";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
@@ -22,9 +24,7 @@ const CreateSourcePage: React.FC = () => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = sourceDefinitions.find(
-      (item) => item.sourceDefinitionId === values.serviceType
-    );
+    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
     const result = await createSource({ values, sourceConnector: connector });
     setSuccessRequest(true);
     setTimeout(() => {
@@ -36,16 +36,9 @@ const CreateSourcePage: React.FC = () => {
   return (
     <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
-      <PageTitle
-        withLine
-        title={<FormattedMessage id="sources.newSourceTitle" />}
-      />
+      <PageTitle withLine title={<FormattedMessage id="sources.newSourceTitle" />} />
       <FormPageContent>
-        <SourceForm
-          onSubmit={onSubmitSourceStep}
-          sourceDefinitions={sourceDefinitions}
-          hasSuccess={successRequest}
-        />
+        <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
       </FormPageContent>
     </>
   );

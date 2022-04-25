@@ -1,20 +1,25 @@
+import { faStar } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-regular-svg-icons";
-
+import { useSearchParams } from "react-router-dom";
+import { useEffectOnce } from "react-use";
 import styled from "styled-components";
+
+import { Button, LoadingButton } from "components";
+
+import { useConfig } from "config";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
 import {
   useGetCloudWorkspace,
   useInvalidateCloudWorkspace,
 } from "packages/cloud/services/workspaces/WorkspacesService";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { Button, LoadingButton } from "components";
-import { useStripeCheckout } from "packages/cloud/services/stripe/StripeService";
-import { useSearchParams } from "react-router-dom";
-import { useEffectOnce } from "react-use";
-import { CloudWorkspace } from "packages/cloud/lib/domain/cloudWorkspaces/types";
-import { useConfig } from "config";
+
+interface Props {
+  selfServiceCheckoutEnabled: boolean;
+}
 
 const Block = styled.div`
   background: ${({ theme }) => theme.darkBeigeColor};
@@ -54,15 +59,13 @@ function hasRecentCreditIncrease(cloudWorkspace: CloudWorkspace): boolean {
   return lastIncrement ? Date.now() - lastIncrement < 30000 : false;
 }
 
-const RemainingCredits: React.FC = () => {
+const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
   const retryIntervalId = useRef<number>();
   const config = useConfig();
   const currentWorkspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(currentWorkspace.workspaceId);
   const [searchParams, setSearchParams] = useSearchParams();
-  const invalidateWorkspace = useInvalidateCloudWorkspace(
-    currentWorkspace.workspaceId
-  );
+  const invalidateWorkspace = useInvalidateCloudWorkspace(currentWorkspace.workspaceId);
   const { isLoading, mutateAsync: createCheckout } = useStripeCheckout();
   const [isWaitingForCredits, setIsWaitingForCredits] = useState(false);
 
@@ -119,6 +122,7 @@ const RemainingCredits: React.FC = () => {
       </CreditView>
       <Actions>
         <LoadingButton
+          disabled={!selfServiceCheckoutEnabled}
           size="xl"
           type="button"
           onClick={startStripeCheckout}

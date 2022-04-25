@@ -1,8 +1,9 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
+
 import useWorkspace from "hooks/services/useWorkspace";
 
 const ButtonWithMargin = styled(Button)`
@@ -21,12 +22,7 @@ const SkipOnboardingButton: React.FC<IProps> = ({ step }) => {
   };
 
   return (
-    <ButtonWithMargin
-      onClick={onSkip}
-      secondary
-      type="button"
-      data-id="skip-onboarding"
-    >
+    <ButtonWithMargin onClick={onSkip} secondary type="button" data-id="skip-onboarding">
       <FormattedMessage id="onboarding.skipOnboarding" />
     </ButtonWithMargin>
   );

@@ -1,14 +1,16 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
-import useConnector from "hooks/services/useConnector";
-import ConnectorsView from "./components/ConnectorsView";
+
 import { DestinationDefinition } from "core/domain/connector";
+import useConnector from "hooks/services/useConnector";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
 } from "services/connector/DestinationDefinitionService";
+
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
+import ConnectorsView from "./components/ConnectorsView";
 
 const DestinationsPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
@@ -18,9 +20,7 @@ const DestinationsPage: React.FC = () => {
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const {
-    mutateAsync: updateDestinationDefinition,
-  } = useUpdateDestinationDefinition();
+  const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
 
   const { hasNewDestinationVersion } = useConnector();
 
@@ -33,8 +33,7 @@ const DestinationsPage: React.FC = () => {
         });
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        const messageId =
-          e.status === 422 ? "form.imageCannotFound" : "form.someError";
+        const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
@@ -48,16 +47,11 @@ const DestinationsPage: React.FC = () => {
     const destinationDefinitionMap = new Map<string, DestinationDefinition>();
     destinations.forEach((destination) => {
       const destinationDefinition = destinationDefinitions.find(
-        (destinationDefinition) =>
-          destinationDefinition.destinationDefinitionId ===
-          destination.destinationDefinitionId
+        (destinationDefinition) => destinationDefinition.destinationDefinitionId === destination.destinationDefinitionId
       );
 
       if (destinationDefinition) {
-        destinationDefinitionMap.set(
-          destinationDefinition.destinationDefinitionId,
-          destinationDefinition
-        );
+        destinationDefinitionMap.set(destinationDefinition.destinationDefinitionId, destinationDefinition);
       }
     });
 

@@ -1,12 +1,9 @@
 import { useRef } from "react";
 
-import { ServiceFormValues } from "views/Connector/ServiceForm";
 import { ConnectorHelper, Scheduler } from "core/domain/connector";
 import { ConnectorT } from "core/domain/connector/types";
-import {
-  CheckConnectorParams,
-  useCheckConnector,
-} from "hooks/services/useConnector";
+import { CheckConnectorParams, useCheckConnector } from "hooks/services/useConnector";
+import { ServiceFormValues } from "views/Connector/ServiceForm";
 
 export const useTestConnector = (
   props: {
@@ -24,9 +21,7 @@ export const useTestConnector = (
   testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
   error: Error | null;
 } => {
-  const { mutateAsync, isLoading, error, isSuccess, reset } = useCheckConnector(
-    props.formType
-  );
+  const { mutateAsync, isLoading, error, isSuccess, reset } = useCheckConnector(props.formType);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -73,9 +68,7 @@ export const useTestConnector = (
       }
 
       if (!payload) {
-        console.error(
-          "Unexpected state met: no connectorId or connectorDefinitionId provided"
-        );
+        console.error("Unexpected state met: no connectorId or connectorDefinitionId provided");
 
         throw new Error("Unexpected state met");
       }
