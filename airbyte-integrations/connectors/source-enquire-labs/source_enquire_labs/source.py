@@ -53,8 +53,7 @@ class EnquireLabsStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        Returns:
-            request response
+        Returns:request response
         """
         return [response.json()]
 
@@ -67,7 +66,9 @@ class QuestionStream(EnquireLabsStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-
+        """
+        Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
+        """
         return "questions"
 
 
@@ -85,6 +86,9 @@ class QuestionResponseStream(EnquireLabsStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
+        """
+        Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
+        """
         return "responses"
 
     def request_params(
@@ -104,6 +108,11 @@ class QuestionResponseStream(EnquireLabsStream):
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This method to define a pagination strategy
+
+        :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
+        """
         decoded_response = response.json()
         if decoded_response.get("next"):
             return {"after": decoded_response.get("data")[0]["response_id"] if decoded_response.get("data") else None}
