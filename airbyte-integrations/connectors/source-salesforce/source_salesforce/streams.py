@@ -14,7 +14,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from numpy import nan
@@ -477,3 +478,25 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
         return {"q": query}
+
+
+class Describe(Stream):
+    """
+    Stream of sObjects' (Salesforce Objects) describe:
+    https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm
+    """
+    name = "Describe"
+    primary_key = "name"
+
+    def __init__(self, sf_api: Salesforce, catalog: ConfiguredAirbyteCatalog = None, **kwargs):
+        super().__init__(**kwargs)
+        self.sf_api = sf_api
+        if catalog:
+            self.sobjects_to_describe = [s.stream.name for s in catalog.streams if s.stream.name != self.name]
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Yield describe response of SObjects defined in catalog as streams only.
+        """
+        for sobject in self.sobjects_to_describe:
+            yield self.sf_api.describe(sobject=sobject)
