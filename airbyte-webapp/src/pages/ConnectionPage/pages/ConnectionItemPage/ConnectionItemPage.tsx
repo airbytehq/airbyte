@@ -62,7 +62,14 @@ const ConnectionItemPage: React.FC = () => {
           ]}
         />
       }
-      pageTitle={<ConnectionPageTitle source={source} destination={destination} currentStep={currentStep} />}
+      pageTitle={
+        <ConnectionPageTitle
+          source={source}
+          destination={destination}
+          connection={connection}
+          currentStep={currentStep}
+        />
+      }
       error={
         isConnectionDeleted ? (
           <ErrorBanner errorType="connectionDeleted" id={"connection.connectionDeletedView"} />

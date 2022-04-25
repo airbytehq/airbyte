@@ -7,7 +7,7 @@ import { ConnectorIcon } from "components/ConnectorIcon";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { Header, Row, Cell } from "components/SimpleTableComponents";
 
-import { Connection } from "core/domain/connection";
+import { Connection, ConnectionStatus } from "core/domain/connection";
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
 import EnabledControl from "./EnabledControl";
@@ -48,6 +48,7 @@ const StatusMainInfo: React.FC<IProps> = ({
   sourceDefinition,
   allowSync,
 }) => {
+  console.log(connection);
   return (
     <MainInfo>
       <Header>
@@ -60,7 +61,7 @@ const StatusMainInfo: React.FC<IProps> = ({
         <Cell>
           <FormattedMessage id="tables.frequency" />
         </Cell>
-        <Cell flex={1.1}></Cell>
+        {connection.status !== ConnectionStatus.DEPRECATED && <Cell flex={1.1}></Cell>}
       </Header>
       <Row>
         <SourceCell flex={2}>
@@ -74,9 +75,11 @@ const StatusMainInfo: React.FC<IProps> = ({
           <ReleaseStageBadge stage={destinationDefinition?.releaseStage} />
         </SourceCell>
         <Cell>{frequencyText}</Cell>
-        <EnabledCell flex={1.1}>
-          <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
-        </EnabledCell>
+        {connection.status !== ConnectionStatus.DEPRECATED && (
+          <EnabledCell flex={1.1}>
+            <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
+          </EnabledCell>
+        )}
       </Row>
     </MainInfo>
   );
