@@ -89,9 +89,10 @@ public class KafkaSource extends BaseConnector implements Source {
     final List<ConsumerRecord<String, JsonNode>> recordsList = new ArrayList<>();
 
     final int retry = config.has("repeated_calls") ? config.get("repeated_calls").intValue() : 0;
+    final int polling_time = config.has("polling_time") ? config.get("polling_time").intValue() : 100;
     int pollCount = 0;
     while (true) {
-      final ConsumerRecords<String, JsonNode> consumerRecords = consumer.poll(Duration.of(100, ChronoUnit.MILLIS));
+      final ConsumerRecords<String, JsonNode> consumerRecords = consumer.poll(Duration.of(polling_time, ChronoUnit.MILLIS));
       if (consumerRecords.count() == 0) {
         pollCount++;
         if (pollCount > retry) {
