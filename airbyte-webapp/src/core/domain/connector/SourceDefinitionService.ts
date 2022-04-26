@@ -3,18 +3,14 @@ import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import {
   createSourceDefinition,
   getSourceDefinition,
+  listLatestSourceDefinitions,
   listSourceDefinitionsForWorkspace,
   SourceDefinitionCreate,
-  SourceDefinitionRead,
   SourceDefinitionUpdate,
   updateSourceDefinition,
 } from "../../request/GeneratedApi";
 
 export class SourceDefinitionService extends AirbyteRequestService {
-  get url(): string {
-    return "source_definitions";
-  }
-
   public get(sourceDefinitionId: string) {
     return getSourceDefinition({ sourceDefinitionId }, this.requestOptions);
   }
@@ -23,11 +19,8 @@ export class SourceDefinitionService extends AirbyteRequestService {
     return listSourceDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
-  public listLatest(workspaceId: string): Promise<{ sourceDefinitions: SourceDefinitionRead[] }> {
-    // TODO: list_latest does not take a workspaceId
-    return this.fetch(`${this.url}/list_latest`, {
-      workspaceId,
-    });
+  public listLatest() {
+    return listLatestSourceDefinitions(this.requestOptions);
   }
 
   public update(body: SourceDefinitionUpdate) {

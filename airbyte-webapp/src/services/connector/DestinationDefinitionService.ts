@@ -38,14 +38,13 @@ const useDestinationDefinitionList = (): {
   return useSuspenseQuery(destinationDefinitionKeys.lists(), async () => {
     const [definition, latestDefinition] = await Promise.all([
       service.list(workspace.workspaceId),
-      service.listLatest(workspace.workspaceId),
+      service.listLatest(),
     ]);
 
     const destinationDefinitions: DestinationDefinitionRead[] = definition.destinationDefinitions.map(
       (destination: DestinationDefinitionRead) => {
         const withLatest = latestDefinition.destinationDefinitions.find(
-          (latestDestination: DestinationDefinition) =>
-            latestDestination.destinationDefinitionId === destination.destinationDefinitionId
+          (latestDestination) => latestDestination.destinationDefinitionId === destination.destinationDefinitionId
         );
 
         return {

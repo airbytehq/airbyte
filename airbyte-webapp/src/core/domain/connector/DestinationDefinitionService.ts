@@ -6,15 +6,11 @@ import {
   DestinationDefinitionUpdate,
   getDestinationDefinition,
   listDestinationDefinitionsForWorkspace,
+  listLatestDestinationDefinitions,
   updateDestinationDefinition,
 } from "../../request/GeneratedApi";
-import { DestinationDefinition } from "./types";
 
 export class DestinationDefinitionService extends AirbyteRequestService {
-  get url(): string {
-    return "destination_definitions";
-  }
-
   public get(destinationDefinitionId: string) {
     return getDestinationDefinition({ destinationDefinitionId }, this.requestOptions);
   }
@@ -23,11 +19,8 @@ export class DestinationDefinitionService extends AirbyteRequestService {
     return listDestinationDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
-  public listLatest(workspaceId: string): Promise<{ destinationDefinitions: DestinationDefinition[] }> {
-    // TODO: List Latest doesn't take a workspace Id.
-    return this.fetch(`${this.url}/list_latest`, {
-      workspaceId,
-    });
+  public listLatest() {
+    return listLatestDestinationDefinitions(this.requestOptions);
   }
 
   public update(body: DestinationDefinitionUpdate) {

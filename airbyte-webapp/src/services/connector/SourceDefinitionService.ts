@@ -38,7 +38,7 @@ const useSourceDefinitionList = (): {
   return useSuspenseQuery(sourceDefinitionKeys.lists(), async () => {
     const [definition, latestDefinition] = await Promise.all([
       service.list(workspace.workspaceId),
-      service.listLatest(workspace.workspaceId),
+      service.listLatest(),
     ]);
 
     const sourceDefinitions = definition.sourceDefinitions.map((source) => {
