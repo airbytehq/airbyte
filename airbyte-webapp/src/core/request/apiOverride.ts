@@ -23,7 +23,6 @@ export const apiOverride = async <T, U = unknown>(
     throw new Error("Please provide middlewares and config!");
   }
   const { apiUrl } = options.config;
-  // Unsure how worth it is to try to fix this replace
   const requestUrl = `${apiUrl}${url}`;
 
   for (const middleware of options.middlewares) {
