@@ -1,9 +1,0 @@
-{
-  "host": "invalid.host.io",
-  "port": 5672,
-  "virtual_host": "invalid_vh",
-  "username": "invalid_username",
-  "password": "invalid_password",
-  "routing_key": "test_queue",
-  "exchange": "test_exchange"
-}
