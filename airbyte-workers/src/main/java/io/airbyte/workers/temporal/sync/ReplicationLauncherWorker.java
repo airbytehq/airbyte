@@ -11,8 +11,10 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerApp;
+import io.temporal.activity.ActivityExecutionContext;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Launches a container-orchestrator container/pod to manage the message passing for the replication
@@ -31,7 +33,8 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
                                    final IntegrationLauncherConfig sourceLauncherConfig,
                                    final IntegrationLauncherConfig destinationLauncherConfig,
                                    final JobRunConfig jobRunConfig,
-                                   final ResourceRequirements resourceRequirements) {
+                                   final ResourceRequirements resourceRequirements,
+                                   final Supplier<ActivityExecutionContext> activityContext) {
     super(
         connectionId,
         REPLICATION,
@@ -42,7 +45,8 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
             INIT_FILE_DESTINATION_LAUNCHER_CONFIG, Jsons.serialize(destinationLauncherConfig)),
         containerOrchestratorConfig,
         resourceRequirements,
-        ReplicationOutput.class);
+        ReplicationOutput.class,
+        activityContext);
   }
 
 }

@@ -10,7 +10,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
 import io.temporal.api.namespace.v1.NamespaceInfo;
@@ -217,13 +217,14 @@ public class TemporalUtils {
    * Runs the code within the supplier while heartbeating in the backgroud. Also makes sure to shut
    * down the heartbeat server after the fact.
    */
-  public static <T> T withBackgroundHeartbeat(final Callable<T> callable) {
+  public static <T> T withBackgroundHeartbeat(final Callable<T> callable,
+                                              final Supplier<ActivityExecutionContext> activityContext) {
     final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     try {
-      scheduledExecutor.scheduleAtFixedRate(() -> {
-        Activity.getExecutionContext().heartbeat(null);
-      }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+      scheduledExecutor.scheduleAtFixedRate(
+          () -> new CancellationHandler.TemporalCancellationHandler(activityContext.get()).checkAndHandleCancellation(() -> {}),
+          0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       return callable.call();
     } catch (final ActivityCompletionException e) {
@@ -237,12 +238,14 @@ public class TemporalUtils {
     }
   }
 
-  public static <T> T withBackgroundHeartbeat(final AtomicReference<Runnable> cancellationCallbackRef, final Callable<T> callable) {
+  public static <T> T withBackgroundHeartbeat(final AtomicReference<Runnable> cancellationCallbackRef,
+                                              final Callable<T> callable,
+                                              final Supplier<ActivityExecutionContext> activityContext) {
     final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     try {
       scheduledExecutor.scheduleAtFixedRate(() -> {
-        final CancellationHandler cancellationHandler = new CancellationHandler.TemporalCancellationHandler();
+        final CancellationHandler cancellationHandler = new CancellationHandler.TemporalCancellationHandler(activityContext.get());
 
         cancellationHandler.checkAndHandleCancellation(() -> {
           if (cancellationCallbackRef != null) {
