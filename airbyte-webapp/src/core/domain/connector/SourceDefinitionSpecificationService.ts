@@ -7,9 +7,10 @@ class SourceDefinitionSpecificationService extends AirbyteRequestService {
     return "source_definition_specifications";
   }
 
-  public get(sourceDefinitionId: string): Promise<SourceDefinitionSpecification> {
+  public get(sourceDefinitionId: string, workspaceId: string): Promise<SourceDefinitionSpecification> {
     return this.fetch<SourceDefinitionSpecification>(`${this.url}/get`, {
       sourceDefinitionId,
+      workspaceId,
     });
   }
 }

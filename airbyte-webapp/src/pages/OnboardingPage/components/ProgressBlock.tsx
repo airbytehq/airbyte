@@ -1,11 +1,11 @@
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-import Link from "components/Link";
 import { Button, H1 } from "components/base";
+import Link from "components/Link";
 
 import { Connection } from "core/domain/connection";
 import Status from "core/statuses";
