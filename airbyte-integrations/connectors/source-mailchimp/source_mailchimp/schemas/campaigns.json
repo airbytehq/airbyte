@@ -2,6 +2,7 @@
   "type": "object",
   "title": "Campaign",
   "description": "A summary of an individual campaign's settings and content.",
+  "required": ["id"],
   "properties": {
     "id": {
       "type": "string",
