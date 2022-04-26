@@ -17,8 +17,7 @@ public class ConnectionDeletionActivityImpl implements ConnectionDeletionActivit
   private final ConnectionHelper connectionHelper;
 
   @Override
-  public void
-  deleteConnection(final ConnectionDeletionInput input) {
+  public void deleteConnection(final ConnectionDeletionInput input) {
     try {
       connectionHelper.deleteConnection(input.getConnectionId());
     } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
