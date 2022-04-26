@@ -17,7 +17,8 @@ jobs:
           - source-hubspot
           - source-google-sheets
           - source-exchange-rates
-          - source-google-analytics
+          - source-google-analytics-v4
+          - source-mailchimp
 
     steps:
       - uses: actions/checkout@v2
@@ -38,17 +39,17 @@ jobs:
         with:
           java-version: "17"
 
-      - name: Build ${{ matrix.connector }}
-        id: build
-        run: |
-          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:build
-          docker tag docker.io/airbyte/source-facebook-marketing:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
-          docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
-
       - name: Login to GitHub package docker registry
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | \
             docker login --username ${{ github.actor }} --password-stdin ghcr.io
+
+      - name: Build ${{ matrix.connector }}
+        id: build
+        run: |
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:build
+          docker tag docker.io/airbyte/${{ matrix.connector }}:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
+          docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
 
       - name: Push ${{ matrix.connector }} image with 'dev' tag
         if: ${{ github.event_name == 'push' }}

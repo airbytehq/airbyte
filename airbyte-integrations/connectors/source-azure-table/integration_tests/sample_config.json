@@ -1,5 +1,0 @@
-{
-  "storage_account_name": "tweets",
-  "storage_access_key": "<<replace with correct key>>",
-  "storage_endpoint_suffix": "core.windows.net"
-}
