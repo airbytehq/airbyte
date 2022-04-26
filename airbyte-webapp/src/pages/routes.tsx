@@ -5,6 +5,7 @@ import { useEffectOnce } from "react-use";
 
 import { useConfig } from "config";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { useNotificationService } from "hooks/services/Notification";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
@@ -15,7 +16,6 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/GeneratedApi";
-import { useTrackPageAnalytics } from "../hooks/services/Analytics/useTrackPageAnalytics";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 import OnboardingPage from "./OnboardingPage";
@@ -97,6 +97,7 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
 const RoutingWithWorkspace: React.FC = () => {
   const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
+  useTrackPageAnalytics();
   useApiHealthPoll();
   useDemo();
 
