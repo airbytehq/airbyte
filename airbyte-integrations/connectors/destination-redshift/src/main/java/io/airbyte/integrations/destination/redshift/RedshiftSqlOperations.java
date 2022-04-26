@@ -108,6 +108,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   @Override
   public void onDestinationCloseOperations(final JdbcDatabase database, final Set<String> writeConfigSet) {
     LOGGER.info("Executing operations for Redshift Destination DB engine...");
+    LOGGER.warn("Write configs : {}", writeConfigSet);
     List<String> schemaAndTableWithNotSuperType = writeConfigSet
         .stream()
         .flatMap(schemaName -> discoverNotSuperTables(database, schemaName).stream())
@@ -126,7 +127,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
                                               final String schemaName) {
     List<String> schemaAndTableWithNotSuperType = new ArrayList<>();
     try {
-      LOGGER.info("Discovering NOT SUPER table types...");
+      LOGGER.info("Discovering NOT SUPER table types... Schema name: {}", schemaName);
       database.execute(String.format("set search_path to %s", schemaName));
       final List<JsonNode> tablesNameWithoutSuperDatatype = database.bufferedResultSetQuery(
           conn -> conn.createStatement().executeQuery(String.format(SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT,
