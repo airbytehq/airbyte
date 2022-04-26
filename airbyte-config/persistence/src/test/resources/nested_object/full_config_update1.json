@@ -1,8 +1,0 @@
-{
-  "username": "charles",
-  "password": "hunter3",
-  "nested": {
-    "password": "hunter2",
-    "not_password": 13
-  }
-}

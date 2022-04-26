@@ -1,0 +1,42 @@
+name: Connectors
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_connectors:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        connector:
+          - source-facebook-marketing
+          - source-hubspot
+          - source-google-sheets
+          - source-exchange-rates
+          - source-google-analytics
+
+    steps:
+      - name: Prepare
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          echo ::set-output name=tag::${TAG}
+
+      - name: Build ${{ matrix.connector }}
+        id: build
+        run: |
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:build
+          docker tag docker.io/airbyte/source-facebook-marketing:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
+          docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
+
+      - name: Push ${{ matrix.connector }} image with 'dev' tag
+        if: ${{ github.event_name == 'push' }}
+        id: push-dev
+        run: |
+          docker pull ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
+          docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:dev
+          docker push ghcr.io/estuary/${{ matrix.connector }}:dev
