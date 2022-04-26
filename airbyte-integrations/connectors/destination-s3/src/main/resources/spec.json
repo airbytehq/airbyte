@@ -18,7 +18,7 @@
     "properties": {
       "access_key_id": {
         "type": "string",
-        "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket.",
+        "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.",
         "title": "S3 Key ID *",
         "airbyte_secret": true,
         "examples": ["A012345678910EXAMPLE"],
@@ -33,14 +33,14 @@
         "order": 1
       },
       "s3_bucket_name": {
-        "title": "S3 Bucket Name",
+        "title": "S3 Bucket Name *",
         "type": "string",
-        "description": "The name of the S3 bucket.",
+        "description": "The name of the S3 bucket. See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket. to create an S3 bucket",
         "examples": ["airbyte_sync"],
         "order": 2
       },
       "s3_bucket_path": {
-        "title": "S3 Bucket Path",
+        "title": "S3 Bucket Path *",
         "description": "Directory under the S3 bucket where data will be written.",
         "type": "string",
         "examples": ["data_sync/test"],
@@ -50,7 +50,7 @@
         "title": "S3 Bucket Region",
         "type": "string",
         "default": "",
-        "description": "The region of the S3 bucket.",
+        "description": "The region of the S3 bucket. See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.",
         "enum": [
           "",
           "us-east-1",
@@ -202,7 +202,7 @@
                 "order": 1
               },
               "part_size_mb": {
-                "title": "dddBlock Size (MB) for Amazon S3 multipart upload (Optional)",
+                "title": "Block Size (MB) for Amazon S3 multipart upload (Optional)",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
@@ -388,7 +388,7 @@
       },
       "s3_path_format": {
         "title": "s3_path_format (Optional)",
-        "description": "Format string on how data will be organized inside the S3 bucket directory",
+        "description": "Format string on how data will be organized inside the S3 bucket directory. See [this](https://docs.airbyte.com/integrations/destinations/s3#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format)",
         "type": "string",
         "examples": [
           "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
