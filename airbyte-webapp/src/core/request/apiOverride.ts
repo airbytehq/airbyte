@@ -30,7 +30,7 @@ export const apiOverride = async <T, U = unknown>(
     headers = (await middleware({ headers })).headers;
   }
 
-  const response = await fetch(`${requestUrl}` + new URLSearchParams(params), {
+  const response = await fetch(`${requestUrl}${new URLSearchParams(params)}`, {
     method,
     ...(data ? { body: JSON.stringify(data) } : {}),
     headers,
