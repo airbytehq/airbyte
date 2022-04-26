@@ -33,7 +33,7 @@
             "default": 0
         },
         "min_amt": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "example": 2,
             "default": 0
         },
@@ -56,7 +56,7 @@
             "example": "48349590"
         },
         "purchase_date": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "date": {
                     "type": "string",
@@ -69,7 +69,7 @@
             }
         },
         "purchase_cost": {
-            "type": "string",
+            "type": ["string", "null"],
             "example": "2.45"
         },
         "remaining": {

@@ -47,7 +47,7 @@
         },
         "location": {},
         "manufacturer": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -76,11 +76,11 @@
             "example": "39883338"
         },
         "purchase_cost": {
-            "type": "string",
+            "type": ["string", "null"],
             "example": "24.42"
         },
         "purchase_date": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "date": {
                     "type": "string",

@@ -4,11 +4,11 @@
     "properties": {
         "id": {"type": "integer"},
         "name": {"type": "string"},
-        "image": {"type": "string"},
+        "image": {"type": ["string", "null"]},
         "category_type": {"type": "string"},
         "has_eula": {"type": "boolean"},
         "use_default_eula": {"type": "boolean"},
-        "eula": {"type": "string"},
+        "eula": {"type": ["string", "null"]},
         "checkin_email": {"type": "boolean"},
         "require_acceptance": {"type": "boolean"},
         "item_count": {"type": "integer"},

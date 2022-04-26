@@ -5,7 +5,7 @@
         "id": {"type": "integer"},
         "name": {"type": "string"},
         "url": {"type": "string"},
-        "image": {"type": "string"},
+        "image": {"type": ["string", "null"]},
         "support_url": {"type": "string"},
         "support_phone": {"type": "string"},
         "support_email": {"type": "string"},
@@ -40,7 +40,7 @@
             }
         },
         "deleted_at": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "datetime": {
                     "type": "string",

@@ -8,7 +8,7 @@
         "image": {},
         "company": {"type": "object"},
         "manufacturer": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -22,7 +22,7 @@
             }
         },
         "supplier": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -35,7 +35,7 @@
                 }
             }
         },
-        "model_number": {"type": "string"},
+        "model_number": {"type": ["string", "null"]},
         "category": {
             "type": "object",
             "properties": {
@@ -51,7 +51,7 @@
             }
         },
         "location": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -64,10 +64,10 @@
                 }
             }
         },
-        "notes": {"type": "string"},
+        "notes": {"type": ["string", "null"]},
         "qty": {"type": "integer"},
         "purchase_date": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "date": {
                     "type": "string",
@@ -79,9 +79,9 @@
                 }
             }
         },
-        "purchase_cost": {"type": "string"},
-        "order_number": {"type": "string"},
-        "min_qty": {"type": "integer"},
+        "purchase_cost": {"type": ["string", "null"]},
+        "order_number": {"type": ["string", "null"]},
+        "min_qty": {"type": ["integer", "null"]},
         "remaining_qty": {"type": "integer"},
         "created_at": {
             "type": "object",

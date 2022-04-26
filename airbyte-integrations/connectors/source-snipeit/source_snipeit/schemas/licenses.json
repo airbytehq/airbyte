@@ -13,7 +13,7 @@
         },
         "company": {},
         "manufacturer": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -39,7 +39,7 @@
             "example": ""
         },
         "purchase_date": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "date": {
                     "type": "string",
@@ -52,7 +52,7 @@
             }
         },
         "purchase_cost": {
-            "type": "string",
+            "type": ["string", "null"],
             "example": "299.99"
         },
         "notes": {

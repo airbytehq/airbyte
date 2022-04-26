@@ -35,7 +35,7 @@
             }
         },
         "model_number": {
-            "type": "string",
+            "type": ["string", "null"],
             "example": "4929525240061"
         },
         "status_label": {
@@ -99,16 +99,16 @@
             }
         },
         "notes": {
-            "type": "string",
+            "type": ["string", "null"],
             "example": "Created by DB seeder"
         },
         "order_number": {
-            "type": "string",
+            "type": ["string", "null"],
             "example": "4243135"
         },
         "company": {},
         "location": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -122,7 +122,7 @@
             }
         },
         "rtd_location": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -137,7 +137,7 @@
         },
         "image": {},
         "assigned_to": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -161,7 +161,7 @@
                     "example": "User"
                 },
                 "employee_number": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "example": "19135"
                 },
                 "type": {
@@ -199,7 +199,7 @@
             }
         },
         "purchase_date": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "date": {
                     "type": "string",
@@ -212,7 +212,7 @@
             }
         },
         "last_checkout": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "datetime": {
                     "type": "string",
@@ -225,7 +225,7 @@
             }
         },
         "expected_checkin": {
-            "type": "object",
+            "type": ["object", "null"],
             "properties": {
                 "date": {
                     "type": "string",
@@ -238,7 +238,7 @@
             }
         },
         "purchase_cost": {
-            "type": "string",
+            "type": ["string", "null"],
             "example": "1114.86"
         },
         "user_can_checkout": {
@@ -247,7 +247,7 @@
             "default": true
         },
         "custom_fields": {
-            "type": "array"
+            "type": ["object", "array", "null"]
         },
         "available_actions": {
             "type": "object",
