@@ -1204,6 +1204,9 @@ public class AcceptanceTests {
         apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
     assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
 
+    // test that repeated deletion call for same connection is successful
+    apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
     // test deletion of connection when temporal workflow is in a bad state, only when using new
     // scheduler
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
