@@ -11,8 +11,20 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from source_pipedrive.streams import Activities, ActivityFields, Deals, Leads, Organizations, Persons, Pipelines, Stages, Users, DealFields, \
-    OrganizationFields, PersonFields
+from source_pipedrive.streams import (
+    Activities,
+    ActivityFields,
+    DealFields,
+    Deals,
+    Leads,
+    OrganizationFields,
+    Organizations,
+    PersonFields,
+    Persons,
+    Pipelines,
+    Stages,
+    Users,
+)
 
 
 class SourcePipedrive(AbstractSource):
