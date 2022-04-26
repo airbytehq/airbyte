@@ -45,6 +45,11 @@ jobs:
           docker tag docker.io/airbyte/source-facebook-marketing:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
           docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
 
+      - name: Login to GitHub package docker registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            docker login --username ${{ github.actor }} --password-stdin ghcr.io
+
       - name: Push ${{ matrix.connector }} image with 'dev' tag
         if: ${{ github.event_name == 'push' }}
         id: push-dev
