@@ -198,7 +198,6 @@ def test_conversation_part_has_conversation_id(requests_mock):
     """
     Test shows that conversation_part records include the `conversation_id` field.
     """
-
     response_body = {
         "type": "conversation",
         "id": "151272900024304",
@@ -224,3 +223,63 @@ def test_conversation_part_has_conversation_id(requests_mock):
         record_count += 1
 
     assert record_count == 2
+
+
+def  _conversations_response(conversations, next_url = None):
+    return {
+        "type": "conversation.list",
+        "pages": {"next": next_url} if next_url else {},
+        "conversations": conversations
+    }
+
+
+def _conversation_response(conversation_id, conversation_parts):
+    return {
+        "type": "conversation",
+        "id": conversation_id,
+        "conversation_parts": {
+            "type": "conversation_part.list",
+            "conversation_parts": conversation_parts,
+            "total_count": len(conversation_parts),
+        },
+    }
+
+
+def test_conversation_part_filtering_based_on_conversation(requests_mock):
+    """
+    Test shows that conversation_part records include the `conversation_id` field.
+    """
+    state = {"updated_at": 1650988200}
+    requests_mock.register_uri('GET', "https://api.intercom.io/conversations", json=_conversations_response(
+        conversations=[
+            {"id":"151272900026677","updated_at":1650988600},
+            {"id":"151272900026666","updated_at":1650988500}
+        ],
+        next_url="https://api.intercom.io/conversations?per_page=2&page=2"
+    ))
+    requests_mock.register_uri('GET', "https://api.intercom.io/conversations?per_page=2&page=2", json=_conversations_response(
+        conversations=[
+            {"id":"151272900026466","updated_at":1650988450},
+            {"id":"151272900026680","updated_at":1650988100}, # Older than state, won't be processed
+        ]
+    ))
+    requests_mock.register_uri('GET', "https://api.intercom.io/conversations/151272900026677", json=_conversation_response(
+        conversation_id="151272900026677",
+        conversation_parts=[{"id": "13740311961","updated_at":1650988300},{"id": "13740311962","updated_at":1650988450}]
+    ))
+    requests_mock.register_uri('GET', "https://api.intercom.io/conversations/151272900026666", json=_conversation_response(
+        conversation_id="151272900026666",
+        conversation_parts=[{"id": "13740311955","updated_at":1650988150},{"id": "13740312056","updated_at":1650988500}]
+    ))
+    requests_mock.register_uri('GET', "https://api.intercom.io/conversations/151272900026466", json=_conversation_response(
+        conversation_id="151272900026466",
+        conversation_parts=[{"id": "13740311970","updated_at":1650988600}]
+    ))
+
+    record_count = 0
+    stream1 = ConversationParts(authenticator=NoAuth())
+    for slice in stream1.stream_slices(sync_mode=SyncMode.incremental, stream_state=state):
+        record_count += len(list(stream1.read_records(sync_mode=SyncMode.incremental, stream_slice=slice, stream_state=state)))
+            
+
+    assert record_count == 5

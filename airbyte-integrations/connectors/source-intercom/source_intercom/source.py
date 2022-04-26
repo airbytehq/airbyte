@@ -10,6 +10,7 @@ from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -71,9 +72,8 @@ class IntercomStream(HttpStream, ABC):
             if error_message:
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
             raise e
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-
+    
+    def get_records_field(self, response: requests.Response) -> Any:
         data = response.json()
 
         for data_field in self.data_fields:
@@ -87,6 +87,9 @@ class IntercomStream(HttpStream, ABC):
             yield data
         else:
             yield from data
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield from self.get_records_field(response=response)
 
 
 class IncrementalIntercomStream(IntercomStream, ABC):
@@ -133,12 +136,12 @@ class IncrementalIntercomStream(IntercomStream, ABC):
 class ChildStreamMixin:
     parent_stream_class: Optional[IntercomStream] = None
 
-    def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         parent_stream = self.parent_stream_class(authenticator=self.authenticator, start_date=self.start_date)
-        for slice in parent_stream.stream_slices(sync_mode=sync_mode):
+        for slice in parent_stream.stream_slices(sync_mode=sync_mode, stream_state=stream_state):
             for item in self.parent_stream_class(
                 authenticator=self.authenticator, start_date=self.start_date, stream_slice=slice
-            ).read_records(sync_mode=sync_mode):
+            ).read_records(sync_mode=sync_mode, stream_state=stream_state):
                 yield {"id": item["id"]}
 
 
@@ -314,8 +317,8 @@ class ConversationParts(ChildStreamMixin, IncrementalIntercomStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/conversations/{stream_slice['id']}"
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        records = super().parse_response(response, stream_state, **kwargs)
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = super().get_records_field(response=response)
         conversation_id = response.json().get("id")
         for conversation_part in records:
             conversation_part.setdefault("conversation_id", conversation_id)
