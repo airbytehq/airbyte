@@ -1,0 +1,13 @@
+name: "Shared Issues"
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: airbytehq/workflow-actions@production
+        with:
+          repo-token: "${{ secrets.OCTAVIA_PAT }}"
+          command: "issue"
