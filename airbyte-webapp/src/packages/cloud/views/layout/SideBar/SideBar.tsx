@@ -1,28 +1,28 @@
-import React from "react";
-import styled from "styled-components";
-import { FormattedMessage, FormattedNumber } from "react-intl";
-import { NavLink } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-regular-svg-icons";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import { FormattedMessage, FormattedNumber } from "react-intl";
+import { NavLink } from "react-router-dom";
+import styled from "styled-components";
 
 import { Link } from "components";
 
-import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { FeatureItem, WithFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
+import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import { WorkspacePopout } from "packages/cloud/views/workspaces/WorkspacePopout";
+import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
 import DocsIcon from "views/layout/SideBar/components/DocsIcon";
 import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
-import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
-import SourceIcon from "views/layout/SideBar/components/SourceIcon";
-import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
-import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import SidebarPopout, { Icon, Item } from "views/layout/SideBar/components/SidebarPopout";
-import { FeatureItem, WithFeature } from "hooks/services/Feature";
+import SourceIcon from "views/layout/SideBar/components/SourceIcon";
+import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
 

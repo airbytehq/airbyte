@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
-import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { JobInfo } from "core/domain/job";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useCreateDestination } from "hooks/services/useDestinationHook";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";

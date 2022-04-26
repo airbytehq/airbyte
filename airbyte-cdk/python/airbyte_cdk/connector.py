@@ -10,7 +10,16 @@ import pkgutil
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Optional
 
+import yaml
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
+
+
+def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
+    """Gets a resource from a package, returning None if it does not exist"""
+    try:
+        return pkgutil.get_data(package, filename)
+    except FileNotFoundError:
+        return None
 
 
 class AirbyteSpec(object):
@@ -51,12 +60,25 @@ class Connector(ABC):
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
         Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
-        required to run this integration.
+        required to run this integration. By default, this will be loaded from a "spec.yaml" or a "spec.json" in the package root.
         """
-        raw_spec: Optional[bytes] = pkgutil.get_data(self.__class__.__module__.split(".")[0], "spec.json")
-        if not raw_spec:
-            raise ValueError("Unable to find spec.json.")
-        return ConnectorSpecification.parse_obj(json.loads(raw_spec))
+
+        package = self.__class__.__module__.split(".")[0]
+
+        yaml_spec = load_optional_package_file(package, "spec.yaml")
+        json_spec = load_optional_package_file(package, "spec.json")
+
+        if yaml_spec and json_spec:
+            raise RuntimeError("Found multiple spec files in the package. Only one of spec.yaml or spec.json should be provided.")
+
+        if yaml_spec:
+            spec_obj = yaml.load(yaml_spec, Loader=yaml.SafeLoader)
+        elif json_spec:
+            spec_obj = json.loads(json_spec)
+        else:
+            raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
+
+        return ConnectorSpecification.parse_obj(spec_obj)
 
     @abstractmethod
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:

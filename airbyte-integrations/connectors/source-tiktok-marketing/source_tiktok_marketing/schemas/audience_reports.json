@@ -43,12 +43,6 @@
         "spend": {
           "type": ["null", "number"]
         },
-        "cash_spend": {
-          "type": ["null", "number"]
-        },
-        "voucher_spend": {
-          "type": ["null", "number"]
-        },
         "cpc": {
           "type": ["null", "number"]
         },

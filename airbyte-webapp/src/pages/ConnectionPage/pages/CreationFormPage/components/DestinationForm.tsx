@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
 // TODO: create separate component for source and destinations forms
-import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
-import useRouter from "hooks/useRouter";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
+import useRouter from "hooks/useRouter";
+import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
 type IProps = {
   afterSubmit: () => void;
