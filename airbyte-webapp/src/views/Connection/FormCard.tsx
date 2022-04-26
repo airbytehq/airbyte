@@ -16,8 +16,8 @@ const FormContainer = styled(Form)`
 
 export const FormCard: React.FC<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CollapsibleCardProps & { bottomSeparator?: boolean; form: FormikConfig<any> }
-> = ({ children, form, bottomSeparator = true, ...props }) => {
+  CollapsibleCardProps & { bottomSeparator?: boolean; form: FormikConfig<any>; mode?: "edit" | "readonly" | "create" }
+> = ({ children, form, bottomSeparator = true, mode, ...props }) => {
   const { formatMessage } = useIntl();
 
   const { mutateAsync, error, reset, isSuccess } = useMutation<
@@ -37,19 +37,21 @@ export const FormCard: React.FC<
             <FormChangeTracker changed={dirty} />
             {children}
             <div>
-              <EditControls
-                withLine={bottomSeparator}
-                isSubmitting={isSubmitting}
-                dirty={dirty}
-                resetForm={() => {
-                  resetForm();
-                  reset();
-                }}
-                successMessage={isSuccess && formatMessage({ id: "form.changesSaved" })}
-                errorMessage={
-                  errorMessage ?? !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
-                }
-              />
+              {mode !== "readonly" && (
+                <EditControls
+                  withLine={bottomSeparator}
+                  isSubmitting={isSubmitting}
+                  dirty={dirty}
+                  resetForm={() => {
+                    resetForm();
+                    reset();
+                  }}
+                  successMessage={isSuccess && formatMessage({ id: "form.changesSaved" })}
+                  errorMessage={
+                    errorMessage ?? !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
+                  }
+                />
+              )}
             </div>
           </FormContainer>
         </CollapsibleCard>

@@ -21,15 +21,18 @@ type EditorHeaderProps = {
   addButtonText?: React.ReactNode;
   itemsCount: number;
   onAddItem: () => void;
+  mode?: "readonly" | "create" | "edit";
 };
 
-const EditorHeader: React.FC<EditorHeaderProps> = ({ itemsCount, onAddItem, mainTitle, addButtonText }) => {
+const EditorHeader: React.FC<EditorHeaderProps> = ({ itemsCount, onAddItem, mainTitle, addButtonText, mode }) => {
   return (
     <Content>
       {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
-      <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton">
-        {addButtonText || <FormattedMessage id="form.addItems" />}
-      </Button>
+      {mode !== "readonly" && (
+        <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton">
+          {addButtonText || <FormattedMessage id="form.addItems" />}
+        </Button>
+      )}
     </Content>
   );
 };

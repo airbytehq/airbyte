@@ -36,6 +36,7 @@ type ArrayOfObjectsEditorProps<T extends { name: string }> = {
   onCancelEdit?: () => void;
   onDone?: () => void;
   onRemove: (index: number) => void;
+  mode?: "readonly" | "edit" | "create";
 };
 
 function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
@@ -45,9 +46,9 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
     props;
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
 
-  const isEditMode = editableItemIndex !== null && editableItemIndex !== undefined;
+  const mode = editableItemIndex === null || editableItemIndex === undefined ? "readonly" : "edit";
 
-  if (isEditMode) {
+  if (mode === "edit") {
     const item = typeof editableItemIndex === "number" ? items[editableItemIndex] : undefined;
 
     return (
@@ -78,6 +79,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
         onAddItem={onAddItem}
         mainTitle={mainTitle}
         addButtonText={addButtonText}
+        mode={mode}
       />
       {items.length ? (
         <ItemsList>
