@@ -5971,7 +5971,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-orb:0.1.1"
+- dockerImage: "airbyte/source-orb:0.1.2"
   spec:
     documentationUrl: "https://docs.withorb.com/"
     connectionSpecification:
