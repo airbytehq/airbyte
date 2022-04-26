@@ -5,7 +5,8 @@ import { useEffectOnce } from "react-use";
 
 import { useConfig } from "config";
 import { Workspace } from "core/domain/workspace/Workspace";
-import { TrackPageAnalytics, useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { TrackPageAnalytics } from "hooks/services/Analytics/TrackPageAnalytics";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { useNotificationService } from "hooks/services/Notification";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
