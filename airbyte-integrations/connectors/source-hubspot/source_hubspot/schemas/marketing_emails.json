@@ -196,7 +196,8 @@
       "publishDate": {
         "type": ["null", "integer"]
       }
-    },
+    }
+  }, {
     "properties": {
       "publishedById": {
         "type": ["null", "integer"]

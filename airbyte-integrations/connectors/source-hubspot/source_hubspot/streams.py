@@ -3,6 +3,7 @@
 #
 
 
+import itertools
 import sys
 import time
 import urllib.parse
@@ -193,6 +194,11 @@ class API:
         return self._parse_and_handle_errors(response), response
 
 
+def grouper(it: Iterator, n: int) -> Iterator[list]:
+    while chunck := list(itertools.islice(it, n)):
+        yield chunck
+
+
 class Stream(HttpStream, ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
 
@@ -249,10 +255,16 @@ class Stream(HttpStream, ABC):
             "User-Agent": self._api.USER_AGENT,
         }
 
+    def allOf_hacked(self, props: Mapping[str, Any]) -> Mapping[str, Any]:
+        hacked_props: List[Mapping[str, Any]] = []
+        for chunk in grouper(iter(props.items()), 64):
+            hacked_props.append({"properties": dict(chunk)})
+        return {"type": "object", "allOf": hacked_props}
+
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
         if self.properties:
-            json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
+            json_schema["properties"]["properties"] = self.allOf_hacked(self.properties)
         return json_schema
 
     def handle_request(
