@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
-import { EmptyListPage } from "components/EmptyResourceListPage";
+import { EmptyResourceListPage } from "components/EmptyResourceListPage";
 import HeadTitle from "components/HeadTitle";
 
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
@@ -40,7 +40,11 @@ const AllConnectionsPage: React.FC = () => {
           <ConnectionsTable connections={connections} />
         </MainPageWithScroll>
       ) : (
-        <EmptyListPage resourceType="connections" onCreateClick={onCreateClick} allowCreate={allowCreateConnection} />
+        <EmptyResourceListPage
+          resourceType="connections"
+          onCreateClick={onCreateClick}
+          allowCreate={allowCreateConnection}
+        />
       )}
     </Suspense>
   );

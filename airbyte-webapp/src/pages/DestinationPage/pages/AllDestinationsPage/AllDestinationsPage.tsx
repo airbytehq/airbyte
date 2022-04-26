@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, MainPageWithScroll } from "components";
-import { EmptyListPage } from "components/EmptyResourceListPage";
+import { EmptyResourceListPage } from "components/EmptyResourceListPage";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
@@ -35,7 +35,7 @@ const AllDestinationsPage: React.FC = () => {
       <DestinationsTable destinations={destinations} />
     </MainPageWithScroll>
   ) : (
-    <EmptyListPage resourceType="destinations" onCreateClick={onCreateDestination} allowCreate />
+    <EmptyResourceListPage resourceType="destinations" onCreateClick={onCreateDestination} allowCreate />
   );
 };
 

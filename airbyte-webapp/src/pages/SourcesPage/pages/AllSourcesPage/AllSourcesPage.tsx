@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, MainPageWithScroll } from "components";
-import { EmptyListPage } from "components/EmptyResourceListPage";
+import { EmptyResourceListPage } from "components/EmptyResourceListPage";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
@@ -34,7 +34,7 @@ const AllSourcesPage: React.FC = () => {
       <SourcesTable sources={sources} />
     </MainPageWithScroll>
   ) : (
-    <EmptyListPage resourceType="sources" onCreateClick={onCreateSource} allowCreate />
+    <EmptyResourceListPage resourceType="sources" onCreateClick={onCreateSource} allowCreate />
   );
 };
 

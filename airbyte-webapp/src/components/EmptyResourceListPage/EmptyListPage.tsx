@@ -57,8 +57,8 @@ export const BowtieImg = styled.img`
   }
 `;
 
-export const EmptyListPage: React.FC<Props> = ({ resourceType, onCreateClick, allowCreate }) => {
-  const { headingMessageId, buttonMessageId } = useMemo(() => {
+export const EmptyResourceListPage: React.FC<Props> = ({ resourceType, onCreateClick, allowCreate }) => {
+  const { headingMessageId, buttonMessageId, singularResourceType } = useMemo(() => {
     const singularResourceType = resourceType.substring(0, resourceType.length - 1);
     const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
 
@@ -67,7 +67,7 @@ export const EmptyListPage: React.FC<Props> = ({ resourceType, onCreateClick, al
       singularResourceType.substring(0, 1).toUpperCase() + singularResourceType.substring(1)
     }`;
 
-    return { headingMessageId, buttonMessageId };
+    return { headingMessageId, buttonMessageId, singularResourceType };
   }, [resourceType]);
 
   return (
@@ -84,7 +84,7 @@ export const EmptyListPage: React.FC<Props> = ({ resourceType, onCreateClick, al
         )}
         <OctaviaImg src={`/images/octavia/empty-${resourceType}.png`} alt="Octavia" resource={resourceType} />
       </IllustrationContainer>
-      <Button onClick={onCreateClick} disabled={!allowCreate} size="xl">
+      <Button onClick={onCreateClick} disabled={!allowCreate} size="xl" data-id={`new-${singularResourceType}`}>
         <FormattedMessage id={buttonMessageId} />
       </Button>
     </Container>
