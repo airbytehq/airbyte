@@ -30,6 +30,10 @@ jobs:
           TAG=$(echo $GITHUB_SHA | head -c7)
           echo ::set-output name=tag::${TAG}
 
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
       - name: Build ${{ matrix.connector }}
         id: build
         run: |
