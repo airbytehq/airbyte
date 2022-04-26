@@ -13,7 +13,7 @@
     "storybook": "start-storybook -p 9009 -s public --quiet",
     "lint": "eslint --ext js,ts,tsx src",
     "license-check": "node ./scripts/license-check.js",
-    "generate-client": "orval && eslint --fix ./src/core/request/GeneratedApi.ts && prettier ./src/core/request/GeneratedApi.ts --write"
+    "generate-client": "orval"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
