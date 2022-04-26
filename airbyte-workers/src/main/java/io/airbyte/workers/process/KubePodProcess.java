@@ -217,7 +217,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withPorts(containerPorts)
         .withImage(image)
         .withImagePullPolicy(imagePullPolicy)
-        .withCommand("sh", "-c", mainCommand)
+        .withCommand("bash", "-c", mainCommand)
         .withEnv(envVars)
         .withWorkingDir(CONFIG_DIR)
         .withVolumeMounts(mainVolumeMounts);
