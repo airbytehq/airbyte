@@ -276,6 +276,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
                 additionalControl={additionalSchemaControl}
                 component={SchemaField}
+                mode={mode}
               />
               {mode === "edit" && (
                 <EditControls

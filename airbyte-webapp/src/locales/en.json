@@ -46,6 +46,7 @@
   "form.primaryKey": "Primary key",
   "form.cursorField": "Cursor field",
   "form.dataSync": "Activate the streams you want to sync",
+  "form.dataSync.readonly": "Activated streams",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",
   "form.submit": "Submit",

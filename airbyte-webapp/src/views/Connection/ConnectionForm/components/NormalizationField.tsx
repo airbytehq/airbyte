@@ -36,17 +36,18 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mo
         checked={field.value === NormalizationType.BASIC}
         disabled={mode === "readonly"}
         message={
-          // todo: make this link not there if mode === readonly
-          <FormattedMessage
-            id="form.basicNormalization.message"
-            values={{
-              lnk: (lnk: React.ReactNode) => (
-                <Link target="_blank" href={config.ui.normalizationLink} as="a">
-                  {lnk}
-                </Link>
-              ),
-            }}
-          />
+          mode !== "readonly" && (
+            <FormattedMessage
+              id="form.basicNormalization.message"
+              values={{
+                lnk: (lnk: React.ReactNode) => (
+                  <Link target="_blank" href={config.ui.normalizationLink} as="a">
+                    {lnk}
+                  </Link>
+                ),
+              }}
+            />
+          )
         }
       />
     </Normalization>

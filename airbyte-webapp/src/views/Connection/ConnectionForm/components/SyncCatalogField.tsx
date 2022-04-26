@@ -88,6 +88,7 @@ const LearnMoreLink = styled.a`
 type SchemaViewProps = {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
+  mode?: "readonly" | "edit" | "create";
 } & FieldProps<SyncSchemaStream[]>;
 
 const CatalogHeader: React.FC = () => {
@@ -179,6 +180,7 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
   additionalControl,
   field,
   form,
+  mode,
 }) => {
   const { value: streams, name: fieldName } = field;
 
@@ -210,14 +212,20 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
   }, [searchString, sortedSchema]);
-
+  console.log(mode);
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
       <HeaderBlock>
-        <FormattedMessage id="form.dataSync" />
-        {additionalControl}
+        {mode !== "readonly" ? (
+          <>
+            <FormattedMessage id="form.dataSync" />
+            {additionalControl}
+          </>
+        ) : (
+          <FormattedMessage id="form.dataSync.readonly" />
+        )}
       </HeaderBlock>
-      <Search onSearch={setSearchString} />
+      {mode !== "readonly" && <Search onSearch={setSearchString} />}
       <StreamsContent>
         <CatalogHeader />
         <CatalogSubheader />
