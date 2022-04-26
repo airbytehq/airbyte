@@ -364,7 +364,7 @@ public class SchedulerHandler {
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     if (featureFlags.usesNewScheduler()) {
-      return createManualRun(connectionIdRequestBody.getConnectionId());
+      return submitManualSyncToWorker(connectionIdRequestBody.getConnectionId());
     }
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
@@ -411,7 +411,7 @@ public class SchedulerHandler {
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     if (featureFlags.usesNewScheduler()) {
-      return resetConnectionWithNewScheduler(connectionIdRequestBody.getConnectionId());
+      return submitResetConnectionToWorker(connectionIdRequestBody.getConnectionId());
     }
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
@@ -447,7 +447,7 @@ public class SchedulerHandler {
   // todo (cgardens) - this method needs a test.
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
     if (featureFlags.usesNewScheduler()) {
-      return createNewSchedulerCancellation(jobIdRequestBody.getId());
+      return submitCancellationToWorker(jobIdRequestBody.getId());
     }
 
     final long jobId = jobIdRequestBody.getId();
@@ -509,34 +509,27 @@ public class SchedulerHandler {
     return destinationDef.getSpec();
   }
 
-  private JobInfoRead createNewSchedulerCancellation(final Long id) throws IOException {
-    final Job job = jobPersistence.getJob(id);
+  private JobInfoRead submitCancellationToWorker(final Long jobId) throws IOException {
+    final Job job = jobPersistence.getJob(jobId);
 
-    final ManualOperationResult cancellationSubmissionResult = eventRunner.startNewCancellation(UUID.fromString(job.getScope()));
+    final ManualOperationResult cancellationResult = eventRunner.startNewCancellation(UUID.fromString(job.getScope()));
 
-    if (cancellationSubmissionResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(cancellationSubmissionResult.getFailingReason().get());
-    }
-
-    final Job cancelledJob = jobPersistence.getJob(id);
-    return jobConverter.getJobInfoRead(cancelledJob);
+    return readJobFromResult(cancellationResult);
   }
 
-  private JobInfoRead createManualRun(final UUID connectionId) throws IOException {
-    final ManualOperationResult manualOperationResult = eventRunner.startNewManualSync(connectionId);
+  private JobInfoRead submitManualSyncToWorker(final UUID connectionId) throws IOException {
+    final ManualOperationResult manualSyncResult = eventRunner.startNewManualSync(connectionId);
 
-    if (manualOperationResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
-    }
-
-    final Job job = jobPersistence.getJob(manualOperationResult.getJobId().get());
-
-    return jobConverter.getJobInfoRead(job);
+    return readJobFromResult(manualSyncResult);
   }
 
-  private JobInfoRead resetConnectionWithNewScheduler(final UUID connectionId) throws IOException {
-    final ManualOperationResult manualOperationResult = eventRunner.resetConnection(connectionId);
+  private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException {
+    final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(connectionId);
 
+    return readJobFromResult(resetConnectionResult);
+  }
+
+  private JobInfoRead readJobFromResult(final ManualOperationResult manualOperationResult) throws IOException, IllegalStateException {
     if (manualOperationResult.getFailingReason().isPresent()) {
       throw new IllegalStateException(manualOperationResult.getFailingReason().get());
     }
