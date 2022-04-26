@@ -968,6 +968,7 @@ class ContactLists(IncrementalStream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
+    primary_key = "listId"
     need_chunk = False
 
 
@@ -1161,6 +1162,7 @@ class FormSubmissions(Stream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
+    primary_key = "submittedAt"
 
     def path(
         self,
@@ -1249,6 +1251,7 @@ class PropertyHistory(IncrementalStream):
     data_field = "contacts"
     page_field = "vid-offset"
     page_filter = "vidOffset"
+    primary_key = "timestamp"
     limit = 100
 
     def list(self, fields) -> Iterable:
@@ -1288,6 +1291,7 @@ class SubscriptionChanges(IncrementalStream):
     data_field = "timeline"
     more_key = "hasMore"
     updated_at_field = "timestamp"
+    primary_key = "timestamp"
 
 
 class Workflows(Stream):
