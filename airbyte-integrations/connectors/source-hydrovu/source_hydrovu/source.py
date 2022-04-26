@@ -91,21 +91,7 @@ class HydroVuStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-
-        """
-        def format_record(r):
-            gps = r['gps']
-            del r['gps']
-            r['latitude'] = gps['latitude']
-            r['longitude'] = gps['longitude']
-            return r
-
-        yield from (format_record(r) for r in response.json())
-        """
-
         yield {}
-
-
 
 
 class Locations(HydroVuStream):
@@ -126,17 +112,9 @@ class Locations(HydroVuStream):
         return "locations/list"
 
 
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        print ("0===================")
-        print(response.json())
-        print ("1===================")
+
         def format_record(r):
-
-            print ("r0------------------")
-            print (r)
-            print ("r1------------------")
-
 
             gps = r['gps']
             del r['gps']
@@ -144,16 +122,11 @@ class Locations(HydroVuStream):
             r['longitude'] = gps['longitude']
             return r
 
-
-
-
         yield from (format_record(r) for r in response.json())
-
 
 
 class Readings(HydroVuStream):
     primary_key = 'id'
-
 
     def __init__(self, auth, *args, **kw):
         super(Readings, self).__init__(*args, **kw)
@@ -161,18 +134,6 @@ class Readings(HydroVuStream):
         locations = Locations(authenticator=auth)
 
         records = list(locations.read_records('full-refresh'))
-        #records = locations.read_records('full-refresh')
-
-
-        #print ("-------------------------")
-        #print ("-------------------------")
-
-        #for r in records:
-        #    print (r['id'])
-
-        #print ("-------------------------")
-        #print ("-------------------------")
-
 
         self._pages = (location for location in sorted(location['id'] for location in records))
 
@@ -184,45 +145,19 @@ class Readings(HydroVuStream):
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        #return "locations/list"
-        #return "readings/list"
-        
-        #return "locations/4538855792574464/data"
 
-        #location_id = stream_slice['id']
+        # next_page_token is the location id
+        if not next_page_token:
+            next_page_token = next(self._pages)
 
-        #print ("location_id")
-        #print (location_id)
-
-        location_id = next(self._pages)
-        
-        #location_id = r['id']
-
-        return f"locations/{location_id}/data"
-        
-        #return f"locations/{r}/data"
-
-        #return f"locations/{self._pages}/data"
-      
-
+        return f"locations/{next_page_token}/data"
 
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
-            #print ("555-------------------------")
-            
-            #r = next(self._pages)
-        
-            print ("-------------------------")
-            print ("-------------------------")
+            r = next(self._pages)
 
-            #print (r['id'])
-            #print (r)
-
-            print ("-------------------------")
-            print ("-------------------------")
-
-            #return r
+            return r
         except StopIteration:
             pass
 
@@ -251,73 +186,52 @@ class Readings(HydroVuStream):
         return params
     '''
 
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        print ("2===================")
-        print(response.json())
-        
-        print ("3===================")
         
 
-        #parse response.json into an iterable list of timestamps, values, and other params and yield that iterable list
+        # parse response.json into an iterable list of timestamps, values, and other params and yield that iterable list
 
         response_json = response.json() 
 
-        yield response_json #works from original response
+        r = response.json()
+
+        flat_readings_list = []
+        
+        locationId = r['locationId']
+
+        parameters = r['parameters']
+
+        for param in parameters:
+
+            parameterId = param['parameterId']
+
+            unitId = param['unitId']
+
+            customParameter = param['customParameter']
+
+            readings = param['readings']
+
+            for reading in readings:
+
+                timestamp = reading['timestamp']
+
+                value = reading['value']
+
+                flat_reading = {}
+
+                flat_reading['locationId'] = locationId
+                flat_reading['parameterId'] = parameterId
+                flat_reading['unitId'] = unitId
+                flat_reading['customParameter'] = customParameter
+                flat_reading['timestamp'] = timestamp
+                flat_reading['value'] = value
+
+                # More efficient way to do this???
+                flat_readings_list.append(flat_reading)
 
 
-
-
-        #locationId = 
-
-
-
-
-        '''
-        records = response.json()
-        if records:
-            for r in records:
-                #r['monitoring_point_id'] = self._active_page
-            
-                print ("r2------------------")
-                print (r)
-                print ("r3------------------")
-       
-                if "parameters" in r:
-                    print ("param---------")
-
-
-            yield from records
-        '''
-
-
-
-
-        '''
-        def format_record(r):
-
-            print ("r2------------------")
-            print (r)
-            print ("r3------------------")
-    
-            
-
-            #gps = r['gps']
-            #del r['gps']
-            #r['latitude'] = gps['latitude']
-            #r['longitude'] = gps['longitude']
-            
-
-
-            return r
-        '''
-
-
-
-        #yield from (format_record(r) for r in response.json())
-
-
-
-
+        yield from flat_readings_list
 
 
 class myOauth2Authenticator(Oauth2Authenticator):
@@ -374,9 +288,5 @@ class SourceHydrovu(AbstractSource):
                                      config['client_secret'],
                                      ""
                                      )
-
-
-        print ("auth1")
-        print (auth)
 
         return [Locations(authenticator=auth), Readings(auth, authenticator=auth)]
