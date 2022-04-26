@@ -976,4 +976,9 @@ jobs:
     ## JOB_KUBE_TOLERATIONS
     ## @param jobs.kube.tolerations [array] Tolerations for jobs.kube pod assignment.
     ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    ## any boolean values should be quoted to ensure the value is passed through as a string, eg:
+    ## - key: airbyte-server
+    ##   operator: Equal
+    ##   value: "true"
+    ##   effect: NoSchedule
     tolerations: []
