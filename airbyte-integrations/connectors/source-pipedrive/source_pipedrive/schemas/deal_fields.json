@@ -64,7 +64,7 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": ["null", "integer", "string", "boolean"]
+            "type": ["null", "string", "integer"]
           },
           "label": {
             "type": ["null", "string"]
@@ -73,7 +73,7 @@
       }
     },
     "mandatory_flag": {
-      "type": ["null", "boolean"]
+      "type": ["null", "string", "boolean", "object"]
     }
   }
 }
