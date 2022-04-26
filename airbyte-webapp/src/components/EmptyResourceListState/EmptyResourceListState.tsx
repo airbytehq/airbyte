@@ -57,7 +57,7 @@ export const BowtieImg = styled.img`
   }
 `;
 
-export const EmptyResourceListPage: React.FC<Props> = ({ resourceType, onCreateClick, disableCreateButton }) => {
+export const EmptyResourceListState: React.FC<Props> = ({ resourceType, onCreateClick, disableCreateButton }) => {
   const { headingMessageId, buttonMessageId, singularResourceType } = useMemo(() => {
     const singularResourceType = resourceType.substring(0, resourceType.length - 1);
     const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
