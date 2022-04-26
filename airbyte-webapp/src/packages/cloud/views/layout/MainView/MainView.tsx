@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { LoadingPage } from "components";
+import { AlertBanner } from "components/base/Banner/AlertBanner";
 
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
@@ -11,7 +12,6 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-import { ErrorBanner } from "../../../../../components/base/Banner/ErrorBanner";
 import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 
 const MainContainer = styled.div`
@@ -52,7 +52,7 @@ const MainView: React.FC = (props) => {
         <SideBar />
         <Content>
           {cloudWorkspace.creditStatus && showBanner && (
-            <ErrorBanner errorType="credits" id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`} />
+            <AlertBanner alertType="credits" id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`} />
           )}
           <DataBlock hasBanner={showBanner}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>

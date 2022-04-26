@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
-import { ErrorBanner } from "components/base/Banner/ErrorBanner";
+import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
@@ -72,7 +72,7 @@ const ConnectionItemPage: React.FC = () => {
       }
       error={
         isConnectionDeleted ? (
-          <ErrorBanner errorType="connectionDeleted" id={"connection.connectionDeletedView"} />
+          <AlertBanner alertType="connectionDeleted" id={"connection.connectionDeletedView"} />
         ) : null
       }
     >

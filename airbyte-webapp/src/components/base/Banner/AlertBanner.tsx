@@ -22,12 +22,12 @@ const CreditsLink = styled(Link)`
   color: ${({ theme }) => theme.blackColor};
 `;
 
-interface ErrorBannerProps {
-  errorType: string;
+interface AlertBannerProps {
+  alertType: string;
   id: CreditStatus | string;
 }
 
-const ErrorBanner: React.FC<ErrorBannerProps> = ({ errorType, id }) => (
+const AlertBanner: React.FC<AlertBannerProps> = ({ alertType: errorType, id }) => (
   <Container errorType={errorType}>
     {/* todo: this can be abstracted a layer further to unify the component */}
     {errorType === "credits" ? (
@@ -41,4 +41,4 @@ const ErrorBanner: React.FC<ErrorBannerProps> = ({ errorType, id }) => (
   </Container>
 );
 
-export { ErrorBanner };
+export { AlertBanner };
