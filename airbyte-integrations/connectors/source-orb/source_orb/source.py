@@ -235,11 +235,18 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         Request params are based on the specific slice (i.e. customer_id) we are requesting for,
         and so we need to pull out relevant slice state from the stream state.
 
+        Ledger entries can either be `pending` or `committed`.
+        We're filtering to only return `committed` ledger entries, which are entries that are older than the
+        reporting grace period (12 hours) and are considered finalized.
+        `pending` entries can change during the reporting grace period, so we don't want to export those entries.
+
         Note that the user of super() here implies that the state for a specific slice of this stream
         is of the same format as the stream_state of a regular incremental stream.
         """
         current_customer_state = stream_state.get(stream_slice["customer_id"], {})
-        return super().request_params(current_customer_state, **kwargs)
+        params = super().request_params(current_customer_state, **kwargs)
+        params["entry_status"] = "committed"
+        return params
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         """
@@ -267,6 +274,13 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         nested_customer_id = ledger_entry_record["customer"]["id"]
         del ledger_entry_record["customer"]
         ledger_entry_record["customer_id"] = nested_customer_id
+
+        # Un-nest credit_block -> expiry_date into block_expiry_date and per_unit_cost_basis
+        nested_expiry_date = ledger_entry_record["credit_block"]["expiry_date"]
+        nested_per_unit_cost_basis = ledger_entry_record["credit_block"]["per_unit_cost_basis"]
+        del ledger_entry_record["credit_block"]
+        ledger_entry_record["block_expiry_date"] = nested_expiry_date
+        ledger_entry_record["credit_block_per_unit_cost_basis"] = nested_per_unit_cost_basis
 
         return ledger_entry_record
 
