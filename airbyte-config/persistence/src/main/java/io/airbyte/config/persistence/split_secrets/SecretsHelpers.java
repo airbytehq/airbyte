@@ -116,7 +116,7 @@ public class SecretsHelpers {
     if (config.has(COORDINATE_FIELD)) {
       final var coordinateNode = config.get(COORDINATE_FIELD);
       final var coordinate = getCoordinateFromTextNode(coordinateNode);
-      return getOrThrowSecretValueNode(secretPersistence, coordinate);
+      return new TextNode(getOrThrowSecretValue(secretPersistence, coordinate));
     }
 
     // otherwise iterate through all object fields
@@ -336,16 +336,16 @@ public class SecretsHelpers {
    * @param secretPersistence storage layer for secrets
    * @param coordinate reference to a secret in the persistence
    * @throws RuntimeException when a secret at that coordinate is not available in the persistence
-   * @return a json text node containing the secret value
+   * @return a json string containing the secret value or a JSON
    */
-  private static TextNode getOrThrowSecretValueNode(final ReadOnlySecretPersistence secretPersistence, final SecretCoordinate coordinate) {
+  private static String getOrThrowSecretValue(final ReadOnlySecretPersistence secretPersistence,
+                                              final SecretCoordinate coordinate) {
     final var secretValue = secretPersistence.read(coordinate);
 
     if (secretValue.isEmpty()) {
       throw new RuntimeException(String.format("That secret was not found in the store! Coordinate: %s", coordinate.getFullCoordinate()));
     }
-
-    return new TextNode(secretValue.get());
+    return secretValue.get();
   }
 
   private static SecretCoordinate getCoordinateFromTextNode(final JsonNode node) {
@@ -379,6 +379,15 @@ public class SecretsHelpers {
                                                   final UUID workspaceId,
                                                   final Supplier<UUID> uuidSupplier,
                                                   final @Nullable String oldSecretFullCoordinate) {
+    return getSecretCoordinate("airbyte_workspace_", newSecret, secretReader, workspaceId, uuidSupplier, oldSecretFullCoordinate);
+  }
+
+  private static SecretCoordinate getSecretCoordinate(final String secretBasePrefix,
+                                                      final String newSecret,
+                                                      final ReadOnlySecretPersistence secretReader,
+                                                      final UUID secretBaseId,
+                                                      final Supplier<UUID> uuidSupplier,
+                                                      final @Nullable String oldSecretFullCoordinate) {
     String coordinateBase = null;
     Long version = null;
 
@@ -398,7 +407,7 @@ public class SecretsHelpers {
     if (coordinateBase == null) {
       // IMPORTANT: format of this cannot be changed without introducing migrations for secrets
       // persistences
-      coordinateBase = "airbyte_workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
+      coordinateBase = secretBasePrefix + secretBaseId + "_secret_" + uuidSupplier.get();
     }
 
     if (version == null) {
@@ -406,6 +415,56 @@ public class SecretsHelpers {
     }
 
     return new SecretCoordinate(coordinateBase, version);
+  }
+
+  /**
+   * This method takes in the key (JSON key or HMAC key) of a workspace service account as a secret
+   * and generates a co-ordinate for the secret so that the secret can be written in secret
+   * persistence at the generated co-ordinate
+   *
+   * @param newSecret The JSON key or HMAC key value
+   * @param secretReader To read the value from secret persistence for comparison with the new value
+   * @param workspaceId of the service account
+   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy *
+   *        fixture creation.
+   * @param oldSecretCoordinate a nullable full coordinate (base+version) retrieved from the *
+   *        previous config
+   * @param keyType HMAC ot JSON key
+   * @return a coordinate (versioned reference to where the secret is stored in the persistence)
+   */
+  public static SecretCoordinateToPayload convertServiceAccountCredsToSecret(final String newSecret,
+                                                                             final ReadOnlySecretPersistence secretReader,
+                                                                             final UUID workspaceId,
+                                                                             final Supplier<UUID> uuidSupplier,
+                                                                             final @Nullable JsonNode oldSecretCoordinate,
+                                                                             final String keyType) {
+    final String oldSecretFullCoordinate =
+        (oldSecretCoordinate != null && oldSecretCoordinate.has(COORDINATE_FIELD)) ? oldSecretCoordinate.get(COORDINATE_FIELD).asText()
+            : null;
+    final SecretCoordinate coordinateForStagingConfig = getSecretCoordinate("service_account_" + keyType + "_",
+        newSecret,
+        secretReader,
+        workspaceId,
+        uuidSupplier,
+        oldSecretFullCoordinate);
+    return new SecretCoordinateToPayload(coordinateForStagingConfig,
+        newSecret,
+        Jsons.jsonNode(Map.of(COORDINATE_FIELD,
+            coordinateForStagingConfig.getFullCoordinate())));
+  }
+
+  /**
+   * Takes in the secret coordinate in form of a JSON and fetches the secret from the store
+   *
+   * @param secretCoordinateAsJson The co-ordinate at which we expect the secret value to be present
+   *        in the secret persistence
+   * @param readOnlySecretPersistence The secret persistence
+   * @return Original secret value as JsonNode
+   */
+  public static JsonNode hydrateSecretCoordinate(final JsonNode secretCoordinateAsJson,
+                                                 final ReadOnlySecretPersistence readOnlySecretPersistence) {
+    final var secretCoordinate = getCoordinateFromTextNode(secretCoordinateAsJson.get(COORDINATE_FIELD));
+    return Jsons.deserialize(getOrThrowSecretValue(readOnlySecretPersistence, secretCoordinate));
   }
 
 }

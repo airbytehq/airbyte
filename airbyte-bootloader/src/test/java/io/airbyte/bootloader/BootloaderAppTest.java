@@ -80,7 +80,7 @@ public class BootloaderAppTest {
         mockedConfigs.getConfigDatabaseUrl())
             .getAndInitialize();
     val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, this.getClass().getName());
-    assertEquals("0.35.59.004", configsMigrator.getLatestMigration().getVersion().getVersion());
+    assertEquals("0.35.65.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
     val jobsPersistence = new DefaultJobPersistence(jobDatabase);
     assertEquals(version, jobsPersistence.getVersion().get());
