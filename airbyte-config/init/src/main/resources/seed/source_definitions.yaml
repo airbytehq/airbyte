@@ -591,7 +591,7 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
