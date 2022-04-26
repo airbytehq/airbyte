@@ -34,7 +34,7 @@ const AllSourcesPage: React.FC = () => {
       <SourcesTable sources={sources} />
     </MainPageWithScroll>
   ) : (
-    <EmptyResourceListPage resourceType="sources" onCreateClick={onCreateSource} allowCreate />
+    <EmptyResourceListPage resourceType="sources" onCreateClick={onCreateSource} />
   );
 };
 

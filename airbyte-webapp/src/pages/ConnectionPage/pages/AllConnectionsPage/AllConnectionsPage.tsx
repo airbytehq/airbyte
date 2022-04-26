@@ -43,7 +43,7 @@ const AllConnectionsPage: React.FC = () => {
         <EmptyResourceListPage
           resourceType="connections"
           onCreateClick={onCreateClick}
-          allowCreate={allowCreateConnection}
+          disableCreateButton={!allowCreateConnection}
         />
       )}
     </Suspense>

@@ -35,7 +35,7 @@ const AllDestinationsPage: React.FC = () => {
       <DestinationsTable destinations={destinations} />
     </MainPageWithScroll>
   ) : (
-    <EmptyResourceListPage resourceType="destinations" onCreateClick={onCreateDestination} allowCreate />
+    <EmptyResourceListPage resourceType="destinations" onCreateClick={onCreateDestination} />
   );
 };
 

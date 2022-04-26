@@ -7,7 +7,7 @@ import { Button, H2 } from "components/base";
 interface Props {
   resourceType: "connections" | "destinations" | "sources";
   onCreateClick: () => void;
-  allowCreate?: boolean;
+  disableCreateButton?: boolean;
 }
 
 const Container = styled.div`
@@ -57,7 +57,7 @@ export const BowtieImg = styled.img`
   }
 `;
 
-export const EmptyResourceListPage: React.FC<Props> = ({ resourceType, onCreateClick, allowCreate }) => {
+export const EmptyResourceListPage: React.FC<Props> = ({ resourceType, onCreateClick, disableCreateButton }) => {
   const { headingMessageId, buttonMessageId, singularResourceType } = useMemo(() => {
     const singularResourceType = resourceType.substring(0, resourceType.length - 1);
     const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;
@@ -84,7 +84,7 @@ export const EmptyResourceListPage: React.FC<Props> = ({ resourceType, onCreateC
         )}
         <OctaviaImg src={`/images/octavia/empty-${resourceType}.png`} alt="Octavia" resource={resourceType} />
       </IllustrationContainer>
-      <Button onClick={onCreateClick} disabled={!allowCreate} size="xl" data-id={`new-${singularResourceType}`}>
+      <Button onClick={onCreateClick} disabled={disableCreateButton} size="xl" data-id={`new-${singularResourceType}`}>
         <FormattedMessage id={buttonMessageId} />
       </Button>
     </Container>
