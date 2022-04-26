@@ -20,6 +20,7 @@ You'll need the following information to configure the Postgres destination:
 * **Password**
 * **Default Schema Name** - Specify the schema (or several schema separated by commas) to be set in the search-path. This schema will be used to resolve unqualified object names used in statements over this connection.
 * **Database** - The database name. The default is to connect to a database with the same name as the user name.
+* **JDBC URL Params** (optional)
 
 [Refer to this guide for more details](https://jdbc.postgresql.org/documentation/head/connect.html)
 
@@ -132,6 +133,8 @@ Now that you have set up the <connector name> destination connector, check out t
 
 | Version | Date | Pull Request | Subject                                                                                             |
 |:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------|
+| 0.3.19  | 2022-04-25 | [12195](https://github.com/airbytehq/airbyte/pull/12195) | Add support for additional JDBC URL Params input                                                    |
+| 0.3.18  | 2022-04-12 | [11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                  |
 | 0.3.17  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                   |
 | 0.3.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.3.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
