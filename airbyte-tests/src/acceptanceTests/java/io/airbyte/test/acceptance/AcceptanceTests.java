@@ -1270,6 +1270,80 @@ public class AcceptanceTests {
     }
   }
 
+  @Test
+  @Order(24)
+  public void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an
+    // underlying temporal workflow.
+    // This case only occurs with the new scheduler, so the entire test is inside the feature flag
+    // conditional.
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      final String connectionName = "test-connection";
+      final UUID sourceId = createPostgresSource().getSourceId();
+      final UUID destinationId = createDestination().getDestinationId();
+      final UUID operationId = createOperation().getOperationId();
+      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+      final SyncMode syncMode = SyncMode.INCREMENTAL;
+      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+      catalog.getStreams().forEach(s -> s.getConfig()
+          .syncMode(syncMode)
+          .cursorField(List.of(COLUMN_ID))
+          .destinationSyncMode(destinationSyncMode)
+          .primaryKey(List.of(List.of(COLUMN_NAME))));
+
+      LOGGER.info("Testing connection update when temporal is in a terminal state");
+      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+      terminateTemporalWorkflow(connectionId);
+
+      apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+      LOGGER.info("Waiting for workflow to be recreated...");
+      Thread.sleep(500);
+
+      final WorkflowState workflowState = getWorkflowState(connectionId);
+      assertTrue(workflowState.isRunning());
+    }
+  }
+
+  @Test
+  @Order(25)
+  public void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
+    // This test only covers the specific behavior of updating a connection that does not have an
+    // underlying temporal workflow.
+    // This case only occurs with the new scheduler, so the entire test is inside the feature flag
+    // conditional.
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    if (featureFlags.usesNewScheduler()) {
+      final String connectionName = "test-connection";
+      final UUID sourceId = createPostgresSource().getSourceId();
+      final UUID destinationId = createDestination().getDestinationId();
+      final UUID operationId = createOperation().getOperationId();
+      final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+      final SyncMode syncMode = SyncMode.INCREMENTAL;
+      final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
+      catalog.getStreams().forEach(s -> s.getConfig()
+          .syncMode(syncMode)
+          .cursorField(List.of(COLUMN_ID))
+          .destinationSyncMode(destinationSyncMode)
+          .primaryKey(List.of(List.of(COLUMN_NAME))));
+
+      LOGGER.info("Testing connection update when temporal is in a terminal state");
+      final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+
+      terminateTemporalWorkflow(connectionId);
+
+      apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+      LOGGER.info("Waiting for workflow to be recreated...");
+      Thread.sleep(500);
+
+      final WorkflowState workflowState = getWorkflowState(connectionId);
+      assertTrue(workflowState.isRunning());
+    }
+  }
+
   private WorkflowClient getWorkflowClient() {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService("localhost:7233");
     return WorkflowClient.newInstance(temporalService);
