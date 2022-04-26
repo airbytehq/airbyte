@@ -1,6 +1,0 @@
-*
-!Dockerfile
-!main.py
-!destination_aws_datalake
-!setup.py
-!boto3-preview
