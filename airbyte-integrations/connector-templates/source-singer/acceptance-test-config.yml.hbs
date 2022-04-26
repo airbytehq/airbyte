@@ -3,7 +3,7 @@
 connector_image: airbyte/source-{{dashCase name}}-singer:dev
 tests:
   spec:
-    - spec_path: "source_{{snakeCase name}}_singer/spec.json"
+    - spec_path: "source_{{snakeCase name}}_singer/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
