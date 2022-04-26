@@ -26,7 +26,6 @@
                 "type": "string",
                 "const": "Client",
                 "enum": ["Client"],
-                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -58,7 +57,6 @@
                 "type": "string",
                 "const": "Token",
                 "enum": ["Token"],
-                "default": "Token",
                 "order": 0
               },
               "api_token": {
