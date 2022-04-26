@@ -272,6 +272,11 @@ public class SecretsRepositoryWriter {
     configRepository.writeWorkspaceServiceAccountNoSecrets(workspaceServiceAccountForDB);
   }
 
+  /**
+   * This method is to encrypt the secret JSON key and HMAC key of a GCP service account a associated
+   * with a workspace. If in future we build a similar feature i.e. an AWS account associated with a
+   * workspace, we will have to build new implementation for it
+   */
   private WorkspaceServiceAccount getWorkspaceServiceAccountWithSecretCoordinate(final WorkspaceServiceAccount workspaceServiceAccount)
       throws JsonValidationException, IOException {
     if (longLivedSecretPersistence.isPresent()) {

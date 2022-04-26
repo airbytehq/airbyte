@@ -116,7 +116,7 @@ public class SecretsHelpers {
     if (config.has(COORDINATE_FIELD)) {
       final var coordinateNode = config.get(COORDINATE_FIELD);
       final var coordinate = getCoordinateFromTextNode(coordinateNode);
-      return new TextNode(getOrThrowSecretValueNode(secretPersistence, coordinate));
+      return new TextNode(getOrThrowSecretValue(secretPersistence, coordinate));
     }
 
     // otherwise iterate through all object fields
@@ -336,10 +336,10 @@ public class SecretsHelpers {
    * @param secretPersistence storage layer for secrets
    * @param coordinate reference to a secret in the persistence
    * @throws RuntimeException when a secret at that coordinate is not available in the persistence
-   * @return a json text node containing the secret value or a JSON
+   * @return a json string containing the secret value or a JSON
    */
-  private static String getOrThrowSecretValueNode(final ReadOnlySecretPersistence secretPersistence,
-                                                  final SecretCoordinate coordinate) {
+  private static String getOrThrowSecretValue(final ReadOnlySecretPersistence secretPersistence,
+                                              final SecretCoordinate coordinate) {
     final var secretValue = secretPersistence.read(coordinate);
 
     if (secretValue.isEmpty()) {
@@ -464,7 +464,7 @@ public class SecretsHelpers {
   public static JsonNode hydrateSecretCoordinate(final JsonNode secretCoordinateAsJson,
                                                  final ReadOnlySecretPersistence readOnlySecretPersistence) {
     final var secretCoordinate = getCoordinateFromTextNode(secretCoordinateAsJson.get(COORDINATE_FIELD));
-    return Jsons.deserialize(getOrThrowSecretValueNode(readOnlySecretPersistence, secretCoordinate));
+    return Jsons.deserialize(getOrThrowSecretValue(readOnlySecretPersistence, secretCoordinate));
   }
 
 }
