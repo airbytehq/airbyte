@@ -3,72 +3,61 @@
 #
 
 import pytest
-from requests.auth import HTTPBasicAuth
 
 from airbyte_cdk.models import SyncMode
 from source_freshdesk.streams import Tickets
-
-
-@pytest.fixture(name="config")
-def config_fixture():
-    return {"domain": "test.freshdesk.com", "api_key": "secret_api_key", "requests_per_minute": 50, "start_date": "2002-02-10T22:21:44Z"}
-
-
-@pytest.fixture(name="authenticator")
-def authenticator_fixture(config):
-    return HTTPBasicAuth(username=config["api_key"], password="unused_with_api_key")
 
 
 @pytest.fixture(name="responses")
 def responses_fixtures():
     return [
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00",
+            "url": "/api/tickets?per_page=1&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00",
             "json": [{"id": 1, "updated_at": "2018-01-02T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00>; rel="next"'}
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00",
+            "url": "/api/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00",
             "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2002-02-10T22%3A21%3A44%2B00%3A00>; rel="next"'}
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00",
+            "url": "/api/tickets?per_page=1&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00>; rel="next"'},
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00",
+            "url": "/api/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2018-02-02T00%3A00%3A00%2B00%3A00>; rel="next"'},
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00",
+            "url": "/api/tickets?per_page=1&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00>; rel="next"'},
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00",
+            "url": "/api/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2018-03-02T00%3A00%3A00%2B00%3A00>; rel="next"'},
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00",
+            "url": "/api/tickets?per_page=1&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00>; rel="next"'},
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00",
+            "url": "/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2019-01-03T00%3A00%3A00%2B00%3A00>; rel="next"'},
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00",
+            "url": "/api/tickets?per_page=1&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
             "headers": {"Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00>; rel="next"'},
         },
         {
-            "url": "https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00",
+            "url": "/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00%2B00%3A00",
             "json": [{"id": 6, "updated_at": "2019-03-03T00:00:00Z"}]
         }
     ]
