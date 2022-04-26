@@ -1,4 +1,5 @@
 {
+  "required": ["id"],
   "properties": {
     "body": {
       "type": ["null", "string"]
@@ -10,7 +11,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "account_id": {
       "type": ["null", "string"]
@@ -1393,5 +1394,5 @@
       "type": ["null", "string"]
     }
   },
-  "type": ["null", "object"]
+  "type": ["object"]
 }

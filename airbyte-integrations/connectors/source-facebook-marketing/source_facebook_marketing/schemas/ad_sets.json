@@ -1,5 +1,6 @@
 {
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["id"],
   "properties": {
     "name": {
       "type": ["null", "string"]
@@ -38,7 +39,7 @@
       }
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "account_id": {
       "type": ["null", "string"]

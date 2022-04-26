@@ -1,4 +1,5 @@
 {
+  "required": ["id"],
   "properties": {
     "account_id": {
       "type": ["null", "string"]
@@ -48,7 +49,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "issues_info": {
       "type": ["null", "array"],
@@ -113,5 +114,5 @@
       "format": "date-time"
     }
   },
-  "type": ["null", "object"]
+  "type": ["object"]
 }
