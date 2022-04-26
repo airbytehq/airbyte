@@ -158,7 +158,10 @@ public class IntegrationRunner {
       case WRITE -> {
         final JsonNode config = parseConfig(parsed.getConfigPath());
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
+        LOGGER.warn("parsed 1 : {} ", parsed);
+        LOGGER.warn("parsed 2 : {} ", parsed.getCatalogPath());
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+        LOGGER.warn("Cat : {} ", catalog);
         try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
           AirbyteSentry.executeWithTracing("WriteDestination", () -> runConsumer(consumer));
         }

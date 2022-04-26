@@ -42,6 +42,7 @@ public class CopyConsumerFactory {
       final ConfiguredAirbyteCatalog catalog,
       final StreamCopierFactory<T> streamCopierFactory,
       final String defaultSchema) {
+    LOGGER.warn("Create PAIR : {}", defaultSchema);
     final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier = createWriteConfigs(
         namingResolver,
         config,
@@ -74,7 +75,9 @@ public class CopyConsumerFactory {
     final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier = new HashMap<>();
     final String stagingFolder = UUID.randomUUID().toString();
     for (final var configuredStream : catalog.getStreams()) {
+      LOGGER.warn("stream {}", configuredStream);
       final var stream = configuredStream.getStream();
+      LOGGER.warn("pair {}", stream);
       final var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       final var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, configuredStream, namingResolver, database, sqlOperations);
 
@@ -157,6 +160,8 @@ public class CopyConsumerFactory {
         }
       }
       if (!hasFailed) {
+        LOGGER.warn("namespace1 : {}", pairToCopier);
+        LOGGER.warn("namespace2 : {}", pairToCopier.keySet());
         sqlOperations.onDestinationCloseOperations(db,
             pairToCopier.keySet().stream().map(AirbyteStreamNameNamespacePair::getNamespace).collect(toSet()));
         sqlOperations.executeTransaction(db, queries);
