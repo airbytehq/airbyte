@@ -52,8 +52,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
       return await response.json();
     }
 
-    // @ts-ignore needs refactoring of services
-    // TODO: refactor
+    // @ts-ignore TODO: needs refactoring of services
     return response;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,4 +75,4 @@ async function parseResponse<T>(response: Response): Promise<T> {
   throw new CommonRequestError(response, resultJsonResponse?.message);
 }
 
-export { AirbyteRequestService, parseResponse };
+export { AirbyteRequestService };
