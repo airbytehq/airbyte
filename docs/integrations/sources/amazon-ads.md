@@ -76,6 +76,7 @@ Start date used for generating reports starting from the specified start date. S
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.6` | 2022-04-20 | [\#11659](https://github.com/airbytehq/airbyte/pull/11659) | Add adId to products report |
 | `0.1.5` | 2022-04-08 | [\#11430](https://github.com/airbytehq/airbyte/pull/11430) | `Added support OAuth2.0` |
 | `0.1.4` | 2022-02-21 | [\#10513](https://github.com/airbytehq/airbyte/pull/10513) | `Increasing REPORT_WAIT_TIMEOUT for supporting report generation which takes longer time ` |
 | `0.1.3` | 2021-12-28 | [\#8388](https://github.com/airbytehq/airbyte/pull/8388) | `Add retry if recoverable error  occured for reporting stream processing` |
