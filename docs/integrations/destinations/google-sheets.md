@@ -70,6 +70,6 @@ These two steps are highlighted in the screenshot below:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                               | Subject                                                                       |
-|---------|------------|------------------------------------------------------------|-------------------------------------------------------------------------------|
-| 0.1.0  | 2022-04-26 | []()   | Initial Release                         |
+| Version | Date       | Pull Request                                               | Subject                                |
+|---------|------------|------------------------------------------------------------|----------------------------------------|
+| 0.1.0  | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135)   | Initial Release                         |
