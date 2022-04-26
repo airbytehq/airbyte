@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["listId"],
   "properties": {
     "parentId": {
       "type": ["null", "integer"]
@@ -70,7 +71,7 @@
       "type": ["null", "integer"]
     },
     "listId": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "updatedAt": {
       "type": ["null", "integer"]

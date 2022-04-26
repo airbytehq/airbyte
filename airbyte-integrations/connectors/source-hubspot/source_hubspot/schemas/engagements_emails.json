@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["id"],
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "properties": {
       "type": "object",
@@ -201,7 +202,8 @@
           "hs_merged_object_ids": {
             "type": ["null", "string"]
           }
-        },
+        }
+      }, {
         "properties": {
           "hs_modified_by": {
             "type": ["null", "string"]
@@ -257,7 +259,7 @@
             "type": ["null", "string"]
           }
         }
-      ]
+      }]
     },
     "createdAt": {
       "type": ["null", "string"],

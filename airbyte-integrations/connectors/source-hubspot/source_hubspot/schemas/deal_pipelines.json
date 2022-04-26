@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": ["null", "object"],
+  "type": ["object"],
+  "required": ["pipelineId"],
   "properties": {
     "label": {
       "type": ["null", "string"]
@@ -55,7 +56,7 @@
       "type": ["null", "string"]
     },
     "pipelineId": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "createdAt": {
       "type": ["null", "integer"]
