@@ -512,7 +512,7 @@ public class SchedulerHandler {
   private JobInfoRead createNewSchedulerCancellation(final Long id) throws IOException {
     final Job job = jobPersistence.getJob(id);
 
-    final ManualOperationResult cancellationSubmissionResult = eventRunner.startNewCancelation(UUID.fromString(job.getScope()));
+    final ManualOperationResult cancellationSubmissionResult = eventRunner.startNewCancellation(UUID.fromString(job.getScope()));
 
     if (cancellationSubmissionResult.getFailingReason().isPresent()) {
       throw new IllegalStateException(cancellationSubmissionResult.getFailingReason().get());

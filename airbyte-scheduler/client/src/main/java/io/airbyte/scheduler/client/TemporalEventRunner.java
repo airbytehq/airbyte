@@ -23,7 +23,7 @@ public class TemporalEventRunner implements EventRunner {
     return temporalClient.startNewManualSync(connectionId);
   }
 
-  public ManualOperationResult startNewCancelation(final UUID connectionId) {
+  public ManualOperationResult startNewCancellation(final UUID connectionId) {
     return temporalClient.startNewCancellation(connectionId);
   }
 

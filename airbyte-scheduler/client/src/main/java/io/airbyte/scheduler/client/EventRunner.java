@@ -14,7 +14,7 @@ public interface EventRunner {
 
   ManualOperationResult startNewManualSync(final UUID connectionId);
 
-  ManualOperationResult startNewCancelation(final UUID connectionId);
+  ManualOperationResult startNewCancellation(final UUID connectionId);
 
   ManualOperationResult resetConnection(final UUID connectionId);
 

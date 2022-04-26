@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
@@ -41,9 +42,7 @@ import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.JobInfor
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
-import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -209,6 +208,9 @@ class TemporalClientTest {
     @Test
     public void testSynchronousResetConnection() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
       final long jobId1 = 1L;
       final long jobId2 = 2L;
       final long jobId3 = 3L;
@@ -221,7 +223,7 @@ class TemporalClientTest {
           new JobInformation(jobId3, 0),
           new JobInformation(jobId3, 0));
 
-      doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
+      doReturn(true).when(temporalClient).isWorkflowReachable(any(UUID.class));
 
       when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
 
@@ -251,7 +253,8 @@ class TemporalClientTest {
 
       doNothing()
           .when(temporalClient).refreshRunningWorkflow();
-      doNothing()
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      doReturn(mConnectionManagerWorkflow)
           .when(temporalClient).submitConnectionUpdaterAsync(nonMigratedId);
 
       temporalClient.migrateSyncIfNeeded(Sets.newHashSet(nonMigratedId, migratedId));
@@ -268,11 +271,14 @@ class TemporalClientTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    @DisplayName("Test delete connection method.")
+    @DisplayName("Test delete connection method when workflow is in a running state.")
     void testDeleteConnection() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
 
-      doReturn(true).when(temporalClient).isWorkflowReachable(anyString());
+      doReturn(true).when(temporalClient).isWorkflowReachable(any(UUID.class));
       when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
 
       final JobSyncConfig syncConfig = new JobSyncConfig()
@@ -295,19 +301,29 @@ class TemporalClientTest {
     @DisplayName("Test delete connection method when workflow is in an unexpected state")
     void testDeleteConnectionInUnexpectedState() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      final BatchRequest mBatchRequest = mock(BatchRequest.class);
-
-      doThrow(new IllegalStateException("Force illegal state")).when(temporalClient).getConnectionUpdateWorkflow(CONNECTION_ID);
-      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mConnectionManagerWorkflow);
-      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
+      doThrow(new IllegalStateException("Force illegal state")).when(mConnectionManagerWorkflow).getState();
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
 
       temporalClient.deleteConnection(CONNECTION_ID);
 
-      // this is only called when getting existing workflow
-      verify(workflowClient, Mockito.never()).newWorkflowStub(any(), anyString());
+      verify(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+    }
 
-      verify(workflowClient).newSignalWithStartRequest();
-      verify(workflowClient).signalWithStart(mBatchRequest);
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test delete connection method when workflow has already been deleted")
+    void testDeleteConnectionOnDeletedWorkflow() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(true);
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      temporalClient.deleteConnection(CONNECTION_ID);
+
+      verify(temporalClient).deleteConnection(CONNECTION_ID);
+      verifyNoMoreInteractions(temporalClient);
     }
 
   }
@@ -324,6 +340,7 @@ class TemporalClientTest {
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
 
       when(mWorkflowState.isRunning()).thenReturn(true);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
       when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
       when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
 
@@ -337,13 +354,10 @@ class TemporalClientTest {
     @DisplayName("Test update connection method starts a new workflow when workflow is in an unexpected state")
     void testUpdateConnectionInUnexpectedState() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      final BatchRequest mBatchRequest = mock(BatchRequest.class);
 
       when(mConnectionManagerWorkflow.getState()).thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
       when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
-      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mConnectionManagerWorkflow);
-      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
-      doNothing().when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
 
       temporalClient.update(CONNECTION_ID);
 
@@ -351,6 +365,263 @@ class TemporalClientTest {
       verify(mConnectionManagerWorkflow, Mockito.never()).connectionUpdated();
 
       verify(temporalClient, Mockito.times(1)).submitConnectionUpdaterAsync(CONNECTION_ID);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test update connection method does nothing when connection is deleted")
+    void testUpdateConnectionDeletedWorkflow() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(true);
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      temporalClient.update(CONNECTION_ID);
+
+      // this is only called when updating an existing workflow
+      verify(mConnectionManagerWorkflow, Mockito.never()).connectionUpdated();
+      verify(temporalClient).update(CONNECTION_ID);
+      verifyNoMoreInteractions(temporalClient);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Test manual sync behavior")
+  class ManualSync {
+
+    @Test
+    @DisplayName("Test startNewManualSync successful")
+    void testStartNewManualSyncSuccess() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
+      when(mWorkflowState.isRunning()).thenReturn(false).thenReturn(true);
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final ManualOperationResult result = temporalClient.startNewManualSync(CONNECTION_ID);
+
+      assertTrue(result.getJobId().isPresent());
+      assertEquals(JOB_ID, result.getJobId().get());
+      assertFalse(result.getFailingReason().isPresent());
+      verify(mConnectionManagerWorkflow).submitManualSync();
+    }
+
+    @Test
+    @DisplayName("Test startNewManualSync fails if job is already running")
+    void testStartNewManualSyncAlreadyRunning() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
+      when(mWorkflowState.isRunning()).thenReturn(true);
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final ManualOperationResult result = temporalClient.startNewManualSync(CONNECTION_ID);
+
+      assertFalse(result.getJobId().isPresent());
+      assertTrue(result.getFailingReason().isPresent());
+      verify(mConnectionManagerWorkflow, times(0)).submitManualSync();
+    }
+
+    @Test
+    @DisplayName("Test startNewManualSync repairs the workflow if it is in a bad state")
+    void testStartNewManualSyncRepairsBadWorkflowState() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
+      when(mWorkflowState.isRunning()).thenReturn(false).thenReturn(true);
+      when(mConnectionManagerWorkflow.getState())
+          // fail the first time
+          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"))
+          // return state the second time (i.e. after the workflow is restarted)
+          .thenReturn(mWorkflowState);
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
+      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+
+      final ManualOperationResult result = temporalClient.startNewManualSync(CONNECTION_ID);
+
+      assertTrue(result.getJobId().isPresent());
+      assertEquals(JOB_ID, result.getJobId().get());
+      assertFalse(result.getFailingReason().isPresent());
+      verify(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      verify(mConnectionManagerWorkflow).submitManualSync();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test startNewManualSync returns a failure reason when connection is deleted")
+    void testStartNewManualSyncDeletedWorkflow() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(true);
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final ManualOperationResult result = temporalClient.startNewManualSync(CONNECTION_ID);
+
+      // this is only called when updating an existing workflow
+      assertFalse(result.getJobId().isPresent());
+      assertTrue(result.getFailingReason().isPresent());
+      verify(mConnectionManagerWorkflow, times(0)).submitManualSync();
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Test cancellation behavior")
+  class Cancellation {
+
+    @Test
+    @DisplayName("Test startNewCancellation successful")
+    void testStartNewCancellationSuccess() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
+      when(mWorkflowState.isRunning()).thenReturn(true).thenReturn(false);
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final ManualOperationResult result = temporalClient.startNewCancellation(CONNECTION_ID);
+
+      assertTrue(result.getJobId().isPresent());
+      assertEquals(JOB_ID, result.getJobId().get());
+      assertFalse(result.getFailingReason().isPresent());
+      verify(mConnectionManagerWorkflow).cancelJob();
+    }
+
+    @Test
+    @DisplayName("Test startNewCancellation repairs the workflow if it is in a bad state")
+    void testStartNewCancellationRepairsBadWorkflowState() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
+      when(mWorkflowState.isRunning()).thenReturn(true).thenReturn(false);
+      when(mConnectionManagerWorkflow.getState())
+          // fail the first time
+          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"))
+          // return state the second time (i.e. after the workflow is restarted)
+          .thenReturn(mWorkflowState);
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
+      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+
+      final ManualOperationResult result = temporalClient.startNewCancellation(CONNECTION_ID);
+
+      assertTrue(result.getJobId().isPresent());
+      assertEquals(JOB_ID, result.getJobId().get());
+      assertFalse(result.getFailingReason().isPresent());
+      verify(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      verify(mConnectionManagerWorkflow).cancelJob();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test startNewCancellation returns a failure reason when connection is deleted")
+    void testStartNewCancellationDeletedWorkflow() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(true);
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final ManualOperationResult result = temporalClient.startNewCancellation(CONNECTION_ID);
+
+      // this is only called when updating an existing workflow
+      assertFalse(result.getJobId().isPresent());
+      assertTrue(result.getFailingReason().isPresent());
+      verify(mConnectionManagerWorkflow, times(0)).cancelJob();
+    }
+
+  }
+
+  @Nested
+  @DisplayName("Test reset connection behavior")
+  class ResetConnection {
+
+    @Test
+    @DisplayName("Test resetConnection successful")
+    void testResetConnectionSuccess() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
+      when(mWorkflowState.isRunning()).thenReturn(false);
+      final long jobId1 = 1;
+      final long jobId2 = 2;
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
+          new JobInformation(jobId1, 0),
+          new JobInformation(jobId1, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId2, 0));
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID);
+
+      assertTrue(result.getJobId().isPresent());
+      assertEquals(jobId2, result.getJobId().get());
+      assertFalse(result.getFailingReason().isPresent());
+      verify(mConnectionManagerWorkflow).resetConnection();
+    }
+
+    @Test
+    @DisplayName("Test resetConnection repairs the workflow if it is in a bad state")
+    void testResetConnectionRepairsBadWorkflowState() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(false);
+      when(mWorkflowState.isRunning()).thenReturn(false);
+      when(mConnectionManagerWorkflow.getState())
+          // fail the first time
+          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"))
+          // return state the second time (i.e. after the workflow is restarted)
+          .thenReturn(mWorkflowState);
+
+      final long jobId1 = 1;
+      final long jobId2 = 2;
+      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
+          new JobInformation(jobId1, 0),
+          new JobInformation(jobId1, 0),
+          new JobInformation(jobId2, 0),
+          new JobInformation(jobId2, 0));
+
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
+      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID);
+
+      assertTrue(result.getJobId().isPresent());
+      assertEquals(jobId2, result.getJobId().get());
+      assertFalse(result.getFailingReason().isPresent());
+      verify(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      verify(mConnectionManagerWorkflow).resetConnection();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Test resetConnection returns a failure reason when connection is deleted")
+    void testResetConnectionDeletedWorkflow() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mWorkflowState.isDeleted()).thenReturn(true);
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+
+      final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID);
+
+      // this is only called when updating an existing workflow
+      assertFalse(result.getJobId().isPresent());
+      assertTrue(result.getFailingReason().isPresent());
+      verify(mConnectionManagerWorkflow, times(0)).resetConnection();
     }
 
   }
