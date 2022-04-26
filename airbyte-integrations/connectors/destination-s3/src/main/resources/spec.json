@@ -47,7 +47,7 @@
         "order": 3
       },
       "s3_bucket_region": {
-        "title": "S3 Bucket Region",
+        "title": "S3 Bucket Region *",
         "type": "string",
         "default": "",
         "description": "The region of the S3 bucket. See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.",
