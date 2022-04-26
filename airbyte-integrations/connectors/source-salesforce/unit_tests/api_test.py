@@ -429,16 +429,16 @@ def test_csv_reader_dialect_unix():
     "stream_names,catalog_stream_names,",
     (
         (
-            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
             None,
         ),
         (
             ["stream_1", "stream_2"],
-            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
         ),
         (
-            ["stream_1", "stream_2", "stream_3"],
-            ["stream_1"],
+            ["stream_1", "stream_2", "stream_3", "Describe"],
+            ["stream_1", "Describe"],
         ),
     ),
 )
@@ -482,7 +482,7 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                         "flag1": True,
                         "queryable": True,
                     }
-                    for stream_name in stream_names
+                    for stream_name in stream_names if stream_name != "Describe"
                 ],
             },
         )
@@ -491,7 +491,8 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
     assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
 
     for stream in streams:
-        assert stream.sobject_options == {"flag1": True, "queryable": True}
+        if stream.name != "Describe":
+            assert stream.sobject_options == {"flag1": True, "queryable": True}
     return
 
 
