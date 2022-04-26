@@ -292,8 +292,9 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-|:------- | :--------- | :----------------------------------------------------- | :------------------------------------- |
+| Version | Date       | Pull Request | Subject |
+|:--------|:-----------| :----------------------------------------------------- | :------------------------------------- |
+| 0.3.21  | 2022-04-11 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0 |
 | 0.3.19  | 2022-03-31 | [11495](https://github.com/airbytehq/airbyte/pull/11495) | Adds Support to Chinese MSSQL Server Agent |
 | 0.3.18  | 2022-03-29 | [11010](https://github.com/airbytehq/airbyte/pull/11010) | Adds JDBC Params |
 | 0.3.17  | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
