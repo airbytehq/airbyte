@@ -16,7 +16,7 @@ abstract class AirbyteRequestService {
 
   /** Perform network request */
   public async fetch<T = Response>(url: string, body?: unknown, options?: Partial<RequestInit>): Promise<T> {
-    const path = `${this.rootUrl}${url}`;
+    const path = `${this.rootUrl.replace("/v1/", "")}/v1/${url}`;
 
     const requestOptions: RequestInit = merge(
       {
