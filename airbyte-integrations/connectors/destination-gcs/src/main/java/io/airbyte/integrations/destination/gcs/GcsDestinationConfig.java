@@ -14,6 +14,7 @@ import com.amazonaws.handlers.RequestHandler2;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.auth.Credentials;
 import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfigs;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
@@ -22,7 +23,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfigs;
-import io.airbyte.integrations.destination.gcs.credential.GCPSessionCredentials;
+import io.airbyte.integrations.destination.gcs.credential.GCPOauth2Adapter;
 
 /**
  * Currently we always reuse the S3 client for GCS. So the GCS config extends from the S3 config.
@@ -59,6 +60,14 @@ public class GcsDestinationConfig extends S3DestinationConfig {
         GcsCredentialConfigs.getCredentialConfig(config),
         S3FormatConfigs.getS3FormatConfig(config));
   }
+  public static GcsDestinationConfig getGcsDestinationConfig(final JsonNode config, final Credentials googleCredentials) {
+    return new GcsDestinationConfig(
+        config.get("gcs_bucket_name").asText(),
+        config.get("gcs_bucket_path").asText(),
+        config.get("gcs_bucket_region").asText(),
+        GcsCredentialConfigs.getCredentialConfig(config, googleCredentials),
+        S3FormatConfigs.getS3FormatConfig(config));
+  }
 
   @Override
   protected AmazonS3 createS3Client() {
@@ -73,10 +82,11 @@ public class GcsDestinationConfig extends S3DestinationConfig {
             .build();
       }
       case OAUTH2 -> {
-        SignerFactory.registerSigner("io.airbyte.integrations.destination.gcs.signer.CustomGCPSigner", CustomGCPSigner.class);
+        final String signerPath = "io.airbyte.integrations.destination.gcs.signer.CustomGCPSigner";
+        SignerFactory.registerSigner(signerPath, CustomGCPSigner.class);
         ClientConfiguration clientConfig = new ClientConfiguration();
-        clientConfig.setSignerOverride("io.airbyte.integrations.destination.gcs.signer.CustomGCPSigner");
-        final GCPSessionCredentials googleCredentials = (GCPSessionCredentials) credentialConfig;
+        clientConfig.setSignerOverride(signerPath);
+        final GCPOauth2Adapter googleCredentials = (GCPOauth2Adapter) credentialConfig;
         return AmazonS3ClientBuilder.standard().withClientConfiguration(clientConfig)
             .withEndpointConfiguration(
                 new AwsClientBuilder.EndpointConfiguration(GCS_ENDPOINT, getBucketRegion()))

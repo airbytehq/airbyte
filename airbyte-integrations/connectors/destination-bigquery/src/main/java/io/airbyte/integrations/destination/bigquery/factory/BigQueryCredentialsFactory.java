@@ -2,6 +2,10 @@ package io.airbyte.integrations.destination.bigquery.factory;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.CREDENTIALS;
+import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.OAuthConsts.ACCESS_TOKEN;
+import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.OAuthConsts.CLIENT_ID;
+import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.OAuthConsts.CLIENT_SECRET;
+import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.OAuthConsts.REFRESH_TOKEN;
 import static java.util.Objects.isNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -46,12 +50,12 @@ public class BigQueryCredentialsFactory {
   }
 
   private static Credentials getOAuthClientCredentials(JsonNode config) {
-    AccessToken accessToken = new AccessToken(config.get(CREDENTIALS).get("access_token").asText(), calculateTokenExpirationDate(config));
-    String refreshToken = config.get(CREDENTIALS).get("refresh_token").asText();
+    AccessToken accessToken = new AccessToken(config.get(CREDENTIALS).get(ACCESS_TOKEN).asText(), calculateTokenExpirationDate(config));
+    String refreshToken = config.get(CREDENTIALS).get(REFRESH_TOKEN).asText();
     GoogleCredentials credentials =
         UserCredentials.newBuilder()
-            .setClientId(config.get(CREDENTIALS).get("client_id").asText())
-            .setClientSecret(config.get(CREDENTIALS).get("client_secret").asText())
+            .setClientId(config.get(CREDENTIALS).get(CLIENT_ID).asText())
+            .setClientSecret(config.get(CREDENTIALS).get(CLIENT_SECRET).asText())
             .setAccessToken(accessToken)
             .setRefreshToken(refreshToken)
             .build();

@@ -5,10 +5,12 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.getJobErrorMessage;
+import static io.airbyte.integrations.destination.gcs.credential.GcsCredentialType.OAUTH2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.auth.oauth2.UserCredentials;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
@@ -158,6 +160,9 @@ public class BigQueryUtils {
     return GcsDestinationConfig.getGcsDestinationConfig(getGcsAvroJsonNodeConfig(config));
   }
 
+  public static GcsDestinationConfig getGcsAvroDestinationConfig(final JsonNode config, final Credentials googleCredentials) {
+    return GcsDestinationConfig.getGcsDestinationConfig(getGcsAvroJsonNodeConfig(config), googleCredentials);
+  }
 
   public static JsonNode getGcsAvroJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
@@ -165,9 +170,7 @@ public class BigQueryUtils {
         .put(BigQueryConsts.GCS_BUCKET_NAME, loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, loadingMethod.get(BigQueryConsts.GCS_BUCKET_PATH))
         .put(BigQueryConsts.GCS_BUCKET_REGION, getDatasetLocation(config))
-        .put(BigQueryConsts.CREDENTIAL, BigQueryCredentialsFactory.isOauth(config) ?
-            Jsons.jsonNode(ImmutableMap.builder().put("credential_type", "OAUTH2").build()) :
-            loadingMethod.get(BigQueryConsts.CREDENTIAL))
+        .put(BigQueryConsts.CREDENTIAL, determineAuthMethodForGcsStaging(config, loadingMethod))
         .put(BigQueryConsts.CREDENTIALS, config.get(BigQueryConsts.CREDENTIALS))
         .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
             + "  \"format_type\": \"AVRO\",\n"
@@ -178,6 +181,12 @@ public class BigQueryUtils {
 
     LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
     return gcsJsonNode;
+  }
+
+  private static JsonNode determineAuthMethodForGcsStaging(JsonNode config, JsonNode loadingMethod) {
+    return BigQueryCredentialsFactory.isOauth(config) ?
+        Jsons.jsonNode(ImmutableMap.builder().put(BigQueryConsts.CREDENTIAL_TYPE, OAUTH2).build()) :
+        loadingMethod.get(BigQueryConsts.CREDENTIAL);
   }
 
   /**

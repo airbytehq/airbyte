@@ -237,7 +237,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final BigQuery bigQuery = BigQueryCredentialsFactory.createBigQueryClientWithCredentials(config);
-    final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
+    final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config, bigQuery.getOptions().getCredentials());
     final UUID stagingId = UUID.randomUUID();
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
     final boolean keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config);

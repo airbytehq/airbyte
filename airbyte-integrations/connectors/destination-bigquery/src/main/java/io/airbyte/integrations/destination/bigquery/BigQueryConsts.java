@@ -6,6 +6,13 @@ package io.airbyte.integrations.destination.bigquery;
 
 public class BigQueryConsts {
 
+  public static class OAuthConsts {
+    public static final String CLIENT_ID = "client_id";
+    public static final String CLIENT_SECRET = "client_secret";
+    public static final String REFRESH_TOKEN = "refresh_token";
+    public static final String ACCESS_TOKEN = "access_token";
+  }
+
   public static final int MiB = 1024 * 1024;
   public static final String CONFIG_DATASET_ID = "dataset_id";
   public static final String CONFIG_PROJECT_ID = "project_id";
@@ -20,7 +27,6 @@ public class BigQueryConsts {
   public static final String GCS_BUCKET_PATH = "gcs_bucket_path";
   public static final String GCS_BUCKET_REGION = "gcs_bucket_region";
   public static final String CREDENTIAL = "credential";
-  public static final String SERVICE_ACCOUNT = "service_account";
   public static final String FORMAT = "format";
   public static final String KEEP_GCS_FILES = "keep_files_in_gcs-bucket";
   public static final String KEEP_GCS_FILES_VAL = "Keep all tmp files in GCS";
@@ -36,6 +42,4 @@ public class BigQueryConsts {
   public static final String CREDENTIAL_TYPE = "credential_type";
   public static final String HMAC_KEY_ACCESS_ID = "hmac_key_access_id";
   public static final String HMAC_KEY_ACCESS_SECRET = "hmac_key_secret";
-
-
 }
