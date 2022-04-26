@@ -2,7 +2,8 @@
 const path = require('path');
 const uuid = require('uuid');
 const capitalCase = require('capital-case');
-
+const changeCase = require('change-case')
+   
 const getSuccessMessage = function(connectorName, outputPath, additionalMessage){
     return `
 🚀 🚀 🚀 🚀 🚀 🚀
@@ -45,9 +46,38 @@ module.exports = function (plop) {
   const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
   const pythonDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
+  const sourceConnectorImagePrefix = 'airbyte/source-'
+  const sourceConnectorImageTag = 'dev'
+  const defaultSpecPathFolderPrefix = 'source_'
+  const specFileName = 'spec.json'
+
 
   plop.setHelper('capitalCase', function(name) {
     return capitalCase.capitalCase(name);
+  });
+
+  plop.setHelper('connectorImage', function() {
+    let suffix = ""
+    if (typeof this.connectorImageNameSuffix !== 'undefined') {
+      suffix = this.connectorImageNameSuffix
+    }
+    return `${sourceConnectorImagePrefix}${changeCase.paramCase(this.name)}${suffix}:${sourceConnectorImageTag}`
+  });
+
+  plop.setHelper('specPath', function() {
+    let suffix = ""
+    if (typeof this.specPathFolderSuffix !== 'undefined') {
+      suffix = this.specPathFolderSuffix
+    }
+    let inSubFolder = true
+    if (typeof this.inSubFolder !== 'undefined') {
+      inSubFolder = this.inSubFolder
+    }
+    if (inSubFolder) {
+      return `${defaultSpecPathFolderPrefix}${changeCase.snakeCase(this.name)}${suffix}/${specFileName}`
+    } else {
+      return specFileName
+    }
   });
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
@@ -130,6 +160,10 @@ module.exports = function (plop) {
          destination: singerSourceOutputRoot,
          base: sourceAcceptanceTestFilesInputRoot,
          templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+         data: {
+          connectorImageNameSuffix: "-singer",
+          specPathFolderSuffix: "_singer"
+        }
        },
        {
          type:'add',
@@ -208,6 +242,9 @@ module.exports = function (plop) {
           destination: genericSourceOutputRoot,
           base: sourceAcceptanceTestFilesInputRoot,
           templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+          data: {
+            inSubFolder: false
+          }
         },
         {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
       ]
