@@ -92,12 +92,9 @@ characters.
    and select **Postgres** from the Destination type dropdown.
 4. Follow the [Setup the Postgres Destination in Airbyte](postgres.md#Setup-the-Postgres-Destination-in-Airbyte)
 
-**For Airbyte OSS:**
-<Steps for OSS>
-
 ## Supported sync modes
 
-The <connector name> <source/destination> connector supports the
+The Postgres destination connector supports the
 following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature | Supported?\(Yes/No\) | Notes |
@@ -121,8 +118,8 @@ Each stream will be output into its own table in Postgres. Each table will conta
   is `JSONB`.
 
 
-## Tutorials <if applicable>
-Now that you have set up the <connector name> destination connector, check out the following <connector name> tutorials:
+## Tutorials
+Now that you have set up the Postgres destination connector, check out the following tutorials:
 
 * [Migrate from mysql to postgres](https://airbyte.com/tutorials/migrate-from-mysql-to-postgresql)
 * [Postgres replication](https://airbyte.com/tutorials/postgres-replication)
