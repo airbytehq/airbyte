@@ -24,7 +24,7 @@ export const apiOverride = async <T, U = unknown>(
   }
   const { apiUrl } = options.config;
   // Unsure how worth it is to try to fix this replace
-  const requestUrl = `${apiUrl}${url.replace("/v1/", "")}`;
+  const requestUrl = `${apiUrl.replace("/v1/", "")}${url}`;
 
   for (const middleware of options.middlewares) {
     headers = (await middleware({ headers })).headers;
