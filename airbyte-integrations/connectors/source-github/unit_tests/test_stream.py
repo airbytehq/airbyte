@@ -48,7 +48,7 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 def test_internal_server_error_retry(time_mock):
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
-    stream_slice = {"repository": "test_repo", "id": "id"}
+    stream_slice = {"repository": "test_repo", "comment_id": "id"}
 
     time_mock.reset_mock()
     responses.add(
