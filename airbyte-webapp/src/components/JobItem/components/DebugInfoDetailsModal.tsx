@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Button } from "components";
 import Modal from "components/Modal";
 
-import { JobDebugRead } from "../../../core/request/GeneratedApi";
+import { JobDebugRead } from "../../../core/request/AirbyteClient";
 
 export type IProps = {
   onClose: () => void;

@@ -10,7 +10,7 @@ import { useAnalytics } from "hooks/services/Analytics";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
-import { JobWithAttemptsRead } from "../../../core/request/GeneratedApi";
+import { JobWithAttemptsRead } from "../../../core/request/AirbyteClient";
 import { useTestConnector } from "./useTestConnector";
 
 export type ConnectorCardProvidedProps = {

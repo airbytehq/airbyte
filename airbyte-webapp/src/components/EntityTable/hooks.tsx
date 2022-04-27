@@ -2,7 +2,7 @@ import FrequencyConfig from "config/FrequencyConfig.json";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useSyncConnection, useUpdateConnection } from "hooks/services/useConnectionHook";
 
-import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/GeneratedApi";
+import { ConnectionStatus, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 
 const useSyncActions = (): {
   changeStatus: (connection: WebBackendConnectionRead) => Promise<void>;

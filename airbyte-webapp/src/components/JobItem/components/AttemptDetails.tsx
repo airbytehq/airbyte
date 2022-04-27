@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import Status from "core/statuses";
 
-import { AttemptRead, JobConfigType } from "../../../core/request/GeneratedApi";
+import { AttemptRead, JobConfigType } from "../../../core/request/AirbyteClient";
 
 type IProps = {
   className?: string;

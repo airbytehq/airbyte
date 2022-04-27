@@ -1,4 +1,4 @@
-import { ConnectionSchedule } from "../../core/request/GeneratedApi";
+import { ConnectionSchedule } from "../../core/request/AirbyteClient";
 
 type EntityTableDataItem = {
   entityId: string;

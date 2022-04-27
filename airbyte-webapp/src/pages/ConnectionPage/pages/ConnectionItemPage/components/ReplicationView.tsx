@@ -20,7 +20,7 @@ import {
 import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
 
-import { NamespaceDefinitionType } from "../../../../../core/request/GeneratedApi";
+import { NamespaceDefinitionType } from "../../../../../core/request/AirbyteClient";
 
 interface Props {
   onAfterSaveSchema: () => void;

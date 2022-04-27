@@ -9,7 +9,7 @@ import { Cell, Header, Row } from "components/SimpleTableComponents";
 
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
-import { WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
+import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 import EnabledControl from "./EnabledControl";
 
 const MainInfo = styled(ContentCard)`

@@ -5,7 +5,7 @@ import { ConnectorT } from "core/domain/connector/types";
 import { CheckConnectorParams, useCheckConnector } from "hooks/services/useConnector";
 import { ServiceFormValues } from "views/Connector/ServiceForm";
 
-import { CheckConnectionRead } from "../../../core/request/GeneratedApi";
+import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
 
 export const useTestConnector = (
   props: {

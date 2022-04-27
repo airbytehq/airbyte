@@ -1,5 +1,5 @@
+import { cancelJob, getJobDebugInfo, getJobInfo, JobListRequestBody, listJobsFor } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
-import { cancelJob, getJobDebugInfo, getJobInfo, JobListRequestBody, listJobsFor } from "../../request/GeneratedApi";
 
 export class JobsService extends AirbyteRequestService {
   public list(listParams: JobListRequestBody) {

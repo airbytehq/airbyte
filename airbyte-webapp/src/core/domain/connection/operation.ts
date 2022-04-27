@@ -1,4 +1,4 @@
-import { OperationRead, OperatorDbt } from "../../request/GeneratedApi";
+import { OperationRead, OperatorDbt } from "../../request/AirbyteClient";
 
 export interface Transformation extends OperationRead {
   operatorConfiguration: DbtOperationConfiguration;

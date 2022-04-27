@@ -1,10 +1,10 @@
-import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   completeDestinationOAuth,
   CompleteDestinationOAuthRequest,
   DestinationOauthConsentRequest,
   getDestinationOAuthConsent,
-} from "../../request/GeneratedApi";
+} from "../../request/AirbyteClient";
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
 export class DestinationAuthService extends AirbyteRequestService {
   public getConsentUrl(body: DestinationOauthConsentRequest) {

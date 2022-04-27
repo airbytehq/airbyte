@@ -1,6 +1,6 @@
 import { JSONSchema7Definition } from "json-schema";
 
-import { NamespaceDefinitionType } from "../../request/GeneratedApi";
+import { NamespaceDefinitionType } from "../../request/AirbyteClient";
 import { SOURCE_NAMESPACE_TAG } from "../connector/source";
 import { SyncSchemaField } from "./models";
 

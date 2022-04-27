@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { equal } from "utils/objects";
 
-import { AirbyteStreamConfiguration } from "../../../core/request/GeneratedApi";
+import { AirbyteStreamConfiguration } from "../../../core/request/AirbyteClient";
 import { pathDisplayName } from "./components/PathPopout";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { FieldHeader } from "./FieldHeader";

@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
-import { DestinationDefinitionSpecificationRead } from "../../../../core/request/GeneratedApi";
+import { DestinationDefinitionSpecificationRead } from "../../../../core/request/AirbyteClient";
 import { useDefaultTransformation } from "../formConfig";
 import { NormalizationField } from "./NormalizationField";
 import { TransformationField } from "./TransformationField";

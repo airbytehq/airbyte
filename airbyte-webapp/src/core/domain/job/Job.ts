@@ -1,7 +1,7 @@
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import Status from "core/statuses";
 
-import { SynchronousJobRead } from "../../request/GeneratedApi";
+import { SynchronousJobRead } from "../../request/AirbyteClient";
 
 export type JobMeta = SynchronousJobRead;
 

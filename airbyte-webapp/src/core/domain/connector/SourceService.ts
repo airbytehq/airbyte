@@ -14,7 +14,7 @@ import {
   SourceCreate,
   SourceUpdate,
   updateSource,
-} from "../../request/GeneratedApi";
+} from "../../request/AirbyteClient";
 import { ConnectionConfiguration } from "../connection";
 
 export class SourceService extends AirbyteRequestService {

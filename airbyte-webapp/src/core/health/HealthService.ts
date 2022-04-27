@@ -1,5 +1,5 @@
+import { getHealthCheck } from "../request/AirbyteClient";
 import { AirbyteRequestService } from "../request/AirbyteRequestService";
-import { getHealthCheck } from "../request/GeneratedApi";
 
 export class HealthService extends AirbyteRequestService {
   health() {

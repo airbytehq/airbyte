@@ -4,7 +4,7 @@ import { LogsService } from "core/domain/logs/LogsService";
 import { useInitService } from "services/useInitService";
 
 import { useConfig } from "../../config";
-import { LogsRequestBody } from "../../core/request/GeneratedApi";
+import { LogsRequestBody } from "../../core/request/AirbyteClient";
 import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
 
 export const logsKeys = {

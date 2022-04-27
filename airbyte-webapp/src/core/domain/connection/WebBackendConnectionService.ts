@@ -1,4 +1,3 @@
-import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   WebBackendConnectionCreate,
   WebBackendConnectionUpdate,
@@ -6,7 +5,8 @@ import {
   webBackendGetConnection,
   webBackendListConnectionsForWorkspace,
   webBackendUpdateConnection,
-} from "../../request/GeneratedApi";
+} from "../../request/AirbyteClient";
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
 export class WebBackendConnectionService extends AirbyteRequestService {
   public getConnection(connectionId: string, withRefreshedCatalog?: boolean) {

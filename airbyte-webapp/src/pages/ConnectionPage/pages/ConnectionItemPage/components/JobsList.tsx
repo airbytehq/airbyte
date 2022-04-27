@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import { JobItem } from "components/JobItem/JobItem";
 
-import { JobWithAttemptsRead } from "../../../../../core/request/GeneratedApi";
+import { JobWithAttemptsRead } from "../../../../../core/request/AirbyteClient";
 
 type Props = {
   jobs: JobWithAttemptsRead[];

@@ -1,6 +1,6 @@
 import { JSONSchema7 } from "json-schema";
 
-import { AirbyteStreamAndConfiguration } from "../../request/GeneratedApi";
+import { AirbyteStreamAndConfiguration } from "../../request/AirbyteClient";
 import { JobInfo } from "../job";
 
 export interface SourceDiscoverSchemaRead {

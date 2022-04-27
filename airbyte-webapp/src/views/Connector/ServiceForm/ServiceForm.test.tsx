@@ -1,13 +1,11 @@
 import { getByTestId, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { AirbyteJSONSchema } from "core/jsonSchema";
 import React from "react";
 import selectEvent from "react-select-event";
-
-import { AirbyteJSONSchema } from "core/jsonSchema";
 import { render } from "utils/testutils";
 import { ServiceForm } from "views/Connector/ServiceForm";
-
-import { DestinationDefinitionSpecificationRead } from "../../../core/request/GeneratedApi";
+import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 import { ServiceFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635

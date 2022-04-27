@@ -17,7 +17,7 @@ import useRouter from "hooks/useRouter";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
-import { WebBackendConnectionRead } from "../../../../core/request/GeneratedApi";
+import { WebBackendConnectionRead } from "../../../../core/request/AirbyteClient";
 import DestinationForm from "./components/DestinationForm";
 import ExistingEntityForm from "./components/ExistingEntityForm";
 import SourceForm from "./components/SourceForm";

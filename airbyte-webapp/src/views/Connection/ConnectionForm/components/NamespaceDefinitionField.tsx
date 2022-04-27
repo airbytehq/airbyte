@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 
 import { ControlLabels, DropDown } from "components";
 
-import { NamespaceDefinitionType } from "../../../../core/request/GeneratedApi";
+import { NamespaceDefinitionType } from "../../../../core/request/AirbyteClient";
 import { FlexRow, LeftFieldCol, RightFieldCol } from "../ConnectionForm";
 
 export const StreamOptions = [

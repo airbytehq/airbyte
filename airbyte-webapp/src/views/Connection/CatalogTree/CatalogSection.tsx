@@ -19,7 +19,7 @@ import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
-import { NamespaceDefinitionType } from "../../../core/request/GeneratedApi";
+import { NamespaceDefinitionType } from "../../../core/request/AirbyteClient";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";

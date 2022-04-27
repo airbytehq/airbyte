@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import Status from "core/statuses";
 import { useGetDebugInfoJob, useGetJob } from "services/job/JobService";
 
-import { AttemptRead } from "../../../core/request/GeneratedApi";
+import { AttemptRead } from "../../../core/request/AirbyteClient";
 import { parseAttemptLink } from "../attemptLinkUtils";
 import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";

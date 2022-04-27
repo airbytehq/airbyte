@@ -21,7 +21,7 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
-import { OperationRead, WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
+import { OperationRead, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 type TransformationViewProps = {
   connection: WebBackendConnectionRead;

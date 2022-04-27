@@ -18,7 +18,7 @@ import {
   ConnectionSchedule,
   NamespaceDefinitionType,
   WebBackendConnectionRead,
-} from "../../../core/request/GeneratedApi";
+} from "../../../core/request/AirbyteClient";
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";

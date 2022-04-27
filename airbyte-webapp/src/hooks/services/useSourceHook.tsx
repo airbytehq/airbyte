@@ -11,7 +11,7 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { WebBackendConnectionRead } from "../../core/request/GeneratedApi";
+import { WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";

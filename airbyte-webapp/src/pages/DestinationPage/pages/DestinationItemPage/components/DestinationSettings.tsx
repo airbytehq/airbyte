@@ -11,7 +11,7 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 
-import { WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
+import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 const Content = styled.div`
   max-width: 813px;

@@ -8,7 +8,7 @@ import {
   SourceDefinitionCreate,
   SourceDefinitionUpdate,
   updateSourceDefinition,
-} from "../../request/GeneratedApi";
+} from "../../request/AirbyteClient";
 
 export class SourceDefinitionService extends AirbyteRequestService {
   public get(sourceDefinitionId: string) {

@@ -5,7 +5,7 @@ import { useIntl } from "react-intl";
 
 import { Button } from "components";
 
-import { JobDebugRead } from "../../../core/request/GeneratedApi";
+import { JobDebugRead } from "../../../core/request/AirbyteClient";
 import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
 
 type IProps = {

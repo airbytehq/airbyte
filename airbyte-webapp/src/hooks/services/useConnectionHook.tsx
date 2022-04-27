@@ -16,7 +16,7 @@ import {
   OperationCreate,
   WebBackendConnectionRead,
   WebBackendConnectionUpdate,
-} from "../../core/request/GeneratedApi";
+} from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";

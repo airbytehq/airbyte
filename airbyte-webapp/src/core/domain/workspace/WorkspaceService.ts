@@ -1,4 +1,3 @@
-import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 import {
   getWorkspace,
   listWorkspaces,
@@ -7,7 +6,8 @@ import {
   WebBackendWorkspaceState,
   WorkspaceIdRequestBody,
   WorkspaceUpdate,
-} from "../../request/GeneratedApi";
+} from "../../request/AirbyteClient";
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
 export class WorkspaceService extends AirbyteRequestService {
   public get(body: WorkspaceIdRequestBody) {

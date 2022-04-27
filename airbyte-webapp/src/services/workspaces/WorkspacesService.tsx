@@ -6,7 +6,7 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
 import { useConfig } from "../../config";
-import { WorkspaceUpdate } from "../../core/request/GeneratedApi";
+import { WorkspaceUpdate } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
 import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";

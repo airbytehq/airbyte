@@ -8,7 +8,7 @@ import {
   listDestinationDefinitionsForWorkspace,
   listLatestDestinationDefinitions,
   updateDestinationDefinition,
-} from "../../request/GeneratedApi";
+} from "../../request/AirbyteClient";
 
 export class DestinationDefinitionService extends AirbyteRequestService {
   public get(destinationDefinitionId: string) {

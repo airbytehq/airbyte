@@ -15,7 +15,7 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useListJobs } from "services/job/JobService";
 
-import { WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
+import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 import JobsList from "./JobsList";
 import StatusMainInfo from "./StatusMainInfo";
 

@@ -14,7 +14,7 @@ import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/con
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
-import { CheckConnectionRead } from "../../core/request/GeneratedApi";
+import { CheckConnectionRead } from "../../core/request/AirbyteClient";
 
 type ConnectorService = {
   hasNewVersions: boolean;

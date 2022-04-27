@@ -1,5 +1,5 @@
+import { AirbyteArchive, exportArchive, importArchive } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
-import { AirbyteArchive, exportArchive, importArchive } from "../../request/GeneratedApi";
 
 export class DeploymentService extends AirbyteRequestService {
   public async exportDeployment() {

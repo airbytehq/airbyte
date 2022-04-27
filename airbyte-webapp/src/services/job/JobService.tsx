@@ -5,7 +5,7 @@ import { JobsService } from "core/domain/job/JobsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
-import { JobInfoRead, JobListRequestBody } from "../../core/request/GeneratedApi";
+import { JobInfoRead, JobListRequestBody } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 
 export const jobsKeys = {

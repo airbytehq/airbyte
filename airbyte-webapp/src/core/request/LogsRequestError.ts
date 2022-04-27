@@ -1,5 +1,5 @@
+import { JobWithAttemptsRead } from "./AirbyteClient";
 import { CommonRequestError } from "./CommonRequestError";
-import { JobWithAttemptsRead } from "./GeneratedApi";
 
 export class LogsRequestError extends CommonRequestError {
   __type = "common.errorWithLogs";

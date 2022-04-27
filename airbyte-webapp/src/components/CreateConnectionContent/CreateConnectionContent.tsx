@@ -15,7 +15,7 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
 
-import { WebBackendConnectionRead } from "../../core/request/GeneratedApi";
+import { WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 

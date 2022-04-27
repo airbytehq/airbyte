@@ -1,5 +1,5 @@
+import { getLogs, LogsRequestBody } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
-import { getLogs, LogsRequestBody } from "../../request/GeneratedApi";
 import { LogType } from "./types";
 
 export type GetLogsPayload = { logType: LogType };

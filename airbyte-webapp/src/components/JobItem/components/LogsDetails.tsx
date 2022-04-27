@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import { Logs } from "core/domain/job";
 
-import { AttemptRead, JobDebugRead } from "../../../core/request/GeneratedApi";
+import { AttemptRead, JobDebugRead } from "../../../core/request/AirbyteClient";
 import AttemptDetails from "./AttemptDetails";
 import DebugInfoButton from "./DebugInfoButton";
 import DownloadButton from "./DownloadButton";

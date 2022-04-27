@@ -6,7 +6,7 @@ import {
   SourceDefinitionRead,
   SourceRead,
   WebBackendConnectionRead,
-} from "../../core/request/GeneratedApi";
+} from "../../core/request/AirbyteClient";
 import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 // TODO: types in next methods look a bit ugly

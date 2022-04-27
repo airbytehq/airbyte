@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { Button, StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
-import { AttemptRead, JobInfoRead, JobStatus, JobWithAttemptsRead } from "../../../core/request/GeneratedApi";
+import { AttemptRead, JobInfoRead, JobStatus, JobWithAttemptsRead } from "../../../core/request/AirbyteClient";
 import { useCancelJob } from "../../../services/job/JobService";
 import AttemptDetails from "./AttemptDetails";
 

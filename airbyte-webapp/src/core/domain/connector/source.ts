@@ -1,4 +1,4 @@
-import { SourceDefinitionSpecificationRead } from "../../request/GeneratedApi";
+import { SourceDefinitionSpecificationRead } from "../../request/AirbyteClient";
 import { ConnectorDefinition, ConnectorDefinitionSpecification, ConnectorT, Source, SourceDefinition } from "./types";
 
 export function isSource(connector: ConnectorT): connector is Source {

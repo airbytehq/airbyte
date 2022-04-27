@@ -13,7 +13,7 @@ import {
   getDestination,
   listDestinationsForWorkspace,
   updateDestination,
-} from "../../request/GeneratedApi";
+} from "../../request/AirbyteClient";
 
 export class DestinationService extends AirbyteRequestService {
   public async check_connection(

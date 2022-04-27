@@ -7,7 +7,7 @@ import { useInitService } from "services/useInitService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
-import { DestinationDefinitionSpecificationRead } from "../../core/request/GeneratedApi";
+import { DestinationDefinitionSpecificationRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 

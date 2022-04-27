@@ -7,7 +7,7 @@ import { Toggle } from "components";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 
-import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
+import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;

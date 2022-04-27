@@ -1,5 +1,5 @@
+import { deleteConnection, resetConnection, syncConnection } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
-import { deleteConnection, resetConnection, syncConnection } from "../../request/GeneratedApi";
 
 export class ConnectionService extends AirbyteRequestService {
   public sync(connectionId: string) {

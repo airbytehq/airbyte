@@ -31,7 +31,7 @@ import {
   NamespaceDefinitionType,
   OperationRead,
   WebBackendConnectionRead,
-} from "../../../core/request/GeneratedApi";
+} from "../../../core/request/AirbyteClient";
 
 type FormikConnectionFormValues = {
   schedule?: ConnectionSchedule | null;

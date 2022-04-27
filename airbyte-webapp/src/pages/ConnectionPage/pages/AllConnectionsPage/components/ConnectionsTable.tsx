@@ -9,7 +9,7 @@ import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
-import { WebBackendConnectionRead } from "../../../../../core/request/GeneratedApi";
+import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 type IProps = {
   connections: WebBackendConnectionRead[];

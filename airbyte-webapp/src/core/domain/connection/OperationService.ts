@@ -1,7 +1,7 @@
 import Status from "core/statuses";
 
+import { checkOperation, OperationRead } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
-import { checkOperation, OperationRead } from "../../request/GeneratedApi";
 
 export class OperationService extends AirbyteRequestService {
   public async check({ operatorConfiguration }: OperationRead) {

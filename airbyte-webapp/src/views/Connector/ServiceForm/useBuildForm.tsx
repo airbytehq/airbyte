@@ -13,7 +13,7 @@ import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
-import { DestinationDefinitionSpecificationRead } from "../../../core/request/GeneratedApi";
+import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 import { ServiceFormValues } from "./types";
 
 function upgradeSchemaLegacyAuth(

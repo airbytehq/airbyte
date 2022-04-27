@@ -12,7 +12,7 @@ import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
 import { ConnectionConfiguration } from "../../../core/domain/connection";
-import { CheckConnectionRead } from "../../../core/request/GeneratedApi";
+import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { FormRoot } from "./FormRoot";

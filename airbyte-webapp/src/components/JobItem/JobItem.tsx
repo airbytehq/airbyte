@@ -6,7 +6,7 @@ import { Spinner } from "components";
 
 import Status from "core/statuses";
 
-import { AttemptRead, JobStatus, JobWithAttemptsRead } from "../../core/request/GeneratedApi";
+import { AttemptRead, JobStatus, JobWithAttemptsRead } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import JobLogs from "./components/JobLogs";

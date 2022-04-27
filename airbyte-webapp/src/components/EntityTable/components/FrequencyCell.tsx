@@ -4,7 +4,7 @@ import styled from "styled-components";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { equal } from "utils/objects";
 
-import { ConnectionSchedule } from "../../../core/request/GeneratedApi";
+import { ConnectionSchedule } from "../../../core/request/AirbyteClient";
 
 type IProps = {
   value: ConnectionSchedule;
