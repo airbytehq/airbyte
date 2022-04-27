@@ -1,12 +1,14 @@
-import React from "react";
 import { Form, Formik, FormikConfig } from "formik";
-import { useMutation } from "react-query";
+import React from "react";
 import { useIntl } from "react-intl";
+import { useMutation } from "react-query";
 import styled from "styled-components";
 
-import EditControls from "views/Connection/ConnectionForm/components/EditControls";
-import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
+import { FormChangeTracker } from "components/FormChangeTracker";
+
 import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
+import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 15px 24px;
@@ -32,6 +34,7 @@ export const FormCard: React.FC<
       {({ resetForm, isSubmitting, dirty, isValid }) => (
         <CollapsibleCard {...props}>
           <FormContainer>
+            <FormChangeTracker changed={dirty} />
             {children}
             <div>
               <EditControls

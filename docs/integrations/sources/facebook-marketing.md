@@ -21,7 +21,11 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 6. For **End Date**, enter the date in YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
 7. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762). 
 8. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
-    <br/> **_What does this mean?_** The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
+        
+    :::info
+    The Facebook Marketing API doesn’t have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
+    :::
+
 9.  (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 10. (Optional) In the Custom Insights section, click **Add**. 
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. 
@@ -103,7 +107,8 @@ For more information, see the [Facebook Insights API documentation.](https://dev
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
-|---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.44  | 2022-04-14 | [11751](https://github.com/airbytehq/airbyte/pull/11751) | Update API to a directly initialise an AdAccount with the given ID                                                                                                                                                                                                                                         |
 | 0.2.43  | 2022-04-13 | [11801](https://github.com/airbytehq/airbyte/pull/11801) | Fix `user_tos_accepted` schema to be an object
 | 0.2.42  | 2022-04-06 | [11761](https://github.com/airbytehq/airbyte/pull/11761) | Upgrade Facebook Python SDK to version 13|
 | 0.2.41  | 2022-03-28 | [11446](https://github.com/airbytehq/airbyte/pull/11446) | Increase number of attempts for individual jobs                                                                                                                                                                                                                                                   |

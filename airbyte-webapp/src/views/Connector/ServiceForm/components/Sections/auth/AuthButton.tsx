@@ -7,8 +7,8 @@ import { Button } from "components";
 import { ConnectorSpecification } from "core/domain/connector";
 
 import { useServiceForm } from "../../../serviceFormContext";
-import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 import GoogleAuthButton from "./GoogleAuthButton";
+import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
 
 const AuthSectionRow = styled.div`
   display: flex;

@@ -9,17 +9,15 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.json.JsonPaths;
-import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -118,7 +116,7 @@ public class SecretsHelpers {
     if (config.has(COORDINATE_FIELD)) {
       final var coordinateNode = config.get(COORDINATE_FIELD);
       final var coordinate = getCoordinateFromTextNode(coordinateNode);
-      return getOrThrowSecretValueNode(secretPersistence, coordinate);
+      return new TextNode(getOrThrowSecretValue(secretPersistence, coordinate));
     }
 
     // otherwise iterate through all object fields
@@ -166,39 +164,6 @@ public class SecretsHelpers {
   }
 
   /**
-   * This returns all the path to the airbyte secrets based on a schema spec. The path will be return
-   * in an ascending alphabetical order.
-   */
-  public static List<String> getSortedSecretPaths(final JsonNode spec) {
-    return JsonSchemas.collectJsonPathsThatMeetCondition(
-        spec,
-        node -> MoreIterators.toList(node.fields())
-            .stream()
-            .anyMatch(field -> field.getKey().equals(JsonSecretsProcessor.AIRBYTE_SECRET_FIELD)))
-        .stream()
-        .sorted()
-        .toList();
-  }
-
-  private static Optional<String> getExistingCoordinateIfExists(final JsonNode json) {
-    if (json != null && json.has(COORDINATE_FIELD)) {
-      return Optional.ofNullable(json.get(COORDINATE_FIELD).asText());
-    } else {
-      return Optional.empty();
-    }
-  }
-
-  private static SecretCoordinate getOrCreateCoordinate(final ReadOnlySecretPersistence secretReader,
-                                                        final UUID workspaceId,
-                                                        final Supplier<UUID> uuidSupplier,
-                                                        final JsonNode newJson,
-                                                        final JsonNode persistedJson) {
-
-    final Optional<String> existingCoordinateOptional = getExistingCoordinateIfExists(persistedJson);
-    return getCoordinate(newJson.asText(), secretReader, workspaceId, uuidSupplier, existingCoordinateOptional.orElse(null));
-  }
-
-  /**
    * Internal method used to support both "split config" and "split and update config" operations.
    *
    * For splits that don't have a prior partial config (such as when a connector is created for a
@@ -214,41 +179,154 @@ public class SecretsHelpers {
    *        stored for
    * @param secretReader provides a way to determine if a secret is the same or updated at a specific
    *        location in a config
-   * @param persistedPartialConfig previous partial config for this specific connector configuration
-   * @param newFullConfig new config containing secrets that will be used to update the partial config
-   *        for this connector
+   * @param oldPartialConfig previous partial config for this specific connector configuration
+   * @param originalFullConfig new config containing secrets that will be used to update the partial
+   *        config for this connector
    * @param spec connector specification
    * @return a partial config + a map of coordinates to secret payloads
    */
-  @VisibleForTesting
-  static SplitSecretConfig internalSplitAndUpdateConfig(final Supplier<UUID> uuidSupplier,
-                                                        final UUID workspaceId,
-                                                        final ReadOnlySecretPersistence secretReader,
-                                                        final JsonNode persistedPartialConfig,
-                                                        final JsonNode newFullConfig,
-                                                        final JsonNode spec) {
-    var fullConfigCopy = newFullConfig.deepCopy();
+  private static SplitSecretConfig internalSplitAndUpdateConfig(final Supplier<UUID> uuidSupplier,
+                                                                final UUID workspaceId,
+                                                                final ReadOnlySecretPersistence secretReader,
+                                                                final JsonNode oldPartialConfig,
+                                                                final JsonNode originalFullConfig,
+                                                                final JsonNode spec) {
+    final var fullConfig = originalFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    final List<String> paths = getSortedSecretPaths(spec);
-
-    for (final String path : paths) {
-      fullConfigCopy = JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
-        final Optional<JsonNode> persistedNode = JsonPaths.getSingleValue(persistedPartialConfig, pathOfNode);
-        final SecretCoordinate coordinate = getOrCreateCoordinate(
-            secretReader,
+    // provide a lambda for hiding repeated arguments to improve readability
+    final InternalSplitter splitter =
+        (final JsonNode partialConfig, final JsonNode newFullConfig, final JsonNode newFullConfigSpec) -> internalSplitAndUpdateConfig(uuidSupplier,
             workspaceId,
-            uuidSupplier,
-            json,
-            persistedNode.orElse(null));
+            secretReader, partialConfig, newFullConfig, newFullConfigSpec);
 
-        secretMap.put(coordinate, json.asText());
+    final var specTypeToHandle = getSpecTypeToHandle(spec);
 
-        return Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinate.getFullCoordinate()));
-      });
+    switch (specTypeToHandle) {
+      case STRING -> {
+        if (JsonSecretsProcessor.isSecret(spec)) {
+          final var oldFullSecretCoordinate = oldPartialConfig.has(COORDINATE_FIELD) ? oldPartialConfig.get(COORDINATE_FIELD).asText() : null;
+          final var secretCoordinate = getCoordinate(fullConfig.asText(), secretReader, workspaceId, uuidSupplier, oldFullSecretCoordinate);
+
+          final var newPartialConfig = Jsons.jsonNode(Map.of(
+              COORDINATE_FIELD, secretCoordinate.getFullCoordinate()));
+
+          final var coordinateToPayload = Map.of(
+              secretCoordinate,
+              fullConfig.asText());
+
+          return new SplitSecretConfig(newPartialConfig, coordinateToPayload);
+        }
+      }
+      case OBJECT -> {
+        final var specPropertiesObject = (ObjectNode) spec.get(JsonSecretsProcessor.PROPERTIES_FIELD);
+        final var specProperties = Jsons.keys(specPropertiesObject).stream()
+            .filter(fullConfig::has)
+            .collect(Collectors.toList());
+
+        // if the input config is specified as an object, we go through and handle each type of property
+        for (final String specProperty : specProperties) {
+          final var nextOldPartialConfig = getFieldOrEmptyNode(oldPartialConfig, specProperty);
+
+          final var nestedSplitConfig =
+              splitter.splitAndUpdateConfig(nextOldPartialConfig, fullConfig.get(specProperty), spec.get("properties").get(specProperty));
+          ((ObjectNode) fullConfig).replace(specProperty, nestedSplitConfig.getPartialConfig());
+          secretMap.putAll(nestedSplitConfig.getCoordinateToPayload());
+        }
+      }
+      case ARRAY -> {
+        for (int i = 0; i < fullConfig.size(); i++) {
+          final var partialConfigElement = getFieldOrEmptyNode(oldPartialConfig, i);
+          final var fullConfigElement = fullConfig.get(i);
+          final var splitConfig = splitter.splitAndUpdateConfig(partialConfigElement, fullConfigElement, spec.get("items"));
+          secretMap.putAll(splitConfig.getCoordinateToPayload());
+          ((ArrayNode) fullConfig).set(i, splitConfig.getPartialConfig());
+        }
+      }
+      case ONE_OF -> {
+        final var possibleSchemas = (ArrayNode) spec.get("oneOf");
+
+        for (int i = 0; i < possibleSchemas.size(); i++) {
+          final var possibleSchema = possibleSchemas.get(i);
+          final var set = new JsonSchemaValidator().validate(possibleSchema, fullConfig);
+          if (set.isEmpty()) {
+            final var splitConfig = splitter.splitAndUpdateConfig(oldPartialConfig, fullConfig, possibleSchema);
+            if (!splitConfig.getPartialConfig().equals(fullConfig)) {
+              return splitConfig;
+            }
+          }
+        }
+      }
     }
 
-    return new SplitSecretConfig(fullConfigCopy, secretMap);
+    return new SplitSecretConfig(fullConfig, secretMap);
+  }
+
+  /**
+   * Enum that allows us to switch on different types seen in a config / spec.
+   *
+   * Unrecognized types refers to values that cannot contain string airbyte_secret secrets such as
+   * numbers, binary fields, etc. They also may contain allOf or other mechanisms that aren't fully
+   * supported in Airbyte connector configurations.
+   */
+  private enum JsonSchemaSpecType {
+    OBJECT,
+    ARRAY,
+    STRING,
+    ONE_OF,
+    UNRECOGNIZED_TYPE
+  }
+
+  /**
+   * Determines what the spec is referring to.
+   *
+   * @param spec connector specification or a sub-node of the specification
+   * @return a type used to process a config or sub-node of a config
+   */
+  private static JsonSchemaSpecType getSpecTypeToHandle(final JsonNode spec) {
+    if (isObjectSchema(spec)) {
+      return JsonSchemaSpecType.OBJECT;
+    } else if (isArraySchema(spec)) {
+      return JsonSchemaSpecType.ARRAY;
+    } else if (isStringSchema(spec)) {
+      return JsonSchemaSpecType.STRING;
+    } else if (spec.has("oneOf") && spec.get("oneOf").isArray()) {
+      return JsonSchemaSpecType.ONE_OF;
+    } else {
+      return JsonSchemaSpecType.UNRECOGNIZED_TYPE;
+    }
+  }
+
+  /**
+   * Interface used to make calls to
+   * {@link SecretsHelpers#internalSplitAndUpdateConfig(Supplier, UUID, ReadOnlySecretPersistence, JsonNode, JsonNode, JsonNode)}
+   * more readable by arguments that are the same across the entire method.
+   */
+  @FunctionalInterface
+  public interface InternalSplitter {
+
+    SplitSecretConfig splitAndUpdateConfig(JsonNode oldPartialConfig, JsonNode fullConfig, JsonNode spec);
+
+  }
+
+  private static boolean isStringSchema(final JsonNode schema) {
+    return schema.has("type") && schema.get("type").asText().equals("string");
+  }
+
+  private static boolean isObjectSchema(final JsonNode schema) {
+    return schema.has("properties") && schema.get("properties").isObject();
+  }
+
+  private static boolean isArraySchema(final JsonNode schema) {
+    return schema.has("items") && schema.get("items").isObject();
+  }
+
+  private static JsonNode getFieldOrEmptyNode(final JsonNode node, final String field) {
+    return node.has(field) ? node.get(field) : Jsons.emptyObject();
+  }
+
+  private static JsonNode getFieldOrEmptyNode(final JsonNode node, final int field) {
+    return node.has(field) ? node.get(field) : Jsons.emptyObject();
   }
 
   /**
@@ -258,16 +336,16 @@ public class SecretsHelpers {
    * @param secretPersistence storage layer for secrets
    * @param coordinate reference to a secret in the persistence
    * @throws RuntimeException when a secret at that coordinate is not available in the persistence
-   * @return a json text node containing the secret value
+   * @return a json string containing the secret value or a JSON
    */
-  private static TextNode getOrThrowSecretValueNode(final ReadOnlySecretPersistence secretPersistence, final SecretCoordinate coordinate) {
+  private static String getOrThrowSecretValue(final ReadOnlySecretPersistence secretPersistence,
+                                              final SecretCoordinate coordinate) {
     final var secretValue = secretPersistence.read(coordinate);
 
     if (secretValue.isEmpty()) {
       throw new RuntimeException(String.format("That secret was not found in the store! Coordinate: %s", coordinate.getFullCoordinate()));
     }
-
-    return new TextNode(secretValue.get());
+    return secretValue.get();
   }
 
   private static SecretCoordinate getCoordinateFromTextNode(final JsonNode node) {
@@ -301,6 +379,15 @@ public class SecretsHelpers {
                                                   final UUID workspaceId,
                                                   final Supplier<UUID> uuidSupplier,
                                                   final @Nullable String oldSecretFullCoordinate) {
+    return getSecretCoordinate("airbyte_workspace_", newSecret, secretReader, workspaceId, uuidSupplier, oldSecretFullCoordinate);
+  }
+
+  private static SecretCoordinate getSecretCoordinate(final String secretBasePrefix,
+                                                      final String newSecret,
+                                                      final ReadOnlySecretPersistence secretReader,
+                                                      final UUID secretBaseId,
+                                                      final Supplier<UUID> uuidSupplier,
+                                                      final @Nullable String oldSecretFullCoordinate) {
     String coordinateBase = null;
     Long version = null;
 
@@ -320,7 +407,7 @@ public class SecretsHelpers {
     if (coordinateBase == null) {
       // IMPORTANT: format of this cannot be changed without introducing migrations for secrets
       // persistences
-      coordinateBase = "airbyte_workspace_" + workspaceId + "_secret_" + uuidSupplier.get();
+      coordinateBase = secretBasePrefix + secretBaseId + "_secret_" + uuidSupplier.get();
     }
 
     if (version == null) {
@@ -328,6 +415,56 @@ public class SecretsHelpers {
     }
 
     return new SecretCoordinate(coordinateBase, version);
+  }
+
+  /**
+   * This method takes in the key (JSON key or HMAC key) of a workspace service account as a secret
+   * and generates a co-ordinate for the secret so that the secret can be written in secret
+   * persistence at the generated co-ordinate
+   *
+   * @param newSecret The JSON key or HMAC key value
+   * @param secretReader To read the value from secret persistence for comparison with the new value
+   * @param workspaceId of the service account
+   * @param uuidSupplier provided to allow a test case to produce known UUIDs in order for easy *
+   *        fixture creation.
+   * @param oldSecretCoordinate a nullable full coordinate (base+version) retrieved from the *
+   *        previous config
+   * @param keyType HMAC ot JSON key
+   * @return a coordinate (versioned reference to where the secret is stored in the persistence)
+   */
+  public static SecretCoordinateToPayload convertServiceAccountCredsToSecret(final String newSecret,
+                                                                             final ReadOnlySecretPersistence secretReader,
+                                                                             final UUID workspaceId,
+                                                                             final Supplier<UUID> uuidSupplier,
+                                                                             final @Nullable JsonNode oldSecretCoordinate,
+                                                                             final String keyType) {
+    final String oldSecretFullCoordinate =
+        (oldSecretCoordinate != null && oldSecretCoordinate.has(COORDINATE_FIELD)) ? oldSecretCoordinate.get(COORDINATE_FIELD).asText()
+            : null;
+    final SecretCoordinate coordinateForStagingConfig = getSecretCoordinate("service_account_" + keyType + "_",
+        newSecret,
+        secretReader,
+        workspaceId,
+        uuidSupplier,
+        oldSecretFullCoordinate);
+    return new SecretCoordinateToPayload(coordinateForStagingConfig,
+        newSecret,
+        Jsons.jsonNode(Map.of(COORDINATE_FIELD,
+            coordinateForStagingConfig.getFullCoordinate())));
+  }
+
+  /**
+   * Takes in the secret coordinate in form of a JSON and fetches the secret from the store
+   *
+   * @param secretCoordinateAsJson The co-ordinate at which we expect the secret value to be present
+   *        in the secret persistence
+   * @param readOnlySecretPersistence The secret persistence
+   * @return Original secret value as JsonNode
+   */
+  public static JsonNode hydrateSecretCoordinate(final JsonNode secretCoordinateAsJson,
+                                                 final ReadOnlySecretPersistence readOnlySecretPersistence) {
+    final var secretCoordinate = getCoordinateFromTextNode(secretCoordinateAsJson.get(COORDINATE_FIELD));
+    return Jsons.deserialize(getOrThrowSecretValue(readOnlySecretPersistence, secretCoordinate));
   }
 
 }

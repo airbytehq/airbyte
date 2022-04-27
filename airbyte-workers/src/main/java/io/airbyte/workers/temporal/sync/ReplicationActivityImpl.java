@@ -38,6 +38,8 @@ import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -103,51 +105,58 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                       final IntegrationLauncherConfig sourceLauncherConfig,
                                       final IntegrationLauncherConfig destinationLauncherConfig,
                                       final StandardSyncInput syncInput) {
-    return TemporalUtils.withBackgroundHeartbeat(() -> {
+    final ActivityExecutionContext context = Activity.getExecutionContext();
+    return TemporalUtils.withBackgroundHeartbeat(
+        () -> {
 
-      final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
-      final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
+          final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
+          final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
 
-      final var fullSyncInput = Jsons.clone(syncInput)
-          .withSourceConfiguration(fullSourceConfig)
-          .withDestinationConfiguration(fullDestinationConfig);
+          final var fullSyncInput = Jsons.clone(syncInput)
+              .withSourceConfiguration(fullSourceConfig)
+              .withDestinationConfiguration(fullDestinationConfig);
 
-      final Supplier<StandardSyncInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
-        return fullSyncInput;
-      };
+          final Supplier<StandardSyncInput> inputSupplier = () -> {
+            validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(fullSyncInput));
+            return fullSyncInput;
+          };
 
-      final CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
+          final CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> workerFactory;
 
-      if (containerOrchestratorConfig.isPresent()) {
-        workerFactory = getContainerLauncherWorkerFactory(
-            containerOrchestratorConfig.get(),
-            sourceLauncherConfig,
-            destinationLauncherConfig,
-            jobRunConfig,
-            syncInput.getResourceRequirements());
-      } else {
-        workerFactory = getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
-      }
+          if (containerOrchestratorConfig.isPresent()) {
+            workerFactory = getContainerLauncherWorkerFactory(
+                containerOrchestratorConfig.get(),
+                sourceLauncherConfig,
+                destinationLauncherConfig,
+                jobRunConfig,
+                syncInput.getResourceRequirements(),
+                () -> context);
+          } else {
+            workerFactory =
+                getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
+          }
 
-      final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt = new TemporalAttemptExecution<>(
-          workspaceRoot,
-          workerEnvironment,
-          logConfigs,
-          jobRunConfig,
-          workerFactory,
-          inputSupplier,
-          new CancellationHandler.TemporalCancellationHandler(),
-          jobPersistence,
-          airbyteVersion);
+          final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt =
+              new TemporalAttemptExecution<>(
+                  workspaceRoot,
+                  workerEnvironment,
+                  logConfigs,
+                  jobRunConfig,
+                  workerFactory,
+                  inputSupplier,
+                  new CancellationHandler.TemporalCancellationHandler(context),
+                  jobPersistence,
+                  airbyteVersion,
+                  () -> context);
 
-      final ReplicationOutput attemptOutput = temporalAttempt.get();
-      final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
+          final ReplicationOutput attemptOutput = temporalAttempt.get();
+          final StandardSyncOutput standardSyncOutput = reduceReplicationOutput(attemptOutput);
 
-      LOGGER.info("sync summary: {}", standardSyncOutput);
+          LOGGER.info("sync summary: {}", standardSyncOutput);
 
-      return standardSyncOutput;
-    });
+          return standardSyncOutput;
+        },
+        () -> context);
   }
 
   private static StandardSyncOutput reduceReplicationOutput(final ReplicationOutput output) {
@@ -205,11 +214,13 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     };
   }
 
-  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(final ContainerOrchestratorConfig containerOrchestratorConfig,
+  private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(
+                                                                                                                     final ContainerOrchestratorConfig containerOrchestratorConfig,
                                                                                                                      final IntegrationLauncherConfig sourceLauncherConfig,
                                                                                                                      final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                      final JobRunConfig jobRunConfig,
-                                                                                                                     final ResourceRequirements resourceRequirements)
+                                                                                                                     final ResourceRequirements resourceRequirements,
+                                                                                                                     final Supplier<ActivityExecutionContext> activityContext)
       throws IOException {
 
     final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
@@ -221,7 +232,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
         sourceLauncherConfig,
         destinationLauncherConfig,
         jobRunConfig,
-        resourceRequirements);
+        resourceRequirements,
+        activityContext);
   }
 
 }

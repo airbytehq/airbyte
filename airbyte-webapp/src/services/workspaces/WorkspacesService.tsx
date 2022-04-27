@@ -1,15 +1,15 @@
 import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
-import useRouter from "hooks/useRouter";
-import { Workspace, WorkspaceService, WorkspaceState } from "core/domain/workspace";
-import { RoutePaths } from "pages/routePaths";
 import { useConfig } from "config";
+import { Workspace, WorkspaceService, WorkspaceState } from "core/domain/workspace";
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
 
+import { useSuspenseQuery } from "../connector/useSuspenseQuery";
+import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
 import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
 import { useInitService } from "../useInitService";
-import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
-import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 
 export const workspaceKeys = {
   all: [SCOPE_USER, "workspaces"] as const,
