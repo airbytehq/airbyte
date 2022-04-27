@@ -1,3 +1,8 @@
+import React, { useMemo } from "react";
+import { useIntl } from "react-intl";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useEffectOnce } from "react-use";
+
 import { useConfig } from "config";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
@@ -5,14 +10,11 @@ import { useApiHealthPoll } from "hooks/services/Health";
 import { useNotificationService } from "hooks/services/Notification";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useEffectOnce } from "react-use";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
+
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";

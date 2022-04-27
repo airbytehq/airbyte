@@ -1,11 +1,14 @@
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, H1 } from "components/base";
-import Link from "components/Link";
-import Status from "core/statuses";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
+
+import { Button, H1 } from "components/base";
+import Link from "components/Link";
+
+import Status from "core/statuses";
+
 import { JobStatus, WebBackendConnectionRead } from "../../../core/request/AirbyteClient";
 import { RoutePaths } from "../../routePaths";
 

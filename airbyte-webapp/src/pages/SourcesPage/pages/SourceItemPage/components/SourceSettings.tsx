@@ -1,13 +1,16 @@
+import React from "react";
+import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
+
 import DeleteBlock from "components/DeleteBlock";
+
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Source } from "core/domain/connector";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
-import React from "react";
-import { FormattedMessage } from "react-intl";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
-import styled from "styled-components";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+
 import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 const Content = styled.div`
