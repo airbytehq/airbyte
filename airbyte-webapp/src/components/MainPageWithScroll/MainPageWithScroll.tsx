@@ -37,7 +37,7 @@ const MainPageWithScroll: React.FC<IProps> = ({ error, headTitle, pageTitle, chi
         {headTitle}
         {pageTitle}
       </Header>
-      <Content hasError={!!error}>{children}</Content>\{" "}
+      <Content hasError={!!error}>{children}</Content>
     </Page>
   );
 };
