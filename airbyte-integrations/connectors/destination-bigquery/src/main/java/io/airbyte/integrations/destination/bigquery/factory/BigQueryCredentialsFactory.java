@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +32,6 @@ public class BigQueryCredentialsFactory {
   private static final String AUTH_TYPE = "auth_type";
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryCredentialsFactory.class);
 
-
-  private BigQueryCredentialsFactory() {
-  }
 
   public static Credentials createCredentialsClient(JsonNode config) {
     return isOauth(config) ? getOAuthClientCredentials(config) : getServiceAccountCredentials(config);
@@ -49,7 +47,7 @@ public class BigQueryCredentialsFactory {
         .getService();
   }
 
-  private static Credentials getOAuthClientCredentials(JsonNode config) {
+  protected static Credentials getOAuthClientCredentials(JsonNode config) {
     AccessToken accessToken = new AccessToken(config.get(CREDENTIALS).get(ACCESS_TOKEN).asText(), calculateTokenExpirationDate(config));
     String refreshToken = config.get(CREDENTIALS).get(REFRESH_TOKEN).asText();
     GoogleCredentials credentials =
@@ -68,7 +66,7 @@ public class BigQueryCredentialsFactory {
     return credentials;
   }
 
-  private static Credentials getServiceAccountCredentials(JsonNode config) {
+  protected static Credentials getServiceAccountCredentials(JsonNode config) {
     ServiceAccountCredentials credentials = null;
     if (BigQueryUtils.isUsingJsonCredentials(config)) {
       // handle the credentials json being passed as a json object or a json object already serialized as
@@ -94,6 +92,9 @@ public class BigQueryCredentialsFactory {
   }
 
   public static boolean isOauth(JsonNode config) {
+    if (Objects.isNull(config)) {
+      return false;
+    }
     return config.has(CREDENTIALS)
         && config.get(CREDENTIALS).has(AUTH_TYPE)
         && "oauth2.0".contains(config.get(CREDENTIALS).get(AUTH_TYPE).asText());
