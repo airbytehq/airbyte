@@ -12,4 +12,3 @@ pytest_plugins = ("source_acceptance_test.plugin",)
 def connector_setup():
     """This fixture is a placeholder for external resources that acceptance test might require."""
     yield
-

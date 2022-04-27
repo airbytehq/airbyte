@@ -3,11 +3,12 @@
 #
 
 
+from datetime import datetime
+
 import requests
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from datetime import datetime, timedelta
-from source_rki_covid.source import IncrementalRkiCovidStream, GermanyHistoryCases
+from source_rki_covid.source import GermanyHistoryCases
+
 
 @fixture
 def patch_incremental_german_history_cases(mocker):
@@ -16,24 +17,31 @@ def patch_incremental_german_history_cases(mocker):
 
 
 def test_cursor_field(patch_incremental_german_history_cases):
-    config = {"cases_in_days": 2}
+    config = {"start_date": "2022-04-27"}
     stream = GermanyHistoryCases(config)
     expected_cursor_field = "date"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_parse_response(patch_incremental_german_history_cases):
-    config = {"cases_in_days": 2}
+    config = {"start_date": "2022-04-27"}
     stream = GermanyHistoryCases(config)
-    response = requests.get('https://api.corona-zahlen.org/germany/history/cases/1')
+    response = requests.get("https://api.corona-zahlen.org/germany/history/cases/1")
     expected_response = response.json().get("data")
     assert stream.parse_response(response) == expected_response
 
 
+def check_diff(start_date):
+    diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+    if diff.days == 0:
+        return str(1)
+    return str(diff.days)
+
+
 def test_parse_with_cases(patch_incremental_german_history_cases):
-    config = {"cases_in_days": 2}
+    config = {"start_date": "2022-04-27"}
     stream = GermanyHistoryCases(config)
-    expected_stream_path = "germany/history/cases/"+str(config.get('cases_in_days'))
+    expected_stream_path = "germany/history/cases/" + check_diff(config.get("start_date"))
     assert stream.path() == expected_stream_path
 
 

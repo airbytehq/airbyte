@@ -2,11 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from http import HTTPStatus
-from unittest.mock import MagicMock
-
 import pytest
-from source_rki_covid.source import RkiCovidStream, Germany
+from source_rki_covid.source import Germany
 
 
 @pytest.fixture

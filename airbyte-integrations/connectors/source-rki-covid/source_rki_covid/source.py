@@ -4,19 +4,17 @@
 
 
 from abc import ABC
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from datetime import datetime
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 # Basic full refresh stream
 class RkiCovidStream(HttpStream, ABC):
-
 
     url_base = "https://api.corona-zahlen.org/"
 
@@ -111,16 +109,16 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        if diff.days == 0:
+            return 1
         return diff.days
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-            Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if not current_stream_state:
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(
-            self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -136,7 +134,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         if self.start_date:
-            return "germany/history/cases/"+str(self.date_to_int(self.start_date))
+            return "germany/history/cases/" + str(self.date_to_int(self.start_date))
         return "germany/history/cases/"
 
 
@@ -160,16 +158,16 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        if diff.days == 0:
+            return 1
         return diff.days
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if not current_stream_state:
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -187,7 +185,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         if self.start_date:
-            return "germany/history/incidence/"+str(self.date_to_int(self.start_date))
+            return "germany/history/incidence/" + str(self.date_to_int(self.start_date))
         return "germany/history/incidence/"
 
 
@@ -211,16 +209,16 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        if diff.days == 0:
+            return 1
         return diff.days
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if not current_stream_state:
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -236,7 +234,7 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         if self.start_date:
-            return "germany/history/deaths/"+str(self.date_to_int(self.start_date))
+            return "germany/history/deaths/" + str(self.date_to_int(self.start_date))
         return "germany/history/deaths/"
 
 
@@ -260,16 +258,16 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        if diff.days == 0:
+            return 1
         return diff.days
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if not current_stream_state:
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -285,7 +283,7 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         if self.start_date:
-            return "germany/history/recovered/"+str(self.date_to_int(self.start_date))
+            return "germany/history/recovered/" + str(self.date_to_int(self.start_date))
         return "germany/history/recovered/"
 
 
@@ -309,16 +307,16 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        if diff.days == 0:
+            return 1
         return diff.days
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if not current_stream_state:
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -334,7 +332,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         if self.start_date:
-            return "germany/history/frozen-incidence/"+str(self.date_to_int(self.start_date))
+            return "germany/history/frozen-incidence/" + str(self.date_to_int(self.start_date))
         return "germany/history/frozen-incidence/"
 
 
@@ -358,16 +356,16 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
 
     def date_to_int(self, start_date) -> int:
         diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
+        if diff.days == 0:
+            return 1
         return diff.days
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-    Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if not current_stream_state:
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(
-        self, stream_state: Mapping[str, Any] = None,  **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -383,13 +381,12 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         if self.start_date:
-            return "germany/history/hospitalization/"+str(self.date_to_int(self.start_date))
+            return "germany/history/hospitalization/" + str(self.date_to_int(self.start_date))
         return "germany/history/hospitalization/"
 
 
 # Source
 class SourceRkiCovid(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
@@ -399,13 +396,12 @@ class SourceRkiCovid(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
-            req = requests.get(RkiCovidStream.url_base+'germany')
+            req = requests.get(RkiCovidStream.url_base + "germany")
             if req.status_code == 200:
                 return True, None
             return False, req.reason
         except Exception:
             return False, "There is a problem in source check connection."
-
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -420,5 +416,5 @@ class SourceRkiCovid(AbstractSource):
             GermanHistoryDeaths(config=config),
             GermanHistoryRecovered(config=config),
             GermanHistoryFrozenIncidence(config=config),
-            GermanHistoryHospitalization(config=config)
-            ]
+            GermanHistoryHospitalization(config=config),
+        ]
