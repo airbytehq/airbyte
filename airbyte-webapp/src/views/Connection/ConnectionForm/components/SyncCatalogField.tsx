@@ -212,7 +212,6 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
   }, [searchString, sortedSchema]);
-  console.log(mode);
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
       <HeaderBlock>
