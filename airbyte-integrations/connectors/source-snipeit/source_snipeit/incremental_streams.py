@@ -1,9 +1,11 @@
 from abc import ABC
 from typing import Any, Iterable, MutableMapping, Mapping, Tuple
+from copy import deepcopy
 
 import requests
 import arrow
 from .full_refresh_streams import SnipeitStream
+
 
 class Events(SnipeitStream, ABC):
     primary_key = "id"
@@ -11,15 +13,15 @@ class Events(SnipeitStream, ABC):
 
     @property
     def cursor_field(self):
-        return "updated_at/datetime"
+        return "updated_at"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if current_stream_state == {}:
-            return {self.cursor_field: latest_record["updated_at"]["datetime"]}
+            return {self.cursor_field: latest_record["updated_at"]}
         else:
             records = {}
             records[current_stream_state[self.cursor_field]] = arrow.get(current_stream_state[self.cursor_field])
-            records[latest_record["updated_at"]["datetime"]] = arrow.get(latest_record["updated_at"]["datetime"])
+            records[latest_record["updated_at"]] = arrow.get(latest_record["updated_at"])
             # NOTE: This was originally the key function in the max() call below
             #       I moved it out here to keep mypy happy.
             def __key_function(item: Tuple) -> Any:
@@ -41,26 +43,32 @@ class Events(SnipeitStream, ABC):
 
         :return an iterable containing each record in the response
         """
+        def __move_cursor_up(record: Mapping[str, Any]) -> Mapping[str, Any]:
+            result: dict = deepcopy(record)
+            result["updated_at"] = result["updated_at"]["datetime"]
+            return result
+
         def _newer_than_latest(latest_record_date: arrow.Arrow, record: Mapping[str, Any]) -> bool:
-            current_record_date = arrow.get(record["updated_at"]["datetime"])
+            current_record_date = arrow.get(record["updated_at"])
             if current_record_date > latest_record_date:
                 return True
             else:
                 return False
-
-        base: list = response.json().get("rows")
+        base = response.json().get("rows")
         self.total = response.json().get("total")
+        # NOTE: Airbyte's recommendation is to transform the object so that the cursor is
+        #       top-level.
+        transformed = [__move_cursor_up(record) for record in base]
 
         if stream_state != {}:
             latest_record_date: arrow.Arrow = arrow.get(stream_state[self.cursor_field])
-            if _newer_than_latest(latest_record_date, base[0]) == False:
+            if _newer_than_latest(latest_record_date, transformed[0]) == False:
                 self.stop_immediately = True
                 yield from []
             else:
-                # NOTE: There's probably a more succint way of doing this but I can't think of it right now.
-                ascending_list = reversed(base)
+                ascending_list = reversed(transformed)
                 only_the_newest: list = [x for x in ascending_list if _newer_than_latest(latest_record_date, x)]
                 yield from only_the_newest
         else:
-            ascending_list = reversed(base)
+            ascending_list = reversed(transformed)
             yield from ascending_list
