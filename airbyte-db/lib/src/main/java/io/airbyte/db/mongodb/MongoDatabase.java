@@ -17,7 +17,7 @@ import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.AbstractDatabase;
-import io.airbyte.db.exception.ConnectionWrapperErrorException;
+import io.airbyte.db.exception.ConnectionErrorException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +51,7 @@ public class MongoDatabase extends AbstractDatabase {
       database = mongoClient.getDatabase(databaseName);
     } catch (final MongoConfigurationException ex) {
       LOGGER.error(ex.getMessage());
-      throw new ConnectionWrapperErrorException("fail_connection", ex.getMessage());
+      throw new ConnectionErrorException("fail_connection", ex.getMessage());
     } catch (final Exception e) {
       LOGGER.error(e.getMessage());
       throw new RuntimeException(e);

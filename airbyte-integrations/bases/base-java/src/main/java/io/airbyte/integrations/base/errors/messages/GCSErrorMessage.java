@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.base.errors.messages;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_BUCKET_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CREDENTIALS;
 import static io.airbyte.integrations.base.errors.utils.ConnectorType.GCS;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
@@ -13,8 +13,8 @@ import io.airbyte.integrations.base.errors.utils.ConnectorType;
 public class GCSErrorMessage implements ErrorMessage {
 
   static {
-    CONSTANTS.put("18", INCORRECT_USERNAME_OR_PASSWORD);
-    CONSTANTS.put("fail_connection", INCORRECT_HOST_OR_PORT);
+    CONSTANTS.put("NoSuchBucket", INCORRECT_BUCKET_NAME);
+    CONSTANTS.put("SignatureDoesNotMatch", INCORRECT_CREDENTIALS);
   }
 
   @Override

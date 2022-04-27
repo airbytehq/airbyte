@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.exception.ConnectionWrapperErrorException;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Destination;
@@ -62,7 +62,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final ConnectionWrapperErrorException ex) {
+    } catch (final ConnectionErrorException ex) {
       LOGGER.info("Exception while checking connection: ", ex);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
               .getErrorMessage(ex.getCustomErrorCode(), ex);

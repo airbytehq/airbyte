@@ -4,11 +4,11 @@
 
 package io.airbyte.db.exception;
 
-public class ConnectionWrapperErrorException extends RuntimeException {
+public class ConnectionErrorException extends RuntimeException {
 
   private final String customErrorCode;
 
-  public ConnectionWrapperErrorException(String errorCode, String errorMessage) {
+  public ConnectionErrorException(String errorCode, String errorMessage) {
     super(errorMessage);
     this.customErrorCode = errorCode;
   }

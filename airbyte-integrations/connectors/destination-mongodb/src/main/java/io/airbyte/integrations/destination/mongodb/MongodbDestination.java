@@ -12,7 +12,7 @@ import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.exception.ConnectionWrapperErrorException;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.BaseConnector;
@@ -85,7 +85,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
         throw new MongodbDatabaseException(databaseName);
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (final ConnectionWrapperErrorException e) {
+    } catch (final ConnectionErrorException e) {
       LOGGER.error("Check failed.", e);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
               .getErrorMessage(e.getCustomErrorCode(), e);
@@ -106,11 +106,11 @@ public class MongodbDestination extends BaseConnector implements Destination {
       try {
         var mongoException = (MongoCommandException) e.getCause();
         String code = String.valueOf(mongoException.getCode());
-        throw new ConnectionWrapperErrorException(code, e.getMessage());
-      } catch (ConnectionWrapperErrorException ex) {
+        throw new ConnectionErrorException(code, e.getMessage());
+      } catch (ConnectionErrorException ex) {
         throw ex;
       } catch (Exception ex) {
-        throw new ConnectionWrapperErrorException("", e.getMessage());
+        throw new ConnectionErrorException("", e.getMessage());
       }
     }
   }

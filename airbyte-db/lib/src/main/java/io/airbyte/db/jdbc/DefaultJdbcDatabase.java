@@ -8,7 +8,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
-import io.airbyte.db.exception.ConnectionWrapperErrorException;
+import io.airbyte.db.exception.ConnectionErrorException;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -82,7 +82,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       return metaData;
     } catch (SQLException e) {
       SQLException sqlException = (SQLException) e.getCause();
-      throw new ConnectionWrapperErrorException(sqlException.getSQLState(), e.getMessage());
+      throw new ConnectionErrorException(sqlException.getSQLState(), e.getMessage());
     }
   }
 
