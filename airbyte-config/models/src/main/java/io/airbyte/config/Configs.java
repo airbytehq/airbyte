@@ -403,6 +403,11 @@ public interface Configs {
   String getDDDogStatsDPort();
 
   /**
+   * Run version check on custom connectors during bootloader execution.
+   */
+  boolean getRunVersionCheckOnCustomConnectors();
+
+  /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
    */
   TrackingStrategy getTrackingStrategy();

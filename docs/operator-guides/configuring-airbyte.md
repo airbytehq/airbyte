@@ -88,6 +88,9 @@ The following variables are relevant to both Docker and Kubernetes.
 3. `MAXIMUM_WORKSPACE_RETENTION_DAYS` - Defines the oldest un-swept configuration file age. Files older than this will definitely be swept. Defaults to 60 days.
 4. `MAXIMUM_WORKSPACE_SIZE_MB` - Defines the workspace size sweeping will continue until. Defaults to 5GB.
 
+#### Bootloader
+1. `RUN_VERSION_CHECK_ON_CUSTOM_CONNECTORS` - Set to `false` to disable version check on custom connectors during bootloader execution.
+
 ### Docker-Only
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
 2. `DOCKER_NETWORK` - Defines the docker network the new Scheduler launches jobs on.
