@@ -1,4 +1,4 @@
-name: Publish Connector Image
+name: Bump, Build, Test Connectors
 on:
   workflow_dispatch:
     inputs:
@@ -10,20 +10,21 @@ on:
         description: "The git ref to check out from the specified repository."
         required: false
         default: master
+      # TODO: Make this support comma list
       connector:
         description: "Airbyte Connector"
         required: true
+      auto-bump-version:
+        description: "Automatically bump connectors version in Dockerfile, definitions.yaml and generate seed spec. You can also do this manually"
+        required: true
+        default: "true"
       run-tests:
-        description: "Should run tests when publishing"
+        description: "Should run tests"
         required: true
         default: "true"
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
-      auto-bump-version:
-        description: "after publishing, the workflow will automatically bump the connector version in definitions and generate seed spec"
-        required: true
-        default: "true"
 
 jobs:
   find_valid_pat:
@@ -45,7 +46,7 @@ jobs:
             ${{ secrets.DAVINCHIA_PAT }}
   ## Gradle Build
   # In case of self-hosted EC2 errors, remove this block.
-  start-publish-image-runner:
+  start-bump-build-test-connector-runner:
     name: Start Build EC2 Runner
     runs-on: ubuntu-latest
     needs: find_valid_pat
@@ -67,11 +68,14 @@ jobs:
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
           # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
-  publish-image:
-    needs: start-publish-image-runner
-    runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
+  bump-build-test-connector:
+    needs: start-bump-build-test-connector-runner
+    runs-on: ${{ needs.start-bump-build-test-connector-runner.outputs.label }}
     environment: more-secrets
     steps:
+      ############################
+      ##         SET UP         ##
+      ############################
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
         with:
@@ -127,7 +131,7 @@ jobs:
           source venv/bin/activate
           tox -r -c ./tools/tox_ci.ini
           pip install --quiet -e ./tools/ci_*
-      - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
+      - name: Get Credentials for ${{ github.event.inputs.connector }}
         run: |
           source venv/bin/activate
           ci_credentials ${{ github.event.inputs.connector }}
@@ -152,47 +156,14 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbyte-5j
           SENTRY_PROJECT: airbyte-connectors
-      - name: Publish ${{ github.event.inputs.connector }}
+      ############################
+      ##          BUMP          ##
+      ############################
+      # TODO: Handle Dockerfile
+      - name: Bump Connector Version
+        if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
-        id: publish
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
-          TZ: UTC
-      - name: Finalize Sentry release
-        if: startsWith(github.event.inputs.connector, 'connectors')
-        run: |
-          sentry-cli releases finalize "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-          SENTRY_ORG: airbyte-5j
-          SENTRY_PROJECT: airbyte-connectors
-      - name: Add Published Success Comment
-        if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :rocket: Successfully published ${{github.event.inputs.connector}}
-      - name: Add Published Failure Comment
-        if: github.event.inputs.comment-id && !success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :x: Failed to publish ${{github.event.inputs.connector}}
-      - name: Slack Notification - Failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}"
-          SLACK_FOOTER: ""
+          echo "Bumping Dockerfile"
       - name: Check if connector in definitions yaml
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
@@ -214,20 +185,17 @@ jobs:
           then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"destination_definitions.yaml
           else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
           fi
-      - name: Run gradle process changes
+      - name: gradle processResources
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           ./gradlew :airbyte-config:init:processResources
-      - name: git config
+      - name: Commit and Push Version Bump
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
-      - name: git commit and push
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
           git add -u
-          git commit -m "auto-bump connector version"
+          git commit -m "auto-bump ${{github.event.inputs.connector}} version"
           git push origin ${{ github.event.inputs.gitref }}
       - name: Add Version Bump Success Comment
         if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && success()
@@ -243,6 +211,56 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: Couldn't auto-bump version for ${{github.event.inputs.connector}}
+        ############################
+        ##     BUILD AND TEST     ##
+        ############################
+        # TODO: change manage.sh to build with -candidate-PR_NUMBER tag
+      - name: Build ${{ github.event.inputs.connector }}
+        run: |
+          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} --publish_spec_to_cache
+        id: build
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
+          TZ: UTC
+      # TODO: gradle command
+      - name: Test ${{ github.event.inputs.connector }}
+        if: github.event.inputs.run-tests == 'true'
+        run: |
+          ./gradlew
+      - name: Finalize Sentry release
+        if: startsWith(github.event.inputs.connector, 'connectors')
+        run: |
+          sentry-cli releases finalize "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
+          SENTRY_ORG: airbyte-5j
+          SENTRY_PROJECT: airbyte-connectors
+      - name: Build and Test Success Comment
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :rocket: Successfully built and tested ${{github.event.inputs.connector}}
+      - name: Build and Test Failure Comment
+        if: github.event.inputs.comment-id && !success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :x: Failed to build and test ${{github.event.inputs.connector}}
+      - name: Slack Notification - Failure
+        if: failure()
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Buildozer
+          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+          SLACK_COLOR: DC143C
+          SLACK_TITLE: "Failed to build and test connector ${{ github.event.inputs.connector }} from branch ${{ github.ref }}"
+          SLACK_FOOTER: ""
       - name: Add Final Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
@@ -250,12 +268,16 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Set publish label
+        if: success()
+        run: |
+          echo "set some label"
   # In case of self-hosted EC2 errors, remove this block.
-  stop-publish-image-runner:
+  stop-bump-build-test-connector-runner:
     name: Stop Build EC2 Runner
     needs:
-      - start-publish-image-runner # required to get output from the start-runner job
-      - publish-image # required to wait when the main job is done
+      - start-bump-build-test-connector-runner # required to get output from the start-runner job
+      - bump-build-test-connector # required to wait when the main job is done
       - find_valid_pat
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
@@ -271,5 +293,5 @@ jobs:
         with:
           mode: stop
           github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-publish-image-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-publish-image-runner.outputs.ec2-instance-id }}
+          label: ${{ needs.start-bump-build-test-connector-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-bump-build-test-connector-runner.outputs.ec2-instance-id }}
