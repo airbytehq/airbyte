@@ -54,7 +54,7 @@ def test_generate_source_or_destination(mocker, context_object, command, resourc
     result = runner.invoke(command, ["uuid", resource_name], obj=context_object)
     assert result.exit_code == 0
     assert result.output == f"✅ - Created the {definition_type} template for {resource_name} in expected_output_path.\n"
-    commands.definitions.factory.assert_called_with(definition_type, context_object["API_CLIENT"], "uuid")
+    commands.definitions.factory.assert_called_with(definition_type, context_object["API_CLIENT"], context_object["WORKSPACE_ID"], "uuid")
     commands.ConnectorSpecificationRenderer.assert_called_with(resource_name, commands.definitions.factory.return_value)
     mock_renderer.write_yaml.assert_called_with(project_path=".")
 

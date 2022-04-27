@@ -111,10 +111,6 @@
             "starting_balance": { "type": "number" },
             "ending_balance": { "type": "number" },
             "amount": { "type": ["null", "number"] },
-            "block_expiry_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
             "created_at": { "type": ["null", "string"], "format": "date-time" },
             "entry_type": { "type": "string" },
             "expiry_date": {
@@ -130,6 +126,14 @@
               "properties": {
                 "id": { "type": "string" },
                 "external_customer_id": { "type": ["null", "string"] }
+              }
+            },
+            "credit_block": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "expiry_date": { "type": ["null", "string"] },
+                "per_unit_cost_basis": { "type": ["null", "string"] }
               }
             }
           }

@@ -137,7 +137,7 @@ With root level normalization, the output CSV is:
 | :--- | :--- | :--- | :--- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | 123 | `{ "first": "John", "last": "Doe" }` |
 
-Output CSV files will always be compressed using GZIP compression.
+Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.csv.gz`).
 
 ### JSON Lines \(JSONL\)
 
@@ -179,7 +179,7 @@ They will be like this in the output file:
 { "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
-Output CSV files will always be compressed using GZIP compression.
+Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.jsonl.gz`).
 
 ### Parquet
 
@@ -235,6 +235,8 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.4  | 2022-04-22 | [\#12167](https://github.com/airbytehq/airbyte/pull/12167) | Add gzip compression option for CSV and JSONL formats. |
+| 0.2.3  | 2022-04-22 | [\#11795](https://github.com/airbytehq/airbyte/pull/11795) | Fix the connection check to verify the provided bucket path. |
 | 0.2.2  | 2022-04-05 | [\#11728](https://github.com/airbytehq/airbyte/pull/11728) | Properly clean-up bucket when running OVERWRITE sync mode |
 | 0.2.1  | 2022-04-05 | [\#11499](https://github.com/airbytehq/airbyte/pull/11499) | Updated spec and documentation. |
 | 0.2.0  | 2022-04-04 | [\#11686](https://github.com/airbytehq/airbyte/pull/11686) | Use serialized buffering strategy to reduce memory consumption; compress CSV and JSONL formats. |
