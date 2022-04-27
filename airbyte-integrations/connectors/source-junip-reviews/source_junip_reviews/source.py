@@ -23,13 +23,10 @@ class SourceJunipReviews(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        url = "https://api.juniphq.com/v1/product_overviews"
-        headers = {
-            'Junip-Store-Key': config["junip_store_key"]
-        }
+        junip_store_key = config["junip_store_key"]
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            Products(junip_store_key=junip_store_key)
             connection = True, None
         except Exception as e:
             connection = False, e

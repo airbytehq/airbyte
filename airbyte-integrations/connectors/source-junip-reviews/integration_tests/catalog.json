@@ -2,7 +2,7 @@
   "streams": [
     {
       "name": "products",
-      "source_defined_cursor": false,
+      "source_defined_cursor": true,
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -56,11 +56,13 @@
       },
       "supported_sync_modes": [
         "full_refresh"
-      ]
+      ],
+      "default_cursor_field": ["created_at"],
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "product_overviews",
-      "source_defined_cursor": false,
+      "source_defined_cursor": true,
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -102,11 +104,13 @@
       },
       "supported_sync_modes": [
         "full_refresh"
-      ]
+      ],
+      "default_cursor_field": ["created_at"],
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "product_reviews",
-      "source_defined_cursor": false,
+      "source_defined_cursor": true,
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -184,11 +188,13 @@
       },
       "supported_sync_modes": [
         "full_refresh"
-      ]
+      ],
+      "default_cursor_field": ["created_at"],
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "stores",
-      "source_defined_cursor": false,
+      "source_defined_cursor": true,
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -236,7 +242,9 @@
       },
       "supported_sync_modes": [
         "full_refresh"
-      ]
+      ],
+      "default_cursor_field": ["created_at"],
+      "source_defined_primary_key": [["id"]]
     },
     {
       "name": "store_reviews",
@@ -314,7 +322,9 @@
       },
       "supported_sync_modes": [
         "full_refresh"
-      ]
+      ],
+      "default_cursor_field": ["created_at"],
+      "source_defined_primary_key": [["id"]]
     }
   ]
 }
