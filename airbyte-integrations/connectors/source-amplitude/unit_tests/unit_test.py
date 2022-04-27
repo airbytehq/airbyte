@@ -17,12 +17,24 @@ def test_http_error_handler(mocker):
     stream = Events(start_date="2021-01-01T00:00:00Z")
 
     mock_response = MockRequest(404)
-    send_request_mocker = mocker.patch.object(stream, "_send_request", side_effect=requests.HTTPError(**{"response": mock_response}))
+    mocker.patch.object(stream, "_send_request", side_effect=requests.HTTPError(**{"response": mock_response}))
+    with pytest.raises(StopIteration):
+        result = next(stream.read_records(sync_mode=airbyte_cdk.models.SyncMode.full_refresh))
+        assert result == []
+
+    mock_response = MockRequest(400)
+    mocker.patch.object(stream, "_send_request", side_effect=requests.HTTPError(**{"response": mock_response}))
+    with pytest.raises(StopIteration):
+        result = next(stream.read_records(sync_mode=airbyte_cdk.models.SyncMode.full_refresh))
+        assert result == []
+
+    mock_response = MockRequest(504)
+    mocker.patch.object(stream, "_send_request", side_effect=requests.HTTPError(**{"response": mock_response}))
     with pytest.raises(StopIteration):
         result = next(stream.read_records(sync_mode=airbyte_cdk.models.SyncMode.full_refresh))
         assert result == []
 
     mock_response = MockRequest(403)
-    send_request_mocker.side_effect = requests.HTTPError(**{"response": mock_response})
+    mocker.patch.object(stream, "_send_request", side_effect=requests.HTTPError(**{"response": mock_response}))
     with pytest.raises(requests.exceptions.HTTPError):
         next(stream.read_records(sync_mode=airbyte_cdk.models.SyncMode.full_refresh))

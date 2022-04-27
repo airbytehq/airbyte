@@ -144,7 +144,13 @@ class Events(IncrementalAmplitudeStream):
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except requests.exceptions.HTTPError as error:
             if error.response.status_code == 404:
-                self.logger.warn(f"Error during syncing {self.name} stream - {error}")
+                self.logger.warn(f"Error during syncing {self.name} stream caused by requesting data for empty time range - {error}")
+                return []
+            elif error.response.status_code == 400:
+                self.logger.warn(f"Error during syncing {self.name} stream caused by file size of the exported data being too large - {error}")
+                return []
+            elif error.response.status_code == 504:
+                self.logger.warn(f"Error during syncing {self.name} stream caused by timeout from large data - {error}")
                 return []
             else:
                 raise
