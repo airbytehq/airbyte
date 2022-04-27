@@ -76,7 +76,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
         }
 
         final boolean warningPreviouslySentForMaxDays =
-            numFailures > 1 && warningPreviouslySentForMaxDays(successTimestamp, maxDaysOfOnlyFailedJobsBeforeWarning, firstJob, jobs);
+            warningPreviouslySentForMaxDays(numFailures, successTimestamp, maxDaysOfOnlyFailedJobsBeforeWarning, firstJob, jobs);
 
         if (numFailures == 0) {
           return new AutoDisableConnectionOutput(false);
@@ -138,11 +138,13 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
   // maxDaysOfOnlyFailedJobsBeforeWarning days after the first job
   // 2. success found and the previous failure occurred maxDaysOfOnlyFailedJobsBeforeWarning days
   // after that success
-  private boolean warningPreviouslySentForMaxDays(final Optional<Long> successTimestamp,
+  private boolean warningPreviouslySentForMaxDays(final int numFailures,
+                                                  final Optional<Long> successTimestamp,
                                                   final int maxDaysOfOnlyFailedJobsBeforeWarning,
                                                   final Job firstJob,
                                                   final List<JobWithStatusAndTimestamp> jobs) {
-    if (jobs.size() <= 1)
+    // no previous warning sent if there was no previous failure
+    if (numFailures <= 1 || jobs.size() <= 1)
       return false;
 
     // get previous failed job (skipping first job since that's considered "current" job)
