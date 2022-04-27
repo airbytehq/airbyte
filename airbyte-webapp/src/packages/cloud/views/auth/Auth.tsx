@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
-import styled from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
+import styled from "styled-components";
 
 import { LoadingPage } from "components";
 
@@ -11,8 +11,8 @@ import { ResetPasswordAction } from "packages/cloud/views/FirebaseActionRoute";
 import FormContent from "./components/FormContent";
 import News from "./components/News";
 import { LoginPage } from "./LoginPage";
-import { SignupPage } from "./SignupPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
+import { SignupPage } from "./SignupPage";
 
 const Content = styled.div`
   width: 100%;

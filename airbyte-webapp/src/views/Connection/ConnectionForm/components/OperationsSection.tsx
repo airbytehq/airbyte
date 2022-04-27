@@ -1,6 +1,6 @@
+import { Field, FieldArray } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
-import { Field, FieldArray } from "formik";
 import styled from "styled-components";
 
 import { DestinationDefinitionSpecification } from "core/domain/connector";
