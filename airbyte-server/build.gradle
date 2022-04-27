@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'maven-publish'
+//    id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
@@ -21,34 +21,34 @@ shadowJar {
     classifier = ''
 }
 
-publishing {
-    publications {
-        shadow(MavenPublication) { publication ->
-            project.shadow.component(publication)
-        }
-    }
-    repositories {
-        publications {
-            // This block is present so Gradle knows to publish a Maven jar.
-            maven(MavenPublication) {
-                from components.java
-                // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-                // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
-            }
-        }
-
-        maven {
-            credentials {
-                name 'cloudrepo'
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
-            }
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-        }
-
-        mavenLocal()
-    }
-}
+//publishing {
+//    publications {
+//        shadow(MavenPublication) { publication ->
+//            project.shadow.component(publication)
+//        }
+//    }
+//    repositories {
+//        publications {
+//            // This block is present so Gradle knows to publish a Maven jar.
+//            maven(MavenPublication) {
+//                from components.java
+//                // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
+//                // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
+//            }
+//        }
+//
+//        maven {
+//            credentials {
+//                name 'cloudrepo'
+//                username System.getenv('CLOUDREPO_USER')
+//                password System.getenv('CLOUDREPO_PASSWORD')
+//            }
+//            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+//        }
+//
+//        mavenLocal()
+//    }
+//}
 
 dependencies {
     implementation 'io.temporal:temporal-sdk:1.8.1'
