@@ -51,7 +51,9 @@ class EnquireLabsStream(HttpStream, ABC):
         """
         Returns:request response
         """
-        return [response.json()]
+        json_response = response.json()
+        for record in json_response["data"]:
+            yield record
 
 
 class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
@@ -69,7 +71,7 @@ class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
         pass
 
     def _convert_date_to_timestamp(self, date: datetime):
-        return datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+        return datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S+00:00")
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -80,7 +82,7 @@ class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
             datetime.datetime.combine(
                 datetime.date.fromtimestamp(0),
                 datetime.datetime.min.time()
-            ).strftime("%Y-%m-%dT%H:%M:%SZ")
+            ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
         )
         state_dt = self._convert_date_to_timestamp(current_stream_state.get(self.cursor_field, base_date))
         latest_record = self._convert_date_to_timestamp(latest_record.get(self.cursor_field, base_date))
@@ -90,7 +92,7 @@ class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
 
 class QuestionStream(IncrementalEnquireLabsStream):
     primary_key = "id"
-    cursor_field = "created_at"
+    cursor_field = "inserted_at"
 
     def path(
         self,
