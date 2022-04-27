@@ -7,9 +7,11 @@ package io.airbyte.integrations.destination.s3;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.exception.ConnectionFileServiceErrorException;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
@@ -85,6 +87,8 @@ public class S3Destination extends BaseConnector implements Destination {
     final String testFile = bucketPath + "/" + "test_" + System.currentTimeMillis();
     try {
       s3Client.putObject(bucketName, testFile, "this is a test file");
+//    } catch (AmazonS3Exception e) {
+//      throw new ConnectionFileServiceErrorException(e.getErrorCode(), e.getMessage());
     } finally {
       s3Client.deleteObject(bucketName, testFile);
     }

@@ -6,11 +6,11 @@ package io.airbyte.integrations.base.errors.messages;
 
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.MONGO;
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.GCS;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
 
-public class MongoDBErrorMessage implements ErrorMessage {
+public class GCSErrorMessage implements ErrorMessage {
 
   static {
     CONSTANTS.put("18", INCORRECT_USERNAME_OR_PASSWORD);
@@ -19,7 +19,7 @@ public class MongoDBErrorMessage implements ErrorMessage {
 
   @Override
   public ConnectorType getConnectorType() {
-    return MONGO;
+    return GCS;
   }
 
 }

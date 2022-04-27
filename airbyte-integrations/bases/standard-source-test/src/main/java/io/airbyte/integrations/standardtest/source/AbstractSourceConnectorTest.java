@@ -139,8 +139,8 @@ public abstract class AbstractSourceConnectorTest {
 
   protected StandardCheckConnectionOutput runCheck(JsonNode config) throws Exception {
     return new DefaultCheckConnectionWorker(
-            workerConfigs,
-            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
+        workerConfigs,
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 

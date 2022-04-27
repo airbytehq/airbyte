@@ -13,5 +13,6 @@ public enum ConnectorType {
   MONGO,
   SNOWFLAKE,
   REDSHIFT,
+  GCS,
   DEFAULT
 }
