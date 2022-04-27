@@ -58,6 +58,9 @@ class Status(str, Enum):
 class AsyncJob(ABC):
     """Abstract AsyncJob base class"""
 
+    # max attempts for a job before errroring out
+    max_attempts: int = 10  # TODO: verify a sane number for this
+
     def __init__(self, api: FacebookAdsApi, interval: pendulum.Period):
         """Init generic async job
 
@@ -158,7 +161,15 @@ class ParentAsyncJob(AsyncJob):
         new_jobs = []
         for job in self._jobs:
             if job.failed:
-                new_jobs.extend(job.split_job())
+                try:
+                    new_jobs.extend(job.split_job())
+                except RuntimeError as split_limit_error:
+                    logger.error(split_limit_error)
+                    if job.attempt_number > job.max_attempts:
+                        raise RuntimeError(f"{job} at smallest split size and still failing after {job.max_attempts} retries.")
+                    logger.info(f'can\'t split "{job}" any smaller, attempting to restart instead.')
+                    job.restart()
+                    new_jobs.append(job)
             else:
                 new_jobs.append(job)
         return new_jobs

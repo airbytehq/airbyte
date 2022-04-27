@@ -415,5 +415,22 @@ class TestParentAsyncJob:
             else:
                 job.split_job.assert_not_called()
 
+    def test_split_job_smallest(self, parent_job, grouped_jobs):
+        grouped_jobs[0].max_attempts = InsightAsyncJob.max_attempts
+        grouped_jobs[0].failed = True
+        grouped_jobs[0].split_job.side_effect = RuntimeError("Mocking smallest size")
+
+        count = 0
+        while count < InsightAsyncJob.max_attempts:
+            split_jobs = parent_job.split_job()
+            assert len(split_jobs) == len(
+                grouped_jobs
+            ), "attempted to split job at smallest size so should just restart job meaning same no. of jobs"
+            grouped_jobs[0].attempt_number += 1
+            count += 1
+
+        with pytest.raises(RuntimeError):  # now that we've hit max_attempts, we should error out
+            parent_job.split_job()
+
     def test_str(self, parent_job, grouped_jobs):
         assert str(parent_job) == f"ParentAsyncJob({grouped_jobs[0]} ... {len(grouped_jobs) - 1} jobs more)"
