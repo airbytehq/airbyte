@@ -82,13 +82,14 @@ const Input: React.FC<InputProps> = (props) => {
 
   const isPassword = props.type === "password";
   const isVisibilityButtonVisible = isPassword && !props.disabled;
+  const type = isPassword ? (isContentVisible ? "text" : "password") : props.type;
   const onInputFocusChange = () => toggleFocused();
 
   return (
     <InputContainer {...props} className={focused ? "input-container--focused" : undefined}>
       <InputComponent
         {...props}
-        type={!isPassword || isContentVisible ? "text" : "password"}
+        type={type}
         isPassword={isPassword}
         onFocus={onInputFocusChange}
         onBlur={onInputFocusChange}
