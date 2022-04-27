@@ -138,12 +138,14 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Test
-  public void testBackwardCompatibilityAfterAddingOauth() throws Exception {
+  public void testBackwardCompatibilityAfterAddingOAuth() throws Exception {
     final JsonNode deprecatedStyleConfig = Jsons.clone(config);
     final JsonNode password = deprecatedStyleConfig.get("credentials").get("password");
+    final JsonNode username = deprecatedStyleConfig.get("credentials").get("username");
 
     ((ObjectNode) deprecatedStyleConfig).remove("credentials");
     ((ObjectNode) deprecatedStyleConfig).set("password", password);
+    ((ObjectNode) deprecatedStyleConfig).set("username", username);
 
     assertEquals("SUCCEEDED", runCheckAndGetStatusAsString(deprecatedStyleConfig).toUpperCase());
   }

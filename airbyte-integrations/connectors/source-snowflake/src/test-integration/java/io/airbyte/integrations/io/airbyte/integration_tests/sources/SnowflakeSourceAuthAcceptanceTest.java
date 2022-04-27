@@ -87,4 +87,8 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
         .deserialize(IOs.readFile(Path.of("secrets/config_auth.json")));
   }
 
+  @Override
+  public void testBackwardCompatibilityAfterAddingOAuth() throws Exception {
+    // this test case is not valid for OAuth method
+  }
 }
