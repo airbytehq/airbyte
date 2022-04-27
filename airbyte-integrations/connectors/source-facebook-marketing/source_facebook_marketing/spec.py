@@ -147,3 +147,13 @@ class ConnectorConfig(BaseConfig):
             "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
         ),
     )
+
+    insights_lookback_window: Optional[PositiveInt] = Field(
+        title="Insights Lookback Window",
+        order=7,
+        description=(
+            "The attribution window"
+        ),
+        exclusiveMaximum=28,
+        default=28,
+    )
