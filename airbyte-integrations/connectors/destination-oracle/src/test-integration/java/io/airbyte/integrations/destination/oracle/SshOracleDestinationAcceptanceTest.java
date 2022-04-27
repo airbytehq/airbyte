@@ -17,13 +17,11 @@ import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.testcontainers.containers.Network;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
