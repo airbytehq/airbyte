@@ -24,7 +24,7 @@ Create `acceptance-test-config.yml`. In most cases, your connector already has t
 connector_image: airbyte/source-some-connector:dev
 tests:
   spec:
-    - spec_path: "some_folder/spec.json"
+    - spec_path: "some_folder/spec.yaml"
 ```
 
 Build your connector image if needed.
@@ -95,10 +95,10 @@ tests:  # Tests configuration
 
 Verify that a spec operation issued to the connector returns a valid spec.
 
-| Input | Type | Default | Note |
-| :--- | :--- | :--- | :--- |
-| `spec_path` | string | `secrets/spec.json` | Path to a JSON object representing the spec expected to be output by this connector |
-| `timeout_seconds` | int | 10 | Test execution timeout in seconds |
+| Input | Type | Default | Note                                                                                             |
+| :--- | :--- | :--- |:-------------------------------------------------------------------------------------------------|
+| `spec_path` | string | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector |
+| `timeout_seconds` | int | 10 | Test execution timeout in seconds                                                                |
 
 ## Test Connection
 

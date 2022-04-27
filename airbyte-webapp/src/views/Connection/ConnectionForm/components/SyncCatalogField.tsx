@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState } from "react";
 import { FieldProps } from "formik";
+import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -9,13 +9,13 @@ import { Cell, Header } from "components/SimpleTableComponents";
 import { useConfig } from "config";
 import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
-import CatalogTree from "views/Connection/CatalogTree";
-import { naturalComparatorBy } from "utils/objects";
 import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
+import { naturalComparatorBy } from "utils/objects";
+import CatalogTree from "views/Connection/CatalogTree";
 
 import { BulkHeader } from "../../CatalogTree/components/BulkHeader";
-import Search from "./Search";
 import InformationToolTip from "./InformationToolTip";
+import Search from "./Search";
 
 const TreeViewContainer = styled.div`
   margin-bottom: 29px;
