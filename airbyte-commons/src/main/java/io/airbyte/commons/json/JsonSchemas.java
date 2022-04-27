@@ -178,7 +178,7 @@ public class JsonSchemas {
             }
           } else {
             throw new IllegalArgumentException(
-                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf");
+                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf in " + jsonSchemaNode);
           }
         }
       }
