@@ -100,6 +100,8 @@ class QuestionStream(IncrementalEnquireLabsStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
         """
+        Ref: https://docs.enquirelabs.com/docs
+
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
         return "questions"
