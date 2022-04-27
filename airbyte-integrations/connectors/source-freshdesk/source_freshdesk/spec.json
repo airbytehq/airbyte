@@ -27,6 +27,7 @@
       },
       "start_date": {
         "title": "Start Date",
+        "type": "string",
         "description": "UTC date and time. Any data created after this date will be replicated. If this parameter is not set, all data will be replicated.",
         "format": "date-time",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
