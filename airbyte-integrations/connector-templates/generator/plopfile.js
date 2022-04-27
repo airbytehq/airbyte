@@ -49,7 +49,7 @@ module.exports = function (plop) {
   const sourceConnectorImagePrefix = 'airbyte/source-'
   const sourceConnectorImageTag = 'dev'
   const defaultSpecPathFolderPrefix = 'source_'
-  const specFileName = 'spec.json'
+  const specFileName = 'spec.yaml'
 
 
   plop.setHelper('capitalCase', function(name) {
