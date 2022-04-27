@@ -3,7 +3,7 @@
     {
       "stream": {
         "name": "question_stream",
-        "source_defined_cursor": false,
+        "source_defined_cursor": true,
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -68,16 +68,16 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["created_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "source_defined_cursor": false,
+        "source_defined_cursor": true,
         "name": "question_response_stream",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
@@ -213,9 +213,9 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["inserted_at"],
+        "source_defined_primary_key": [["id"]]
       },
        "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

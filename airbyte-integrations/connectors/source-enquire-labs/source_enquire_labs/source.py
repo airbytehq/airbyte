@@ -1,11 +1,7 @@
-#
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
-#
-
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import datetime
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -58,7 +54,44 @@ class EnquireLabsStream(HttpStream, ABC):
         return [response.json()]
 
 
-class QuestionStream(EnquireLabsStream):
+class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
+
+    state_checkpoint_interval = None
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
+        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+
+        :return str: The name of the cursor field.
+        """
+        pass
+
+    def _convert_date_to_timestamp(self, date: datetime):
+        return datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+        base_date = (
+            datetime.datetime.combine(
+                datetime.date.fromtimestamp(0),
+                datetime.datetime.min.time()
+            ).strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        state_dt = self._convert_date_to_timestamp(current_stream_state.get(self.cursor_field, base_date))
+        latest_record = self._convert_date_to_timestamp(latest_record.get(self.cursor_field, base_date))
+
+        return {self.cursor_field: max(latest_record, state_dt)}
+
+
+class QuestionStream(IncrementalEnquireLabsStream):
+    primary_key = "id"
+    cursor_field = "created_at"
+
     def path(
         self,
         *,
@@ -72,7 +105,10 @@ class QuestionStream(EnquireLabsStream):
         return "questions"
 
 
-class QuestionResponseStream(EnquireLabsStream):
+class QuestionResponseStream(IncrementalEnquireLabsStream):
+    primary_key = "id"
+    cursor_field = "inserted_at"
+
     def __init__(self, secret_key, since, until, question_id, **kwargs):
         super().__init__(secret_key=secret_key, **kwargs)
         self.since = since
@@ -87,6 +123,8 @@ class QuestionResponseStream(EnquireLabsStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
         """
+        Ref: https://docs.enquirelabs.com/docs
+
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
         return "responses"
@@ -95,6 +133,7 @@ class QuestionResponseStream(EnquireLabsStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
+        Ref: https://docs.enquirelabs.com/docs
         This method use to add query params in requested URL
         """
         params = {
@@ -109,6 +148,7 @@ class QuestionResponseStream(EnquireLabsStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
+        Ref: https://docs.enquirelabs.com/docs
         This method to define a pagination strategy
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
@@ -117,32 +157,7 @@ class QuestionResponseStream(EnquireLabsStream):
         if decoded_response.get("next"):
             return {"after": decoded_response.get("data")[0]["response_id"] if decoded_response.get("data") else None}
 
-        return None
 
-
-class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
-
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
-
-
-# Source
 class SourceEnquireLabs(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
@@ -154,15 +169,8 @@ class SourceEnquireLabs(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
 
-        url = "https://app.enquirelabs.com/api/questions"
-
-        payload = {}
-        headers = {
-            'Accept': 'application/json',
-            'Authorization': config["secret_key"]
-        }
         try:
-            response = requests.request("GET", url, headers=headers, data=payload)
+            QuestionStream(secret_key=config["secret_key"])
             connection = True, None
         except Exception as e:
             connection = False, e
