@@ -5,7 +5,6 @@
 package io.airbyte.workers;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;

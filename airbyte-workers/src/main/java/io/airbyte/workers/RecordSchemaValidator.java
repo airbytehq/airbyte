@@ -8,12 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.util.HashMap;
 
 public class RecordSchemaValidator {
+
   private final HashMap<String, JsonNode> streams;
 
   public RecordSchemaValidator(final StandardSyncInput syncInput) {
