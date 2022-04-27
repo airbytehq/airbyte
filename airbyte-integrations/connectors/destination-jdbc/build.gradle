@@ -12,7 +12,6 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-s3')
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-config:models')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-csv:1.4'
