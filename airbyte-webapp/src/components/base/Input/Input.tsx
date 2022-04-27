@@ -92,9 +92,15 @@ const Input: React.FC<InputProps> = (props) => {
         isPassword={isPassword}
         onFocus={onInputFocusChange}
         onBlur={onInputFocusChange}
+        data-testid="input"
       />
       {isVisibilityButtonVisible ? (
-        <VisibilityButton iconOnly onClick={() => setIsContentVisible(!isContentVisible)} type="button">
+        <VisibilityButton
+          iconOnly
+          onClick={() => setIsContentVisible(!isContentVisible)}
+          type="button"
+          data-testid="toggle-password-visibility-button"
+        >
           <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} fixedWidth />
         </VisibilityButton>
       ) : null}
