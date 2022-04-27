@@ -114,7 +114,8 @@
       "io_number": {
         "type": ["null", "number"]
       }
-    }, {
+    }
+  }, {
     "properties": {
       "is_attribution_spec_system_default": {
         "type": ["null", "boolean"]

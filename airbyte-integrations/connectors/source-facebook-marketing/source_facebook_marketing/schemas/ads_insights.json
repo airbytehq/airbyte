@@ -194,7 +194,8 @@
       "full_view_reach": {
         "type": ["null", "number"]
       }
-    }, {
+    }
+  }, {
     "properties": {
       "gender_targeting": {
         "type": ["null", "string"]
