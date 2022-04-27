@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.configs.migrations;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;
@@ -28,4 +32,5 @@ public class V0_36_3_001__AddScheduleTypeToConfigsTable extends BaseJavaMigratio
         .addColumnIfNotExists(DSL.field("scheduleType", SQLDataType.VARCHAR(256).nullable(false)))
         .execute();
   }
+
 }
