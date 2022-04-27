@@ -226,7 +226,7 @@ jobs:
       - name: git commit and push
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
-          git pull origin master
+          git pull origin ${{ github.event.inputs.gitref }}
           git add -u
           git commit -m "auto-bump connector version"
           git push origin ${{ github.event.inputs.gitref }}
