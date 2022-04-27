@@ -253,14 +253,9 @@ class TestBaseInsightsStream:
 
         schema = stream.get_json_schema()
 
-        props = (
-            schema["properties"]
-            if "properties" in schema
-            else {key: value for d in schema["allOf"] for key, value in d["properties"].items()}
-        )
-        assert "device_platform" not in props
-        assert "country" not in props
-        assert not (set(stream.fields) - set(props.keys())), "all fields present in schema"
+        assert "device_platform" not in schema["properties"]
+        assert "country" not in schema["properties"]
+        assert not (set(stream.fields) - set(schema["properties"].keys())), "all fields present in schema"
 
     def test_get_json_schema_custom(self, api):
         stream = AdsInsights(
@@ -268,15 +263,10 @@ class TestBaseInsightsStream:
         )
 
         schema = stream.get_json_schema()
-        props = (
-            schema["properties"]
-            if "properties" in schema
-            else {key: value for d in schema["allOf"] for key, value in d["properties"].items()}
-        )
 
-        assert "device_platform" in props
-        assert "country" in props
-        assert not (set(stream.fields) - set(props.keys())), "all fields present in schema"
+        assert "device_platform" in schema["properties"]
+        assert "country" in schema["properties"]
+        assert not (set(stream.fields) - set(schema["properties"].keys())), "all fields present in schema"
 
     def test_fields(self, api):
         stream = AdsInsights(
