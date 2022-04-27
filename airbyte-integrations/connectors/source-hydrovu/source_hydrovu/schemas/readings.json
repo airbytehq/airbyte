@@ -2,17 +2,23 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "readings": {
-      "type":  "array",
-      "items": {
-	"type": "object",
-        "timestamp": {
-          "type": "integer"
-        },
-        "value": {
-          "type": "number"
-        }
-      }
+    "locationId": {
+      "type": "integer"
+    },
+    "parameterId": {
+      "type":  "integer"
+    },
+    "unitId": {
+      "type":  "integer"
+    },
+    "customerParameter": {
+      "type":  "boolean"
+    },
+    "timestamp": {
+      "type":  "integer"
+    },
+    "value": {
+      "type":  "integer"
     }
   }
 }
