@@ -8,12 +8,14 @@ import { LabeledRadioButton, Link } from "components";
 import { useConfig } from "config";
 import { NormalizationType } from "core/domain/connection/operation";
 
+import { ConnectionFormMode } from "../ConnectionForm";
+
 const Normalization = styled.div`
   margin: 16px 0;
 `;
 
 type NormalizationBlockProps = FieldProps<string> & {
-  mode: "readonly" | "create" | "edit";
+  mode: ConnectionFormMode;
 };
 
 const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mode }) => {

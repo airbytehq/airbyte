@@ -91,6 +91,8 @@ interface ConnectionFormSubmitResult {
   onSubmitComplete: () => void;
 }
 
+export type ConnectionFormMode = "create" | "edit" | "readonly";
+
 interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
@@ -102,7 +104,7 @@ interface ConnectionFormProps {
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   editSchemeMode?: boolean;
-  mode: "create" | "edit" | "readonly";
+  mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
   connection: Connection | (Partial<Connection> & Pick<Connection, "syncCatalog" | "source" | "destination">);

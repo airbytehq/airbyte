@@ -20,6 +20,7 @@ import { useGetDestinationDefinitionSpecification } from "services/connector/Des
 import { FormikOnSubmit } from "types/formik";
 import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
 import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
+import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
 import {
   getInitialNormalization,
   getInitialTransformations,
@@ -50,7 +51,7 @@ const NoSupportedTransformationCard = styled(ContentCard)`
 const CustomTransformationsCard: React.FC<{
   operations: Operation[];
   onSubmit: FormikOnSubmit<{ transformations?: Transformation[] }>;
-  mode: "readonly" | "edit" | "create";
+  mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
   const defaultTransformation = useDefaultTransformation();
 
@@ -85,7 +86,7 @@ const CustomTransformationsCard: React.FC<{
 const NormalizationCard: React.FC<{
   operations: Operation[];
   onSubmit: FormikOnSubmit<{ normalization?: NormalizationType }>;
-  mode: "readonly" | "edit" | "create";
+  mode: ConnectionFormMode;
 }> = ({ operations, onSubmit, mode }) => {
   const initialValues = useMemo(
     () => ({
