@@ -1,6 +1,12 @@
 import { Config } from "../../config";
 import { RequestMiddleware } from "./RequestMiddleware";
 
+export interface ApiOverrideRequestOptions {
+  config: Pick<Config, "apiUrl">;
+  middlewares: RequestMiddleware[];
+  signal?: RequestInit["signal"];
+}
+
 export const apiOverride = async <T, U = unknown>(
   {
     url,
@@ -17,7 +23,7 @@ export const apiOverride = async <T, U = unknown>(
     headers?: HeadersInit;
     responseType?: "blob";
   },
-  options?: { config: Pick<Config, "apiUrl">; middlewares: RequestMiddleware[]; signal?: RequestInit["signal"] }
+  options?: ApiOverrideRequestOptions
 ): Promise<typeof responseType extends "blob" ? Blob : T> => {
   if (!options) {
     throw new Error("Please provide middlewares and config!");

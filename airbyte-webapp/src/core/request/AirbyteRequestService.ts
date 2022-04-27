@@ -1,5 +1,6 @@
 import merge from "lodash/merge";
 
+import { ApiOverrideRequestOptions } from "./apiOverride";
 import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
 import { VersionError } from "./VersionError";
@@ -7,7 +8,7 @@ import { VersionError } from "./VersionError";
 abstract class AirbyteRequestService {
   constructor(private rootUrl: string, private middlewares: RequestMiddleware[] = []) {}
 
-  protected get requestOptions() {
+  protected get requestOptions(): ApiOverrideRequestOptions {
     return {
       config: { apiUrl: this.rootUrl },
       middlewares: this.middlewares,
