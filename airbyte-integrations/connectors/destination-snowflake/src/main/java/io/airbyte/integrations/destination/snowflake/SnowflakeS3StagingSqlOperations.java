@@ -10,10 +10,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryptionBlobDecorator;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.staging.StagingOperations;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
+  private static final Encoder BASE64_ENCODER = Base64.getEncoder();
   private static final String COPY_QUERY = "COPY INTO %s.%s FROM '%s' "
       + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
       + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
@@ -31,6 +35,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   private final NamingConventionTransformer nameTransformer;
   private final S3StorageOperations s3StorageOperations;
   private final S3DestinationConfig s3Config;
+  private final byte[] keyEncryptingKey;
 
   public SnowflakeS3StagingSqlOperations(final NamingConventionTransformer nameTransformer,
                                          final AmazonS3 s3Client,
@@ -38,6 +43,12 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
     this.nameTransformer = nameTransformer;
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, s3Config);
     this.s3Config = s3Config;
+    // TODO receive this as a parameter
+    this.keyEncryptingKey = null;
+
+    if (this.keyEncryptingKey != null) {
+      this.s3StorageOperations.addBlobDecorator(new AesCbcEnvelopeEncryptionBlobDecorator(this.keyEncryptingKey));
+    }
   }
 
   @Override
@@ -98,12 +109,19 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                 final String dstTableName,
                                 final String schemaName) {
     final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
-    return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";",
+    final String encryptionClause;
+    if (keyEncryptingKey == null) {
+      encryptionClause = "";
+    } else {
+      encryptionClause = String.format(" encryption = (type = 'aws_cse' master_key = '%s')", BASE64_ENCODER.encodeToString(keyEncryptingKey));
+    }
+    return String.format(COPY_QUERY + generateFilesList(stagedFiles) + encryptionClause + ";",
         schemaName,
         dstTableName,
         generateBucketPath(stageName, stagingPath),
         credentialConfig.getAccessKeyId(),
-        credentialConfig.getSecretAccessKey());
+        credentialConfig.getSecretAccessKey()
+    );
   }
 
   private String generateBucketPath(final String stageName, final String stagingPath) {
