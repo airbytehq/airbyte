@@ -35,7 +35,6 @@
                 "title": "Auth Type",
                 "const": "oauth2.0",
                 "order": 0,
-                "enum": ["oauth2.0"],
                 "type": "string"
               },
               "app_id": {
@@ -67,7 +66,6 @@
                 "title": "Auth Type",
                 "const": "prod_access_token",
                 "order": 0,
-                "enum": ["prod_access_token"],
                 "type": "string"
               },
               "app_id": {
@@ -98,7 +96,6 @@
                 "title": "Auth Type",
                 "const": "sandbox_access_token",
                 "order": 0,
-                "enum": ["sandbox_access_token"],
                 "type": "string"
               },
               "advertiser_id": {

@@ -20,6 +20,8 @@ This connector outputs the following full refresh streams:
 * [Pull request commits](https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request)
 * [Repositories](https://docs.github.com/en/rest/reference/repos#list-organization-repositories)
 * [Tags](https://docs.github.com/en/rest/reference/repos#list-repository-tags)
+* [TeamMembers](https://docs.github.com/en/rest/teams/members#list-team-members)
+* [TeamMemberships](https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user)
 * [Teams](https://docs.github.com/en/rest/reference/teams#list-teams)
 * [Users](https://docs.github.com/en/rest/reference/orgs#list-organization-members)
 * [Workflows](https://docs.github.com/en/rest/reference/actions#workflows)
@@ -111,6 +113,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.28  | 2022-04-21 | [11893](https://github.com/airbytehq/airbyte/pull/11893) | Add new streams `TeamMembers`, `TeamMemberships`                                                           |
 | 0.2.27  | 2022-04-02 | [11678](https://github.com/airbytehq/airbyte/pull/11678) | Fix "PAT Credentials" in spec                                                                              |
 | 0.2.26  | 2022-03-31 | [11623](https://github.com/airbytehq/airbyte/pull/11623) | Re-factored incremental sync for `Reviews` stream                                                          |
 | 0.2.25  | 2022-03-31 | [11567](https://github.com/airbytehq/airbyte/pull/11567) | Improve code for better error handling                                                                     |

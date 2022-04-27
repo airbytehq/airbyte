@@ -6,9 +6,11 @@ Our demo source will pull data from an external API, which will pull down the in
 
 To set it up, just follow the instructions on the screenshot below.
 
-{% hint style="info" %}
+:::info
+
 You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
-{% endhint %}
+
+:::
 
 ![](../.gitbook/assets/getting-started-source.png)
 

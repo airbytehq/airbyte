@@ -21,6 +21,15 @@ data:
   GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
   INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
+{{- if $.Values.jobs.kube.annotations }}
+  JOB_KUBE_ANNOTATIONS: {{ $.Values.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}
+{{- end }}
+{{- if $.Values.jobs.kube.nodeSelector }}
+  JOB_KUBE_NODE_SELECTORS: {{ $.Values.jobs.kube.nodeSelector | include "airbyte.flattenMap" | quote }}
+{{- end }}
+{{- if $.Values.jobs.kube.tolerations }}
+  JOB_KUBE_TOLERATIONS: {{ $.Values.jobs.kube.tolerations | include "airbyte.flattenArrayMap" | quote }}
+{{- end }}
   JOB_MAIN_CONTAINER_CPU_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).cpu | default "" | quote }}
   JOB_MAIN_CONTAINER_CPU_REQUEST: {{ ((.Values.jobs.resources | default dict).requests | default dict).cpu | default "" | quote }}
   JOB_MAIN_CONTAINER_MEMORY_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).memory | default "" | quote }}

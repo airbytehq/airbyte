@@ -26,6 +26,13 @@
         "title": "Join all channels",
         "description": "Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages. "
       },
+      "channel_filter": {
+        "type": "array",
+        "default": [],
+        "title": "Channel name filter",
+        "description": "A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter.",
+        "examples": ["channel_one", "channel_two"]
+      },
       "credentials": {
         "title": "Authentication mechanism",
         "description": "Choose how to authenticate into Slack",

@@ -59,7 +59,7 @@ class TestSpec(BaseTest):
     def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
-            assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.json file"
+            assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
 
     def test_docker_env(self, actual_connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
         """Check that connector's docker image has required envs"""
@@ -256,8 +256,8 @@ class TestBasicRead(BaseTest):
         just running schema validation is not enough case schema could have
         additionalProperties parameter set to true and no required fields
         therefore any arbitrary object would pass schema validation.
-        This method is here to catch those cases by extracting all the pathes
-        from the object and compare it to pathes expected from jsonschema. If
+        This method is here to catch those cases by extracting all the paths
+        from the object and compare it to paths expected from jsonschema. If
         there no common pathes then raise an alert.
 
         :param records: List of airbyte record messages gathered from connector instances.
