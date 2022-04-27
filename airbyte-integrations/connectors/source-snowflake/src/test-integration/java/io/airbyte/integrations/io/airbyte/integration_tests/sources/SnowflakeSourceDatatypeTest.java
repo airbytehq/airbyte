@@ -51,8 +51,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
 
   private Database getDatabase() {
     return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get("credentials").get("username").asText(),
+        config.get("credentials").get("password").asText(),
         String.format("jdbc:snowflake://%s/",
             config.get("host").asText()),
         SnowflakeSource.DRIVER_CLASS,
