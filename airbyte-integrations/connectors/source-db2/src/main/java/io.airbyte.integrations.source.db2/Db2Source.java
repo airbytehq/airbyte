@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -40,7 +40,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
 
   public Db2Source() {
-    super(DRIVER_CLASS, new DefaultJdbcStreamingQueryConfig(), new Db2SourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new Db2SourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {

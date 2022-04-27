@@ -5,9 +5,7 @@
 package io.airbyte.db.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -15,6 +13,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,7 +39,6 @@ public class TestStreamingJdbcDatabase {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
-  private JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
   private JdbcDatabase defaultJdbcDatabase;
   private JdbcDatabase streamingJdbcDatabase;
   private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
@@ -54,8 +52,6 @@ public class TestStreamingJdbcDatabase {
 
   @BeforeEach
   void setup() throws Exception {
-    jdbcStreamingQueryConfiguration = mock(JdbcStreamingQueryConfiguration.class);
-
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
@@ -74,7 +70,7 @@ public class TestStreamingJdbcDatabase {
         config.get("database").asText()));
 
     defaultJdbcDatabase = spy(new DefaultJdbcDatabase(connectionPool));
-    streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, JdbcUtils.getDefaultSourceOperations(), jdbcStreamingQueryConfiguration);
+    streamingJdbcDatabase = new StreamingJdbcDatabase(connectionPool, JdbcUtils.getDefaultSourceOperations(), AdaptiveStreamingQueryConfig::new);
 
     defaultJdbcDatabase.execute(connection -> {
       connection.createStatement().execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -103,8 +99,6 @@ public class TestStreamingJdbcDatabase {
         sourceOperations::rowToJson);
 
     assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
-    // verify that the query configuration is invoked.
-    verify(jdbcStreamingQueryConfiguration).accept(connection1.get(), ps1.get());
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {

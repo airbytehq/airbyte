@@ -26,7 +26,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.DefaultJdbcStreamingQueryConfig;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
@@ -317,7 +317,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             config.get("port").asInt(),
             dbName),
         DRIVER_CLASS,
-        new DefaultJdbcStreamingQueryConfig(),
+        AdaptiveStreamingQueryConfig::new,
         Maps.newHashMap(),
         new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
