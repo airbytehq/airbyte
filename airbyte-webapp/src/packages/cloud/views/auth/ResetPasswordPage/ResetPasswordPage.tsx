@@ -32,13 +32,19 @@ const ResetPasswordPage: React.FC = () => {
           email: "",
         }}
         validationSchema={ResetPasswordPageValidationSchema}
-        onSubmit={async ({ email }) => {
-          await requirePasswordReset(email);
-          registerNotification({
-            id: "resetPassword.emailSent",
-            title: formatMessage({ id: "login.resetPassword.emailSent" }),
-            isError: false,
-          });
+        onSubmit={async ({ email }, FormikBag) => {
+          try {
+            await requirePasswordReset(email);
+            registerNotification({
+              id: "resetPassword.emailSent",
+              title: formatMessage({ id: "login.resetPassword.emailSent" }),
+              isError: false,
+            });
+          } catch (err) {
+            err.message.includes("user-not-found")
+              ? FormikBag.setFieldError("email", formatMessage({ id: "login.yourEmail.notFound" }))
+              : FormikBag.setFieldError("email", formatMessage({ id: "login.yourEmail.notFound" }));
+          }
         }}
         validateOnBlur={true}
         validateOnChange={false}
