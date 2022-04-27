@@ -2,8 +2,8 @@ import type { PluggableList } from "react-markdown/lib/react-markdown";
 
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import remarkFrontmatter from "remark-frontmatter";
+import remarkGfm from "remark-gfm";
 import styled from "styled-components";
 
 type Props = {

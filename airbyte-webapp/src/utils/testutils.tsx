@@ -5,9 +5,9 @@ import { IntlProvider } from "react-intl";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
-import en from "locales/en.json";
-import { FeatureService } from "hooks/services/Feature";
 import { configContext, defaultConfig } from "config";
+import { FeatureService } from "hooks/services/Feature";
+import en from "locales/en.json";
 
 export type RenderOptions = {
   // optionally pass in a history object to control routes in the test

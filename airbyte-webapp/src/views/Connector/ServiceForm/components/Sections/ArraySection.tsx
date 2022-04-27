@@ -1,5 +1,5 @@
-import React from "react";
 import { FieldArray, useField } from "formik";
+import React from "react";
 
 import { ArrayOfObjectsEditor } from "components";
 import GroupControls from "components/GroupControls";
@@ -7,8 +7,8 @@ import GroupControls from "components/GroupControls";
 import { FormObjectArrayItem } from "core/form/types";
 
 import { useServiceForm } from "../../serviceFormContext";
-import { FormSection } from "./FormSection";
 import { SectionContainer } from "./common";
+import { FormSection } from "./FormSection";
 
 /**
  * ArraySection is responsible for handling array of objects

@@ -6,8 +6,8 @@ import { BigButton } from "components/CenteredPageComponents";
 
 import { useConfig } from "config";
 
-import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
 import VideoItem from "./VideoItem";
 
 type WelcomeStepProps = {
