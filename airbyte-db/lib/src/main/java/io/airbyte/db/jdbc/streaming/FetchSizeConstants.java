@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.jdbc.streaming;
 
 public final class FetchSizeConstants {
@@ -9,7 +13,6 @@ public final class FetchSizeConstants {
   public static final int DEFAULT_FETCH_SIZE = 1000;
   public static final int MAX_FETCH_SIZE = 100_000;
 
-  private FetchSizeConstants() {
-  }
+  private FetchSizeConstants() {}
 
 }

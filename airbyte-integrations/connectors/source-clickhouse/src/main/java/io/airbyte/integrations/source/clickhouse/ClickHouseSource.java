@@ -72,8 +72,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   }
 
   /**
-   * The reason we use NoOpStreamingQueryConfig(not setting auto commit to false and not
-   * setting fetch size to 1000) for ClickHouse is cause method
+   * The reason we use NoOpStreamingQueryConfig(not setting auto commit to false and not setting fetch
+   * size to 1000) for ClickHouse is cause method
    * {@link ru.yandex.clickhouse.ClickHouseConnectionImpl#setAutoCommit} is empty and method
    * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
    */

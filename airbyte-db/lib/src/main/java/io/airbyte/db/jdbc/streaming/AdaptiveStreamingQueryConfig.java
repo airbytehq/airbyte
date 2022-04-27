@@ -1,6 +1,9 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.jdbc.streaming;
 
-import io.airbyte.commons.json.Jsons;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

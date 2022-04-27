@@ -12,11 +12,9 @@ import java.sql.Statement;
 public class NoOpStreamingQueryConfig implements JdbcStreamingQueryConfig {
 
   @Override
-  public void initialize(final Connection connection, final Statement preparedStatement) throws SQLException {
-  }
+  public void initialize(final Connection connection, final Statement preparedStatement) throws SQLException {}
 
   @Override
-  public void accept(final ResultSet resultSet, final Object o) throws SQLException {
-  }
+  public void accept(final ResultSet resultSet, final Object o) throws SQLException {}
 
 }

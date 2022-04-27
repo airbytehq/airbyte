@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.jdbc.streaming;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,8 +32,7 @@ class BaseSizeEstimatorTest {
     }
 
     @Override
-    public void accept(final Object o) {
-    }
+    public void accept(final Object o) {}
 
     public void setMeanByteSize(final long meanByteSize) {
       this.meanByteSize = meanByteSize;

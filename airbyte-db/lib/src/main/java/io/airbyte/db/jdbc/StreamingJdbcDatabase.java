@@ -22,9 +22,9 @@ import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
 
 /**
- * This database allows a developer to specify a {@link JdbcStreamingQueryConfig}. This
- * allows the developer to specify the correct configuration in order for a
- * {@link PreparedStatement} to execute as in a streaming / chunked manner.
+ * This database allows a developer to specify a {@link JdbcStreamingQueryConfig}. This allows the
+ * developer to specify the correct configuration in order for a {@link PreparedStatement} to
+ * execute as in a streaming / chunked manner.
  */
 public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
 
@@ -38,12 +38,12 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
   }
 
   /**
-   * Assuming that the {@link JdbcStreamingQueryConfig} is configured correctly for the JDBC
-   * driver being used, this method will return data in streaming / chunked fashion. Review the
-   * provided {@link JdbcStreamingQueryConfig} to understand the size of these chunks. If the
-   * entire stream is consumed the database connection will be closed automatically and the caller
-   * need not call close on the returned stream. This query (and the first chunk) are fetched
-   * immediately. Subsequent chunks will not be pulled until the first chunk is consumed.
+   * Assuming that the {@link JdbcStreamingQueryConfig} is configured correctly for the JDBC driver
+   * being used, this method will return data in streaming / chunked fashion. Review the provided
+   * {@link JdbcStreamingQueryConfig} to understand the size of these chunks. If the entire stream is
+   * consumed the database connection will be closed automatically and the caller need not call close
+   * on the returned stream. This query (and the first chunk) are fetched immediately. Subsequent
+   * chunks will not be pulled until the first chunk is consumed.
    *
    * @param statementCreator create a {@link PreparedStatement} from a {@link Connection}.
    * @param recordTransform transform each record of that result set into the desired type. do NOT
@@ -92,8 +92,8 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
   }
 
   /**
-   * This method differs from {@link DefaultJdbcDatabase#toUnsafeStream} in that it takes a streaming config
-   * that adjusts the fetch size dynamically according to sampled row size.
+   * This method differs from {@link DefaultJdbcDatabase#toUnsafeStream} in that it takes a streaming
+   * config that adjusts the fetch size dynamically according to sampled row size.
    */
   protected static <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
                                                 final CheckedFunction<ResultSet, T, SQLException> mapper,
