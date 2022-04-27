@@ -33,7 +33,7 @@ public class SamplingSizeEstimator extends BaseSizeEstimator implements FetchSiz
 
     counter = 0;
     final long rowByteSize = getEstimatedByteSize(row);
-    if (rowByteSize != meanByteSize) {
+    if (rowByteSize != Double.valueOf(meanByteSize).longValue()) {
       meanByteSize = meanByteSize / 2.0 + rowByteSize / 2.0;
       hasNewEstimation = true;
     }
