@@ -14,10 +14,14 @@ const FormContainer = styled(Form)`
   padding: 22px 27px 15px 24px;
 `;
 
-export const FormCard: React.FC<
+interface FormCardProps extends CollapsibleCardProps {
+  bottomSeparator?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CollapsibleCardProps & { bottomSeparator?: boolean; form: FormikConfig<any>; mode?: "edit" | "readonly" | "create" }
-> = ({ children, form, bottomSeparator = true, mode, ...props }) => {
+  form: FormikConfig<any>;
+  mode?: "edit" | "readonly" | "create";
+}
+
+export const FormCard: React.FC<FormCardProps> = ({ children, form, bottomSeparator = true, mode, ...props }) => {
   const { formatMessage } = useIntl();
 
   const { mutateAsync, error, reset, isSuccess } = useMutation<

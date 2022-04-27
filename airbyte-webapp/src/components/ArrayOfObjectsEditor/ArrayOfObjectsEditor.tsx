@@ -4,6 +4,8 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
+import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
+
 import { EditorHeader } from "./components/EditorHeader";
 import { EditorRow } from "./components/EditorRow";
 
@@ -36,7 +38,7 @@ type ArrayOfObjectsEditorProps<T extends { name: string }> = {
   onCancelEdit?: () => void;
   onDone?: () => void;
   onRemove: (index: number) => void;
-  mode?: "readonly" | "edit" | "create";
+  mode?: ConnectionFormMode;
 };
 
 function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-const Content = styled.div<{ hasError?: boolean }>`
+const Content = styled.div`
   overflow-y: auto;
   padding-top: 17px;
   height: 100%;
@@ -37,7 +37,7 @@ const MainPageWithScroll: React.FC<IProps> = ({ error, headTitle, pageTitle, chi
         {headTitle}
         {pageTitle}
       </Header>
-      <Content hasError={!!error}>{children}</Content>
+      <Content>{children}</Content>
     </Page>
   );
 };
