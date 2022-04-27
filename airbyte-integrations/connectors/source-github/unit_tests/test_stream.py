@@ -14,6 +14,7 @@ from source_github.streams import (
     Branches,
     Collaborators,
     Comments,
+    CommitCommentReactions,
     CommitComments,
     Commits,
     Deployments,
@@ -783,4 +784,83 @@ def test_stream_team_members_full_refresh():
         {"username": "login1", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team2"},
+    ]
+
+
+@responses.activate
+def test_stream_commit_comment_reactions_incremental_read():
+
+    repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
+    stream = CommitCommentReactions(**repository_args)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments",
+        json=[
+            {"id": 55538825, "updated_at": "2021-01-01T15:00:00Z"},
+            {"id": 55538826, "updated_at": "2021-01-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538825/reactions",
+        json=[
+            {"id": 154935429, "created_at": "2022-01-01T15:00:00Z"},
+            {"id": 154935430, "created_at": "2022-01-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538826/reactions",
+        json=[{"id": 154935431, "created_at": "2022-01-01T17:00:00Z"}],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+
+    assert stream_state == {
+        "airbytehq/integration-test": {
+            "55538825": {"created_at": "2022-01-01T16:00:00Z"},
+            "55538826": {"created_at": "2022-01-01T17:00:00Z"},
+        }
+    }
+
+    assert records == [
+        {"id": 154935429, "comment_id": 55538825, "created_at": "2022-01-01T15:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935430, "comment_id": 55538825, "created_at": "2022-01-01T16:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935431, "comment_id": 55538826, "created_at": "2022-01-01T17:00:00Z", "repository": "airbytehq/integration-test"},
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments",
+        json=[
+            {"id": 55538825, "updated_at": "2021-01-01T15:00:00Z"},
+            {"id": 55538826, "updated_at": "2021-01-01T16:00:00Z"},
+            {"id": 55538827, "updated_at": "2022-02-01T15:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538826/reactions",
+        json=[
+            {"id": 154935431, "created_at": "2022-01-01T17:00:00Z"},
+            {"id": 154935432, "created_at": "2022-02-01T16:00:00Z"},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test/comments/55538827/reactions",
+        json=[{"id": 154935433, "created_at": "2022-02-01T17:00:00Z"}],
+    )
+
+    records = read_incremental(stream, stream_state)
+
+    assert records == [
+        {"id": 154935432, "comment_id": 55538826, "created_at": "2022-02-01T16:00:00Z", "repository": "airbytehq/integration-test"},
+        {"id": 154935433, "comment_id": 55538827, "created_at": "2022-02-01T17:00:00Z", "repository": "airbytehq/integration-test"},
     ]
