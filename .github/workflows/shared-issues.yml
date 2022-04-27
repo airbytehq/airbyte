@@ -1,10 +1,10 @@
 name: "Shared Issues"
 on:
   issues:
-    types: [opened, edited, labeled]
+    types: [opened, labeled, unlabeled]
 
 jobs:
-  triage:
+  shared-issues:
     runs-on: ubuntu-latest
     steps:
       - uses: airbytehq/workflow-actions@production
