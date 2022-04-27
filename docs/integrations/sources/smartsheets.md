@@ -86,7 +86,8 @@ To setup your new Smartsheets source, Airbyte will need:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                   |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------|
-| 0.1.9   | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns |
-| 0.1.8   | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792)   | Added oauth support       |
+| Version | Date       | Pull Request                                             | Subject                                                   |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.10  | 2022-04-15 | [12077](https://github.com/airbytehq/airbyte/pull/12077)           | Implement incremental read and improve code test coverage |
+| 0.1.9   | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns                                 |
+| 0.1.8   | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792)   | Added oauth support                                       |
