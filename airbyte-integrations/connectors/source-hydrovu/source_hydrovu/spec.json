@@ -9,19 +9,19 @@
     "properties": {
       "client_id": {
         "type": "string",
-        "description": "describe me"
+        "description": "Oauth Client ID for HydroVu API"
       },
       "client_secret": {
         "type": "string",
-        "description": "describe me"
+        "description": "Secret key for HydroVu API"
       },
       "refresh_token": {
         "type": "string",
-        "description": "describe me"
+        "description": "Leave blank"
       },
       "token_refresh_endpoint": {
         "type": "string",
-        "description": "describe me"
+        "description": "URL to retrieve token"
       }
     }
   }
