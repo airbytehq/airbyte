@@ -1,6 +1,7 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React from "react";
+import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
 import { Theme } from "theme";
@@ -77,7 +78,8 @@ const VisibilityButton = styled(Button)`
 `;
 
 const Input: React.FC<InputProps> = (props) => {
-  const [isContentVisible, setIsContentVisible] = useState(false);
+  const { formatMessage } = useIntl();
+  const [isContentVisible, setIsContentVisible] = useToggle(false);
   const [focused, toggleFocused] = useToggle(false);
 
   const isPassword = props.type === "password";
@@ -98,8 +100,11 @@ const Input: React.FC<InputProps> = (props) => {
       {isVisibilityButtonVisible ? (
         <VisibilityButton
           iconOnly
-          onClick={() => setIsContentVisible(!isContentVisible)}
+          onClick={() => setIsContentVisible()}
           type="button"
+          aria-label={formatMessage({
+            id: `ui.input.${isContentVisible ? "hide" : "show"}Password`,
+          })}
           data-testid="toggle-password-visibility-button"
         >
           <FontAwesomeIcon icon={isContentVisible ? faEyeSlash : faEye} fixedWidth />
