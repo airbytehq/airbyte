@@ -4,8 +4,8 @@
 
 import logging
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -15,6 +15,7 @@ from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
+from pendulum.tz.timezone import Timezone
 
 from .common import MAX_BATCH_SIZE, deep_merge
 
@@ -22,6 +23,13 @@ if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
+
+
+# Simple transformer
+def parse_date(date: Any, timezone: Timezone) -> datetime:
+    if date and isinstance(date, str):
+        return pendulum.parse(date).replace(tzinfo=timezone)
+    return date
 
 
 class FBMarketingStream(Stream, ABC):
@@ -153,6 +161,31 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         if self._end_date < self._start_date:
             logger.error("The end_date must be after start_date.")
 
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+        stream_state = stream_state or {}
+        cursor_value = stream_state.get(self.cursor_field)
+        start_date = self.get_date(parse_date(cursor_value, self.timezone), self.start_date, max)
+        return self.chunk_date_range(start_date)
+
+    def start_date_abnormal(self, start_date: datetime) -> bool:
+        return start_date >= self.end_date
+
+    def get_date(self, cursor_value: Any, default_date: datetime, comparator: Callable[[datetime, datetime], datetime]) -> datetime:
+        cursor_value = parse_date(cursor_value or default_date, self.timezone)
+        date = comparator(cursor_value, default_date)
+        return date
+
+    def chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
+        dates = []
+        delta = timedelta(days=self.intervals)
+        while start_date <= self.end_date:
+            end_date = self.get_date(start_date + delta, self._end_date, min)
+            dates.append({self.cursor_field: start_date, self.cursor_field + "_end": end_date})
+            start_date += delta
+        return dates
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
         potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
@@ -187,6 +220,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
             "filtering": [
                 {
                     "field": f"{self.entity_prefix}.{self.cursor_field}",
+                    "operator": "GREATER_THAN",
                     "operator": "GREATER_THAN",
                     "value": filter_value.int_timestamp,
                 },
