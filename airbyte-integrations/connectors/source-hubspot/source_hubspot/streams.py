@@ -258,7 +258,7 @@ class Stream(HttpStream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
         if self.properties:
-            json_schema["properties"]["properties"] = self.properties
+            json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
         return json_schema
 
     def handle_request(
