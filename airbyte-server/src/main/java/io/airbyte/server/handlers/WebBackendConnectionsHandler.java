@@ -252,9 +252,10 @@ public class WebBackendConnectionsHandler {
         }
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
-        outputStreamConfig.setSelected(originalStreamConfig.getSelected());
+        outputStreamConfig.setSelected(true);
       } else {
         outputStreamConfig = s.getConfig();
+        outputStreamConfig.setSelected(false);
       }
       final AirbyteStreamAndConfiguration outputStream = new AirbyteStreamAndConfiguration()
           .stream(Jsons.clone(stream))
