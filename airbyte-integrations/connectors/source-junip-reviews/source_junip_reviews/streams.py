@@ -18,7 +18,7 @@ class JunipReviewsStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        This method used to do pagination strategy
+        Implements the pagination approach for stream.
 
         Returns: Next page token
         """
@@ -35,7 +35,7 @@ class JunipReviewsStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
-        This method is for add query params in request URL
+        Adds query params in requested URL.
         """
         params = {}
 
