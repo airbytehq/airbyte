@@ -214,21 +214,18 @@ jobs:
         ############################
         ##     BUILD AND TEST     ##
         ############################
-        # TODO: change manage.sh to build with -candidate-PR_NUMBER tag
       - name: Build ${{ github.event.inputs.connector }}
         run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} --publish_spec_to_cache
+          ./tools/integrations/manage.sh cmd_build airbyte-integrations/${{ github.event.inputs.connector }}
         id: build
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
-      # TODO: gradle command
       - name: Test ${{ github.event.inputs.connector }}
         if: github.event.inputs.run-tests == 'true'
         run: |
-          ./gradlew --tasks
+          ./tools/integrations/manage.sh cmd_test airbyte-integrations/${{ github.event.inputs.connector }}
       - name: Finalize Sentry release
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
