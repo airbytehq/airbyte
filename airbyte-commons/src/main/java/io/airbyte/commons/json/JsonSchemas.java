@@ -26,9 +26,11 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
 // todo (cgardens) - we need the ability to identify jsonschemas that Airbyte considers invalid for
 // a connector (e.g. "not" keyword).
+@Slf4j
 public class JsonSchemas {
 
   private static final String JSON_SCHEMA_ENUM_KEY = "enum";
@@ -162,6 +164,7 @@ public class JsonSchemas {
         case ARRAY_TYPE -> {
           final String newPath = JsonPaths.appendAppendListSplat(path);
           // hit every node.
+          // log.error("array: " + jsonSchemaNode);
           traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
         }
         case OBJECT_TYPE -> {
@@ -170,10 +173,12 @@ public class JsonSchemas {
             for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {
               final Entry<String, JsonNode> child = it.next();
               final String newPath = JsonPaths.appendField(path, child.getKey());
+              // log.error("obj1: " + jsonSchemaNode);
               traverseJsonSchemaInternal(child.getValue(), newPath, consumer);
             }
           } else if (comboKeyWordOptional.isPresent()) {
             for (final JsonNode arrayItem : jsonSchemaNode.get(comboKeyWordOptional.get())) {
+              // log.error("obj2: " + jsonSchemaNode);
               traverseJsonSchemaInternal(arrayItem, path, consumer);
             }
           } else {

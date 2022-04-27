@@ -6,7 +6,7 @@
     documentationUrl: "https://docs.airbyte.io/integrations/sources/airtable"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "Airtable Source Spec"
+      title: "Airtadfgdfgble Source Spec"
       type: "object"
       required:
       - "api_key"
@@ -713,6 +713,15 @@
           type: "string"
           description: "Api key of bamboo hr"
           airbyte_secret: true
+        custom_reports_fields:
+          type: "string"
+          default: ""
+          description: "Comma-separated list of fields to include in custom reports."
+        custom_reports_include_default_fields:
+          type: "boolean"
+          default: true
+          description: "If true, the custom reports endpoint will include the default\
+            \ fields defined here: https://documentation.bamboohr.com/docs/list-of-field-names."
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1408,7 +1417,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-confluence:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/confluence"
+    documentationUrl: "https://docsurl.com"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Confluence Spec"
@@ -2371,8 +2380,7 @@
           title: "Domain"
           examples:
           - "myaccount.freshdesk.com"
-          pattern:
-          - "^[a-zA-Z0-9._-]*\\.freshdesk\\.com$"
+          pattern: "^[a-zA-Z0-9._-]*\\.freshdesk\\.com$"
         api_key:
           type: "string"
           title: "API Key"
@@ -2387,6 +2395,7 @@
             \ account."
         start_date:
           title: "Start Date"
+          type: "string"
           description: "UTC date and time. Any data created after this date will be\
             \ replicated. If this parameter is not set, all data will be replicated."
           format: "date-time"
@@ -4054,6 +4063,7 @@
                 - "OAUTHBEARER"
                 - "SCRAM-SHA-256"
                 - "SCRAM-SHA-512"
+                - "PLAIN"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "The JAAS login context parameters for SASL connections\
@@ -4178,7 +4188,7 @@
     - "append"
 - dockerImage: "airbyte/source-lemlist:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/source-lemlist"
+    documentationUrl: "https://docsurl.com"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Lemlist Spec"
@@ -4685,6 +4695,7 @@
           description: "The hostname of the database."
           title: "Host"
           type: "string"
+          order: 0
         port:
           description: "The port of the database."
           title: "Port"
@@ -4693,21 +4704,32 @@
           maximum: 65536
           examples:
           - "1433"
+          order: 1
         database:
           description: "The name of the database."
           title: "Database"
           type: "string"
           examples:
           - "master"
+          order: 2
         username:
           description: "The username which is used to access the database."
           title: "Username"
           type: "string"
+          order: 3
         password:
           description: "The password associated with the username."
           title: "Password"
           type: "string"
           airbyte_secret: true
+          order: 4
+        jdbc_url_params:
+          title: "JDBC URL Params"
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          type: "string"
+          order: 5
         ssl_method:
           title: "SSL Method"
           type: "object"
@@ -4772,6 +4794,7 @@
           enum:
           - "STANDARD"
           - "CDC"
+          order: 8
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -7771,6 +7794,9 @@
         channel_filter:
           type: "array"
           default: []
+          items:
+            type: "string"
+            min-item: 0
           title: "Channel name filter"
           description: "A channel name list (without leading '#' char) which limit\
             \ the channels from which you'd like to sync. Empty list means no filter."
@@ -8341,6 +8367,15 @@
           description: "Access Token for making authenticated requests. See the <a\
             \ href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a>\
             \ for information on how to generate this key."
+        survey_ids:
+          type: "array"
+          items:
+            type: "string"
+            pattern: "^[0-9]{8,9}$"
+          title: "Survey Monkey survey IDs"
+          description: "IDs of the surveys from which you'd like to replicate data.\
+            \ If left empty, data from all boards to which you have access will be\
+            \ replicated."
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -8573,8 +8608,6 @@
                 title: "Auth Type"
                 const: "oauth2.0"
                 order: 0
-                enum:
-                - "oauth2.0"
                 type: "string"
               app_id:
                 title: "App ID"
@@ -8602,8 +8635,6 @@
                 title: "Auth Type"
                 const: "prod_access_token"
                 order: 0
-                enum:
-                - "prod_access_token"
                 type: "string"
               app_id:
                 title: "App ID"
@@ -8630,8 +8661,6 @@
                 title: "Auth Type"
                 const: "sandbox_access_token"
                 order: 0
-                enum:
-                - "sandbox_access_token"
                 type: "string"
               advertiser_id:
                 title: "Advertiser ID"
@@ -9565,11 +9594,13 @@
       additionalProperties: true
       properties:
         api_token:
+          title: "API Token"
           type: "string"
           description: "Kustomer API Token. See the <a href=\"https://developer.kustomer.com/kustomer-api-docs/reference/authentication\"\
             >docs</a> on how to obtain this"
           airbyte_secret: true
         start_date:
+          title: "Start Date"
           type: "string"
           description: "The date from which you'd like to replicate the data"
           examples:

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.init;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,8 +12,11 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
@@ -19,38 +26,34 @@ public class SpecFormatTest {
   void testOnAllExistingConfig() throws IOException, JsonValidationException {
     final ConfigPersistence configPersistence = YamlSeedConfigPersistence.getDefault();
 
-    log.error("Sources");
-    final List<JsonNode> latestSourcesSpecs = configPersistence.listConfigs(
+    final List<JsonNode> sourceSpecs = configPersistence.listConfigs(
         ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
         .stream()
         .map(standardSourceDefinition -> standardSourceDefinition.getSpec().getConnectionSpecification())
         .toList();
 
-    latestSourcesSpecs.forEach(
-        spec -> {
-          try {
-            JsonSchemas.traverseJsonSchema(spec, (node, path) -> {});
-          } catch (final Exception e) {
-            log.error("failed on: " + spec.toString(), e);
-          }
-        }
-    );
-
-    log.error("Destinations");
-    final List<JsonNode> latestDestinationSpecs = configPersistence.listConfigs(
-            ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
+    final List<JsonNode> destinationSpecs = configPersistence.listConfigs(
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
         .stream()
         .map(standardDestinationDefinition -> standardDestinationDefinition.getSpec().getConnectionSpecification())
         .toList();
 
-    latestSourcesSpecs.forEach(
-        spec -> {
+    final List<JsonNode> allSpecs = new ArrayList<>();
+
+    allSpecs.addAll(sourceSpecs);
+    allSpecs.addAll(destinationSpecs);
+
+    Assertions.assertThat(allSpecs)
+        .flatMap(spec -> {
           try {
             JsonSchemas.traverseJsonSchema(spec, (node, path) -> {});
+            return Collections.emptyList();
           } catch (final Exception e) {
             log.error("failed on: " + spec.toString(), e);
+            return List.of(e);
           }
-        }
-    );
+        })
+        .isEmpty();
   }
+
 }
