@@ -7,24 +7,31 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.util.HashMap;
 
 public class RecordSchemaValidator {
+  private final HashMap<String, JsonNode> streams;
 
-  public void validateSchema(final AirbyteMessage message, final StandardSyncInput syncInput) throws RecordSchemaValidationException {
-    // the stream this message corresponds to
-    final String messageStream = message.getRecord().getStream();
-    final JsonNode messageData = message.getRecord().getData();
+  public RecordSchemaValidator(final StandardSyncInput syncInput) {
     final String streamPrefix = syncInput.getPrefix();
 
-    // the stream name and json schema
-    final ConfiguredAirbyteStream matchingAirbyteStream = syncInput.getCatalog().getStreams().stream()
-        .filter(s -> (String.format(streamPrefix + s.getStream().getName().trim()).equals((messageStream.trim())))).findFirst().orElse(null);
+    // streams is populated with a stream name (including prefix) and stream schema
+    // for easy access when we check each record's schema
+    this.streams = new HashMap<String, JsonNode>();
+    syncInput.getCatalog().getStreams().forEach(s -> {
+      streams.put(String.format(streamPrefix + s.getStream().getName().trim()), s.getStream().getJsonSchema());
+    });
+  }
 
-    final JsonNode matchingSchema = matchingAirbyteStream.getStream().getJsonSchema();
+  public void validateSchema(final AirbyteRecordMessage message) throws RecordSchemaValidationException {
+    // the stream this message corresponds to
+    final String messageStream = message.getStream();
+    final JsonNode messageData = message.getData();
+    final JsonNode matchingSchema = streams.get(messageStream);
 
     final JsonSchemaValidator validator = new JsonSchemaValidator();
 

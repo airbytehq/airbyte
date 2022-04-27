@@ -31,14 +31,14 @@ public class RecordSchemaValidatorTest {
 
   @Test
   void testValidateValidSchema() throws Exception {
-    final RecordSchemaValidator recordSchemaValidator = mock(RecordSchemaValidator.class);
-    recordSchemaValidator.validateSchema(VALID_RECORD, syncInput);
+    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(syncInput);
+    recordSchemaValidator.validateSchema(VALID_RECORD.getRecord());
   }
 
   @Test
   void testValidateInvalidSchema() throws Exception {
-    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator();
-    assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD, syncInput));
+    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(syncInput);
+    assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord()));
   }
 
 }

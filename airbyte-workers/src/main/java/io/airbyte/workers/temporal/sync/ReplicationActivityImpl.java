@@ -21,6 +21,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.DefaultReplicationWorker;
+import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerApp.ContainerOrchestratorConfig;
@@ -210,7 +211,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
-          new AirbyteMessageTracker());
+          new AirbyteMessageTracker(),
+          new RecordSchemaValidator(syncInput));
     };
   }
 

@@ -75,15 +75,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteSource source,
                                   final AirbyteMapper mapper,
                                   final AirbyteDestination destination,
-                                  final MessageTracker messageTracker) {
-    this(jobId, attempt, source, mapper, destination, messageTracker, new RecordSchemaValidator());
-  }
-
-  public DefaultReplicationWorker(final String jobId,
-                                  final int attempt,
-                                  final AirbyteSource source,
-                                  final AirbyteMapper mapper,
-                                  final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator) {
     this.jobId = jobId;
@@ -305,7 +296,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             if (message.getRecord() != null) {
               try {
-                recordSchemaValidator.validateSchema(message, syncInput);
+                recordSchemaValidator.validateSchema(message.getRecord());
               } catch (final RecordSchemaValidationException e) {
                 LOGGER.warn(e.getMessage());
               }
