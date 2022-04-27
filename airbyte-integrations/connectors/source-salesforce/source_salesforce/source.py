@@ -14,7 +14,7 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, IncrementalSalesforceStream, SalesforceStream
+from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalSalesforceStream, SalesforceStream
 
 
 class SourceSalesforce(AbstractSource):
@@ -78,7 +78,9 @@ class SourceSalesforce(AbstractSource):
     def streams(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog = None, state: Mapping[str, Any] = None) -> List[Stream]:
         sf = self._get_sf_object(config)
         stream_objects = sf.get_validated_streams(config=config, catalog=catalog)
-        return self.generate_streams(config, stream_objects, sf, state=state)
+        streams = self.generate_streams(config, stream_objects, sf, state=state)
+        streams.append(Describe(sf_api=sf, catalog=catalog))
+        return streams
 
     def read(
         self,
