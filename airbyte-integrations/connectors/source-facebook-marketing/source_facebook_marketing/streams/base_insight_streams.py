@@ -95,6 +95,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         Facebook freezes insight data 28 days after it was generated, which means that all data
         from the past 28 days may have changed since we last emitted it, so we retrieve it again.
+        But in some cases users my have define their own lookback window, thats
+        why the value for `insights_lookback_window` is set throught config.
         """
         return pendulum.duration(days=self._insights_lookback_window)
 
