@@ -37,6 +37,8 @@ class FBMarketingStream(Stream, ABC):
 
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    timezone = pendulum.timezone("utc")
+    max_days_per_slice = 60
 
     # number of records per page when response has pagination
     page_size = 100
@@ -166,11 +168,11 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
-        start_date = self.get_date(parse_date(cursor_value, self.timezone), self.start_date, max)
+        start_date = self.get_date(parse_date(cursor_value, self.timezone), self._start_date, max)
         return self.chunk_date_range(start_date)
 
     def start_date_abnormal(self, start_date: datetime) -> bool:
-        return start_date >= self.end_date
+        return start_date >= self._end_date
 
     def get_date(self, cursor_value: Any, default_date: datetime, comparator: Callable[[datetime, datetime], datetime]) -> datetime:
         cursor_value = parse_date(cursor_value or default_date, self.timezone)
@@ -179,8 +181,8 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     def chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
         dates = []
-        delta = timedelta(days=self.intervals)
-        while start_date <= self.end_date:
+        delta = timedelta(days=self.max_days_per_slice)
+        while start_date <= self._end_date:
             end_date = self.get_date(start_date + delta, self._end_date, min)
             dates.append({self.cursor_field: start_date, self.cursor_field + "_end": end_date})
             start_date += delta
