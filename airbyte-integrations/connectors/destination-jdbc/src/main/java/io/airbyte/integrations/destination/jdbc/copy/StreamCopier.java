@@ -77,4 +77,5 @@ public interface StreamCopier {
    * @return current staging file name
    */
   String getCurrentFile();
+
 }
