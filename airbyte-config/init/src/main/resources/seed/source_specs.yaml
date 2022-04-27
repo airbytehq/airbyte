@@ -511,7 +511,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-apify-dataset:0.1.9"
+- dockerImage: "airbyte/source-apify-dataset:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/apify-dataset"
     connectionSpecification:
@@ -1126,7 +1126,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-clickhouse:0.1.8"
+- dockerImage: "airbyte/source-clickhouse:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1304,7 +1304,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.10"
+- dockerImage: "airbyte/source-cockroachdb:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -4667,7 +4667,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.19"
+- dockerImage: "airbyte/source-mssql:0.3.21"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -5366,7 +5366,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.6"
+- dockerImage: "airbyte/source-mysql:0.5.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -5637,7 +5637,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-openweather:0.1.1"
+- dockerImage: "airbyte/source-openweather:0.1.4"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -5971,7 +5971,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-orb:0.1.1"
+- dockerImage: "airbyte/source-orb:0.1.2"
   spec:
     documentationUrl: "https://docs.withorb.com/"
     connectionSpecification:
@@ -6266,7 +6266,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pipedrive:0.1.9"
+- dockerImage: "airbyte/source-pipedrive:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/pipedrive"
     connectionSpecification:
@@ -6476,7 +6476,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.10"
+- dockerImage: "airbyte/source-postgres:0.4.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7955,7 +7955,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.10"
+- dockerImage: "airbyte/source-snowflake:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -7968,10 +7968,77 @@
       - "warehouse"
       - "database"
       - "schema"
-      - "username"
-      - "password"
-      additionalProperties: false
+      additionalProperties: true
       properties:
+        credentials:
+          title: "Authorization Method"
+          type: "object"
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            order: 0
+            required:
+            - "client_id"
+            - "client_secret"
+            - "auth_type"
+            properties:
+              auth_type:
+                type: "string"
+                const: "OAuth"
+                default: "OAuth"
+                order: 0
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your Snowflake developer application."
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: "string"
+                title: "Client Secret"
+                description: "The Client Secret of your Snowflake developer application."
+                airbyte_secret: true
+                order: 2
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "Access Token for making authenticated requests."
+                airbyte_secret: true
+                order: 3
+              refresh_token:
+                type: "string"
+                title: "Refresh Token"
+                description: "Refresh Token for making authenticated requests."
+                airbyte_secret: true
+                order: 4
+          - title: "Username and Password"
+            type: "object"
+            required:
+            - "username"
+            - "password"
+            - "auth_type"
+            order: 1
+            properties:
+              auth_type:
+                type: "string"
+                const: "username/password"
+                default: "username/password"
+                order: 0
+              username:
+                description: "The username you created to allow Airbyte to access\
+                  \ the database."
+                examples:
+                - "AIRBYTE_USER"
+                type: "string"
+                title: "Username"
+                order: 1
+              password:
+                description: "The password associated with the username."
+                type: "string"
+                airbyte_secret: true
+                title: "Password"
+                order: 2
+          order: 0
         host:
           description: "The host domain of the snowflake instance (must include the\
             \ account, region, cloud environment, and end with snowflakecomputing.com)."
@@ -7979,58 +8046,96 @@
           - "accountname.us-east-2.aws.snowflakecomputing.com"
           type: "string"
           title: "Account Name"
-          order: 0
+          order: 1
         role:
           description: "The role you created for Airbyte to access Snowflake."
           examples:
           - "AIRBYTE_ROLE"
           type: "string"
           title: "Role"
-          order: 1
+          order: 2
         warehouse:
           description: "The warehouse you created for Airbyte to access data."
           examples:
           - "AIRBYTE_WAREHOUSE"
           type: "string"
           title: "Warehouse"
-          order: 2
+          order: 3
         database:
           description: "The database you created for Airbyte to access data."
           examples:
           - "AIRBYTE_DATABASE"
           type: "string"
           title: "Database"
-          order: 3
+          order: 4
         schema:
           description: "The source Snowflake schema tables."
           examples:
           - "AIRBYTE_SCHEMA"
           type: "string"
           title: "Schema"
-          order: 4
-        username:
-          description: "The username you created to allow Airbyte to access the database."
-          examples:
-          - "AIRBYTE_USER"
-          type: "string"
-          title: "Username"
           order: 5
-        password:
-          description: "The password associated with the username."
-          type: "string"
-          airbyte_secret: true
-          title: "Password"
-          order: 6
         jdbc_url_params:
           description: "Additional properties to pass to the JDBC URL string when\
             \ connecting to the database formatted as 'key=value' pairs separated\
             \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
           title: "JDBC URL Params"
           type: "string"
-          order: 7
+          order: 6
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "credentials"
+      - "auth_type"
+      predicate_value: "OAuth"
+      oauth_config_specification:
+        oauth_user_input_from_connector_config_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            host:
+              type: "string"
+              path_in_connector_config:
+              - "host"
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "access_token"
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "refresh_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_secret"
 - dockerImage: "airbyte/source-square:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/square"
