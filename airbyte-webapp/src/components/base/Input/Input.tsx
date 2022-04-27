@@ -19,10 +19,10 @@ const getBackgroundColor = (props: IStyleProps) => {
   return props.theme.greyColor0;
 };
 
-export type InputProps = {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   light?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+}
 
 const InputContainer = styled.div<InputProps>`
   width: 100%;
