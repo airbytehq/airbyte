@@ -12,7 +12,6 @@ dependencies {
     implementation project(":airbyte-json-validation")
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:persistence')
-    // implementation project(':airbyte-scheduler:models')
 
     implementation 'io.temporal:temporal-sdk:1.8.1'
     implementation "org.flywaydb:flyway-core:7.14.0"

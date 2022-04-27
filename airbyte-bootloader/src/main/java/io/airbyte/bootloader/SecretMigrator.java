@@ -162,7 +162,7 @@ public class SecretMigrator {
         connectorConfigurationJson.set(JsonPaths.replaceAtJsonNode(connectorConfigurationJson.get(), secretPath,
             Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinate.getFullCoordinate()))));
       } else {
-        log.error("Not migrating already migrating secrets");
+        log.error("Not migrating already migrated secrets");
       }
 
     });
