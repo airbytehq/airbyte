@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { Button, H2 } from "components/base";
 
-interface Props {
+interface EmptyResourceListViewProps {
   resourceType: "connections" | "destinations" | "sources";
   onCreateClick: () => void;
   disableCreateButton?: boolean;
@@ -57,7 +57,11 @@ export const BowtieImg = styled.img`
   }
 `;
 
-export const EmptyResourceListState: React.FC<Props> = ({ resourceType, onCreateClick, disableCreateButton }) => {
+export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
+  resourceType,
+  onCreateClick,
+  disableCreateButton,
+}) => {
   const { headingMessageId, buttonMessageId, singularResourceType } = useMemo(() => {
     const singularResourceType = resourceType.substring(0, resourceType.length - 1);
     const baseMessageId = resourceType === "connections" ? singularResourceType : resourceType;

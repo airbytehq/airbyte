@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import { Theme } from "theme";
 
-import { IProps } from "./types";
+import { ButtonProps } from "./types";
 
-type IStyleProps = IProps & { theme: Theme };
+type IStyleProps = ButtonProps & { theme: Theme };
 
 const getBorderColor = (props: IStyleProps) => {
   if ((props.secondary && props.wasActive) || props.iconOnly) {
@@ -96,7 +96,7 @@ const getPadding = (props: IStyleProps) => {
   return "5px 16px";
 };
 
-const Button = styled.button<IProps>`
+const Button = styled.button<ButtonProps>`
   width: ${(props) => (props.full ? "100%" : "auto")};
   display: ${(props) => (props.full ? "block" : "inline-block")};
   border: 1px solid ${(props) => getBorderColor(props)};
