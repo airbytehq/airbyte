@@ -52,7 +52,7 @@ class EnquireLabsStream(HttpStream, ABC):
         Returns:request response
         """
         json_response = response.json()
-        for record in json_response["data"]:
+        for record in json_response.get("data"):
             yield record
 
 
@@ -138,7 +138,7 @@ class QuestionResponseStream(IncrementalEnquireLabsStream):
     ) -> MutableMapping[str, Any]:
         """
         Ref: https://docs.enquirelabs.com/docs
-        This method use to add query params in requested URL
+        Adds query params in requested URL.
         """
         params = {
             "since": self.since,
@@ -153,7 +153,7 @@ class QuestionResponseStream(IncrementalEnquireLabsStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Ref: https://docs.enquirelabs.com/docs
-        This method to define a pagination strategy
+        Implements the pagination approach for stream.
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
