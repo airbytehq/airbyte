@@ -2,6 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import itertools
 import logging
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -17,6 +18,11 @@ from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobM
 from .base_streams import FBMarketingIncrementalStream
 
 logger = logging.getLogger("airbyte")
+
+
+def grouper(it: Iterator, n: int) -> Iterator[list]:
+    while chunck := list(itertools.islice(it, n)):
+        yield chunck
 
 
 class AdsInsights(FBMarketingIncrementalStream):
@@ -251,17 +257,34 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Works differently for insights, so remove it"""
         return {}
 
+    def allOf_hacked(self, props: Mapping[str, Any]) -> Mapping[str, Any]:
+        hacked_props: List[Mapping[str, Any]] = []
+        for chunk in grouper(iter(props.items()), 64):
+            hacked_props.append({"properties": dict(chunk)})
+        return {"type": "object", "allOf": hacked_props}
+
     def get_json_schema(self) -> Mapping[str, Any]:
         """Add fields from breakdowns to the stream schema
         :return: A dict of the JSON schema representing this stream.
         """
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
         schema = loader.get_schema("ads_insights")
+
+        props = (
+            schema["properties"]
+            if "properties" in schema
+            else {key: value for d in schema["allOf"] for key, value in d["properties"].items()}
+        )
         if self._fields:
-            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
+            props = {k: v for k, v in props.items() if k in self._fields}
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
-            schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
+            props.update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
+
+        if "properties" in schema:
+            schema["properties"] = props
+        else:
+            schema["allOf"] = self.allOf_hacked(props)["allOf"]
         return schema
 
     @cached_property
@@ -270,4 +293,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         if self._fields:
             return self._fields
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
-        return list(schema.get("properties", {}).keys())
+        props = (
+            schema["properties"]
+            if "properties" in schema
+            else {key: value for d in schema["allOf"] for key, value in d["properties"].items()}
+        )
+        return list(props.keys())
