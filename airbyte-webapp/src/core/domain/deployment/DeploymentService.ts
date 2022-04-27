@@ -1,5 +1,5 @@
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
-import { exportArchive, importArchive } from "../../request/GeneratedApi";
+import { AirbyteArchive, exportArchive, importArchive } from "../../request/GeneratedApi";
 
 export class DeploymentService extends AirbyteRequestService {
   public async exportDeployment() {
@@ -7,7 +7,7 @@ export class DeploymentService extends AirbyteRequestService {
     return window.URL.createObjectURL(blob);
   }
 
-  public async importDeployment(file: Blob) {
+  public async importDeployment(file: AirbyteArchive) {
     await importArchive(file, this.requestOptions);
   }
 }

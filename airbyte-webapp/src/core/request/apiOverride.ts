@@ -7,6 +7,18 @@ export interface ApiOverrideRequestOptions {
   signal?: RequestInit["signal"];
 }
 
+function getRequestBody<U>(data: U) {
+  const stringifiedData = JSON.stringify(data);
+  const nonJsonObject = stringifiedData === "{}";
+  if (nonJsonObject) {
+    // The app tries to stringify blobs which results in broken functionality.
+    // There may be some edge cases where we pass in an empty object.
+    // @ts-expect-error There may be a better way to do this, but for now it solves the problem.
+    return data as BodyInit;
+  }
+  return stringifiedData;
+}
+
 export const apiOverride = async <T, U = unknown>(
   {
     url,
@@ -37,10 +49,13 @@ export const apiOverride = async <T, U = unknown>(
 
   const response = await fetch(`${requestUrl}${new URLSearchParams(params)}`, {
     method,
-    ...(data ? { body: JSON.stringify(data) } : {}),
+    ...(data ? { body: getRequestBody(data) } : {}),
     headers,
     signal: options.signal,
   });
 
-  return responseType === "blob" ? response.blob() : response.json();
+  // TODO: For some reason some responses that return blobs do not have `responseType: "blob"` generated
+  return responseType === "blob" || response.headers.get("Content-Type") === "application/x-gzip"
+    ? response.blob()
+    : response.json();
 };
