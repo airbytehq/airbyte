@@ -228,7 +228,7 @@ jobs:
       - name: Test ${{ github.event.inputs.connector }}
         if: github.event.inputs.run-tests == 'true'
         run: |
-          ./gradlew
+          ./gradlew --tasks
       - name: Finalize Sentry release
         if: startsWith(github.event.inputs.connector, 'connectors')
         run: |
