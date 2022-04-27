@@ -3,26 +3,26 @@ import { FormattedMessage } from "react-intl";
 import { Route, Routes } from "react-router-dom";
 
 import { DropDownRow } from "components";
-import PageTitle from "components/PageTitle";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
+import { ConnectorIcon } from "components/ConnectorIcon";
+import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
-import HeadTitle from "components/HeadTitle";
+import PageTitle from "components/PageTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
-import { ConnectorIcon } from "components/ConnectorIcon";
 
-import { getIcon } from "utils/imageUtils";
-import useRouter from "hooks/useRouter";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetSource } from "hooks/services/useSourceHook";
+import useRouter from "hooks/useRouter";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { getIcon } from "utils/imageUtils";
 
-import { RoutePaths } from "../../../routePaths";
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
-import SourceSettings from "./components/SourceSettings";
+import { RoutePaths } from "../../../routePaths";
 import SourceConnectionTable from "./components/SourceConnectionTable";
+import SourceSettings from "./components/SourceSettings";
 
 const SourceItemPage: React.FC = () => {
   const { query, params, push } = useRouter<{ id: string }, { id: string; "*": string }>();
@@ -63,8 +63,8 @@ const SourceItemPage: React.FC = () => {
   );
 
   const onSelectStep = (id: string) => {
-    const path = id === StepsTypes.OVERVIEW ? "/" : `/${id.toLowerCase()}`;
-    push(`/source/${source.sourceId}${path}`);
+    const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
+    push(path);
   };
 
   const onSelect = (data: DropDownRow.IDataItem) => {

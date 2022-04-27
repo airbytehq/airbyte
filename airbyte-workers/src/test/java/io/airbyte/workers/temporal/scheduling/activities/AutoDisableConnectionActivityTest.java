@@ -7,10 +7,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static io.airbyte.config.EnvConfigs.DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE;
 import static io.airbyte.config.EnvConfigs.DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE;
 import static io.airbyte.scheduler.models.Job.REPLICATION_TYPES;
-import static io.airbyte.scheduler.persistence.JobNotifier.CONNECTION_DISABLED_NOTIFICATION;
-import static io.airbyte.scheduler.persistence.JobNotifier.CONNECTION_DISABLED_WARNING_NOTIFICATION;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.Configs;
@@ -90,6 +87,7 @@ class AutoDisableConnectionActivityTest {
     Mockito.when(mFeatureFlags.autoDisablesFailingConnections()).thenReturn(true);
     Mockito.when(mConfigs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable()).thenReturn(MAX_DAYS_OF_ONLY_FAILED_JOBS);
     Mockito.when(mJobPersistence.getLastReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
+    Mockito.when(mJobPersistence.getFirstReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
   }
 
   // test warnings
@@ -108,8 +106,8 @@ class AutoDisableConnectionActivityTest {
     final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
     assertThat(output.isDisabled()).isFalse();
     assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
-    Mockito.verify(mJobNotifier, Mockito.only()).autoDisableConnectionAlertWithoutCustomerioConfig(eq(CONNECTION_DISABLED_WARNING_NOTIFICATION),
-        Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.times(1)).autoDisableConnectionWarning(Mockito.any());
   }
 
   @Test
@@ -121,15 +119,14 @@ class AutoDisableConnectionActivityTest {
         .thenReturn(Collections.singletonList(FAILED_JOB));
 
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
-    Mockito.when(mJobPersistence.getFirstReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
     Mockito.when(mJob.getCreatedAtInSecond()).thenReturn(
         CURR_INSTANT.getEpochSecond() - TimeUnit.DAYS.toSeconds(MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_WARNING));
 
     final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
     assertThat(output.isDisabled()).isFalse();
     assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
-    Mockito.verify(mJobNotifier, Mockito.only()).autoDisableConnectionAlertWithoutCustomerioConfig(eq(CONNECTION_DISABLED_WARNING_NOTIFICATION),
-        Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.times(1)).autoDisableConnectionWarning(Mockito.any());
   }
 
   @Test
@@ -143,15 +140,35 @@ class AutoDisableConnectionActivityTest {
         CURR_INSTANT.minus(MAX_DAYS_OF_ONLY_FAILED_JOBS, ChronoUnit.DAYS))).thenReturn(jobs);
 
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
-    Mockito.when(mJobPersistence.getFirstReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
     Mockito.when(mJob.getCreatedAtInSecond()).thenReturn(mJobCreateOrUpdatedInSeconds);
     Mockito.when(mJob.getUpdatedAtInSecond()).thenReturn(mJobCreateOrUpdatedInSeconds);
 
     final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
     assertThat(output.isDisabled()).isFalse();
     assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
-    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionAlertWithoutCustomerioConfig(Mockito.anyString(),
-        Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionWarning(Mockito.any());
+  }
+
+  @Test
+  @DisplayName("Test that a notification warning is not sent after one was just sent for consecutive failures")
+  public void testWarningNotificationsDoesNotSpamAfterConsecutiveFailures() throws IOException {
+    final List<JobWithStatusAndTimestamp> jobs = new ArrayList<>(Collections.nCopies(MAX_FAILURE_JOBS_IN_A_ROW - 1, FAILED_JOB));
+    final long mJobCreateOrUpdatedInSeconds = CURR_INSTANT.getEpochSecond() - TimeUnit.DAYS.toSeconds(MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_WARNING);
+
+    Mockito.when(mConfigs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable()).thenReturn(MAX_DAYS_OF_ONLY_FAILED_JOBS);
+    Mockito.when(mJobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, REPLICATION_TYPES,
+        CURR_INSTANT.minus(MAX_DAYS_OF_ONLY_FAILED_JOBS, ChronoUnit.DAYS))).thenReturn(jobs);
+
+    Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
+    Mockito.when(mJob.getCreatedAtInSecond()).thenReturn(mJobCreateOrUpdatedInSeconds);
+    Mockito.when(mJob.getUpdatedAtInSecond()).thenReturn(mJobCreateOrUpdatedInSeconds);
+
+    final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
+    assertThat(output.isDisabled()).isFalse();
+    assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionWarning(Mockito.any());
   }
 
   @Test
@@ -163,13 +180,13 @@ class AutoDisableConnectionActivityTest {
         .thenReturn(Collections.singletonList(FAILED_JOB));
 
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
-    Mockito.when(mJobPersistence.getFirstReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
     Mockito.when(mJob.getCreatedAtInSecond()).thenReturn(CURR_INSTANT.getEpochSecond());
 
     final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
     assertThat(output.isDisabled()).isFalse();
     assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
-    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionAlertWithoutCustomerioConfig(Mockito.anyString(), Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionWarning(Mockito.any());
   }
 
   // test should disable / shouldn't disable cases
@@ -189,8 +206,8 @@ class AutoDisableConnectionActivityTest {
     final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
     assertThat(output.isDisabled()).isTrue();
     assertThat(standardSync.getStatus()).isEqualTo(Status.INACTIVE);
-    Mockito.verify(mJobNotifier, Mockito.only()).autoDisableConnectionAlertWithoutCustomerioConfig(eq(CONNECTION_DISABLED_NOTIFICATION),
-        Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionWarning(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.times(1)).autoDisableConnection(Mockito.any());
   }
 
   @Test
@@ -201,7 +218,6 @@ class AutoDisableConnectionActivityTest {
     jobs.add(SUCCEEDED_JOB);
 
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
-    Mockito.when(mJobPersistence.getFirstReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
     Mockito.when(mJobPersistence.listJobStatusAndTimestampWithConnection(CONNECTION_ID, REPLICATION_TYPES,
         CURR_INSTANT.minus(MAX_DAYS_OF_ONLY_FAILED_JOBS, ChronoUnit.DAYS))).thenReturn(jobs);
     Mockito.when(mJob.getCreatedAtInSecond()).thenReturn(
@@ -212,7 +228,8 @@ class AutoDisableConnectionActivityTest {
     assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
 
     // check that no notification has been sent
-    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionAlertWithoutCustomerioConfig(Mockito.anyString(), Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionWarning(Mockito.any());
   }
 
   @Test
@@ -224,7 +241,9 @@ class AutoDisableConnectionActivityTest {
     final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
     assertThat(output.isDisabled()).isFalse();
     assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
-    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionAlertWithoutCustomerioConfig(Mockito.anyString(), Mockito.any());
+
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionWarning(Mockito.any());
   }
 
   @Test
@@ -236,7 +255,6 @@ class AutoDisableConnectionActivityTest {
         .thenReturn(Collections.singletonList(FAILED_JOB));
 
     Mockito.when(mConfigs.getMaxFailedJobsInARowBeforeConnectionDisable()).thenReturn(MAX_FAILURE_JOBS_IN_A_ROW);
-    Mockito.when(mJobPersistence.getFirstReplicationJob(CONNECTION_ID)).thenReturn(Optional.of(mJob));
     Mockito.when(mJob.getCreatedAtInSecond()).thenReturn(
         CURR_INSTANT.getEpochSecond() - TimeUnit.DAYS.toSeconds(MAX_DAYS_OF_ONLY_FAILED_JOBS));
     Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);
@@ -244,8 +262,9 @@ class AutoDisableConnectionActivityTest {
     final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
     assertThat(output.isDisabled()).isTrue();
     assertThat(standardSync.getStatus()).isEqualTo(Status.INACTIVE);
-    Mockito.verify(mJobNotifier, Mockito.only()).autoDisableConnectionAlertWithoutCustomerioConfig(eq(CONNECTION_DISABLED_NOTIFICATION),
-        Mockito.any());
+
+    Mockito.verify(mJobNotifier, Mockito.times(1)).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionWarning(Mockito.any());
   }
 
   @Test
@@ -258,7 +277,8 @@ class AutoDisableConnectionActivityTest {
     final AutoDisableConnectionOutput output = autoDisableActivity.autoDisableFailingConnection(ACTIVITY_INPUT);
     assertThat(output.isDisabled()).isFalse();
     assertThat(standardSync.getStatus()).isEqualTo(Status.ACTIVE);
-    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionAlertWithoutCustomerioConfig(Mockito.anyString(), Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnection(Mockito.any());
+    Mockito.verify(mJobNotifier, Mockito.never()).autoDisableConnectionWarning(Mockito.any());
   }
 
 }

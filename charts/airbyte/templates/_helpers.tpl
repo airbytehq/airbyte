@@ -238,3 +238,14 @@ Construct comma separated list of key/value pairs from object (useful for ENV va
 {{- end -}}
 {{ join "," $kvList }}
 {{- end -}}
+
+{{/*
+Construct semi-colon delimited list of comma separated key/value pairs from array of objects (useful for ENV var values)
+*/}}
+{{- define "airbyte.flattenArrayMap" -}}
+{{- $mapList := list -}}
+{{- range $element := . -}}
+{{- $mapList = include "airbyte.flattenMap" $element | mustAppend $mapList -}}
+{{- end -}}
+{{ join ";" $mapList }}
+{{- end -}}
