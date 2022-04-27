@@ -279,6 +279,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             props = {k: v for k, v in props.items() if k in self._fields}
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
+            schema["required"].extend(self.breakdowns)
             props.update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
 
         if "properties" in schema:
