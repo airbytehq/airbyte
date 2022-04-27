@@ -131,7 +131,7 @@
   },
   "workflows": {
     "airbytehq/integration-test": {
-      "updated_at": "2121-12-31T23:59:59.000-05:00"
+      "updated_at": "2121-12-31T23:59:59Z"
     }
   }
 }

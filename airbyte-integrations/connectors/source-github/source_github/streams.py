@@ -8,6 +8,7 @@ from copy import deepcopy
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -201,6 +202,9 @@ class SemiIncrementalMixin:
             return "repository"
         return "organization"
 
+    def convert_cursor_value(self, value):
+        return value
+
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         if not self.is_sorted_descending:
@@ -213,7 +217,7 @@ class SemiIncrementalMixin:
         object and returning an updated state object.
         """
         slice_value = latest_record[self.__slice_key]
-        updated_state = latest_record[self.cursor_field]
+        updated_state = self.convert_cursor_value(latest_record[self.cursor_field])
         stream_state_value = current_stream_state.get(slice_value, {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
@@ -239,9 +243,10 @@ class SemiIncrementalMixin:
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record[self.cursor_field] > start_point:
+            cursor_value = self.convert_cursor_value(record[self.cursor_field])
+            if cursor_value > start_point:
                 yield record
-            elif self.is_sorted_descending and record[self.cursor_field] < start_point:
+            elif self.is_sorted_descending and cursor_value < start_point:
                 break
 
 
@@ -1041,6 +1046,9 @@ class Workflows(SemiIncrementalMixin, GithubStream):
         response = response.json().get("workflows")
         for record in response:
             yield self.transform(record=record, stream_slice=stream_slice)
+
+    def convert_cursor_value(self, value):
+        return pendulum.parse(value).in_tz(tz="UTC").format("YYYY-MM-DDTHH:mm:ss[Z]")
 
 
 class WorkflowRuns(GithubStream):
