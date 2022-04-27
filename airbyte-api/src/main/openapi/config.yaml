@@ -3218,6 +3218,9 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        sourceCatalogId:
+          type: string
+          format: uuid
     WebBackendConnectionUpdate:
       type: object
       required:
@@ -3258,6 +3261,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WebBackendOperationCreateOrUpdate"
+        sourceCatalogId:
+          type: string
+          format: uuid
     ConnectionRead:
       type: object
       required:

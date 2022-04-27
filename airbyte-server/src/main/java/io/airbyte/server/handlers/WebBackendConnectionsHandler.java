@@ -399,6 +399,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
+    connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
 
     return connectionUpdate;
   }
