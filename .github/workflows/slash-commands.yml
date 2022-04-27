@@ -22,6 +22,7 @@ jobs:
           commands: |
             test
             test-performance
+            publish
             bump-build-test-connector
             publish-external
             publish-cdk
