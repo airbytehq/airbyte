@@ -21,13 +21,13 @@ export const destinationsKeys = {
   list: (filters: string) => [...destinationsKeys.lists(), { filters }] as const,
   detail: (destinationId: string) => [...destinationsKeys.all, "details", destinationId] as const,
 };
-//
+
 type ValuesProps = {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
 };
-//
+
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
 function useDestinationService() {
