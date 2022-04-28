@@ -14,6 +14,7 @@ class SamplingSizeEstimatorTest {
   @Test
   public void testIt() {
     final long bufferByteSize = 120;
+    final int sampleSize = 2;
     final int sampleFrequency = 3;
     final long initialByteSize = 30;
     final int minFetchSize = 1;
@@ -21,6 +22,7 @@ class SamplingSizeEstimatorTest {
     final int maxFetchSize = 120;
     final SamplingSizeEstimator sizeEstimator = new SamplingSizeEstimator(
         bufferByteSize,
+        sampleSize,
         sampleFrequency,
         initialByteSize,
         minFetchSize,
@@ -43,7 +45,7 @@ class SamplingSizeEstimatorTest {
     sizeEstimator.accept("111");
     final Optional<Integer> fetchSize1 = sizeEstimator.getFetchSize();
     assertTrue(fetchSize1.isPresent());
-    meanByteSize = meanByteSize / 2.0 + 20 / 2.0;
+    meanByteSize = (meanByteSize + 20) / 2.0;
     assertDoubleEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
     assertDoubleEquals(bufferByteSize / meanByteSize, fetchSize1.get().doubleValue());
 
@@ -61,7 +63,7 @@ class SamplingSizeEstimatorTest {
     sizeEstimator.accept("111111");
     final Optional<Integer> fetchSize2 = sizeEstimator.getFetchSize();
     assertTrue(fetchSize2.isPresent());
-    meanByteSize = meanByteSize / 2.0 + 32 / 2.0;
+    meanByteSize = (meanByteSize + 32) / 2.0;
     assertDoubleEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
     assertDoubleEquals(bufferByteSize / meanByteSize, fetchSize2.get().doubleValue());
   }
