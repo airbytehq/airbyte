@@ -212,9 +212,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                         error={!!meta.error && meta.touched}
                         options={frequencies}
                         onChange={(item) => {
-                          if (onDropDownSelect) {
-                            onDropDownSelect(item);
-                          }
+                          onDropDownSelect?.(item);
                           setFieldValue(field.name, item.value);
                         }}
                       />
@@ -289,9 +287,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   dirty={dirty}
                   resetForm={() => {
                     resetForm();
-                    if (onCancel) {
-                      onCancel();
-                    }
+                    onCancel?.();
                   }}
                   successMessage={successMessage}
                   errorMessage={

@@ -14,7 +14,7 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "../../../../routePaths";
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
-interface Props {
+interface ConnectionPageTitleProps {
   source: Source;
   destination: Destination;
   connection: Connection;
@@ -43,7 +43,7 @@ const ConnectorsLink = styled(Link)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const ConnectionPageTitle: React.FC<Props> = ({ source, destination, connection, currentStep }) => {
+const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ source, destination, connection, currentStep }) => {
   const { push } = useRouter<{ id: string }>();
 
   const steps = [

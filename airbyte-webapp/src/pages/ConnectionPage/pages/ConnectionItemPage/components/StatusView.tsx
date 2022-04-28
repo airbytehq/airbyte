@@ -19,7 +19,7 @@ import { useListJobs } from "services/job/JobService";
 import JobsList from "./JobsList";
 import StatusMainInfo from "./StatusMainInfo";
 
-interface Props {
+interface StatusViewProps {
   connection: Connection;
   frequencyText?: string;
 }
@@ -51,7 +51,7 @@ const SyncButton = styled(LoadingButton)`
   min-height: 28px;
 `;
 
-const StatusView: React.FC<Props> = ({ connection, frequencyText }) => {
+const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
   const { hasFeature } = useFeatureService();

@@ -29,7 +29,7 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
-interface Props {
+interface TransformationViewProps {
   connection: Connection;
 }
 
@@ -110,7 +110,7 @@ const NormalizationCard: React.FC<{
   );
 };
 
-const TransformationView: React.FC<Props> = ({ connection }) => {
+const TransformationView: React.FC<TransformationViewProps> = ({ connection }) => {
   const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
