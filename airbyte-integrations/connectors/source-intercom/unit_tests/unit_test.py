@@ -295,7 +295,7 @@ def test_conversation_part_has_conversation_id(requests_mock, single_conversatio
     conversation_parts = ConversationParts(authenticator=NoAuth())
 
     record_count = 0
-    for record in conversation_parts.read_records(sync_mode=SyncMode.incremental, stream_slice={"parent":{"id": conversation_id}}):
+    for record in conversation_parts.read_records(sync_mode=SyncMode.incremental, stream_slice={"id": conversation_id}):
         assert record["conversation_id"] == "151272900024304"
         record_count += 1
 

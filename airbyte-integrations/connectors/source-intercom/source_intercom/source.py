@@ -10,6 +10,7 @@ from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -302,27 +303,36 @@ class Conversations(IncrementalIntercomStream):
         return "conversations"
 
 
-class ConversationParts(HttpSubStream, IncrementalIntercomStream):
+class ConversationParts(IncrementalIntercomStream):
     """Return list of all conversation parts.
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#retrieve-a-conversation
     Endpoint: https://api.intercom.io/conversations/<id>
     """
 
     data_fields = ["conversation_parts", "conversation_parts"]
-
+    
     def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
-        super().__init__(
-            parent=Conversations(authenticator=authenticator, start_date=start_date, **kwargs),
-            authenticator=authenticator,
-            start_date=start_date,
-            **kwargs
-        )
+        super().__init__(authenticator, start_date, **kwargs)
+        self.parent = Conversations(authenticator, start_date, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"/conversations/{stream_slice['parent']['id']}"
+        return f"/conversations/{stream_slice['id']}"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = super().parse_response(response=response, stream_state={})
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"id": record["id"]}
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        records = super().parse_response(response=response, stream_state={}, **kwargs)
         conversation_id = response.json().get("id")
         for conversation_part in records:
             conversation_part.setdefault("conversation_id", conversation_id)
