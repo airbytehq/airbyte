@@ -1387,9 +1387,6 @@ public abstract class DestinationAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = readMessagesFromFile(messagesFilename);
 
-    LOGGER.warn("configuredCatalog : {}", configuredCatalog);
-    LOGGER.warn("catalog : {}", catalog);
-
     if (supportsNormalization()) {
       LOGGER.info("Normalization is supported! Run test with normalization.");
       runAndCheckWithNormalization(messages, configuredCatalog, catalog);
