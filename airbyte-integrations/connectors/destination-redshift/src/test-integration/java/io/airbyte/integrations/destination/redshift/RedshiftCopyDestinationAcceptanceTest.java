@@ -130,7 +130,8 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
       switch (field.getDataType().getTypeName()) {
         case "varchar", "other":
           var stringValue = (value != null ? value.toString() : null);
-          if (stringValue != null && (stringValue.matches("^\\[.*\\]$") || stringValue.matches("^\\{.*\\}$"))) {
+          if (stringValue != null && (stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\[.*\\]$")
+              || stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\{.*\\}$"))) {
             node.set(field.getName(), Jsons.deserialize(stringValue));
           } else {
             node.put(field.getName(), stringValue);
