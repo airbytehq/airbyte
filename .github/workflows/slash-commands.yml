@@ -25,7 +25,6 @@ jobs:
             build-connector
             publish-connector
             publish
-            build-connector
             publish-external
             publish-cdk
             gke-kube-test
