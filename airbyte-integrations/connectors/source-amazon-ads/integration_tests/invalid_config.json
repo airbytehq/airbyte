@@ -1,6 +1,8 @@
 {
   "client_id": "client_id fake",
-  "client_secret": " client_secret fake",
+  "client_secret": "client_secret fake",
   "refresh_token": "refresh_token fake",
-  "scope": "scope"
+  "region": "NA",
+  "report_wait_timeout": 30,
+  "report_generation_max_retries": 5
 }
