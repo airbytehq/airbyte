@@ -22,6 +22,7 @@ repos:
             "pyproject.toml",
             "--dont-follow-links",
             "--jobs=-1",
+            "--profile=black",
           ]
         additional_dependencies: ["colorama"]
   - repo: https://github.com/pre-commit/mirrors-prettier
