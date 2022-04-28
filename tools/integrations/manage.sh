@@ -52,7 +52,7 @@ cmd_build() {
   # If running via the bump-build-test-connector job, re-tag gradle built image following candidate image pattern
   if [[ "$GITHUB_JOB" == "bump-build-test-connector" ]]; then
     docker tag "$image_name:dev" "$image_name:$image_candidate_tag"
-    # TODO: technically this should be pushed..
+    # TODO: docker push "$image_name:$image_candidate_tag"
   fi
 }
 
@@ -66,6 +66,8 @@ cmd_test() {
 }
 
 # Bumps connector version in Dockerfile, definitions.yaml file, and updates seeds with gradle.
+# This does not build or test, it solely manages the versions of connectors to be +1'd.
+#
 # NOTE: this does NOT update changelogs because the changelog markdown files do not have a reliable machine-readable
 # format to automatically handle this. Someday it could though: https://github.com/airbytehq/airbyte/issues/12031
 cmd_bump_version() {
@@ -76,7 +78,6 @@ cmd_bump_version() {
   bump_version="$2" || bump_version="patch"
 
   # Set local constants
-  connector_path="airbyte-integrations/connectors/destination-postgres"
   connector=${connector_path#airbyte-integrations/connectors/}
   if [[ "$connector" =~ "source-" ]]; then
     connector_type="source"
@@ -86,6 +87,7 @@ cmd_bump_version() {
     echo "Invalid connector_type from $connector"
     exit 1
   fi
+  definitions_path="./airbyte-config/init/src/main/resources/seed/${connector_type}_definitions.yaml"
   dockerfile="$connector_path/Dockerfile"
   master_dockerfile="/tmp/master_${connector}_dockerfile"
   # This allows getting the contents of a file without checking it out
@@ -94,13 +96,11 @@ cmd_bump_version() {
   # Current version always comes from master, this way we can always bump correctly relative to master
   # verses a potentially stale local branch
   current_version=$(_get_docker_image_version "$master_dockerfile")
+  local image_name; image_name=$(_get_docker_image_name "$dockerfile")
   rm "$master_dockerfile"
-  definitions_path="./airbyte-config/init/src/main/resources/seed/${connector_type}_definitions.yaml"
 
-  # Based on current version, decompose into major, minor, patch
+  ## Create bumped version
   IFS=. read -r major_version minor_version patch_version <<<"${current_version##*-}"
-
-  ## Create new version
   case "$bump_version" in
     "major")
       ((major_version++))
@@ -120,13 +120,15 @@ cmd_bump_version() {
   esac
 
   bumped_version="$major_version.$minor_version.$patch_version"
+  # This image should not already exist, if it does, something weird happened
+  _error_if_tag_exists "$image_name:$bumped_version"
   echo "$connector:$current_version will be bumped to $connector:$bumped_version"
 
   ## Write new version to files
-  # Dockerfile
+  # 1) Dockerfile
   sed -i "s/$current_version/$bumped_version/g" "$dockerfile"
 
-  # Definitions YAML file
+  # 2) Definitions YAML file
   definitions_check=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitions_path")
 
   if [[ (-z "$definitions_check") ]]; then
@@ -137,8 +139,10 @@ cmd_bump_version() {
   connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitions_path")
   yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
 
-  # Seed files
+  # 3) Seed files
   ./gradlew :airbyte-config:init:processResources
+
+  echo "Woohoo! Successfully bumped $connector:$current_version to $connector:$bumped_version"
 }
 
 cmd_publish() {
