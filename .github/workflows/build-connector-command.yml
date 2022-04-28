@@ -1,4 +1,4 @@
-name: Bump, Build, Test Connectors
+name: Bump, Build, Test Connectors [EXPERIMENTAL]
 on:
   workflow_dispatch:
     inputs:

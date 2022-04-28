@@ -1,4 +1,4 @@
-name: Publish Connector
+name: Publish Connector [EXPERIMENTAL]
 on:
   workflow_dispatch:
     inputs:
