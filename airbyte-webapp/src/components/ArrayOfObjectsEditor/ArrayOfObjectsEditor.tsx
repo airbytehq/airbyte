@@ -59,8 +59,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
 
   const isEditable = editableItemIndex !== null && editableItemIndex !== undefined;
-
-  if (mode === "edit" && isEditable) {
+  if (mode !== "readonly" && isEditable) {
     const item = typeof editableItemIndex === "number" ? items[editableItemIndex] : undefined;
     return (
       <Content>

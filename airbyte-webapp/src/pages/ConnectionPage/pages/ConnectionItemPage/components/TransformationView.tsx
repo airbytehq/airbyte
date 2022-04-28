@@ -63,7 +63,7 @@ const CustomTransformationsCard: React.FC<{
   );
 
   return (
-    <FormCard
+    <FormCard<{ transformations?: Transformation[] }>
       title={<FormattedMessage id="connection.customTransformations" />}
       collapsible
       bottomSeparator
@@ -96,7 +96,7 @@ const NormalizationCard: React.FC<{
   );
 
   return (
-    <FormCard
+    <FormCard<{ normalization?: NormalizationType }>
       form={{
         initialValues,
         onSubmit,

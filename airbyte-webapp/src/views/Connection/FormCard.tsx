@@ -1,4 +1,4 @@
-import { Form, Formik, FormikConfig } from "formik";
+import { Form, Formik, FormikConfig, FormikHelpers } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
 import { useMutation } from "react-query";
@@ -16,22 +16,28 @@ const FormContainer = styled(Form)`
   padding: 22px 27px 15px 24px;
 `;
 
-interface FormCardProps extends CollapsibleCardProps {
+interface FormCardProps<T> extends CollapsibleCardProps {
   bottomSeparator?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: FormikConfig<any>;
+  form: FormikConfig<T>;
   mode?: ConnectionFormMode;
 }
 
-export const FormCard: React.FC<FormCardProps> = ({ children, form, bottomSeparator = true, mode, ...props }) => {
+export function FormCard<T>({
+  children,
+  form,
+  bottomSeparator = true,
+  mode,
+  ...props
+}: React.PropsWithChildren<FormCardProps<T>>) {
   const { formatMessage } = useIntl();
 
   const { mutateAsync, error, reset, isSuccess } = useMutation<
-    unknown,
+    void,
     Error,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any
-  >(async ({ values, formikHelpers }) => form.onSubmit(values, formikHelpers));
+    { values: T; formikHelpers: FormikHelpers<T> }
+  >(async ({ values, formikHelpers }) => {
+    form.onSubmit(values, formikHelpers);
+  });
 
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
@@ -64,4 +70,4 @@ export const FormCard: React.FC<FormCardProps> = ({ children, form, bottomSepara
       )}
     </Formik>
   );
-};
+}
