@@ -30,7 +30,18 @@ public interface GenerateInputActivity {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  class SyncOutput {
+  class SyncInputWithAttemptNumber {
+
+    private int attemptNumber;
+    private long jobId;
+    private boolean reset;
+
+  }
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class GeneratedJobInput {
 
     private JobRunConfig jobRunConfig;
     private IntegrationLauncherConfig sourceLauncherConfig;
@@ -43,6 +54,12 @@ public interface GenerateInputActivity {
    * This generate the input needed by the child sync workflow
    */
   @ActivityMethod
-  SyncOutput getSyncWorkflowInput(SyncInput input);
+  GeneratedJobInput getSyncWorkflowInput(SyncInput input);
+
+  /**
+   * This generate the input needed by the child sync workflow
+   */
+  @ActivityMethod
+  GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(SyncInputWithAttemptNumber input);
 
 }

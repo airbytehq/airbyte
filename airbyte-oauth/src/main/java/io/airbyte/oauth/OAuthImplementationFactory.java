@@ -26,6 +26,7 @@ public class OAuthImplementationFactory {
 
   public OAuthImplementationFactory(final ConfigRepository configRepository, final HttpClient httpClient) {
     OAUTH_FLOW_MAPPING = ImmutableMap.<String, OAuthFlowImplementation>builder()
+        .put("airbyte/source-amazon-ads", new AmazonAdsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-asana", new AsanaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository, httpClient))
@@ -46,6 +47,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-linkedin-ads", new LinkedinAdsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-salesforce", new SalesforceOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-slack", new SlackOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-smartsheets", new SmartsheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snapchat-marketing", new SnapchatMarketingOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-square", new SquareOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-strava", new StravaOAuthFlow(configRepository, httpClient))
@@ -54,11 +56,14 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-youtube-analytics", new YouTubeAnalyticsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-drift", new DriftOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-zendesk-chat", new ZendeskChatOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-zendesk-support", new ZendeskSupportOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-monday", new MondayOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-zendesk-sunshine", new ZendeskSunshineOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-mailchimp", new MailchimpOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-shopify", new ShopifyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-tiktok-marketing", new TikTokMarketingOAuthFlow(configRepository, httpClient))
+        .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
         .build();
   }
 

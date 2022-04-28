@@ -1,14 +1,16 @@
-import React from "react";
 import { Field, FieldProps, Formik } from "formik";
-import * as yup from "yup";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
-import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { LoadingButton, LabeledInput, Link } from "components";
-import { FormTitle } from "../components/FormTitle";
-import { CloudRoutes } from "../../../cloudRoutes";
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
+
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+
+import { CloudRoutes } from "../../../cloudRoutes";
+import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
+import { FormTitle } from "../components/FormTitle";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -54,11 +56,7 @@ const ResetPasswordPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -67,11 +65,7 @@ const ResetPasswordPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton
-                type="submit"
-                isLoading={isSubmitting}
-                data-testid="login.resetPassword"
-              >
+              <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
                 <FormattedMessage id="login.resetPassword" />
               </LoadingButton>
             </BottomBlock>

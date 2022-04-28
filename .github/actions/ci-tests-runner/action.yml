@@ -26,19 +26,23 @@ inputs:
 runs:
   using: "composite"
   steps:
-
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: 3.9
+
+    - name: Install Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: "17"
 
     - name: Tests of CI
       shell: bash
       run: |
         # all CI python packages have the prefix "ci_"
         pip install --quiet tox==3.24.4
-        tox -r -c ./tools/tox_ci.ini
         pip install --quiet -e ./tools/ci_*
+        tox -r -c ./tools/tox_ci.ini
         echo "::echo::off"
 
     - name: Auth with gcloud CLI
@@ -52,20 +56,20 @@ runs:
       id: gcloud-tunnel
       shell: bash
       run: |
-          while true; do
-            PORT=$(( ((RANDOM<<15)|RANDOM) % 49152 + 10000 ))
-            status="$(nc -z 127.0.0.1 $PORT < /dev/null &>/dev/null; echo $?)"
-            if [ "${status}" != "0" ]; then
-                echo "$PORT is free to use";
-                break;
-            fi
-          done
-          IPS=($(hostname -I))
-          LOCAL_IP_PORT="${IPS[0]}:${PORT}"
-          gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP_PORT} --zone=europe-central2-a --project dataline-integration-testing &
-          echo ::set-output name=pid::$!
-          echo "::set-output name=sonar-host::http://${LOCAL_IP_PORT}/"
-          echo "::echo::on"
+        while true; do
+          PORT=$(( ((RANDOM<<15)|RANDOM) % 49152 + 10000 ))
+          status="$(nc -z 127.0.0.1 $PORT < /dev/null &>/dev/null; echo $?)"
+          if [ "${status}" != "0" ]; then
+              echo "$PORT is free to use";
+              break;
+          fi
+        done
+        IPS=($(hostname -I))
+        LOCAL_IP_PORT="${IPS[0]}:${PORT}"
+        gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP_PORT} --zone=europe-central2-a --project dataline-integration-testing &
+        echo ::set-output name=pid::$!
+        echo "::set-output name=sonar-host::http://${LOCAL_IP_PORT}/"
+        echo "::echo::on"
 
     - name: Python Tests
       id: ci-py-tests
@@ -82,10 +86,6 @@ runs:
       with:
         module-name: ${{ inputs.module-name }}
         module-folder: ${{ inputs.module-folder }}
-
-
-
-
 
     - name: Prepare SQ Options
       shell: bash
@@ -108,7 +108,11 @@ runs:
 
           [ -f ${{ steps.ci-py-tests.outputs.coverage-paths }} ] && OPTIONS+=("-Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}")
           [ -f ${{ steps.ci-py-tests.outputs.flake8-logs }} ] && OPTIONS+=("-Dsonar.python.flake8.reportPaths=${{ steps.ci-py-tests.outputs.flake8-logs }}")
+          # TODO: figure out how to make this check work for Java-based connectors
+          # See more in https://github.com/airbytehq/airbyte/issues/10924
+          cat ${REPORT_FOLDER}/*
         fi
+
         if [ ${{ inputs.module-lang }} == 'java' ]; then
              [ -d "./src/main/java" ] && OPTIONS+=("-Dsonar.sources=./src/main/java")
              [ -d "./src/test/java" ] && OPTIONS+=("-Dsonar.tests=./src/test/java")
@@ -140,17 +144,17 @@ runs:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
         SONAR_HOST_URL: ${{ steps.gcloud-tunnel.outputs.sonar-host }}
       with:
-          projectBaseDir: ${{ steps.create-sq-project.outputs.module_dir }}
-          args: >
-            -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
-            -Dsonar.verbose=true
-            -Dsonar.working.directory=/tmp/scannerwork
-            -Dsonar.language=${{ inputs.module-lang }}
-            -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.module_dir }}
-            -Dsonar.exclusions=reports/**,*.toml
-            -Dsonar.externalIssuesReportPaths=${{ steps.sq-options.outputs.external_reports }}
-            ${{ steps.sq-options.outputs.options }}
+        projectBaseDir: ${{ steps.create-sq-project.outputs.module_dir }}
+        args: >
+          -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
+          -Dsonar.verbose=true
+          -Dsonar.working.directory=/tmp/scannerwork
+          -Dsonar.language=${{ inputs.module-lang }}
+          -Dsonar.sourceEncoding=UTF-8
+          -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.module_dir }}
+          -Dsonar.exclusions=reports/**,*.toml,*_tests/**,setup.py,main.py
+          -Dsonar.externalIssuesReportPaths=${{ steps.sq-options.outputs.external_reports }}
+          ${{ steps.sq-options.outputs.options }}
 
     - name: Generate SonarQube Report
       shell: bash

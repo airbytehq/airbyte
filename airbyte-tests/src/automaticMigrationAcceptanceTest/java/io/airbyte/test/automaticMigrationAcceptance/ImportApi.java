@@ -18,6 +18,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.function.Consumer;
 
@@ -66,7 +67,7 @@ public class ImportApi {
             "importArchive call received non-success response",
             localVarResponse.headers(),
             localVarResponse.body() == null ? null
-                : new String(localVarResponse.body().readAllBytes()));
+                : new String(localVarResponse.body().readAllBytes(), StandardCharsets.UTF_8));
       }
       return new ApiResponse<ImportRead>(
           localVarResponse.statusCode(),

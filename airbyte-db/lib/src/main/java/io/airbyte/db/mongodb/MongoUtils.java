@@ -4,20 +4,23 @@
 
 package io.airbyte.db.mongodb;
 
+import static java.util.Arrays.asList;
 import static org.bson.BsonType.ARRAY;
 import static org.bson.BsonType.DOCUMENT;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.util.DateTime;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.mongodb.DBRefCodecProvider;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,6 +39,9 @@ import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.BsonType;
 import org.bson.Document;
+import org.bson.codecs.*;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.jsr310.Jsr310CodecProvider;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.bson.types.Symbol;
@@ -51,14 +57,14 @@ public class MongoUtils {
   private static final String AIRBYTE_SUFFIX = "_aibyte_transform";
   private static final int DISCOVER_LIMIT = 10000;
 
-  public static JsonSchemaPrimitive getType(final BsonType dataType) {
+  public static JsonSchemaType getType(final BsonType dataType) {
     return switch (dataType) {
-      case BOOLEAN -> JsonSchemaPrimitive.BOOLEAN;
-      case INT32, INT64, DOUBLE, DECIMAL128 -> JsonSchemaPrimitive.NUMBER;
-      case STRING, SYMBOL, BINARY, DATE_TIME, TIMESTAMP, OBJECT_ID, REGULAR_EXPRESSION, JAVASCRIPT -> JsonSchemaPrimitive.STRING;
-      case ARRAY -> JsonSchemaPrimitive.ARRAY;
-      case DOCUMENT, JAVASCRIPT_WITH_SCOPE -> JsonSchemaPrimitive.OBJECT;
-      default -> JsonSchemaPrimitive.STRING;
+      case BOOLEAN -> JsonSchemaType.BOOLEAN;
+      case INT32, INT64, DOUBLE, DECIMAL128 -> JsonSchemaType.NUMBER;
+      case STRING, SYMBOL, BINARY, DATE_TIME, TIMESTAMP, OBJECT_ID, REGULAR_EXPRESSION, JAVASCRIPT -> JsonSchemaType.STRING;
+      case ARRAY -> JsonSchemaType.ARRAY;
+      case DOCUMENT, JAVASCRIPT_WITH_SCOPE -> JsonSchemaType.OBJECT;
+      default -> JsonSchemaType.STRING;
     };
   }
 
@@ -263,7 +269,20 @@ public class MongoUtils {
 
   private static BsonDocument toBsonDocument(final Document document) {
     try {
-      return document.toBsonDocument();
+      CodecRegistry customCodecRegistry =
+          fromProviders(asList(
+              new ValueCodecProvider(),
+              new BsonValueCodecProvider(),
+              new DocumentCodecProvider(),
+              new IterableCodecProvider(),
+              new MapCodecProvider(),
+              new Jsr310CodecProvider(),
+              new JsonObjectCodecProvider(),
+              new BsonCodecProvider(),
+              new DBRefCodecProvider()));
+
+      // Override the default codec registry
+      return document.toBsonDocument(BsonDocument.class, customCodecRegistry);
     } catch (final Exception e) {
       LOGGER.error("Exception while converting Document to BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);

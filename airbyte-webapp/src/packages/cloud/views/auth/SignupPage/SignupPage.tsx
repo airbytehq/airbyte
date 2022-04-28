@@ -1,29 +1,25 @@
-import React from "react";
-import * as yup from "yup";
-import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Formik } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import * as yup from "yup";
+
+import { H1, LabeledInput, Link, LoadingButton } from "components";
 
 import { useConfig } from "config";
-
-import {
-  BottomBlock,
-  FieldItem,
-  Form,
-  RowFieldItem,
-} from "../components/FormComponents";
-import { H1, LabeledInput, Link, LoadingButton } from "components";
-import CheckBoxControl from "../components/CheckBoxControl";
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+
+import CheckBoxControl from "../components/CheckBoxControl";
+import { BottomBlock, FieldItem, Form, RowFieldItem } from "../components/FormComponents";
 import SpecialBlock from "./components/SpecialBlock";
 
 type FormValues = {
   name: string;
-  company: string;
+  companyName: string;
   email: string;
   password: string;
-  subscribe: boolean;
+  news: boolean;
   security: boolean;
 };
 
@@ -33,12 +29,9 @@ const MarginBlock = styled.div`
 
 const SignupPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
-  password: yup
-    .string()
-    .min(6, "signup.password.minLength")
-    .required("form.empty.error"),
+  password: yup.string().min(12, "signup.password.minLength").required("form.empty.error"),
   name: yup.string().required("form.empty.error"),
-  company: yup.string().required("form.empty.error"),
+  companyName: yup.string().required("form.empty.error"),
   security: yup.boolean().oneOf([true], "form.empty.error"),
 });
 
@@ -58,10 +51,10 @@ const SignupPage: React.FC = () => {
       <Formik<FormValues>
         initialValues={{
           name: "",
-          company: "",
+          companyName: "",
           email: "",
           password: "",
-          subscribe: true,
+          news: true,
           security: false,
         }}
         validationSchema={SignupPageValidationSchema}
@@ -90,15 +83,11 @@ const SignupPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
-              <Field name="company">
+              <Field name="companyName">
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
@@ -108,11 +97,7 @@ const SignupPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -128,11 +113,7 @@ const SignupPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -148,17 +129,13 @@ const SignupPage: React.FC = () => {
                     })}
                     type="password"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
             </FieldItem>
             <FieldItem>
-              <Field name="subscribe">
+              <Field name="news">
                 {({ field, meta }: FieldProps<string>) => (
                   <MarginBlock>
                     <CheckBoxControl
@@ -166,11 +143,7 @@ const SignupPage: React.FC = () => {
                       checked={!!field.value}
                       checkbox
                       label={<FormattedMessage id="login.subscribe" />}
-                      message={
-                        meta.touched &&
-                        meta.error &&
-                        formatMessage({ id: meta.error })
-                      }
+                      message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                     />
                   </MarginBlock>
                 )}
@@ -186,34 +159,20 @@ const SignupPage: React.FC = () => {
                       <FormattedMessage
                         id="login.security"
                         values={{
-                          terms: (...terms: React.ReactNode[]) => (
-                            <Link
-                              $clear
-                              target="_blank"
-                              href={config.ui.termsLink}
-                              as="a"
-                            >
+                          terms: (terms: React.ReactNode) => (
+                            <Link $clear target="_blank" href={config.ui.termsLink} as="a">
                               {terms}
                             </Link>
                           ),
-                          privacy: (...privacy: React.ReactNode[]) => (
-                            <Link
-                              $clear
-                              target="_blank"
-                              href={config.ui.privacyLink}
-                              as="a"
-                            >
+                          privacy: (privacy: React.ReactNode) => (
+                            <Link $clear target="_blank" href={config.ui.privacyLink} as="a">
                               {privacy}
                             </Link>
                           ),
                         }}
                       />
                     }
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
@@ -221,11 +180,7 @@ const SignupPage: React.FC = () => {
             <BottomBlock>
               <>
                 <div />
-                <LoadingButton
-                  type="submit"
-                  isLoading={isSubmitting}
-                  disabled={!isValid}
-                >
+                <LoadingButton type="submit" isLoading={isSubmitting} disabled={!isValid}>
                   <FormattedMessage id="login.signup" />
                 </LoadingButton>
               </>

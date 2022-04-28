@@ -7,11 +7,13 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
 
 public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTest {
 
-  protected static JdbcDatabase createDatabase(final JsonNode config) {
+  @Override
+  protected JdbcDatabase createDatabase(final JsonNode config) {
     return Databases.createJdbcDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -20,8 +22,8 @@ public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTes
             config.get("port").asText(),
             config.get("database").asText()),
         RedshiftSource.DRIVER_CLASS,
-        "ssl=true;" +
-            "sslfactory=com.amazon.redshift.ssl.NonValidatingFactory");
+        JdbcUtils.parseJdbcParameters("ssl=true&" +
+            "sslfactory=com.amazon.redshift.ssl.NonValidatingFactory"));
   }
 
 }

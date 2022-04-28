@@ -84,12 +84,12 @@ def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: i
 
     with open(filepath, "ab") as f:
         while True:
-            file_size = os.stat(filepath).st_size / (1024 ** 3)
+            file_size = os.stat(filepath).st_size / (1024**3)
             if file_size > size_in_gigabytes:
                 break
             with open(temp_files[0], "rb") as tf:  # type: ignore[assignment]
                 with open(temp_files[1], "wb") as tf2:
-                    buf = tf.read(50 * 1024 ** 2)  # by 50Mb
+                    buf = tf.read(50 * 1024**2)  # by 50Mb
                     if buf:
                         f.write(buf)  # type: ignore[arg-type]
                         tf2.write(buf)  # type: ignore[arg-type]
@@ -368,7 +368,7 @@ class TestCsvParser(AbstractTestParser):
         self.logger.info(f"generated file {filepath} with size {file_size}Gb, lines: {expected_count}")
         for _ in range(3):
             parser = CsvParser(
-                format={"filetype": self.filetype, "block_size": 5 * 1024 ** 2},
+                format={"filetype": self.filetype, "block_size": 5 * 1024**2},
                 master_schema=schema,
             )
             expected_file = open(filepath, "r")

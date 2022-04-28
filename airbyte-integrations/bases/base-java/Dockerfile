@@ -18,5 +18,5 @@ ENV SENTRY_DSN="https://981e729cf92840628b29121e96e958f7@o1009025.ingest.sentry.
 ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
 ENTRYPOINT ["/airbyte/base.sh"]
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.1
 LABEL io.airbyte.name=airbyte/integration-base-java

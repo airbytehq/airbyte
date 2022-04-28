@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
 
@@ -23,23 +23,11 @@ type EditorHeaderProps = {
   onAddItem: () => void;
 };
 
-const EditorHeader: React.FC<EditorHeaderProps> = ({
-  itemsCount,
-  onAddItem,
-  mainTitle,
-  addButtonText,
-}) => {
+const EditorHeader: React.FC<EditorHeaderProps> = ({ itemsCount, onAddItem, mainTitle, addButtonText }) => {
   return (
     <Content>
-      {mainTitle || (
-        <FormattedMessage id="form.items" values={{ count: itemsCount }} />
-      )}
-      <Button
-        secondary
-        type="button"
-        onClick={onAddItem}
-        data-testid="addItemButton"
-      >
+      {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
+      <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton">
         {addButtonText || <FormattedMessage id="form.addItems" />}
       </Button>
     </Content>

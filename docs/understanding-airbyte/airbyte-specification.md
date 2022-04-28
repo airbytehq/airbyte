@@ -26,7 +26,7 @@ This document is focused on the interfaces and primitives around connectors. You
 
 * **Airbyte Worker** - This is a core piece of the Airbyte stack that is responsible for 1\) initializing a Source and a Destinations and 2\) passing data from Source to Destination.
   * Someone implementing a connector need not ever touch this code, but in this article we mention it to contextualize how data is flowing through Airbyte.
-* **Connector** - A connector is code that allows Airbyte to interact with a specific underlying data source \(e.g. Postgres\). In Airbyte, an integration is either a Source or a Destination.
+* **Connector** - A connector is a code that allows Airbyte to interact with a specific underlying data source \(e.g. Postgres\). In Airbyte, an integration is either a Source or a Destination.
 * **Source** - A connector that _pulls_ data from an underlying data source. \(e.g. A Postgres Source reads data from a Postgres database. A Stripe Source reads data from the Stripe API\)
 * **Destination** - A connector that _pushes_ data to an underlying data source. \(e.g. A Postgres Destination writes data to a Postgres database\)
 * **AirbyteSpecification** - the specification that describes how to implement connectors using a standard interface.
@@ -99,7 +99,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
           "streams": [
             {
               "name": "users",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name"],
                 "properties": {
@@ -123,7 +123,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
           "streams": [
             {
               "name": "customers",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name"],
                 "properties": {
@@ -135,7 +135,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
             },
             {
               "name": "products",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name", "features"],
                 "properties": {

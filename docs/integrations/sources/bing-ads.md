@@ -56,6 +56,8 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 * refresh\_token: Token received during [auth process](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth?view=bingads-13)
 * client\_secret: Secret generated during application registration
 * client\_id: Id generated during application registration
+* tenant_id: Tenant generated during application registration
+* redirect\_uri: You can create Redirect URI from azure application configuration. e.g: https://login.microsoftonline.com/{tenant_id}/oauth2/nativeclient
 * reports\_start\_date: From which date report generation should start
 * report\_aggregation: Defines how report data will be aggregated
 * hourly\_reports: includes hourly report streams if true
@@ -77,6 +79,8 @@ Be aware that `refresh token` will expire in 90 days. You need to repeat auth pr
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.5 | 2022-01-01 | [11652](https://github.com/airbytehq/airbyte/pull/11652) | Rebump attempt after DockerHub failure at registring the 0.1.4 |
+| 0.1.4 | 2022-03-22 | [9510](https://github.com/airbytehq/airbyte/pull/9510) | Added optional Redirect URI & Tenant ID to spec |
 | 0.1.3 | 2022-01-14 | [9510](https://github.com/airbytehq/airbyte/pull/9510) | Fixed broken dependency that blocked connector's operations |
 | 0.1.2 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
 | 0.1.1 | 2021-08-31 | [5750](https://github.com/airbytehq/airbyte/pull/5750) | Added reporting streams\) |

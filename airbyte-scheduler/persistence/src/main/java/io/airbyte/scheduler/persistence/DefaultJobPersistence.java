@@ -32,6 +32,7 @@ import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.AttemptWithJobInfo;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.models.JobWithStatusAndTimestamp;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
@@ -386,6 +387,28 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public List<JobWithStatusAndTimestamp> listJobStatusAndTimestampWithConnection(final UUID connectionId,
+                                                                                 final Set<ConfigType> configTypes,
+                                                                                 final Instant jobCreatedAtTimestamp)
+      throws IOException {
+    final LocalDateTime timeConvertedIntoLocalDateTime = LocalDateTime.ofInstant(jobCreatedAtTimestamp, ZoneOffset.UTC);
+
+    final String JobStatusSelect = "SELECT id, status, created_at, updated_at FROM jobs ";
+    return jobDatabase.query(ctx -> ctx
+        .fetch(JobStatusSelect + "WHERE " +
+            "scope = ? AND " +
+            "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "created_at >= ? ORDER BY created_at DESC", connectionId.toString(), timeConvertedIntoLocalDateTime))
+        .stream()
+        .map(r -> new JobWithStatusAndTimestamp(
+            r.get("id", Long.class),
+            JobStatus.valueOf(r.get("status", String.class).toUpperCase()),
+            r.get("created_at", Long.class) / 1000,
+            r.get("updated_at", Long.class) / 1000))
+        .toList();
+  }
+
+  @Override
   public Optional<Job> getLastReplicationJob(final UUID connectionId) throws IOException {
     return jobDatabase.query(ctx -> ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
@@ -393,6 +416,21 @@ public class DefaultJobPersistence implements JobPersistence {
             "scope = ? AND " +
             "CAST(jobs.status AS VARCHAR) <> ? " +
             "ORDER BY jobs.created_at DESC LIMIT 1",
+            connectionId.toString(),
+            Sqls.toSqlName(JobStatus.CANCELLED))
+        .stream()
+        .findFirst()
+        .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class))));
+  }
+
+  @Override
+  public Optional<Job> getFirstReplicationJob(final UUID connectionId) throws IOException {
+    return jobDatabase.query(ctx -> ctx
+        .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
+            "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
+            "scope = ? AND " +
+            "CAST(jobs.status AS VARCHAR) <> ? " +
+            "ORDER BY jobs.created_at ASC LIMIT 1",
             connectionId.toString(),
             Sqls.toSqlName(JobStatus.CANCELLED))
         .stream()

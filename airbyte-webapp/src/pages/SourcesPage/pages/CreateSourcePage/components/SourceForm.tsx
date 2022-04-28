@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import useRouter from "hooks/useRouter";
-import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { SourceDefinition } from "core/domain/connector";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import useRouter from "hooks/useRouter";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
 type IProps = {
   onSubmit: (values: {
@@ -23,31 +24,31 @@ type IProps = {
   error?: { message?: string; status?: number } | null;
 };
 
-const SourceForm: React.FC<IProps> = ({
-  onSubmit,
-  sourceDefinitions,
-  error,
-  hasSuccess,
-  afterSelectConnector,
-}) => {
+const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId === "string"
+  );
+};
+
+const SourceForm: React.FC<IProps> = ({ onSubmit, sourceDefinitions, error, hasSuccess, afterSelectConnector }) => {
   const { location } = useRouter();
   const analyticsService = useAnalyticsService();
 
-  const [sourceDefinitionId, setSourceDefinitionId] = useState(
-    location.state?.sourceDefinitionId || ""
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
+    hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
   );
 
   const {
-    sourceDefinitionSpecification,
-    sourceDefinitionError,
+    data: sourceDefinitionSpecification,
+    error: sourceDefinitionError,
     isLoading,
-  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
-    const connector = sourceDefinitions.find(
-      (item) => item.sourceDefinitionId === sourceDefinitionId
-    );
+    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
 
     if (afterSelectConnector) {
       afterSelectConnector();
@@ -60,10 +61,7 @@ const SourceForm: React.FC<IProps> = ({
     });
   };
 
-  const onSubmitForm = async (values: {
-    name: string;
-    serviceType: string;
-  }) => {
+  const onSubmitForm = async (values: ServiceFormValues) => {
     await onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
@@ -78,17 +76,12 @@ const SourceForm: React.FC<IProps> = ({
       onSubmit={onSubmitForm}
       formType="source"
       availableServices={sourceDefinitions}
-      selectedConnector={sourceDefinitionSpecification}
+      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       hasSuccess={hasSuccess}
       fetchingConnectorError={sourceDefinitionError}
       errorMessage={errorMessage}
       isLoading={isLoading}
-      formValues={
-        sourceDefinitionId
-          ? { serviceType: sourceDefinitionId, name: "" }
-          : undefined
-      }
-      allowChangeConnector
+      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />

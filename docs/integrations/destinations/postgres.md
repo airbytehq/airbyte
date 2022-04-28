@@ -35,12 +35,12 @@ Make sure your Postgres database can be accessed by Airbyte. If your database is
 
 #### **Permissions**
 
-You need a Postgres user with the following permissions: 
+You need a Postgres user with the following permissions:
 
-* can create tables and write rows. 
-* can create schemas e.g: 
+* can create tables and write rows.
+* can create schemas e.g:
 
-You can create such a user by runnig: 
+You can create such a user by running:
 
 ```
 CREATE USER airbyte_user PASSWORD <password>;
@@ -63,6 +63,8 @@ You should now have all the requirements needed to configure Postgres as a desti
 * **Password**
 * **Default Schema Name**
 * **Database**
+* **JDBC URL Params** (optional)
+
 
 ## Naming Conventions
 
@@ -82,10 +84,15 @@ Therefore, Airbyte Postgres destination will create tables and schemas using the
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-|:--------| :--- | :--- | :--- |
-| 0.3.13  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key  |
-| 0.3.12  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |  
-| 0.3.11  | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support |
-| 0.3.10  | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000\(NULL\) value processing |
+| Version | Date       | Pull Request | Subject                                                                                             |
+|:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------|
+| 0.3.19  | 2022-04-25 | [12195](https://github.com/airbytehq/airbyte/pull/12195) | Add support for additional JDBC URL Params input                                                    |
+| 0.3.18  | 2022-04-12 | [11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                  |
+| 0.3.17  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                |
+| 0.3.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
+| 0.3.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
+| 0.3.13  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                            |
+| 0.3.12  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
+| 0.3.11  | 2021-09-07 | [\#5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support                                                                              |
+| 0.3.10  | 2021-08-11 | [\#5336](https://github.com/airbytehq/airbyte/pull/5336) | 🐛 Destination Postgres: fix \u0000\(NULL\) value processing                                        |
 

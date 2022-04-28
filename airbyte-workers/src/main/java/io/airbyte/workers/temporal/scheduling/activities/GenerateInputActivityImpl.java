@@ -23,7 +23,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   private JobPersistence jobPersistence;
 
   @Override
-  public SyncOutput getSyncWorkflowInput(final SyncInput input) {
+  public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
     try {
       final long jobId = input.getJobId();
       final int attempt = input.getAttemptId();
@@ -65,13 +65,23 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withOperationSequence(config.getOperationSequence())
           .withCatalog(config.getConfiguredAirbyteCatalog())
           .withState(config.getState())
-          .withResourceRequirements(config.getResourceRequirements());
+          .withResourceRequirements(config.getResourceRequirements())
+          .withSourceResourceRequirements(config.getSourceResourceRequirements())
+          .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
 
-      return new SyncOutput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+      return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
     } catch (final Exception e) {
       throw new RetryableException(e);
     }
+  }
+
+  @Override
+  public GeneratedJobInput getSyncWorkflowInputWithAttemptNumber(final SyncInputWithAttemptNumber input) {
+    return getSyncWorkflowInput(new SyncInput(
+        input.getAttemptNumber(),
+        input.getJobId(),
+        input.isReset()));
   }
 
 }

@@ -24,7 +24,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import java.io.ByteArrayInputStream;
@@ -48,8 +48,8 @@ public class DefaultDiscoverCatalogWorkerTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog()
       .withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
           STREAM,
-          Field.of(COLUMN_NAME, JsonSchemaPrimitive.STRING),
-          Field.of(COLUMN_AGE, JsonSchemaPrimitive.NUMBER))));
+          Field.of(COLUMN_NAME, JsonSchemaType.STRING),
+          Field.of(COLUMN_AGE, JsonSchemaType.NUMBER))));
 
   private WorkerConfigs workerConfigs;
   private Path jobRoot;
