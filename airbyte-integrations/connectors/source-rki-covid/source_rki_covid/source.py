@@ -56,8 +56,8 @@ class GermanyAgeGroups(RkiCovidStream):
 
     primary_key = None
 
-    # def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-    #     return response.json().get("data")
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json().get("data")
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

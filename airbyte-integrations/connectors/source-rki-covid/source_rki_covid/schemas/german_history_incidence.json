@@ -1,1 +1,16 @@
-{"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"weekIncidence": {"type": "number"}, "date": {"type": "string"}}, "required": ["date", "weekIncidence"]}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "weekIncidence": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "date",
+    "weekIncidence"
+  ]
+}

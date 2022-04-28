@@ -1,7 +1,3 @@
 {
-  "incidence_in_days": 100,
-  "deaths_in_days": 100,
-  "recovered_in_days": 100,
-  "frozen_incidence_in_days": 100,
-  "hospitalization_in_days":100
+  "start_date": "20220426"
 }

@@ -9,7 +9,7 @@
     "properties": {
       "start_date": {
         "type": "string",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated."
+        "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated."
       }
     }
   }

@@ -1,1 +1,16 @@
-{"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"deaths": {"type": "integer"}, "date": {"type": "string"}}, "required": ["date", "deaths"]}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "deaths": {
+      "type": "integer"
+    },
+    "date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "date",
+    "deaths"
+  ]
+}

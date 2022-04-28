@@ -1,1 +1,60 @@
-{"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"cases7Days": {"type": "integer"}, "incidence7Days": {"type": "number"}, "date": {"type": "string"}, "fixedCases7Days": {"type": "integer"}, "updatedCases7Days": {"type": "integer"}, "adjustedLowerCases7Days": {"type": "null"}, "adjustedCases7Days": {"type": "null"}, "adjustedUpperCases7Days": {"type": "null"}, "fixedIncidence7Days": {"type": "number"}, "updatedIncidence7Days": {"type": "number"}, "adjustedLowerIncidence7Days": {"type": "null"}, "adjustedIncidence7Days": {"type": "null"}, "adjustedUpperIncidence7Days": {"type": "null"}}, "required": ["adjustedCases7Days", "adjustedIncidence7Days", "adjustedLowerCases7Days", "adjustedLowerIncidence7Days", "adjustedUpperCases7Days", "adjustedUpperIncidence7Days", "cases7Days", "date", "fixedCases7Days", "fixedIncidence7Days", "incidence7Days", "updatedCases7Days", "updatedIncidence7Days"]}
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "cases7Days": {
+      "type": "integer"
+    },
+    "incidence7Days": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
+    },
+    "fixedCases7Days": {
+      "type": "integer"
+    },
+    "updatedCases7Days": {
+      "type": "integer"
+    },
+    "adjustedLowerCases7Days": {
+      "type": "null"
+    },
+    "adjustedCases7Days": {
+      "type": "null"
+    },
+    "adjustedUpperCases7Days": {
+      "type": "null"
+    },
+    "fixedIncidence7Days": {
+      "type": "number"
+    },
+    "updatedIncidence7Days": {
+      "type": "number"
+    },
+    "adjustedLowerIncidence7Days": {
+      "type": "null"
+    },
+    "adjustedIncidence7Days": {
+      "type": "null"
+    },
+    "adjustedUpperIncidence7Days": {
+      "type": "null"
+    }
+  },
+  "required": [
+    "adjustedCases7Days",
+    "adjustedIncidence7Days",
+    "adjustedLowerCases7Days",
+    "adjustedLowerIncidence7Days",
+    "adjustedUpperCases7Days",
+    "adjustedUpperIncidence7Days",
+    "cases7Days",
+    "date",
+    "fixedCases7Days",
+    "fixedIncidence7Days",
+    "incidence7Days",
+    "updatedCases7Days",
+    "updatedIncidence7Days"
+  ]
+}
