@@ -6,9 +6,6 @@ import { uiConfig } from "./uiConfig";
 
 const features: Feature[] = [
   {
-    id: FeatureItem.AllowOAuthConnector,
-  },
-  {
     id: FeatureItem.AllowUploadCustomImage,
   },
   {
