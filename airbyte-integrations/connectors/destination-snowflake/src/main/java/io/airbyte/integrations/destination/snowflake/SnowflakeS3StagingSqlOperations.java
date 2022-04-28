@@ -10,7 +10,9 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryptionBlobDecorator;
+import io.airbyte.integrations.destination.s3.EncryptionConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
@@ -39,15 +41,16 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   public SnowflakeS3StagingSqlOperations(final NamingConventionTransformer nameTransformer,
                                          final AmazonS3 s3Client,
-                                         final S3DestinationConfig s3Config) {
+                                         final S3DestinationConfig s3Config,
+                                         final EncryptionConfig encryptionConfig) {
     this.nameTransformer = nameTransformer;
     this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, s3Config);
     this.s3Config = s3Config;
-    // TODO receive this as a parameter
-    this.keyEncryptingKey = null;
-
-    if (this.keyEncryptingKey != null) {
-      this.s3StorageOperations.addBlobDecorator(new AesCbcEnvelopeEncryptionBlobDecorator(this.keyEncryptingKey));
+    if (encryptionConfig instanceof AesCbcEnvelopeEncryption e) {
+      this.s3StorageOperations.addBlobDecorator(new AesCbcEnvelopeEncryptionBlobDecorator(e.key()));
+      this.keyEncryptingKey = e.key();
+    } else {
+      this.keyEncryptingKey = null;
     }
   }
 
@@ -98,13 +101,12 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
     LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
     AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> Exceptions.toRuntime(() -> database.execute(getCopyQuery(stageName, stagingPath, stagedFiles, dstTableName, schemaName))),
+        () -> Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName))),
         Map.of("schema", schemaName, "path", stagingPath, "table", dstTableName));
     LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
 
-  protected String getCopyQuery(final String stageName,
-                                final String stagingPath,
+  protected String getCopyQuery(final String stagingPath,
                                 final List<String> stagedFiles,
                                 final String dstTableName,
                                 final String schemaName) {
@@ -118,13 +120,13 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
     return String.format(COPY_QUERY + generateFilesList(stagedFiles) + encryptionClause + ";",
         schemaName,
         dstTableName,
-        generateBucketPath(stageName, stagingPath),
+        generateBucketPath(stagingPath),
         credentialConfig.getAccessKeyId(),
         credentialConfig.getSecretAccessKey()
     );
   }
 
-  private String generateBucketPath(final String stageName, final String stagingPath) {
+  private String generateBucketPath(final String stagingPath) {
     return "s3://" + s3Config.getBucketName() + "/" + stagingPath;
   }
 
