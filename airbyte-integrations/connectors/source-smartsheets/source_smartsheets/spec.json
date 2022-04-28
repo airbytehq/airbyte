@@ -17,6 +17,14 @@
         "title": "Sheet ID",
         "description": "The spreadsheet ID. Find in the spreadsheet menu: File > Properties",
         "type": "string"
+      },
+      "start_datetime": {
+        "title": "Start Datetime",
+        "type": "string",
+        "examples": ["2000-01-01T13:00:00", "2000-01-01T13:00:00-07:00"],
+        "description": "ISO 8601, for instance: `YYYY-MM-DDTHH:MM:SS`, `YYYY-MM-DDTHH:MM:SS+HH:MM`",
+        "format": "date-time",
+        "default": "2020-01-01T00:00:00+00:00"
       }
     }
   },
