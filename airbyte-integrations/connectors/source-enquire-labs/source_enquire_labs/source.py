@@ -110,6 +110,13 @@ class QuestionStream(IncrementalEnquireLabsStream):
 
 
 class QuestionResponseStream(IncrementalEnquireLabsStream):
+    """
+    This stream is currently not working because of their internal server error
+
+    Ref: https://docs.enquirelabs.com/reference/retrieve-responses
+
+    please add this stream when it's available
+    """
     primary_key = "id"
     cursor_field = "inserted_at"
 
