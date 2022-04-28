@@ -83,7 +83,7 @@ public class DataSourceFactoryTest extends AbstractFactoryTest {
     final String database = container.getDatabaseName();
 
     assertThrows(RuntimeException.class, () -> {
-      final DataSource dataSource = DataSourceFactory.create(username, password, host, port, database, driverClassName);
+      DataSourceFactory.create(username, password, host, port, database, driverClassName);
     });
   }
 
