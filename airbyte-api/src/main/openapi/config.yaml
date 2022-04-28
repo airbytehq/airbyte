@@ -3143,7 +3143,6 @@ components:
     WebBackendConnectionCreate:
       type: object
       required:
-        - connection
         - sourceId
         - destinationId
         - status
