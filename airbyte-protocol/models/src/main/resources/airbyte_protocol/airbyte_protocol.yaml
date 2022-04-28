@@ -137,7 +137,6 @@ definitions:
         enum:
           - SYSTEM_ERROR
           - CONFIG_ERROR
-          - MANUAL_CANCELLATION
   AirbyteConnectionStatus:
     description: Airbyte connection status
     type: object
