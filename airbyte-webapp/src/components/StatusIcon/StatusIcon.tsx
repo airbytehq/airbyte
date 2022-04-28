@@ -3,12 +3,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
 
+import { MoonIcon } from "components/icons/MoonIcon";
+
 import CircleLoader from "./CircleLoader";
 import PauseIcon from "./PauseIcon";
 
 export type StatusIconStatus = "empty" | "inactive" | "success" | "warning" | "loading";
 
-interface Props {
+interface StatusIconProps {
   className?: string;
   status?: StatusIconStatus;
   title?: string;
@@ -16,7 +18,7 @@ interface Props {
   value?: string | number;
 }
 
-const getBadgeWidth = (props: Props) => (props.big ? (props.value ? 57 : 40) : props.value ? 37 : 20);
+const getBadgeWidth = (props: StatusIconProps) => (props.big ? (props.value ? 57 : 40) : props.value ? 37 : 20);
 
 const _iconByStatus: Partial<Record<StatusIconStatus, IconDefinition | undefined>> = {
   empty: faBan,
@@ -25,13 +27,13 @@ const _iconByStatus: Partial<Record<StatusIconStatus, IconDefinition | undefined
 };
 
 const _themeByStatus: Partial<Record<StatusIconStatus, string>> = {
-  empty: "attentionColor",
+  empty: "lightTextColor",
   inactive: "lightTextColor",
   success: "successColor",
   warning: "warningColor",
 };
 
-const Container = styled.div<Props>`
+const Container = styled.div<StatusIconProps>`
   width: ${(props) => getBadgeWidth(props)}px;
   height: ${({ big }) => (big ? 40 : 20)}px;
   margin-right: 10px;
@@ -39,14 +41,14 @@ const Container = styled.div<Props>`
   line-height: ${({ big }) => (big ? 33 : 12)}px;
   text-align: center;
   display: inline-block;
-  vertical-align: top;
+  vertical-align: middle;
 `;
 
-const Badge = styled(Container)<Props>`
+const Badge = styled(Container)<StatusIconProps>`
   background: ${(props) => props.theme[(props.status && _themeByStatus[props.status]) || "dangerColor"]};
   border-radius: ${({ value }) => (value ? "15px" : "50%")};
   color: ${({ theme }) => theme.whiteColor};
-  padding-top: 4px;
+  padding-top: ${({ status }) => (status === "warning" ? 3 : 4)}px;
 `;
 
 const Value = styled.span`
@@ -56,7 +58,7 @@ const Value = styled.span`
   vertical-align: top;
 `;
 
-const StatusIcon: React.FC<Props> = ({ title, status, ...props }) => {
+const StatusIcon: React.FC<StatusIconProps> = ({ title, status, ...props }) => {
   const valueElement = props.value ? <Value>{props.value}</Value> : null;
 
   if (status === "loading") {
@@ -72,6 +74,8 @@ const StatusIcon: React.FC<Props> = ({ title, status, ...props }) => {
     <Badge {...props} status={status}>
       {status === "inactive" ? (
         <PauseIcon title={title} />
+      ) : status === "empty" ? (
+        <MoonIcon title={title} />
       ) : (
         <FontAwesomeIcon icon={(status && _iconByStatus[status]) || faTimes} title={title} />
       )}
