@@ -5,8 +5,8 @@ import styled from "styled-components";
 
 import { MoonIcon } from "components/icons/MoonIcon";
 
+import PauseIcon from "../icons/PauseIcon";
 import CircleLoader from "./CircleLoader";
-import PauseIcon from "./PauseIcon";
 
 export type StatusIconStatus = "empty" | "inactive" | "success" | "warning" | "loading";
 
