@@ -102,6 +102,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         self.window_in_days: int = config.get("window_in_days", 1)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
+        self.primary_key = config["primary_key"] if "primary_key" in config else None
         self.dimensions = config["dimensions"]
         self._config = config
         self.dimensions_ref, self.metrics_ref = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
@@ -180,8 +181,9 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
         schema: Dict[str, Any] = {
             "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": ["null", "object"],
+            "type": ["object"],
             "additionalProperties": False,
+            "required": ["view_id"],
             "properties": {
                 "view_id": {"type": ["string"]},
             },
@@ -192,10 +194,13 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             data_type = self.lookup_data_type("dimension", dimension)
             data_format = self.lookup_data_format(dimension)
             dimension = dimension.replace("ga:", "ga_")
+            is_primary_key = dimension in self.primary_key if type(self.primary_key) == list else dimension == self.primary_key
 
             dimension_data: Dict[str, Any] = {"type": [data_type]}
             if data_format:
                 dimension_data["format"] = data_format
+            if is_primary_key:
+                schema["required"].append(dimension)
             schema["properties"][dimension] = dimension_data
 
         # Add the metrics to the schema
@@ -586,6 +591,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         for stream in config["ga_streams"]:
             config["metrics"] = stream["metrics"]
             config["dimensions"] = stream["dimensions"]
+            config["primary_key"] = stream["primary_key"] if "primary_key" in stream else None
 
             # construct GAReadStreams sub-class for each stream
             stream_name = stream["name"]

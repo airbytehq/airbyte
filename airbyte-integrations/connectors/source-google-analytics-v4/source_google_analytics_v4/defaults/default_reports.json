@@ -2,7 +2,8 @@
   {
     "name": "daily_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:1dayUsers"]
+    "metrics": ["ga:1dayUsers"],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "devices",
@@ -23,12 +24,14 @@
       "ga:avgTimeOnPage",
       "ga:bounceRate",
       "ga:exitRate"
-    ]
+    ],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "four_weekly_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:28dayUsers"]
+    "metrics": ["ga:28dayUsers"],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "locations",
@@ -52,12 +55,14 @@
       "ga:avgTimeOnPage",
       "ga:bounceRate",
       "ga:exitRate"
-    ]
+    ],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "monthly_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:30dayUsers"]
+    "metrics": ["ga:30dayUsers"],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "pages",
@@ -71,7 +76,8 @@
       "ga:bounceRate",
       "ga:exits",
       "ga:exitRate"
-    ]
+    ],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "traffic_sources",
@@ -87,12 +93,14 @@
       "ga:avgTimeOnPage",
       "ga:bounceRate",
       "ga:exitRate"
-    ]
+    ],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "two_weekly_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:14dayUsers"]
+    "metrics": ["ga:14dayUsers"],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "website_overview",
@@ -108,11 +116,13 @@
       "ga:avgTimeOnPage",
       "ga:bounceRate",
       "ga:exitRate"
-    ]
+    ],
+    "primary_key": ["ga_date", "view_id"]
   },
   {
     "name": "weekly_active_users",
     "dimensions": ["ga:date"],
-    "metrics": ["ga:7dayUsers"]
+    "metrics": ["ga:7dayUsers"],
+    "primary_key": ["ga_date", "view_id"]
   }
 ]
