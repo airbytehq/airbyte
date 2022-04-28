@@ -3304,6 +3304,9 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        sourceCatalogId:
+          type: string
+          format: uuid
     ConnectionSearch:
       type: object
       properties:
@@ -4369,6 +4372,9 @@ components:
           type: boolean
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        catalogId:
+          type: string
+          format: uuid
     WebBackendConnectionReadList:
       type: object
       required:
