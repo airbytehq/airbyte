@@ -19,7 +19,7 @@ const FormContainer = styled(Form)`
 interface FormCardProps extends CollapsibleCardProps {
   bottomSeparator?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: FormikConfig<unknown>;
+  form: FormikConfig<any>;
   mode?: ConnectionFormMode;
 }
 
