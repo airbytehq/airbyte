@@ -12,6 +12,10 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.util.HashMap;
 
+/**
+ * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's configured catalog
+ */
+
 public class RecordSchemaValidator {
 
   private final HashMap<String, JsonNode> streams;
@@ -27,6 +31,12 @@ public class RecordSchemaValidator {
     });
   }
 
+  /**
+   * Takes an AirbyteRecordMessage and uses the JsonSchemaValidator to validate that its data conforms to the stream's schema
+   * If it does not, this method throws a RecordSchemaValidationException
+   * @param message
+   * @throws RecordSchemaValidationException
+   */
   public void validateSchema(final AirbyteRecordMessage message) throws RecordSchemaValidationException {
     // the stream this message corresponds to
     final String messageStream = message.getStream();
