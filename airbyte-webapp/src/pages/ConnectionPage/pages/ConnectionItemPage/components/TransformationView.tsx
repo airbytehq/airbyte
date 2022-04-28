@@ -110,7 +110,7 @@ const NormalizationCard: React.FC<{
   );
 };
 
-const TransformationView: React.FC<Props> = ({ connection }) => {
+const TransformationView: React.FC<TransformationViewProps> = ({ connection }) => {
   const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
