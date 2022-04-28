@@ -1,10 +1,14 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
+  "documentationUrl": "",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Ads Spec",
     "type": "object",
-    "required": ["credentials", "start_date", "customer_id"],
+    "required": [
+      "credentials",
+      "start_date",
+      "customer_id"
+    ],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -21,30 +25,30 @@
           "developer_token": {
             "type": "string",
             "title": "Developer Token",
-            "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "Developer token granted by Google to use their APIs.",
             "airbyte_secret": true
           },
           "client_id": {
             "type": "string",
             "title": "Client ID",
-            "description": "The Client ID of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>"
+            "description": "The Client ID of your Google Ads developer application."
           },
           "client_secret": {
             "type": "string",
             "title": "Client Secret",
-            "description": "The Client Secret of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "The Client Secret of your Google Ads developer application.",
             "airbyte_secret": true
           },
           "access_token": {
             "type": "string",
             "title": "Access Token",
-            "description": "Access Token for making authenticated requests. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "Access Token for making authenticated requests.",
             "airbyte_secret": true
           },
           "refresh_token": {
             "type": "string",
             "title": "Refresh Token",
-            "description": "The token for obtaining a new access token. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "description": "The token for obtaining a new access token.",
             "airbyte_secret": true
           }
         }
@@ -52,7 +56,7 @@
       "customer_id": {
         "title": "Customer ID",
         "type": "string",
-        "description": "Customer ID must be specified as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>. Metrics streams like AdGroupAdReport cannot be requested for a manager account.",
+        "description": "Customer ID must be specified as a 10-digit number without dashes. Metrics streams like AdGroupAdReport cannot be requested for a manager account.",
         "order": 1
       },
       "start_date": {
@@ -60,7 +64,9 @@
         "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "examples": ["2017-01-25"],
+        "examples": [
+          "2017-01-25"
+        ],
         "order": 2
       },
       "end_date": {
@@ -68,7 +74,9 @@
         "title": "End Date",
         "description": "UTC date and time in the format 2017-01-25. Any data after this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "examples": ["2017-01-30"],
+        "examples": [
+          "2017-01-30"
+        ],
         "order": 6
       },
       "custom_queries": {
@@ -107,7 +115,9 @@
         "minimum": 0,
         "maximum": 1095,
         "default": 14,
-        "examples": [14],
+        "examples": [
+          14
+        ],
         "order": 5
       }
     }
@@ -115,13 +125,28 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["credentials"],
-      "oauthFlowInitParameters": [
-        ["client_id"],
-        ["client_secret"],
-        ["developer_token"]
+      "rootObject": [
+        "credentials"
       ],
-      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+      "oauthFlowInitParameters": [
+        [
+          "client_id"
+        ],
+        [
+          "client_secret"
+        ],
+        [
+          "developer_token"
+        ]
+      ],
+      "oauthFlowOutputParameters": [
+        [
+          "access_token"
+        ],
+        [
+          "refresh_token"
+        ]
+      ]
     }
   }
 }

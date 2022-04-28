@@ -18,7 +18,7 @@ class ConnectorConfig(BaseModel):
         title = "Klaviyo Spec"
 
     api_key: str = Field(
-        description='Klaviyo API Key. See our <a href="https://docs.airbyte.io/integrations/sources/klaviyo">docs</a> if you need help finding this key.',
+        description='Klaviyo API Key.',
         airbyte_secret=True,
     )
     start_date: str = Field(
@@ -69,8 +69,8 @@ class SourceKlaviyo(AbstractSource):
         required to run this integration.
         """
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/klaviyo",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/klaviyo",
+            documentationUrl="",
+            changelogUrl="",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
