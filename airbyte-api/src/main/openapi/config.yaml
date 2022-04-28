@@ -32,6 +32,7 @@ externalDocs:
   url: "https://airbyte.io"
 servers:
   - url: "http://localhost:8000/api"
+  - url: "http://host.docker.internal:8001/api"
 tags:
   - name: workspace
     description: Workspace related resources.
