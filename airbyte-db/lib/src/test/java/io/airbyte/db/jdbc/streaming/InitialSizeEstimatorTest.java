@@ -42,7 +42,7 @@ class InitialSizeEstimatorTest {
     final Optional<Integer> fetchSize = sizeEstimator.getFetchSize();
     assertTrue(fetchSize.isPresent());
     final long expectedMeanByteSize = 20L;
-    assertEquals(expectedMeanByteSize, sizeEstimator.getMeanRowByteSize());
+    assertEquals(expectedMeanByteSize, Math.round(sizeEstimator.getMeanRowByteSize()));
     assertEquals(bufferByteSize / expectedMeanByteSize, fetchSize.get().longValue());
   }
 

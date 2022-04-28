@@ -34,7 +34,7 @@ class BaseSizeEstimatorTest {
     @Override
     public void accept(final Object o) {}
 
-    public void setMeanByteSize(final long meanByteSize) {
+    public void setMeanByteSize(final double meanByteSize) {
       this.meanByteSize = meanByteSize;
     }
 
@@ -48,30 +48,30 @@ class BaseSizeEstimatorTest {
     final int maxFetchSize = 40;
     final TestSizeEstimator sizeEstimator = new TestSizeEstimator(bufferByteSize, minFetchSize, defaultFetchSize, maxFetchSize);
 
-    sizeEstimator.setMeanByteSize(-1L);
+    sizeEstimator.setMeanByteSize(-1.0);
     assertEquals(defaultFetchSize, sizeEstimator.getBoundedFetchSize());
 
-    sizeEstimator.setMeanByteSize(0L);
+    sizeEstimator.setMeanByteSize(0.0);
     assertEquals(defaultFetchSize, sizeEstimator.getBoundedFetchSize());
 
     // fetch size = 5 < min fetch size
-    sizeEstimator.setMeanByteSize(bufferByteSize / 5);
+    sizeEstimator.setMeanByteSize(bufferByteSize / 5.0);
     assertEquals(minFetchSize, sizeEstimator.getBoundedFetchSize());
 
     // fetch size = 10 within [min fetch size, max fetch size]
-    sizeEstimator.setMeanByteSize(bufferByteSize / 10);
+    sizeEstimator.setMeanByteSize(bufferByteSize / 10.0);
     assertEquals(10, sizeEstimator.getBoundedFetchSize());
 
     // fetch size = 30 within [min fetch size, max fetch size]
-    sizeEstimator.setMeanByteSize(bufferByteSize / 30);
+    sizeEstimator.setMeanByteSize(bufferByteSize / 30.0);
     assertEquals(30, sizeEstimator.getBoundedFetchSize());
 
     // fetch size = 40 within [min fetch size, max fetch size]
-    sizeEstimator.setMeanByteSize(bufferByteSize / 40);
+    sizeEstimator.setMeanByteSize(bufferByteSize / 40.0);
     assertEquals(40, sizeEstimator.getBoundedFetchSize());
 
     // fetch size = 60 > max fetch size
-    sizeEstimator.setMeanByteSize(bufferByteSize / 60);
+    sizeEstimator.setMeanByteSize(bufferByteSize / 60.0);
     assertEquals(maxFetchSize, sizeEstimator.getBoundedFetchSize());
   }
 

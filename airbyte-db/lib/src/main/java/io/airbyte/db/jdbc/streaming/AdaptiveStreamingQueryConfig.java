@@ -22,6 +22,7 @@ public class AdaptiveStreamingQueryConfig implements JdbcStreamingQueryConfig {
   public void initialize(final Connection connection, final Statement preparedStatement) throws SQLException {
     connection.setAutoCommit(false);
     preparedStatement.setFetchSize(FetchSizeConstants.INITIAL_SAMPLE_SIZE);
+    LOGGER.info("Set initial fetch size: {}", preparedStatement.getFetchSize());
   }
 
   @Override
@@ -30,6 +31,7 @@ public class AdaptiveStreamingQueryConfig implements JdbcStreamingQueryConfig {
     final Optional<Integer> newFetchSize = fetchSizeEstimator.getFetchSize();
     if (newFetchSize.isPresent()) {
       resultSet.setFetchSize(newFetchSize.get());
+      LOGGER.info("Updated fetch size: {}", resultSet.getFetchSize());
     }
   }
 

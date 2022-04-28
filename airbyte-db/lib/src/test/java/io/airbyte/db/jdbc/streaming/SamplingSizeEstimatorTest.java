@@ -27,7 +27,7 @@ class SamplingSizeEstimatorTest {
         defaultFetchSize,
         maxFetchSize);
 
-    long meanByteSize = initialByteSize;
+    double meanByteSize = initialByteSize;
 
     // size: 3 * 4 = 12, not sampled
     sizeEstimator.accept("1");
@@ -43,27 +43,31 @@ class SamplingSizeEstimatorTest {
     sizeEstimator.accept("111");
     final Optional<Integer> fetchSize1 = sizeEstimator.getFetchSize();
     assertTrue(fetchSize1.isPresent());
-    meanByteSize = meanByteSize / 2 + 20 / 2;
-    assertEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
-    assertEquals(bufferByteSize / meanByteSize, fetchSize1.get().longValue());
+    meanByteSize = meanByteSize / 2.0 + 20 / 2.0;
+    assertDoubleEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
+    assertDoubleEquals(bufferByteSize / meanByteSize, fetchSize1.get().doubleValue());
 
     // size: 6 * 4 = 24, not sampled
     sizeEstimator.accept("1111");
     assertFalse(sizeEstimator.getFetchSize().isPresent());
-    assertEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
+    assertDoubleEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
 
     // size: 7 * 4 = 28, not sampled
     sizeEstimator.accept("11111");
     assertFalse(sizeEstimator.getFetchSize().isPresent());
-    assertEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
+    assertDoubleEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
 
     // size: 8 * 4 = 32, sampled, fetch size is ready
     sizeEstimator.accept("111111");
     final Optional<Integer> fetchSize2 = sizeEstimator.getFetchSize();
     assertTrue(fetchSize2.isPresent());
-    meanByteSize = meanByteSize / 2 + 32 / 2;
-    assertEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
-    assertEquals(bufferByteSize / meanByteSize, fetchSize2.get().longValue());
+    meanByteSize = meanByteSize / 2.0 + 32 / 2.0;
+    assertDoubleEquals(meanByteSize, sizeEstimator.getMeanRowByteSize());
+    assertDoubleEquals(bufferByteSize / meanByteSize, fetchSize2.get().doubleValue());
+  }
+
+  private static void assertDoubleEquals(final double expected, final double actual) {
+    assertEquals(Math.round(expected), Math.round(actual));
   }
 
 }

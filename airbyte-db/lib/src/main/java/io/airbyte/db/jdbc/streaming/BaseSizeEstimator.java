@@ -36,15 +36,18 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
   }
 
   protected int getBoundedFetchSize() {
-    if (meanByteSize <= 0L) {
+    if (meanByteSize <= 0.0) {
       return defaultFetchSize;
     }
-    final double rawFetchSize = bufferByteSize / meanByteSize;
-    return Math.max(minFetchSize, Math.min(maxFetchSize, Double.valueOf(rawFetchSize).intValue()));
+    final long rawFetchSize = Math.round(bufferByteSize / meanByteSize);
+    if (rawFetchSize > Integer.MAX_VALUE) {
+      return maxFetchSize;
+    }
+    return Math.max(minFetchSize, Math.min(maxFetchSize, (int) rawFetchSize));
   }
 
-  long getMeanRowByteSize() {
-    return Double.valueOf(meanByteSize).longValue();
+  double getMeanRowByteSize() {
+    return meanByteSize;
   }
 
 }

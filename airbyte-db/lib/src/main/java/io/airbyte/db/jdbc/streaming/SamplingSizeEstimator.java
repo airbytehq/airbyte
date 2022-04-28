@@ -15,7 +15,7 @@ public class SamplingSizeEstimator extends BaseSizeEstimator implements FetchSiz
 
   public SamplingSizeEstimator(final long bufferByteSize,
                                final int sampleFrequency,
-                               final long initialRowByteSize,
+                               final double initialRowByteSize,
                                final int minFetchSize,
                                final int defaultFetchSize,
                                final int maxFetchSize) {
@@ -33,7 +33,7 @@ public class SamplingSizeEstimator extends BaseSizeEstimator implements FetchSiz
 
     counter = 0;
     final long rowByteSize = getEstimatedByteSize(row);
-    if (rowByteSize != Double.valueOf(meanByteSize).longValue()) {
+    if (rowByteSize != Math.round(meanByteSize)) {
       meanByteSize = meanByteSize / 2.0 + rowByteSize / 2.0;
       hasNewEstimation = true;
     }
