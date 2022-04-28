@@ -1,3 +1,4 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "56sd4a65d4sa65d4as65d4",
+  "api_secret": "5a6sd4as65d4a6s5d465as4",
 }
