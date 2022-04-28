@@ -97,6 +97,7 @@ When sampling occurs, a warning is logged to the sync log.
 ## IsDataGolden
 
 Google Analytics API may return provisional or incomplete data. When this occurs, the returned data will set the flag `isDataGolden` to false, and the connector will log a warning to the sync log.
+The connector always syncs data from 2 days ago due to the fact it [takes](https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article) Google Analytics up to 48 hours to update the data. To determine whether data is finished processing or not, the `isDataGolden` flag is exposed and should be used.
 
 ## Reading Custom Reports
 
@@ -159,6 +160,7 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.1.20  | 2022-04-28 | [12150](https://github.com/airbytehq/airbyte/pull/12150) | Expose `isDataGOlden` field and always resync data two days back to make sure it is golden   |
 | 0.1.19  | 2022-04-19 | [12150](https://github.com/airbytehq/airbyte/pull/12150) | Minor changes to documentation                                                               |
 | 0.1.18  | 2022-04-07 | [11803](https://github.com/airbytehq/airbyte/pull/11803) | Improved documentation                                                                       |
 | 0.1.17  | 2022-03-31 | [11512](https://github.com/airbytehq/airbyte/pull/11512) | Improved Unit and Acceptance tests coverage, fixed `read` with abnormally large state values |

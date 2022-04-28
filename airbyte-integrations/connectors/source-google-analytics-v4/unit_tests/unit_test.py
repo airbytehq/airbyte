@@ -310,13 +310,15 @@ def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_
 
 
 @freeze_time("2021-11-30")
-def test_stream_slices_limited_by_current_date(test_config, mock_metrics_dimensions_type_list_link):
+def test_stream_slice_limits(test_config, mock_metrics_dimensions_type_list_link):
     test_config["window_in_days"] = 14
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
     stream_state = {"ga_date": "2021-11-25"}
     slices = g.stream_slices(stream_state=stream_state)
     current_date = pendulum.now().date().strftime("%Y-%m-%d")
-    assert slices == [{"startDate": "2021-11-26", "endDate": current_date}]
+    expected_start_date = "2021-11-24"  # always resync two days back
+    expected_end_date = current_date  # do not try to sync future dates
+    assert slices == [{"startDate": expected_start_date, "endDate": expected_end_date}]
 
 
 @freeze_time("2021-11-30")
