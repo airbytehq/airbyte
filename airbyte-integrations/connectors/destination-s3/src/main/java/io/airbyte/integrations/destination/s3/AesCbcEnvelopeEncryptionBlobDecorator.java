@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.s3;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.OutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -65,19 +66,7 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
   private final byte[] initializationVector;
 
   public AesCbcEnvelopeEncryptionBlobDecorator(final SecretKey keyEncryptingKey) {
-    this.keyEncryptingKey = keyEncryptingKey;
-
-    try {
-      final KeyGenerator cekGenerator = KeyGenerator.getInstance(CONTENT_ENCRYPTING_KEY_ALGO);
-      cekGenerator.init(AES_KEY_SIZE_BITS);
-      this.contentEncryptingKey = cekGenerator.generateKey();
-    } catch (final NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
-    }
-
-    this.initializationVector = new byte[AES_CBC_INITIALIZATION_VECTOR_SIZE_BYTES];
-    final SecureRandom ivGenerator = new SecureRandom();
-    ivGenerator.nextBytes(this.initializationVector);
+    this(keyEncryptingKey, randomContentEncryptingKey(), randomInitializationVector());
   }
 
   public AesCbcEnvelopeEncryptionBlobDecorator(final byte[] keyEncryptingKey) {
@@ -86,6 +75,14 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
 
   public AesCbcEnvelopeEncryptionBlobDecorator(final String base64EncodedKeyEncryptingKey) {
     this(new SecretKeySpec(BASE64_DECODER.decode(base64EncodedKeyEncryptingKey), KEY_ENCRYPTING_ALGO));
+  }
+
+  @VisibleForTesting
+  AesCbcEnvelopeEncryptionBlobDecorator(final SecretKey keyEncryptingKey, final SecretKey contentEncryptingKey, final byte[] initializationVector) {
+    this.keyEncryptingKey = keyEncryptingKey;
+    this.contentEncryptingKey = contentEncryptingKey;
+
+    this.initializationVector = initializationVector;
   }
 
   /**
@@ -120,5 +117,22 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
     } catch (final NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static SecretKey randomContentEncryptingKey() {
+    try {
+      final KeyGenerator cekGenerator = KeyGenerator.getInstance(CONTENT_ENCRYPTING_KEY_ALGO);
+      cekGenerator.init(AES_KEY_SIZE_BITS);
+      return cekGenerator.generateKey();
+    } catch (final NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static byte[] randomInitializationVector() {
+    final byte[] initializationVector = new byte[AES_CBC_INITIALIZATION_VECTOR_SIZE_BYTES];
+    final SecureRandom ivGenerator = new SecureRandom();
+    ivGenerator.nextBytes(initializationVector);
+    return initializationVector;
   }
 }
