@@ -185,7 +185,10 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
-          <fieldset disabled={mode === "readonly"} style={{ border: "0", pointerEvents: "none" }}>
+          <fieldset
+            disabled={mode === "readonly"}
+            style={{ border: "0", pointerEvents: `${mode === "readonly" ? "none" : "auto"}` }}
+          >
             <FormChangeTracker changed={dirty} formId={formId} />
             <Section title={<FormattedMessage id="connection.transfer" />}>
               <Field name="schedule">

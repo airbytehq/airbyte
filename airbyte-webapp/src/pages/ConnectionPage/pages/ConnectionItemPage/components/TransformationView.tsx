@@ -157,7 +157,10 @@ const TransformationView: React.FC<Props> = ({ connection }) => {
 
   return (
     <Content>
-      <fieldset disabled={mode === "readonly"} style={{ border: "0", pointerEvents: "none" }}>
+      <fieldset
+        disabled={mode === "readonly"}
+        style={{ border: "0", pointerEvents: `${mode === "readonly" ? "none" : "auto"}` }}
+      >
         {supportsNormalization && (
           <NormalizationCard operations={connection.operations} onSubmit={onSubmit} mode={mode} />
         )}
