@@ -4,7 +4,6 @@
 
 package io.airbyte.db.jdbc;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -75,20 +74,6 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @MustBeClosed
-  @Override
-  public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws SQLException {
-    return unsafeQuery(connection -> {
-      final PreparedStatement statement = connection.prepareStatement(sql);
-      int i = 1;
-      for (final String param : params) {
-        statement.setString(i, param);
-        ++i;
-      }
-      return statement;
-    }, sourceOperations::rowToJson);
   }
 
   /**
