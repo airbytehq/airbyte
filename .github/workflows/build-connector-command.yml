@@ -15,11 +15,11 @@ on:
         required: true
       bump-version:
         description: "Set to major, minor, or patch to automatically bump connectors version in Dockerfile, definitions.yaml and generate seed spec. You can also do this manually"
-        required: true
+        required: false
         default: "false"
       run-tests:
         description: "Should run tests"
-        required: true
+        required: false
         default: "true"
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
