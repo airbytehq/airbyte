@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "fulfillmentId": {
+      "type": "integer"
+    },
+    "orderId": {
+      "type": "integer"
+    },
+    "orderNumber": {
+      "type": "string"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "customerEmail": {
+      "type": "string"
+    },
+    "trackingNumber": {
+      "type": "string"
+    },
+    "createDate": {
+      "type": "string"
+    },
+    "shipDate": {
+      "type": "string"
+    },
+    "voidDate": {
+      "type": "null"
+    },
+    "deliveryDate": {
+      "type": "null"
+    },
+    "carrierCode": {
+      "type": "string"
+    },
+    "fulfillmentProviderCode": {
+      "type": "null"
+    },
+    "fulfillmentServiceCode": {
+      "type": "null"
+    },
+    "fulfillmentFee": {
+      "type": "integer"
+    },
+    "voidRequested": {
+      "type": "boolean"
+    },
+    "voided": {
+      "type": "boolean"
+    },
+    "marketplaceNotified": {
+      "type": "boolean"
+    },
+    "notifyErrorMessage": {
+      "type": "null"
+    },
+    "shipTo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "null"
+        },
+        "street1": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "null"
+        },
+        "street3": {
+          "type": "null"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "residential": {
+          "type": "null"
+        },
+        "addressVerified": {
+          "type": "null"
+        }
+      },
+      "required": []
+    }
+  },
+  "required": []
+}

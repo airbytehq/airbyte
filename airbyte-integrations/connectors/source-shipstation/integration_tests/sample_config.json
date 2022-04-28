@@ -1,0 +1,4 @@
+{
+  "api_key": "<your_shipstation_api_key>",
+  "api_secret": "<your_shipstation_api_secret>"
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "storeId": {
+      "type": "integer"
+    },
+    "storeName": {
+      "type": "string"
+    },
+    "marketplaceId": {
+      "type": "integer"
+    },
+    "marketplaceName": {
+      "type": "string"
+    },
+    "accountName": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "integrationUrl": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "companyName": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "publicEmail": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "refreshDate": {
+      "type": "string"
+    },
+    "lastRefreshAttempt": {
+      "type": "string"
+    },
+    "createDate": {
+      "type": "string"
+    },
+    "modifyDate": {
+      "type": "string"
+    },
+    "autoRefresh": {
+      "type": "boolean"
+    },
+    "statusMappings": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

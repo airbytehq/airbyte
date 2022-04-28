@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "warehouseId": {
+      "type": "integer"
+    },
+    "warehouseName": {
+      "type": "string"
+    },
+    "originAddress": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "street1": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "street3": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "residential": {
+          "type": "boolean"
+        },
+        "addressVerified": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "returnAddress": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "street1": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "street3": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "residential": {
+          "type": "string"
+        },
+        "addressVerified": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "company",
+        "street1",
+        "street2",
+        "street3",
+        "city",
+        "state",
+        "postalCode",
+        "country",
+        "phone",
+        "residential",
+        "addressVerified"
+      ]
+    },
+    "createDate": {
+      "type": "string"
+    },
+    "isDefault": {
+      "type": "boolean"
+    },
+    "sellerIntegrationId": {
+      "type": "string"
+    },
+    "extInventoryIdentity": {
+      "type": "string"
+    },
+    "registerFedexMeter": {
+      "type": "string"
+    }
+  },
+  "required": []
+}
