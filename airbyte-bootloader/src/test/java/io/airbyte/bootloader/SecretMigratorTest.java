@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
@@ -78,13 +77,13 @@ public class SecretMigratorTest {
     final ConnectorConfiguration sourceConnectorConfiguration = new ConnectorConfiguration(
         workspaceId,
         sourceConfiguration,
-        sourceSpec
-    );
-    // Mockito.when(secretMigrator.migrateConfiguration(Mockito.eq(sourceConnectorConfiguration), Mockito.any()));
+        sourceSpec);
+    // Mockito.when(secretMigrator.migrateConfiguration(Mockito.eq(sourceConnectorConfiguration),
+    // Mockito.any()));
 
-    //Mockito.doNothing().when(secretMigrator).migrateSources(Mockito.any(), Mockito.any());
+    // Mockito.doNothing().when(secretMigrator).migrateSources(Mockito.any(), Mockito.any());
 
-    final JsonNode destinationConfig = Jsons.jsonNode("defConf");
+    /*final JsonNode destinationConfig = Jsons.jsonNode("defConf");
     final UUID destinationDefinitionId = UUID.randomUUID();
     final StandardDestinationDefinition standardDestiantionDefinition = new StandardDestinationDefinition()
         .withDestinationDefinitionId(destinationDefinitionId)
@@ -99,14 +98,37 @@ public class SecretMigratorTest {
         .withDestinationId(UUID.randomUUID());
     final List<DestinationConnection> destinationConnections = Lists.newArrayList(destinationConnection);
     Mockito.when(configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class))
-        .thenReturn(destinationConnections);
+        .thenReturn(destinationConnections);*/
+
+    final JsonNode sourceSpec = Jsons.jsonNode("sourceSpec");
+    final UUID sourceDefinitionId = UUID.randomUUID();
+    final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()
+        .withSourceDefinitionId(sourceDefinitionId)
+        .withSpec(
+            new ConnectorSpecification()
+                .withConnectionSpecification(sourceSpec));
+    final Map<UUID, JsonNode> standardSourceDefinitions = new HashMap<>();
+    standardSourceDefinitions.put(sourceDefinitionId, standardSourceDefinition.getSpec().getConnectionSpecification());
+    Mockito.when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
+        .thenReturn(Lists.newArrayList(standardSourceDefinition));
+
+    final JsonNode sourceConfiguration = Jsons.jsonNode("sourceConfiguration");
+    final SourceConnection sourceConnection = new SourceConnection()
+        .withSourceId(UUID.randomUUID())
+        .withSourceDefinitionId(sourceDefinitionId)
+        .withConfiguration(sourceConfiguration)
+        .withWorkspaceId(workspaceId);
+    final List<SourceConnection> sourceConnections = Lists.newArrayList(sourceConnection);
+    Mockito.when(configPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class))
+        .thenReturn(sourceConnections);
 
     // Mockito.doNothing().when(secretMigrator).migrateDestinations(Mockito.any(), Mockito.any());
 
     final String path = "Mocked static call source";
     Mockito.doReturn(Lists.newArrayList(path)).when(secretMigrator).getSecretPath(sourceSpec);
     Mockito.doReturn(Lists.newArrayList(path)).when(secretMigrator).getAllExplodedPath(sourceConfiguration, path);
-    Mockito.doReturn(Optional.of(Jsons.jsonNode("Taratata"))).when(secretMigrator).getValueForPath(sourceConfiguration, path);
+    Mockito.doReturn(Optional.of(Jsons.jsonNode("shhhh"))).when(secretMigrator).getValueForPath(sourceConfiguration, path);
+    Mockito.doReturn(Jsons.jsonNode("sanitized")).when(secretMigrator).replaceAtJsonNode(Mockito.any(), Mockito.any(), Mockito.any());
     secretMigrator.migrateSecrets();
 
     Mockito.verify(secretMigrator).migrateSources(sourceConnections, standardSourceDefinitions);
