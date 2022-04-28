@@ -1,4 +1,4 @@
-name: Bump, Build, Test Connectors
+name: Publish Connector
 on:
   workflow_dispatch:
     inputs:
