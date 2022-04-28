@@ -5,21 +5,22 @@
 package io.airbyte.integrations.destination.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.Record;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -28,6 +29,7 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static MSSQLServerContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final ObjectMapper mapper = new ObjectMapper();
   private JsonNode configWithoutDbName;
   private JsonNode config;
 
@@ -97,19 +99,6 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
-
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
@@ -118,10 +107,31 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
               return ctx
                   .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                   .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
+                  .map(this::getJsonFromRecord)
                   .collect(Collectors.toList());
             });
+  }
+
+  private JsonNode getJsonFromRecord(Record record) {
+    ObjectNode node = mapper.createObjectNode();
+
+    Arrays.stream(record.fields()).forEach(field -> {
+      var value = record.get(field);
+
+      switch (field.getDataType().getTypeName()) {
+        case "nvarchar":
+          var stringValue = (String) value;
+          if (stringValue != null && stringValue.matches("^\\[.*\\]$")) {
+            node.set(field.getName(), Jsons.deserialize(stringValue));
+          } else {
+            node.put(field.getName(), stringValue);
+          }
+          break;
+        default:
+          node.put(field.getName(), (value != null ? value.toString() : null));
+      }
+    });
+    return node;
   }
 
   @BeforeAll

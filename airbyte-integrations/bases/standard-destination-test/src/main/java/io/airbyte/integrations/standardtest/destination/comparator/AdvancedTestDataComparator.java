@@ -92,8 +92,6 @@ public class AdvancedTestDataComparator implements TestDataComparator {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
     } else if (expectedValue.isArray() && actualValue.isArray()) {
       return compareArrays(expectedValue, actualValue);
-    } else if (expectedValue.isArray() && isQuotedArray(actualValue)) {
-      return compareArrays(expectedValue, Jsons.deserialize(actualValue.asText()));
     } else if (expectedValue.isObject() && actualValue.isObject()) {
       compareObjects(expectedValue, actualValue);
       return true;
