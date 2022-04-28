@@ -44,7 +44,7 @@ cmd_build() {
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
   # TODO: needs to build correct name
-  docker tag "$image_name:dev" "$image_candidate_tag"
+#  docker tag "$image_name:dev" "$image_candidate_tag"
 }
 
 cmd_test() {
@@ -134,6 +134,7 @@ cmd_publish() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
+  local run_tests=$1; shift || run_tests=true
   local publish_spec_to_cache
   local spec_cache_writer_sa_key_file
 
@@ -163,7 +164,6 @@ cmd_publish() {
   # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
-  local image_candidate_tag; image_candidate_tag="$image_version-candidate-PR_NUMBER"
 
   local versioned_image=$image_name:$image_version
   local latest_image=$image_name:latest
@@ -171,6 +171,13 @@ cmd_publish() {
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
   echo "latest_image $latest_image"
+
+  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
+  # time building, running tests to realize this version is a duplicate.
+  _error_if_tag_exists "$versioned_image"
+
+  # building the connector
+  cmd_build "$path" "$run_tests"
 
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
@@ -183,9 +190,8 @@ cmd_publish() {
     VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
     VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
   else
-    # Re-tag with production tag
-    docker tag "$image_candidate_tag" "$versioned_image"
-    docker tag "$image_candidate_tag" "$latest_image"
+    docker tag "$image_name:dev" "$versioned_image"
+    docker tag "$image_name:dev" "$latest_image"
 
     echo "Publishing new version ($versioned_image)"
     docker push "$versioned_image"
