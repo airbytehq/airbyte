@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "string",
+      "examples": ["2021-06-18T18:24:48.702Z"]
+    },
+    "deleted_at": {
+      "type": "string",
+      "examples": ["2021-06-18T18:24:48.702Z"]
+    },
+    "rating_average": {
+      "type": "number"
+    },
+    "rating_count": {
+      "type": "integer"
+    },
+    "rating_distribution": {
+      "type": "array"
+    },
+    "recommended_count": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": "string",
+      "examples": ["2021-06-18T18:24:48.702Z"]
+    }
+  }
+}

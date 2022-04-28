@@ -1,0 +1,215 @@
+{
+  "streams": [
+    {
+      "name": "question_stream",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "properties": {
+              "allow_other": {
+                "type": "boolean"
+              },
+              "customer_type": {
+                "type": "string"
+              },
+              "frequency_type": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer"
+              },
+              "inserted_at": {
+                "type": "string"
+              },
+              "other_placeholder": {
+                "type": "string"
+              },
+              "prompt": {
+                "type": "string"
+              },
+              "published_at": {
+                "type": "string"
+              },
+              "randomize_responses": {
+                "type": "string"
+              },
+              "responses": {
+                "type": "array",
+                "properties": {
+                  "clarification_question": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "id": {
+                    "type": "integer"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "submit_text": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "updated_at": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": [
+        "full_refresh"
+      ]
+    },
+    {
+      "name": "question_response_stream",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "properties": {
+              "available_responses": {
+                "type": "string"
+              },
+              "clarification_question": {
+                "type": "boolean"
+              },
+              "coupon_amount": {
+                "type": "string"
+              },
+              "coupon_code": {
+                "type": "string"
+              },
+              "coupon_type": {
+                "type": "string"
+              },
+              "customer_id": {
+                "type": "string"
+              },
+              "customer_order_count": {
+                "type": "integer"
+              },
+              "email": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "inserted_at": {
+                "type": "string"
+              },
+              "landing_page_path": {
+                "type": "string"
+              },
+              "order_currency_code": {
+                "type": "string"
+              },
+              "order_id": {
+                "type": "string"
+              },
+              "order_number": {
+                "type": "string"
+              },
+              "order_platform": {
+                "type": "string"
+              },
+              "order_source": {
+                "type": "string"
+              },
+              "order_total": {
+                "type": "string"
+              },
+              "order_total_usd": {
+                "type": "string"
+              },
+              "other": {
+                "type": "boolean"
+              },
+              "other_response": {
+                "type": "string"
+              },
+              "question": {
+                "type": "string"
+              },
+              "question_id": {
+                "type": "integer"
+              },
+              "question_type": {
+                "type": "string"
+              },
+              "referring_question": {
+                "type": "string"
+              },
+              "referring_question_id": {
+                "type": "string"
+              },
+              "referring_question_response": {
+                "type": "string"
+              },
+              "referring_question_response_id": {
+                "type": "string"
+              },
+              "referring_site": {
+                "type": "string"
+              },
+              "response": {
+                "type": "string"
+              },
+              "response_id": {
+                "type": "integer"
+              },
+              "response_position": {
+                "type": "integer"
+              },
+              "response_provided_at": {
+                "type": "string"
+              },
+              "submit_delta": {
+                "type": "integer"
+              },
+              "updated_at": {
+                "type": "string"
+              },
+              "utm_campaign": {
+                "type": "string"
+              },
+              "utm_content": {
+                "type": "string"
+              },
+              "utm_medium": {
+                "type": "string"
+              },
+              "utm_source": {
+                "type": "string"
+              },
+              "utm_term": {
+                "type": "string"
+              }
+            }
+          },
+          "next": {
+            "type": "string"
+          },
+          "prev": {
+            "type": "string"
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["created_at"],
+      "source_defined_primary_key": [["id"]]
+    }
+  ]
+}

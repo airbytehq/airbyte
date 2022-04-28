@@ -14,6 +14,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.STATE;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
+import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE_SERVICE_ACCOUNT;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.select;
 
@@ -45,6 +46,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -127,6 +129,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return (T) getActorCatalog(configId);
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       return (T) getActorCatalogFetchEvent(configId);
+    } else if (configType == ConfigSchema.WORKSPACE_SERVICE_ACCOUNT) {
+      return (T) getWorkspaceServiceAccount(configId);
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -135,6 +139,12 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   private StandardWorkspace getStandardWorkspace(final String configId) throws IOException, ConfigNotFoundException {
     final List<ConfigWithMetadata<StandardWorkspace>> result = listStandardWorkspaceWithMetadata(Optional.of(UUID.fromString(configId)));
     validate(configId, result, ConfigSchema.STANDARD_WORKSPACE);
+    return result.get(0).getConfig();
+  }
+
+  private WorkspaceServiceAccount getWorkspaceServiceAccount(final String configId) throws IOException, ConfigNotFoundException {
+    final List<ConfigWithMetadata<WorkspaceServiceAccount>> result = listWorkspaceServiceAccountWithMetadata(Optional.of(UUID.fromString(configId)));
+    validate(configId, result, ConfigSchema.WORKSPACE_SERVICE_ACCOUNT);
     return result.get(0).getConfig();
   }
 
@@ -272,6 +282,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorCatalogWithMetadata(configIdOpt), configType);
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       return (ConfigWithMetadata<T>) validateAndReturn(configId, listActorCatalogFetchEventWithMetadata(configIdOpt), configType);
+    } else if (configType == ConfigSchema.WORKSPACE_SERVICE_ACCOUNT) {
+      return (ConfigWithMetadata<T>) validateAndReturn(configId, listWorkspaceServiceAccountWithMetadata(configIdOpt), configType);
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -304,6 +316,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       listActorCatalogWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       listActorCatalogFetchEventWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
+    } else if (configType == ConfigSchema.WORKSPACE_SERVICE_ACCOUNT) {
+      listWorkspaceServiceAccountWithMetadata().forEach(c -> configWithMetadata.add((ConfigWithMetadata<T>) c));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -335,6 +349,33 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
           workspace));
     }
     return standardWorkspaces;
+  }
+
+  private List<ConfigWithMetadata<WorkspaceServiceAccount>> listWorkspaceServiceAccountWithMetadata() throws IOException {
+    return listWorkspaceServiceAccountWithMetadata(Optional.empty());
+  }
+
+  private List<ConfigWithMetadata<WorkspaceServiceAccount>> listWorkspaceServiceAccountWithMetadata(final Optional<UUID> configId)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(WORKSPACE_SERVICE_ACCOUNT);
+      if (configId.isPresent()) {
+        return query.where(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID.eq(configId.get())).fetch();
+      }
+      return query.fetch();
+    });
+
+    final List<ConfigWithMetadata<WorkspaceServiceAccount>> workspaceServiceAccounts = new ArrayList<>();
+    for (final Record record : result) {
+      final WorkspaceServiceAccount workspaceServiceAccount = DbConverter.buildWorkspaceServiceAccount(record);
+      workspaceServiceAccounts.add(new ConfigWithMetadata<>(
+          record.get(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID).toString(),
+          ConfigSchema.WORKSPACE_SERVICE_ACCOUNT.name(),
+          record.get(WORKSPACE_SERVICE_ACCOUNT.CREATED_AT).toInstant(),
+          record.get(WORKSPACE_SERVICE_ACCOUNT.UPDATED_AT).toInstant(),
+          workspaceServiceAccount));
+    }
+    return workspaceServiceAccounts;
   }
 
   private List<ConfigWithMetadata<StandardSourceDefinition>> listStandardSourceDefinitionWithMetadata() throws IOException {
@@ -697,6 +738,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeActorCatalog(Collections.singletonList((ActorCatalog) config));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       writeActorCatalogFetchEvent(Collections.singletonList((ActorCatalogFetchEvent) config));
+    } else if (configType == ConfigSchema.WORKSPACE_SERVICE_ACCOUNT) {
+      writeWorkspaceServiceAccount(Collections.singletonList((WorkspaceServiceAccount) config));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -753,6 +796,44 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(WORKSPACE.FEEDBACK_COMPLETE, standardWorkspace.getFeedbackDone())
             .set(WORKSPACE.CREATED_AT, timestamp)
             .set(WORKSPACE.UPDATED_AT, timestamp)
+            .execute();
+      }
+    });
+  }
+
+  private void writeWorkspaceServiceAccount(final List<WorkspaceServiceAccount> configs) throws IOException {
+    database.transaction(ctx -> {
+      writeWorkspaceServiceAccount(configs, ctx);
+      return null;
+    });
+  }
+
+  private void writeWorkspaceServiceAccount(final List<WorkspaceServiceAccount> configs, final DSLContext ctx) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    configs.forEach((workspaceServiceAccount) -> {
+      final boolean isExistingConfig = ctx.fetchExists(select()
+          .from(WORKSPACE_SERVICE_ACCOUNT)
+          .where(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID.eq(workspaceServiceAccount.getWorkspaceId())));
+
+      if (isExistingConfig) {
+        ctx.update(WORKSPACE_SERVICE_ACCOUNT)
+            .set(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID, workspaceServiceAccount.getWorkspaceId())
+            .set(WORKSPACE_SERVICE_ACCOUNT.SERVICE_ACCOUNT_ID, workspaceServiceAccount.getServiceAccountId())
+            .set(WORKSPACE_SERVICE_ACCOUNT.SERVICE_ACCOUNT_EMAIL, workspaceServiceAccount.getServiceAccountEmail())
+            .set(WORKSPACE_SERVICE_ACCOUNT.JSON_CREDENTIAL, JSONB.valueOf(Jsons.serialize(workspaceServiceAccount.getJsonCredential())))
+            .set(WORKSPACE_SERVICE_ACCOUNT.HMAC_KEY, JSONB.valueOf(Jsons.serialize(workspaceServiceAccount.getHmacKey())))
+            .set(WORKSPACE_SERVICE_ACCOUNT.UPDATED_AT, timestamp)
+            .where(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID.eq(workspaceServiceAccount.getWorkspaceId()))
+            .execute();
+      } else {
+        ctx.insertInto(WORKSPACE_SERVICE_ACCOUNT)
+            .set(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID, workspaceServiceAccount.getWorkspaceId())
+            .set(WORKSPACE_SERVICE_ACCOUNT.SERVICE_ACCOUNT_ID, workspaceServiceAccount.getServiceAccountId())
+            .set(WORKSPACE_SERVICE_ACCOUNT.SERVICE_ACCOUNT_EMAIL, workspaceServiceAccount.getServiceAccountEmail())
+            .set(WORKSPACE_SERVICE_ACCOUNT.JSON_CREDENTIAL, JSONB.valueOf(Jsons.serialize(workspaceServiceAccount.getJsonCredential())))
+            .set(WORKSPACE_SERVICE_ACCOUNT.HMAC_KEY, JSONB.valueOf(Jsons.serialize(workspaceServiceAccount.getHmacKey())))
+            .set(WORKSPACE_SERVICE_ACCOUNT.CREATED_AT, timestamp)
+            .set(WORKSPACE_SERVICE_ACCOUNT.UPDATED_AT, timestamp)
             .execute();
       }
     });
@@ -1044,6 +1125,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
+            .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
             .set(CONNECTION.CREATED_AT, timestamp)
             .set(CONNECTION.UPDATED_AT, timestamp)
             .execute();
@@ -1189,6 +1271,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       writeActorCatalog(configs.values().stream().map(c -> (ActorCatalog) c).collect(Collectors.toList()));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       writeActorCatalogFetchEvent(configs.values().stream().map(c -> (ActorCatalogFetchEvent) c).collect(Collectors.toList()));
+    } else if (configType == ConfigSchema.WORKSPACE_SERVICE_ACCOUNT) {
+      writeWorkspaceServiceAccount(configs.values().stream().map(c -> (WorkspaceServiceAccount) c).collect(Collectors.toList()));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1220,6 +1304,8 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       deleteConfig(ACTOR_CATALOG, ACTOR_CATALOG.ID, UUID.fromString(configId));
     } else if (configType == ConfigSchema.ACTOR_CATALOG_FETCH_EVENT) {
       deleteConfig(ACTOR_CATALOG_FETCH_EVENT, ACTOR_CATALOG_FETCH_EVENT.ID, UUID.fromString(configId));
+    } else if (configType == ConfigSchema.WORKSPACE_SERVICE_ACCOUNT) {
+      deleteConfig(WORKSPACE_SERVICE_ACCOUNT, WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID, UUID.fromString(configId));
     } else {
       throw new IllegalArgumentException("Unknown Config Type " + configType);
     }
@@ -1277,6 +1363,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       ctx.truncate(STATE).restartIdentity().cascade().execute();
       ctx.truncate(ACTOR_CATALOG).restartIdentity().cascade().execute();
       ctx.truncate(ACTOR_CATALOG_FETCH_EVENT).restartIdentity().cascade().execute();
+      ctx.truncate(WORKSPACE_SERVICE_ACCOUNT).restartIdentity().cascade().execute();
 
       if (configs.containsKey(ConfigSchema.STANDARD_WORKSPACE)) {
         configs.get(ConfigSchema.STANDARD_WORKSPACE).map(c -> (StandardWorkspace) c)

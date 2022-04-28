@@ -1,0 +1,312 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "products",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "created_at": {
+              "type": "string",
+              "examples": [
+                "2021-06-18T18:24:48.702Z"
+              ]
+            },
+            "deleted_at": {
+              "type": "string",
+              "examples": [
+                "2021-06-18T18:24:48.702Z"
+              ]
+            },
+            "rating_average": {
+              "type": "number"
+            },
+            "rating_count": {
+              "type": "integer"
+            },
+            "rating_distribution": {
+              "type": "object"
+            },
+            "recommended_count": {
+              "type": "integer"
+            },
+            "remote_handle": {
+              "type": "string"
+            },
+            "remote_id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "unreviewable": {
+              "type": "boolean"
+            },
+            "updated_at": {
+              "type": "string",
+              "examples": [
+                "2021-06-18T18:24:48.702Z"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "product_overviews",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "created_at": {
+              "type": "string",
+              "examples": [
+                "2021-06-18T18:24:48.702Z"
+              ]
+            },
+            "deleted_at": {
+              "type": "string",
+              "examples": [
+                "2021-06-18T18:24:48.702Z"
+              ]
+            },
+            "rating_average": {
+              "type": "number"
+            },
+            "rating_count": {
+              "type": "integer"
+            },
+            "rating_distribution": {
+              "type": "object"
+            },
+            "recommended_count": {
+              "type": "integer"
+            },
+            "updated_at": {
+              "type": "string",
+              "examples": [
+                "2021-06-18T18:24:48.702Z"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "product_reviews",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "body": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "created_at": {
+              "type": "string",
+              "examples": [
+                "2021-06-18T18:25:07.033Z"
+              ]
+            },
+            "customer_id": {
+              "type": "integer"
+            },
+            "down_vote_count": {
+              "type": "integer"
+            },
+            "featured": {
+              "type": "boolean"
+            },
+            "product_id": {
+              "type": "integer"
+            },
+            "rating": {
+              "type": "integer"
+            },
+            "response": {
+              "type": [
+                "null",
+                "object"
+              ]
+            },
+            "target_title": {
+              "type": "string"
+            },
+            "title": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "up_vote_count": {
+              "type": "integer"
+            },
+            "updated_at": {
+              "type": "string",
+              "examples": [
+                "2021-06-18T18:25:07.033Z"
+              ]
+            },
+            "verified_buyer": {
+              "type": "boolean"
+            },
+            "would_recommend": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "photo_urls": {
+              "type": "array"
+            },
+            "video_urls": {
+              "type": "array"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "stores",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "created_at": {
+              "type": "string",
+              "examples": ["2021-06-18T18:25:17.951Z"]
+            },
+            "key": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "rating_average": {
+              "type": "number"
+            },
+            "rating_count": {
+              "type": "number"
+            },
+            "rating_distribution": {
+              "type": "object"
+            },
+            "recommended_count": {
+              "type": "integer"
+            },
+            "slug": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string",
+              "examples": ["2021-06-18T18:25:17.951Z"]
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "store_reviews",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "body": {
+              "type": ["null", "object"]
+            },
+            "created_at": {
+              "type": "string",
+              "examples": ["2021-06-18T18:25:16.161Z"]
+            },
+            "customer_id": {
+              "type": "integer"
+            },
+            "down_vote_count": {
+              "type": "number"
+            },
+            "featured": {
+              "type": "boolean"
+            },
+            "rating": {
+              "type": "number"
+            },
+            "response": {
+              "type": ["null", "object"]
+            },
+            "target_title": {
+              "type": "string"
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "up_vote_count": {
+              "type": "integer"
+            },
+            "updated_at": {
+              "type": "string",
+              "examples": ["2021-06-18T18:25:16.161Z"]
+            },
+            "verified_buyer": {
+              "type": "boolean"
+            },
+            "would_recommend": {
+              "type": ["null", "string"]
+            },
+            "photo_urls": {
+              "type": "array"
+            },
+            "video_urls": {
+              "type": "array"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}
