@@ -42,4 +42,5 @@ public class BigQueryConsts {
   public static final String CREDENTIAL_TYPE = "credential_type";
   public static final String HMAC_KEY_ACCESS_ID = "hmac_key_access_id";
   public static final String HMAC_KEY_ACCESS_SECRET = "hmac_key_secret";
+
 }
