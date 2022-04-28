@@ -71,7 +71,7 @@ describe("formConfigHelpers", () => {
     test("should leave cursorField empty if defaultCursorField not defined", () => {
       const streamNode = verifyConfigCursorField(mockedStreamNode);
 
-      expect(streamNode.config.cursorField).toBeEmpty();
+      expect(streamNode.config.cursorField).toStrictEqual([]);
     });
   });
 
