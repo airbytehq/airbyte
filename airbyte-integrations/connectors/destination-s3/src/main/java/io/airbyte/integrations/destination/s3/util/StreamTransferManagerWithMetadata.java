@@ -31,6 +31,7 @@ public class StreamTransferManagerWithMetadata extends StreamTransferManager {
         objectMetadata = new ObjectMetadata();
       }
       objectMetadata.setUserMetadata(userMetadata);
+      request.setObjectMetadata(objectMetadata);
     }
   }
 }
