@@ -7,39 +7,10 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class ShipstationStream(HttpStream, ABC):
-    """
-    TODO remove this comment
-
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class ShipstationStream(HttpStream, ABC)` which is the current class
-    `class Customers(ShipstationStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(ShipstationStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalShipstationStream((ShipstationStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # TODO: Fill in the url base. Required.
     url_base = "https://ssapi.shipstation.com"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
         This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
         to most other methods in this class to help you form headers, request bodies, query params, etc..
 
@@ -61,7 +32,6 @@ class ShipstationStream(HttpStream, ABC):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
         params = {'pageSize': 500}
@@ -73,7 +43,6 @@ class ShipstationStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
         yield {}
@@ -138,9 +107,6 @@ class Stores(ShipstationStream):
     ) -> str:
         return "/stores"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
-
 
 class Warehouses(ShipstationStream):
     primary_key = "warehouseId"
@@ -153,24 +119,13 @@ class Warehouses(ShipstationStream):
     ) -> str:
         return "/warehouses"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()
 
-
-# Basic incremental stream
 class IncrementalShipstationStream(ShipstationStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
     @property
     def cursor_field(self) -> str:
         """
-        TODO
         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
 
@@ -187,27 +142,18 @@ class IncrementalShipstationStream(ShipstationStream, ABC):
 
 
 class Employees(IncrementalShipstationStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
 
-    # TODO: Fill in the cursor_field. Required.
     cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "employee_id"
 
     def path(self, **kwargs) -> str:
         """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
         return "single". Required.
         """
         return "employees"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-
         Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
         This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
         section of the docs for more information.
@@ -225,3 +171,6 @@ class Employees(IncrementalShipstationStream):
         the date query param.
         """
         raise NotImplementedError("Implement stream slices or delete this method!")
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()

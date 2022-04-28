@@ -18,8 +18,8 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_shipstation",
     description="Source implementation for Shipstation.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
+    author="Ehmad Zubair",
+    author_email="ehmadz@cogentlabs.co",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},

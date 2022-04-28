@@ -173,7 +173,7 @@
               "type": "object",
               "properties": {
                 "value": {
-                  "type": "integer"
+                  "type": "number"
                 },
                 "units": {
                   "type": "string"
@@ -191,10 +191,10 @@
               "type": "number"
             },
             "taxAmount": {
-              "type": "null"
+              "type": "number"
             },
             "shippingAmount": {
-              "type": "null"
+              "type": "number"
             },
             "warehouseLocation": {
               "type": "string"
@@ -255,7 +255,7 @@
       "type": "number"
     },
     "shippingAmount": {
-      "type": "integer"
+      "type": "number"
     },
     "customerNotes": {
       "type": "string"
@@ -297,7 +297,7 @@
       "type": "object",
       "properties": {
         "value": {
-          "type": "integer"
+          "type": "number"
         },
         "units": {
           "type": "string"
@@ -309,19 +309,19 @@
       ]
     },
     "dimensions": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "units": {
           "type": "string"
         },
         "length": {
-          "type": "integer"
+          "type": "number"
         },
         "width": {
-          "type": "integer"
+          "type": "number"
         },
         "height": {
-          "type": "integer"
+          "type": "number"
         }
       },
       "required": [
@@ -341,7 +341,7 @@
           "type": "boolean"
         },
         "insuredValue": {
-          "type": "integer"
+          "type": "number"
         }
       },
       "required": [
@@ -372,7 +372,7 @@
                   "type": "integer"
                 },
                 "value": {
-                  "type": "integer"
+                  "type": "number"
                 },
                 "harmonizedTariffCode": {
                   "type": "null"

@@ -15,22 +15,22 @@
       "type": "string"
     },
     "price": {
-      "type": "integer"
+      "type": "number"
     },
     "defaultCost": {
       "type": "integer"
     },
     "length": {
-      "type": "integer"
+      "type": ["number", "null"]
     },
     "width": {
-      "type": "integer"
+      "type": ["number", "null"]
     },
     "height": {
-      "type": "integer"
+      "type": ["number", "null"]
     },
     "weightOz": {
-      "type": "integer"
+      "type": ["number", "null"]
     },
     "internalNotes": {
       "type": "null"

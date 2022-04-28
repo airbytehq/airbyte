@@ -1,7 +1,7 @@
 # Shipstation Source
 
 This is the repository for the Shipstation source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/shipstation).
+For information about how to use this connector within Airbyte, see [the documentation](https://help.shipstation.com/hc/en-us/articles/360025856212-ShipStation-API).
 
 ## Local development
 
