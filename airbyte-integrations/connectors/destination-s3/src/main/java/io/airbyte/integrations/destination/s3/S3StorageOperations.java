@@ -33,7 +33,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3StorageOperations implements BlobStorageOperations {
+public class S3StorageOperations extends BlobStorageOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StorageOperations.class);
 
@@ -63,13 +63,11 @@ public class S3StorageOperations implements BlobStorageOperations {
   private final NamingConventionTransformer nameTransformer;
   protected final S3DestinationConfig s3Config;
   protected AmazonS3 s3Client;
-  private final List<BlobDecorator> blobDecorators;
 
   public S3StorageOperations(final NamingConventionTransformer nameTransformer, final AmazonS3 s3Client, final S3DestinationConfig s3Config) {
     this.nameTransformer = nameTransformer;
     this.s3Client = s3Client;
     this.s3Config = s3Config;
-    this.blobDecorators = new ArrayList<>();
   }
 
   @Override
@@ -290,10 +288,4 @@ public class S3StorageOperations implements BlobStorageOperations {
   public boolean isValidData(final JsonNode jsonNode) {
     return true;
   }
-
-  @Override
-  public void addBlobDecorator(final BlobDecorator blobDecorator) {
-    blobDecorators.add(blobDecorator);
-  }
-
 }
