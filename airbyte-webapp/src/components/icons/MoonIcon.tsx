@@ -3,7 +3,7 @@ interface MoonProps {
 }
 
 export const MoonIcon = ({ title }: MoonProps): JSX.Element => (
-  <svg width="11" height="11" viewBox="0 0 10 10" fill="none" role="img" data-icon="moon">
+  <svg viewBox="0 0 10 10" fill="none" role="img" data-icon="moon">
     {title && <title>{title}</title>}
     <path
       fillRule="evenodd"

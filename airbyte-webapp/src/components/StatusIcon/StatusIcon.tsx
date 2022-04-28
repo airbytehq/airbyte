@@ -48,7 +48,12 @@ const Badge = styled(Container)<StatusIconProps>`
   background: ${(props) => props.theme[(props.status && _themeByStatus[props.status]) || "dangerColor"]};
   border-radius: ${({ value }) => (value ? "15px" : "50%")};
   color: ${({ theme }) => theme.whiteColor};
-  padding-top: ${({ status }) => (status === "warning" ? 3 : 4)}px;
+  padding-top: ${({ status }) => (status === "warning" || status === "inactive" ? 3 : 4)}px;
+
+  > svg {
+    height: 1em;
+    vertical-align: -0.125em;
+  }
 `;
 
 const Value = styled.span`
