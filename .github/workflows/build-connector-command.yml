@@ -68,6 +68,7 @@ jobs:
           # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   bump-build-test-connector:
+    name: Bump, Build, Test Connector
     needs: start-bump-build-test-connector-runner
     runs-on: ${{ needs.start-bump-build-test-connector-runner.outputs.label }}
     environment: more-secrets
@@ -154,8 +155,7 @@ jobs:
       ############################
       - name: Bump Connector Version
         if: github.event.inputs.bump-version != 'false' && success()
-        run: |
-          ./tools/integrations/manage.sh cmd_bump_version airbyte-integrations/${{ github.event.inputs.connector }}
+        run: ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }}
       - name: Commit and Push Version Bump
         if: github.event.inputs.bump-version != 'false' && success()
         run: |
@@ -182,8 +182,7 @@ jobs:
       ##     BUILD AND TEST     ##
       ############################
       - name: Build ${{ github.event.inputs.connector }}
-        run: |
-          ./tools/integrations/manage.sh cmd_build airbyte-integrations/${{ github.event.inputs.connector }}
+        run: ./tools/integrations/manage.sh build_experiment airbyte-integrations/${{ github.event.inputs.connector }}
         id: build
         env:
           PR_NUMBER: ${{ github.event.number }}
@@ -192,8 +191,7 @@ jobs:
           TZ: UTC
   #      - name: Test ${{ github.event.inputs.connector }}
   #        if: github.event.inputs.run-tests == 'true'
-  #        run: |
-  #          ./tools/integrations/manage.sh cmd_test airbyte-integrations/${{ github.event.inputs.connector }}
+  #        run: ./tools/integrations/manage.sh test airbyte-integrations/${{ github.event.inputs.connector }}
   #      - name: Finalize Sentry release
   #        if: startsWith(github.event.inputs.connector, 'connectors')
   #        run: |

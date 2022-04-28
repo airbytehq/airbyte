@@ -34,8 +34,26 @@ cmd_scaffold() {
   )
 }
 
-# TODO: needs to be able to set alternate tag
 cmd_build() {
+  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
+  [ -d "$path" ] || error "Path must be the root path of the integration"
+
+  local run_tests=$1; shift || run_tests=true
+
+  echo "Building $path"
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
+
+  if [ "$run_tests" = false ] ; then
+    echo "Skipping integration tests..."
+  else
+    echo "Running integration tests..."
+    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+  fi
+}
+
+# Experimental version of the above for a new way to build/tag images
+cmd_build_experiment() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
@@ -60,7 +78,7 @@ cmd_test() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
-  # TODO: needs to know to use alternate image from cmd_build
+  # TODO: needs to know to use alternate image tag from cmd_build_experiment
   echo "Running integration tests..."
   ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
 }
@@ -179,7 +197,6 @@ cmd_publish() {
   # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
-
   local versioned_image=$image_name:$image_version
   local latest_image=$image_name:latest
 
