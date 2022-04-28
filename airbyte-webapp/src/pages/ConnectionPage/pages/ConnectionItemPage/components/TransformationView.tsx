@@ -29,7 +29,7 @@ import {
 } from "views/Connection/ConnectionForm/formConfig";
 import { FormCard } from "views/Connection/FormCard";
 
-interface Props {
+interface TransformationViewProps {
   connection: Connection;
 }
 
