@@ -90,7 +90,7 @@ const ConnectionItemPage: React.FC = () => {
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           />
-          {connection.status !== ConnectionStatus.DEPRECATED && (
+          {!isConnectionDeleted && (
             <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
           )}
           <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace={true} />} />
