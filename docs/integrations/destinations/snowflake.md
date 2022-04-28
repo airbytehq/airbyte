@@ -1,6 +1,6 @@
 # Snowflake
 
-Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, then setting up the data loading method (internal stage, AWS S3, GCS bucket, or Azure Blob Storage), and then configuring the Snowflake destination connector using the Airbyte UI.  
+Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, then setting up the data loading method (internal stage, AWS S3, GCS bucket, or Azure Blob Storage), and then configuring the Snowflake destination connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
@@ -15,11 +15,11 @@ To set up the Snowflake destination connector, you first need to create Airbyte-
 
 You can use the following script in a new [Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) to create the entities:
 
-1. [Log into your Snowflake account](https://www.snowflake.com/login/). 
+1. [Log into your Snowflake account](https://www.snowflake.com/login/).
 2. Edit the following script to change the password to a more secure password and to change the names of other resources if you so desire.
 
     **Note:** Make sure you follow the [Snowflake identifier requirements](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html) while renaming the resources.
-    
+
         -- set variables (these need to be uppercase)
         set airbyte_role = 'AIRBYTE_ROLE';
         set airbyte_username = 'AIRBYTE_USER';
@@ -88,7 +88,7 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
         to role identifier($airbyte_role);
 
         commit;
-        
+
 
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowlight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html). Make sure to select the **All Queries** checkbox.
 
@@ -103,7 +103,7 @@ You can also store data externally using an [Amazon S3 bucket](https://docs.aws.
 
 ### Using an Amazon S3 bucket
 
-To use an Amazon S3 bucket, [create a new Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) with read/write access for Airbyte to stage data to Snowflake. 
+To use an Amazon S3 bucket, [create a new Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) with read/write access for Airbyte to stage data to Snowflake.
 
 
 ### Using a Google Cloud Storage (GCS) bucket
@@ -111,7 +111,7 @@ To use an Amazon S3 bucket, [create a new Amazon S3 bucket](https://docs.aws.ama
 To use a GCS bucket:
 
 1. Navigate to the Google Cloud Console and [create a new GCS bucket](https://cloud.google.com/storage/docs/creating-buckets) with read/write access for Airbyte to stage data to Snowflake.
-2. [Generate a JSON key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for your service account. 
+2. [Generate a JSON key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for your service account.
 3. Edit the following script to replace `AIRBYTE_ROLE` with the role you used for Airbyte's Snowflake configuration and `YOURBUCKETNAME` with your GCS bucket name.
     ```text
     create storage INTEGRATION gcs_airbyte_integration
@@ -130,7 +130,7 @@ To use a GCS bucket:
     DESC STORAGE INTEGRATION gcs_airbyte_integration;
     ```
     The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. Add read/write permissions to your bucket with that email.
-    
+
 4. Navigate to the Snowflake UI and run the script as a [Snowflake account admin](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowlight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
 
 ### Using Azure Blob Storage
@@ -180,6 +180,7 @@ To use AWS S3 as the cloud storage, enter the information for the S3 bucket you 
 | S3 Access Key *  | The corresponding secret to the S3 Key ID. |
 | Stream Part Size (Optional) | Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. <br/>Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care. (e.g. 5)  |
 | Purge Staging Files and Tables | Determines whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after sync; if you want to keep them for other purposes, set `purge_staging_data` to false. |
+| Encryption | Whether files on S3 are encrypted. You probably don't need to enable this, but it can provide an additional layer of security if you are sharing your data storage with other applications. If you do use encryption, you must choose between ephemeral keys (Airbyte will automatically generate a new key for each sync, and nobody but Airbyte and Snowflake will be able to read the data on S3) or providing your own key (if you have the "Purge staging files and tables" option disabled, and you want to be able to decrypt the data yourself) |
 
 To use GCS as the cloud storage, enter the information for the GCS bucket you created in Step 2:
 
@@ -199,7 +200,7 @@ To use Azure Blob storage, enter the information for the storage you created in 
 | SAS Token | The SAS Token you provided in Step 2. |
 
 
-## Output schema 
+## Output schema
 
 Airbyte outputs each stream into its own table with the following columns in Snowflake:
 
