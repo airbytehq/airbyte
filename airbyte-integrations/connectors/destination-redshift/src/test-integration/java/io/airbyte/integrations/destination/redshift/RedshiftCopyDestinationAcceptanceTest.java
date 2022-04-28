@@ -53,9 +53,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   public JsonNode getStaticConfig() {
-    var config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
-    LOGGER.warn("real config : {} ", config);
-    return config;
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
