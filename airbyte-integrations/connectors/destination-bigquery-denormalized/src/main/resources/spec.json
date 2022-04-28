@@ -1,21 +1,14 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
   "supportsIncremental": true,
-  "supportsNormalization": true,
+  "supportsNormalization": false,
   "supportsDBT": true,
-  "supported_destination_sync_modes": [
-    "overwrite",
-    "append",
-    "append_dedup"
-  ],
+  "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Denormalized Typed Struct Destination Spec",
     "type": "object",
-    "required": [
-      "project_id",
-      "dataset_id"
-    ],
+    "required": ["project_id", "dataset_id"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -26,18 +19,10 @@
             "type": "object",
             "title": "Service Account",
             "order": 0,
-            "required": [
-              "auth_type",
-              "credentials_json"
-            ],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "service_account",
-                "enum": [
-                  "service_account"
-                ],
-                "default": "service_account",
                 "order": 0
               },
               "credentials_json": {
@@ -52,17 +37,10 @@
             "type": "object",
             "title": "OAuth2.0",
             "order": 1,
-            "required": [
-              "auth_type"
-            ],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": [
-                  "oauth2.0"
-                ],
-                "default": "oauth2.0",
                 "order": 0
               },
               "access_token": {
@@ -173,9 +151,7 @@
           {
             "title": "Standard Inserts",
             "additionalProperties": false,
-            "required": [
-              "method"
-            ],
+            "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
@@ -201,17 +177,13 @@
                 "title": "GCS Bucket Name",
                 "type": "string",
                 "description": "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
-                "examples": [
-                  "airbyte_sync"
-                ]
+                "examples": ["airbyte_sync"]
               },
               "gcs_bucket_path": {
                 "title": "GCS Bucket Path",
                 "description": "Directory under the GCS bucket where data will be written.",
                 "type": "string",
-                "examples": [
-                  "data_sync/test"
-                ]
+                "examples": ["data_sync/test"]
               },
               "part_size_mb": {
                 "title": "Block Size (MB) for GCS Multipart Upload (Optional)",
@@ -220,9 +192,7 @@
                 "default": 5,
                 "minimum": 5,
                 "maximum": 525,
-                "examples": [
-                  5
-                ]
+                "examples": [5]
               },
               "keep_files_in_gcs-bucket": {
                 "type": "string",
