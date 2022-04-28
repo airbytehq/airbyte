@@ -11,6 +11,12 @@ from conftest import generate_stream
 from source_salesforce.streams import BulkIncrementalSalesforceStream
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 @pytest.mark.parametrize(
     "n_records, first_size, first_peak",
     (
