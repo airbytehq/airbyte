@@ -289,9 +289,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   dirty={dirty}
                   resetForm={() => {
                     resetForm();
-                    if (onCancel) {
-                      onCancel();
-                    }
+                      onCancel?.();
                   }}
                   successMessage={successMessage}
                   errorMessage={
