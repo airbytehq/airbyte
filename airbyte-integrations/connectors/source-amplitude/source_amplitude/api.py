@@ -30,7 +30,7 @@ class AmplitudeStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         status = response.status_code
-        if status in list(HTTP_ERROR_CODES.keys()):
+        if status in HTTP_ERROR_CODES.keys():
             error_msg_from_status(status)
             yield from []
         else:
@@ -167,7 +167,7 @@ class Events(IncrementalAmplitudeStream):
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code
-            if status in list(HTTP_ERROR_CODES.keys()):
+            if status in HTTP_ERROR_CODES.keys():
                 error_msg_from_status(status)
                 yield from []
             else:
