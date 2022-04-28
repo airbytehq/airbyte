@@ -26,6 +26,7 @@ definitions:
           - SPEC
           - CONNECTION_STATUS
           - CATALOG
+          - TRACE
       log:
         description: "log message: any kind of logging you want the platform to know about."
         "$ref": "#/definitions/AirbyteLogMessage"
@@ -43,6 +44,9 @@ definitions:
       state:
         description: "schema message: the state. Must be the last message produced. The platform uses this information"
         "$ref": "#/definitions/AirbyteStateMessage"
+      trace:
+        description: "trace message: a message to provide human readable information about a sync"
+        "$ref": "#/definitions/AirbyteTraceMessage"
   AirbyteRecordMessage:
     type: object
     additionalProperties: true
@@ -93,6 +97,39 @@ definitions:
           - TRACE
       message:
         description: "the log message"
+        type: string
+  AirbyteTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - emitted_at
+    properties:
+      type:
+        description: "the type of trace message"
+        type: string
+        enum:
+          - ERROR
+      emitted_at:
+        description: "the time in ms the message was emitted"
+        type: number
+      error:
+        description: "error data from the sync"
+        "$ref": "#/definitions/AirbyteErrorTraceMessage"
+  AirbyteErrorTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - message
+    properties:
+      message:
+        description: The human readable message that will be shown to the user in the UI
+        type: string
+      internal_message:
+        description: The less human readable, more technical message showing the reason for the failure, e.g. the first line of a stack trace
+        type: string
+      stack_trace:
+        description: The full stack trace of the error
         type: string
   AirbyteConnectionStatus:
     description: Airbyte connection status
