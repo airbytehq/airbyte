@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Base64.Decoder;
-import java.util.Base64.Encoder;
 import java.util.HashMap;
 import java.util.Map;
 import javax.crypto.spec.SecretKeySpec;
@@ -14,12 +13,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AesCbcEnvelopeEncryptionBlobDecoratorTest {
 
-  private static final Encoder BASE64_ENCODER = Base64.getEncoder();
   private static final Decoder BASE64_DECODER = Base64.getDecoder();
 
   private AesCbcEnvelopeEncryptionBlobDecorator decorator;
@@ -33,7 +29,6 @@ public class AesCbcEnvelopeEncryptionBlobDecoratorTest {
     );
   }
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AesCbcEnvelopeEncryptionBlobDecoratorTest.class);
   @Test
   public void testEncryption() throws IOException {
     final ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -48,8 +43,6 @@ public class AesCbcEnvelopeEncryptionBlobDecoratorTest {
           Charset.defaultCharset()
       );
     }
-    LOGGER.info(BASE64_ENCODER.encodeToString(stream.toByteArray()));
-
 
     Assertions.assertArrayEquals(
         BASE64_DECODER.decode("IRfz0FN05Y9yyne+0V+G14xYjA4B0+ter7qniDheIu9UM3Fdmu/mqjyFvYFIRTroP5kNJ1SH3FaArE5aHkrWMPwSkczkhArajfYX+UEfGH68YyWOSnpdxuviTTgK3Ee3OVTz3ZlziOB8jCMjupJ9pqkLnxg7Ghe3BQ1puOHGFDMmIgiP4Zfz0fkdlUyZOvsJ7xpncD24G6IIJNwOyo4CedULgueHdybmxr4oddhAja8QxJxZzlfZl4suJ+KWvt78MSdkRlp+Ip99U8n0O7BLJA=="),
