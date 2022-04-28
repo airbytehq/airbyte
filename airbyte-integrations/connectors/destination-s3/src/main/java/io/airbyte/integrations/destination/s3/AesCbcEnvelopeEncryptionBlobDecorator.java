@@ -36,7 +36,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Snowflake only supports client-side encryption in S3 and Azure Storage; it does not support this feature in GCS (https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html).
  * Azure Storage uses a similar envelope encryption technique to S3 (https://docs.microsoft.com/en-us/azure/storage/common/storage-client-side-encryption?tabs=dotnet#encryption-via-the-envelope-technique).
  */
-public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
+public class AesCbcEnvelopeEncryptionBlobDecorator extends BlobDecorator {
 
   public static final String ENCRYPTED_CONTENT_ENCRYPTING_KEY = "cek";
   public static final String INITIALIZATION_VECTOR = "iv";
