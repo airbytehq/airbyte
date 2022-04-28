@@ -7,7 +7,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 import java.util.Map;
 import javax.crypto.BadPaddingException;
@@ -42,12 +41,11 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
   public static final String ENCRYPTED_CONTENT_ENCRYPTING_KEY = "cek";
   public static final String INITIALIZATION_VECTOR = "iv";
 
-  private static final int AES_KEY_SIZE_BITS = 256;
+  public static final int AES_KEY_SIZE_BITS = 256;
   private static final int AES_CBC_INITIALIZATION_VECTOR_SIZE_BYTES = 16;
   private static final Encoder BASE64_ENCODER = Base64.getEncoder();
-  private static final Decoder BASE64_DECODER = Base64.getDecoder();
 
-  private static final String KEY_ENCRYPTING_ALGO = "AES";
+  public static final String KEY_ENCRYPTING_ALGO = "AES";
 
   // There's no specific KeyGenerator for AES/CBC/PKCS5Padding, so we just use a normal AES KeyGenerator
   private static final String CONTENT_ENCRYPTING_KEY_ALGO = "AES";
@@ -73,25 +71,12 @@ public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
     this(new SecretKeySpec(keyEncryptingKey, KEY_ENCRYPTING_ALGO));
   }
 
-  public AesCbcEnvelopeEncryptionBlobDecorator(final String base64EncodedKeyEncryptingKey) {
-    this(new SecretKeySpec(BASE64_DECODER.decode(base64EncodedKeyEncryptingKey), KEY_ENCRYPTING_ALGO));
-  }
-
   @VisibleForTesting
   AesCbcEnvelopeEncryptionBlobDecorator(final SecretKey keyEncryptingKey, final SecretKey contentEncryptingKey, final byte[] initializationVector) {
     this.keyEncryptingKey = keyEncryptingKey;
     this.contentEncryptingKey = contentEncryptingKey;
 
     this.initializationVector = initializationVector;
-  }
-
-  /**
-   * Generate a random KEK. Useful for producing ephemeral keys.
-   */
-  public static SecretKey randomKeyEncryptingKey() throws NoSuchAlgorithmException {
-    final KeyGenerator kekGenerator = KeyGenerator.getInstance(KEY_ENCRYPTING_ALGO);
-    kekGenerator.init(AES_KEY_SIZE_BITS);
-    return kekGenerator.generateKey();
   }
 
   @Override

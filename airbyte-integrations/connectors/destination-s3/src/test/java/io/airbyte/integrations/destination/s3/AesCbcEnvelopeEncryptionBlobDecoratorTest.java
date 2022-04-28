@@ -9,7 +9,6 @@ import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 import java.util.HashMap;
 import java.util.Map;
-import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
@@ -77,17 +76,5 @@ public class AesCbcEnvelopeEncryptionBlobDecoratorTest {
         ),
         metadata
     );
-  }
-
-  @Test
-  public void foo() throws Exception {
-    final String b64EncryptedCek = "Ck5u5cKqcY+bcFBrpsPHHUNw5Qx8nYDJ2Vqt6XG6kwxjVAJQKKljPv9NDsG6Ncoc";
-    final String b64kek = "oFf0LY0Zae9ksNZsPSJG8ZLGRRBUUhitaPKWRPPKTvM=";
-
-    final SecretKeySpec kek = new SecretKeySpec(BASE64_DECODER.decode(b64kek), "AES");
-    final Cipher cekCipher = Cipher.getInstance("AES");
-    cekCipher.init(Cipher.DECRYPT_MODE, kek);
-    final byte[] decryptedCek = cekCipher.doFinal(BASE64_DECODER.decode(b64EncryptedCek));
-    LOGGER.info(BASE64_ENCODER.encodeToString(decryptedCek));
   }
 }
