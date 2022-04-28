@@ -16,6 +16,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+
 from .errors import HTTP_ERROR_CODES, error_msg_from_status
 
 
@@ -29,15 +30,15 @@ class AmplitudeStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         status = response.status_code
-        if status == 200:
-            yield from response.json().get(self.data_field, [])
-        elif status in list(HTTP_ERROR_CODES.keys()):
+        if status in list(HTTP_ERROR_CODES.keys()):
             error_msg_from_status(status)
             yield from []
-        
+        else:
+            yield from response.json().get(self.data_field, [])
+
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/{self.name}"
-        
+
 
 class Cohorts(AmplitudeStream):
     primary_key = "id"
@@ -126,12 +127,12 @@ class Events(IncrementalAmplitudeStream):
         with gzip.open(zip_file) as file:
             for record in file:
                 yield json.loads(record)
-                
+
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         start = self._start_date
         if stream_state:
-            start = pendulum.parse(stream_state.get(self.cursor_field))            
+            start = pendulum.parse(stream_state.get(self.cursor_field))
         end = pendulum.now()
         while start <= end:
             slices.append(
@@ -154,7 +155,8 @@ class Events(IncrementalAmplitudeStream):
         # API returns data only when requested with a difference between 'start' and 'end' of 6 or more hours.
         start = pendulum.parse(stream_slice["start"]).add(hours=6)
         end = pendulum.parse(stream_slice["end"])
-        if start > end: yield from []
+        if start > end:
+            yield from []
 
         # sometimes the API throws a 404 error for not obvious reasons, we have to handle it and log it.
         # for example, if there is no data from the specified time period, a 404 exception is thrown
@@ -176,7 +178,6 @@ class Events(IncrementalAmplitudeStream):
         params = self.base_params
         params["start"] = pendulum.parse(stream_slice["start"]).strftime(self.date_template)
         params["end"] = pendulum.parse(stream_slice["end"]).strftime(self.date_template)
-
         return params
 
     def path(self, **kwargs) -> str:
