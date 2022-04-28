@@ -23,7 +23,7 @@ jobs:
             test
             test-performance
             publish
-            bump-build-test-connector
+            build-connector
             publish-external
             publish-cdk
             gke-kube-test

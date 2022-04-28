@@ -10,6 +10,7 @@ Usage: $(basename "$0") <cmd>
 For publish, if you want to push the spec to the spec cache, provide a path to a service account key file that can write to the cache.
 Available commands:
   scaffold
+  test <integration_root_path>
   build  <integration_root_path> [<run_tests>]
   publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
   publish_external  <image_name> <image_version>
@@ -33,29 +34,106 @@ cmd_scaffold() {
   )
 }
 
+# TODO: needs to be able to set alternate tag
 cmd_build() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
-
-  local run_tests=$1; shift || run_tests=true
 
   echo "Building $path"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
-  if [ "$run_tests" = false ] ; then
-    echo "Skipping integration tests..."
+  # TODO: needs to build correct name
+  docker tag "$image_name:dev" "$image_candidate_tag"
+}
+
+cmd_test() {
+  local path=$1; shift || error "Missing target (root path of integration) $USAGE"
+  [ -d "$path" ] || error "Path must be the root path of the integration"
+
+  # TODO: needs to know to use alternate image from cmd_build
+  echo "Running integration tests..."
+  ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+}
+
+# Bumps connector version in Dockerfile, definitions.yaml file, and updates seeds with gradle.
+# NOTE: this does NOT update changelogs because the changelog markdown files do not have a reliable machine-readable
+# format to automatically handle this. Someday it could though: https://github.com/airbytehq/airbyte/issues/12031
+cmd_bump_version() {
+  # Take params
+  local connector_path
+  local bump_version
+  connector_path="$1" # Should look like airbyte-integrations/connectors/source-X
+  bump_version="$2" || bump_version="patch"
+
+  # Set local constants
+  connector_path="airbyte-integrations/connectors/destination-postgres"
+  connector=${connector_path#airbyte-integrations/connectors/}
+  if [[ "$connector" =~ "source-" ]]; then
+    connector_type="source"
+  elif [[ "$connector" =~ "destination-" ]]; then
+    connector_type="destination"
   else
-    echo "Running integration tests..."
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+    echo "Invalid connector_type from $connector"
+    exit 1
   fi
+  dockerfile="$connector_path/Dockerfile"
+  # TODO: Make this based on master, not local branch
+  current_version=$(_get_docker_image_version "$dockerfile")
+  definitions_path="./airbyte-config/init/src/main/resources/seed/${connector_type}_definitions.yaml"
+
+  # Based on current version, decompose into major, minor, patch
+  IFS=. read -r major_version minor_version patch_version <<<"${current_version##*-}"
+
+  ## Create new version
+  case "$bump_version" in
+    "major")
+      ((major_version++))
+      minor_version=0
+      patch_version=0
+      ;;
+    "minor")
+      ((minor_version++))
+      patch_version=0
+      ;;
+    "patch")
+      ((patch_version++))
+      ;;
+    *)
+      echo "Invalid bump_version option: $bump_version. Valid options are major, minor, patch"
+      exit 1
+  esac
+
+  bumped_version="$major_version.$minor_version.$patch_version"
+  if [[ "$current_version" == "$bumped_version" ]]; then
+    echo "No change in version"
+  else
+    echo "Bumped $current_version to $bumped_version"
+  fi
+
+  ## Write new version to files
+  # Dockerfile
+  sed -i "s/$current_version/$bumped_version/g" "$dockerfile"
+
+  # Definitions YAML file
+  definitions_check=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitions_path")
+
+  if [[ (-z "$definitions_check") ]]; then
+    echo "Could not find $connector in $definitions_path, exiting 1"
+    exit 1
+  fi
+
+  connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitions_path")
+  yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
+
+  # Seed files
+  ./gradlew :airbyte-config:init:processResources
 }
 
 cmd_publish() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
-  local run_tests=$1; shift || run_tests=true
   local publish_spec_to_cache
   local spec_cache_writer_sa_key_file
 
@@ -85,19 +163,14 @@ cmd_publish() {
   # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
+  local image_candidate_tag; image_candidate_tag="$image_version-candidate-PR_NUMBER"
+
   local versioned_image=$image_name:$image_version
   local latest_image=$image_name:latest
 
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
   echo "latest_image $latest_image"
-
-  # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
-  # time building, running tests to realize this version is a duplicate.
-  _error_if_tag_exists "$versioned_image"
-
-  # building the connector
-  cmd_build "$path" "$run_tests"
 
   # in case curing the build / tests someone this version has been published.
   _error_if_tag_exists "$versioned_image"
@@ -110,8 +183,9 @@ cmd_publish() {
     VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml build
     VERSION=latest         GIT_REVISION=$GIT_REVISION docker-compose -f airbyte-integrations/bases/base-normalization/docker-compose.build.yaml push
   else
-    docker tag "$image_name:dev" "$versioned_image"
-    docker tag "$image_name:dev" "$latest_image"
+    # Re-tag with production tag
+    docker tag "$image_candidate_tag" "$versioned_image"
+    docker tag "$image_candidate_tag" "$latest_image"
 
     echo "Publishing new version ($versioned_image)"
     docker push "$versioned_image"
@@ -149,7 +223,7 @@ cmd_publish() {
       echo "Using environment gcloud"
     fi
 
-    gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
+    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
   else
     echo "Publishing without writing to spec cache."
   fi
@@ -176,7 +250,7 @@ cmd_publish_external() {
 
   echo "Using environment gcloud"
 
-  gsutil cp "$tmp_spec_file" gs://io-airbyte-cloud-spec-cache/specs/"$image_name"/"$image_version"/spec.json
+  gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
 }
 
 main() {

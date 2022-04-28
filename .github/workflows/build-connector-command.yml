@@ -10,14 +10,13 @@ on:
         description: "The git ref to check out from the specified repository."
         required: false
         default: master
-      # TODO: Make this support comma list
       connector:
         description: "Airbyte Connector"
         required: true
-      auto-bump-version:
-        description: "Automatically bump connectors version in Dockerfile, definitions.yaml and generate seed spec. You can also do this manually"
+      bump-version:
+        description: "Set to major, minor, or patch to automatically bump connectors version in Dockerfile, definitions.yaml and generate seed spec. You can also do this manually"
         required: true
-        default: "true"
+        default: "false"
       run-tests:
         description: "Should run tests"
         required: true
@@ -119,7 +118,7 @@ jobs:
           source venv/bin/activate
           pip install --quiet tox==3.24.4
       - name: Install yq
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.bump-version != 'false' && success()
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
           sudo add-apt-repository ppa:rmescandon/yq
@@ -137,138 +136,106 @@ jobs:
           ci_credentials ${{ github.event.inputs.connector }}
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      - name: Set Name and Version Environment Vars
-        if: startsWith(github.event.inputs.connector, 'connectors')
-        run: |
-          source tools/lib/lib.sh
-          DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
-          echo "IMAGE_NAME=$(echo ${{ github.event.inputs.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
-          echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
-      - name: Prepare Sentry
-        if: startsWith(github.event.inputs.connector, 'connectors')
-        run: |
-          curl -sL https://sentry.io/get-cli/ | bash
-      - name: Create Sentry Release
-        if: startsWith(github.event.inputs.connector, 'connectors')
-        run: |
-          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}" --auto --ignore-missing
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-          SENTRY_ORG: airbyte-5j
-          SENTRY_PROJECT: airbyte-connectors
+      # TODO: seems like this should run in post-merge workflow
+      #      - name: Prepare Sentry
+      #        if: startsWith(github.event.inputs.connector, 'connectors')
+      #        run: |
+      #          curl -sL https://sentry.io/get-cli/ | bash
+      #      - name: Create Sentry Release
+      #        if: startsWith(github.event.inputs.connector, 'connectors')
+      #        run: |
+      #          sentry-cli releases set-commits "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}" --auto --ignore-missing
+      #        env:
+      #          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
+      #          SENTRY_ORG: airbyte-5j
+      #          SENTRY_PROJECT: airbyte-connectors
       ############################
       ##          BUMP          ##
       ############################
-      # TODO: Handle Dockerfile
       - name: Bump Connector Version
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.bump-version != 'false' && success()
         run: |
-          echo "Bumping Dockerfile"
-      - name: Check if connector in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config/init/src/main/resources/seed/
-          sourcecheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"source_definitions.yaml)
-          destcheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"destination_definitions.yaml)
-          if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
-          then exit 1
-          fi
-      - name: Bump version in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config/init/src/main/resources/seed/
-          sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
-          destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
-          if [ -z "$sourcename" ]
-          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"destination_definitions.yaml
-          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
-          fi
-      - name: gradle processResources
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          ./gradlew :airbyte-config:init:processResources
+          ./tools/integrations/manage.sh cmd_bump_version airbyte-integrations/${{ github.event.inputs.connector }}
       - name: Commit and Push Version Bump
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.bump-version != 'false' && success()
         run: |
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
           git add -u
-          git commit -m "auto-bump ${{github.event.inputs.connector}} version"
+          git commit -m "bump-version ${{github.event.inputs.connector}}"
           git push origin ${{ github.event.inputs.gitref }}
       - name: Add Version Bump Success Comment
-        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.comment-id && github.event.inputs.bump-version != 'false' && success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :rocket: Auto-bumped version for ${{github.event.inputs.connector}}
+            > :rocket: Bumped version for ${{github.event.inputs.connector}}
       - name: Add Version Bump Failure Comment
-        if: github.event.inputs.comment-id && github.event.inputs.auto-bump-version == 'true' && !success()
+        if: github.event.inputs.comment-id && github.event.inputs.bump-version != 'false' && !success()
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > :x: Couldn't auto-bump version for ${{github.event.inputs.connector}}
+            > :x: Couldn't bump version for ${{github.event.inputs.connector}}
         ############################
         ##     BUILD AND TEST     ##
         ############################
-      - name: Build ${{ github.event.inputs.connector }}
-        run: |
-          ./tools/integrations/manage.sh cmd_build airbyte-integrations/${{ github.event.inputs.connector }}
-        id: build
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
-          TZ: UTC
-      - name: Test ${{ github.event.inputs.connector }}
-        if: github.event.inputs.run-tests == 'true'
-        run: |
-          ./tools/integrations/manage.sh cmd_test airbyte-integrations/${{ github.event.inputs.connector }}
-      - name: Finalize Sentry release
-        if: startsWith(github.event.inputs.connector, 'connectors')
-        run: |
-          sentry-cli releases finalize "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-          SENTRY_ORG: airbyte-5j
-          SENTRY_PROJECT: airbyte-connectors
-      - name: Build and Test Success Comment
-        if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :rocket: Successfully built and tested ${{github.event.inputs.connector}}
-      - name: Build and Test Failure Comment
-        if: github.event.inputs.comment-id && !success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :x: Failed to build and test ${{github.event.inputs.connector}}
-      - name: Slack Notification - Failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Failed to build and test connector ${{ github.event.inputs.connector }} from branch ${{ github.ref }}"
-          SLACK_FOOTER: ""
-      - name: Add Final Success Comment
-        if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Set publish label
-        if: success()
-        run: |
-          echo "set some label"
+  #      - name: Build ${{ github.event.inputs.connector }}
+  #        run: |
+  #          ./tools/integrations/manage.sh cmd_build airbyte-integrations/${{ github.event.inputs.connector }}
+  #        id: build
+  #        env:
+  #          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  #          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
+  #          TZ: UTC
+  #      - name: Test ${{ github.event.inputs.connector }}
+  #        if: github.event.inputs.run-tests == 'true'
+  #        run: |
+  #          ./tools/integrations/manage.sh cmd_test airbyte-integrations/${{ github.event.inputs.connector }}
+  #      - name: Finalize Sentry release
+  #        if: startsWith(github.event.inputs.connector, 'connectors')
+  #        run: |
+  #          sentry-cli releases finalize "${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+  #        env:
+  #          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
+  #          SENTRY_ORG: airbyte-5j
+  #          SENTRY_PROJECT: airbyte-connectors
+  #      - name: Build and Test Success Comment
+  #        if: github.event.inputs.comment-id && success()
+  #        uses: peter-evans/create-or-update-comment@v1
+  #        with:
+  #          comment-id: ${{ github.event.inputs.comment-id }}
+  #          body: |
+  #            > :rocket: Successfully built and tested ${{github.event.inputs.connector}}
+  #      - name: Build and Test Failure Comment
+  #        if: github.event.inputs.comment-id && !success()
+  #        uses: peter-evans/create-or-update-comment@v1
+  #        with:
+  #          comment-id: ${{ github.event.inputs.comment-id }}
+  #          body: |
+  #            > :x: Failed to build and test ${{github.event.inputs.connector}}
+  #      - name: Slack Notification - Failure
+  #        if: failure()
+  #        uses: rtCamp/action-slack-notify@master
+  #        env:
+  #          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+  #          SLACK_USERNAME: Buildozer
+  #          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+  #          SLACK_COLOR: DC143C
+  #          SLACK_TITLE: "Failed to build and test connector ${{ github.event.inputs.connector }} from branch ${{ github.ref }}"
+  #          SLACK_FOOTER: ""
+  #      - name: Add Final Success Comment
+  #        if: github.event.inputs.comment-id && success()
+  #        uses: peter-evans/create-or-update-comment@v1
+  #        with:
+  #          comment-id: ${{ github.event.inputs.comment-id }}
+  #          body: |
+  #            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+  #      - name: Set publish label
+  #        if: success()
+  #        run: |
+  #          echo "set some label on PR"
   # In case of self-hosted EC2 errors, remove this block.
   stop-bump-build-test-connector-runner:
     name: Stop Build EC2 Runner
