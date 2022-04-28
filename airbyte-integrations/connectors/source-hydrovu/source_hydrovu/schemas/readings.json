@@ -11,7 +11,7 @@
     "unitId": {
       "type":  "integer"
     },
-    "customerParameter": {
+    "customParameter": {
       "type":  "boolean"
     },
     "timestamp": {
