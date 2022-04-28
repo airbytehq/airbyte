@@ -19,7 +19,7 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 const ResetPasswordPage: React.FC = () => {
   const { requirePasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <div>
@@ -42,8 +42,8 @@ const ResetPasswordPage: React.FC = () => {
             });
           } catch (err) {
             err.message.includes("user-not-found")
-              ? FormikBag.setFieldError("email", formatMessage({ id: "login.yourEmail.notFound" }))
-              : FormikBag.setFieldError("email", formatMessage({ id: "login.yourEmail.notFound" }));
+              ? FormikBag.setFieldError("email", "login.yourEmail.notFound")
+              : FormikBag.setFieldError("email", "login.unknownError");
           }
         }}
         validateOnBlur={true}
