@@ -20,7 +20,7 @@ jobs:
         with:
           token: ${{ secrets.DAVINCHIA_PAT }}
           commands: |
-            test-x
+            test
             test-performance
             publish
             build-connector
