@@ -17,7 +17,7 @@ export const verifySupportedSyncModes = (streamNode: SyncSchemaStream): SyncSche
     stream: { supportedSyncModes },
   } = streamNode;
 
-  if (!supportedSyncModes?.length) return streamNode;
+  if (supportedSyncModes?.length) return streamNode;
   return { ...streamNode, stream: { ...streamNode.stream, supportedSyncModes: [SyncMode.FullRefresh] } };
 };
 
@@ -28,7 +28,7 @@ export const verifyConfigCursorField = (streamNode: SyncSchemaStream): SyncSchem
     ...streamNode,
     config: {
       ...config,
-      cursorField: !config.cursorField?.length ? config.cursorField : getDefaultCursorField(streamNode),
+      cursorField: config.cursorField?.length ? config.cursorField : getDefaultCursorField(streamNode),
     },
   };
 };
