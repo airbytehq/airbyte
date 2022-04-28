@@ -1,5 +1,3 @@
-import isEmpty from "lodash/isEmpty";
-
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
@@ -14,32 +12,34 @@ const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
   return streamNode.config.cursorField;
 };
 
-const verifySupportedSyncModes = (streamNode: SyncSchemaStream): SyncSchemaStream => {
+export const verifySupportedSyncModes = (streamNode: SyncSchemaStream): SyncSchemaStream => {
   const {
     stream: { supportedSyncModes },
   } = streamNode;
 
-  if (!isEmpty(supportedSyncModes)) return streamNode;
+  if (!supportedSyncModes?.length) return streamNode;
   return { ...streamNode, stream: { ...streamNode.stream, supportedSyncModes: [SyncMode.FullRefresh] } };
 };
 
-const verifyConfigCursorField = (streamNode: SyncSchemaStream): SyncSchemaStream => {
+export const verifyConfigCursorField = (streamNode: SyncSchemaStream): SyncSchemaStream => {
   const { config } = streamNode;
 
   return {
     ...streamNode,
     config: {
       ...config,
-      cursorField: !isEmpty(config.cursorField) ? config.cursorField : getDefaultCursorField(streamNode),
+      cursorField: !config.cursorField?.length ? config.cursorField : getDefaultCursorField(streamNode),
     },
   };
 };
 
-const setOptimalSyncMode = (
+export const getOptimalSyncMode = (
   streamNode: SyncSchemaStream,
   supportedDestinationSyncModes: DestinationSyncMode[]
 ): SyncSchemaStream => {
-  const updateStreamConfig = (config: Partial<AirbyteStreamConfiguration>): SyncSchemaStream => ({
+  const updateStreamConfig = (
+    config: Pick<AirbyteStreamConfiguration, "syncMode" | "destinationSyncMode">
+  ): SyncSchemaStream => ({
     ...streamNode,
     config: { ...streamNode.config, ...config },
   });
@@ -84,5 +84,3 @@ const setOptimalSyncMode = (
   }
   return streamNode;
 };
-
-export { verifySupportedSyncModes, verifyConfigCursorField, setOptimalSyncMode };

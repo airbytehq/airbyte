@@ -22,7 +22,7 @@ import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import { setOptimalSyncMode, verifyConfigCursorField, verifySupportedSyncModes } from "./formConfigHelpers";
+import { getOptimalSyncMode, verifyConfigCursorField, verifySupportedSyncModes } from "./formConfigHelpers";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -200,7 +200,7 @@ const useInitialSchema = (schema: SyncSchema, supportedDestinationSyncModes: Des
         const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
 
         return pipe(nodeWithId, verifySupportedSyncModes, verifyConfigCursorField, (nodeStream) =>
-          setOptimalSyncMode(nodeStream, supportedDestinationSyncModes)
+          getOptimalSyncMode(nodeStream, supportedDestinationSyncModes)
         );
       }),
     }),
