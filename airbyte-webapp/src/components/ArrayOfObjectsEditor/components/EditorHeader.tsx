@@ -4,6 +4,8 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
+import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
+
 const Content = styled.div`
   display: flex;
   justify-content: space-between;
@@ -21,7 +23,7 @@ type EditorHeaderProps = {
   addButtonText?: React.ReactNode;
   itemsCount: number;
   onAddItem: () => void;
-  mode?: "readonly" | "create" | "edit";
+  mode?: ConnectionFormMode;
 };
 
 const EditorHeader: React.FC<EditorHeaderProps> = ({ itemsCount, onAddItem, mainTitle, addButtonText, mode }) => {
