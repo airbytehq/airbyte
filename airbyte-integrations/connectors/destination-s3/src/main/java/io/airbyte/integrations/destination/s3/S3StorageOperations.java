@@ -14,6 +14,7 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -53,6 +54,11 @@ public class S3StorageOperations implements BlobStorageOperations {
   private static final String FORMAT_VARIABLE_EPOCH = "${EPOCH}";
   private static final String FORMAT_VARIABLE_UUID = "${UUID}";
   private static final String GZ_FILE_EXTENSION = "gz";
+
+  public static final Map<String, String> METADATA_KEY_MAPPING = ImmutableMap.of(
+      AesCbcEnvelopeEncryptionBlobDecorator.ENCRYPTED_CONTENT_ENCRYPTING_KEY, "x-amz-key",
+      AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "x-amz-iv"
+  );
 
   private final NamingConventionTransformer nameTransformer;
   protected final S3DestinationConfig s3Config;
@@ -140,7 +146,7 @@ public class S3StorageOperations implements BlobStorageOperations {
 
     final Map<String, String> metadata = new HashMap<>();
     for (final BlobDecorator blobDecorator : blobDecorators) {
-      blobDecorator.updateMetadata(metadata);
+      blobDecorator.updateMetadata(metadata, METADATA_KEY_MAPPING);
     }
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
         .getDefault(bucket, fullObjectKey, s3Client, partSize, metadata)
