@@ -14,7 +14,7 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "../../../../routePaths";
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
-interface Props {
+interface ConnectionPageTitleProps {
   source: Source;
   destination: Destination;
   connection: Connection;
