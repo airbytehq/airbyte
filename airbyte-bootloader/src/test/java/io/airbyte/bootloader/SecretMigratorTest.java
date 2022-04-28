@@ -35,6 +35,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class SecretMigratorTest {
 
+  private final UUID workspaceId = UUID.randomUUID();
+
   @Mock
   private ConfigPersistence configPersistence;
 
@@ -50,24 +52,37 @@ public class SecretMigratorTest {
 
   @Test
   public void testMigrateSecret() throws JsonValidationException, IOException {
-    final JsonNode sourceConfig = Jsons.jsonNode("sourceConf");
+    final JsonNode sourceSpec = Jsons.jsonNode("sourceSpec");
     final UUID sourceDefinitionId = UUID.randomUUID();
     final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()
         .withSourceDefinitionId(sourceDefinitionId)
         .withSpec(
             new ConnectorSpecification()
-                .withConnectionSpecification(sourceConfig));
+                .withConnectionSpecification(sourceSpec));
     final Map<UUID, JsonNode> standardSourceDefinitions = new HashMap<>();
     standardSourceDefinitions.put(sourceDefinitionId, standardSourceDefinition.getSpec().getConnectionSpecification());
     Mockito.when(configPersistence.listConfigs(ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class))
         .thenReturn(Lists.newArrayList(standardSourceDefinition));
+
+    final JsonNode sourceConfiguration = Jsons.jsonNode("sourceConfiguration");
     final SourceConnection sourceConnection = new SourceConnection()
-        .withSourceId(UUID.randomUUID());
+        .withSourceId(UUID.randomUUID())
+        .withSourceDefinitionId(sourceDefinitionId)
+        .withConfiguration(sourceConfiguration)
+        .withWorkspaceId(workspaceId);
     final List<SourceConnection> sourceConnections = Lists.newArrayList(sourceConnection);
     Mockito.when(configPersistence.listConfigs(ConfigSchema.SOURCE_CONNECTION, SourceConnection.class))
         .thenReturn(sourceConnections);
 
-    Mockito.doNothing().when(secretMigrator).migrateSources(Mockito.any(), Mockito.any());
+    final JsonNode migratedSpec = Jsons.jsonNode("migratedSourceConf");
+    final ConnectorConfiguration sourceConnectorConfiguration = new ConnectorConfiguration(
+        workspaceId,
+        sourceConfiguration,
+        sourceSpec
+    );
+    // Mockito.when(secretMigrator.migrateConfiguration(Mockito.eq(sourceConnectorConfiguration), Mockito.any()));
+
+    //Mockito.doNothing().when(secretMigrator).migrateSources(Mockito.any(), Mockito.any());
 
     final JsonNode destinationConfig = Jsons.jsonNode("defConf");
     final UUID destinationDefinitionId = UUID.randomUUID();
@@ -86,11 +101,16 @@ public class SecretMigratorTest {
     Mockito.when(configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class))
         .thenReturn(destinationConnections);
 
-    Mockito.doNothing().when(secretMigrator).migrateDestinations(Mockito.any(), Mockito.any());
+    // Mockito.doNothing().when(secretMigrator).migrateDestinations(Mockito.any(), Mockito.any());
 
+    final String path = "Mocked static call source";
+    Mockito.doReturn(Lists.newArrayList(path)).when(secretMigrator).getSecretPath(sourceSpec);
+    Mockito.doReturn(Lists.newArrayList(path)).when(secretMigrator).getAllExplodedPath(sourceConfiguration, path);
+    Mockito.doReturn(Optional.of(Jsons.jsonNode("Taratata"))).when(secretMigrator).getValueForPath(sourceConfiguration, path);
     secretMigrator.migrateSecrets();
 
     Mockito.verify(secretMigrator).migrateSources(sourceConnections, standardSourceDefinitions);
+    secretPersistence.write(Mockito.any(), Mockito.any());
     Mockito.verify(secretMigrator).migrateDestinations(destinationConnections, standardDestinationDefinitions);
   }
 
