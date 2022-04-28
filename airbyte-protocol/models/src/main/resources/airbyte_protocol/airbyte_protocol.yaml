@@ -111,7 +111,7 @@ definitions:
         enum:
           - ERROR
       emitted_at:
-        description: "the time in ms the message was emitted"
+        description: "the time in ms that the message was emitted"
         type: number
       error:
         description: "error data from the sync"
@@ -131,6 +131,13 @@ definitions:
       stack_trace:
         description: The full stack trace of the error
         type: string
+      failure_type:
+        description: The type of error
+        type: string
+        enum:
+          - SYSTEM_ERROR
+          - CONFIG_ERROR
+          - MANUAL_CANCELLATION
   AirbyteConnectionStatus:
     description: Airbyte connection status
     type: object
