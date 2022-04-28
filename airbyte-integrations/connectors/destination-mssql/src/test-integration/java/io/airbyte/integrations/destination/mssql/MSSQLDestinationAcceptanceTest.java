@@ -83,7 +83,7 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
@@ -121,7 +121,8 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
       switch (field.getDataType().getTypeName()) {
         case "nvarchar":
           var stringValue = (String) value;
-          if (stringValue != null && stringValue.matches("^\\[.*\\]$")) {
+          if (stringValue != null && (stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\[.*\\]$")
+              || stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\{.*\\}$"))) {
             node.set(field.getName(), Jsons.deserialize(stringValue));
           } else {
             node.put(field.getName(), stringValue);
