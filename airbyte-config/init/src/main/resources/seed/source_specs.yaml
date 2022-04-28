@@ -2388,6 +2388,7 @@
             \ account."
         start_date:
           title: "Start Date"
+          type: "string"
           description: "UTC date and time. Any data created after this date will be\
             \ replicated. If this parameter is not set, all data will be replicated."
           format: "date-time"
@@ -7772,6 +7773,9 @@
         channel_filter:
           type: "array"
           default: []
+          items:
+            type: "string"
+            min-item: 0
           title: "Channel name filter"
           description: "A channel name list (without leading '#' char) which limit\
             \ the channels from which you'd like to sync. Empty list means no filter."
