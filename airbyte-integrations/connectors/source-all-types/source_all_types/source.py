@@ -89,6 +89,7 @@ class SourceAllTypes(Source):
                 "type_datetime_without_timezone": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"},
                 "type_big_integer": {"type": "string", "airbyte_type": "big_integer"},
                 "type_big_number": {"type": "string", "airbyte_type": "big_number"},
+                "type_binary": {"type": "string", "contentEncoding": "base64"},
             },
         }
 
@@ -137,6 +138,7 @@ class SourceAllTypes(Source):
             "type_datetime_without_timezone": "2022-11-22T01:23:45",
             "type_big_integer": "123141241234124123141241234124123141241234124123141241234124123141241234124",
             "type_big_number": "1000000000000000000000000000000000.1234",
+            "type_binary": "kFB5dGhvbiBpcyBmdW6Q",
         }
 
         yield AirbyteMessage(
