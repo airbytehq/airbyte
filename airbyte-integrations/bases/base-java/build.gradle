@@ -11,7 +11,7 @@ dependencies {
     api 'io.sentry:sentry:5.6.0'
 
     implementation 'commons-cli:commons-cli:1.4'
-    implementation 'org.apache.sshd:sshd-mina:2.7.0'
+    implementation 'org.apache.sshd:sshd-mina:2.8.0'
     // bouncycastle is pinned to version-match the transitive dependency from kubernetes client-java
     // because a version conflict causes "parameter object not a ECParameterSpec" on ssh tunnel initiation
     implementation 'org.bouncycastle:bcprov-jdk15on:1.66'
