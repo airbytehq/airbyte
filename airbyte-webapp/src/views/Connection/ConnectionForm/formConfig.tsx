@@ -1,4 +1,3 @@
-import { pipe } from "fp-ts/function";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
@@ -198,10 +197,9 @@ const useInitialSchema = (schema: SyncSchema, supportedDestinationSyncModes: Des
     () => ({
       streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
         const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+        const nodeStream = verifyConfigCursorField(verifySupportedSyncModes(nodeWithId));
 
-        return pipe(nodeWithId, verifySupportedSyncModes, verifyConfigCursorField, (nodeStream) =>
-          getOptimalSyncMode(nodeStream, supportedDestinationSyncModes)
-        );
+        return getOptimalSyncMode(nodeStream, supportedDestinationSyncModes);
       }),
     }),
     [schema.streams, supportedDestinationSyncModes]
