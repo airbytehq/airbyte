@@ -27,19 +27,20 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Factory to create Google Credentials
+ */
 public class BigQueryCredentialsFactory {
 
   private static final String AUTH_TYPE = "auth_type";
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryCredentialsFactory.class);
 
-
-  public static Credentials createCredentialsClient(JsonNode config) {
-    return isOauth(config) ? getOAuthClientCredentials(config) : getServiceAccountCredentials(config);
-  }
+  private BigQueryCredentialsFactory() {}
 
   public static BigQuery createBigQueryClientWithCredentials(JsonNode config) throws IOException {
+    LOGGER.info("Creating BigQuery client with Google credentials...");
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-    Credentials credentials = isOauth(config) ? getOAuthClientCredentials(config) : getServiceAccountCredentials(config);
+    Credentials credentials = createCredentialsClient(config);
     return BigQueryOptions.newBuilder()
         .setProjectId(projectId)
         .setCredentials(!isNull(credentials) ? credentials : GoogleCredentials.getApplicationDefault())
@@ -47,7 +48,13 @@ public class BigQueryCredentialsFactory {
         .getService();
   }
 
+  public static Credentials createCredentialsClient(JsonNode config) {
+    LOGGER.info("Determining Google credentials type from the config...");
+    return isOauth(config) ? getOAuthClientCredentials(config) : getServiceAccountCredentials(config);
+  }
+
   protected static Credentials getOAuthClientCredentials(JsonNode config) {
+    LOGGER.info("Creating OAuth client credentials...");
     AccessToken accessToken = new AccessToken(config.get(CREDENTIALS).get(ACCESS_TOKEN).asText(), calculateTokenExpirationDate(config));
     String refreshToken = config.get(CREDENTIALS).get(REFRESH_TOKEN).asText();
     GoogleCredentials credentials =
@@ -67,6 +74,7 @@ public class BigQueryCredentialsFactory {
   }
 
   protected static Credentials getServiceAccountCredentials(JsonNode config) {
+    LOGGER.info("Creating Service Account credentials...");
     ServiceAccountCredentials credentials = null;
     if (BigQueryUtils.isUsingJsonCredentials(config)) {
       // handle the credentials json being passed as a json object or a json object already serialized as
@@ -79,7 +87,8 @@ public class BigQueryCredentialsFactory {
         credentials = ServiceAccountCredentials
             .fromStream(new ByteArrayInputStream(credentialsString.getBytes(UTF_8)));
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.error("Error appears, when creating the Service Account credentials...", e);
+        throw new RuntimeException(e);
       }
     }
     return credentials;
@@ -93,7 +102,7 @@ public class BigQueryCredentialsFactory {
 
   public static boolean isOauth(JsonNode config) {
     if (Objects.isNull(config)) {
-      return false;
+      throw new IllegalArgumentException("Config cannot be null");
     }
     return config.has(CREDENTIALS)
         && config.get(CREDENTIALS).has(AUTH_TYPE)

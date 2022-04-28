@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.bigquery.factory;
 
 import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.CONFIG_PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -93,6 +94,8 @@ public class BigQueryCredentialsFactoryTest {
 
   @Test
   public void testIsNotOauthWhenConfigIsNull() {
-    assertFalse(BigQueryCredentialsFactory.isOauth(null));
+    assertThrows(IllegalArgumentException.class, () -> {
+      BigQueryCredentialsFactory.isOauth(null);
+    });
   }
 }
