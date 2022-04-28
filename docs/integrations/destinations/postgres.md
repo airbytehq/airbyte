@@ -11,14 +11,13 @@ To use the Postgres destination, you'll need:
 Airbyte Cloud only supports connecting to your Postgres instances with SSL or TLS encryption. TLS is
 used by default. Other than that, you can proceed with the open-source instructions below.
 
-You should now have all the requirements needed to configure Postgres as a destination in the UI.
 You'll need the following information to configure the Postgres destination:
 
 * **Host** - The host name of the server.
 * **Port** - The port number the server is listening on. Defaults to the PostgreSQL™ standard port number (5432).
 * **Username**
 * **Password**
-* **Default Schema Name** - Specify the schema (or several schema separated by commas) to be set in the search-path. This schema will be used to resolve unqualified object names used in statements over this connection.
+* **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in the search-path. These schemas will be used to resolve unqualified object names used in statements executed over this connection.
 * **Database** - The database name. The default is to connect to a database with the same name as the user name.
 * **JDBC URL Params** (optional)
 
@@ -63,7 +62,7 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
 * Subsequent characters in an identifier or key word can be letters, underscores, digits \(0-9\), or
   dollar signs \($\).
 
-  Note that dollar signs are not allowed in identifiers according to the letter of the SQL standard,
+  Note that dollar signs are not allowed in identifiers according to the SQL standard,
   so their use might render applications less portable. The SQL standard will not define a key word
   that contains digits or starts or ends with an underscore, so identifiers of this form are safe
   against possible conflict with future extensions of the standard.
@@ -77,10 +76,9 @@ From [Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-s
   still applies.
 * Quoting an identifier also makes it case-sensitive, whereas unquoted names are always folded to
   lower case.
-* If you want to write portable applications you are advised to always quote a particular name or
-  never quote it.
+* In order to make your applications portable and less error-prone, use consistent quoting with each name (either always quote it or never quote it).
 
-Therefore, Airbyte Postgres destination will create tables and schemas using the Unquoted
+Note, that Airbyte Postgres destination will create tables and schemas using the Unquoted
 identifiers when possible or fallback to Quoted Identifiers if the names are containing special
 characters.
 
@@ -108,7 +106,7 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 
 #### Output Schema
 
-Each stream will be output into its own table in Postgres. Each table will contain 3 columns:
+Each stream will be mapped to a separate table in Postgres. Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
   Postgres is `VARCHAR`.
