@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "c47d6804-8b98-449f-970a-5ddb5cb5d7aa",
+  "name": "Customer.io",
+  "dockerRepository": "farosai/airbyte-customer-io-source",
+  "dockerImageTag": "0.1.23",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/customer-io",
+  "icon": "customer-io.svg"
+}

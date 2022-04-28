@@ -6,11 +6,11 @@ This is a blazing fast guide to building an HTTP source connector. Think of it a
 
 If you are a visual learner and want to see a video version of this guide going over each part in detail, check it out below.
 
-{% embed url="https://www.youtube.com/watch?v=kJ3hLoNfz_E" caption="A speedy CDK overview." %}
+[A speedy CDK overview.](https://www.youtube.com/watch?v=kJ3hLoNfz_E)
 
 ## Dependencies
 
-1. Python &gt;= 3.7
+1. Python &gt;= 3.9
 2. Docker
 3. NodeJS
 
@@ -38,27 +38,26 @@ pip install -r requirements.txt
 cd source_python_http_example
 ```
 
-We're working with the PokeAPI, so we need to define our input schema to reflect that. Open the `spec.json` file here and replace it with:
+We're working with the PokeAPI, so we need to define our input schema to reflect that. Open the `spec.yaml` file here and replace it with:
 
-```javascript
-{
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pokeapi",
-  "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Pokeapi Spec",
-    "type": "object",
-    "required": ["pokemon_name"],
-    "additionalProperties": false,
-    "properties": {
-      "pokemon_name": {
-        "type": "string",
-        "description": "Pokemon requested from the API.",
-        "pattern": "^[a-z0-9_\\-]+$",
-        "examples": ["ditto, luxray, snorlax"]
-      }
-    }
-  }
-}
+```yaml
+documentationUrl: https://docs.airbyte.io/integrations/sources/pokeapi
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Pokeapi Spec
+  type: object
+  required:
+    - pokemon_name
+  additionalProperties: false
+  properties:
+    pokemon_name:
+      type: string
+      description: Pokemon requested from the API.
+      pattern: ^[a-z0-9_\-]+$
+      examples:
+        - ditto
+        - luxray
+        - snorlax
 ```
 
 As you can see, we have one input to our input schema, which is `pokemon_name`, which is required. Normally, input schemas will contain information such as API keys and client secrets that need to get passed down to all endpoints or streams.

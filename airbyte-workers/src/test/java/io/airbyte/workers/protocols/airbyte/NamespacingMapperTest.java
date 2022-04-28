@@ -12,7 +12,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import org.junit.jupiter.api.Test;
 
 class NamespacingMapperTest {
@@ -24,7 +24,7 @@ class NamespacingMapperTest {
   private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
       STREAM_NAME,
       INPUT_NAMESPACE,
-      Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+      Field.of(FIELD_NAME, JsonSchemaType.STRING));
   private static final AirbyteMessage RECORD_MESSAGE = createRecordMessage();
 
   private static AirbyteMessage createRecordMessage() {
@@ -41,7 +41,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME,
         INPUT_NAMESPACE,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);
@@ -66,7 +66,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME,
         null,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(originalCatalog);
 
     assertEquals(expectedCatalog, actualCatalog);
@@ -90,7 +90,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME,
         null,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);
@@ -112,7 +112,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog originalCatalog = Jsons.clone(CATALOG);
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME, expectedNamespace,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);
@@ -135,7 +135,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog originalCatalog = Jsons.clone(CATALOG);
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME, expectedNamespace,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);
@@ -160,7 +160,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         OUTPUT_PREFIX + STREAM_NAME,
         null,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(originalCatalog);
 
     assertEquals(expectedCatalog, actualCatalog);
@@ -184,7 +184,7 @@ class NamespacingMapperTest {
     final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
         INPUT_NAMESPACE,
-        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+        Field.of(FIELD_NAME, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(CATALOG);
 
     assertEquals(originalCatalog, CATALOG);

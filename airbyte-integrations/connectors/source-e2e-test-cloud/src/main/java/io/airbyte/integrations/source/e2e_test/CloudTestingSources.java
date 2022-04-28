@@ -10,15 +10,12 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Since 2.0.0, the cloud version is the same as the OSS version. This connector should be removed.
  */
 public class CloudTestingSources extends SpecModifyingSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CloudTestingSources.class);
   private static final String CLOUD_TESTING_SOURCES_TITLE = "Cloud E2E Test Source Spec";
 
   public CloudTestingSources() {

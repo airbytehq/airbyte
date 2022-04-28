@@ -11,26 +11,20 @@ type IProps = {
     id: string;
     name: string | React.ReactNode;
     status?: string;
+    isPartialSuccess?: boolean;
     onSelect?: () => void;
   }[];
 };
 
 const TabsContent = styled.div<{ isFailed?: boolean }>`
   padding: 6px 0;
-  border-bottom: 1px solid
-    ${({ theme, isFailed }) =>
-      isFailed ? theme.dangerTransparentColor : theme.greyColor20};
+  border-bottom: 1px solid ${({ theme, isFailed }) => (isFailed ? theme.dangerTransparentColor : theme.greyColor20)};
 `;
 
 const Tabs: React.FC<IProps> = ({ isFailed, activeStep, onSelect, data }) => {
   return (
     <TabsContent isFailed={isFailed}>
-      <StepsMenu
-        lightMode
-        activeStep={activeStep}
-        onSelect={onSelect}
-        data={data}
-      />
+      <StepsMenu lightMode activeStep={activeStep} onSelect={onSelect} data={data} />
     </TabsContent>
   );
 };

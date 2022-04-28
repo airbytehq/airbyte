@@ -24,21 +24,54 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 
 ## Areas for contributing
 
+We gladly welcome all improvements existing on the codebase. 
+
+#### 1. Open an issue, or find a similar one.
+Before jumping into the code please first:
+1. Verify if an existing [GitHub issue](https://github.com/airbytehq/airbyte/issues) matches your contribution project (please filter with the *area/connectors* or *area/platform* labels).
+2. If you don't find an existing issue, [please create a new one](https://github.com/airbytehq/airbyte/issues/new/choose) to explain what you want to achieve.
+3. Assign the issue to yourself and add a comment to tell that you want to work on this.
+
+This will enable our team to make sure your contribution does not overlap with existing works and will comply with the design orientation we are currently heading the product toward.
+If you do not receive an update on the issue from our team, please ping us on [Slack](https://slack.airbyte.io)!
+
+#### 2. Let's code
+1. Fork our [GitHub repository](https://github.com/airbytehq/airbyte).
+2. Open a branch for your work.
+3. Code, and please write **tests**.
+4. Ensure all tests pass. For connectors, this includes acceptance tests as well. 
+
+### 3. Open a pull request
+1. Rebase master with your branch before submitting a pull request.
+2. Open the pull request.
+3. Wait for a review from a community maintainer or our team.
+
+### 4. Review process
+When we review, we look at:
+* ‌Does the PR solve the issue?
+* Is the proposed solution reasonable?
+* Is it tested? \(unit tests or integration tests\)
+* Is it introducing security risks?
+‌Once your PR passes, we will merge it 🎉.
+
 ### **New connectors**
 
 It's easy to add your own connector to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing connectors in other languages.
 
 For sources, simply head over to our [Python CDK](../connector-development/cdk-python/).
 
-{% hint style="info" %}
+:::info
+
 The CDK currently does not support creating destinations, but it will very soon.
-{% endhint %}
+
+::::
 
 * See [Building new connectors](../connector-development/) to get started.
 * Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](../connector-development/tutorials/building-a-python-source.md) and [Build Java Destination Connectors](../connector-development/tutorials/building-a-java-destination.md)
 * Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways, as detailed [here](../connector-development/testing-connectors/source-acceptance-tests-reference.md)
 
 **Please note that, at no point in time, we will ask you to maintain your connector.** The goal is that the Airbyte team and the community helps maintain the connector.
+
 
 ### **Documentation**
 
@@ -62,17 +95,7 @@ We have a repo dedicated to community content. Everything is documented [there](
 
 Feel free to submit a pull request in this repo, if you have something to add even if it's not related to anything mentioned above.
 
-## Ways you can contribute
-
-### **Adding to the codebase for a connector or issue**
-
-First, a big thank you! A few things to keep in mind when contributing code:
-
-* Please make sure there is an issue associated with the work that you're doing.
-* If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
-* Rebase master with your branch before submitting a pull request.
-
-Here are some details about [our review process](./#review-process).
+## Other ways you can contribute
 
 ### **Upvoting issues, feature and connector requests**
 
@@ -106,19 +129,6 @@ To see what has already been proposed by the community, you can look [here](http
 ### **Reporting security issues**
 
 Please do not create a public GitHub issue. If you've found a security issue, please email us directly at [security@airbyte.io](mailto:security@airbyte.io) instead of raising an issue.
-
-## **Review process**
-
-**‌‌**If you are considering adding to the codebase or contributing a new connector: a big thank you! We sincerely appreciate your help.
-
-As soon as you are done with your development, just put up a PR. You're also always welcome to reach out during or before development. When we review we look at:
-
-* ‌Does the PR solve the issue?
-* Is the proposed solution reasonable?
-* Is it tested? \(unit tests or integration tests\)
-* Is it introducing security risks?
-
-‌Once your PR passes, we will merge it.
 
 ## **Airbyte CI workflows**
 * [Testing by SonarQube](sonar-qube-workflow.md)

@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.debezium.internals;
 
+import io.airbyte.db.DataTypeUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Properties;
 import org.apache.kafka.connect.data.SchemaBuilder;
@@ -48,16 +51,25 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
       if (x instanceof byte[]) {
-        return new String((byte[]) x);
+        return new String((byte[]) x, StandardCharsets.UTF_8);
       } else {
         return x.toString();
       }
     });
   }
 
+  /**
+   * The debezium driver replaces Zero-value by Null even when this column is mandatory. According to
+   * the doc, it should be done by driver, but it fails.
+   */
+  private Object convertDefaultValueNullDate(final RelationalColumn field) {
+    final var defaultValue = DebeziumConverterUtils.convertDefaultValue(field);
+    return (defaultValue == null && !field.isOptional() ? DataTypeUtils.toISO8601String(LocalDate.EPOCH) : defaultValue);
+  }
+
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string(),
-        x -> x == null ? DebeziumConverterUtils.convertDefaultValue(field) : DebeziumConverterUtils.convertDate(x));
+        x -> x == null ? convertDefaultValueNullDate(field) : DebeziumConverterUtils.convertDate(x));
   }
 
 }

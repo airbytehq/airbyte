@@ -27,10 +27,6 @@ public class ExtendedNameTransformer extends StandardNameTransformer {
     }
   }
 
-  protected String applyDefaultCase(final String input) {
-    return input;
-  }
-
   protected boolean useExtendedIdentifiers(final String input) {
     boolean result = false;
     if (input.matches("[^\\p{Alpha}_].*")) {

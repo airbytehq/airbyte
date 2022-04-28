@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -89,7 +90,7 @@ public class GcsLogs implements CloudLogs {
       final var poppedBlob = descendingTimestampBlobs.remove(0);
       try (final var inMemoryData = new ByteArrayOutputStream()) {
         poppedBlob.downloadTo(inMemoryData);
-        final var currFileLines = inMemoryData.toString().split("\n");
+        final var currFileLines = inMemoryData.toString(StandardCharsets.UTF_8).split("\n");
         final List<String> currFileLinesReversed = Lists.reverse(List.of(currFileLines));
         for (final var line : currFileLinesReversed) {
           if (linesRead == numLines) {

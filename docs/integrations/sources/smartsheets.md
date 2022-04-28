@@ -25,12 +25,12 @@ The data type mapping adopted by this connector is based on the Smartsheet [docu
 
 **NOTE**: For any column datatypes interpreted by Smartsheets beside `DATE` and `DATETIME`, this connector's source schema generation assumes a `string` type, in which case the `format` field is not required by Airbyte.
 
-| Integration Type | Airbyte Type | Airbyte Format |
-| :--- | :--- | :--- |
-| `TEXT_NUMBER` | `string` |  |
-| `DATE` | `string` | `format: date` |
-| `DATETIME` | `string` | `format: date-time` |
-| `anything else` | `string` |  |
+| Integration Type | Airbyte Type | Airbyte Format       |
+|:-----------------|:-------------|:---------------------|
+| `TEXT_NUMBER`    | `string`     |                      |
+| `DATE`           | `string`     | `format: date`       |
+| `DATETIME`       | `string`     | `format: date-time`  |
+| `anything else`  | `string`     |                      |
 
 The remaining column datatypes supported by Smartsheets are more complex types \(e.g. Predecessor, Dropdown List\) and are not supported by this connector beyond its `string` representation.
 
@@ -38,11 +38,11 @@ The remaining column datatypes supported by Smartsheets are more complex types \
 
 This source connector only supports Full Refresh Sync. Since Smartsheets only allows 5000 rows per sheet, it's likely that the Full Refresh Sync Mode will suit the majority of use-cases.
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | No |
-| Namespaces | No |
+| Feature           | Supported? |
+|:------------------|:-----------|
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
+| Namespaces        | No         |
 
 ### Performance considerations
 
@@ -84,3 +84,10 @@ To setup your new Smartsheets source, Airbyte will need:
 1. Your API access token
 2. The spreadsheet ID
 
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject                                                   |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.10  | 2022-04-15 | [12077](https://github.com/airbytehq/airbyte/pull/12077)           | Implement incremental read and improve code test coverage |
+| 0.1.9   | 2022-04-12 | [11911](https://github.com/airbytehq/airbyte/pull/11911) | Bugfix: scrambled columns                                 |
+| 0.1.8   | 2022-02-04 | [9792](https://github.com/airbytehq/airbyte/pull/9792)   | Added oauth support                                       |

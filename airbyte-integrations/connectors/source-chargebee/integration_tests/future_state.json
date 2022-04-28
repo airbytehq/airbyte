@@ -2,6 +2,9 @@
   "subscription": {
     "updated_at": 2147483647
   },
+  "coupon": {
+    "updated_at": 2147483647
+  },
   "customer": {
     "updated_at": 2147483647
   },

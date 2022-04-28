@@ -2,6 +2,14 @@
 
 set -e
 
+# GCS resources for the following tests are located in the dataline-integration-testing GCP project.
+# GCS testing creds can be found in the "google cloud storage ( gcs ) test creds" secret in the `Shared-integration-tests`
+# folder in Lastpass.
+
+# AWS resources for the following tests are located in the dev account.
+# S3 testing creds can be found in the `AWS_S3_INTEGRATION_TEST_CREDS` secret in the `Shared-integration-tests`
+# folder in Lastpass.
+
 echo "Writing cloud storage credentials.."
 
 # S3

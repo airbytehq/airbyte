@@ -17,6 +17,11 @@ public enum ConfigSchema implements AirbyteConfig {
       standardWorkspace -> standardWorkspace.getWorkspaceId().toString(),
       "workspaceId"),
 
+  WORKSPACE_SERVICE_ACCOUNT("WorkspaceServiceAccount.yaml",
+      WorkspaceServiceAccount.class,
+      workspaceServiceAccount -> workspaceServiceAccount.getWorkspaceId().toString(),
+      "workspaceId"),
+
   // source
   STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml",
       StandardSourceDefinition.class,
@@ -59,6 +64,9 @@ public enum ConfigSchema implements AirbyteConfig {
       "oauthParameterId"),
 
   STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml", StandardSyncSummary.class),
+
+  ACTOR_CATALOG("ActorCatalog.yaml", ActorCatalog.class),
+  ACTOR_CATALOG_FETCH_EVENT("ActorCatalogFetchEvent.yaml", ActorCatalogFetchEvent.class),
 
   // worker
   STANDARD_SYNC_INPUT("StandardSyncInput.yaml", StandardSyncInput.class),

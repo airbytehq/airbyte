@@ -1,76 +1,35 @@
 import React, { Suspense } from "react";
-import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
-import { RoutePaths } from "pages/routes";
-import { Link, LoadingPage, MainPageWithScroll } from "components";
-import PageTitle from "components/PageTitle";
+import { LoadingPage, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
-import StepsMenu from "components/StepsMenu";
-import useRouter from "hooks/useRouter";
 
-import StatusView from "./components/StatusView";
-import SettingsView from "./components/SettingsView";
-import ConnectionResource from "core/resources/Connection";
 import FrequencyConfig from "config/FrequencyConfig.json";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import { equal } from "utils/objects";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { useGetConnection } from "hooks/services/useConnectionHook";
+import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
+import { equal } from "utils/objects";
+
+import ConnectionPageTitle from "./components/ConnectionPageTitle";
+import ReplicationView from "./components/ReplicationView";
+import SettingsView from "./components/SettingsView";
+import StatusView from "./components/StatusView";
+import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
 const ConnectionItemPage: React.FC = () => {
-  const { params, push } = useRouter<{ id: string }>();
-  const { id } = params;
-  const currentStep = params["*"] || "status";
-  const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId: id,
-  });
+  const params = useParams<{
+    connectionId: string;
+    "*": ConnectionSettingsRoutes;
+  }>();
+  const connectionId = params.connectionId || "";
+  const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
+  const connection = useGetConnection(connectionId);
 
   const { source, destination } = connection;
 
-  const sourceDefinition = useResource(
-    SourceDefinitionResource.detailShape(),
-    source
-      ? {
-          sourceDefinitionId: source.sourceDefinitionId,
-        }
-      : null
-  );
-
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    destination
-      ? {
-          destinationDefinitionId: destination.destinationDefinitionId,
-        }
-      : null
-  );
-
-  const steps = [
-    {
-      id: "status",
-      name: <FormattedMessage id={"sources.status"} />,
-    },
-    {
-      id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />,
-    },
-  ];
-
-  const onSelectStep = (id: string) => {
-    if (id === "settings") {
-      push(`${RoutePaths.Settings}`);
-    } else {
-      push("");
-    }
-  };
-
   const analyticsService = useAnalyticsService();
 
-  const frequency = FrequencyConfig.find((item) =>
-    equal(item.config, connection.schedule)
-  );
+  const frequency = FrequencyConfig.find((item) => equal(item.config, connection.schedule));
 
   const onAfterSaveSchema = () => {
     analyticsService.track("Source - Action", {
@@ -99,69 +58,24 @@ const ConnectionItemPage: React.FC = () => {
           ]}
         />
       }
-      pageTitle={
-        <PageTitle
-          withLine
-          title={
-            <FormattedMessage
-              id="connection.fromTo"
-              values={{
-                source: (
-                  <Link
-                    $clear
-                    to={`../../${RoutePaths.Source}/${source.sourceId}`}
-                  >
-                    {source.name}
-                  </Link>
-                ),
-                destination: (
-                  <Link
-                    $clear
-                    to={`../../${RoutePaths.Destination}/${destination.destinationId}`}
-                  >
-                    {destination.name}
-                  </Link>
-                ),
-              }}
-            />
-          }
-          middleComponent={
-            <StepsMenu
-              lightMode
-              data={steps}
-              onSelect={onSelectStep}
-              activeStep={currentStep}
-            />
-          }
-        />
-      }
+      pageTitle={<ConnectionPageTitle source={source} destination={destination} currentStep={currentStep} />}
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route
-            index
-            element={
-              <StatusView
-                connection={connection}
-                sourceDefinition={sourceDefinition}
-                destinationDefinition={destinationDefinition}
-                frequencyText={frequency?.text}
-              />
-            }
+            path={ConnectionSettingsRoutes.STATUS}
+            element={<StatusView connection={connection} frequencyText={frequency?.text} />}
           />
           <Route
-            path="settings"
-            element={
-              <SettingsView
-                onAfterSaveSchema={onAfterSaveSchema}
-                connectionId={connection.connectionId}
-                sourceDefinition={sourceDefinition}
-                destinationDefinition={destinationDefinition}
-                frequencyText={frequency?.text}
-              />
-            }
+            path={ConnectionSettingsRoutes.REPLICATION}
+            element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
           />
-          <Route index element={<Navigate to="status" />} />
+          <Route
+            path={ConnectionSettingsRoutes.TRANSFORMATION}
+            element={<TransformationView connection={connection} />}
+          />
+          <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace={true} />} />
         </Routes>
       </Suspense>
     </MainPageWithScroll>

@@ -17,6 +17,7 @@ import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.WorkerConfigs;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
@@ -46,15 +47,18 @@ public class JobScheduler implements Runnable {
     this.jobFactory = jobFactory;
   }
 
-  public JobScheduler(final JobPersistence jobPersistence,
+  public JobScheduler(final boolean connectorSpecificResourceDefaultsEnabled,
+                      final JobPersistence jobPersistence,
                       final ConfigRepository configRepository,
-                      final TrackingClient trackingClient) {
+                      final TrackingClient trackingClient,
+                      final WorkerConfigs workerConfigs) {
     this(
         jobPersistence,
         configRepository,
         new ScheduleJobPredicate(Instant::now),
         new DefaultSyncJobFactory(
-            new DefaultJobCreator(jobPersistence, configRepository),
+            connectorSpecificResourceDefaultsEnabled,
+            new DefaultJobCreator(jobPersistence, configRepository, workerConfigs.getResourceRequirements()),
             configRepository,
             new OAuthConfigSupplier(configRepository, trackingClient)));
   }

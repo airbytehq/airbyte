@@ -1,0 +1,270 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "title": "Line item",
+  "properties": {
+    "id": {
+      "type": "string",
+      "title": "Line item ID",
+      "maxLength": 13
+    },
+    "uuid": {
+      "type": "string",
+      "title": "UUID",
+      "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
+      "maxLength": 32
+    },
+    "type": {
+      "type": "string",
+      "title": "Line item type",
+      "description": "Charges are positive line items that debit the account. Credits are negative line items that credit the account.",
+      "maxLength": 256
+    },
+    "item_code": {
+      "type": ["null", "string"],
+      "title": "Item Code",
+      "description": "Unique code to identify an item. Available when the Credit Invoices and Subscription Billing Terms features are enabled.",
+      "maxLength": 50
+    },
+    "item_id": {
+      "type": ["null", "string"],
+      "title": "Item ID",
+      "description": "System-generated unique identifier for an item. Available when the Credit Invoices and Subscription Billing Terms features are enabled.",
+      "maxLength": 13
+    },
+    "external_sku": {
+      "type": ["null", "string"],
+      "title": "External SKU",
+      "description": "Optional Stock Keeping Unit assigned to an item. Available when the Credit Invoices and Subscription Billing Terms features are enabled.",
+      "maxLength": 50
+    },
+    "revenue_schedule_type": {
+      "type": ["null", "string"],
+      "title": "Revenue schedule type",
+      "maxLength": 256
+    },
+    "state": {
+      "type": "string",
+      "title": "Current state of the line item",
+      "description": "Pending line items are charges or credits on an account that have not been applied to an invoice yet. Invoiced line items will always have an `invoice_id` value.",
+      "maxLength": 256
+    },
+    "legacy_category": {
+      "type": ["null", "string"],
+      "title": "Legacy category",
+      "description": "Category to describe the role of a line item on a legacy invoice:\n- \"charges\" refers to charges being billed for on this invoice.\n- \"credits\" refers to refund or proration credits. This portion of the invoice can be considered a credit memo.\n- \"applied_credits\" refers to previous credits applied to this invoice. See their original_line_item_id to determine where the credit first originated.\n- \"carryforwards\" can be ignored. They exist to consume any remaining credit balance. A new credit with the same amount will be created and placed back on the account.\n"
+    },
+    "bill_for_account_id": {
+      "type": "string",
+      "title": "Bill For Account ID",
+      "maxLength": 13,
+      "description": "The UUID of the account responsible for originating the line item."
+    },
+    "subscription_id": {
+      "type": ["null", "string"],
+      "title": "Subscription ID",
+      "description": "If the line item is a charge or credit for a subscription, this is its ID.",
+      "maxLength": 13
+    },
+    "plan_id": {
+      "type": ["null", "string"],
+      "title": "Plan ID",
+      "description": "If the line item is a charge or credit for a plan or add-on, this is the plan's ID.",
+      "maxLength": 13
+    },
+    "plan_code": {
+      "type": ["null", "string"],
+      "title": "Plan code",
+      "description": "If the line item is a charge or credit for a plan or add-on, this is the plan's code.",
+      "maxLength": 50
+    },
+    "add_on_id": {
+      "type": ["null", "string"],
+      "title": "Add-on ID",
+      "description": "If the line item is a charge or credit for an add-on this is its ID.",
+      "maxLength": 13
+    },
+    "add_on_code": {
+      "type": ["null", "string"],
+      "title": "Add-on code",
+      "description": "If the line item is a charge or credit for an add-on, this is its code.",
+      "maxLength": 50
+    },
+    "invoice_id": {
+      "type": ["null", "string"],
+      "title": "Invoice ID",
+      "description": "Once the line item has been invoiced this will be the invoice's ID.",
+      "maxLength": 13
+    },
+    "invoice_number": {
+      "type": ["null", "string"],
+      "title": "Invoice number",
+      "description": "Once the line item has been invoiced this will be the invoice's number. If VAT taxation and the Country Invoice Sequencing feature are enabled, invoices will have country-specific invoice numbers for invoices billed to EU countries (ex: FR1001). Non-EU invoices will continue to use the site-level invoice number sequence.",
+      "maxLength": 256
+    },
+    "previous_line_item_id": {
+      "type": ["null", "string"],
+      "title": "Previous line item ID",
+      "description": "Will only have a value if the line item is a credit created from a previous credit, or if the credit was created from a charge refund.",
+      "maxLength": 13
+    },
+    "original_line_item_invoice_id": {
+      "type": ["null", "string"],
+      "title": "Original line item's invoice ID",
+      "description": "The invoice where the credit originated. Will only have a value if the line item is a credit created from a previous credit, or if the credit was created from a charge refund.",
+      "maxLength": 13
+    },
+    "origin": {
+      "type": "string",
+      "title": "Origin of line item",
+      "description": "A credit created from an original charge will have the value of the charge's origin.",
+      "maxLength": 256
+    },
+    "accounting_code": {
+      "type": "string",
+      "title": "Accounting code",
+      "description": "Internal accounting code to help you reconcile your revenue to the correct ledger. Line items created as part of a subscription invoice will use the plan or add-on's accounting code, otherwise the value will only be present if you define an accounting code when creating the line item.",
+      "maxLength": 20
+    },
+    "product_code": {
+      "type": "string",
+      "title": "Product code",
+      "description": "For plan-related line items this will be the plan's code, for add-on related line items it will be the add-on's code. For item-related line items it will be the item's `external_sku`.",
+      "maxLength": 50
+    },
+    "credit_reason_code": {
+      "type": ["null", "string"],
+      "title": "Credit reason code",
+      "description": "The reason the credit was given when line item is `type=credit`.",
+      "default": "general",
+      "maxLength": 256
+    },
+    "currency": {
+      "type": "string",
+      "title": "Currency",
+      "description": "3-letter ISO 4217 currency code.",
+      "maxLength": 3
+    },
+    "amount": {
+      "type": "number",
+      "format": "float",
+      "title": "Total after discounts and taxes",
+      "description": "`(quantity * unit_amount) - (discount + tax)`"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Description that appears on the invoice. For subscription related items this will be filled in automatically.",
+      "maxLength": 255
+    },
+    "quantity": {
+      "type": "integer",
+      "title": "Quantity",
+      "description": "This number will be multiplied by the unit amount to compute the subtotal before any discounts or taxes.",
+      "default": 1
+    },
+    "unit_amount": {
+      "type": "number",
+      "format": "float",
+      "title": "Unit amount",
+      "description": "Positive amount for a charge, negative amount for a credit."
+    },
+    "unit_amount_decimal": {
+      "type": ["null", "string"],
+      "title": "Unit amount decimal",
+      "description": "Positive amount for a charge, negative amount for a credit."
+    },
+    "subtotal": {
+      "type": "number",
+      "format": "float",
+      "title": "Total before discounts and taxes",
+      "description": "`quantity * unit_amount`"
+    },
+    "discount": {
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Discount",
+      "description": "The discount applied to the line item."
+    },
+    "tax": {
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Tax",
+      "description": "The tax amount for the line item."
+    },
+    "taxable": {
+      "type": "boolean",
+      "title": "Taxable?",
+      "description": "`true` if the line item is taxable, `false` if it is not."
+    },
+    "tax_exempt": {
+      "type": "boolean",
+      "title": "Tax exempt?",
+      "description": "`true` exempts tax on charges, `false` applies tax on charges. If not defined, then defaults to the Plan and Site settings. This attribute does not work for credits (negative line items). Credits are always applied post-tax. Pre-tax discounts should use the Coupons feature."
+    },
+    "tax_code": {
+      "type": ["null", "string"],
+      "title": "Tax code",
+      "description": "Used by Avalara, Vertex, and Recurly\u2019s EU VAT tax feature. The tax code values are specific to each tax system. If you are using Recurly\u2019s EU VAT feature you can use `unknown`, `physical`, or `digital`.",
+      "maxLength": 50
+    },
+    "proration_rate": {
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Proration rate",
+      "description": "When a line item has been prorated, this is the rate of the proration. Proration rates were made available for line items created after March 30, 2017. For line items created prior to that date, the proration rate will be `null`, even if the line item was prorated.",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "refund": {
+      "type": "boolean",
+      "title": "Refund?"
+    },
+    "refunded_quantity": {
+      "type": ["null", "integer"],
+      "title": "Refunded Quantity",
+      "description": "For refund charges, the quantity being refunded. For non-refund charges, the total quantity refunded (possibly over multiple refunds)."
+    },
+    "credit_applied": {
+      "type": ["null", "number"],
+      "format": "float",
+      "title": "Credit Applied",
+      "description": "The amount of credit from this line item that was applied to the invoice."
+    },
+    "shipping_address": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Shipping Address ID",
+          "maxLength": 13,
+          "readOnly": true
+        }
+      }
+    },
+    "start_date": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "title": "Start date",
+      "description": "If an end date is present, this is value indicates the beginning of a billing time range. If no end date is present it indicates billing for a specific date."
+    },
+    "end_date": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "title": "End date",
+      "description": "If this date is provided, it indicates the end of a time range."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created at",
+      "description": "When the line item was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last updated at",
+      "description": "When the line item was last changed."
+    }
+  }
+}

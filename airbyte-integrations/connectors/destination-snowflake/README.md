@@ -19,11 +19,12 @@
 ```
 
 ## For Airbyte employees
-Put the contents of the `Snowflake Integration Test Config` secret on Rippling under the `Engineering` folder into `secrets/config.json` to be able to run integration tests locally.
+Put the contents of the `Snowflake Integration Test Config` secret on LastPass under the `Engineering` folder into `secrets/config.json` to be able to run integration tests locally.
 
 1. Put the contents of the `destination snowflake - insert test creds` LastPass secret into `secrets/insert_config.json`.
 1. Put the contents of the `destination snowflake - insert staging test creds` secret into `internal_staging_config.json`.
 1. Put the contents of the `destination snowflake - gcs copy test creds` secret into `secrets/copy_gcs_config.json`
 1. Put the contents of the `destination snowflake - s3 copy test creds` secret into `secrets/copy_s3_config.json`
+1. Put the contents of the `destination snowflake - azure blob copy test creds` secret into `secrets/copy_azure_blob_config.json`
 
 The query timeout for insert data to table has been updated from 30 minutes to 3 hours.

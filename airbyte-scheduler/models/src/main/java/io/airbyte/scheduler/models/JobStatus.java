@@ -16,6 +16,6 @@ public enum JobStatus {
   SUCCEEDED,
   CANCELLED;
 
-  public static Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED, CANCELLED);
+  public static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(FAILED, SUCCEEDED, CANCELLED);
 
 }

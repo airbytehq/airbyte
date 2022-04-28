@@ -13,6 +13,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
@@ -21,8 +22,9 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
-import java.util.function.Supplier;
 
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
@@ -32,9 +34,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final String databaseUser;
-  private final String databasePassword;
-  private final String databaseUrl;
+  private final JobPersistence jobPersistence;
   private final String airbyteVersion;
 
   public CheckConnectionActivityImpl(final WorkerConfigs workerConfigs,
@@ -43,9 +43,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
-                                     final String databaseUser,
-                                     final String databasePassword,
-                                     final String databaseUrl,
+                                     final JobPersistence jobPersistence,
                                      final String airbyteVersion) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -53,9 +51,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.databaseUser = databaseUser;
-    this.databasePassword = databasePassword;
-    this.databaseUrl = databaseUrl;
+    this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
   }
 
@@ -68,15 +64,18 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
         .withConnectionConfiguration(fullConfig);
 
-    final Supplier<StandardCheckConnectionInput> inputSupplier = () -> input;
+    final ActivityExecutionContext context = Activity.getExecutionContext();
 
     final TemporalAttemptExecution<StandardCheckConnectionInput, StandardCheckConnectionOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
             workspaceRoot, workerEnvironment, logConfigs,
             jobRunConfig,
             getWorkerFactory(launcherConfig),
-            inputSupplier,
-            new CancellationHandler.TemporalCancellationHandler(), databaseUser, databasePassword, databaseUrl, airbyteVersion);
+            () -> input,
+            new CancellationHandler.TemporalCancellationHandler(context),
+            jobPersistence,
+            airbyteVersion,
+            () -> context);
 
     return temporalAttemptExecution.get();
   }

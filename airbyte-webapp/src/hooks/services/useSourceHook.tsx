@@ -1,18 +1,28 @@
-import { useCallback } from "react";
-import { useFetcher, useResource } from "rest-hooks";
-import { useStatefulResource } from "@rest-hooks/legacy";
+import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
 
-import SourceResource from "core/resources/Source";
-import { RoutePaths } from "pages/routes";
-import ConnectionResource, { Connection } from "core/resources/Connection";
-import SourceDefinitionSpecificationResource from "core/resources/SourceDefinitionSpecification";
-import SchedulerResource, { Scheduler } from "core/resources/Scheduler";
-import { ConnectionConfiguration } from "core/domain/connection";
-import useWorkspace from "./useWorkspace";
-
-import useRouter from "hooks/useRouter";
+import { useConfig } from "config";
+import { SyncSchema } from "core/domain/catalog";
+import { Connection, ConnectionConfiguration } from "core/domain/connection";
+import { Source } from "core/domain/connector";
+import { SourceService } from "core/domain/connector/SourceService";
+import { JobInfo } from "core/domain/job";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { Source, SourceDefinitionSpecification } from "core/domain/connector";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
+import { useInitService } from "services/useInitService";
+import { isDefined } from "utils/common";
+
+import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
+import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { connectionsKeys, ListConnection } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
+
+export const sourcesKeys = {
+  all: [SCOPE_WORKSPACE, "sources"] as const,
+  lists: () => [...sourcesKeys.all, "list"] as const,
+  list: (filters: string) => [...sourcesKeys.lists(), { filters }] as const,
+  detail: (sourceId: string) => [...sourcesKeys.all, "details", sourceId] as const,
+};
 
 type ValuesProps = {
   name: string;
@@ -23,234 +33,184 @@ type ValuesProps = {
 
 type ConnectorProps = { name: string; sourceDefinitionId: string };
 
-export const useSourceDefinitionSpecificationLoad = (
-  sourceDefinitionId: string
-): {
-  isLoading: boolean;
-  sourceDefinitionError?: Error;
-  sourceDefinitionSpecification?: SourceDefinitionSpecification;
-} => {
-  const {
-    loading: isLoading,
-    error: sourceDefinitionError,
-    data: sourceDefinitionSpecification,
-  } = useStatefulResource(
-    SourceDefinitionSpecificationResource.detailShape(),
-    sourceDefinitionId
-      ? {
-          sourceDefinitionId,
-        }
-      : null
+function useSourceService(): SourceService {
+  const config = useConfig();
+  const middlewares = useDefaultRequestMiddlewares();
+
+  return useInitService(
+    () => new SourceService(config.apiUrl, middlewares),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [config]
   );
+}
 
-  return { sourceDefinitionSpecification, sourceDefinitionError, isLoading };
+type SourceList = { sources: Source[] };
+
+const useSourceList = (): SourceList => {
+  const workspace = useCurrentWorkspace();
+  const service = useSourceService();
+
+  return useSuspenseQuery(sourcesKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
-type SourceService = {
-  recreateSource: (recreateSourcePayload: {
-    values: ValuesProps;
-    sourceId: string;
-  }) => Promise<Source>;
-  checkSourceConnection: (checkSourceConnectionPayload: {
-    sourceId: string;
-    values?: ValuesProps;
-  }) => Promise<Scheduler>;
-  createSource: (createSourcePayload: {
-    values: ValuesProps;
-    sourceConnector?: ConnectorProps;
-  }) => Promise<Source>;
-  updateSource: (updateSourcePayload: {
-    values: ValuesProps;
-    sourceId: string;
-  }) => Promise<Source>;
-  deleteSource: (deleteSourcePayload: {
-    source: Source;
-    connectionsWithSource: Connection[];
-  }) => Promise<void>;
+const useGetSource = <T extends string | undefined | null>(
+  sourceId: T
+): T extends string ? Source : Source | undefined => {
+  const service = useSourceService();
+
+  return useSuspenseQuery(sourcesKeys.detail(sourceId ?? ""), () => service.get(sourceId ?? ""), {
+    enabled: isDefined(sourceId),
+  });
 };
 
-const useSource = (): SourceService => {
-  const { push } = useRouter();
-  const { workspace } = useWorkspace();
-  const createSourcesImplementation = useFetcher(SourceResource.createShape());
+const useCreateSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+  const workspace = useCurrentWorkspace();
+
   const analyticsService = useAnalyticsService();
 
-  const sourceCheckConnectionShape = useFetcher(
-    SchedulerResource.sourceCheckConnectionShape()
-  );
-
-  const updatesource = useFetcher(SourceResource.partialUpdateShape());
-
-  const recreatesource = useFetcher(SourceResource.recreateShape());
-
-  const sourceDelete = useFetcher(SourceResource.deleteShape());
-
-  const updateConnectionsStore = useFetcher(
-    ConnectionResource.updateStoreAfterDeleteShape()
-  );
-
-  const createSource: SourceService["createSource"] = async ({
-    values,
-    sourceConnector,
-  }) => {
-    analyticsService.track("New Source - Action", {
-      action: "Test a connector",
-      connector_source: sourceConnector?.name,
-      connector_source_id: sourceConnector?.sourceDefinitionId,
-    });
-
-    try {
-      await sourceCheckConnectionShape({
-        sourceDefinitionId: sourceConnector?.sourceDefinitionId,
-        connectionConfiguration: values.connectionConfiguration,
+  return useMutation(
+    async (createSourcePayload: { values: ValuesProps; sourceConnector?: ConnectorProps }) => {
+      const { values, sourceConnector } = createSourcePayload;
+      analyticsService.track("New Source - Action", {
+        action: "Test a connector",
+        connector_source: sourceConnector?.name,
+        connector_source_id: sourceConnector?.sourceDefinitionId,
       });
 
-      // Try to crete source
-      const result = await createSourcesImplementation(
-        {},
-        {
+      try {
+        // Try to crete source
+        const result = await service.create({
           name: values.name,
           sourceDefinitionId: sourceConnector?.sourceDefinitionId,
           workspaceId: workspace.workspaceId,
           connectionConfiguration: values.connectionConfiguration,
-        },
-        [
-          [
-            SourceResource.listShape(),
-            { workspaceId: workspace.workspaceId },
-            (newsourceId: string, sourceIds: { sources: string[] }) => ({
-              sources: [...(sourceIds?.sources || []), newsourceId],
-            }),
-          ],
-        ]
-      );
-      analyticsService.track("New Source - Action", {
-        action: "Tested connector - success",
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId,
-      });
-
-      return result;
-    } catch (e) {
-      analyticsService.track("New Source - Action", {
-        action: "Tested connector - failure",
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId,
-      });
-      throw e;
-    }
-  };
-
-  const updateSource: SourceService["updateSource"] = async ({
-    values,
-    sourceId,
-  }) => {
-    await sourceCheckConnectionShape({
-      name: values.name,
-      sourceId,
-      connectionConfiguration: values.connectionConfiguration,
-    });
-
-    return await updatesource(
-      {
-        sourceId: sourceId,
-      },
-      {
-        name: values.name,
-        sourceId,
-        connectionConfiguration: values.connectionConfiguration,
-      }
-    );
-  };
-
-  const checkSourceConnection = useCallback(
-    async ({
-      sourceId,
-      values,
-    }: {
-      sourceId: string;
-      values?: ValuesProps;
-    }) => {
-      if (values) {
-        return await sourceCheckConnectionShape({
-          connectionConfiguration: values.connectionConfiguration,
-          name: values.name,
-          sourceId: sourceId,
         });
+
+        analyticsService.track("New Source - Action", {
+          action: "Tested connector - success",
+          connector_source: sourceConnector?.name,
+          connector_source_id: sourceConnector?.sourceDefinitionId,
+        });
+
+        return result;
+      } catch (e) {
+        analyticsService.track("New Source - Action", {
+          action: "Tested connector - failure",
+          connector_source: sourceConnector?.name,
+          connector_source_id: sourceConnector?.sourceDefinitionId,
+        });
+        throw e;
       }
-      return await sourceCheckConnectionShape({
-        sourceId,
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(sourcesKeys.lists(), (lst: SourceList | undefined) => ({
+          sources: [data, ...(lst?.sources ?? [])],
+        }));
+      },
+    }
+  );
+};
+
+const useDeleteSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
+
+  return useMutation(
+    (payload: { source: Source; connectionsWithSource: Connection[] }) => service.delete(payload.source.sourceId),
+    {
+      onSuccess: (_data, ctx) => {
+        analyticsService.track("Source - Action", {
+          action: "Delete source",
+          connector_source: ctx.source.sourceName,
+          connector_source_id: ctx.source.sourceDefinitionId,
+        });
+
+        queryClient.removeQueries(sourcesKeys.detail(ctx.source.sourceId));
+        queryClient.setQueryData(
+          sourcesKeys.lists(),
+          (lst: SourceList | undefined) =>
+            ({
+              sources: lst?.sources.filter((conn) => conn.sourceId !== ctx.source.sourceId) ?? [],
+            } as SourceList)
+        );
+
+        // To delete connections with current source from local store
+        const connectionIds = ctx.connectionsWithSource.map((item) => item.connectionId);
+
+        queryClient.setQueryData(connectionsKeys.lists(), (ls: ListConnection | undefined) => ({
+          connections: ls?.connections.filter((c) => connectionIds.includes(c.connectionId)) ?? [],
+        }));
+      },
+    }
+  );
+};
+
+const useUpdateSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (updateSourcePayload: { values: ValuesProps; sourceId: string }) => {
+      return service.update({
+        name: updateSourcePayload.values.name,
+        sourceId: updateSourcePayload.sourceId,
+        connectionConfiguration: updateSourcePayload.values.connectionConfiguration,
       });
     },
-    [sourceCheckConnectionShape]
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(sourcesKeys.detail(data.sourceId), data);
+      },
+    }
   );
-
-  const recreateSource: SourceService["recreateSource"] = async ({
-    values,
-    sourceId,
-  }) => {
-    return await recreatesource(
-      {
-        sourceId: sourceId,
-      },
-      {
-        name: values.name,
-        sourceId,
-        connectionConfiguration: values.connectionConfiguration,
-        workspaceId: workspace.workspaceId,
-        sourceDefinitionId: values.serviceType,
-      },
-      // Method used only in onboarding.
-      // Replace all source List to new item in UpdateParams (to change id)
-      [
-        [
-          SourceResource.listShape(),
-          { workspaceId: workspace.workspaceId },
-          (newsourceId: string) => ({
-            sources: [newsourceId],
-          }),
-        ],
-      ]
-    );
-  };
-
-  const deleteSource: SourceService["deleteSource"] = async ({
-    source,
-    connectionsWithSource,
-  }) => {
-    await sourceDelete({
-      sourceId: source.sourceId,
-    });
-
-    analyticsService.track("Source - Action", {
-      action: "Delete source",
-      connector_source: source.sourceName,
-      connector_source_id: source.sourceDefinitionId,
-    });
-
-    // To delete connections with current source from local store
-    connectionsWithSource.map((item) =>
-      updateConnectionsStore({ connectionId: item.connectionId }, undefined)
-    );
-
-    push(RoutePaths.Source);
-  };
-
-  return {
-    createSource,
-    updateSource,
-    recreateSource,
-    deleteSource,
-    checkSourceConnection,
-  };
 };
 
-const useSourceList = (): { sources: Source[] } => {
-  const { workspace } = useWorkspace();
-  return useResource(SourceResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+const useDiscoverSchema = (
+  sourceId?: string
+): {
+  isLoading: boolean;
+  schema: SyncSchema;
+  schemaErrorStatus: { status: number; response: JobInfo } | null;
+  catalogId: string;
+  onDiscoverSchema: () => Promise<void>;
+} => {
+  const service = useSourceService();
+  const [schema, setSchema] = useState<SyncSchema>({ streams: [] });
+  const [catalogId, setCatalogId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [schemaErrorStatus, setSchemaErrorStatus] = useState<{
+    status: number;
+    response: JobInfo;
+  } | null>(null);
+
+  const onDiscoverSchema = useCallback(async () => {
+    setIsLoading(true);
+    setSchemaErrorStatus(null);
+    try {
+      const data = await service.discoverSchema(sourceId || "");
+      setSchema(data.catalog);
+      setCatalogId(data.catalogId);
+    } catch (e) {
+      setSchemaErrorStatus(e);
+    } finally {
+      setIsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceId]);
+
+  useEffect(() => {
+    (async () => {
+      if (sourceId) {
+        await onDiscoverSchema();
+      }
+    })();
+  }, [onDiscoverSchema, sourceId]);
+
+  return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };
 };
 
-export { useSourceList };
-export default useSource;
+export { useSourceList, useGetSource, useCreateSource, useDeleteSource, useUpdateSource, useDiscoverSchema };

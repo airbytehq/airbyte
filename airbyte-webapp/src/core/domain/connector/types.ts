@@ -1,8 +1,14 @@
-import {
-  ConnectionConfiguration,
-  ConnectionSpecification,
-} from "core/domain/connection";
-import { DestinationSyncMode } from "core/domain/catalog";
+import { DestinationSyncMode, SourceDiscoverSchemaRead } from "core/domain/catalog";
+import { ConnectionConfiguration, ConnectionSpecification } from "core/domain/connection";
+
+import { JobInfo } from "../job";
+
+export enum ReleaseStage {
+  "ALPHA" = "alpha",
+  "BETA" = "beta",
+  "GENERALLY_AVAILABLE" = "generally_available",
+  "CUSTOM" = "custom",
+}
 
 export interface DestinationDefinition {
   destinationDefinitionId: string;
@@ -12,6 +18,7 @@ export interface DestinationDefinition {
   latestDockerImageTag: string;
   documentationUrl: string;
   icon: string;
+  releaseStage?: ReleaseStage;
 }
 
 export interface SourceDefinition {
@@ -22,6 +29,7 @@ export interface SourceDefinition {
   latestDockerImageTag: string;
   documentationUrl: string;
   icon: string;
+  releaseStage?: ReleaseStage;
 }
 
 export type ConnectorDefinition = SourceDefinition | DestinationDefinition;
@@ -62,20 +70,16 @@ interface ConnectorDefinitionSpecificationBase {
   advancedAuth?: AdvancedAuth;
 }
 
-export type ConnectorDefinitionSpecification =
-  | DestinationDefinitionSpecification
-  | SourceDefinitionSpecification;
+export type ConnectorDefinitionSpecification = DestinationDefinitionSpecification | SourceDefinitionSpecification;
 
-export interface DestinationDefinitionSpecification
-  extends ConnectorDefinitionSpecificationBase {
+export interface DestinationDefinitionSpecification extends ConnectorDefinitionSpecificationBase {
   destinationDefinitionId: string;
   supportedDestinationSyncModes: DestinationSyncMode[];
   supportsDbt: boolean;
   supportsNormalization: boolean;
 }
 
-export interface SourceDefinitionSpecification
-  extends ConnectorDefinitionSpecificationBase {
+export interface SourceDefinitionSpecification extends ConnectorDefinitionSpecificationBase {
   sourceDefinitionId: string;
 }
 
@@ -109,4 +113,17 @@ export interface Destination {
   workspaceId: string;
   destinationDefinitionId: string;
   connectionConfiguration: ConnectionConfiguration;
+}
+
+export type ConnectorT = Destination | Source;
+
+export interface Scheduler {
+  status: string;
+  message: string;
+  jobInfo?: JobInfo;
+}
+
+export interface Schema extends SourceDiscoverSchemaRead {
+  // TODO: probably this could be removed. Legacy proper that was used in rest-hooks
+  id: string;
 }

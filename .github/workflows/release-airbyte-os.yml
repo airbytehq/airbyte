@@ -9,9 +9,27 @@ on:
         required: true
         default: "patch"
 jobs:
+  find_valid_pat:
+    name: "Find a PAT with room for actions"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      pat: ${{ steps.variables.outputs.pat }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Check PAT rate limits
+        id: variables
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
   # In case of self-hosted EC2 errors, remove this block.
   start-release-airbyte-runner:
     name: "Release Airbyte: Start EC2 Runner"
+    needs: find_valid_pat
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -26,7 +44,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
 
   releaseAirbyte:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
@@ -45,15 +63,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: "16.13.0"
-
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
-      - name: Save Old Version
-        id: old_version
-        run: |
-          echo ::set-output name=OLD_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
+          python-version: "3.9"
       - name: Release Airbyte
         id: release_airbyte
         env:
@@ -63,14 +76,60 @@ jobs:
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
           ./tools/bin/release_version.sh
-      - name: Save New Version
-        id: new_version
-        run: |
-          echo ::set-output name=NEW_VERSION::$(grep -w VERSION .env | cut -d"=" -f2)
+
+  # We are releasing octavia from a separate job because:
+  # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
+  releaseOctavia:
+    runs-on: ubuntu-latest
+    environment: more-secrets
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "17"
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "16.13.0"
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Release Octavia
+        id: release_octavia
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
+        run: ./tools/bin/release_version_octavia.sh
+
+  createPullRequest:
+    needs:
+      - releaseAirbyte
+      - releaseOctavia
+    runs-on: ubuntu-latest
+    environment: more-secrets
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      # necessary to install pip
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Bump version
+        id: bump_version
+        env:
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
+        run: ./tools/bin/bump_version.sh
       - name: Get PR Body
         id: pr_body
         env:
-          PREV_VERSION: ${{ steps.old_version.outputs.OLD_VERSION }}
+          PREV_VERSION: ${{ steps.bump_version.outputs.PREV_VERSION }}
+          NEW_VERSION: ${{ steps.bump_version.outputs.NEW_VERSION }}
+          GIT_REVISION: ${{ steps.bump_version.outputs.GIT_REVISION }}
         run: |
           chmod +x tools/bin/pr_body.sh
           body=$(./tools/bin/pr_body.sh)
@@ -84,9 +143,9 @@ jobs:
           branch: bump-version
           branch-suffix: random
           delete-branch: true
-          title: Bump Airbyte version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
+          title: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
           body: ${{ steps.pr_body.outputs.PR_BODY }}
-          commit-message: Bump Airbyte version from ${{ steps.old_version.outputs.OLD_VERSION }} to ${{ steps.new_version.outputs.NEW_VERSION }}
+          commit-message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
       - name: PR Details
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
@@ -99,6 +158,7 @@ jobs:
     needs:
       - start-release-airbyte-runner # required to get output from the start-runner job
       - releaseAirbyte # required to wait when the main job is done
+      - find_valid_pat
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
@@ -109,9 +169,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.3.0
+        uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          github-token: ${{ needs.find_valid_pat.outputs.pat }}
           label: ${{ needs.start-release-airbyte-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-release-airbyte-runner.outputs.ec2-instance-id }}

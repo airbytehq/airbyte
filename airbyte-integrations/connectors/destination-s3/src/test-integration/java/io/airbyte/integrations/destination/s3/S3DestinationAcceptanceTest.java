@@ -15,9 +15,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.avro.AvroConstants;
-import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -25,6 +27,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +52,8 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   protected JsonNode configJson;
   protected S3DestinationConfig config;
   protected AmazonS3 s3Client;
+  protected NamingConventionTransformer nameTransformer;
+  protected S3StorageOperations s3StorageOperations;
 
   protected S3DestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
@@ -68,6 +74,14 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
   }
 
   @Override
+  protected String getDefaultSchema(final JsonNode config) {
+    if (config.has("s3_bucket_path")) {
+      return config.get("s3_bucket_path").asText();
+    }
+    return null;
+  }
+
+  @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode baseJson = getBaseConfigJson();
     final JsonNode failCheckJson = Jsons.clone(baseJson);
@@ -81,13 +95,20 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * Helper method to retrieve all synced objects inside the configured bucket path.
    */
   protected List<S3ObjectSummary> getAllSyncedObjects(final String streamName, final String namespace) {
-    final String outputPrefix = S3OutputPathHelper
-        .getOutputPrefix(config.getBucketPath(), namespace, streamName);
+    final String namespaceStr = nameTransformer.getNamespace(namespace);
+    final String streamNameStr = nameTransformer.getIdentifier(streamName);
+    final String outputPrefix = s3StorageOperations.getBucketObjectPath(
+        namespaceStr,
+        streamNameStr,
+        DateTime.now(DateTimeZone.UTC),
+        config.getPathFormat());
+    // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
+    final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
     final List<S3ObjectSummary> objectSummaries = s3Client
-        .listObjects(config.getBucketName(), outputPrefix)
+        .listObjects(config.getBucketName(), parentFolder)
         .getObjectSummaries()
         .stream()
-        .filter(o -> o.getKey().contains(AvroConstants.NAME_TRANSFORMER.convertStreamName(streamName) + "/"))
+        .filter(o -> o.getKey().contains(streamNameStr + "/"))
         .sorted(Comparator.comparingLong(o -> o.getLastModified().getTime()))
         .collect(Collectors.toList());
     LOGGER.info(
@@ -120,6 +141,8 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());
 
     this.s3Client = config.getS3Client();
+    this.nameTransformer = new S3NameTransformer();
+    this.s3StorageOperations = new S3StorageOperations(nameTransformer, s3Client, config);
   }
 
   /**
@@ -142,6 +165,26 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
           .deleteObjects(new DeleteObjectsRequest(config.getBucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
 }

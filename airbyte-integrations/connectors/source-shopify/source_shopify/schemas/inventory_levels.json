@@ -1,6 +1,9 @@
 {
   "type": "object",
   "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
     "available": {
       "type": ["null", "integer"]
     },
