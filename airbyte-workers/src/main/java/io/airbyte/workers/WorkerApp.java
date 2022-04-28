@@ -211,7 +211,8 @@ public class WorkerApp {
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(checkConnectionActivity, replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncWorker.registerActivitiesImplementations(checkConnectionActivity, replicationActivity, normalizationActivity, dbtTransformationActivity,
+        persistStateActivity);
   }
 
   private void registerDiscover(final WorkerFactory factory) {

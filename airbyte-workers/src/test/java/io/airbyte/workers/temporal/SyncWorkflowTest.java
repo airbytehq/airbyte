@@ -23,7 +23,6 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
-import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
@@ -118,7 +117,8 @@ class SyncWorkflowTest {
 
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    syncWorker.registerActivitiesImplementations(checkActivity, replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncWorker.registerActivitiesImplementations(checkActivity, replicationActivity, normalizationActivity, dbtTransformationActivity,
+        persistStateActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());

@@ -12,13 +12,21 @@ import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
 
 public class CheckConnectionWorkflowImpl implements CheckConnectionWorkflow {
-  private final CheckConnectionActivity activity = Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
+  private final CheckConnectionActivity activity =
+      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
 
   @Override
   public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
                                            final IntegrationLauncherConfig launcherConfig,
                                            final StandardCheckConnectionInput connectionConfiguration) {
+
+    // try {
     return activity.check(jobRunConfig, launcherConfig, connectionConfiguration);
+    // } catch (Exception e) {
+    // throw Activity.wrap(e);
+    // throw ApplicationFailure.newNonRetryableFailure("CHECK failed", "check", e);
+    // throw ApplicationFailure.newNonRetryableFailure(e.toString(), "check-failure", e);
+    // }
   }
 
 }

@@ -43,10 +43,10 @@ public class ActivityConfiguration {
       .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)
       .build();
 
- public static final ActivityOptions CHECK_ACTIVITY_OPTIONS = ActivityOptions.newBuilder()
-     .setScheduleToCloseTimeout(Duration.ofMinutes(5))
-     .setRetryOptions(TemporalUtils.NO_RETRY)
-     .build();
+  public static final ActivityOptions CHECK_ACTIVITY_OPTIONS = ActivityOptions.newBuilder()
+      .setScheduleToCloseTimeout(Duration.ofMinutes(5))
+      .setRetryOptions(TemporalUtils.NO_RETRY)
+      .build();
 
   public static final ActivityOptions SHORT_ACTIVITY_OPTIONS = ActivityOptions.newBuilder()
       .setStartToCloseTimeout(DB_INTERACTION_TIMEOUT)
