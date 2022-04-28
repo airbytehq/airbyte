@@ -35,13 +35,13 @@ public class CopyConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumerFactory.class);
 
   public static <T> AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-      final JdbcDatabase database,
-      final SqlOperations sqlOperations,
-      final ExtendedNameTransformer namingResolver,
-      final T config,
-      final ConfiguredAirbyteCatalog catalog,
-      final StreamCopierFactory<T> streamCopierFactory,
-      final String defaultSchema) {
+                                                  final JdbcDatabase database,
+                                                  final SqlOperations sqlOperations,
+                                                  final ExtendedNameTransformer namingResolver,
+                                                  final T config,
+                                                  final ConfiguredAirbyteCatalog catalog,
+                                                  final StreamCopierFactory<T> streamCopierFactory,
+                                                  final String defaultSchema) {
     final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier = createWriteConfigs(
         namingResolver,
         config,
@@ -65,12 +65,12 @@ public class CopyConsumerFactory {
   }
 
   private static <T> Map<AirbyteStreamNameNamespacePair, StreamCopier> createWriteConfigs(final ExtendedNameTransformer namingResolver,
-      final T config,
-      final ConfiguredAirbyteCatalog catalog,
-      final StreamCopierFactory<T> streamCopierFactory,
-      final String defaultSchema,
-      final JdbcDatabase database,
-      final SqlOperations sqlOperations) {
+                                                                                          final T config,
+                                                                                          final ConfiguredAirbyteCatalog catalog,
+                                                                                          final StreamCopierFactory<T> streamCopierFactory,
+                                                                                          final String defaultSchema,
+                                                                                          final JdbcDatabase database,
+                                                                                          final SqlOperations sqlOperations) {
     final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier = new HashMap<>();
     final String stagingFolder = UUID.randomUUID().toString();
     for (final var configuredStream : catalog.getStreams()) {
@@ -89,8 +89,8 @@ public class CopyConsumerFactory {
   }
 
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
-      final SqlOperations sqlOperations,
-      final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+                                                                         final SqlOperations sqlOperations,
+                                                                         final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
     return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
       final var fileName = pairToCopier.get(pair).prepareStagingFile();
       for (final AirbyteRecordMessage recordMessage : records) {
@@ -117,9 +117,9 @@ public class CopyConsumerFactory {
   }
 
   private static OnCloseFunction onCloseFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
-      final JdbcDatabase database,
-      final SqlOperations sqlOperations,
-      final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+                                                 final JdbcDatabase database,
+                                                 final SqlOperations sqlOperations,
+                                                 final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
     return (hasFailed) -> {
       pairToIgnoredRecordCount
           .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
@@ -128,9 +128,9 @@ public class CopyConsumerFactory {
   }
 
   private static void closeAsOneTransaction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
-      boolean hasFailed,
-      final JdbcDatabase db,
-      final SqlOperations sqlOperations)
+                                            boolean hasFailed,
+                                            final JdbcDatabase db,
+                                            final SqlOperations sqlOperations)
       throws Exception {
     Exception firstException = null;
     List<StreamCopier> streamCopiers = new ArrayList<>(pairToCopier.values());

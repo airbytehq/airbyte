@@ -3,7 +3,7 @@
 connector_image: airbyte/source-scaffold-source-http:dev
 tests:
   spec:
-    - spec_path: "source_scaffold_source_http/spec.json"
+    - spec_path: "source_scaffold_source_http/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

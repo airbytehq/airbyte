@@ -20,6 +20,8 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
@@ -52,6 +54,8 @@ public class SpecActivityImpl implements SpecActivity {
   public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
     final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
+    final ActivityExecutionContext context = Activity.getExecutionContext();
+
     final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
         workerEnvironment,
@@ -59,9 +63,10 @@ public class SpecActivityImpl implements SpecActivity {
         jobRunConfig,
         getWorkerFactory(launcherConfig),
         inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(),
+        new CancellationHandler.TemporalCancellationHandler(context),
         jobPersistence,
-        airbyteVersion);
+        airbyteVersion,
+        () -> context);
 
     return temporalAttemptExecution.get();
   }
