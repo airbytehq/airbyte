@@ -8,7 +8,7 @@ import { MoonIcon } from "components/icons/MoonIcon";
 import PauseIcon from "../icons/PauseIcon";
 import CircleLoader from "./CircleLoader";
 
-export type StatusIconStatus = "empty" | "inactive" | "success" | "warning" | "loading";
+export type StatusIconStatus = "sleep" | "inactive" | "success" | "warning" | "loading";
 
 interface StatusIconProps {
   className?: string;
@@ -21,13 +21,13 @@ interface StatusIconProps {
 const getBadgeWidth = (props: StatusIconProps) => (props.big ? (props.value ? 57 : 40) : props.value ? 37 : 20);
 
 const _iconByStatus: Partial<Record<StatusIconStatus, IconDefinition | undefined>> = {
-  empty: faBan,
+  sleep: faBan,
   success: faCheck,
   warning: faExclamationTriangle,
 };
 
 const _themeByStatus: Partial<Record<StatusIconStatus, string>> = {
-  empty: "lightTextColor",
+  sleep: "lightTextColor",
   inactive: "lightTextColor",
   success: "successColor",
   warning: "warningColor",
@@ -79,7 +79,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ title, status, ...props }) => {
     <Badge {...props} status={status}>
       {status === "inactive" ? (
         <PauseIcon title={title} />
-      ) : status === "empty" ? (
+      ) : status === "sleep" ? (
         <MoonIcon title={title} />
       ) : (
         <FontAwesomeIcon icon={(status && _iconByStatus[status]) || faTimes} title={title} />
