@@ -13,7 +13,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from requests.auth import AuthBase
 
@@ -313,7 +313,7 @@ class ConversationParts(IncrementalIntercomStream):
     
     def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
         super().__init__(authenticator, start_date, **kwargs)
-        self.parent = Conversations(authenticator, start_date, **kwargs)
+        self.conversations_stream = Conversations(authenticator, start_date, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/conversations/{stream_slice['id']}"
@@ -321,15 +321,15 @@ class ConversationParts(IncrementalIntercomStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
+        parent_stream_slices = self.conversations_stream.stream_slices(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
         )
         for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
+            conversations = self.conversations_stream.read_records(
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
-            for record in parent_records:
-                yield {"id": record["id"]}
+            for conversation in conversations:
+                yield {"id": conversation["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         records = super().parse_response(response=response, stream_state={}, **kwargs)
