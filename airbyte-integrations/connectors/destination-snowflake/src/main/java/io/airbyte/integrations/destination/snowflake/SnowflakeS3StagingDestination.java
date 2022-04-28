@@ -103,7 +103,8 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
         config,
-        catalog);
+        catalog,
+        isPurgeStagingData(config));
   }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
@@ -111,4 +112,12 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
     return S3DestinationConfig.getS3DestinationConfig(loadingMethod);
   }
 
+  private static boolean isPurgeStagingData(final JsonNode config) {
+    final JsonNode loadingMethod = config.get("loading_method");
+    if (!loadingMethod.has("purge_staging_data")) {
+      return true;
+    } else {
+      return loadingMethod.get("purge_staging_data").asBoolean();
+    }
+  }
 }
