@@ -4,9 +4,19 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Mixpanel Spec",
     "type": "object",
-    "required": ["api_secret"],
     "additionalProperties": true,
     "properties": {
+      "serviceaccount_username": {
+        "title": "Mixpanel Service Account username",
+        "type": "string",
+        "description": "Mixpanel Service Account username"
+      },
+      "serviceaccount_secret": {
+        "title": "Mixpanel Service Account secret",
+        "type": "string",
+        "description": "Mixpanel Service Account secret",
+        "airbyte_secret": true
+      },
       "api_secret": {
         "title": "API Secret",
         "type": "string",
