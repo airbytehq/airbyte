@@ -21,7 +21,7 @@ class ExchangeRates(HttpStream):
     # HttpStream related fields
     url_base = "http://api.exchangeratesapi.io/v1/"
     cursor_field = date_field_name
-    primary_key = ""
+    primary_key = ["date", "base"]
 
     def __init__(self, base: Optional[str], start_date: DateTime, access_key: str, ignore_weekends: Optional[bool]):
         super().__init__()
