@@ -18,7 +18,7 @@ public class CheckConnectionWorkflowImpl implements CheckConnectionWorkflow {
   public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
                                            final IntegrationLauncherConfig launcherConfig,
                                            final StandardCheckConnectionInput connectionConfiguration) {
-    return activity.run(jobRunConfig, launcherConfig, connectionConfiguration);
+    return activity.check(jobRunConfig, launcherConfig, connectionConfiguration);
   }
 
 }

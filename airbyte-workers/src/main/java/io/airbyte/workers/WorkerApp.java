@@ -195,11 +195,15 @@ public class WorkerApp {
         defaultWorkerConfigs,
         defaultProcessFactory);
 
+    final CheckConnectionActivityImpl checkConnectionActivity =
+        new CheckConnectionActivityImpl(checkWorkerConfigs, checkProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
+            jobPersistence, airbyteVersion);
+
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncWorker.registerActivitiesImplementations(checkConnectionActivity, replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
   }
 
   private void registerDiscover(final WorkerFactory factory) {
