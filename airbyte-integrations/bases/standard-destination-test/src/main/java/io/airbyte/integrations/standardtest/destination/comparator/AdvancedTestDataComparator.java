@@ -100,10 +100,6 @@ public class AdvancedTestDataComparator implements TestDataComparator {
     }
   }
 
-  protected boolean isQuotedArray(JsonNode actualValue) {
-    return actualValue.isTextual() && actualValue.asText().matches("^\\[.*\\]$");
-  }
-
   protected boolean compareString(final JsonNode expectedValue, final JsonNode actualValue) {
     return expectedValue.asText().equals(actualValue.asText());
   }
