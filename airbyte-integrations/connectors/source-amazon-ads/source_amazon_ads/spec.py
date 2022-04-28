@@ -2,7 +2,7 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
+from typing import Any, Dict, List, Type
 
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
@@ -16,8 +16,20 @@ class AmazonAdsConfig(BaseModel):
         # ignore extra attributes during model initialization
         # https://pydantic-docs.helpmanual.io/usage/model_config/
         extra = Extra.ignore
-        # it's default, but better to be more explicit
-        schema_extra = {"additionalProperties": True}
+
+        @staticmethod
+        def schema_extra(schema: Dict[str, Any], model: Type["AmazonAdsConfig"]) -> None:
+            # it's default, but better to be more explicit
+            schema["additionalProperties"] = True
+
+            # force require "region" field
+            # pydantic don't require "region" because it has default value
+            if "region" not in schema["required"]:
+                schema["required"].append("region")
+            if "report_wait_timeout" not in schema["required"]:
+                schema["required"].append("report_wait_timeout")
+            if "report_generation_max_retries" not in schema["required"]:
+                schema["required"].append("report_generation_max_retries")
 
     auth_type: str = Field(default="oauth2.0", const=True, order=0)
 
@@ -42,14 +54,14 @@ class AmazonAdsConfig(BaseModel):
     )
 
     region: AmazonAdsRegion = Field(
-        title="Region *",
+        title="Region",
         description='Region to pull data from (EU/NA/FE/SANDBOX). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a> for more details.',
         default=AmazonAdsRegion.NA,
         order=4,
     )
 
     report_wait_timeout: int = Field(
-        title="Report Wait Timeout *",
+        title="Report Wait Timeout",
         description="Timeout duration in minutes for Reports. Eg. 30",
         default=30,
         examples=[30, 120],
@@ -57,7 +69,7 @@ class AmazonAdsConfig(BaseModel):
     )
 
     report_generation_max_retries: int = Field(
-        title="Report Generation Maximum Retries *",
+        title="Report Generation Maximum Retries",
         description="Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
         default=5,
         examples=[5, 10, 15],
