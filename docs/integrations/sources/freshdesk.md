@@ -53,7 +53,6 @@ Please read [How to find your API key](https://support.freshdesk.com/support/sol
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.2.12  | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep        |
 | 0.2.11  | 2021-12-14 | [8682](https://github.com/airbytehq/airbyte/pull/8682)   | Migrate to the CDK                                                             |
 | 0.2.10  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                      |
 | 0.2.9   | 2021-11-16 | [8017](https://github.com/airbytehq/airbyte/pull/8017)   | Bugfix an issue that caused the connector not to sync more than 50000 contacts |
