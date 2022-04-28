@@ -191,4 +191,4 @@ class SourceEnquireLabs(AbstractSource):
             "until": config.get("until"),
             "question_id": config.get("question_id")
         }
-        return [QuestionStream(secret_key=config["secret_key"]), QuestionResponseStream(**args)]
+        return [QuestionStream(secret_key=config["secret_key"])]
