@@ -36,4 +36,6 @@ public interface BlobStorageOperations {
 
   boolean isValidData(JsonNode jsonNode);
 
+  void addBlobDecorator(BlobDecorator blobDecorator);
+
 }

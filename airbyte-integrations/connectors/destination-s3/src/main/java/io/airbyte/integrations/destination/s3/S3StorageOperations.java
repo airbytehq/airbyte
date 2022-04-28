@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.s3;
 
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
-import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
@@ -21,8 +20,11 @@ import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
@@ -55,11 +57,13 @@ public class S3StorageOperations implements BlobStorageOperations {
   private final NamingConventionTransformer nameTransformer;
   protected final S3DestinationConfig s3Config;
   protected AmazonS3 s3Client;
+  private final List<BlobDecorator> blobDecorators;
 
   public S3StorageOperations(final NamingConventionTransformer nameTransformer, final AmazonS3 s3Client, final S3DestinationConfig s3Config) {
     this.nameTransformer = nameTransformer;
     this.s3Client = s3Client;
     this.s3Config = s3Config;
+    this.blobDecorators = new ArrayList<>();
   }
 
   @Override
@@ -133,20 +137,30 @@ public class S3StorageOperations implements BlobStorageOperations {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
     final String fullObjectKey = objectPath + getPartId(objectPath) + getExtension(recordsData.getFilename());
+
+    final Map<String, String> metadata = new HashMap<>();
+    for (final BlobDecorator blobDecorator : blobDecorators) {
+      blobDecorator.updateMetadata(metadata);
+    }
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
-        .getDefault(bucket, fullObjectKey, s3Client, partSize)
+        .getDefault(bucket, fullObjectKey, s3Client, partSize, metadata)
         .checkIntegrity(true)
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
     boolean succeeded = false;
-    try (final MultiPartOutputStream outputStream = uploadManager.getMultiPartOutputStreams().get(0);
-        final InputStream dataStream = recordsData.getInputStream()) {
+
+    OutputStream outputStream = uploadManager.getMultiPartOutputStreams().get(0);
+    for (final BlobDecorator blobDecorator : blobDecorators) {
+      outputStream = blobDecorator.wrap(outputStream);
+    }
+    try (final InputStream dataStream = recordsData.getInputStream()) {
       dataStream.transferTo(outputStream);
       succeeded = true;
     } catch (final Exception e) {
       LOGGER.error("Failed to load data into storage {}", objectPath, e);
       throw new RuntimeException(e);
     } finally {
+      outputStream.close();
       if (!succeeded) {
         uploadManager.abort();
       } else {
@@ -269,6 +283,11 @@ public class S3StorageOperations implements BlobStorageOperations {
   @Override
   public boolean isValidData(final JsonNode jsonNode) {
     return true;
+  }
+
+  @Override
+  public void addBlobDecorator(final BlobDecorator blobDecorator) {
+    blobDecorators.add(blobDecorator);
   }
 
 }
