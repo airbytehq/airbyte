@@ -23,6 +23,8 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
 import io.airbyte.workers.temporal.sync.NormalizationActivity;
@@ -54,6 +56,7 @@ class SyncWorkflowTest {
   private TestWorkflowEnvironment testEnv;
   private Worker syncWorker;
   private WorkflowClient client;
+  private CheckConnectionActivityImpl checkActivity;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
   private DbtTransformationActivityImpl dbtTransformationActivity;
@@ -106,6 +109,7 @@ class SyncWorkflowTest {
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
         .withOperatorDbt(syncInput.getOperationSequence().get(1).getOperatorDbt());
 
+    checkActivity = mock(CheckConnectionActivityImpl.class);
     replicationActivity = mock(ReplicationActivityImpl.class);
     normalizationActivity = mock(NormalizationActivityImpl.class);
     dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
@@ -114,7 +118,7 @@ class SyncWorkflowTest {
 
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncWorker.registerActivitiesImplementations(checkActivity, replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());

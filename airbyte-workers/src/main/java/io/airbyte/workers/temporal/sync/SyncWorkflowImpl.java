@@ -17,7 +17,6 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
-import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.Workflow;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -46,10 +45,11 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
+    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(syncInput.getSourceConfiguration());
 
-    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(syncInput.getSourceConfiguration());
     System.out.println(sourceConfiguration);
-    StandardCheckConnectionOutput sourceCheckOutput = checkActivity.run(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
+    StandardCheckConnectionOutput sourceCheckOutput = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
 
     final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(syncInput.getDestinationConfiguration());
     System.out.println(destinationConfiguration);

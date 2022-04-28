@@ -15,8 +15,8 @@ import io.temporal.activity.ActivityMethod;
 public interface CheckConnectionActivity {
 
   @ActivityMethod
-  StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
-                                    IntegrationLauncherConfig launcherConfig,
-                                    StandardCheckConnectionInput connectionConfiguration);
+  StandardCheckConnectionOutput check(JobRunConfig jobRunConfig,
+                                      IntegrationLauncherConfig launcherConfig,
+                                      StandardCheckConnectionInput connectionConfiguration);
 
 }

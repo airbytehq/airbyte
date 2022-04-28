@@ -55,9 +55,9 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
-  public StandardCheckConnectionOutput run(final JobRunConfig jobRunConfig,
-                                           final IntegrationLauncherConfig launcherConfig,
-                                           final StandardCheckConnectionInput connectionConfiguration) {
+  public StandardCheckConnectionOutput check(final JobRunConfig jobRunConfig,
+                                             final IntegrationLauncherConfig launcherConfig,
+                                             final StandardCheckConnectionInput connectionConfiguration) {
 
     final JsonNode fullConfig = secretsHydrator.hydrate(connectionConfiguration.getConnectionConfiguration());
 
