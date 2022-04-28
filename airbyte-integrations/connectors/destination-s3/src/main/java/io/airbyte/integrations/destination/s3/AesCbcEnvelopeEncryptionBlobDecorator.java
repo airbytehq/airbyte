@@ -38,8 +38,8 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class AesCbcEnvelopeEncryptionBlobDecorator extends BlobDecorator {
 
-  public static final String ENCRYPTED_CONTENT_ENCRYPTING_KEY = "cek";
-  public static final String INITIALIZATION_VECTOR = "iv";
+  public static final String ENCRYPTED_CONTENT_ENCRYPTING_KEY = "aes_cbc_envelope_encryption-content-encrypting-key";
+  public static final String INITIALIZATION_VECTOR = "aes_cbc_envelope_encryption-initialization-vector";
 
   public static final int AES_KEY_SIZE_BITS = 256;
   private static final int AES_CBC_INITIALIZATION_VECTOR_SIZE_BYTES = 16;

@@ -16,7 +16,7 @@ public abstract class BlobDecorator {
    * <p>
    * In the most common case, BlobDecorator implementations will insert new entries into the metadata map. These entries may be vendor-specific. The
    * metadataKeyMapping parameter defines a mapping from the "canonical" keys to the vendor-specific keys. See {@link
-   * S3StorageOperations#METADATA_KEY_MAPPING} for an example.
+   * S3StorageOperations#getMetadataMapping()} for an example.
    * <p>
    * If a key is not defined in metadataKeyMapping, it will not be inserted into the metadata.
    *

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.joda.time.DateTime;
 
 public abstract class BlobStorageOperations {
@@ -43,6 +44,8 @@ public abstract class BlobStorageOperations {
   public abstract void dropBucketObject(String objectPath);
 
   public abstract boolean isValidData(JsonNode jsonNode);
+
+  protected abstract Map<String, String> getMetadataMapping();
 
   public void addBlobDecorator(final BlobDecorator blobDecorator) {
     blobDecorators.add(blobDecorator);

@@ -55,11 +55,6 @@ public class S3StorageOperations extends BlobStorageOperations {
   private static final String FORMAT_VARIABLE_UUID = "${UUID}";
   private static final String GZ_FILE_EXTENSION = "gz";
 
-  public static final Map<String, String> METADATA_KEY_MAPPING = ImmutableMap.of(
-      AesCbcEnvelopeEncryptionBlobDecorator.ENCRYPTED_CONTENT_ENCRYPTING_KEY, "x-amz-key",
-      AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "x-amz-iv"
-  );
-
   private final NamingConventionTransformer nameTransformer;
   protected final S3DestinationConfig s3Config;
   protected AmazonS3 s3Client;
@@ -144,7 +139,7 @@ public class S3StorageOperations extends BlobStorageOperations {
 
     final Map<String, String> metadata = new HashMap<>();
     for (final BlobDecorator blobDecorator : blobDecorators) {
-      blobDecorator.updateMetadata(metadata, METADATA_KEY_MAPPING);
+      blobDecorator.updateMetadata(metadata, getMetadataMapping());
     }
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
         .getDefault(bucket, fullObjectKey, s3Client, partSize, metadata)
@@ -287,5 +282,13 @@ public class S3StorageOperations extends BlobStorageOperations {
   @Override
   public boolean isValidData(final JsonNode jsonNode) {
     return true;
+  }
+
+  @Override
+  protected Map<String, String> getMetadataMapping() {
+    return ImmutableMap.of(
+        AesCbcEnvelopeEncryptionBlobDecorator.ENCRYPTED_CONTENT_ENCRYPTING_KEY, "x-amz-key",
+        AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "x-amz-iv"
+    );
   }
 }
