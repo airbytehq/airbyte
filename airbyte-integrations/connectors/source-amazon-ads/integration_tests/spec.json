@@ -32,7 +32,7 @@
         "type": "string"
       },
       "region": {
-        "title": "Region",
+        "title": "Region *",
         "description": "Region to pull data from (EU/NA/FE/SANDBOX). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
         "default": "NA",
         "enum": ["NA", "EU", "FE", "SANDBOX"],
@@ -40,7 +40,7 @@
         "type": "string"
       },
       "report_wait_timeout": {
-        "title": "Report Wait Timeout",
+        "title": "Report Wait Timeout *",
         "description": "Timeout duration in minutes for Reports. Eg. 30",
         "default": 30,
         "examples": [30, 120],
@@ -48,7 +48,7 @@
         "type": "integer"
       },
       "report_generation_max_retries": {
-        "title": "Report Generation Maximum Retries",
+        "title": "Report Generation Maximum Retries *",
         "description": "Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
         "default": 5,
         "examples": [5, 10, 15],
@@ -72,14 +72,7 @@
         }
       }
     },
-    "required": [
-      "client_id",
-      "client_secret",
-      "refresh_token",
-      "region",
-      "report_wait_timeout",
-      "report_generation_max_retries"
-    ]
+    "required": ["client_id", "client_secret", "refresh_token"]
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
