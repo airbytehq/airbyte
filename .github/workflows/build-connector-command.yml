@@ -182,6 +182,8 @@ jobs:
         ##     BUILD AND TEST     ##
         ############################
   #      - name: Build ${{ github.event.inputs.connector }}
+  #        env:
+  #          PR_NUMBER: ${{ github.event.number }}
   #        run: |
   #          ./tools/integrations/manage.sh cmd_build airbyte-integrations/${{ github.event.inputs.connector }}
   #        id: build

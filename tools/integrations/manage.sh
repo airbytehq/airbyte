@@ -43,8 +43,17 @@ cmd_build() {
   ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
-  # TODO: needs to build correct name
-#  docker tag "$image_name:dev" "$image_candidate_tag"
+  # After this happens this image should exist: "image_name:dev"
+  # Re-tag with CI candidate label
+  local image_name; image_name=$(_get_docker_image_name "$path/Dockerfile")
+  local image_version; image_version=$(_get_docker_image_version "$path/Dockerfile")
+  local image_candidate_tag; image_candidate_tag="$image_version-candidate-$PR_NUMBER"
+
+  # If running via the bump-build-test-connector job, re-tag gradle built image following candidate image pattern
+  if [[ "$GITHUB_JOB" == "bump-build-test-connector" ]]; then
+    docker tag "$image_name:dev" "$image_name:$image_candidate_tag"
+    # TODO: technically this should be pushed..
+  fi
 }
 
 cmd_test() {
@@ -78,8 +87,14 @@ cmd_bump_version() {
     exit 1
   fi
   dockerfile="$connector_path/Dockerfile"
-  # TODO: Make this based on master, not local branch
-  current_version=$(_get_docker_image_version "$dockerfile")
+  master_dockerfile="/tmp/master_${connector}_dockerfile"
+  # This allows getting the contents of a file without checking it out
+  git --no-pager show "origin/master:$dockerfile" > "$master_dockerfile"
+
+  # Current version always comes from master, this way we can always bump correctly relative to master
+  # verses a potentially stale local branch
+  current_version=$(_get_docker_image_version "$master_dockerfile")
+  rm "$master_dockerfile"
   definitions_path="./airbyte-config/init/src/main/resources/seed/${connector_type}_definitions.yaml"
 
   # Based on current version, decompose into major, minor, patch
@@ -105,11 +120,7 @@ cmd_bump_version() {
   esac
 
   bumped_version="$major_version.$minor_version.$patch_version"
-  if [[ "$current_version" == "$bumped_version" ]]; then
-    echo "No change in version"
-  else
-    echo "Bumped $current_version to $bumped_version"
-  fi
+  echo "$connector:$current_version will be bumped to $connector:$bumped_version"
 
   ## Write new version to files
   # Dockerfile
