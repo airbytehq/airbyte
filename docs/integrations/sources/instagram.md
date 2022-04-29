@@ -28,7 +28,7 @@ See the Facebook [support](https://www.facebook.com/business/help/89875296019580
 Follow the [Instagram documentation](https://www.facebook.com/business/help/1492627900875762) for setting up an Instagram business account. We'll need this ID to configure Instagram as a source in Airbyte.
 
 
-## Step 2: Set up the <connector name> connector in Airbyte
+## Step 2: Set up the Instagram connector in Airbyte
 
 **For Airbyte Cloud:**
 
