@@ -12,8 +12,7 @@ logger = logging.getLogger("test_client")
 
 def test_check_connection_api_secret_ok(requests_mock):
 
-    config = {}
-    config["api_secret"] = "testApiSecret"
+    config = {"api_secret" : "testApiSecret"}
 
     service_account_headers = {
         "Authorization": "Basic api_secret:testApiSecret",
@@ -28,9 +27,10 @@ def test_check_connection_api_secret_ok(requests_mock):
 
 def test_check_connection_service_account_ok(requests_mock):
 
-    config = {}
-    config["serviceaccount_username"] = "testName"
-    config["serviceaccount_secret"] = "testSecretName"
+    config = {
+        "serviceaccount_username" : "testName",
+        "serviceaccount_secret" : "testSecretName"
+     }
 
     service_account_headers = {
         "Authorization": "Basic testName:testSecretName",

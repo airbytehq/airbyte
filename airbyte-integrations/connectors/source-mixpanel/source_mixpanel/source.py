@@ -807,10 +807,10 @@ class SourceMixpanel(AbstractSource):
         auth = None
         try:
             auth = TokenAuthenticatorBase64(token=config["api_secret"])
-        except KeyError as key_error:
+        except KeyError:
             try:
                 auth = TokenAuthenticatorBase64(token=config["serviceaccount_username"] + ":" + config["serviceaccount_secret"])
-            except KeyError as key_error:
+            except KeyError:
                 auth = None
 
         if auth == None:
