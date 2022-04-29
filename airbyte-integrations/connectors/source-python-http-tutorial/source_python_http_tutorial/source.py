@@ -40,7 +40,7 @@ class ExchangeRates(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        # The api requires that we include access_key as a query param so we do that in this method ADD THIS
+        # The api requires that we include access_key as a query param so we do that in this method
         return {"access_key": self.access_key}
 
     def parse_response(
