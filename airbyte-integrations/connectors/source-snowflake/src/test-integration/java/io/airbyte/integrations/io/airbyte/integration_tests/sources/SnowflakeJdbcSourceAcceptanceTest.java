@@ -4,19 +4,25 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.JDBCType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -26,10 +32,6 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void init() {
     snConfig = Jsons
         .deserialize(IOs.readFile(Path.of("secrets/config.json")));
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
     // due to case sensitiveness in SnowflakeDB
     SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
     SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
@@ -49,7 +51,10 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_3 = new BigDecimal(3);
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
+  }
 
+  @BeforeEach
+  public void setup() throws Exception {
     super.setup();
   }
 
@@ -77,6 +82,13 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new SnowflakeSource();
+  }
+
+  @Test
+  void testCheckFailure() throws Exception {
+    ((ObjectNode) config.get("credentials")).put("password", "fake");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
   }
 
 }

@@ -121,7 +121,8 @@ Now that you have set up the Salesforce source connector, check out the followin
 ## Changelog
 
 | Version | Date       | Pull Request | Subject                                                                                                                          |
-|:--------|:-----------| :--- |:---------------------------------------------------------------------------------------------------------------------------------|
+|:--------|:-----------|:---|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.4 | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep |
 | 1.0.3 | 2022-04-04 | [11692](https://github.com/airbytehq/airbyte/pull/11692) | Optimised memory usage for `BULK` API calls |
 | 1.0.2 | 2022-03-01 | [10751](https://github.com/airbytehq/airbyte/pull/10751) | Fix broken link anchor in connector configuration |
 | 1.0.1 | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679) | Reorganize input parameter order on the UI |
