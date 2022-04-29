@@ -45,7 +45,7 @@ definitions:
         description: "schema message: the state. Must be the last message produced. The platform uses this information"
         "$ref": "#/definitions/AirbyteStateMessage"
       trace:
-        description: "trace message: a message to provide human readable information to users"
+        description: "trace message: a message to communicate information about the status and performance of a connector"
         "$ref": "#/definitions/AirbyteTraceMessage"
   AirbyteRecordMessage:
     type: object
@@ -114,7 +114,7 @@ definitions:
         description: "the time in ms that the message was emitted"
         type: number
       error:
-        description: "error data from the sync"
+        description: "error trace message: the error object"
         "$ref": "#/definitions/AirbyteErrorTraceMessage"
   AirbyteErrorTraceMessage:
     type: object
@@ -123,10 +123,10 @@ definitions:
       - message
     properties:
       message:
-        description: The human readable message that will be shown to the user in the UI
+        description: A user-friendly message that indicates the cause of the error
         type: string
       internal_message:
-        description: The less human readable, more technical message showing the reason for the failure, e.g. the first line of a stack trace
+        description: The internal error that caused the failure
         type: string
       stack_trace:
         description: The full stack trace of the error
@@ -135,8 +135,8 @@ definitions:
         description: The type of error
         type: string
         enum:
-          - SYSTEM_ERROR
-          - CONFIG_ERROR
+          - system_error
+          - config_error
   AirbyteConnectionStatus:
     description: Airbyte connection status
     type: object
