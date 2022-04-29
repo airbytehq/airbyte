@@ -15,7 +15,7 @@ public final class FetchSizeConstants {
   // sample every N rows during the post-initial stage
   public static final int SAMPLE_FREQUENCY = 100;
 
-  public static final int MIN_FETCH_SIZE = 10;
+  public static final int MIN_FETCH_SIZE = 1;
   public static final int DEFAULT_FETCH_SIZE = 1000;
   public static final int MAX_FETCH_SIZE = 100_000;
 
