@@ -43,6 +43,22 @@ def test_check_connection_service_account_ok(requests_mock):
     assert ok
     assert not error_msg
 
+def test_check_connection_wrong_endpoint_not_ok(requests_mock):
+
+    config = {}
+    config["api_secret"] = "testApiSecret"
+
+    service_account_headers = {
+        "Authorization": "Basic api_secret:testApiSecret",
+        "Accept": "application/json",
+    }
+
+    requests_mock.register_uri("GET", "NOT https://mixpanel.com/api/2.0/funnels/list", headers=service_account_headers)
+    ok, error_msg = SourceMixpanel().check_connection(logger, config=config)
+
+    assert not ok
+    assert error_msg
+
 def test_date_slices():
 
     now = date.today()
