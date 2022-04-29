@@ -11,6 +11,19 @@ from source_mixpanel.source import Annotations
 def test_date_slices():
 
     now = date.today()
+
+    # Test with service account
+    stream_slices = Annotations(authenticator=NoAuth(),
+                                serviceaccount_username="testName",
+                                serviceaccount_secret="testSecret",
+                                start_date=now,
+                                end_date=now,
+                                date_window_size=1,
+                                region="EU").stream_slices(
+        sync_mode="any"
+    )
+    assert 1 == len(stream_slices)
+
     # Test with start_date now range
     stream_slices = Annotations(authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1, region="EU").stream_slices(
         sync_mode="any"

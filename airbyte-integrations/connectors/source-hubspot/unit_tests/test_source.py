@@ -40,6 +40,17 @@ def test_check_connection_ok(requests_mock, config):
     assert ok
     assert not error_msg
 
+def test_check_connection_service_account_ok(requests_mock, config):
+    responses = [
+        {"json": [], "status_code": 200},
+    ]
+
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    ok, error_msg = SourceHubspot().check_connection(logger, config=config)
+
+    assert ok
+    assert not error_msg
+
 
 def test_check_connection_empty_config(config):
     config = {}
