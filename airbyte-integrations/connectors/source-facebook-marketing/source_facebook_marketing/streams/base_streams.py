@@ -212,6 +212,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         """Additional filters associated with state if any set"""
         state_value = stream_state.get(self.cursor_field)
         filter_value = self._start_date if not state_value else pendulum.parse(state_value)
+        end_value = stream_state.get(self.cursor_field + "_end")
 
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
@@ -223,8 +224,12 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
                 {
                     "field": f"{self.entity_prefix}.{self.cursor_field}",
                     "operator": "GREATER_THAN",
-                    "operator": "GREATER_THAN",
                     "value": filter_value.int_timestamp,
+                },
+                {
+                    "field": f"{self.entity_prefix}.{self.cursor_field}",
+                    "operator": "LESS_THAN",
+                    "value": end_value.int_timestamp,
                 },
             ],
         }
