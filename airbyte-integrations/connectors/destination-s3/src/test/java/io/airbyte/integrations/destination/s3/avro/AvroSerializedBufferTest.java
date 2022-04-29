@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 public class AvroSerializedBufferTest {
 
   private static final JsonNode MESSAGE_DATA = Jsons.jsonNode(Map.of(
-      "field1", 10000,
+      "field1", "null",
       "column2", "string value",
       "another field", true,
       "nested_column", Map.of("array_column", List.of(1, 2, 3))));
