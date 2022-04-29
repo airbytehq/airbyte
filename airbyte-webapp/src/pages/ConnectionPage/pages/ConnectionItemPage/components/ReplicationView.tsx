@@ -82,6 +82,7 @@ const ReplicationView: React.FC<Props> = ({ onAfterSaveSchema, connectionId }) =
       connectionId,
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
+      sourceCatalogId: connection?.catalogId,
     });
 
     setSaved(true);
