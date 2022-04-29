@@ -59,6 +59,7 @@ Select the correct region \(EU or US\) for your Mixpanel project. See detail [he
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| `0.1.13` | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                              |  
 | `0.1.12` | 2022-03-31 | [11633](https://github.com/airbytehq/airbyte/pull/11633) | Increase unit test coverage                                                                          |  
 | `0.1.11` | 2022-04-04 | [11318](https://github.com/airbytehq/airbyte/pull/11318) | Change Response Reading                                                                              |
 | `0.1.10` | 2022-03-31 | [11227](https://github.com/airbytehq/airbyte/pull/11227) | Fix cohort id always null in the cohort_members stream                                               |
