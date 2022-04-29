@@ -1,4 +1,6 @@
-import { DestinationSyncMode, SyncMode, SyncSchemaStream } from "../../../core/domain/catalog";
+import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
+
+import { SyncSchemaStream } from "../../../core/domain/catalog";
 import { getOptimalSyncMode, verifyConfigCursorField, verifySupportedSyncModes } from "./formConfigHelpers";
 
 const mockedStreamNode: SyncSchemaStream = {
@@ -6,7 +8,7 @@ const mockedStreamNode: SyncSchemaStream = {
     name: "test",
     supportedSyncModes: [],
     jsonSchema: {},
-    sourceDefinedCursor: null,
+    sourceDefinedCursor: undefined,
     sourceDefinedPrimaryKey: [],
     defaultCursorField: [],
   },
@@ -14,8 +16,8 @@ const mockedStreamNode: SyncSchemaStream = {
     cursorField: [],
     primaryKey: [],
     selected: true,
-    syncMode: SyncMode.FullRefresh,
-    destinationSyncMode: DestinationSyncMode.Append,
+    syncMode: SyncMode.full_refresh,
+    destinationSyncMode: DestinationSyncMode.append,
     aliasName: "",
   },
   id: "1",
@@ -23,25 +25,25 @@ const mockedStreamNode: SyncSchemaStream = {
 
 describe("formConfigHelpers", () => {
   describe("verifySupportedSyncModes", () => {
-    const streamNodeWithDefinedSyncMode: SyncSchemaStream = {
+    const streamNodeWithDefinedSyncMode = {
       ...mockedStreamNode,
-      stream: { ...mockedStreamNode.stream, supportedSyncModes: [SyncMode.Incremental] },
-    };
+      stream: { ...mockedStreamNode.stream, supportedSyncModes: [SyncMode.incremental] },
+    } as SyncSchemaStream;
 
     test("should not change supportedSyncModes if it's not empty", () => {
       const streamNode = verifySupportedSyncModes(streamNodeWithDefinedSyncMode);
 
-      expect(streamNode.stream.supportedSyncModes).toStrictEqual([SyncMode.Incremental]);
+      expect(streamNode?.stream?.supportedSyncModes).toStrictEqual([SyncMode.incremental]);
     });
 
     test("should set default supportedSyncModes if it's empty", () => {
       const streamNodeWithEmptySyncMode = {
         ...streamNodeWithDefinedSyncMode,
         stream: { ...mockedStreamNode.stream, supportedSyncModes: [] },
-      };
+      } as SyncSchemaStream;
       const streamNode = verifySupportedSyncModes(streamNodeWithEmptySyncMode);
 
-      expect(streamNode.stream.supportedSyncModes).toStrictEqual([SyncMode.FullRefresh]);
+      expect(streamNode?.stream?.supportedSyncModes).toStrictEqual([SyncMode.full_refresh]);
     });
   });
 
@@ -50,28 +52,28 @@ describe("formConfigHelpers", () => {
       ...mockedStreamNode,
       config: { ...mockedStreamNode.config, cursorField: ["id"] },
       stream: { ...mockedStreamNode.stream, defaultCursorField: ["name"] },
-    };
+    } as SyncSchemaStream;
 
     test("should leave cursorField value as is if it's defined", () => {
       const streamNode = verifyConfigCursorField(streamWithDefinedCursorField);
 
-      expect(streamNode.config.cursorField).toStrictEqual(["id"]);
+      expect(streamNode?.config?.cursorField).toStrictEqual(["id"]);
     });
 
     test("should set defaultCursorField if cursorField is not defined", () => {
       const streamNodeWithoutDefinedCursor = {
         ...streamWithDefinedCursorField,
         config: { ...mockedStreamNode.config, cursorField: [] },
-      };
+      } as SyncSchemaStream;
       const streamNode = verifyConfigCursorField(streamNodeWithoutDefinedCursor);
 
-      expect(streamNode.config.cursorField).toStrictEqual(["name"]);
+      expect(streamNode?.config?.cursorField).toStrictEqual(["name"]);
     });
 
     test("should leave cursorField empty if defaultCursorField not defined", () => {
       const streamNode = verifyConfigCursorField(mockedStreamNode);
 
-      expect(streamNode.config.cursorField).toStrictEqual([]);
+      expect(streamNode?.config?.cursorField).toStrictEqual([]);
     });
   });
 
@@ -79,37 +81,37 @@ describe("formConfigHelpers", () => {
     test("should get 'Incremental(cursor defined) => Append dedup' mode", () => {
       const streamNodeWithIncrDedupMode = {
         ...mockedStreamNode,
-        stream: { ...mockedStreamNode.stream, supportedSyncModes: [SyncMode.Incremental], sourceDefinedCursor: true },
-      };
-      const nodeStream = getOptimalSyncMode(streamNodeWithIncrDedupMode, [DestinationSyncMode.Dedupted]);
+        stream: { ...mockedStreamNode.stream, supportedSyncModes: [SyncMode.incremental], sourceDefinedCursor: true },
+      } as SyncSchemaStream;
+      const nodeStream = getOptimalSyncMode(streamNodeWithIncrDedupMode, [DestinationSyncMode.append_dedup]);
 
-      expect(nodeStream.config.syncMode).toBe(SyncMode.Incremental);
-      expect(nodeStream.config.destinationSyncMode).toBe(DestinationSyncMode.Dedupted);
+      expect(nodeStream?.config?.syncMode).toBe(SyncMode.incremental);
+      expect(nodeStream?.config?.destinationSyncMode).toBe(DestinationSyncMode.append_dedup);
     });
 
     test("should get 'FullRefresh => Overwrite' mode", () => {
-      const nodeStream = getOptimalSyncMode(mockedStreamNode, [DestinationSyncMode.Overwrite]);
+      const nodeStream = getOptimalSyncMode(mockedStreamNode, [DestinationSyncMode.overwrite]);
 
-      expect(nodeStream.config.syncMode).toBe(SyncMode.FullRefresh);
-      expect(nodeStream.config.destinationSyncMode).toBe(DestinationSyncMode.Overwrite);
+      expect(nodeStream?.config?.syncMode).toBe(SyncMode.full_refresh);
+      expect(nodeStream?.config?.destinationSyncMode).toBe(DestinationSyncMode.overwrite);
     });
 
     test("should get 'Incremental => Append' mode", () => {
       const streamNodeWithIncrAppendMode = {
         ...mockedStreamNode,
-        stream: { ...mockedStreamNode.stream, supportedSyncModes: [SyncMode.Incremental] },
-      };
-      const nodeStream = getOptimalSyncMode(streamNodeWithIncrAppendMode, [DestinationSyncMode.Append]);
+        stream: { ...mockedStreamNode.stream, supportedSyncModes: [SyncMode.incremental] },
+      } as SyncSchemaStream;
+      const nodeStream = getOptimalSyncMode(streamNodeWithIncrAppendMode, [DestinationSyncMode.append]);
 
-      expect(nodeStream.config.syncMode).toBe(SyncMode.Incremental);
-      expect(nodeStream.config.destinationSyncMode).toBe(DestinationSyncMode.Append);
+      expect(nodeStream?.config?.syncMode).toBe(SyncMode.incremental);
+      expect(nodeStream?.config?.destinationSyncMode).toBe(DestinationSyncMode.append);
     });
 
     test("should get 'FullRefresh => Append' mode", () => {
-      const nodeStream = getOptimalSyncMode(mockedStreamNode, [DestinationSyncMode.Append]);
+      const nodeStream = getOptimalSyncMode(mockedStreamNode, [DestinationSyncMode.append]);
 
-      expect(nodeStream.config.syncMode).toBe(SyncMode.FullRefresh);
-      expect(nodeStream.config.destinationSyncMode).toBe(DestinationSyncMode.Append);
+      expect(nodeStream?.config?.syncMode).toBe(SyncMode.full_refresh);
+      expect(nodeStream?.config?.destinationSyncMode).toBe(DestinationSyncMode.append);
     });
     test("should return untouched nodeStream", () => {
       const nodeStream = getOptimalSyncMode(mockedStreamNode, []);

@@ -1,6 +1,11 @@
 import { JSONSchema7 } from "json-schema";
 
-import { AirbyteCatalog, AirbyteStreamAndConfiguration } from "../../request/AirbyteClient";
+import {
+  AirbyteCatalog,
+  AirbyteStreamAndConfiguration,
+  DestinationSyncMode,
+  SyncMode,
+} from "../../request/AirbyteClient";
 import { JobInfo } from "../job";
 
 export interface SourceDiscoverSchemaRead {
@@ -10,17 +15,6 @@ export interface SourceDiscoverSchemaRead {
 }
 
 export type SchemaFields = JSONSchema7;
-
-export enum SyncMode {
-  Incremental = "incremental",
-  FullRefresh = "full_refresh",
-}
-
-export enum DestinationSyncMode {
-  Overwrite = "overwrite",
-  Append = "append",
-  Deduped = "append_dedup",
-}
 
 export interface SyncSchemaStream extends AirbyteStreamAndConfiguration {
   /**

@@ -7,9 +7,7 @@ import { DropDownRow } from "components";
 
 import {
   AirbyteStreamConfiguration,
-  DestinationSyncMode,
   getDestinationNamespace,
-  SyncMode,
   SyncSchemaField,
   SyncSchemaFieldObject,
   SyncSchemaStream,
@@ -19,7 +17,7 @@ import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
-import { NamespaceDefinitionType } from "../../../core/request/AirbyteClient";
+import { DestinationSyncMode, NamespaceDefinitionType, SyncMode } from "../../../core/request/AirbyteClient";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
@@ -46,7 +44,7 @@ type TreeViewRowProps = {
   namespaceDefinition: NamespaceDefinitionType;
   namespaceFormat: string;
   prefix: string;
-  updateStream: (id: string, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;
+  updateStream: (id: string | undefined, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;
 };
 
 const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
@@ -106,8 +104,8 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     [updateStreamWithConfig]
   );
 
-  const pkRequired = config?.destinationSyncMode === DestinationSyncMode.Deduped;
-  const cursorRequired = config?.syncMode === SyncMode.Incremental;
+  const pkRequired = config?.destinationSyncMode === DestinationSyncMode.append_dedup;
+  const cursorRequired = config?.syncMode === SyncMode.incremental;
   const shouldDefinePk = stream?.sourceDefinedPrimaryKey?.length === 0 && pkRequired;
   const shouldDefineCursor = !stream?.sourceDefinedCursor && cursorRequired;
 

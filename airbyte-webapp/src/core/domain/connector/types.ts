@@ -1,7 +1,11 @@
-import { DestinationSyncMode, SourceDiscoverSchemaRead } from "core/domain/catalog";
+import { SourceDiscoverSchemaRead } from "core/domain/catalog";
 import { ConnectionConfiguration, ConnectionSpecification } from "core/domain/connection";
 
-import { DestinationDefinitionSpecificationRead, SourceDefinitionSpecificationRead } from "../../request/AirbyteClient";
+import {
+  DestinationDefinitionSpecificationRead,
+  DestinationSyncMode,
+  SourceDefinitionSpecificationRead,
+} from "../../request/AirbyteClient";
 import { JobInfo } from "../job";
 
 export enum ReleaseStage {

@@ -7,8 +7,8 @@ import { CheckBox } from "components";
 import { Cell, Header } from "components/SimpleTableComponents";
 
 import { useConfig } from "config";
-import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode } from "core/request/AirbyteClient";
 import { BatchEditProvider, useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 import { naturalComparatorBy } from "utils/objects";
 import CatalogTree from "views/Connection/CatalogTree";

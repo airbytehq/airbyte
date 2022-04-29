@@ -5,7 +5,7 @@ import * as yup from "yup";
 import { DropDownRow } from "components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { SyncMode, SyncSchema, SyncSchemaStream } from "core/domain/catalog";
+import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
 import {
   isDbtTransformation,
   isNormalizationTransformation,
@@ -23,6 +23,7 @@ import {
   DestinationSyncMode,
   NamespaceDefinitionType,
   OperationRead,
+  SyncMode,
   WebBackendConnectionRead,
 } from "../../../core/request/AirbyteClient";
 import { getOptimalSyncMode, verifyConfigCursorField, verifySupportedSyncModes } from "./formConfigHelpers";
@@ -40,10 +41,10 @@ type FormikConnectionFormValues = {
 type ConnectionFormValues = ValuesProps;
 
 const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
-  [SyncMode.FullRefresh, DestinationSyncMode.overwrite],
-  [SyncMode.FullRefresh, DestinationSyncMode.append],
-  [SyncMode.Incremental, DestinationSyncMode.append],
-  [SyncMode.Incremental, DestinationSyncMode.append_dedup],
+  [SyncMode.full_refresh, DestinationSyncMode.overwrite],
+  [SyncMode.full_refresh, DestinationSyncMode.append],
+  [SyncMode.incremental, DestinationSyncMode.append],
+  [SyncMode.incremental, DestinationSyncMode.append_dedup],
 ];
 
 const DEFAULT_SCHEDULE: ConnectionSchedule = {
@@ -127,7 +128,7 @@ const connectionValidationSchema = yup
                   }
                 }
 
-                if (SyncMode.Incremental === value.syncMode) {
+                if (SyncMode.incremental === value.syncMode) {
                   if (
                     !this.parent.stream.sourceDefinedCursor &&
                     // it's possible that cursorField array is always present

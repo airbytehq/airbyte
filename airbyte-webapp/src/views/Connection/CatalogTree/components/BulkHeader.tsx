@@ -5,14 +5,8 @@ import styled from "styled-components";
 
 import { Button, Cell, Header, Toggle } from "components";
 
-import {
-  DestinationSyncMode,
-  SyncMode,
-  SyncSchemaField,
-  SyncSchemaFieldObject,
-  SyncSchemaStream,
-  traverseSchemaToField,
-} from "core/domain/catalog";
+import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchemaToField } from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
@@ -88,9 +82,9 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
     return null;
   }
 
-  const pkRequired = options.destinationSyncMode === DestinationSyncMode.Deduped;
+  const pkRequired = options.destinationSyncMode === DestinationSyncMode.append_dedup;
   const shouldDefinePk = selectedBatchNodes.every((n) => n.stream?.sourceDefinedPrimaryKey?.length === 0) && pkRequired;
-  const cursorRequired = options.syncMode === SyncMode.Incremental;
+  const cursorRequired = options.syncMode === SyncMode.incremental;
   const shouldDefineCursor = selectedBatchNodes.every((n) => !n.stream?.sourceDefinedCursor) && cursorRequired;
 
   const pkType = getPathType(pkRequired, shouldDefinePk);

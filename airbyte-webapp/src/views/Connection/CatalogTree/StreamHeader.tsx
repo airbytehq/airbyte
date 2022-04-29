@@ -4,7 +4,8 @@ import styled from "styled-components";
 
 import { Cell, CheckBox, DropDownRow, Toggle } from "components";
 
-import { DestinationSyncMode, Path, SyncMode, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
+import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
 import { Arrow as ArrowBlock } from "./components/Arrow";
