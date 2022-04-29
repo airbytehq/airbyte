@@ -128,6 +128,7 @@ cmd_bump_version() {
     *)
       echo "Invalid bump_version option: $bump_version. Valid options are major, minor, patch"
       exit 1
+      ;;
   esac
 
   bumped_version="$major_version.$minor_version.$patch_version"
@@ -149,14 +150,14 @@ cmd_bump_version() {
   sed -i "s/$current_version/$bumped_version/g" "$dockerfile"
 
   # 2) Definitions YAML file
-  definitions_check=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"airbyte/$connector\")" "$definitions_path")
+  definitions_check=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$image_name\")" "$definitions_path")
 
   if [[ (-z "$definitions_check") ]]; then
     echo "Could not find $connector in $definitions_path, exiting 1"
     exit 1
   fi
 
-  connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"airbyte/$connector\") | .name" "$definitions_path")
+  connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$image_name\") | .name" "$definitions_path")
   yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
 
   # 3) Seed files
