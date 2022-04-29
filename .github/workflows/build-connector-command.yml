@@ -17,6 +17,10 @@ on:
         description: "Set to major, minor, or patch to automatically bump connectors version in Dockerfile, definitions.yaml and generate seed spec. You can also do this manually"
         required: false
         default: "patch"
+        options:
+          - "major"
+          - "minor"
+          - "patch"
       run-tests:
         description: "Should run tests"
         required: false
@@ -119,7 +123,6 @@ jobs:
           source venv/bin/activate
           pip install --quiet tox==3.24.4
       - name: Install yq
-        if: github.event.inputs.bump-version != 'false' && success()
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
           sudo add-apt-repository ppa:rmescandon/yq
@@ -155,10 +158,10 @@ jobs:
       ############################
       - name: Bump Connector Version
         id: bump-version
-        if: github.event.inputs.bump-version != 'false' && success()
+        if: success()
         run: ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }}
       - name: Commit and Push Version Bump
-        if: github.event.inputs.bump-version != 'false' && success() && steps.bump-version.outputs.bumped == 'true'
+        if: success() && steps.bump-version.outputs.bumped == 'true'
         run: |
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
@@ -166,14 +169,14 @@ jobs:
           git commit -m "bump-version ${{github.event.inputs.connector}}"
           git push origin ${{ github.event.inputs.gitref }}
       - name: Add Version Bump Success Comment
-        if: github.event.inputs.comment-id && github.event.inputs.bump-version != 'false' && success() && steps.bump-version.outputs.bumped == 'true
+        if: github.event.inputs.comment-id && success() && steps.bump-version.outputs.bumped == 'true'
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :rocket: Bumped version for ${{github.event.inputs.connector}}
       - name: Add Version Bump Failure Comment
-        if: github.event.inputs.comment-id && github.event.inputs.bump-version != 'false' && !success() && steps.bump-version.outputs.bumped == 'true
+        if: github.event.inputs.comment-id && !success() && steps.bump-version.outputs.bumped == 'true'
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
