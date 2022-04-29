@@ -54,8 +54,13 @@ export const apiOverride = async <T, U = unknown>(
     signal: options.signal,
   });
 
-  // TODO: For some reason some responses that return blobs do not have `responseType: "blob"` generated
-  return responseType === "blob" || response.headers.get("Content-Type") === "application/x-gzip"
+  /*
+   * Orval only generates `responseType: "blob"` if the schema for an endpoint
+   * is `type: string, and format: binary`.
+   * If it references a type that is `type: string, and format: binary` it does not interpret
+   * it correct. So I am making an assumption that if it's not explicitly JSON, it's a binary file.
+   */
+  return responseType === "blob" || response.headers.get("Content-Type") !== "application/json"
     ? response.blob()
     : response.json();
 };
