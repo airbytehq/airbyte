@@ -50,7 +50,6 @@ def test_check_connection_service_account_ok(requests_mock):
 def test_date_slices():
 
     now = date.today()
-
     # Test with start_date now range
     stream_slices = Annotations(authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1, region="EU").stream_slices(
         sync_mode="any"
