@@ -20,13 +20,7 @@ public class CheckConnectionWorkflowImpl implements CheckConnectionWorkflow {
                                            final IntegrationLauncherConfig launcherConfig,
                                            final StandardCheckConnectionInput connectionConfiguration) {
 
-    // try {
     return activity.check(jobRunConfig, launcherConfig, connectionConfiguration);
-    // } catch (Exception e) {
-    // throw Activity.wrap(e);
-    // throw ApplicationFailure.newNonRetryableFailure("CHECK failed", "check", e);
-    // throw ApplicationFailure.newNonRetryableFailure(e.toString(), "check-failure", e);
-    // }
   }
 
 }
