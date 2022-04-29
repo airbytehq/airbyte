@@ -17,6 +17,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -61,7 +62,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   public MySqlSource() {
-    super(DRIVER_CLASS, new MySqlJdbcStreamingQueryConfiguration(), new MySqlSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MySqlSourceOperations());
   }
 
   private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
@@ -129,7 +130,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         config.get("port").asText(),
         config.get("database").asText()));
 
-    // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
+    // To fetch the result in batches, the "useCursorFetch=true" must be set.
+    // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-implementation-notes.html.
+    // When using this approach MySql creates a temporary table which may have some effect on db
+    // performance.
     jdbcUrl.append("?useCursorFetch=true");
     jdbcUrl.append("&zeroDateTimeBehavior=convertToNull");
     // ensure the return tinyint(1) is boolean
@@ -181,8 +185,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), MySqlCdcProperties.getDebeziumProperties(),
               catalog, true);
 
-      Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
-      MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
+      final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
+      final MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
       cdcState.ifPresent(cdc -> checkBinlog(cdc.getState(), database));
       return handler.getIncrementalIterators(fetcher, new MySqlCdcStateHandler(stateManager), new MySqlCdcConnectorMetadataInjector(), emittedAt);
     } else {

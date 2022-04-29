@@ -11,8 +11,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils;
-import io.airbyte.integrations.source.snowflake.SnowflakeJdbcStreamingQueryConfiguration;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -26,12 +26,12 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     final DataSource dataSource = createDataSource(getStaticConfig());
     return new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
-        new SnowflakeJdbcStreamingQueryConfiguration());
+        AdaptiveStreamingQueryConfig::new);
   }
 
   private HikariDataSource createDataSource(final JsonNode config) {
-    HikariDataSource dataSource = new HikariDataSource();
-    Properties properties = new Properties();
+    final HikariDataSource dataSource = new HikariDataSource();
+    final Properties properties = new Properties();
 
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:snowflake://%s/?", config.get("host").asText()));
@@ -49,18 +49,18 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
       jdbcUrl.append(config.get("jdbc_url_params").asText());
     }
 
-    var credentials = config.get("credentials");
+    final var credentials = config.get("credentials");
     try {
       properties.setProperty("client_id", credentials.get("client_id").asText());
       properties.setProperty("client_secret", credentials.get("client_secret").asText());
       properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
       properties.setProperty("host", config.get("host").asText());
-      var accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
+      final var accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
           config.get("host").asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
       properties.put("authenticator", "oauth");
       properties.put("token", accessToken);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
 
@@ -91,4 +91,5 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
   public void testBackwardCompatibilityAfterAddingOAuth() throws Exception {
     // this test case is not valid for OAuth method
   }
+
 }

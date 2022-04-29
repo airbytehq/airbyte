@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -45,7 +45,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   public OracleSource() {
-    super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   public static Source sshWrappedSource() {

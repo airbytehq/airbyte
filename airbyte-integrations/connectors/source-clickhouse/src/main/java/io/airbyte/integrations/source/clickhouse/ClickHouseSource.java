@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.NoOpStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -72,13 +72,13 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   }
 
   /**
-   * The reason we use NoOpJdbcStreamingQueryConfiguration(not setting auto commit to false and not
-   * setting fetch size to 1000) for ClickHouse is cause method
+   * The reason we use NoOpStreamingQueryConfig(not setting auto commit to false and not setting fetch
+   * size to 1000) for ClickHouse is cause method
    * {@link ru.yandex.clickhouse.ClickHouseConnectionImpl#setAutoCommit} is empty and method
    * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
    */
   public ClickHouseSource() {
-    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override
@@ -93,7 +93,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
       jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
     }
 
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
