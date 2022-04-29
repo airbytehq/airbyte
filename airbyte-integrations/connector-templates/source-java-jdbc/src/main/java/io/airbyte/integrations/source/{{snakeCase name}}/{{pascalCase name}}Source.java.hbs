@@ -23,8 +23,8 @@ public class {{pascalCase name}}Source extends AbstractJdbcSource<JDBCType> impl
   static final String DRIVER_CLASS = "driver_name_here";
 
   public {{pascalCase name}}Source() {
-    // By default, NoOpStreamingQueryConfig class is used, but may be updated. See example
-    // MssqlJdbcStreamingQueryConfiguration
+    // By default, NoOpStreamingQueryConfig class is used. If the JDBC supports custom
+    // fetch size, change it to AdaptiveStreamingQueryConfig for better performance.
     super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
