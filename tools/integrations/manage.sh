@@ -92,8 +92,8 @@ cmd_bump_version() {
   # Take params
   local connector_path
   local bump_version
-  connector_path="${1:?connector_path should be passed in as first argument}" # Should look like airbyte-integrations/connectors/source-X
-  bump_version="${2:-patch}"
+  connector_path="$1"; shift || error "Missing target (path) $USAGE"
+  bump_version="$1"; shift || error "Missing target (bump_version) $USAGE"
 
   # Set local constants
   connector=${connector_path#airbyte-integrations/connectors/}
