@@ -12,7 +12,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -39,11 +38,15 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.JobInformation;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.temporal.client.BatchRequest;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.workflow.Functions.Proc;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,6 +57,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 class TemporalClientTest {
@@ -247,9 +251,9 @@ class TemporalClientTest {
       final UUID migratedId = UUID.randomUUID();
 
       doReturn(false)
-          .when(temporalClient).isInRunningWorkflowCache(TemporalClient.getConnectionManagerName(nonMigratedId));
+          .when(temporalClient).isInRunningWorkflowCache(ConnectionManagerUtils.getConnectionManagerName(nonMigratedId));
       doReturn(true)
-          .when(temporalClient).isInRunningWorkflowCache(TemporalClient.getConnectionManagerName(migratedId));
+          .when(temporalClient).isInRunningWorkflowCache(ConnectionManagerUtils.getConnectionManagerName(migratedId));
 
       doNothing()
           .when(temporalClient).refreshRunningWorkflow();
@@ -300,14 +304,27 @@ class TemporalClientTest {
     @SuppressWarnings("unchecked")
     @DisplayName("Test delete connection method when workflow is in an unexpected state")
     void testDeleteConnectionInUnexpectedState() {
-      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      doThrow(new IllegalStateException("Force illegal state")).when(mConnectionManagerWorkflow).getState();
-      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
-      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      when(mTerminatedConnectionManagerWorkflow.getState())
+          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mTerminatedConnectionManagerWorkflow);
+
+      final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mNewConnectionManagerWorkflow);
+      final BatchRequest mBatchRequest = mock(BatchRequest.class);
+      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
       temporalClient.deleteConnection(CONNECTION_ID);
+      verify(workflowClient).signalWithStart(mBatchRequest);
 
-      verify(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      // Verify that the deleteConnection signal was passed to the batch request by capturing the
+      // argument,
+      // executing the signal, and verifying that the desired signal was executed
+      final ArgumentCaptor<Proc> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc.class);
+      verify(mBatchRequest).add(batchRequestAddArgCaptor.capture());
+      final Proc signal = batchRequestAddArgCaptor.getValue();
+      signal.apply();
+      verify(mNewConnectionManagerWorkflow).deleteConnection();
     }
 
     @Test
@@ -431,27 +448,37 @@ class TemporalClientTest {
     @Test
     @DisplayName("Test startNewManualSync repairs the workflow if it is in a bad state")
     void testStartNewManualSyncRepairsBadWorkflowState() {
-      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      when(mTerminatedConnectionManagerWorkflow.getState())
+          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+      when(mTerminatedConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mTerminatedConnectionManagerWorkflow);
+
+      final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
-      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mNewConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
       when(mWorkflowState.isDeleted()).thenReturn(false);
       when(mWorkflowState.isRunning()).thenReturn(false).thenReturn(true);
-      when(mConnectionManagerWorkflow.getState())
-          // fail the first time
-          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"))
-          // return state the second time (i.e. after the workflow is restarted)
-          .thenReturn(mWorkflowState);
-      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
-      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
-      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      when(mNewConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mNewConnectionManagerWorkflow);
+      final BatchRequest mBatchRequest = mock(BatchRequest.class);
+      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
       final ManualOperationResult result = temporalClient.startNewManualSync(CONNECTION_ID);
 
       assertTrue(result.getJobId().isPresent());
       assertEquals(JOB_ID, result.getJobId().get());
       assertFalse(result.getFailingReason().isPresent());
-      verify(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
-      verify(mConnectionManagerWorkflow).submitManualSync();
+      verify(workflowClient).signalWithStart(mBatchRequest);
+
+      // Verify that the submitManualSync signal was passed to the batch request by capturing the
+      // argument,
+      // executing the signal, and verifying that the desired signal was executed
+      final ArgumentCaptor<Proc> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc.class);
+      verify(mBatchRequest).add(batchRequestAddArgCaptor.capture());
+      final Proc signal = batchRequestAddArgCaptor.getValue();
+      signal.apply();
+      verify(mNewConnectionManagerWorkflow).submitManualSync();
     }
 
     @Test
@@ -500,27 +527,36 @@ class TemporalClientTest {
     @Test
     @DisplayName("Test startNewCancellation repairs the workflow if it is in a bad state")
     void testStartNewCancellationRepairsBadWorkflowState() {
-      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      when(mTerminatedConnectionManagerWorkflow.getState())
+          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+      when(mTerminatedConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mTerminatedConnectionManagerWorkflow);
+
+      final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
-      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mNewConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
       when(mWorkflowState.isDeleted()).thenReturn(false);
       when(mWorkflowState.isRunning()).thenReturn(true).thenReturn(false);
-      when(mConnectionManagerWorkflow.getState())
-          // fail the first time
-          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"))
-          // return state the second time (i.e. after the workflow is restarted)
-          .thenReturn(mWorkflowState);
-      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
-      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
-      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      when(mNewConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mNewConnectionManagerWorkflow);
+      final BatchRequest mBatchRequest = mock(BatchRequest.class);
+      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
       final ManualOperationResult result = temporalClient.startNewCancellation(CONNECTION_ID);
 
       assertTrue(result.getJobId().isPresent());
       assertEquals(JOB_ID, result.getJobId().get());
       assertFalse(result.getFailingReason().isPresent());
-      verify(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
-      verify(mConnectionManagerWorkflow).cancelJob();
+      verify(workflowClient).signalWithStart(mBatchRequest);
+
+      // Verify that the cancelJob signal was passed to the batch request by capturing the argument,
+      // executing the signal, and verifying that the desired signal was executed
+      final ArgumentCaptor<Proc> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc.class);
+      verify(mBatchRequest).add(batchRequestAddArgCaptor.capture());
+      final Proc signal = batchRequestAddArgCaptor.getValue();
+      signal.apply();
+      verify(mNewConnectionManagerWorkflow).cancelJob();
     }
 
     @Test
@@ -575,35 +611,40 @@ class TemporalClientTest {
     @Test
     @DisplayName("Test resetConnection repairs the workflow if it is in a bad state")
     void testResetConnectionRepairsBadWorkflowState() {
-      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final ConnectionManagerWorkflow mTerminatedConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      when(mTerminatedConnectionManagerWorkflow.getState())
+          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"));
+      when(mTerminatedConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mTerminatedConnectionManagerWorkflow);
+
+      final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
-      when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
+      when(mNewConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
       when(mWorkflowState.isDeleted()).thenReturn(false);
       when(mWorkflowState.isRunning()).thenReturn(false);
-      when(mConnectionManagerWorkflow.getState())
-          // fail the first time
-          .thenThrow(new IllegalStateException("Force state exception to simulate workflow not running"))
-          // return state the second time (i.e. after the workflow is restarted)
-          .thenReturn(mWorkflowState);
-
-      final long jobId1 = 1;
-      final long jobId2 = 2;
-      when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
-          new JobInformation(jobId1, 0),
-          new JobInformation(jobId1, 0),
-          new JobInformation(jobId2, 0),
-          new JobInformation(jobId2, 0));
-
-      when(workflowClient.newWorkflowStub(any(Class.class), any(String.class))).thenReturn(mConnectionManagerWorkflow);
-      doReturn(mConnectionManagerWorkflow).when(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
+      when(mNewConnectionManagerWorkflow.getJobInformation()).thenReturn(
+          new JobInformation(ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID, 0),
+          new JobInformation(ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID, 0),
+          new JobInformation(JOB_ID, 0),
+          new JobInformation(JOB_ID, 0));
+      when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mNewConnectionManagerWorkflow);
+      final BatchRequest mBatchRequest = mock(BatchRequest.class);
+      when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
       final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID);
 
       assertTrue(result.getJobId().isPresent());
-      assertEquals(jobId2, result.getJobId().get());
+      assertEquals(JOB_ID, result.getJobId().get());
       assertFalse(result.getFailingReason().isPresent());
-      verify(temporalClient).submitConnectionUpdaterAsync(CONNECTION_ID);
-      verify(mConnectionManagerWorkflow).resetConnection();
+      verify(workflowClient).signalWithStart(mBatchRequest);
+
+      // Verify that the resetConnection signal was passed to the batch request by capturing the argument,
+      // executing the signal, and verifying that the desired signal was executed
+      final ArgumentCaptor<Proc> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc.class);
+      verify(mBatchRequest).add(batchRequestAddArgCaptor.capture());
+      final Proc signal = batchRequestAddArgCaptor.getValue();
+      signal.apply();
+      verify(mNewConnectionManagerWorkflow).resetConnection();
     }
 
     @Test

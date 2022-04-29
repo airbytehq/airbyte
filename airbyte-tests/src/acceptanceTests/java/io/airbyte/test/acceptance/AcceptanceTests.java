@@ -1192,6 +1192,7 @@ public class AcceptanceTests {
     waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
 
     // test normal deletion of connection
+    LOGGER.info("Calling delete connection...");
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // remove connection to avoid exception during tear down
@@ -1205,6 +1206,7 @@ public class AcceptanceTests {
     assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
 
     // test that repeated deletion call for same connection is successful
+    LOGGER.info("Calling delete connection a second time to test repeat call behavior...");
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // test deletion of connection when temporal workflow is in a bad state, only when using new
@@ -1304,6 +1306,7 @@ public class AcceptanceTests {
 
       final WorkflowState workflowState = getWorkflowState(connectionId);
       assertTrue(workflowState.isRunning());
+      assertTrue(workflowState.isSkipScheduling());
     }
   }
 
@@ -1341,6 +1344,7 @@ public class AcceptanceTests {
 
       final WorkflowState workflowState = getWorkflowState(connectionId);
       assertTrue(workflowState.isRunning());
+      assertTrue(workflowState.isResetConnection());
     }
   }
 
