@@ -57,26 +57,26 @@ class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
+    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
+        title="Authentication *", order=0, default={}, type="object"
+    )
+
     start_date: str = Field(
-        title="Start Date",
+        title="Start Date *",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "
         "If this parameter is not set, all data will be replicated.",
-        order=0,
+        order=1,
     )
 
     report_granularity: str = Field(
-        title="Report Granularity",
+        title="Report Granularity *",
         description="Which time granularity should be grouped by; for LIFETIME there will be no grouping. "
         "This option is used for reports' streams only.",
         default=ReportGranularity.default().value,
         enum=[g.value for g in ReportGranularity],
-        order=1,
-    )
-
-    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
-        title="Authorization Method", order=3, default={}, type="object"
+        order=2,
     )
 
     @classmethod

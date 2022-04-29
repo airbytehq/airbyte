@@ -4,8 +4,8 @@ import { useEffectOnce } from "react-use";
 
 import LoadingPage from "components/LoadingPage";
 
-import { TrackPageAnalytics } from "hooks/services/Analytics/TrackPageAnalytics";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
+import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { FeatureItem, useFeatureRegisterValues } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
@@ -154,6 +154,7 @@ export const Routing: React.FC = () => {
   );
   useAnalyticsRegisterValues(analyticsContext);
   useAnalyticsIdentifyUser(user?.userId);
+  useTrackPageAnalytics();
 
   if (!inited) {
     return <LoadingPage />;
@@ -161,7 +162,6 @@ export const Routing: React.FC = () => {
 
   return (
     <WorkspaceServiceProvider>
-      <TrackPageAnalytics />
       <Suspense fallback={<LoadingPage />}>
         {/* Allow email verification no matter whether the user is logged in or not */}
         <Routes>

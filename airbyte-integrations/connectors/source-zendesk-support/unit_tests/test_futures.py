@@ -21,6 +21,12 @@ STREAM_ARGS: dict = {
 }
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 @pytest.mark.parametrize(
     "records_count,page_size,expected_futures_deque_len",
     [
