@@ -15,6 +15,7 @@ const requestConnectorValidationSchema = yup.object({
     yup.object().shape({
       role: yup.string().required("form.empty.error"),
       email: yup.string().required("form.empty.error").email("form.email.error"),
+      continueUrl: yup.string().required("form.empty.error"),
     })
   ),
 });
@@ -65,6 +66,7 @@ export const InviteUsersModal: React.FC<{
           users: [
             {
               email: "",
+              continueUrl: "",
               role: roleOptions[0].value,
             },
           ],
@@ -88,6 +90,11 @@ export const InviteUsersModal: React.FC<{
                       <FormattedMessage id="modals.addUser.email.label" />
                     </H5>
                   </Cell>
+                  <Cell flex={2}>
+                    <H5>
+                      <FormattedMessage id="modals.addUser.continueUrl.label" />
+                    </H5>
+                  </Cell>
                   <Cell>
                     <H5>
                       <FormattedMessage id="modals.addUser.role.label" />
@@ -103,6 +110,11 @@ export const InviteUsersModal: React.FC<{
                           <Cell flex={2}>
                             <Field name={`users[${index}].email`}>
                               {({ field }: FieldProps<string>) => <Input {...field} placeholder="email@company.com" />}
+                            </Field>
+                          </Cell>
+                          <Cell flex={2}>
+                            <Field name={`users[${index}].continueUrl`}>
+                              {({ field }: FieldProps<string>) => <Input {...field} placeholder="" />}
                             </Field>
                           </Cell>
                           <Cell>
@@ -129,6 +141,7 @@ export const InviteUsersModal: React.FC<{
                         onClick={() =>
                           arrayHelpers.push({
                             email: "",
+                            continueUrl: "",
                             role: roleOptions[0].value,
                           })
                         }

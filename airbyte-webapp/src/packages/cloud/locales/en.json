@@ -80,6 +80,7 @@
   "userSettings.user.remove": "Remove",
   "modals.addUser.title": "Add new users",
   "modals.addUser.email.label": "Email address",
+  "modals.addUser.continueUrl.label": "Continue URL",
   "modals.addUser.role.label": "Role",
   "modals.addUser.role.placeholder": "Select a role",
   "modals.addUser.button.addUser": "Add another user",

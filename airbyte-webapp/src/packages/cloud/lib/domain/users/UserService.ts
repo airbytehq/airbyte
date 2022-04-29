@@ -50,13 +50,15 @@ class UserService extends AirbyteRequestService {
     users: {
       email: string;
     }[],
-    workspaceId: string
+    workspaceId: string,
+    continueUrl: string
   ): Promise<User[]> {
     return Promise.all(
       users.map(async (user) =>
-        this.fetch<User>(`web_backend/cloud_workspaces/invite`, {
+        this.fetch<User>(`web_backend/cloud_workspaces/invite_with_signin_link`, {
           email: user.email,
           workspaceId,
+          continueUrl,
         })
       )
     );

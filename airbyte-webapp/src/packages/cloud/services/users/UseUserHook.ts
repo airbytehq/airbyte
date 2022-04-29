@@ -40,7 +40,8 @@ export const useUserHook = () => {
           email: string;
         }[];
         workspaceId: string;
-      }) => service.invite(payload.users, payload.workspaceId),
+        continueUrl: string;
+      }) => service.invite(payload.users, payload.workspaceId, payload.continueUrl),
       {
         onSuccess: async () => {
           await queryClient.invalidateQueries(userKeys.lists());
