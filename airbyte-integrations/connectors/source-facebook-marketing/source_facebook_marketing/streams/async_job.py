@@ -58,9 +58,6 @@ class Status(str, Enum):
 class AsyncJob(ABC):
     """Abstract AsyncJob base class"""
 
-    # max attempts for a job before errroring out
-    max_attempts: int = 10  # TODO: verify a sane number for this
-
     def __init__(self, api: FacebookAdsApi, interval: pendulum.Period):
         """Init generic async job
 
@@ -163,11 +160,9 @@ class ParentAsyncJob(AsyncJob):
             if job.failed:
                 try:
                     new_jobs.extend(job.split_job())
-                except RuntimeError as split_limit_error:
+                except ValueError as split_limit_error:
                     logger.error(split_limit_error)
-                    if job.attempt_number > job.max_attempts:
-                        raise RuntimeError(f"{job} at smallest split size and still failing after {job.max_attempts} retries.")
-                    logger.info(f'can\'t split "{job}" any smaller, attempting to restart instead.')
+                    logger.info(f'can\'t split "{job}" any smaller, attempting to retry the job.')
                     job.restart()
                     new_jobs.append(job)
             else:
@@ -213,7 +208,7 @@ class InsightAsyncJob(AsyncJob):
             return self._split_by_edge_class(AdSet)
         elif isinstance(self._edge_object, AdSet):
             return self._split_by_edge_class(Ad)
-        raise RuntimeError("The job is already splitted to the smallest size.")
+        raise ValueError("The job is already splitted to the smallest size.")
 
     def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List[AsyncJob]:
         """Split insight job by creating insight jobs from lower edge object, i.e.
