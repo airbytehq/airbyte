@@ -388,48 +388,6 @@ tasks.withType(AbstractArchiveTask) {
 // definition for publishing
 catalog {
     versionCatalog {
-//            version('fasterxml_version', '2.13.0')
-//            version('glassfish_version', '2.31')
-//            version('commons_io', '2.7')
-//            version('log4j', '2.17.1')
-//            version('slf4j', '1.7.30')
-//            version('lombok', '1.18.22')
-//            version('junit-jupiter', '5.7.2')
-//            library('fasterxml', 'com.fasterxml.jackson', 'jackson-bom').versionRef('fasterxml_version')
-//            library('glassfish', 'org.glassfish.jersey', 'jackson-bom').versionRef('glassfish_version')
-//            library('jackson-databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('fasterxml_version')
-//            library('jackson-annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('fasterxml_version')
-//            library('jackson-dataformat', 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-yaml').versionRef('fasterxml_version')
-//            library('jackson-datatype', 'com.fasterxml.jackson.datatype', 'jackson-datatype-jsr310').versionRef('fasterxml_version')
-//            library('guava', 'com.google.guava', 'guava').version('30.1.1-jre')
-//            library('commons-io', 'commons-io', 'commons-io').versionRef('commons_io')
-//            library('apache-commons', 'org.apache.commons', 'commons-compress').version('1.20')
-//            library('apache-commons-lang', 'org.apache.commons', 'commons-lang3').version('3.11')
-//            library('slf4j-api', 'org.slf4j', 'slf4j-api').version('1.7.30')
-//            library('log4j-api', 'org.apache.logging.log4j', 'log4j-api').versionRef('log4j')
-//            library('log4j-core', 'org.apache.logging.log4j', 'log4j-core').versionRef('log4j')
-//            library('log4j-impl', 'org.apache.logging.log4j', 'log4j-slf4j-impl').versionRef('log4j')
-//            library('log4j-web', 'org.apache.logging.log4j', 'log4j-web').versionRef('log4j')
-//            library('jul-to-slf4j', 'org.slf4j', 'jul-to-slf4j').versionRef('slf4j')
-//            library('jcl-over-slf4j', 'org.slf4j', 'jcl-over-slf4j').versionRef('slf4j')
-//            library('log4j-over-slf4j', 'org.slf4j', 'log4j-over-slf4j').versionRef('slf4j')
-//            library('appender-log4j2', 'com.therealvan', 'appender-log4j2').version('3.6.0')
-//            library('aws-java-sdk-s3', 'com.amazonaws', 'aws-java-sdk-s3').version('1.12.6')
-//            library('google-cloud-storage', 'com.google.cloud', 'google-cloud-storage').version('2.2.2')
-//            library('s3', 'software.amazon.awssdk', 's3').version('2.16.84')
-//            library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
-//            library('junit-jupiter-engine', 'org.junit.jupiter', 'junit-jupiter-engine').versionRef('junit-jupiter')
-//            library('junit-jupiter-api', 'org.junit.jupiter', 'junit-jupiter-api').versionRef('junit-jupiter')
-//            library('junit-jupiter-params', 'org.junit.jupiter', 'junit-jupiter-params').versionRef('junit-jupiter')
-//            library('mockito-junit-jupiter', 'org.mockito', 'mockito-junit-jupiter').version('4.0.0')
-//            library('assertj-core', 'org.assertj', 'assertj-core').version('3.21.0')
-//            library('junit-pioneer', 'org.junit-pioneer', 'junit-pioneer').version('1.6.2')
-//            library('findsecbugs-plugin', 'com.h3xstream.findsecbugs', 'findsecbugs-plugin').version('1.11.0')
-//            bundle('jackson', ['jackson-databind', 'jackson-annotations', 'jackson-dataformat', 'jackson-datatype'])
-//            bundle('apache', ['apache-commons', 'apache-commons-lang'])
-//            bundle('log4j', ['log4j-api', 'log4j-core', 'log4j-impl', 'log4j-web'])
-//            bundle('slf4j', ['jul-to-slf4j', 'jcl-over-slf4j', 'log4j-over-slf4j'])
-//            bundle('junit', ['junit-jupiter-api', 'junit-jupiter-params', 'mockito-junit-jupiter'])
         from(files("deps.toml"))
     }
 }
@@ -461,6 +419,9 @@ publishing {
         publications {
             // This block is present so Gradle knows to publish a Maven jar.
             maven(MavenPublication) {
+                groupId = 'io.airbyte'
+                artifactId = 'oss-catalog'
+
                 from components.versionCatalog
                 // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
                 // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.

@@ -24,9 +24,19 @@ rootProject.name = 'airbyte'
 
 // definition for dependency resolution
 dependencyResolutionManagement {
+    repositories {
+        maven {
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+            credentials {
+                name 'cloudrepo'
+                username System.getenv('CLOUDREPO_USER')
+                password System.getenv('CLOUDREPO_PASSWORD')
+            }
+        }
+    }
     versionCatalogs {
         libs {
-            from(files("deps.toml"))
+            from("io.airbyte:oss-catalog:0.36.3-alpha")
         }
     }
 }

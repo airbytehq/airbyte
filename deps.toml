@@ -45,5 +45,3 @@ apache = ["apache-commons", "apache-commons-lang"]
 log4j = ["log4j-api", "log4j-core", "log4j-impl", "log4j-web"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
-
-[plugins]
