@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from .formats.csv_spec import CsvFormat
 from .formats.parquet_spec import ParquetFormat
+from .formats.avro_spec import AvroFormat
 
 # To implement your provider specific spec, inherit from SourceFilesAbstractSpec and add provider-specific settings e.g.:
 
@@ -60,7 +61,7 @@ class SourceFilesAbstractSpec(BaseModel):
         examples=['{"column_1": "number", "column_2": "string", "column_3": "array", "column_4": "object", "column_5": "boolean"}'],
     )
 
-    format: Union[CsvFormat, ParquetFormat] = Field(default=CsvFormat.Config.title)
+    format: Union[CsvFormat, ParquetFormat, AvroFormat] = Field(default=CsvFormat.Config.title)
 
     @staticmethod
     def change_format_to_oneOf(schema: dict) -> dict:
