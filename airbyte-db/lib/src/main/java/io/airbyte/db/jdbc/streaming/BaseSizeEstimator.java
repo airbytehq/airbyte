@@ -4,6 +4,7 @@
 
 package io.airbyte.db.jdbc.streaming;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 
 /**
@@ -34,7 +35,8 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
    * What we really want is to know how much memory each {@code rowData} takes. However, there is no
    * easy way to measure that. So we use the byte size of the serialized row to approximate that.
    */
-  static long getEstimatedByteSize(final Object rowData) {
+  @VisibleForTesting
+  public static long getEstimatedByteSize(final Object rowData) {
     if (rowData == null) {
       return 0L;
     }
