@@ -29,7 +29,8 @@ public class ConnectionManagerUtils {
    * Attempts to send a signal to the existing ConnectionManagerWorkflow for the provided connection.
    *
    * If the workflow is unreachable, this will restart the workflow and send the signal in a single
-   * batched request.
+   * batched request. Batching is used to avoid race conditions between starting the workflow and
+   * executing the signal.
    *
    * @param client the WorkflowClient for interacting with temporal
    * @param connectionId the connection ID to execute this operation for
@@ -49,7 +50,8 @@ public class ConnectionManagerUtils {
    * Attempts to send a signal to the existing ConnectionManagerWorkflow for the provided connection.
    *
    * If the workflow is unreachable, this will restart the workflow and send the signal in a single
-   * batched request.
+   * batched request. Batching is used to avoid race conditions between starting the workflow and
+   * executing the signal.
    *
    * @param client the WorkflowClient for interacting with temporal
    * @param connectionId the connection ID to execute this operation for
