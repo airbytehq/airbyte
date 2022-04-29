@@ -2388,6 +2388,7 @@
             \ account."
         start_date:
           title: "Start Date"
+          type: "string"
           description: "UTC date and time. Any data created after this date will be\
             \ replicated. If this parameter is not set, all data will be replicated."
           format: "date-time"
@@ -3708,7 +3709,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.16"
+- dockerImage: "airbyte/source-intercom:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -7772,6 +7773,9 @@
         channel_filter:
           type: "array"
           default: []
+          items:
+            type: "string"
+            min-item: 0
           title: "Channel name filter"
           description: "A channel name list (without leading '#' char) which limit\
             \ the channels from which you'd like to sync. Empty list means no filter."
@@ -7857,7 +7861,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-smartsheets:0.1.10"
+- dockerImage: "airbyte/source-smartsheets:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/smartsheets"
     connectionSpecification:
@@ -7874,13 +7878,15 @@
           description: "The Access Token for making authenticated requests. Find in\
             \ the main menu: Account > Apps & Integrations > API Access"
           type: "string"
+          order: 0
           airbyte_secret: true
         spreadsheet_id:
           title: "Sheet ID"
           description: "The spreadsheet ID. Find in the spreadsheet menu: File > Properties"
           type: "string"
+          order: 1
         start_datetime:
-          title: "Start Datetime"
+          title: "Start Datetime (Optional)"
           type: "string"
           examples:
           - "2000-01-01T13:00:00"
@@ -7888,6 +7894,7 @@
           description: "ISO 8601, for instance: `YYYY-MM-DDTHH:MM:SS`, `YYYY-MM-DDTHH:MM:SS+HH:MM`"
           format: "date-time"
           default: "2020-01-01T00:00:00+00:00"
+          order: 2
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
