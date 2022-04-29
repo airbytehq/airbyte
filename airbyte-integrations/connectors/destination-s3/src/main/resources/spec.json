@@ -382,12 +382,12 @@
         "title": "Endpoint (Optional)",
         "type": "string",
         "default": "",
-        "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
+        "description": "This is your S3 endpoint url. (If you are working with AWS S3, you can leave blank).",
         "examples": ["http://localhost:9000"],
         "order": 6
       },
       "s3_path_format": {
-        "title": "s3_path_format (Optional)",
+        "title": "S3 Path Format (Optional)",
         "description": "Format string on how data will be organized inside the S3 bucket directory. See [this](https://docs.airbyte.com/integrations/destinations/s3#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format)",
         "type": "string",
         "examples": [
