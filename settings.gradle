@@ -27,11 +27,6 @@ dependencyResolutionManagement {
     repositories {
         maven {
             url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
-            credentials {
-                name 'cloudrepo'
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
-            }
         }
     }
     versionCatalogs {
