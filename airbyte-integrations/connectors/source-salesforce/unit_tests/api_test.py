@@ -24,6 +24,12 @@ from source_salesforce.streams import (
 )
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 def test_bulk_sync_creation_failed(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     with requests_mock.Mocker() as m:
@@ -482,7 +488,8 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                         "flag1": True,
                         "queryable": True,
                     }
-                    for stream_name in stream_names if stream_name != "Describe"
+                    for stream_name in stream_names
+                    if stream_name != "Describe"
                 ],
             },
         )

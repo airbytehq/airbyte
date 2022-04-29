@@ -94,9 +94,9 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public void insertRecords(final JdbcDatabase database,
-      final List<AirbyteRecordMessage> records,
-      final String schemaName,
-      final String tempTableName)
+                            final List<AirbyteRecordMessage> records,
+                            final String schemaName,
+                            final String tempTableName)
       throws Exception {
     final String tableName = String.format("%s.%s", schemaName, tempTableName);
     final String columns = String.format("(%s, %s, %s)",
@@ -107,11 +107,11 @@ public class OracleOperations implements SqlOperations {
 
   // Adapted from SqlUtils.insertRawRecordsInSingleQuery to meet some needs specific to Oracle syntax
   private static void insertRawRecordsInSingleQuery(final String tableName,
-      final String columns,
-      final String recordQueryComponent,
-      final JdbcDatabase jdbcDatabase,
-      final List<AirbyteRecordMessage> records,
-      final Supplier<UUID> uuidSupplier)
+                                                    final String columns,
+                                                    final String recordQueryComponent,
+                                                    final JdbcDatabase jdbcDatabase,
+                                                    final List<AirbyteRecordMessage> records,
+                                                    final Supplier<UUID> uuidSupplier)
       throws SQLException {
     if (records.isEmpty()) {
       return;
@@ -152,9 +152,9 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public String copyTableQuery(final JdbcDatabase database,
-      final String schemaName,
-      final String sourceTableName,
-      final String destinationTableName) {
+                               final String schemaName,
+                               final String sourceTableName,
+                               final String destinationTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 

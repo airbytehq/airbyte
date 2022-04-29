@@ -29,8 +29,8 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -65,16 +66,16 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
   protected final String driverClass;
-  protected final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
+  protected final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider;
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
   protected String quoteString;
 
   public AbstractJdbcSource(final String driverClass,
-                            final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                            final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
                             final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
     this.driverClass = driverClass;
-    this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
+    this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
   }
 
@@ -289,11 +290,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
     final JdbcDatabase database = Databases.createStreamingJdbcDatabase(
-        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
-        jdbcStreamingQueryConfiguration,
+        streamingQueryConfigProvider,
         JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
         sourceOperations);
 
