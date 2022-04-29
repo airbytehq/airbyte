@@ -285,6 +285,7 @@ class Conversations(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/conversations
     """
 
+    use_cache = True
     data_fields = ["conversations"]
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -310,7 +311,7 @@ class ConversationParts(IncrementalIntercomStream):
     """
 
     data_fields = ["conversation_parts", "conversation_parts"]
-    
+
     def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
         super().__init__(authenticator, start_date, **kwargs)
         self.conversations_stream = Conversations(authenticator, start_date, **kwargs)
