@@ -26,7 +26,7 @@
       },
       "secret_access_key": {
         "type": "string",
-        "description": "The corresponding secret to the access key ID",
+        "description": "The corresponding secret to the access key ID. See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)",
         "title": "S3 Access Key *",
         "airbyte_secret": true,
         "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
@@ -41,7 +41,7 @@
       },
       "s3_bucket_path": {
         "title": "S3 Bucket Path *",
-        "description": "Directory under the S3 bucket where data will be written.",
+        "description": "Directory under the S3 bucket where data will be written. See [this](https://docs.airbyte.com/integrations/destinations/s3#:~:text=to%20format%20the-,bucket%20path,-%3A)",
         "type": "string",
         "examples": ["data_sync/test"],
         "order": 3
@@ -84,7 +84,7 @@
       "format": {
         "title": "Output Format *",
         "type": "object",
-        "description": "Output data format",
+        "description": "Output data format See [here](https://docs.airbyte.com/integrations/destinations/s3/#output-schema) for more details",
         "oneOf": [
           {
             "title": "Avro: Apache Avro",
@@ -382,7 +382,7 @@
         "title": "Endpoint (Optional)",
         "type": "string",
         "default": "",
-        "description": "This is your S3 endpoint url. (If you are working with AWS S3, you can leave blank).",
+        "description": "This is your S3 endpoint url. (If you are working with AWS S3, you can leave blank). See [this](https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use)",
         "examples": ["http://localhost:9000"],
         "order": 6
       },
