@@ -7,7 +7,6 @@ package io.airbyte.workers.temporal;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -484,45 +483,6 @@ public class TemporalClient {
     } catch (final Exception e) {
       return false;
     }
-  }
-
-  public static void main(final String[] args) throws DeletedWorkflowException {
-    final Configs configs = new EnvConfigs();
-
-    final Path workspaceRoot = Path.of("/tmp/workspace");
-
-    // final String temporalHost = configs.getTemporalHost();
-    // log.info("temporalHost = " + temporalHost);
-
-    final String temporalHost = "localhost:7233";
-
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
-
-    final UUID connectionId = UUID.fromString("da5b0ba8-53c1-4400-935d-5793ccb5236d");
-    final String connectionManagerWorkflowName = ConnectionManagerUtils.getConnectionManagerName(connectionId);
-
-    temporalClient.deleteConnection(connectionId);
-
-    // final ConnectionManagerWorkflow existingWorkflow =
-    // temporalClient.getConnectionManagerWorkflow(connectionId);
-
-    // log.info("existingWorkflow.getState(): {}", existingWorkflow.getState());
-
-    // final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
-    // final WorkflowClient workflowClient = WorkflowClient.newInstance(temporalService);
-    // workflowClient.newUntypedWorkflowStub(connectionManagerWorkflowName).terminate("local testing");
-    // log.info("terminated workflow {}", connectionManagerWorkflowName);
-
-    log.info("end");
-
-    // temporalClient.startConnectionManagerWithSignal(connectionId, cmw -> cmw::submitManualSync);
-
-    // temporalClient.signalWorkflowAndRepairIfNecessary(connectionId, cmw -> cmw::submitManualSync);
-
-    // temporalClient.startConnectionManagerWithSignals(connectionId, cmw -> cmw::submitManualSync);
-
-    // when trying to start workflow that is already running, we get a: Method threw
-    // 'io.temporal.client.WorkflowExecutionAlreadyStarted' exception.
   }
 
 }
