@@ -160,8 +160,6 @@ jobs:
         id: bump-version
         if: success()
         run: |
-          echo "hello world"
-          echo "${{ github.event.inputs.bump-version }}"
           ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
       - name: Commit and Push Version Bump
         if: success() && steps.bump-version.outputs.bumped == 'true'
