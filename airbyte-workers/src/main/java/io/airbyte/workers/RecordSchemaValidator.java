@@ -10,7 +10,8 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -19,17 +20,15 @@ import java.util.HashMap;
 
 public class RecordSchemaValidator {
 
-  private final HashMap<String, JsonNode> streams;
+  private final Map<String, JsonNode> streams;
 
   public RecordSchemaValidator(final StandardSyncInput syncInput) {
     final String streamPrefix = syncInput.getPrefix();
 
-    // streams is populated with a stream name (including prefix) and stream schema
+    // streams is Map of a stream name (including prefix) and stream schema
     // for easy access when we check each record's schema
-    this.streams = new HashMap<String, JsonNode>();
-    syncInput.getCatalog().getStreams().forEach(s -> {
-      streams.put(String.format(streamPrefix + s.getStream().getName().trim()), s.getStream().getJsonSchema());
-    });
+    this.streams = syncInput.getCatalog().getStreams().stream().collect(
+        Collectors.toMap(k -> String.format(streamPrefix + k.getStream().getName().trim()), v -> v.getStream().getJsonSchema()));
   }
 
   /**
