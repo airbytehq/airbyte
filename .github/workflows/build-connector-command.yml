@@ -158,7 +158,7 @@ jobs:
         if: github.event.inputs.bump-version != 'false' && success()
         run: ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }}
       - name: Commit and Push Version Bump
-        if: github.event.inputs.bump-version != 'false' && success() && steps.bump-version.outputs.bumped == 'true
+        if: github.event.inputs.bump-version != 'false' && success() && steps.bump-version.outputs.bumped == 'true'
         run: |
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
