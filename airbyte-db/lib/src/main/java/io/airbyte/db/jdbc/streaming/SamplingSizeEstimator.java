@@ -44,7 +44,7 @@ public class SamplingSizeEstimator extends BaseSizeEstimator implements FetchSiz
       // This is equivalent to calculating the mean size
       // based on the last N rows. The division is performed
       // first to prevent overflow.
-      meanByteSize = meanByteSize / sampleSize * (sampleSize - 1)  + 1.0 * rowByteSize / sampleSize;
+      meanByteSize = meanByteSize / sampleSize * (sampleSize - 1) + 1.0 * rowByteSize / sampleSize;
       hasNewEstimation = true;
     }
   }

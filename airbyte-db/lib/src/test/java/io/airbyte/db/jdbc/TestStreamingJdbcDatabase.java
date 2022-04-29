@@ -83,7 +83,8 @@ public class TestStreamingJdbcDatabase {
   @Order(1)
   void testQuery() throws SQLException {
     defaultJdbcDatabase.execute(connection -> {
-      connection.createStatement().execute("""
+      connection.createStatement().execute(
+          """
           DROP TABLE IF EXISTS id_and_name;
           CREATE TABLE id_and_name (id INTEGER, name VARCHAR(200));
           INSERT INTO id_and_name (id, name) VALUES (1, 'picard'),  (2, 'crusher'), (3, 'vash');
@@ -111,19 +112,21 @@ public class TestStreamingJdbcDatabase {
   }
 
   /**
-   * Test stream querying a table with 20 rows. Each row is 10 MB large. The table in this test
-   * must contain more than {@code FetchSizeConstants.INITIAL_SAMPLE_SIZE} rows. Otherwise, all
-   * rows will be fetched in the first fetch, the fetch size won't be adjusted, and the test
-   * will fail.
+   * Test stream querying a table with 20 rows. Each row is 10 MB large. The table in this test must
+   * contain more than {@code
+   * FetchSizeConstants.INITIAL_SAMPLE_SIZE} rows. Otherwise, all rows will be fetched in the first
+   * fetch, the fetch size won't be adjusted, and the test will fail.
    */
   @Order(2)
   @Test
   void testLargeRow() throws SQLException {
-    defaultJdbcDatabase.execute(connection -> connection.createStatement().execute("""
-        DROP TABLE IF EXISTS id_and_name;
-        CREATE TABLE id_and_name (id INTEGER, name TEXT);
-        INSERT INTO id_and_name SELECT id, repeat('a', 10485760) as name from generate_series(1, 20) as id;
-        """));
+    defaultJdbcDatabase.execute(connection -> connection.createStatement()
+        .execute(
+            """
+            DROP TABLE IF EXISTS id_and_name;
+            CREATE TABLE id_and_name (id INTEGER, name TEXT);
+            INSERT INTO id_and_name SELECT id, repeat('a', 10485760) as name from generate_series(1, 20) as id;
+            """));
 
     final AtomicReference<Connection> connection1 = new AtomicReference<>();
     final AtomicReference<PreparedStatement> ps1 = new AtomicReference<>();
