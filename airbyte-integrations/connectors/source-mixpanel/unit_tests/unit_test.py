@@ -11,9 +11,7 @@ from source_mixpanel.source import SourceMixpanel
 logger = logging.getLogger("test_client")
 
 def test_check_connection_api_secret_ok(requests_mock):
-    responses = [
-        {"json": [], "status_code": 200},
-    ]
+
     config = {}
     config["api_secret"] = "testApiSecret"
 
@@ -29,9 +27,7 @@ def test_check_connection_api_secret_ok(requests_mock):
     assert not error_msg
 
 def test_check_connection_service_account_ok(requests_mock):
-    responses = [
-        {"json": [], "status_code": 200},
-    ]
+
     config = {}
     config["serviceaccount_username"] = "testName"
     config["serviceaccount_secret"] = "testSecretName"
