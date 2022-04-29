@@ -27,9 +27,8 @@ interface AlertBannerProps {
   id: CreditStatus | string;
 }
 
-const AlertBanner: React.FC<AlertBannerProps> = ({ alertType: errorType, id }) => (
+export const AlertBanner: React.FC<AlertBannerProps> = ({ alertType: errorType, id }) => (
   <Container errorType={errorType}>
-    {/* todo: this can be abstracted a layer further to unify the component */}
     {errorType === "credits" ? (
       <FormattedMessage
         id={id}
@@ -40,5 +39,3 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ alertType: errorType, id }) =
     )}
   </Container>
 );
-
-export { AlertBanner };
