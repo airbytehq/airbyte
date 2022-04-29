@@ -109,6 +109,7 @@ cmd_bump_version() {
   dockerfile="$connector_path/Dockerfile"
   master_dockerfile="/tmp/master_${connector}_dockerfile"
   # This allows getting the contents of a file without checking it out
+  git fetch origin --quiet
   git --no-pager show "origin/master:$dockerfile" > "$master_dockerfile"
 
   # Current version always comes from master, this way we can always bump correctly relative to master
