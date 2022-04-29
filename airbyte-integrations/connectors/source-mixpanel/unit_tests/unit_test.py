@@ -1,28 +1,55 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from datetime import date, timedelta
 
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_mixpanel.source import Annotations
+from source_mixpanel.source import SourceMixpanel
 
+logger = logging.getLogger("test_client")
+
+def test_check_connection_api_secret_ok(requests_mock):
+    responses = [
+        {"json": [], "status_code": 200},
+    ]
+    config = {}
+    config["api_secret"] = "testApiSecret"
+
+    service_account_headers = {
+        "Authorization": "Basic api_secret:testApiSecret",
+        "Accept": "application/json",
+    }
+
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", headers=service_account_headers)
+    ok, error_msg = SourceMixpanel().check_connection(logger, config=config)
+
+    assert ok
+    assert not error_msg
+
+def test_check_connection_service_account_ok(requests_mock):
+    responses = [
+        {"json": [], "status_code": 200},
+    ]
+    config = {}
+    config["serviceaccount_username"] = "testName"
+    config["serviceaccount_secret"] = "testSecretName"
+
+    service_account_headers = {
+        "Authorization": "Basic testName:testSecretName",
+        "Accept": "application/json",
+    }
+
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", headers=service_account_headers)
+    ok, error_msg = SourceMixpanel().check_connection(logger, config=config)
+
+    assert ok
+    assert not error_msg
 
 def test_date_slices():
 
     now = date.today()
-
-    # Test with service account
-    stream_slices = Annotations(authenticator=NoAuth(),
-                                serviceaccount_username="testName",
-                                serviceaccount_secret="testSecret",
-                                start_date=now,
-                                end_date=now,
-                                date_window_size=1,
-                                region="EU").stream_slices(
-        sync_mode="any"
-    )
-    assert 1 == len(stream_slices)
 
     # Test with start_date now range
     stream_slices = Annotations(authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1, region="EU").stream_slices(
