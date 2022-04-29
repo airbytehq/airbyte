@@ -1,4 +1,3 @@
-import { setIn } from "formik";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
@@ -6,13 +5,7 @@ import * as yup from "yup";
 import { DropDownRow } from "components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import {
-  AirbyteStreamConfiguration,
-  DestinationSyncMode,
-  SyncMode,
-  SyncSchema,
-  SyncSchemaStream,
-} from "core/domain/catalog";
+import { SyncMode, SyncSchema, SyncSchemaStream } from "core/domain/catalog";
 import {
   isDbtTransformation,
   isNormalizationTransformation,
@@ -25,13 +18,14 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import {
-  AirbyteStreamAndConfiguration,
   ConnectionSchedule,
   DestinationDefinitionSpecificationRead,
+  DestinationSyncMode,
   NamespaceDefinitionType,
   OperationRead,
   WebBackendConnectionRead,
 } from "../../../core/request/AirbyteClient";
+import { getOptimalSyncMode, verifyConfigCursorField, verifySupportedSyncModes } from "./formConfigHelpers";
 
 type FormikConnectionFormValues = {
   schedule?: ConnectionSchedule | null;
@@ -46,10 +40,10 @@ type FormikConnectionFormValues = {
 type ConnectionFormValues = ValuesProps;
 
 const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
-  [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
-  [SyncMode.FullRefresh, DestinationSyncMode.Append],
-  [SyncMode.Incremental, DestinationSyncMode.Append],
-  [SyncMode.Incremental, DestinationSyncMode.Deduped],
+  [SyncMode.FullRefresh, DestinationSyncMode.overwrite],
+  [SyncMode.FullRefresh, DestinationSyncMode.append],
+  [SyncMode.Incremental, DestinationSyncMode.append],
+  [SyncMode.Incremental, DestinationSyncMode.append_dedup],
 ];
 
 const DEFAULT_SCHEDULE: ConnectionSchedule = {
@@ -122,7 +116,7 @@ const connectionValidationSchema = yup
                 if (!value.selected) {
                   return true;
                 }
-                if (DestinationSyncMode.Deduped === value.destinationSyncMode) {
+                if (DestinationSyncMode.append_dedup === value.destinationSyncMode) {
                   // it's possible that primaryKey array is always present
                   // however yup couldn't determine type correctly even with .required() call
                   if (value.primaryKey?.length === 0) {
@@ -204,55 +198,22 @@ function mapFormPropsToOperation(
 
   return newOperations;
 }
-
-function getDefaultCursorField(streamNode: SyncSchemaStream) {
-  if (streamNode.stream?.defaultCursorField?.length) {
-    return streamNode.stream.defaultCursorField;
-  }
-  return streamNode.config?.cursorField;
-}
-
-const useInitialSchema = (schema: SyncSchema): SyncSchema =>
+const useInitialSchema = (
+  schema: SyncSchema,
+  supportedDestinationSyncModes: DestinationSyncMode[] | undefined
+): SyncSchema =>
   useMemo<SyncSchema>(
     () => ({
-      streams: schema.streams.map<AirbyteStreamAndConfiguration>((apiNode, id) => {
-        const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+      streams: schema.streams
+        .map((apiNode, id) => {
+          const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+          const nodeStream = verifyConfigCursorField(verifySupportedSyncModes(nodeWithId));
 
-        // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
-        // Otherwise, it supports whatever sync modes are present.
-        const streamNode = nodeWithId.stream?.supportedSyncModes?.length
-          ? nodeWithId
-          : setIn(nodeWithId, "stream.supportedSyncModes", [SyncMode.FullRefresh]);
-
-        // If syncMode isn't null - don't change item
-        if (streamNode.config.syncMode) {
-          return streamNode;
-        }
-
-        const updateStreamConfig = (config: Partial<AirbyteStreamConfiguration>): SyncSchemaStream => ({
-          ...streamNode,
-          config: { ...streamNode.config, ...config },
-        });
-
-        const supportedSyncModes = streamNode.stream.supportedSyncModes;
-
-        // Prefer INCREMENTAL sync mode over other sync modes
-        if (supportedSyncModes.includes(SyncMode.Incremental)) {
-          return updateStreamConfig({
-            cursorField: streamNode.config.cursorField.length
-              ? streamNode.config.cursorField
-              : getDefaultCursorField(streamNode),
-            syncMode: SyncMode.Incremental,
-          });
-        }
-
-        // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
-        return updateStreamConfig({
-          syncMode: streamNode.stream.supportedSyncModes[0],
-        });
-      }),
+          return getOptimalSyncMode(nodeStream, supportedDestinationSyncModes);
+        })
+        .filter((stream): stream is SyncSchemaStream => Boolean(stream)),
     }),
-    [schema.streams]
+    [schema.streams, supportedDestinationSyncModes]
   );
 
 const getInitialTransformations = (operations?: OperationRead[]): Transformation[] =>
@@ -277,7 +238,7 @@ const useInitialValues = (
   destDefinition: DestinationDefinitionSpecificationRead,
   isEditMode?: boolean
 ): FormikConnectionFormValues => {
-  const initialSchema = useInitialSchema(connection.syncCatalog);
+  const initialSchema = useInitialSchema(connection.syncCatalog, destDefinition.supportedDestinationSyncModes);
 
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {

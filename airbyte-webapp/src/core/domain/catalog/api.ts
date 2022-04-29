@@ -1,6 +1,6 @@
 import { JSONSchema7 } from "json-schema";
 
-import { AirbyteStreamAndConfiguration } from "../../request/AirbyteClient";
+import { AirbyteCatalog, AirbyteStreamAndConfiguration } from "../../request/AirbyteClient";
 import { JobInfo } from "../job";
 
 export interface SourceDiscoverSchemaRead {
@@ -22,14 +22,12 @@ export enum DestinationSyncMode {
   Deduped = "append_dedup",
 }
 
-export type SyncSchemaStreamInner = AirbyteStreamAndConfiguration;
-
-export type SyncSchemaStream = SyncSchemaStreamInner & {
+export interface SyncSchemaStream extends AirbyteStreamAndConfiguration {
   /**
    * This field is not returned from API and is used to track unique objects
    */
-  id: string;
-};
+  id?: string;
+}
 
 export type AirbyteStream = {
   name: string;
@@ -50,8 +48,8 @@ export type AirbyteStreamConfiguration = {
   aliasName: string;
 };
 
-export type SyncSchema = {
-  streams: AirbyteStreamAndConfiguration[];
-};
+export interface SyncSchema extends AirbyteCatalog {
+  streams: SyncSchemaStream[];
+}
 
 export type Path = string[];

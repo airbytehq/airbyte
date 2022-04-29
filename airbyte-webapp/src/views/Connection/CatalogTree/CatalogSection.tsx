@@ -28,6 +28,7 @@ import { flatten, getPathType } from "./utils";
 const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
   border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : "none")};
   background: ${({ theme, isSelected }) => (isSelected ? "rgba(97, 94, 255, 0.1);" : theme.greyColor0)};
+  padding: 2px;
 
   &:first-child {
     border-radius: 8px 8px 0 0;

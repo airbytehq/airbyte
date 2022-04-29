@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.scaffold_java_jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.NoOpStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -23,9 +23,9 @@ public class ScaffoldJavaJdbcSource extends AbstractJdbcSource<JDBCType> impleme
   static final String DRIVER_CLASS = "driver_name_here";
 
   public ScaffoldJavaJdbcSource() {
-    // By default, NoOpJdbcStreamingQueryConfiguration class is used, but may be updated. See example
-    // MssqlJdbcStreamingQueryConfiguration
-    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    // By default, NoOpStreamingQueryConfig class is used. If the JDBC supports custom
+    // fetch size, change it to AdaptiveStreamingQueryConfig for better performance.
+    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   // TODO The config is based on spec.json, update according to your DB
