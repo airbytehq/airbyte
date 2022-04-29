@@ -91,4 +91,5 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
   public void testBackwardCompatibilityAfterAddingOAuth() throws Exception {
     // this test case is not valid for OAuth method
   }
+
 }

@@ -7,8 +7,8 @@ package io.airbyte.db.jdbc.streaming;
 import java.util.Optional;
 
 /**
- * This class adjusts the mean row byte size by estimating one row out of
- * every {@code sampleFrequency} rows.
+ * This class adjusts the mean row byte size by estimating one row out of every
+ * {@code sampleFrequency} rows.
  */
 public class SamplingSizeEstimator extends BaseSizeEstimator implements FetchSizeEstimator {
 

@@ -6,6 +6,10 @@ package io.airbyte.db.jdbc.streaming;
 
 import java.util.Optional;
 
+/**
+ * This class estimates the mean row byte size by measuring the first consecutive
+ * {@code initialSampleSize} rows.
+ */
 public class InitialSizeEstimator extends BaseSizeEstimator implements FetchSizeEstimator {
 
   private final int sampleSize;
