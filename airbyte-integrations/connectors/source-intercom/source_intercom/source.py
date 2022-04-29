@@ -322,6 +322,13 @@ class ConversationParts(IncrementalIntercomStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Returns the stream slices, which correspond to conversation IDs. Uses the `Conversations` stream
+        to get conversations by `sync_mode` and `state`. Unlike `ChildStreamMixin`, it gets slices based
+        on the `sync_mode`, so that it does not get all conversations at all times. Since we can't do
+        `filter_by_state` inside `parse_records`, we need to make sure we get the right conversations only.
+        Otherwise, this stream would always return all conversation_parts.
+        """
         parent_stream_slices = self.conversations_stream.stream_slices(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
         )
@@ -333,6 +340,12 @@ class ConversationParts(IncrementalIntercomStream):
                 yield {"id": conversation["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """
+        Adds `conversation_id` to every `conversation_part` record before yielding it. Records are not
+        filtered by state here, because the aggregate list of `conversation_parts` is not sorted by
+        `updated_at`, because it gets `conversation_parts` for each `conversation`. Hence, using parent's
+        `filter_by_state` logic could potentially end up in data loss.
+        """
         records = super().parse_response(response=response, stream_state={}, **kwargs)
         conversation_id = response.json().get("id")
         for conversation_part in records:
