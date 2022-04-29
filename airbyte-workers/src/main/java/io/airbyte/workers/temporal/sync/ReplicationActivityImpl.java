@@ -27,6 +27,7 @@ import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerApp.ContainerOrchestratorConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -212,7 +213,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
           new AirbyteMessageTracker(),
-          new RecordSchemaValidator(syncInput));
+          new RecordSchemaValidator(syncInput, WorkerUtils.mapStreamNamesToSchemas(syncInput)));
     };
   }
 

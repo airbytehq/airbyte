@@ -30,13 +30,13 @@ public class RecordSchemaValidatorTest {
 
   @Test
   void testValidateValidSchema() throws Exception {
-    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(syncInput);
+    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(syncInput, WorkerUtils.mapStreamNamesToSchemas(syncInput));
     recordSchemaValidator.validateSchema(VALID_RECORD.getRecord());
   }
 
   @Test
   void testValidateInvalidSchema() throws Exception {
-    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(syncInput);
+    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(syncInput, WorkerUtils.mapStreamNamesToSchemas(syncInput));
     assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord()));
   }
 

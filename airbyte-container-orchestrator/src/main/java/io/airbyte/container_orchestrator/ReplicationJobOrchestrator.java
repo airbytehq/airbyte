@@ -97,7 +97,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
         new DefaultAirbyteDestination(workerConfigs, destinationLauncher),
         new AirbyteMessageTracker(),
-        new RecordSchemaValidator(syncInput));
+        new RecordSchemaValidator(syncInput, WorkerUtils.mapStreamNamesToSchemas(syncInput)));
 
     log.info("Running replication worker...");
     final Path jobRoot = WorkerUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
