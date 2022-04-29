@@ -143,8 +143,9 @@ cmd_bump_version() {
     echo "$connector:$current_version will be bumped to $connector:$bumped_version"
 
     # Set outputs back to Github Actions for later steps
-    echo ::set-output name=bumped_version::${bumped_version}
-    echo ::set-output name=bumped::true
+    echo ::set-output name=current_version::"${current_version}"
+    echo ::set-output name=bumped_version::"${bumped_version}"
+    echo ::set-output name=bumped::"true"
   else
     echo "No version bump was necessary, this PR has probably already been bumped"
     exit 0
