@@ -12,7 +12,7 @@ import requests
 import re
 from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from requests.auth import AuthBase
 from source_freshdesk.utils import CallCredit
@@ -136,6 +136,31 @@ class Agents(FreshdeskStream):
         return "agents"
 
 
+class BusinessHours(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "business_hours"
+
+
+class CannedResponseFolders(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "canned_response_folders"
+
+
+class CannedResponses(HttpSubStream, FreshdeskStream):
+
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
+        super().__init__(
+            authenticator=authenticator,
+            config=config,
+            parent=CannedResponseFolders(authenticator=authenticator, config=config, **kwargs)
+        )
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"canned_response_folders/{stream_slice['parent']['id']}/responses"
+
+
 class Companies(FreshdeskStream):
 
     def path(self, **kwargs) -> str:
@@ -149,10 +174,73 @@ class Contacts(IncrementalFreshdeskStream):
         return "contacts"
 
 
+class DiscussionCategories(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "discussions/categories"
+
+
+class DiscussionForums(HttpSubStream, FreshdeskStream):
+
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
+        super().__init__(
+            authenticator=authenticator,
+            config=config,
+            parent=DiscussionCategories(authenticator=authenticator, config=config, **kwargs)
+        )
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"discussions/categories/{stream_slice['parent']['id']}/forums"
+
+
+class DiscussionTopics(HttpSubStream, FreshdeskStream):
+
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
+        super().__init__(
+            authenticator=authenticator,
+            config=config,
+            parent=DiscussionForums(authenticator=authenticator, config=config, **kwargs)
+        )
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"discussions/forums/{stream_slice['parent']['id']}/topics"
+
+
+class DiscussionComments(HttpSubStream, FreshdeskStream):
+
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
+        super().__init__(
+            authenticator=authenticator,
+            config=config,
+            parent=DiscussionTopics(authenticator=authenticator, config=config, **kwargs)
+        )
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"discussions/topics/{stream_slice['parent']['id']}/comments"
+
+
+class EmailConfigs(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "email_configs"
+
+
+class EmailMailboxes(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "email/mailboxes"
+
+
 class Groups(FreshdeskStream):
 
     def path(self, **kwargs) -> str:
         return "groups"
+
+
+class Products(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "products"
 
 
 class Roles(FreshdeskStream):
@@ -161,16 +249,82 @@ class Roles(FreshdeskStream):
         return "roles"
 
 
+class ScenarioAutomations(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "scenario_automations"
+
+
+class Settings(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "settings/helpdesk"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json()
+
+
 class Skills(FreshdeskStream):
 
     def path(self, **kwargs) -> str:
         return "skills"
 
 
+class SlaPolicies(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "sla_policies"
+
+
+class SolutionCategories(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "solutions/categories"
+
+
+class SolutionFolders(HttpSubStream, FreshdeskStream):
+
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
+        super().__init__(
+            authenticator=authenticator,
+            config=config,
+            parent=SolutionCategories(authenticator=authenticator, config=config, **kwargs)
+        )
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"solutions/categories/{stream_slice['parent']['id']}/folders"
+    
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        records = response.json()
+        category_id = stream_slice['parent']['id']
+        for record in records:
+            record.setdefault("category_id", category_id)
+            yield record
+
+
+class SolutionArticles(HttpSubStream, FreshdeskStream):
+
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
+        super().__init__(
+            authenticator=authenticator,
+            config=config,
+            parent=SolutionFolders(authenticator=authenticator, config=config, **kwargs)
+        )
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"solutions/folders/{stream_slice['parent']['id']}/articles"
+
+
 class TimeEntries(FreshdeskStream):
 
     def path(self, **kwargs) -> str:
         return "time_entries"
+
+
+class TicketFields(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "ticket_fields"
 
 
 class Tickets(IncrementalFreshdeskStream):
@@ -271,3 +425,9 @@ class SatisfactionRatings(IncrementalFreshdeskStream):
 
     def path(self, **kwargs) -> str:
         return "surveys/satisfaction_ratings"
+
+
+class Surveys(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "surveys"

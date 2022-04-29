@@ -9,7 +9,7 @@ from requests.auth import AuthBase, HTTPBasicAuth
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_freshdesk.streams import Agents, Companies, Contacts, Conversations, Groups, Roles, SatisfactionRatings, Skills, Tickets, TimeEntries
+from source_freshdesk.streams import Agents, BusinessHours, CannedResponseFolders, CannedResponses, Companies, Contacts, Conversations, DiscussionCategories, DiscussionComments, DiscussionForums, DiscussionTopics, EmailConfigs, EmailMailboxes, Groups, Products, Roles, SatisfactionRatings, ScenarioAutomations, Settings, Skills, SlaPolicies, SolutionArticles, SolutionCategories, SolutionFolders, Surveys, TicketFields, Tickets, TimeEntries
 
 
 class SourceFreshdesk(AbstractSource):
@@ -40,13 +40,31 @@ class SourceFreshdesk(AbstractSource):
         authenticator = self._create_authenticator(config["api_key"])
         return [
             Agents(authenticator=authenticator, config=config),
+            BusinessHours(authenticator=authenticator, config=config),
+            CannedResponseFolders(authenticator=authenticator, config=config),
+            CannedResponses(authenticator=authenticator, config=config),
             Companies(authenticator=authenticator, config=config),
             Contacts(authenticator=authenticator, config=config),
             Conversations(authenticator=authenticator, config=config),
+            DiscussionCategories(authenticator=authenticator, config=config),
+            DiscussionComments(authenticator=authenticator, config=config),
+            DiscussionForums(authenticator=authenticator, config=config),
+            DiscussionTopics(authenticator=authenticator, config=config),
+            EmailConfigs(authenticator=authenticator, config=config),
+            EmailMailboxes(authenticator=authenticator, config=config),
             Groups(authenticator=authenticator, config=config),
+            Products(authenticator=authenticator, config=config),
             Roles(authenticator=authenticator, config=config),
+            ScenarioAutomations(authenticator=authenticator, config=config),
+            Settings(authenticator=authenticator, config=config),
             Skills(authenticator=authenticator, config=config),
+            SlaPolicies(authenticator=authenticator, config=config),
+            SolutionArticles(authenticator=authenticator, config=config),
+            SolutionCategories(authenticator=authenticator, config=config),
+            SolutionFolders(authenticator=authenticator, config=config),
             TimeEntries(authenticator=authenticator, config=config),
+            TicketFields(authenticator=authenticator, config=config),
             Tickets(authenticator=authenticator, config=config),
-            SatisfactionRatings(authenticator=authenticator, config=config)
+            SatisfactionRatings(authenticator=authenticator, config=config),
+            Surveys(authenticator=authenticator, config=config)
         ]
