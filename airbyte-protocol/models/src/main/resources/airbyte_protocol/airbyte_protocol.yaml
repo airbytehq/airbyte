@@ -45,7 +45,7 @@ definitions:
         description: "schema message: the state. Must be the last message produced. The platform uses this information"
         "$ref": "#/definitions/AirbyteStateMessage"
       trace:
-        description: "trace message: a message to provide human readable information about a sync"
+        description: "trace message: a message to provide human readable information to users"
         "$ref": "#/definitions/AirbyteTraceMessage"
   AirbyteRecordMessage:
     type: object
