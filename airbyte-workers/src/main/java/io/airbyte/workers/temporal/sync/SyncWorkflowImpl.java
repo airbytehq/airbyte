@@ -17,6 +17,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
@@ -25,6 +26,8 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class SyncWorkflowImpl implements SyncWorkflow {
 
@@ -55,46 +58,18 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final StandardCheckConnectionInput destinationConfiguration =
         new StandardCheckConnectionInput().withConnectionConfiguration(syncInput.getDestinationConfiguration());
 
-    StandardCheckConnectionOutput sourceCheckOutput = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
-    StandardCheckConnectionOutput destinationCheckOutput = checkActivity.check(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+    final StandardCheckConnectionOutput sourceCheckResponse = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
+    if (sourceCheckResponse.getStatus() == Status.FAILED) {
+      final Exception ex = new IllegalArgumentException(sourceCheckResponse.toString());
+      final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobRunConfig.getJobId()), Math.toIntExact(jobRunConfig.getAttemptId()), FailureReason.FailureOrigin.SOURCE);
+      return new StandardSyncOutput().withFailures(List.of(checkFailureReason));
+    }
 
-    // if (sourceCheckOutput.getStatus() == Status.FAILED) {
-    // ThrowAndLogError("Source check failed");
-    // }
-    // else if (destinationCheckOutput.getStatus() == Status.FAILED) {
-    // ThrowAndLogError("Destination check failed");
-    // }
-
-    // boolean source_check_passed = true;
-    // boolean destination_check_passed = true;
-    // try {
-    //// System.out.println("----- SOURCE START");
-    // StandardCheckConnectionOutput sourceCheckOutput = checkActivity.check(jobRunConfig,
-    // sourceLauncherConfig, sourceConfiguration);
-    //// System.out.println("----- SOURCE RESPONSE");
-    //// System.out.println(sourceCheckOutput);
-    // } catch (ActivityFailure e) {
-    // source_check_passed = false;
-    // }
-    //
-    // try {
-    //// System.out.println("----- DESTINATION START");
-    // StandardCheckConnectionOutput destinationCheckOutput = checkActivity.check(jobRunConfig,
-    // destinationLauncherConfig, destinationConfiguration);
-    //// System.out.println("----- DESTINATION RESPONSE");
-    //// System.out.println(destinationCheckOutput);
-    // } catch (ActivityFailure e) {
-    // destination_check_passed = false;
-    // }
-
-    /*
-     * If there is an error with either of the connection CHECKs, return early with a FailureReason
-     */
-    if (sourceCheckOutput.getStatus() != Status.SUCCEEDED || destinationCheckOutput.getStatus() != Status.SUCCEEDED) {
-      StandardSyncOutput failureSyncOutput = new StandardSyncOutput();
-      List<FailureReason> failures = new ArrayList<FailureReason>();
-      failureSyncOutput.setFailures(failures);
-      return failureSyncOutput;
+    final StandardCheckConnectionOutput destinationCheckResponse = checkActivity.check(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+    if (destinationCheckResponse.getStatus() == Status.FAILED) {
+      final Exception ex = new IllegalArgumentException(destinationCheckResponse.toString());
+      final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobRunConfig.getJobId()), Math.toIntExact(jobRunConfig.getAttemptId()), FailureReason.FailureOrigin.DESTINATION);
+      return new StandardSyncOutput().withFailures(List.of(checkFailureReason));
     }
 
     StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
@@ -126,17 +101,13 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
           dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, syncInput.getResourceRequirements(), operatorDbtInput);
         } else {
-          ThrowAndLogError(String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType()));
+          final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
+          LOGGER.error(message);
+          throw new IllegalArgumentException(message);
         }
       }
     }
 
     return syncOutput;
   }
-
-  private void ThrowAndLogError(String message) {
-    LOGGER.error(message);
-    throw new IllegalArgumentException(message);
-  }
-
 }

@@ -9,6 +9,7 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.Metadata;
+import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.util.Comparator;
 import java.util.List;
@@ -84,6 +85,14 @@ public class FailureHelper {
     return genericFailure(m, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withExternalMessage(m.getError().getMessage());
+  }
+
+  public static FailureReason checkFailure(final Throwable t, final Long jobId, final Integer attemptNumber, FailureReason.FailureOrigin origin) {
+    return genericFailure(t, jobId, attemptNumber)
+        .withFailureOrigin(origin)
+        .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
+        .withRetryable(false)
+        .withExternalMessage(String.format("%s check failed", origin));
   }
 
   public static FailureReason replicationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
