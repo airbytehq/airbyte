@@ -138,9 +138,17 @@ cmd_bump_version() {
   esac
 
   bumped_version="$major_version.$minor_version.$patch_version"
-  # This image should not already exist, if it does, something weird happened
-  _error_if_tag_exists "$image_name:$bumped_version"
-  echo "$connector:$current_version will be bumped to $connector:$bumped_version"
+  if [[ "$bumped_version" != "$current_version" ]]; then
+    _error_if_tag_exists "$image_name:$bumped_version"
+    echo "$connector:$current_version will be bumped to $connector:$bumped_version"
+
+    # Set outputs back to Github Actions for later steps
+    echo ::set-output name=bumped_version::${bumped_version}
+    echo ::set-output name=bumped::true
+  else
+    echo "No version bump was necessary, this PR has probably already been bumped"
+    exit 0
+  fi
 
   ## Write new version to files
   # 1) Dockerfile
