@@ -38,7 +38,7 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
       </TreeRowWrapper>
       <RowsContainer>
         {props.syncSchemaFields.map((field) => (
-          <TreeRowWrapper depth={1} key={field.key}>
+          <TreeRowWrapper depth={1} key={pathDisplayName(field.path)}>
             <FieldRow
               path={field.path}
               name={pathDisplayName(field.path)}
