@@ -159,7 +159,8 @@ jobs:
       - name: Bump Connector Version
         id: bump-version
         if: success()
-        run: ./tools/integrations/manage.sh bump_version "airbyte-integrations/${{ github.event.inputs.connector }}" "${{ github.event.inputs.bump-version }}"
+        run: |
+          ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
       - name: Commit and Push Version Bump
         if: success() && steps.bump-version.outputs.bumped == 'true'
         run: |
@@ -186,7 +187,8 @@ jobs:
       ##     BUILD AND TEST     ##
       ############################
       - name: Build ${{ github.event.inputs.connector }}
-        run: ./tools/integrations/manage.sh build_experiment airbyte-integrations/${{ github.event.inputs.connector }}
+        run: |
+          ./tools/integrations/manage.sh build_experiment airbyte-integrations/${{ github.event.inputs.connector }}
         id: build
         env:
           BUILD_CANDIDATE_IMAGE: true
@@ -196,7 +198,8 @@ jobs:
           TZ: UTC
       - name: Test ${{ github.event.inputs.connector }}
         if: github.event.inputs.run-tests == 'true'
-        run: ./tools/integrations/manage.sh test airbyte-integrations/${{ github.event.inputs.connector }}
+        run: |
+          ./tools/integrations/manage.sh test airbyte-integrations/${{ github.event.inputs.connector }}
       #        - name: Finalize Sentry release
       #          if: startsWith(github.event.inputs.connector, 'connectors')
       #          run: |
