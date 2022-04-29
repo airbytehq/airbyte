@@ -44,6 +44,7 @@ public class AesCbcEnvelopeEncryptionBlobDecorator extends BlobDecorator {
   public static final int AES_KEY_SIZE_BITS = 256;
   private static final int AES_CBC_INITIALIZATION_VECTOR_SIZE_BYTES = 16;
   private static final Encoder BASE64_ENCODER = Base64.getEncoder();
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   public static final String KEY_ENCRYPTING_ALGO = "AES";
 
@@ -116,8 +117,7 @@ public class AesCbcEnvelopeEncryptionBlobDecorator extends BlobDecorator {
 
   private static byte[] randomInitializationVector() {
     final byte[] initializationVector = new byte[AES_CBC_INITIALIZATION_VECTOR_SIZE_BYTES];
-    final SecureRandom ivGenerator = new SecureRandom();
-    ivGenerator.nextBytes(initializationVector);
+    SECURE_RANDOM.nextBytes(initializationVector);
     return initializationVector;
   }
 }
