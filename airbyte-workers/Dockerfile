@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y \
                           gnupg-agent \
                           software-properties-common
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-RUN add-apt-repository \
-       "deb [arch=${DOCKER_BUILD_ARCH}] https://download.docker.com/linux/debian \
-       $(lsb_release -cs) \
-       stable"
+RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
+       add-apt-repository \
+       "deb [arch=${arch}] https://download.docker.com/linux/debian \
+       $(lsb_release -cs) stable"
 RUN apt-get update && apt-get install -y docker-ce-cli jq
 
 # Install kubectl for copying files to kube pods. Eventually should be replaced with a kube java client.
@@ -25,7 +25,7 @@ RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packa
 RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 RUN apt-get update && apt-get install -y kubectl
 
-ARG VERSION=0.36.5-alpha
+ARG VERSION=0.36.3-alpha
 
 ENV APPLICATION airbyte-workers
 ENV VERSION ${VERSION}
