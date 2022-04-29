@@ -4,27 +4,25 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE;
-import static io.airbyte.integrations.standardtest.destination.DateTimeUtils.DATE_TIME;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.standardtest.destination.DateTimeUtils;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
+import org.jooq.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
@@ -32,11 +30,17 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestinationAcceptanceTest.class);
+
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
   protected JsonNode config;
   private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
+
+  protected TestDestinationEnv testDestinationEnv;
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @Override
   protected String getImageName() {
@@ -60,6 +64,26 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new RedshiftTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
                                            final String streamName,
                                            final String namespace,
@@ -67,7 +91,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(j -> j.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
@@ -97,17 +121,27 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
+  private JsonNode getJsonFromRecord(Record record) {
+    ObjectNode node = mapper.createObjectNode();
+
+    Arrays.stream(record.fields()).forEach(field -> {
+      var value = record.get(field);
+
+      switch (field.getDataType().getTypeName()) {
+        case "varchar", "other":
+          var stringValue = (value != null ? value.toString() : null);
+          if (stringValue != null && (stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\[.*\\]$")
+              || stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\{.*\\}$"))) {
+            node.set(field.getName(), Jsons.deserialize(stringValue));
+          } else {
+            node.put(field.getName(), stringValue);
+          }
+          break;
+        default:
+          node.put(field.getName(), (value != null ? value.toString() : null));
+      }
+    });
+    return node;
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
@@ -115,8 +149,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .stream()
-            .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-            .map(Jsons::deserialize)
+            .map(this::getJsonFromRecord)
             .collect(Collectors.toList()));
   }
 
@@ -130,6 +163,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
     config = configForSchema;
+    this.testDestinationEnv = testEnv;
   }
 
   @Override
@@ -150,6 +184,10 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
         RedshiftInsertDestination.SSL_JDBC_PARAMETERS);
   }
 
+  public RedshiftSQLNameTransformer getNamingResolver() {
+    return namingResolver;
+  }
+
   @Override
   protected boolean implementsRecordSizeLimitChecks() {
     return true;
@@ -158,29 +196,6 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   @Override
   protected int getMaxRecordValueLimit() {
     return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
-  }
-
-  @Override
-  public boolean requiresDateTimeConversionForNormalizedSync() {
-    return true;
-  }
-
-  @Override
-  public void convertDateTime(ObjectNode data, Map<String, String> dateTimeFieldNames) {
-    if (dateTimeFieldNames.keySet().isEmpty()) {
-      return;
-    }
-    for (String path : dateTimeFieldNames.keySet()) {
-      if (isOneLevelPath(path) && !data.at(path).isMissingNode() && DateTimeUtils.isDateTimeValue(data.at(path).asText())) {
-        var key = path.replace("/", StringUtils.EMPTY);
-        switch (dateTimeFieldNames.get(path)) {
-          case DATE_TIME -> data.put(key.toLowerCase(),
-              DateTimeUtils.convertToRedshiftFormat(data.at(path).asText()));
-          case DATE -> data.put(key.toLowerCase(),
-              DateTimeUtils.convertToDateFormat(data.at(path).asText()));
-        }
-      }
-    }
   }
 
 }

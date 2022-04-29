@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.kinesis;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,6 +42,26 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
         kinesisContainer.getSecretKey());
     kinesisStream = new KinesisStream(new KinesisConfig(configJson));
     kinesisNameTransformer = new KinesisNameTransformer();
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   @Override

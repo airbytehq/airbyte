@@ -1,11 +1,11 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Link } from "components/Link";
 
-import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 
 const Container = styled.div`
   height: 30px;
@@ -20,7 +20,6 @@ const Container = styled.div`
 `;
 const CreditsLink = styled(Link)`
   color: ${({ theme }) => theme.blackColor};
-  margin-left: 8px;
 `;
 
 type CreditsProblemBannerProps = {
@@ -29,10 +28,10 @@ type CreditsProblemBannerProps = {
 
 const CreditsProblemBanner: React.FC<CreditsProblemBannerProps> = ({ status }) => (
   <Container>
-    <FormattedMessage id={`credits.creditsProblem.${status}`} />
-    <CreditsLink to={CloudRoutes.Credits}>
-      <FormattedMessage id="credits.creditsProblem.link" />
-    </CreditsLink>
+    <FormattedMessage
+      id={`credits.creditsProblem.${status}`}
+      values={{ lnk: (content: React.ReactNode) => <CreditsLink to={CloudRoutes.Credits}>{content}</CreditsLink> }}
+    />
   </Container>
 );
 

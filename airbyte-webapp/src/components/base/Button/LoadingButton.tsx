@@ -1,10 +1,10 @@
+import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled, { keyframes } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 
-import { IProps } from "./types";
 import Button from "./Button";
+import { ButtonProps } from "./types";
 
 export const SpinAnimation = keyframes`
   0% {
@@ -15,7 +15,7 @@ export const SpinAnimation = keyframes`
   }
 `;
 
-const SymbolSpinner = styled(FontAwesomeIcon)<IProps>`
+const SymbolSpinner = styled(FontAwesomeIcon)<ButtonProps>`
   display: inline-block;
   font-size: 18px;
   position: absolute;
@@ -25,7 +25,7 @@ const SymbolSpinner = styled(FontAwesomeIcon)<IProps>`
   margin: -1px 0 -3px -9px;
 `;
 
-const ButtonView = styled(Button)<IProps>`
+const ButtonView = styled(Button)<ButtonProps>`
   pointer-events: none;
   background: ${({ theme }) => theme.primaryColor25};
   border-color: transparent;
@@ -36,7 +36,7 @@ const Invisible = styled.div`
   color: rgba(255, 255, 255, 0);
 `;
 
-const LoadingButton: React.FC<IProps> = (props) => {
+const LoadingButton: React.FC<ButtonProps> = (props) => {
   if (props.isLoading) {
     return (
       <ButtonView {...props}>

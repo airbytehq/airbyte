@@ -13,8 +13,8 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -69,6 +69,26 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new MariaDbTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
                                            String streamName,
                                            String namespace,
@@ -96,16 +116,6 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
             config.get("port").asText(),
             config.get("database").asText()),
         MariadbColumnstoreDestination.DRIVER_CLASS);
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-
-    return result;
   }
 
   @Override

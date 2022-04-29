@@ -207,6 +207,8 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 1.1.1  | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068) | Fixed bug with GCS bucket conditional binding |
+| 1.1.0  | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption. |
 | 1.0.2 | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec |
 | 1.0.1 | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350) | Improve check performance |
 | 1.0.0 | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238) | Updated spec and documentation |
@@ -236,6 +238,8 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 0.3.1  | 2022-04-15 | [11978](https://github.com/airbytehq/airbyte/pull/11978) | Fixed emittedAt timestamp. |
+| 0.3.0  | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption. |
 | 0.2.15 | 2022-04-05 | [11166](https://github.com/airbytehq/airbyte/pull/11166) | Fixed handling of anyOf and allOf fields |
 | 0.2.14 | 2022-04-02 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec |
 | 0.2.13 | 2022-04-01 | [11636](https://github.com/airbytehq/airbyte/pull/11636) | Added new unit tests |

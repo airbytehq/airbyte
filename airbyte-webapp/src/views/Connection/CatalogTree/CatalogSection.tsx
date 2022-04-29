@@ -1,7 +1,7 @@
+import { FormikErrors, getIn } from "formik";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 import styled from "styled-components";
-import { FormikErrors, getIn } from "formik";
 
 import { DropDownRow } from "components";
 
@@ -15,14 +15,14 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
-import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { equal, naturalComparatorBy } from "utils/objects";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
+import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
-import { StreamHeader } from "./StreamHeader";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { StreamFieldTable } from "./StreamFieldTable";
+import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
 
 const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
@@ -178,6 +178,4 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 };
 
-const CatalogSection = memo(CatalogSectionInner);
-
-export { CatalogSection };
+export const CatalogSection = memo(CatalogSectionInner);

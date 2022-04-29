@@ -1,13 +1,13 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
 
 import { useServiceForm } from "../serviceFormContext";
+import { TestingConnectionError } from "./TestingConnectionError";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import { TestingConnectionError } from "./TestingConnectionError";
 
 const Controls = styled.div`
   margin-top: 34px;

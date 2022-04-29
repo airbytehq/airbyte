@@ -1,22 +1,24 @@
-import { QueryObserverSuccessResult, useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
 import { useConfig } from "config";
+import FrequencyConfig from "config/FrequencyConfig.json";
+import { SyncSchema } from "core/domain/catalog";
 import {
   Connection,
   ConnectionNamespaceDefinition,
+  ConnectionStatus,
   ScheduleProperties,
   WebBackendConnectionService,
 } from "core/domain/connection";
-import { SyncSchema } from "core/domain/catalog";
+import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { Operation } from "core/domain/connection/operation";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { equal } from "utils/objects";
 import { Destination, Source, SourceDefinition } from "core/domain/connector";
+import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { ConnectionService } from "core/domain/connection/ConnectionService";
+import { equal } from "utils/objects";
 
+import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -42,6 +44,7 @@ type CreateConnectionProps = {
   destination?: Destination;
   sourceDefinition?: SourceDefinition | { name: string; sourceDefinitionId: string };
   destinationDefinition?: { name: string; destinationDefinitionId: string };
+  sourceCatalogId: string;
 };
 
 type UpdateConnection = {
@@ -49,7 +52,7 @@ type UpdateConnection = {
   syncCatalog?: SyncSchema;
   namespaceDefinition: ConnectionNamespaceDefinition;
   namespaceFormat?: string;
-  status: string;
+  status: ConnectionStatus;
   prefix: string;
   schedule?: ScheduleProperties | null;
   operations?: Operation[];
@@ -127,30 +130,26 @@ export const useResetConnection = () => {
 const useGetConnection = (connectionId: string, options?: { refetchInterval: number }): Connection => {
   const service = useWebConnectionService();
 
-  return (
-    useQuery(
-      connectionsKeys.detail(connectionId),
-      () => service.getConnection(connectionId),
-      options
-    ) as QueryObserverSuccessResult<Connection>
-  ).data;
+  return useSuspenseQuery(connectionsKeys.detail(connectionId), () => service.getConnection(connectionId), options);
 };
 
 const useCreateConnection = () => {
   const service = useWebConnectionService();
   const queryClient = useQueryClient();
-
   const analyticsService = useAnalyticsService();
 
   return useMutation(
     async (conn: CreateConnectionProps) => {
-      const { values, source, destination, sourceDefinition, destinationDefinition } = conn;
+      const { values, source, destination, sourceDefinition, destinationDefinition, sourceCatalogId } = conn;
       const response = await service.create({
         sourceId: source?.sourceId,
         destinationId: destination?.destinationId,
         ...values,
         status: "active",
+        sourceCatalogId: sourceCatalogId,
       });
+
+      const enabledStreams = values.syncCatalog.streams.filter((stream) => stream.config.selected).length;
 
       const frequencyData = FrequencyConfig.find((item) => equal(item.config, values.schedule));
 
@@ -161,6 +160,8 @@ const useCreateConnection = () => {
         connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
         connector_destination_definition_id: destinationDefinition?.destinationDefinitionId,
+        available_streams: values.syncCatalog.streams.length,
+        enabled_streams: enabledStreams,
       });
 
       return response;
@@ -217,11 +218,7 @@ const useConnectionList = (): ListConnection => {
   const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
 
-  return (
-    useQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId)) as QueryObserverSuccessResult<{
-      connections: Connection[];
-    }>
-  ).data;
+  return useSuspenseQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
 export { useConnectionList, useGetConnection, useUpdateConnection, useCreateConnection, useDeleteConnection };

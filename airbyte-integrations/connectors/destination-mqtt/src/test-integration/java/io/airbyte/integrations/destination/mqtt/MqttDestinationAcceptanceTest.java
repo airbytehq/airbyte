@@ -13,6 +13,8 @@ import com.google.common.net.InetAddresses;
 import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -75,6 +77,26 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("connect_timeout", 10)
         .put("automatic_reconnect", true)
         .build());
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   @Override

@@ -1,9 +1,9 @@
-import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRocket } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
+import styled from "styled-components";
 
 import { Link } from "components";
 import Version from "components/Version";
@@ -17,8 +17,8 @@ import DestinationIcon from "./components/DestinationIcon";
 import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
 import SettingsIcon from "./components/SettingsIcon";
+import SidebarPopout from "./components/SidebarPopout";
 import SourceIcon from "./components/SourceIcon";
-import ResourcesPopup from "./components/ResourcesPopup";
 import { NotificationIndicator } from "./NotificationIndicator";
 
 const Bar = styled.nav`
@@ -146,7 +146,7 @@ const SideBar: React.FC = () => {
           </MenuLinkItem>
         </li>
         <li>
-          <ResourcesPopup options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
+          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
             {({ onOpen }) => (
               <MenuItem onClick={onOpen} as="div">
                 <DocsIcon />
@@ -155,7 +155,7 @@ const SideBar: React.FC = () => {
                 </Text>
               </MenuItem>
             )}
-          </ResourcesPopup>
+          </SidebarPopout>
         </li>
 
         <li>

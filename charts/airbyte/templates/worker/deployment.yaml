@@ -112,16 +112,27 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        {{- if $.Values.jobs.kube.annotations }}
         - name: JOB_KUBE_ANNOTATIONS
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: JOB_KUBE_ANNOTATIONS
+        {{- end }}
+        {{- if $.Values.jobs.kube.nodeSelector }}
         - name: JOB_KUBE_NODE_SELECTORS
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: JOB_KUBE_NODE_SELECTORS
+        {{- end }}
+        {{- if $.Values.jobs.kube.tolerations }}
+        - name: JOB_KUBE_TOLERATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: JOB_KUBE_TOLERATIONS
+        {{- end }}
         - name: SUBMITTER_NUM_THREADS
           valueFrom:
             configMapKeyRef:
