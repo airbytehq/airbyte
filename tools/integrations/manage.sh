@@ -111,7 +111,15 @@ cmd_bump_version() {
   rm "$master_dockerfile"
 
   ## Create bumped version
-  IFS=. read -r major_version minor_version patch_version <<<"${current_version##*-}"
+#  IFS=. read -r major_version minor_version patch_version <<<"${current_version##*-}"
+  major_version=$(echo "$current_version" | cut -d. -f1)
+  minor_version=$(echo "$current_version" | cut -d. -f2)
+  patch_version=$(echo "$current_version" | cut -d. -f3)
+
+  echo "major_version: $major_version"
+  echo "minor_version: $minor_version"
+  echo "patch_version: $patch_version"
+
   case "$bump_version" in
     "major")
       ((major_version++))
