@@ -348,7 +348,7 @@
 - name: IBM Db2
   sourceDefinitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
   dockerRepository: airbyte/source-db2
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/db2
   icon: db2.svg
   sourceType: database
@@ -625,7 +625,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.11
+  dockerImageTag: 0.4.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
