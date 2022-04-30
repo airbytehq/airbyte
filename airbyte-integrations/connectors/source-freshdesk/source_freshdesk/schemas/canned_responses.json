@@ -18,31 +18,34 @@
         "type": ["null", "string"]
       },
       "attachments": {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-                "type": ["null", "integer"]
-            },
-            "name": {
-                "type": ["null", "string"]
-            },
-			"content_type": {
-                "type": ["null", "string"]
-            },
-			"size": {
-                "type": ["null", "integer"]
-            },
-			"attachment_url": {
-                "type": ["null", "string"]
-            },
-			"thumb_url": {
-                "type": ["null", "string"]
-            },
-            "created_at": {
-                "type": "string"
-            },
-            "updated_at": {
-                "type": "string"
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                  "type": ["null", "integer"]
+              },
+              "name": {
+                  "type": ["null", "string"]
+              },
+              "content_type": {
+                  "type": ["null", "string"]
+              },
+              "size": {
+                  "type": ["null", "integer"]
+              },
+              "attachment_url": {
+                  "type": ["null", "string"]
+              },
+              "thumb_url": {
+                  "type": ["null", "string"]
+              },
+              "created_at": {
+                  "type": "string"
+              },
+              "updated_at": {
+                  "type": "string"
+              }
             }
           }
       },

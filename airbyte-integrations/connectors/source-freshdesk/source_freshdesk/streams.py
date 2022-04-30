@@ -257,6 +257,8 @@ class ScenarioAutomations(FreshdeskStream):
 
 class Settings(FreshdeskStream):
 
+    primary_key = "primary_language"
+
     def path(self, **kwargs) -> str:
         return "settings/helpdesk"
     

@@ -18,7 +18,7 @@
         "type": ["null", "integer"]
       },
       "default_reply_email": {
-        "type": ["null", "string"]
+        "type": ["null", "boolean"]
       },
       "mailbox_type": {
         "type": ["null", "string"]

@@ -48,7 +48,7 @@
         "type": ["null", "string"]
       },
       "choices": {
-        "type": ["null", "array"]
+        "type": ["null", "array", "object"]
       },
       "is_fsm": {
         "type": ["null", "boolean"]

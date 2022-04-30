@@ -24,7 +24,7 @@
         "type": ["null", "integer"]
       },
       "replied_by": {
-        "type": "string"
+        "type": ["null", "integer"]
       },
       "stamp_type": {
         "type": ["null", "integer"]
