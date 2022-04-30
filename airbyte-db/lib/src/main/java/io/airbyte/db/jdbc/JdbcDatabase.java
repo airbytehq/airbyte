@@ -126,8 +126,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
       throws SQLException;
 
   /**
-   * String query is a common use case for {@link JdbcDatabase#unsafeResultSetQuery}.
-   * So this method is created as syntactic sugar.
+   * String query is a common use case for {@link JdbcDatabase#unsafeResultSetQuery}. So this method
+   * is created as syntactic sugar.
    */
   public List<String> queryStrings(final CheckedFunction<Connection, ResultSet, SQLException> query,
                                    final CheckedFunction<ResultSet, String, SQLException> recordTransform)
@@ -159,8 +159,9 @@ public abstract class JdbcDatabase extends SqlDatabase {
       throws SQLException;
 
   /**
-   * Json query is a common use case for {@link JdbcDatabase#unsafeQuery(CheckedFunction, CheckedFunction)}.
-   * So this method is created as syntactic sugar.
+   * Json query is a common use case for
+   * {@link JdbcDatabase#unsafeQuery(CheckedFunction, CheckedFunction)}. So this method is created as
+   * syntactic sugar.
    */
   public List<JsonNode> queryJsons(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                                    final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
@@ -203,8 +204,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   /**
-   * Json query is a common use case for {@link JdbcDatabase#unsafeQuery(String, String...)}.
-   * So this method is created as syntactic sugar.
+   * Json query is a common use case for {@link JdbcDatabase#unsafeQuery(String, String...)}. So this
+   * method is created as syntactic sugar.
    */
   public List<JsonNode> queryJsons(final String sql, final String... params) throws SQLException {
     try (final Stream<JsonNode> stream = unsafeQuery(sql, params)) {
