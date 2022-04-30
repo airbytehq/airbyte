@@ -1305,7 +1305,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.11"
+- dockerImage: "airbyte/source-cockroachdb:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -3578,7 +3578,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.9"
+- dockerImage: "airbyte/source-db2:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -4669,7 +4669,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.21"
+- dockerImage: "airbyte/source-mssql:0.3.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -4687,6 +4687,7 @@
           description: "The hostname of the database."
           title: "Host"
           type: "string"
+          order: 0
         port:
           description: "The port of the database."
           title: "Port"
@@ -4695,21 +4696,32 @@
           maximum: 65536
           examples:
           - "1433"
+          order: 1
         database:
           description: "The name of the database."
           title: "Database"
           type: "string"
           examples:
           - "master"
+          order: 2
         username:
           description: "The username which is used to access the database."
           title: "Username"
           type: "string"
+          order: 3
         password:
           description: "The password associated with the username."
           title: "Password"
           type: "string"
           airbyte_secret: true
+          order: 4
+        jdbc_url_params:
+          title: "JDBC URL Params"
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          type: "string"
+          order: 5
         ssl_method:
           title: "SSL Method"
           type: "object"
@@ -4774,6 +4786,7 @@
           enum:
           - "STANDARD"
           - "CDC"
+          order: 8
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -5368,7 +5381,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.9"
+- dockerImage: "airbyte/source-mysql:0.5.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -5757,7 +5770,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.14"
+- dockerImage: "airbyte/source-oracle:0.3.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/oracle"
     connectionSpecification:
@@ -6478,7 +6491,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.11"
+- dockerImage: "airbyte/source-postgres:0.4.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -6914,7 +6927,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.9"
+- dockerImage: "airbyte/source-redshift:0.3.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -7972,7 +7985,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.11"
+- dockerImage: "airbyte/source-snowflake:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -8493,7 +8506,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tidb:0.1.0"
+- dockerImage: "airbyte/source-tidb:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tidb"
     connectionSpecification:
