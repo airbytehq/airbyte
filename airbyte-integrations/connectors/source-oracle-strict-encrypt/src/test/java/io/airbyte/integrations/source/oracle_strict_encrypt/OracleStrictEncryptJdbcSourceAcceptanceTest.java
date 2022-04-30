@@ -49,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
-@SuppressWarnings("OUT_OF_RANGE_ARRAY_INDEX")
 class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleStrictEncryptJdbcSourceAcceptanceTest.class);
