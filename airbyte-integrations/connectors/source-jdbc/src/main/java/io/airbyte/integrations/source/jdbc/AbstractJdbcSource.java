@@ -295,12 +295,16 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
         streamingQueryConfigProvider,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()),
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
+  }
+
+  protected String getJdbcParameterDelimiter() {
+    return "&";
   }
 
 }
