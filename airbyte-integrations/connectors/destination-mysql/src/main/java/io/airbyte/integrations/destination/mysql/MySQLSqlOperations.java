@@ -99,7 +99,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   }
 
   private double getVersion(final JdbcDatabase database) throws SQLException {
-    final List<String> versions = database.queryStringsByResultSet(
+    final List<String> versions = database.queryStrings(
         connection -> connection.createStatement().executeQuery("select version()"),
         resultSet -> resultSet.getString("version()"));
     return Double.parseDouble(versions.get(0).substring(0, 3));
@@ -116,7 +116,7 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   }
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
-    final List<String> localFiles = database.queryStringsByResultSet(
+    final List<String> localFiles = database.queryStrings(
         connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
         resultSet -> resultSet.getString("Value"));
     return localFiles.get(0).equalsIgnoreCase("on");

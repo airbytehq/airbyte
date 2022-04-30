@@ -94,7 +94,7 @@ public class TestStreamingJdbcDatabase {
     // invoked.
     final AtomicReference<Connection> connection1 = new AtomicReference<>();
     final AtomicReference<PreparedStatement> ps1 = new AtomicReference<>();
-    final List<JsonNode> actual = streamingJdbcDatabase.queryJsonsByStatement(connection -> {
+    final List<JsonNode> actual = streamingJdbcDatabase.queryJsons(connection -> {
       connection1.set(connection);
       final PreparedStatement ps = connection.prepareStatement("SELECT * FROM id_and_name;");
       ps1.set(ps);
@@ -127,7 +127,7 @@ public class TestStreamingJdbcDatabase {
     final AtomicReference<Connection> connection1 = new AtomicReference<>();
     final AtomicReference<PreparedStatement> ps1 = new AtomicReference<>();
     final Set<Integer> fetchSizes = new HashSet<>();
-    final List<JsonNode> actual = streamingJdbcDatabase.queryJsonsByStatement(
+    final List<JsonNode> actual = streamingJdbcDatabase.queryJsons(
         connection -> {
           connection1.set(connection);
           final PreparedStatement ps = connection.prepareStatement("SELECT * FROM id_and_name;");

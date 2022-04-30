@@ -125,8 +125,12 @@ public abstract class JdbcDatabase extends SqlDatabase {
                                                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
-  public List<String> queryStringsByResultSet(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                              final CheckedFunction<ResultSet, String, SQLException> recordTransform)
+  /**
+   * String query is a common use case for {@link JdbcDatabase#unsafeResultSetQuery}.
+   * So this method is created as syntactic sugar.
+   */
+  public List<String> queryStrings(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                   final CheckedFunction<ResultSet, String, SQLException> recordTransform)
       throws SQLException {
     try (final Stream<String> stream = unsafeResultSetQuery(query, recordTransform)) {
       return stream.toList();
@@ -154,8 +158,12 @@ public abstract class JdbcDatabase extends SqlDatabase {
                                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
-  public List<JsonNode> queryJsonsByStatement(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                              final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
+  /**
+   * Json query is a common use case for {@link JdbcDatabase#unsafeQuery(CheckedFunction, CheckedFunction)}.
+   * So this method is created as syntactic sugar.
+   */
+  public List<JsonNode> queryJsons(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                   final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
       throws SQLException {
     try (final Stream<JsonNode> stream = unsafeQuery(statementCreator, recordTransform)) {
       return stream.toList();
@@ -194,6 +202,10 @@ public abstract class JdbcDatabase extends SqlDatabase {
     }, sourceOperations::rowToJson);
   }
 
+  /**
+   * Json query is a common use case for {@link JdbcDatabase#unsafeQuery(String, String...)}.
+   * So this method is created as syntactic sugar.
+   */
   public List<JsonNode> queryJsons(final String sql, final String... params) throws SQLException {
     try (final Stream<JsonNode> stream = unsafeQuery(sql, params)) {
       return stream.toList();

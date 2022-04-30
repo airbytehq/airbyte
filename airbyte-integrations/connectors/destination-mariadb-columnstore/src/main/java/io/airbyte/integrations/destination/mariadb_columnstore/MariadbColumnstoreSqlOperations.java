@@ -99,7 +99,7 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   }
 
   private Semver getVersion(final JdbcDatabase database) throws SQLException {
-    final List<String> versions = database.queryStringsByResultSet(
+    final List<String> versions = database.queryStrings(
         connection -> connection.createStatement().executeQuery("SELECT version()"),
         resultSet -> resultSet.getString("version()"));
 
@@ -120,7 +120,7 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   }
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
-    final List<String> localFiles = database.queryStringsByResultSet(
+    final List<String> localFiles = database.queryStrings(
         connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
         resultSet -> resultSet.getString("Value"));
     return localFiles.get(0).equalsIgnoreCase("on");

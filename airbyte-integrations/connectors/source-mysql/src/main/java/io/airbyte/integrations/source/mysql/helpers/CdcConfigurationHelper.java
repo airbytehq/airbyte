@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,11 +72,14 @@ public class CdcConfigurationHelper {
   }
 
   private static boolean isBinlogAvailable(final String binlog, final JdbcDatabase database) {
-    try {
-      final List<String> binlogs = database.queryStringsByResultSet(
-          connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
-          resultSet -> resultSet.getString("Log_name"));
-      return !binlog.isEmpty() && binlogs.stream().anyMatch(e -> e.equals(binlog));
+    if (binlog.isEmpty()) {
+      return false;
+    }
+
+    try (final Stream<String> binlogs = database.unsafeResultSetQuery(
+        connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
+        resultSet -> resultSet.getString("Log_name"))) {
+      return binlogs.anyMatch(e -> e.equals(binlog));
     } catch (final SQLException e) {
       LOGGER.error("Can not get binlog list. Error: ", e);
       throw new RuntimeException(e);
@@ -94,7 +98,7 @@ public class CdcConfigurationHelper {
 
   private static CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(final String name, final String value) {
     return database -> {
-      final List<String> result = database.queryStringsByResultSet(
+      final List<String> result = database.queryStrings(
           connection -> connection.createStatement().executeQuery(String.format("show variables where Variable_name = '%s'", name)),
           resultSet -> resultSet.getString("Value"));
 
