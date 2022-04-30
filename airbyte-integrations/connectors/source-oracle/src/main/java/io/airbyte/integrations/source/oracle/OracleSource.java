@@ -93,7 +93,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
       }
     }
     if (!additionalParameters.isEmpty()) {
-      final String connectionParams = String.join(";", additionalParameters);
+      final String connectionParams = String.join(getJdbcParameterDelimiter(), additionalParameters);
       configBuilder.put("connection_properties", connectionParams);
     }
 
@@ -169,6 +169,11 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of();
+  }
+
+  @Override
+  protected String getJdbcParameterDelimiter() {
+    return ";";
   }
 
   public static void main(final String[] args) throws Exception {
