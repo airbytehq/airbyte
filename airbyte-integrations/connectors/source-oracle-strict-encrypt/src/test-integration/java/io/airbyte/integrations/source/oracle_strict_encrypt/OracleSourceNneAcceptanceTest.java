@@ -42,9 +42,9 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
             "oracle.net.encryption_types_client=( "
             + algorithm + " )"));
 
-    final String network_service_banner =
+    final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).toList();
+    final List<JsonNode> collect = database.queryJsonNodes(networkServiceBanner);
 
     assertTrue(collect.get(2).get("NETWORK_SERVICE_BANNER").asText()
         .contains(algorithm + " Encryption"));
@@ -71,8 +71,8 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
             "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
 
-    final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
-    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).toList();
+    final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
+    final List<JsonNode> collect = database.queryJsonNodes(networkServiceBanner);
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }
