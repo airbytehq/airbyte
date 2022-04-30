@@ -3,8 +3,8 @@ import { useAsync } from "react-use";
 
 import { LoadingPage } from "components";
 
-import { Config, ValueProvider } from "./types";
 import { applyProviders } from "./configProviders";
+import { Config, ValueProvider } from "./types";
 
 export type ConfigContext<T extends Config = Config> = {
   config: T;

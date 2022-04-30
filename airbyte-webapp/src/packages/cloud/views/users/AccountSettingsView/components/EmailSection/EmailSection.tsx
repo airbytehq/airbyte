@@ -1,20 +1,20 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Field, FieldProps, Form, Formik } from "formik";
 import styled from "styled-components";
 
 import { Button } from "components";
 import { LabeledInput } from "components/LabeledInput";
 
-import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
-import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
-import NotificationsForm from "pages/SettingsPage/pages/NotificationPage/components/NotificationsForm";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
+import NotificationsForm from "pages/SettingsPage/pages/NotificationPage/components/NotificationsForm";
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import { FormValues } from "./typings";
 import { useEmail } from "./hooks";
+import { FormValues } from "./typings";
 
 const ChangeEmailFooter = styled.div`
   display: flex;

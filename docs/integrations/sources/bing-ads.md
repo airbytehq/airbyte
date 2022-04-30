@@ -23,7 +23,7 @@ It can also sync the following reports:
 * [KeywordPerformanceReport](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 
 ### Report Aggregation
-All reports synced by this connector can be aggregated using hourly, daily, weekly, or monthly windows. Performance data is aggregated using the selected window. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report listing the impressions recorded on that day, and so on.    
+All reports synced by this connector can be aggregated using hourly, daily, weekly, or monthly windows. Performance data is aggregated using the selected window. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.   
 
 A report's aggregation window is indicated in its name e.g: `account_performance_report_hourly` is the Account Performance Reported aggregated using an hourly window. 
 
