@@ -16,15 +16,14 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcceptanceTest {
 
   @Test
-  public void testEncrytion() throws SQLException {
-    final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+  public void testEncryption() throws SQLException {
+    final ObjectNode clone = (ObjectNode) Jsons.clone(getConfig());
+    clone.set("encryption", Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "3DES168")
         .build()));
@@ -45,7 +44,7 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
 
     final String network_service_banner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).toList();
 
     assertTrue(collect.get(2).get("NETWORK_SERVICE_BANNER").asText()
         .contains(algorithm + " Encryption"));
@@ -53,8 +52,8 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
 
   @Test
   public void testCheckProtocol() throws SQLException {
-    final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+    final ObjectNode clone = (ObjectNode) Jsons.clone(getConfig());
+    clone.set("encryption", Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "AES256")
         .build()));
@@ -70,11 +69,10 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
             clone.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( "
-            + algorithm + " )"));
+            "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
 
     final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
-    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).toList();
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }

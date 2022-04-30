@@ -38,18 +38,18 @@ class OracleStressTest extends JdbcStressTest {
 
   @BeforeAll
   static void init() {
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
-    ORACLE_DB.start();
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
     TABLE_NAME = "ID_AND_NAME";
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_ID_TYPE = "NUMBER(38,0)";
     INSERT_STATEMENT = "INTO id_and_name (id, name) VALUES (%s,'picard-%s')";
 
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    ORACLE_DB.start();
+  }
+
+  @BeforeEach
+  public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", ORACLE_DB.getHost())
         .put("port", ORACLE_DB.getFirstMappedPort())
@@ -57,7 +57,6 @@ class OracleStressTest extends JdbcStressTest {
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
         .build());
-
     super.setup();
   }
 

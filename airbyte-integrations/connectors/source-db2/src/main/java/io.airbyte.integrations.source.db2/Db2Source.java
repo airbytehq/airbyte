@@ -16,6 +16,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -143,7 +144,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   private static void convertAndImportCertificate(final String certificate, final String keyStorePassword)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
-    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
+    try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);

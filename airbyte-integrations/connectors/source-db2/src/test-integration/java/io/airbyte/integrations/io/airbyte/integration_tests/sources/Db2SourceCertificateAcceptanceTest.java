@@ -25,6 +25,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import org.testcontainers.containers.Db2Container;
@@ -175,7 +176,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
   private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
-    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
+    try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
