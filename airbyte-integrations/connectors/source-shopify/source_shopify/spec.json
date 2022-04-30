@@ -15,6 +15,7 @@
       },
       "credentials": {
         "title": "Shopify Authorization Method",
+        "description": "The authorization method to use to retrieve data from Shopify",
         "type": "object",
         "order": 2,
         "oneOf": [
@@ -74,7 +75,7 @@
       },
       "start_date": {
         "type": "string",
-        "title": "Start Date",
+        "title": "Replication Start Date",
         "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
         "examples": ["2021-01-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
