@@ -19,6 +19,7 @@ from .spec import (
 )
 from .streams import (
     DEFAULT_START_DATE,
+    DEFAULT_END_DATE,
     AdGroupAudienceReports,
     AdGroups,
     AdGroupsReports,
@@ -92,6 +93,7 @@ class SourceTiktokMarketing(AbstractSource):
         return {
             "authenticator": TiktokTokenAuthenticator(access_token),
             "start_date": config.get("start_date") or DEFAULT_START_DATE,
+            "end_date": config.get("end_date") or DEFAULT_END_DATE,
             "advertiser_id": advertiser_id,
             "app_id": app_id,
             "secret": secret,

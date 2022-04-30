@@ -1,0 +1,140 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.27.1
+    method: GET
+    uri: https://business-api.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=eb84ec191e411910dd399658868285769d63bb74&secret=27325d9aeba472ee3488ca19fba858d0b9256528&app_id=7059398826003529729
+  response:
+    body:
+      string: '<a href="https://ads.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=eb84ec191e411910dd399658868285769d63bb74&amp;secret=27325d9aeba472ee3488ca19fba858d0b9256528&amp;app_id=7059398826003529729">Temporary
+        Redirect</a>.
+
+
+        '
+    headers:
+      Cache-Control:
+      - max-age=0, no-cache, no-store
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '232'
+      Content-Type:
+      - text/html; charset=utf-8
+      Date:
+      - Sat, 30 Apr 2022 13:41:16 GMT
+      Expires:
+      - Sat, 30 Apr 2022 13:41:16 GMT
+      Location:
+      - https://ads.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=eb84ec191e411910dd399658868285769d63bb74&secret=27325d9aeba472ee3488ca19fba858d0b9256528&app_id=7059398826003529729
+      Pragma:
+      - no-cache
+      Server:
+      - nginx
+      Server-Timing:
+      - cdn-cache; desc=MISS, edge; dur=84, origin; dur=10
+      - inner; dur=2
+      X-Akamai-Request-ID:
+      - 6c168ba1.3225038f
+      X-Cache:
+      - TCP_MISS from a88-221-221-133.deploy.akamaitechnologies.com (AkamaiGHost/10.7.5-41022941)
+        (-)
+      X-Cache-Remote:
+      - TCP_MISS from a172-232-7-15.deploy.akamaitechnologies.com (AkamaiGHost/10.7.5-41022941)
+        (-)
+      X-Origin-Response-Time:
+      - 10,172.232.7.15
+      X-Parent-Response-Time:
+      - 94,88.221.221.133
+      x-tt-logid:
+      - 202204301341160101131350911272485E
+      x-tt-trace-host:
+      - 0187fa220474ed9f3ce919185a4a99d3a80f27baa2153625a326437072514ab1e1ea27c3af023794a41bdb590603bf0ecef0aeb1b499ac24edb430501660a9a5f4fe2361247cd1065faf1e0e95223f5845cf8c378f5f9bc6a480d2486fef9df47edc8a7040d2204554f97fec059f253a7f
+      x-tt-trace-tag:
+      - id=16;cdn-cache=miss;type=dyn
+    status:
+      code: 307
+      message: Temporary Redirect
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.27.1
+    method: GET
+    uri: https://ads.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=eb84ec191e411910dd399658868285769d63bb74&secret=27325d9aeba472ee3488ca19fba858d0b9256528&app_id=7059398826003529729
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//rJZdb+I4FIb/isXFalaaVsff9txRoKVDaStot9LurFaGGIiApGMnsyNV
+        /e97EqYZLvD2ZiQIsZ34Oef49Wteessy871PBD6S3t7H6NZNq3c36WFH8F9rH6t/8qzpY8AYCA6U
+        C0oVUGBCMkHxBgacciOgeSdzlcOnX3q7PFZ489dLz2XffKjy6MNhJmUkcMlBaGq5NsB4Qz96qnD7
+        Noqxi8+OnJFxf9pc3X5Rh7UPZP7swtbF6En/Cge0MsCt6b1+JKdgSkiKEAmGSobR89Owz265JU/l
+        bhW3eYGzXgRXZB38c38wIU93N5fzyfUt6dcxfKkBVstY1cWarA6NQIbB1RhX8z6iQGCdUmEZaZsv
+        ALVYT6vs6bAud25ZFnkT0GiG17f21X4xxqbglhnJk8lbbrQQCuutpTRMJ5Jv4s9UM/90OOuSnl4/
+        PIxuhqPHh/lgjPTZ4+3w8vF2gkOoAC0ZZQmupfgRRkmluOJWygR3/rV2wZNRkX/vqMd9P7LUAIYl
+        WZgi6tLiL2ZKUYqnWdO724dRR/mzrCoyH5HfyKA8J5NGR/iykMImOYIZBtZqygCBMsUZliGvytiR
+        7v1zzAclGfq6isvNrpFVm9eXupEjEZJrzY36Hyy3oI1SRivMTp/GzsrlNlYuvM89exeJUgGrqBKU
+        MW20kaeRLWHqvpNfwVQcrQW4BpSOACkSzNVB/6lZDMrBSsqU1VYbY+jpWQaX913MzX272SOZH/Zx
+        uxtW/6IKiw32+108JHGkFcok0zoVhRUCXU0BaEbRHlNR9BeLRoW40frXeP3RfKsXCIMGSZMMQxlK
+        0TAULXDBEvW6Kdd55ZebhvI4wGvX8cZRmpqEf2jgxgImCtqCNdYw9Z5/DF0koxAr39W3PxuS+1Cu
+        g9vvszz4bZWXBZkeSl0sN61bYj0lJOqJUWC2SkqqAf2EoWEmdrjbVR47cJmKyhcVGdeLn2b2NjjO
+        0eOz3BexIv78j3Mc48AU5ihTfCOZEkJzQD7gfkx4dfQLvMu6BZ1j+3njwt4d6aeVj8Q9hU6SBirQ
+        Slsm0UM1GmkCeDLhD1co5ur3X5K4pcyq5qRi6OToCQnv+bn8T0fHxxP+d8gORoD0WV1kq7rYkkm7
+        8mrXLjseX2juCcs98I3F00RrptGQ2Hv82cVFx++IFz7s8uKs3eS+WOCfCBzVzdwcj+e/X1//AwAA
+        //8DAAZBQqwHCQAA
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '924'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 30 Apr 2022 13:41:16 GMT
+      Server:
+      - nginx
+      Server-Timing:
+      - cdn-cache; desc=MISS, edge; dur=173, origin; dur=204
+      - inner; dur=202
+      Vary:
+      - Accept-Encoding
+      X-Domain-Change-Info:
+      - We have moved to a new domain for API services after the Platform Upgrade
+        on 09/30/2021. Please update all of your requests with the new domain if you
+        haven't done so already. For more information, please visit https://ads.tiktok.com/marketing_api/docs?rid=esb88xalm6m&id=1709207085043713
+      X-Origin-Response-Time:
+      - 204,23.44.4.15
+      X-Parent-Response-Time:
+      - 372,88.221.221.133
+      X-TT-LOGID:
+      - 202204301341160102452410100C313840
+      - 202204301341160102452410100C313840
+      X_TT_LOGID:
+      - 202204301341160102452410100C313840
+      stablecode:
+      - '0'
+      upstream-caught:
+      - None
+      x-tt-trace-host:
+      - 0187fa220474ed9f3ce919185a4a99d3a80f27baa2153625a326437072514ab1e1843afc31012de609bffa64a8a8247d7427ab22037339612b2c7d5b2c73861bbb62cec17bafa555777465bd3758eea26daacab5ba904e00a94f47bddb6c63c2ef37b36f4b8bdb136e69e32956a8584f8b
+      x-tt-trace-tag:
+      - id=16;cdn-cache=miss;type=dyn
+    status:
+      code: 200
+      message: OK
+version: 1
