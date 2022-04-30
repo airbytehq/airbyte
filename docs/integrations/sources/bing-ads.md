@@ -65,11 +65,12 @@ API limits number of requests for all Microsoft Advertising clients. You can fin
 ## Changelog
 
 | Version | Date | Pull Request                                             | Subject |
-| :--- | :--- |:---------------------------------------------------------| :--- |
-| 0.1.5 | 2022-01-01 | [11652](https://github.com/airbytehq/airbyte/pull/11652) | Rebump attempt after DockerHub failure at registring the 0.1.4 |
-| 0.1.4 | 2022-03-22 | [11311](https://github.com/airbytehq/airbyte/pull/11311) | Added optional Redirect URI & Tenant ID to spec |
-| 0.1.3 | 2022-01-14 | [9510](https://github.com/airbytehq/airbyte/pull/9510)   | Fixed broken dependency that blocked connector's operations |
-| 0.1.2 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions |
-| 0.1.1 | 2021-08-31 | [5750](https://github.com/airbytehq/airbyte/pull/5750)   | Added reporting streams\) |
-| 0.1.0 | 2021-07-22 | [4911](https://github.com/airbytehq/airbyte/pull/4911)   | Initial release supported core streams \(Accounts, Campaigns, Ads, AdGroups\) |
+|:--------| :--- |:---------------------------------------------------------| :--- |
+| 0.1.6   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
+| 0.1.5   | 2022-01-01 | [11652](https://github.com/airbytehq/airbyte/pull/11652) | Rebump attempt after DockerHub failure at registring the 0.1.4 |
+| 0.1.4   | 2022-03-22 | [11311](https://github.com/airbytehq/airbyte/pull/11311) | Added optional Redirect URI & Tenant ID to spec |
+| 0.1.3   | 2022-01-14 | [9510](https://github.com/airbytehq/airbyte/pull/9510)   | Fixed broken dependency that blocked connector's operations |
+| 0.1.2   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions |
+| 0.1.1   | 2021-08-31 | [5750](https://github.com/airbytehq/airbyte/pull/5750)   | Added reporting streams\) |
+| 0.1.0   | 2021-07-22 | [4911](https://github.com/airbytehq/airbyte/pull/4911)   | Initial release supported core streams \(Accounts, Campaigns, Ads, AdGroups\) |
 

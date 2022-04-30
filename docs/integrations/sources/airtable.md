@@ -34,5 +34,6 @@ See information about rate limits [here](https://support.airtable.com/hc/en-us/a
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| `0.1.1` | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+|:--------| :--------  | :-----       | :------ |
+| 0.1.2   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
+| 0.1.1   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
