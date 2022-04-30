@@ -4669,7 +4669,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.3.21"
+- dockerImage: "airbyte/source-mssql:0.3.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -4687,6 +4687,7 @@
           description: "The hostname of the database."
           title: "Host"
           type: "string"
+          order: 0
         port:
           description: "The port of the database."
           title: "Port"
@@ -4695,21 +4696,32 @@
           maximum: 65536
           examples:
           - "1433"
+          order: 1
         database:
           description: "The name of the database."
           title: "Database"
           type: "string"
           examples:
           - "master"
+          order: 2
         username:
           description: "The username which is used to access the database."
           title: "Username"
           type: "string"
+          order: 3
         password:
           description: "The password associated with the username."
           title: "Password"
           type: "string"
           airbyte_secret: true
+          order: 4
+        jdbc_url_params:
+          title: "JDBC URL Params"
+          description: "Additional properties to pass to the JDBC URL string when\
+            \ connecting to the database formatted as 'key=value' pairs separated\
+            \ by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."
+          type: "string"
+          order: 5
         ssl_method:
           title: "SSL Method"
           type: "object"
@@ -4774,6 +4786,7 @@
           enum:
           - "STANDARD"
           - "CDC"
+          order: 8
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
