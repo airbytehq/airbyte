@@ -87,7 +87,7 @@ class IncrementalEnquireLabsStream(EnquireLabsStream, ABC):
         state_dt = self._convert_date_to_timestamp(current_stream_state.get(self.cursor_field, base_date))
         latest_record = self._convert_date_to_timestamp(latest_record.get(self.cursor_field, base_date))
 
-        return {self.cursor_field: max(latest_record, state_dt)}
+        return {self.cursor_field: max(latest_record, state_dt).strftime("%Y-%m-%dT%H:%M:%S+00:00")}
 
 
 class QuestionStream(IncrementalEnquireLabsStream):
@@ -179,9 +179,11 @@ class SourceEnquireLabs(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        url = "https://app.enquirelabs.com/api/questions"
+        response = requests.get(url=url, headers={"Authorization": config["secret_key"]})
 
         try:
-            QuestionStream(secret_key=config["secret_key"])
+            response.raise_for_status()
             connection = True, None
         except Exception as e:
             connection = False, e

@@ -16,7 +16,7 @@
       "type": "string"
     },
     "rating_average": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "rating_count": {
       "type": "number"

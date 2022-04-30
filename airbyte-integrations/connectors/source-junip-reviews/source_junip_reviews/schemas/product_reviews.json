@@ -6,11 +6,16 @@
       "type": "integer"
     },
     "body": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "created_at": {
       "type": "string",
-      "examples": ["2021-06-18T18:25:07.033Z"]
+      "examples": [
+        "2021-06-18T18:25:07.033Z"
+      ]
     },
     "customer_id": {
       "type": "integer"
@@ -28,26 +33,37 @@
       "type": "integer"
     },
     "response": {
-      "type": ["null", "object"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "target_title": {
       "type": "string"
     },
     "title": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "up_vote_count": {
       "type": "integer"
     },
     "updated_at": {
       "type": "string",
-      "examples": ["2021-06-18T18:25:07.033Z"]
+      "examples": [
+        "2021-06-18T18:25:07.033Z"
+      ]
     },
     "verified_buyer": {
       "type": "boolean"
     },
     "would_recommend": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "photo_urls": {
       "type": "array"

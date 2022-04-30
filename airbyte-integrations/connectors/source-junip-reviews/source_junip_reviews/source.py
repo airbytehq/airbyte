@@ -24,9 +24,9 @@ class SourceJunipReviews(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         junip_store_key = config["junip_store_key"]
-
+        response = requests.get("https://api.juniphq.com/v1/products", headers={"junip_store_key": junip_store_key})
         try:
-            Products(junip_store_key=junip_store_key)
+            response.raise_for_status()
             connection = True, None
         except Exception as e:
             connection = False, e

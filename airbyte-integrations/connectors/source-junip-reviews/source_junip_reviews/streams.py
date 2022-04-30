@@ -99,10 +99,15 @@ class IncrementalJunipReviewsStream(JunipReviewsStream, ABC):
                 datetime.datetime.min.time()
             ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         )
-        state_dt = self._convert_date_to_timestamp(current_stream_state.get(self.cursor_field, base_date))
-        latest_record = self._convert_date_to_timestamp(latest_record.get(self.cursor_field, base_date))
+        state_dt = current_stream_state.get(self.cursor_field, base_date)
+        if isinstance(state_dt, str):
+            state_dt = self._convert_date_to_timestamp(state_dt)
 
-        return {self.cursor_field: max(latest_record, state_dt)}
+        latest_record = latest_record.get(self.cursor_field, base_date)
+        if isinstance(latest_record, str):
+            latest_record = self._convert_date_to_timestamp(latest_record)
+
+        return {self.cursor_field: max(latest_record, state_dt).strftime("%Y-%m-%dT%H:%M:%S.%fZ")}
 
 
 class Products(IncrementalJunipReviewsStream):

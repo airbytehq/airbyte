@@ -10,17 +10,17 @@
       "examples": ["2021-06-18T18:24:48.702Z"]
     },
     "deleted_at": {
-      "type": "string",
+      "type": ["string", "null"],
       "examples": ["2021-06-18T18:24:48.702Z"]
     },
     "rating_average": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "rating_count": {
       "type": "integer"
     },
     "rating_distribution": {
-      "type": "array"
+      "type": "object"
     },
     "recommended_count": {
       "type": "integer"
