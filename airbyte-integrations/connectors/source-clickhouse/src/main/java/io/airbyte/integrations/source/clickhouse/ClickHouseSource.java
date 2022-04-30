@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,14 +48,14 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
         .collect(Collectors.toMap(
             tableInfo -> sourceOperations.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
-              try (final Stream<String> stream = database.unsafeResultSetQuery(connection -> {
-                final String sql = "SELECT name FROM system.columns WHERE database = ? AND table = ? AND is_in_primary_key = 1";
-                final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                preparedStatement.setString(1, tableInfo.getNameSpace());
-                preparedStatement.setString(2, tableInfo.getName());
-                return preparedStatement.executeQuery();
-              }, resultSet -> resultSet.getString("name"))) {
-                return stream.toList();
+              try {
+                return database.queryStringsByResultSet(connection -> {
+                  final String sql = "SELECT name FROM system.columns WHERE database = ? AND table = ? AND is_in_primary_key = 1";
+                  final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                  preparedStatement.setString(1, tableInfo.getNameSpace());
+                  preparedStatement.setString(2, tableInfo.getName());
+                  return preparedStatement.executeQuery();
+                }, resultSet -> resultSet.getString("name"));
               } catch (final SQLException e) {
                 throw new RuntimeException(e);
               }

@@ -182,7 +182,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.queryJsonNodes(networkServiceBanner);
+    final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
         .contains("Oracle Advanced Security: encryption"));

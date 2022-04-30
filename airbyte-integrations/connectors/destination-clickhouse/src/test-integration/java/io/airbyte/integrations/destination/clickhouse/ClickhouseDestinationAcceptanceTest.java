@@ -102,7 +102,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
     final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    return jdbcDB.queryJsonNodes(query);
+    return jdbcDB.queryJsons(query);
   }
 
   @Override

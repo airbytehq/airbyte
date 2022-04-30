@@ -44,9 +44,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
 
   @Override
   public void execute(final String sql) throws SQLException {
-    execute(connection -> {
-      connection.createStatement().execute(sql);
-    });
+    execute(connection -> connection.createStatement().execute(sql));
   }
 
   public void executeWithinTransaction(final List<String> queries) throws SQLException {
@@ -127,6 +125,14 @@ public abstract class JdbcDatabase extends SqlDatabase {
                                                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
+  public List<String> queryStringsByResultSet(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                              final CheckedFunction<ResultSet, String, SQLException> recordTransform)
+      throws SQLException {
+    try (final Stream<String> stream = unsafeResultSetQuery(query, recordTransform)) {
+      return stream.toList();
+    }
+  }
+
   /**
    * Use a connection to create a {@link PreparedStatement} and map it into a stream. You CANNOT
    * assume that data will be returned from this method before the entire {@link ResultSet} is
@@ -148,8 +154,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
                                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
-  public List<JsonNode> queryJsonNodes(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                                       final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
+  public List<JsonNode> queryJsonsByStatement(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                              final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
       throws SQLException {
     try (final Stream<JsonNode> stream = unsafeQuery(statementCreator, recordTransform)) {
       return stream.toList();
@@ -157,7 +163,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   public int queryInt(final String sql, final String... params) throws SQLException {
-    try (final Stream<Integer> q = unsafeQuery(c -> {
+    try (final Stream<Integer> stream = unsafeQuery(c -> {
       PreparedStatement statement = c.prepareStatement(sql);
       int i = 1;
       for (String param : params) {
@@ -165,9 +171,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
         ++i;
       }
       return statement;
-    },
-        rs -> rs.getInt(1))) {
-      return q.findFirst().get();
+    }, rs -> rs.getInt(1))) {
+      return stream.findFirst().get();
     }
   }
 
@@ -189,7 +194,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
     }, sourceOperations::rowToJson);
   }
 
-  public List<JsonNode> queryJsonNodes(final String sql, final String... params) throws SQLException {
+  public List<JsonNode> queryJsons(final String sql, final String... params) throws SQLException {
     try (final Stream<JsonNode> stream = unsafeQuery(sql, params)) {
       return stream.toList();
     }

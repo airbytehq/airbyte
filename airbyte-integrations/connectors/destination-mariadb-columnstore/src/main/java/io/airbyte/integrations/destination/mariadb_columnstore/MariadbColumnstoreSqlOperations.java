@@ -17,7 +17,6 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
 
@@ -100,17 +99,15 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   }
 
   private Semver getVersion(final JdbcDatabase database) throws SQLException {
-    try (final Stream<String> stream = database.unsafeResultSetQuery(
+    final List<String> versions = database.queryStringsByResultSet(
         connection -> connection.createStatement().executeQuery("SELECT version()"),
-        resultSet -> resultSet.getString("version()"))) {
-      final List<String> value = stream.toList();
-      final Matcher matcher = VERSION_PATTERN.matcher(value.get(0));
+        resultSet -> resultSet.getString("version()"));
 
-      if (matcher.find()) {
-        return new Semver(matcher.group(1));
-      } else {
-        throw new RuntimeException(String.format("Unexpected version string: %s\nExpected version format is X.X.X-MariaDB", value.get(0)));
-      }
+    final Matcher matcher = VERSION_PATTERN.matcher(versions.get(0));
+    if (matcher.find()) {
+      return new Semver(matcher.group(1));
+    } else {
+      throw new RuntimeException(String.format("Unexpected version string: %s\nExpected version format is X.X.X-MariaDB", versions.get(0)));
     }
   }
 
@@ -123,11 +120,10 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   }
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
-    try (final Stream<String> stream = database.unsafeResultSetQuery(
+    final List<String> localFiles = database.queryStringsByResultSet(
         connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
-        resultSet -> resultSet.getString("Value"))) {
-      return stream.toList().get(0).equalsIgnoreCase("on");
-    }
+        resultSet -> resultSet.getString("Value"));
+    return localFiles.get(0).equalsIgnoreCase("on");
   }
 
   private void tryEnableLocalFile(final JdbcDatabase database) throws SQLException {

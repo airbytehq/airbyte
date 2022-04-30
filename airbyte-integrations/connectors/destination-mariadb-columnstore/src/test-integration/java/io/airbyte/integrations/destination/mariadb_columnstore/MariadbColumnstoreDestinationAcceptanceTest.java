@@ -97,7 +97,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase database = getDatabase(getConfig());
     final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    return database.queryJsonNodes(query);
+    return database.queryJsons(query);
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {

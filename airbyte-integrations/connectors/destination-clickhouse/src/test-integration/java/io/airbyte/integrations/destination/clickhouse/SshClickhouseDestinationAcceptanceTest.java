@@ -104,7 +104,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
         mangledConfig -> {
           final JdbcDatabase database = getDatabase(mangledConfig);
           final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-          return database.queryJsonNodes(query);
+          return database.queryJsons(query);
         });
   }
 

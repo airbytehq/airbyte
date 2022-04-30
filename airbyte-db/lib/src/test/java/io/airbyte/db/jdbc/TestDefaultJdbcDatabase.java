@@ -88,7 +88,7 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testQuery() throws SQLException {
-    final List<JsonNode> actual = database.queryJsonNodes(
+    final List<JsonNode> actual = database.queryJsonsByStatement(
         connection -> connection.prepareStatement("SELECT * FROM id_and_name;"),
         sourceOperations::rowToJson);
     assertEquals(RECORDS_AS_JSON, actual);

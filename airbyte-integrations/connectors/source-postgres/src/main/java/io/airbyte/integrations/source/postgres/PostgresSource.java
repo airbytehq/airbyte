@@ -158,7 +158,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (isCdc(config)) {
       checkOperations.add(database -> {
-        final List<JsonNode> matchingSlots = database.queryJsonNodes(connection -> {
+        final List<JsonNode> matchingSlots = database.queryJsonsByStatement(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
           final PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("replication_method").get("replication_slot").asText());
@@ -180,7 +180,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       });
 
       checkOperations.add(database -> {
-        final List<JsonNode> matchingPublications = database.queryJsonNodes(connection -> {
+        final List<JsonNode> matchingPublications = database.queryJsonsByStatement(connection -> {
           final PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
           ps.setString(1, config.get("replication_method").get("publication").asText());
           LOGGER.info("Attempting to find the publication using the query: " + ps);
@@ -318,7 +318,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       return ps;
     };
 
-    return new HashSet<>(database.queryJsonNodes(statementCreator, sourceOperations::rowToJson))
+    return new HashSet<>(database.queryJsonsByStatement(statementCreator, sourceOperations::rowToJson))
         .stream()
         .map(e -> JdbcPrivilegeDto.builder()
             .schemaName(e.get("table_schema").asText())

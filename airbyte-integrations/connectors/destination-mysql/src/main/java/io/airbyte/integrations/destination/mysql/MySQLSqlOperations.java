@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class MySQLSqlOperations extends JdbcSqlOperations {
 
@@ -100,11 +99,10 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   }
 
   private double getVersion(final JdbcDatabase database) throws SQLException {
-    try (final Stream<String> stream = database.unsafeResultSetQuery(
+    final List<String> versions = database.queryStringsByResultSet(
         connection -> connection.createStatement().executeQuery("select version()"),
-        resultSet -> resultSet.getString("version()"))) {
-      return Double.parseDouble(stream.toList().get(0).substring(0, 3));
-    }
+        resultSet -> resultSet.getString("version()"));
+    return Double.parseDouble(versions.get(0).substring(0, 3));
   }
 
   VersionCompatibility isCompatibleVersion(final JdbcDatabase database) throws SQLException {
@@ -118,11 +116,10 @@ public class MySQLSqlOperations extends JdbcSqlOperations {
   }
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
-    try (final Stream<String> stream = database.unsafeResultSetQuery(
+    final List<String> localFiles = database.queryStringsByResultSet(
         connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
-        resultSet -> resultSet.getString("Value"))) {
-      return stream.toList().get(0).equalsIgnoreCase("on");
-    }
+        resultSet -> resultSet.getString("Value"));
+    return localFiles.get(0).equalsIgnoreCase("on");
   }
 
   @Override

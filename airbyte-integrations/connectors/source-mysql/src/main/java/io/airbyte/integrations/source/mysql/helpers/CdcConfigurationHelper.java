@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,10 +71,10 @@ public class CdcConfigurationHelper {
   }
 
   private static boolean isBinlogAvailable(final String binlog, final JdbcDatabase database) {
-    try (final Stream<String> stream = database.unsafeResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
-        resultSet -> resultSet.getString("Log_name"))) {
-      final List<String> binlogs = stream.toList();
+    try {
+      final List<String> binlogs = database.queryStringsByResultSet(
+          connection -> connection.createStatement().executeQuery("SHOW BINARY LOGS"),
+          resultSet -> resultSet.getString("Log_name"));
       return !binlog.isEmpty() && binlogs.stream().anyMatch(e -> e.equals(binlog));
     } catch (final SQLException e) {
       LOGGER.error("Can not get binlog list. Error: ", e);
@@ -95,21 +94,17 @@ public class CdcConfigurationHelper {
 
   private static CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(final String name, final String value) {
     return database -> {
-      try (final Stream<String> stream = database.unsafeResultSetQuery(connection -> {
-        final String sql = String.format("show variables where Variable_name = '%s'", name);
+      final List<String> result = database.queryStringsByResultSet(
+          connection -> connection.createStatement().executeQuery(String.format("show variables where Variable_name = '%s'", name)),
+          resultSet -> resultSet.getString("Value"));
 
-        return connection.createStatement().executeQuery(sql);
-      }, resultSet -> resultSet.getString("Value"))) {
-        final List<String> result = stream.toList();
+      if (result.size() != 1) {
+        throw new RuntimeException("Could not query the variable " + name);
+      }
 
-        if (result.size() != 1) {
-          throw new RuntimeException("Could not query the variable " + name);
-        }
-
-        final String resultValue = result.get(0);
-        if (!resultValue.equalsIgnoreCase(value)) {
-          throw new RuntimeException(String.format("The variable \"%s\" should be set to \"%s\", but it is \"%s\"", name, value, resultValue));
-        }
+      final String resultValue = result.get(0);
+      if (!resultValue.equalsIgnoreCase(value)) {
+        throw new RuntimeException(String.format("The variable \"%s\" should be set to \"%s\", but it is \"%s\"", name, value, resultValue));
       }
     };
   }
