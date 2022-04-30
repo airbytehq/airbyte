@@ -148,6 +148,14 @@ public abstract class JdbcDatabase extends SqlDatabase {
                                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
+  public List<JsonNode> queryJsonNodes(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                       final CheckedFunction<ResultSet, JsonNode, SQLException> recordTransform)
+      throws SQLException {
+    try (final Stream<JsonNode> stream = unsafeQuery(statementCreator, recordTransform)) {
+      return stream.toList();
+    }
+  }
+
   public int queryInt(final String sql, final String... params) throws SQLException {
     try (final Stream<Integer> q = unsafeQuery(c -> {
       PreparedStatement statement = c.prepareStatement(sql);
@@ -179,6 +187,12 @@ public abstract class JdbcDatabase extends SqlDatabase {
       }
       return statement;
     }, sourceOperations::rowToJson);
+  }
+
+  public List<JsonNode> queryJsonNodes(final String sql, final String... params) throws SQLException {
+    try (final Stream<JsonNode> stream = unsafeQuery(sql, params)) {
+      return stream.toList();
+    }
   }
 
   public ResultSetMetaData queryMetadata(final String sql, final String... params) throws SQLException {
