@@ -50,7 +50,7 @@ class SourceTiktokMarketingSpec(BaseModel):
         title = "TikTok Marketing Source Spec"
 
     credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
-        title="Authentication Method", order=0, default={}, type="object"
+        title="Authentication Method", description="Authentication method", order=0, default={}, type="object"
     )
 
     start_date: str = Field(
