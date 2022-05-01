@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.OracleJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -38,18 +38,18 @@ class OracleStressTest extends JdbcStressTest {
 
   @BeforeAll
   static void init() {
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
-    ORACLE_DB.start();
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
     TABLE_NAME = "ID_AND_NAME";
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_ID_TYPE = "NUMBER(38,0)";
     INSERT_STATEMENT = "INTO id_and_name (id, name) VALUES (%s,'picard-%s')";
 
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    ORACLE_DB.start();
+  }
+
+  @BeforeEach
+  public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", ORACLE_DB.getHost())
         .put("port", ORACLE_DB.getFirstMappedPort())
@@ -57,7 +57,6 @@ class OracleStressTest extends JdbcStressTest {
         .put("username", ORACLE_DB.getUsername())
         .put("password", ORACLE_DB.getPassword())
         .build());
-
     super.setup();
   }
 
@@ -93,7 +92,7 @@ class OracleStressTest extends JdbcStressTest {
     static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
     public OracleTestSource() {
-      super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+      super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override
