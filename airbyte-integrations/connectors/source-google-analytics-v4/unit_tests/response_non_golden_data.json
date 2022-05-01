@@ -23,7 +23,6 @@
             ]
           }
         ],
-        "isDataGolden": false,
         "totals": [
           {
             "values": ["158"]
