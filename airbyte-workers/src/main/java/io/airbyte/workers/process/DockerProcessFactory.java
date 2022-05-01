@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,6 +115,9 @@ public class DockerProcessFactory implements ProcessFactory {
           rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
           "--log-driver",
           "none");
+      final String containerName = createContainerName(imageName, jobId, attempt);
+      cmd.add("--name");
+      cmd.add(containerName);
 
       if (networkName != null) {
         cmd.add("--network");
@@ -161,6 +165,28 @@ public class DockerProcessFactory implements ProcessFactory {
     } catch (final IOException e) {
       throw new WorkerException(e.getMessage(), e);
     }
+  }
+
+  private static String createContainerName(final String fullImagePath, final String jobId, final int attempt) {
+    final var versionDelimiter = ":";
+    final var noVersion = fullImagePath.split(versionDelimiter)[0];
+
+    final var dockerDelimiter = "/";
+    final var nameParts = noVersion.split(dockerDelimiter);
+    var imageName = nameParts[nameParts.length - 1];
+
+    final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final String suffix = "sync" + "-" + jobId + "-" + attempt + "-" + randSuffix;
+
+    var podName = imageName + "-" + suffix;
+    final var podNameLenLimit = 128;
+    if (podName.length() > podNameLenLimit) {
+      final var extra = podName.length() - podNameLenLimit;
+      imageName = imageName.substring(extra);
+      podName = imageName + "-" + suffix;
+    }
+
+    return podName;
   }
 
   private Path rebasePath(final Path jobRoot) {
