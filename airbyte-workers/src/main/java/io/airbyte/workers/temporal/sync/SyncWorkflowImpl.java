@@ -32,7 +32,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkflowImpl.class);
   private static final String VERSION_LABEL = "sync-workflow";
-  private static final int CURRENT_VERSION = 1;
+  private static final int VERSION_INTRODUCING_CHECK_BEFORE_SYNC = 2;
+  private static final int CURRENT_VERSION = 2;
 
   private final CheckConnectionActivity checkActivity =
       Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
@@ -52,33 +53,35 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
+    final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput()
         .withConnectionConfiguration(syncInput.getSourceConfiguration());
     final StandardCheckConnectionInput destinationConfiguration =
         new StandardCheckConnectionInput().withConnectionConfiguration(syncInput.getDestinationConfiguration());
 
-    System.out.println("--- START SOURCE CHECK");
-    final StandardCheckConnectionOutput sourceCheckResponse = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
-    if (sourceCheckResponse.getStatus() == Status.FAILED) {
-      System.out.println("--- SOURCE CHECK FAILED");
-      System.out.println(sourceCheckResponse);
-      return CheckFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobRunConfig, sourceCheckResponse);
-    }
-    System.out.println("--- SOURCE CHECK OK");
 
-    System.out.println("--- START DESTINATION CHECK");
-    final StandardCheckConnectionOutput destinationCheckResponse =
-        checkActivity.check(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
-    if (destinationCheckResponse.getStatus() == Status.FAILED) {
-      System.out.println("--- DESTINATION CHECK FAILED");
-      System.out.println(destinationCheckResponse);
-      return CheckFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobRunConfig, destinationCheckResponse);
+    if (version >= VERSION_INTRODUCING_CHECK_BEFORE_SYNC) {
+      System.out.println("--- START SOURCE CHECK");
+      final StandardCheckConnectionOutput sourceCheckResponse = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
+      if (sourceCheckResponse.getStatus() == Status.FAILED) {
+        System.out.println("--- SOURCE CHECK FAILED");
+        System.out.println(sourceCheckResponse);
+        return CheckFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobRunConfig, sourceCheckResponse);
+      }
+      System.out.println("--- SOURCE CHECK OK");
+
+      System.out.println("--- START DESTINATION CHECK");
+      final StandardCheckConnectionOutput destinationCheckResponse =
+          checkActivity.check(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+      if (destinationCheckResponse.getStatus() == Status.FAILED) {
+        System.out.println("--- DESTINATION CHECK FAILED");
+        System.out.println(destinationCheckResponse);
+        return CheckFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobRunConfig, destinationCheckResponse);
+      }
+      System.out.println("--- DESTINATION CHECK OK");
     }
-    System.out.println("--- DESTINATION CHECK OK");
 
     StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
-
-    final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
 
     if (version > Workflow.DEFAULT_VERSION) {
       // the state is persisted immediately after the replication succeeded, because the
