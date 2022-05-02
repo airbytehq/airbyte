@@ -3,6 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
+from datetime import timedelta
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
@@ -96,9 +97,10 @@ class IncrementalTwilioStream(TwilioStream, ABC):
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
 
-    def __init__(self, start_date: str = None, **kwargs):
+    def __init__(self, start_date: str = None, lookback: int = None, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = start_date
+        self._start_date = start_date  
+        self._lookback = lookback
 
     @property
     @abstractmethod
@@ -112,7 +114,7 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        latest_benchmark = pendulum.parse(latest_record[self.cursor_field], strict=False).strftime(self.time_filter_template)
+        latest_benchmark = pendulum.parse(latest_record[self.cursor_field], strict=False).strftime(self.time_filter_template)#-timedelta(hours=self._lookback))
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}

@@ -1,6 +1,7 @@
 version: "3.7"
 #https://github.com/compose-spec/compose-spec/blob/master/spec.md#using-extensions-as-fragments
-x-logging: &default-logging
+x-logging:
+  &default-logging
   options:
     max-size: "100m"
     max-file: "5"
@@ -48,6 +49,8 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
     volumes:
       - db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
   scheduler:
     image: airbyte/scheduler:${VERSION}
     logging: *default-logging
