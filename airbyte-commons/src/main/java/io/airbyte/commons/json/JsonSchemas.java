@@ -26,18 +26,20 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
 // todo (cgardens) - we need the ability to identify jsonschemas that Airbyte considers invalid for
 // a connector (e.g. "not" keyword).
+@Slf4j
 public class JsonSchemas {
 
+  private static final String JSON_SCHEMA_ENUM_KEY = "enum";
   private static final String JSON_SCHEMA_TYPE_KEY = "type";
   private static final String JSON_SCHEMA_PROPERTIES_KEY = "properties";
   private static final String JSON_SCHEMA_ITEMS_KEY = "items";
 
   // all JSONSchema types.
   private static final String ARRAY_TYPE = "array";
-  private static final String ENUM_TYPE = "enum";
   private static final String OBJECT_TYPE = "object";
   private static final String STRING_TYPE = "string";
   private static final String NUMBER_TYPE = "number";
@@ -162,6 +164,7 @@ public class JsonSchemas {
         case ARRAY_TYPE -> {
           final String newPath = JsonPaths.appendAppendListSplat(path);
           // hit every node.
+          // log.error("array: " + jsonSchemaNode);
           traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
         }
         case OBJECT_TYPE -> {
@@ -170,15 +173,17 @@ public class JsonSchemas {
             for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {
               final Entry<String, JsonNode> child = it.next();
               final String newPath = JsonPaths.appendField(path, child.getKey());
+              // log.error("obj1: " + jsonSchemaNode);
               traverseJsonSchemaInternal(child.getValue(), newPath, consumer);
             }
           } else if (comboKeyWordOptional.isPresent()) {
             for (final JsonNode arrayItem : jsonSchemaNode.get(comboKeyWordOptional.get())) {
+              // log.error("obj2: " + jsonSchemaNode);
               traverseJsonSchemaInternal(arrayItem, path, consumer);
             }
           } else {
             throw new IllegalArgumentException(
-                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf");
+                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf in " + jsonSchemaNode);
           }
         }
       }
@@ -221,8 +226,8 @@ public class JsonSchemas {
         return List.of(jsonNode.get(JSON_SCHEMA_TYPE_KEY).asText());
       }
     }
-    if (jsonNode.has(ENUM_TYPE)) {
-      return List.of(ENUM_TYPE);
+    if (jsonNode.has(JSON_SCHEMA_ENUM_KEY)) {
+      return List.of(STRING_TYPE);
     }
     return Collections.emptyList();
   }

@@ -157,17 +157,26 @@ public class SecretMigrator {
       if (secretValue.get().isTextual()) {
         final JsonNode stringSecretValue = secretValue.get();
 
-        final SecretCoordinate coordinate = new SecretCoordinate("airbyte_workspace_" + workspaceId + "_secret_" + uuidProvider.get(), 1);
+        final SecretCoordinate coordinate =
+            new SecretCoordinate(SecretsHelpers.getCoordinatorBase("airbyte_workspace_", workspaceId, uuidProvider), 1);
         secretPersistence.get().write(coordinate, stringSecretValue.textValue());
-        connectorConfigurationJson.set(JsonPaths.replaceAtJsonNode(connectorConfigurationJson.get(), secretPath,
+        connectorConfigurationJson.set(replaceAtJsonNode(connectorConfigurationJson.get(), secretPath,
             Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinate.getFullCoordinate()))));
       } else {
-        log.error("Not migrating already migrating secrets");
+        log.error("Not migrating already migrated secrets");
       }
 
     });
 
     return connectorConfigurationJson.get();
+  }
+
+  /**
+   * Wrapper to help to mock static methods
+   */
+  @VisibleForTesting
+  JsonNode replaceAtJsonNode(final JsonNode connectorConfigurationJson, final String secretPath, final JsonNode replacement) {
+    return JsonPaths.replaceAtJsonNode(connectorConfigurationJson, secretPath, replacement);
   }
 
   /**
