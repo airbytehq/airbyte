@@ -269,6 +269,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                         placeholder={formatMessage({
                           id: `form.prefix.placeholder`,
                         })}
+                        data-testid="prefixInput"
                       />
                     </RightFieldCol>
                   </FlexRow>

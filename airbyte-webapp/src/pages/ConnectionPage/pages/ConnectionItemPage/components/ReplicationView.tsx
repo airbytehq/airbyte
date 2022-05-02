@@ -21,7 +21,7 @@ import {
 import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
 
-interface Props {
+interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
 }
@@ -48,7 +48,7 @@ const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const ReplicationView: React.FC<Props> = ({ onAfterSaveSchema, connectionId }) => {
+export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -166,5 +166,3 @@ const ReplicationView: React.FC<Props> = ({ onAfterSaveSchema, connectionId }) =
     </Content>
   );
 };
-
-export default ReplicationView;
