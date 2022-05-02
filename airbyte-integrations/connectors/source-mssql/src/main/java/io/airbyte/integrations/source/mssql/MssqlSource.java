@@ -17,6 +17,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -63,20 +64,20 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   MssqlSource() {
-    super(DRIVER_CLASS, new MssqlJdbcStreamingQueryConfiguration(), new MssqlSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(JdbcDatabase database,
-                                                               List<String> columnNames,
-                                                               String schemaName,
-                                                               String tableName) {
+  public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
 
-    List<String> newIdentifiersList = getWrappedColumn(database,
+    final List<String> newIdentifiersList = getWrappedColumn(database,
         columnNames,
         schemaName, tableName, "\"");
-    String preparedSqlQuery = String
+    final String preparedSqlQuery = String
         .format("SELECT %s FROM %s", String.join(",", newIdentifiersList),
             getFullTableName(schemaName, tableName));
 
@@ -85,13 +86,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(JdbcDatabase database,
-                                                               List<String> columnNames,
-                                                               String schemaName,
-                                                               String tableName,
-                                                               String cursorField,
-                                                               JDBCType cursorFieldType,
-                                                               String cursor) {
+  public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
+                                                               final List<String> columnNames,
+                                                               final String schemaName,
+                                                               final String tableName,
+                                                               final String cursorField,
+                                                               final JDBCType cursorFieldType,
+                                                               final String cursor) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -101,7 +102,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
               final String identifierQuoteString = connection.getMetaData()
                   .getIdentifierQuoteString();
-              List<String> newColumnNames = getWrappedColumn(database,
+              final List<String> newColumnNames = getWrappedColumn(database,
                   columnNames, schemaName, tableName, identifierQuoteString);
 
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
@@ -133,14 +134,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
    *
    * @return the list with Column names updated to handle functions (if nay) properly
    */
-  private List<String> getWrappedColumn(JdbcDatabase database,
-                                        List<String> columnNames,
-                                        String schemaName,
-                                        String tableName,
-                                        String enquoteSymbol) {
-    List<String> hierarchyIdColumns = new ArrayList<>();
+  private List<String> getWrappedColumn(final JdbcDatabase database,
+                                        final List<String> columnNames,
+                                        final String schemaName,
+                                        final String tableName,
+                                        final String enquoteSymbol) {
+    final List<String> hierarchyIdColumns = new ArrayList<>();
     try {
-      SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
+      final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
           .queryMetadata(String
               .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
                   enquoteIdentifierList(columnNames),
@@ -155,7 +156,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         }
       }
 
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
     }
 

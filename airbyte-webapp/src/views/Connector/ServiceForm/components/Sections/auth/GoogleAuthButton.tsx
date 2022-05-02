@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 
-import { IProps } from "components/base/Button/types";
+import { ButtonProps } from "components/base/Button/types";
 
-const StyledButton = styled.button<IProps>`
+const StyledButton = styled.button<ButtonProps>`
   align-items: center;
   background: #4285f4;
   border: 0 solid #4285f4;

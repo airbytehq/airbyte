@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.1"
+- dockerImage: "airbyte/destination-bigquery:1.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -294,6 +294,7 @@
       type: "object"
       required:
       - "project_id"
+      - "dataset_location"
       - "dataset_id"
       additionalProperties: true
       properties:
@@ -317,20 +318,13 @@
             \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
             >here</a>."
           title: "Project ID"
-        dataset_id:
-          type: "string"
-          description: "The default BigQuery Dataset ID that tables are replicated\
-            \ to if the source does not specify a namespace. Read more <a href=\"\
-            https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
-          title: "Default Dataset ID"
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
             \ will not be applied. The default \"US\" value is used if not set explicitly.\
             \ Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\"\
             >here</a>."
-          title: "Dataset Location (Optional)"
-          default: "US"
+          title: "Dataset Location"
           enum:
           - "US"
           - "EU"
@@ -363,6 +357,12 @@
           - "us-west2"
           - "us-west3"
           - "us-west4"
+        dataset_id:
+          type: "string"
+          description: "The default BigQuery Dataset ID that tables are replicated\
+            \ to if the source does not specify a namespace. Read more <a href=\"\
+            https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
+          title: "Default Dataset ID"
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
@@ -495,7 +495,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.1"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -793,7 +793,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.1.4"
+- dockerImage: "airbyte/destination-clickhouse:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1288,7 +1288,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.2.1"
+- dockerImage: "airbyte/destination-gcs:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -1560,6 +1560,31 @@
                 default: 5
                 examples:
                 - 5
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".csv.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
           - title: "JSON Lines: newline-delimited JSON"
             required:
             - "format_type"
@@ -1579,6 +1604,29 @@
                 default: 5
                 examples:
                 - 5
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".jsonl.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
           - title: "Parquet: Columnar Storage"
             required:
             - "format_type"
@@ -2219,7 +2267,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.16"
+- dockerImage: "airbyte/destination-mssql:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -2771,7 +2819,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-oracle:0.1.15"
+- dockerImage: "airbyte/destination-oracle:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
@@ -2999,7 +3047,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.17"
+- dockerImage: "airbyte/destination-postgres:0.3.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
@@ -3596,7 +3644,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.0"
+- dockerImage: "airbyte/destination-s3:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3838,6 +3886,31 @@
                 default: 5
                 examples:
                 - 5
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".csv.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires:
+                  - "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
           - title: "JSON Lines: newline-delimited JSON"
             required:
             - "format_type"
@@ -3857,6 +3930,29 @@
                 default: 5
                 examples:
                 - 5
+              compression:
+                title: "Compression"
+                type: "object"
+                description: "Whether the output files should be compressed. If compression\
+                  \ is selected, the output filename will have an extra extension\
+                  \ (GZIP: \".jsonl.gz\")."
+                oneOf:
+                - title: "No Compression"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "No Compression"
+                      default: "No Compression"
+                - title: "GZIP"
+                  requires: "compression_type"
+                  properties:
+                    compression_type:
+                      type: "string"
+                      enum:
+                      - "GZIP"
+                      default: "GZIP"
           - title: "Parquet: Columnar Storage"
             required:
             - "format_type"

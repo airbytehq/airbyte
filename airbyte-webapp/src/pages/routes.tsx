@@ -5,7 +5,8 @@ import { useEffectOnce } from "react-use";
 
 import { useConfig } from "config";
 import { Workspace } from "core/domain/workspace/Workspace";
-import { TrackPageAnalytics, useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { useNotificationService } from "hooks/services/Notification";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
@@ -55,7 +56,6 @@ const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
 const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
   return (
     <MainView>
-      <TrackPageAnalytics />
       <Routes>
         <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
@@ -96,6 +96,7 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
 const RoutingWithWorkspace: React.FC = () => {
   const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
+  useTrackPageAnalytics();
   useApiHealthPoll();
   useDemo();
 

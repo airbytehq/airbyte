@@ -41,6 +41,12 @@ def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalMixpanelStream, "__abstractmethods__", set())
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 def test_url_base(patch_base_class):
     stream = MixpanelStream(authenticator=MagicMock())
 

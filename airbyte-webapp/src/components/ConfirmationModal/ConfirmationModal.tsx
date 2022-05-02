@@ -29,6 +29,7 @@ export interface ConfirmationModalProps {
   text: string;
   submitButtonText: string;
   onSubmit: () => void;
+  submitButtonDataId?: string;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -37,6 +38,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   text,
   onSubmit,
   submitButtonText,
+  submitButtonDataId,
 }) => (
   <Modal onClose={onClose} title={<FormattedMessage id={title} />}>
     <Content>
@@ -45,7 +47,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <ButtonWithMargin onClick={onClose} type="button" secondary>
           <FormattedMessage id="form.cancel" />
         </ButtonWithMargin>
-        <Button type="button" danger onClick={onSubmit}>
+        <Button type="button" danger onClick={onSubmit} data-id={submitButtonDataId}>
           <FormattedMessage id={submitButtonText} />
         </Button>
       </ButtonContent>

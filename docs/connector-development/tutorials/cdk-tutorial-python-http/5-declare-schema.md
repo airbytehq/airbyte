@@ -10,7 +10,7 @@ We'll begin by creating a stream to represent the data that we're pulling from t
 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.exchangeratesapi.io/"
+    url_base = "http://api.exchangeratesapi.io/"
 
     # Set this as a noop.
     primary_key = None
@@ -60,7 +60,7 @@ Having created this stream in code, we'll put a file `exchange_rates.json` in th
 With `.json` schema file in place, let's see if the connector can now find this schema and produce a valid catalog:
 
 ```text
-python main.py discover --config sample_files/config.json
+python main.py discover --config secrets/config.json
 ```
 
 you should see some output like:
