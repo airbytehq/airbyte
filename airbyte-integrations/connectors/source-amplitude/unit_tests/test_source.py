@@ -3,41 +3,45 @@
 #
 
 
-import json
-from typing import Any, Mapping
-
 import pytest
+import requests
+from unittest.mock import patch
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from source_amplitude import SourceAmplitude
 from source_amplitude.api import ActiveUsers, Annotations, AverageSessionLength, Cohorts, Events
 
+    
+TEST_CONFIG: dict = {
+    "api_key": "test_api_key",
+    "secret_key": "test_secret_key",
+    "start_date": "2022-05-01T00:00:00Z"
+}
+TEST_INSTANCE: SourceAmplitude = SourceAmplitude()
 
-def get_config(config_path: str = "secrets/config.json") -> Mapping[str, Any]:
-    """
-    Get the config from /test_input
-    """
-    with open(config_path, "r") as f:
-        return json.loads(f.read())
-
-
-# using real config from secrets/config_oauth.json
-TEST_CONFIG: dict = get_config()
-TEST_INSTANCE: object = SourceAmplitude()
-
+class MockRequest:
+    def __init__(self, status_code):
+        self.status_code = status_code
 
 def test_convert_auth_to_token():
-    expected = "YWJjOmRlZg=="
-    actual = TEST_INSTANCE._convert_auth_to_token("abc", "def")
+    expected = "dXNlcm5hbWU6cGFzc3dvcmQ="
+    actual = TEST_INSTANCE._convert_auth_to_token("username", "password")
     assert actual == expected
 
 
-def test_check():
-    expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    actual = TEST_INSTANCE.check(logger=AirbyteLogger, config=TEST_CONFIG)
-    assert actual == expected
-
-
+@pytest.mark.parametrize(
+    "response, check_passed",
+    [
+        ({"id": 123}, True), 
+        (requests.HTTPError(), False), 
+    ],
+    ids=["Success", "Fail"],
+)   
+def test_check(response, check_passed):
+    with patch.object(Cohorts, 'read_records', return_value=response) as mock_method:
+        result = TEST_INSTANCE.check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
+        mock_method.assert_called()
+        assert check_passed == result[0]
+        
 @pytest.mark.parametrize(
     "expected_stream_cls",
     [
