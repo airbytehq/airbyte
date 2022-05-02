@@ -17,7 +17,7 @@ class OauthCredSpec(BaseModel):
     class Config:
         title = "OAuth2.0"
 
-    auth_type: str = Field(default="oauth2.0", const=True, order=0, enum=["oauth2.0"])
+    auth_type: str = Field(default="oauth2.0", const=True, order=0)
 
     app_id: str = Field(title="App ID", description="The App ID applied by the developer.", airbyte_secret=True)
 
@@ -30,7 +30,7 @@ class SandboxEnvSpec(BaseModel):
     class Config:
         title = "Sandbox Access Token"
 
-    auth_type: str = Field(default="sandbox_access_token", const=True, order=0, enum=["sandbox_access_token"])
+    auth_type: str = Field(default="sandbox_access_token", const=True, order=0)
 
     # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     advertiser_id: str = Field(
@@ -44,7 +44,7 @@ class ProductionEnvSpec(BaseModel):
     class Config:
         title = "Production Access Token"
 
-    auth_type: str = Field(default="prod_access_token", const=True, order=0, enum=["prod_access_token"])
+    auth_type: str = Field(default="prod_access_token", const=True, order=0)
 
     # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     app_id: str = Field(description="The App ID applied by the developer.", title="App ID")
@@ -57,26 +57,26 @@ class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
+    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
+        title="Authentication *", order=0, default={}, type="object"
+    )
+
     start_date: str = Field(
-        title="Start Date",
+        title="Start Date *",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "
         "If this parameter is not set, all data will be replicated.",
-        order=0,
+        order=1,
     )
 
     report_granularity: str = Field(
-        title="Report Granularity",
+        title="Report Granularity *",
         description="Which time granularity should be grouped by; for LIFETIME there will be no grouping. "
         "This option is used for reports' streams only.",
         default=ReportGranularity.default().value,
         enum=[g.value for g in ReportGranularity],
-        order=1,
-    )
-
-    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
-        title="Authorization Method", order=3, default={}, type="object"
+        order=2,
     )
 
     @classmethod

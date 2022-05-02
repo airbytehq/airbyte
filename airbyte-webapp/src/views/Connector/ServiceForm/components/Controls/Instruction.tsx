@@ -1,20 +1,20 @@
-import type { Url } from "url";
 import type { PluggableList } from "react-markdown/lib/react-markdown";
+import type { Url } from "url";
 
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useToggle } from "react-use";
-import urls from "rehype-urls";
 import rehypeSlug from "rehype-slug";
+import urls from "rehype-urls";
+import styled from "styled-components";
 
 import { LoadingPage } from "components";
-import { SideView } from "components/SideView";
 import { Markdown } from "components/Markdown";
+import { SideView } from "components/SideView";
 
-import { useDocumentation, getDocumentationType } from "hooks/services/useDocumentation";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { useConfig } from "config";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { useDocumentation, getDocumentationType } from "hooks/services/useDocumentation";
 
 type IProps = {
   selectedService: SourceDefinition | DestinationDefinition;

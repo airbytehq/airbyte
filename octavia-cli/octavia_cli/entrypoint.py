@@ -8,6 +8,7 @@ import airbyte_api_client
 import click
 import pkg_resources
 from airbyte_api_client.api import workspace_api
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
 from .apply import commands as apply_commands
 from .check_context import check_api_health, check_is_initialized, check_workspace_exists
@@ -42,7 +43,8 @@ def set_context_object(ctx: click.Context, airbyte_url: str, workspace_id: str, 
         ctx.obj["TELEMETRY_CLIENT"] = telemetry_client
         api_client = get_api_client(airbyte_url)
         ctx.obj["WORKSPACE_ID"] = get_workspace_id(api_client, workspace_id)
-        api_client.user_agent = build_user_agent(ctx.obj["OCTAVIA_VERSION"], ctx.obj["WORKSPACE_ID"])
+        ctx.obj["ANONYMOUS_DATA_COLLECTION"] = get_anonymous_data_collection(api_client, ctx.obj["WORKSPACE_ID"])
+        api_client.user_agent = build_user_agent(ctx.obj["OCTAVIA_VERSION"])
         ctx.obj["API_CLIENT"] = api_client
         ctx.obj["PROJECT_IS_INITIALIZED"] = check_is_initialized()
     except Exception as e:
@@ -63,7 +65,7 @@ def set_context_object(ctx: click.Context, airbyte_url: str, workspace_id: str, 
     "--enable-telemetry/--disable-telemetry",
     envvar="OCTAVIA_ENABLE_TELEMETRY",
     default=True,
-    help="Enable or disable usage tracking for telemetry.",
+    help="Enable or disable telemetry for product improvement.",
 )
 @click.pass_context
 def octavia(ctx: click.Context, airbyte_url: str, workspace_id: str, enable_telemetry: bool) -> None:
@@ -92,6 +94,12 @@ def get_workspace_id(api_client, user_defined_workspace_id):
         api_instance = workspace_api.WorkspaceApi(api_client)
         api_response = api_instance.list_workspaces(_check_return_type=False)
         return api_response.workspaces[0]["workspaceId"]
+
+
+def get_anonymous_data_collection(api_client, workspace_id):
+    api_instance = workspace_api.WorkspaceApi(api_client)
+    api_response = api_instance.get_workspace(WorkspaceIdRequestBody(workspace_id), _check_return_type=False)
+    return api_response.anonymous_data_collection
 
 
 def add_commands_to_octavia():

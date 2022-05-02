@@ -1,13 +1,13 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Field, FieldProps, Form, Formik } from "formik";
 
-import { LabeledInput } from "components/LabeledInput";
 import { LoadingButton } from "components";
+import { LabeledInput } from "components/LabeledInput";
 
-import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import { usePassword } from "./hooks";
 import { FormValues } from "./typings";
