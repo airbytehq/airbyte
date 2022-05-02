@@ -141,7 +141,7 @@ cmd_bump_version() {
   esac
 
   bumped_version="$major_version.$minor_version.$patch_version"
-  if [[ "$bumped_version" != "$master_version" ]]; then
+#  if [[ "$bumped_version" != "$master_version" ]]; then
     _error_if_tag_exists "$image_name:$bumped_version"
     echo "$connector:$branch_version will be bumped to $connector:$bumped_version"
 
@@ -149,10 +149,10 @@ cmd_bump_version() {
     echo ::set-output name=master_version::"${master_version}"
     echo ::set-output name=bumped_version::"${bumped_version}"
     echo ::set-output name=bumped::"true"
-  else
-    echo "No version bump was necessary, this PR has probably already been bumped"
-    exit 0
-  fi
+#  else
+#    echo "No version bump was necessary, this PR has probably already been bumped"
+#    exit 0
+#  fi
 
   ## Write new version to files
   # 1) Dockerfile
@@ -169,9 +169,9 @@ cmd_bump_version() {
   connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$image_name\") | .name" "$definitions_path")
   yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
 
-  # 3) Generate Spec, dont push to cache though since PR has not been merged yet
-#  local tmp_spec_file; tmp_spec_file=$(mktemp)
-#  publish_spec_to_cache="true" _publish_spec_to_cache "$image_name" "$bumped_version"
+  # 3) Generate seed specs
+  local tmp_spec_file; tmp_spec_file=$(mktemp)
+  publish_spec_to_cache="true" _publish_spec_to_cache "$image_name" "$bumped_version"
 
   # 4) processResources to update
   ./gradlew :airbyte-config:init:processResources
