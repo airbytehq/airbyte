@@ -1,7 +1,5 @@
 ---
-description: >-
-  BigQuery is a serverless, highly scalable, and cost-effective data warehouse
-  offered by Google Cloud Provider.
+description: >- BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
 ---
 
 # BigQuery
@@ -20,8 +18,7 @@ Each stream will be output into its own table in BigQuery. Each table will conta
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
 
-The output tables from the BigQuery destination are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
-This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a WHERE clause). Filters on the partitioning column will be used to prune the partitions and reduce the query cost. (The parameter "Require partition filter" is not enabled by Airbyte, but you may toggle this by updating the produced tables if you wish so)
+The output tables from the BigQuery destination are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time. This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a WHERE clause). Filters on the partitioning column will be used to prune the partitions and reduce the query cost. (The parameter "Require partition filter" is not enabled by Airbyte, but you may toggle this by updating the produced tables if you wish so)
 
 #### Features
 
@@ -74,8 +71,8 @@ Note that queries written in BigQuery can only reference Datasets in the same ph
 
 #### Service account
 
-In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User"(roles/bigquery.user) and "BigQuery Data Editor"(roles/bigquery.dataEditor) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control). 
-We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions. "BigQuery User"(roles/bigquery.user) role permissions: 
+In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User"(roles/bigquery.user) and "BigQuery Data Editor"(roles/bigquery.dataEditor) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control). We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions. "BigQuery User"(roles/bigquery.user) role permissions:
+
 ``` 
 bigquery.bireservations.get
 bigquery.capacityCommitments.get
@@ -102,6 +99,7 @@ resourcemanager.projects.list
 ```
 
 "BigQuery Data Editor"(roles/bigquery.dataEditor) role permissions:
+
 ```
 bigquery.config.get
 bigquery.datasets.create
@@ -207,19 +205,20 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 ### bigquery
 
-| Version | Date       | Pull Request | Subject                                                                                     |
-|:--------|:-----------| :--- |:--------------------------------------------------------------------------------------------|
-| 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
-| 1.1.1   | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068) | Fixed bug with GCS bucket conditional binding                                               |
-| 1.1.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption.                             |
-| 1.0.2   | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec                                                                                |
-| 1.0.1   | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350) | Improve check performance                                                                   |
-| 1.0.0   | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238) | Updated spec and documentation                                                              |
-| 0.6.12  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters                                                       |
-| 0.6.11  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM                                             |
-| 0.6.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                |
-| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959) | Fix null pointer exception from buffered stream consumer.                                   |
-| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry.                                                                      |
+| Version | Date       | Pull Request                                               | Subject                                                                                     |
+|:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------|
+| 1.1.3   | 2022-05-02 | []()                                                       | Update Dataset location description                                                         |
+| 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477)   | Dataset location is a required field                                                        |
+| 1.1.1   | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068)   | Fixed bug with GCS bucket conditional binding                                               |
+| 1.1.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776)   | Use serialized buffering strategy to reduce memory consumption.                             |
+| 1.0.2   | 2022-03-30 | [11620](https://github.com/airbytehq/airbyte/pull/11620)   | Updated spec                                                                                |
+| 1.0.1   | 2022-03-24 | [11350](https://github.com/airbytehq/airbyte/pull/11350)   | Improve check performance                                                                   |
+| 1.0.0   | 2022-03-18 | [11238](https://github.com/airbytehq/airbyte/pull/11238)   | Updated spec and documentation                                                              |
+| 0.6.12  | 2022-03-18 | [10793](https://github.com/airbytehq/airbyte/pull/10793)   | Fix namespace with invalid characters                                                       |
+| 0.6.11  | 2022-03-03 | [10755](https://github.com/airbytehq/airbyte/pull/10755)   | Make sure to kill children threads and stop JVM                                             |
+| 0.6.8   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                |
+| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959)   | Fix null pointer exception from buffered stream consumer.                                   |
+| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                      |
 | 0.6.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields                             |
 | 0.6.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | Support dataset-id prefixed by project-id                                                   |
 | 0.6.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data                                  |
@@ -231,9 +230,9 @@ This uploads data directly from your source to BigQuery. While this is faster to
 | 0.4.1   | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers                                                       |
 | 0.4.0   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option                                                          |
 | 0.3.12  | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size    |
-| 0.3.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json                                                |
+| 0.3.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                |
 | 0.3.10  | 2021-07-28 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId                           |
-| 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names                    |
+| 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026)   | Add sanitized json fields in raw tables to handle quotes in column names                    |
 | 0.3.6   | 2021-06-18 | [\#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional.                                               |
 | 0.3.4   | 2021-06-07 | [\#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option                                                                 |
 
