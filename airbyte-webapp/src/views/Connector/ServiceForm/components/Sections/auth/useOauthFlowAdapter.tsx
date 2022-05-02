@@ -47,7 +47,6 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
     loading,
     done,
     run: async () => {
-      // TODO: Unsure if this is right
       const oauthInputProperties =
         (
           connector?.advancedAuth?.oauthConfigSpecification?.oauthUserInputFromConnectorConfigSpecification as {
