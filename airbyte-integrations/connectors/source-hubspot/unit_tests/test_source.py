@@ -119,7 +119,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
 
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    requests_mock.register_uri("GET", requests_mock.ANY, responses)
     source = SourceHubspot()
     alive, error = source.check_connection(logger=logger, config=config)
 
@@ -133,7 +133,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
     ]
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    requests_mock.register_uri("GET", requests_mock.ANY, responses)
     source = SourceHubspot()
     alive, error = source.check_connection(logger=logger, config=config)
 
@@ -360,7 +360,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                 "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(100)],
                 "paging": {
                     "next": {
-                        "after": f"{x*100}",
+                        "after": f"{x * 100}",
                     }
                 },
             },
@@ -376,7 +376,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                     "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
                     "paging": {
                         "next": {
-                            "after": f"{x*100}",
+                            "after": f"{x * 100}",
                         }
                     },
                 },
