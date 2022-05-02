@@ -48,17 +48,14 @@ from source_hubspot.streams import (
 class SourceHubspot(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
-
-        common_params = self.get_common_params(config=config)
         try:
-            contacts = Campaigns(**common_params)
-            next(contacts.read_records(sync_mode=SyncMode.full_refresh))
-            return True, None
+            for stream in self.streams(config=config):
+                next(stream.read_records(sync_mode=SyncMode.full_refresh))
         except HTTPError as error:
-            alive = False
             error_msg = repr(error)
 
-            return alive, error_msg
+            return False, error_msg
+        return True, None
 
     @staticmethod
     def get_api(config: Mapping[str, Any]) -> API:
