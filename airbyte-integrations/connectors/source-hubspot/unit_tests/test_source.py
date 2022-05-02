@@ -40,7 +40,7 @@ def test_check_connection_ok(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
 
-    requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
+    requests_mock.register_uri(test_check_connection_ok, test_check_connection_ok, responses)
     ok, error_msg = SourceHubspot().check_connection(logger, config=config)
 
     assert ok
@@ -119,7 +119,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
 
-    requests_mock.register_uri("GET", requests_mock.ANY, responses)
+    requests_mock.register_uri(requests_mock.ANY, requests_mock.ANY, responses)
     source = SourceHubspot()
     alive, error = source.check_connection(logger=logger, config=config)
 
@@ -133,7 +133,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
     ]
-    requests_mock.register_uri("GET", requests_mock.ANY, responses)
+    requests_mock.register_uri(requests_mock.ANY, requests_mock.ANY, responses)
     source = SourceHubspot()
     alive, error = source.check_connection(logger=logger, config=config)
 
