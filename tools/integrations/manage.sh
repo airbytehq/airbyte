@@ -89,7 +89,6 @@ cmd_bump_version() {
 
   local publish_spec_to_cache
   local spec_cache_writer_sa_key_file
-
   while [ $# -ne 0 ]; do
     case "$1" in
     --publish_spec_to_cache)
