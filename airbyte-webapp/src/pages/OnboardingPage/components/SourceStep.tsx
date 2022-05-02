@@ -5,7 +5,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useCreateSource } from "hooks/services/useSourceHook";
-import { useTrackNewSourceAction } from "hooks/useTrackNewSourceAction";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -31,7 +31,7 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
 
   const { mutateAsync: createSource } = useCreateSource();
 
-  const trackNewSourceAction = useTrackNewSourceAction();
+  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 

@@ -5,7 +5,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceDefinition } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import useRouter from "hooks/useRouter";
-import { useTrackNewSourceAction } from "hooks/useTrackNewSourceAction";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
@@ -34,7 +34,7 @@ const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: s
 
 const SourceForm: React.FC<IProps> = ({ onSubmit, sourceDefinitions, error, hasSuccess, afterSelectConnector }) => {
   const { location } = useRouter();
-  const trackNewSourceAction = useTrackNewSourceAction();
+  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
     hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null

@@ -7,8 +7,7 @@ import JobItem from "components/JobItem";
 import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
 import { JobInfo } from "core/domain/job/Job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalytics } from "hooks/services/Analytics";
-import { useTrackNewSourceAction } from "hooks/useTrackNewSourceAction";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
@@ -40,8 +39,8 @@ const ConnectorCard: React.FC<
 
   const { testConnector, isTestConnectionInProgress, onStopTesting, error } = useTestConnector(props);
 
-  const analyticsService = useAnalytics().service;
-  const trackNewSourceAction = useTrackNewSourceAction();
+  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
+  const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
@@ -59,8 +58,7 @@ const ConnectorCard: React.FC<
           connector_source_id: Connector.id(connector),
         });
       } else {
-        analyticsService.track("New Destination - Action", {
-          action: action,
+        trackNewDestinationAction(action, {
           connector_destination: connector?.name,
           connector_destination_definition_id: Connector.id(connector),
         });
