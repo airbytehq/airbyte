@@ -188,18 +188,8 @@ jobs:
           body: |
             > :x: Couldn't bump version for ${{github.event.inputs.connector}}
       ############################
-      ##     BUILD AND TEST     ##
+      ##          TEST          ##
       ############################
-      - name: Build ${{ github.event.inputs.connector }}
-        run: |
-          ./tools/integrations/manage.sh build_experiment airbyte-integrations/${{ github.event.inputs.connector }}
-        id: build
-        env:
-          BUILD_CANDIDATE_IMAGE: true
-          PR_NUMBER: ${{ github.event.number }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
-          TZ: UTC
       - name: Test ${{ github.event.inputs.connector }}
         if: github.event.inputs.run-tests == 'true'
         run: |
