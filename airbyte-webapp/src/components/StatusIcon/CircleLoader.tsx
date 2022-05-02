@@ -38,8 +38,8 @@ const CircleLoader = ({ title }: Props): JSX.Element => (
         gradientUnits="userSpaceOnUse"
         gradientTransform="translate(0 0)"
       >
-        <stop id="eDwmAshgIQE3-fill-0" offset="17.9167%" stop-color="#d1d1db" />
-        <stop id="eDwmAshgIQE3-fill-1" offset="100%" stop-color="rgba(209,209,219,0)" />
+        <stop id="eDwmAshgIQE3-fill-0" offset="17.9167%" stopColor="#d1d1db" />
+        <stop id="eDwmAshgIQE3-fill-1" offset="100%" stopColor="rgba(209,209,219,0)" />
       </linearGradient>
     </defs>
     {title && <title>{title}</title>}
