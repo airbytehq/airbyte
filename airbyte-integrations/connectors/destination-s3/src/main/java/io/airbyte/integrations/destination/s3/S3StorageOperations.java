@@ -148,18 +148,20 @@ public class S3StorageOperations extends BlobStorageOperations {
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
     boolean succeeded = false;
 
-    OutputStream outputStream = uploadManager.getMultiPartOutputStreams().get(0);
+    // Wrap output stream in decorators
+    OutputStream rawOutputStream = uploadManager.getMultiPartOutputStreams().get(0);
     for (final BlobDecorator blobDecorator : blobDecorators) {
-      outputStream = blobDecorator.wrap(outputStream);
+      rawOutputStream = blobDecorator.wrap(rawOutputStream);
     }
-    try (final InputStream dataStream = recordsData.getInputStream()) {
+
+    try (final OutputStream outputStream = rawOutputStream;
+        final InputStream dataStream = recordsData.getInputStream()) {
       dataStream.transferTo(outputStream);
       succeeded = true;
     } catch (final Exception e) {
       LOGGER.error("Failed to load data into storage {}", objectPath, e);
       throw new RuntimeException(e);
     } finally {
-      outputStream.close();
       if (!succeeded) {
         uploadManager.abort();
       } else {
