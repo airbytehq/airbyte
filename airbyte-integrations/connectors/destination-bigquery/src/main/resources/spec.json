@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": ["project_id", "dataset_id"],
+    "required": ["project_id", "dataset_location", "dataset_id"],
     "additionalProperties": true,
     "properties": {
       "big_query_client_buffer_size_mb": {
@@ -25,16 +25,10 @@
         "description": "The GCP project ID for the project containing the target BigQuery dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
         "title": "Project ID"
       },
-      "dataset_id": {
-        "type": "string",
-        "description": "The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href=\"https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>.",
-        "title": "Default Dataset ID"
-      },
       "dataset_location": {
         "type": "string",
         "description": "The location of the dataset. Warning: Changes made after creation will not be applied. The default \"US\" value is used if not set explicitly. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
-        "title": "Dataset Location (Optional)",
-        "default": "US",
+        "title": "Dataset Location",
         "enum": [
           "US",
           "EU",
@@ -68,6 +62,11 @@
           "us-west3",
           "us-west4"
         ]
+      },
+      "dataset_id": {
+        "type": "string",
+        "description": "The default BigQuery Dataset ID that tables are replicated to if the source does not specify a namespace. Read more <a href=\"https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>.",
+        "title": "Default Dataset ID"
       },
       "credentials_json": {
         "type": "string",
