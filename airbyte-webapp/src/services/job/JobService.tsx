@@ -5,7 +5,7 @@ import { JobsService } from "core/domain/job/JobsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
-import { JobInfoRead, JobListRequestBody } from "../../core/request/AirbyteClient";
+import { JobDebugInfoRead, JobInfoRead, JobListRequestBody } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 
 export const jobsKeys = {
@@ -39,11 +39,12 @@ export const useGetJob = (id: number, enabled = true) => {
   });
 };
 
-export const useGetDebugInfoJob = (id: number) => {
+export const useGetDebugInfoJob = (id: number, enabled = true): JobDebugInfoRead | undefined => {
   const service = useGetJobService();
 
   return useSuspenseQuery(jobsKeys.getDebugInfo(id), () => service.getDebugInfo(id), {
     refetchInterval: false,
+    enabled,
   });
 };
 

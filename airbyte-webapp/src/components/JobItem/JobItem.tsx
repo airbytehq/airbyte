@@ -63,10 +63,6 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
     }
   });
 
-  if (!job) {
-    return null;
-  }
-
   return (
     <Item isFailed={didSucceed} ref={scrollAnchor}>
       <MainInfo shortInfo={shortInfo} isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} />

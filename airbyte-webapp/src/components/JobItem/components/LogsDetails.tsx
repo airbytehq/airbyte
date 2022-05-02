@@ -42,7 +42,7 @@ export const LogsDetails: React.FC<{
     <LogHeader>
       <LogPath>{path}</LogPath>
       <LinkToAttemptButton jobId={id} attemptId={currentAttempt?.id} />
-      {currentAttempt && <DownloadButton currentAttempt={currentAttempt} fileName={`logs-${id}`} />}
+      {jobDebugInfo && <DownloadButton jobDebugInfo={jobDebugInfo} fileName={`logs-${id}`} />}
       {jobDebugInfo && <DebugInfoButton jobDebugInfo={jobDebugInfo} />}
     </LogHeader>
     <LogsTable logsArray={jobDebugInfo?.attempts.slice(-1)[0].logs.logLines} />

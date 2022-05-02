@@ -97,7 +97,7 @@ export const getConnectionTableData = (
       connectorName:
         type === "connection"
           ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
-          : connection[connectType]?.name || "", // TODO: Is name correct here?
+          : connection[connectType]?.name || "",
       lastSync: connection.latestSyncJobCreatedAt,
       enabled: connection.status === ConnectionStatus.active,
       schedule: connection.schedule,

@@ -1,5 +1,5 @@
 import React from "react";
-import { CartesianGrid, BarChart as BasicBarChart, ResponsiveContainer, XAxis, YAxis, Bar, Label } from "recharts";
+import { Bar, BarChart as BasicBarChart, CartesianGrid, Label, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { barChartColors, theme } from "theme";
 
 type BarChartProps = {
@@ -42,7 +42,7 @@ const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel 
           <Label value={yLabel} fontSize={11} fill={chartTicksColor} fontWeight={600} position="top" offset={10} />
         </YAxis>
         {legendLabels.map((barName, key) => (
-          <Bar dataKey={barName} fill={barChartColors[key]} />
+          <Bar key={barName} dataKey={barName} fill={barChartColors[key]} />
         ))}
       </BasicBarChart>
     </ResponsiveContainer>
