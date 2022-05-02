@@ -49,6 +49,8 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 
 **Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad#segments.date) without time. Also, some report cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
+**Note**: Due to contraints from Google Ads API, data is only able to sync from the previous days data.
+
 ## Getting Started \(Airbyte-Cloud\)
 
 1. Click `Authenticate your Google Ads account` to sign in with Google and authorize your account.
