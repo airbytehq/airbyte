@@ -87,6 +87,26 @@ cmd_bump_version() {
   connector_path="$1"; shift || error "Missing target (path) $USAGE"
   bump_version="$1"; shift || error "Missing target (bump_version) $USAGE"
 
+  local publish_spec_to_cache
+  local spec_cache_writer_sa_key_file
+
+  while [ $# -ne 0 ]; do
+    case "$1" in
+    --publish_spec_to_cache)
+      publish_spec_to_cache=true
+      shift 1
+      ;;
+    --publish_spec_to_cache_with_key_file)
+      publish_spec_to_cache=true
+      spec_cache_writer_sa_key_file="$2"
+      shift 2
+      ;;
+    *)
+      error "Unknown option: $1"
+      ;;
+    esac
+  done
+
   # Set local constants
   connector=${connector_path#airbyte-integrations/connectors/}
   if [[ "$connector" =~ "source-" ]]; then

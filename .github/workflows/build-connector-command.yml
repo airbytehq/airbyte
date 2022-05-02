@@ -160,7 +160,8 @@ jobs:
         id: bump-version
         if: success()
         run: |
-          ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
+          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
+          ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }} --publish_spec_to_cache
       - name: Commit and Push Version Bump
         if: success() && steps.bump-version.outputs.bumped == 'true'
         run: |
