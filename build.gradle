@@ -145,7 +145,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
         def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
         def arch = System.getProperty("os.arch").toLowerCase()
-        def isArm64 = arch == "arch64" || arch == "arm64"
+        def isArm64 = arch == "aarch64" || arch == "arm64"
 
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
