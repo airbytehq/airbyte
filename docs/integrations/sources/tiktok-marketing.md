@@ -3,6 +3,8 @@
 This page guides you through the process of setting up the TikTok Marketing source connector.
 
 ## Prerequisites
+* Start date
+* Report Granularity (LIFETIME, DAY, HOUR)
 
 For Production environment:
 * Access token 
@@ -13,8 +15,6 @@ For Sandbox environment:
 * Access token 
 * Advertiser ID
 
-* Start date
-* Report Granularity (LIFETIME, DAY, HOUR)
 
 ## Step 1: Set up TikTok
 
