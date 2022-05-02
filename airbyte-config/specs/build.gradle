@@ -21,4 +21,4 @@ task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
     args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
 }
 
-//project(":airbyte-config:init").tasks.processResources.dependsOn(generateSeedConnectorSpecs)
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateSeedConnectorSpecs)

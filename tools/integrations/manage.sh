@@ -169,18 +169,12 @@ cmd_bump_version() {
   connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$image_name\") | .name" "$definitions_path")
   yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
 
-  # Show changes
-  git status
-
   # 3) Generate Spec, dont push to cache though since PR has not been merged yet
 #  local tmp_spec_file; tmp_spec_file=$(mktemp)
 #  publish_spec_to_cache="true" _publish_spec_to_cache "$image_name" "$bumped_version"
 
   # 4) processResources to update
   ./gradlew :airbyte-config:init:processResources
-
-#  Show changes
-  git status
 
   echo "Woohoo! Successfully bumped $connector:$branch_version to $connector:$bumped_version"
 }
