@@ -133,7 +133,8 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
     ]
-    requests_mock.register_uri(requests_mock.ANY, requests_mock.ANY, responses)
+    requests_mock.register_uri("GET", requests_mock.ANY, responses)
+    requests_mock.register_uri("POST", requests_mock.ANY, responses)
     source = SourceHubspot()
     alive, error = source.check_connection(logger=logger, config=config)
 
