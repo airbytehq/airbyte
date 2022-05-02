@@ -10,7 +10,10 @@ from source_pipedrive.streams import (
     Organizations,
     Persons,
     Pipelines,
-    Stages
+    Stages,
+    DealFields,
+    OrganizationFields,
+    PersonFields
 )
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
@@ -44,6 +47,9 @@ def test_path_refresh(config_refresh):
     "stream, endpoint",
     [
         (ActivityFields, "activityFields"),
+        (DealFields, "dealFields"),
+        (OrganizationFields, "organizationFields"),
+        (PersonFields, "personFields"),
         (Leads, "leads"),
     ]
 )
