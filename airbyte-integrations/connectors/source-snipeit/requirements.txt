@@ -1,4 +1,4 @@
-airbyte-cdk==0.1.32
+airbyte-cdk==0.1.55
 arrow==1.2.1
 attrs==21.2.0
 backoff==1.11.1

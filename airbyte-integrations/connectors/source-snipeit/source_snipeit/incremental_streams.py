@@ -6,7 +6,12 @@ import requests
 import arrow
 from .full_refresh_streams import SnipeitStream
 
-from airbyte_cdk.sources.streams import IncrementalMixin
+# NOTE: Temporary, dirty hack to account for the import differences
+#       between airbyte_cdk 0.1.53 and 0.1.55
+try:
+    from airbyte_cdk.sources.streams import IncrementalMixin
+except ImportError:
+    from airbyte_cdk.sources.streams.core import IncrementalMixin
 
 class Events(SnipeitStream, IncrementalMixin):
     primary_key = "id"
@@ -88,18 +93,3 @@ class Events(SnipeitStream, IncrementalMixin):
         else:
             ascending_list = reversed(transformed)
             yield from ascending_list
-
-        # if self.state:
-        #     latest_record_date = arrow.get(self.state.get(self.cursor_field))
-        #     if _newer_than_latest(latest_record_date, transformed[0]) == False:
-        #         self.stop_immediately = True
-        #         yield from []
-        #     else:
-        #         ascending = reversed(transformed)
-        #         only_the_newest = [x for x in ascending if _newer_than_latest(latest_record_date, x)]
-        #         self.state = only_the_newest[0][self.cursor_field]
-        #         yield from only_the_newest
-        # else:
-        #     ascending = reversed(transformed)
-        #     self.state = transformed[0][self.cursor_field]
-        #     yield from ascending
