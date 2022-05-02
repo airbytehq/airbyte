@@ -92,8 +92,7 @@ class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
-        boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
-        role = boto3_client.assume_role(RoleArn=config.role_arn, RoleSessionName="guid")
+        role = self.get_role(config)
         role_creds = role["Credentials"]
         aws_signature = AWSSignature(
             service="execute-api",
@@ -120,6 +119,23 @@ class SourceAmazonSellerPartner(AbstractSource):
             "max_wait_seconds": config.max_wait_seconds,
         }
         return stream_kwargs
+
+    def get_role(self, config):
+        boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
+        *_, arn_resource = config.role_arn.split(":")
+        if arn_resource.startswith("user"):
+            role = self._get_session_token(boto3_client)
+        elif arn_resource.startswith("role"):
+            role = self._assume_role(boto3_client, config.role_arn)
+        else:
+            raise ValueError("Invalid User/Role Arn")
+        return role
+
+    def _get_session_token(self, boto3_client):
+        return boto3_client.get_session_token()
+
+    def _assume_role(self, boto3_client, role_arn: str):
+        return boto3_client.assume_role(RoleArn=role_arn, RoleSessionName="guid")
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
