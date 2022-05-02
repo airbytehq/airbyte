@@ -28,7 +28,7 @@ const Content = styled.div`
   margin-bottom: 20px;
 `;
 
-type ArrayOfObjectsEditorProps<T extends { name: string }> = {
+export interface ArrayOfObjectsEditorProps<T extends { name: string }> {
   items: T[];
   editableItemIndex?: number | string | null;
   children: (item?: T) => React.ReactNode;
@@ -39,23 +39,20 @@ type ArrayOfObjectsEditorProps<T extends { name: string }> = {
   onDone?: () => void;
   onRemove: (index: number) => void;
   mode?: ConnectionFormMode;
-};
+}
 
-function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
-  props: ArrayOfObjectsEditorProps<T>
-): JSX.Element {
-  const {
-    onStartEdit,
-    onDone,
-    onRemove,
-    onCancelEdit,
-    items,
-    editableItemIndex,
-    children,
-    mainTitle,
-    addButtonText,
-    mode,
-  } = props;
+export function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>({
+  onStartEdit,
+  onDone,
+  onRemove,
+  onCancelEdit,
+  items,
+  editableItemIndex,
+  children,
+  mainTitle,
+  addButtonText,
+  mode,
+}: ArrayOfObjectsEditorProps<T>): JSX.Element {
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
 
   const isEditable = editableItemIndex !== null && editableItemIndex !== undefined;
@@ -101,6 +98,3 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
     </Content>
   );
 }
-
-export { ArrayOfObjectsEditor };
-export type { ArrayOfObjectsEditorProps };
