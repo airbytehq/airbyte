@@ -7,6 +7,7 @@ import csv
 import json as json_lib
 import time
 import zlib
+import xmltodict
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -400,6 +401,12 @@ class FbaReplacementsReports(ReportsAmazonSPStream):
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
+
+class GetXmlBrowseTreeData(ReportsAmazonSPStream):
+    def parse_document(self, document):
+        yield xmltodict.parse(document, dict_constructor=dict)
+
+    name = "GET_XML_BROWSE_TREE_DATA" 
 
 
 class BrandAnalyticsStream(ReportsAmazonSPStream):
