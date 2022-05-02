@@ -30,19 +30,21 @@ export const useListJobs = (listParams: JobListRequestBody) => {
   }).jobs;
 };
 
-export const useGetJob = (id: number) => {
+export const useGetJob = (id: number, enabled = true) => {
   const service = useGetJobService();
 
   return useSuspenseQuery(jobsKeys.detail(id), () => service.get(id), {
     refetchInterval: 2500, // every 2,5 seconds,
+    enabled,
   });
 };
 
-export const useGetDebugInfoJob = (id: number) => {
+export const useGetDebugInfoJob = (id: number, enabled: boolean) => {
   const service = useGetJobService();
 
   return useSuspenseQuery(jobsKeys.getDebugInfo(id), () => service.getDebugInfo(id), {
     refetchInterval: false,
+    enabled,
   });
 };
 

@@ -5,17 +5,19 @@ import { useIntl } from "react-intl";
 
 import { Button } from "components";
 
-type IProps = {
-  logs: string[];
-  fileName: string;
-};
+import { AttemptRead } from "core/request/AirbyteClient";
 
-const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
+interface DownloadButtonProps {
+  currentAttempt: AttemptRead;
+  fileName: string;
+}
+
+const DownloadButton: React.FC<DownloadButtonProps> = ({ currentAttempt, fileName }) => {
   const formatMessage = useIntl().formatMessage;
 
   const downloadFileWithLogs = () => {
     const element = document.createElement("a");
-    const file = new Blob([logs.join("\n")], {
+    const file = new Blob([JSON.stringify(currentAttempt)], {
       type: "text/plain;charset=utf-8",
     });
     element.href = URL.createObjectURL(file);

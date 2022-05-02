@@ -5,12 +5,11 @@ import { ContentCard } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 
 import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
-import { LogsRequestError } from "core/request/LogsRequestError";
+import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
 import { useAnalytics } from "hooks/services/Analytics";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
-import { JobWithAttemptsRead } from "../../../core/request/AirbyteClient";
 import { useTestConnector } from "./useTestConnector";
 
 export type ConnectorCardProvidedProps = {
@@ -20,11 +19,11 @@ export type ConnectorCardProvidedProps = {
   testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
 };
 
-const ConnectorCard: React.FC<
+export const ConnectorCard: React.FC<
   {
     title?: React.ReactNode;
     full?: boolean;
-    jobInfo?: JobWithAttemptsRead | null;
+    jobInfo?: SynchronousJobReadWithStatus | null;
   } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
     (
       | {
@@ -91,5 +90,3 @@ const ConnectorCard: React.FC<
     </ContentCard>
   );
 };
-
-export { ConnectorCard };

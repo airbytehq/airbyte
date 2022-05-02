@@ -3,61 +3,71 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation } from "react-router-dom";
 
-import Status from "core/statuses";
-import { useGetDebugInfoJob, useGetJob } from "services/job/JobService";
+import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
+import { useGetDebugInfoJob } from "services/job/JobService";
 
-import { AttemptRead } from "../../../core/request/AirbyteClient";
+import { AttemptRead, AttemptStatus } from "../../../core/request/AirbyteClient";
 import { parseAttemptLink } from "../attemptLinkUtils";
 import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
-import Tabs from "./Tabs";
+import Tabs, { TabsData } from "./Tabs";
 
-type IProps = {
-  id: number;
+type JobLogsProps = {
   jobIsFailed?: boolean;
+  job: SynchronousJobReadWithStatus | JobsWithJobs;
 };
 
 const isPartialSuccess = (attempt: AttemptRead) => {
   return !!attempt.failureSummary?.partialSuccess;
 };
 
-const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
-  const job = useGetJob(id);
-  const debugInfo = useGetDebugInfoJob(id);
+const jobIsSynchronousJobRead = (
+  job: SynchronousJobReadWithStatus | JobsWithJobs
+): job is SynchronousJobReadWithStatus => {
+  return !!(job as SynchronousJobReadWithStatus)?.logs?.logLines;
+};
+
+const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
+  const isSynchronousJobRead = jobIsSynchronousJobRead(job);
+  const debugInfo = useGetDebugInfoJob((job as JobsWithJobs).job?.id, !isSynchronousJobRead);
 
   const { hash } = useLocation();
   const [attemptNumber, setAttemptNumber] = useState<number>(() => {
     // If the link lead directly to an attempt use this attempt as the starting one
     // otherwise use the latest attempt
-    const { attemptId, jobId } = parseAttemptLink(hash);
-    if (jobId === String(id) && attemptId) {
-      return clamp(parseInt(attemptId), 0, job.attempts.length - 1);
+    if (!isSynchronousJobRead && job.attempts) {
+      const { attemptId, jobId } = parseAttemptLink(hash);
+      if (!isNaN(Number(jobId)) && Number(jobId) === job.job.id && attemptId) {
+        return clamp(parseInt(attemptId), 0, job.attempts.length - 1);
+      }
+
+      return job.attempts.length ? job.attempts.length - 1 : 0;
     }
 
-    return job.attempts.length ? job.attempts.length - 1 : 0;
+    return 0;
   });
 
-  if (!job.attempts.length) {
-    return <Logs />;
+  if (isSynchronousJobRead) {
+    return <Logs logsArray={job.logs?.logLines} />;
   }
 
-  const currentAttempt = job.attempts[attemptNumber].attempt;
-  const logs = job.attempts[attemptNumber]?.logs;
-  const path = ["/tmp/workspace", id, currentAttempt.id, "logs.log"].join("/");
+  const currentAttempt = job.attempts?.[attemptNumber];
+  const path = ["/tmp/workspace", job.job.id, currentAttempt?.id, "logs.log"].join("/");
 
-  const attemptsTabs = job.attempts.map((item, index) => ({
-    id: index.toString(),
-    isPartialSuccess: isPartialSuccess(item.attempt),
-    status:
-      item.attempt.status === Status.FAILED || item.attempt.status === Status.SUCCEEDED
-        ? item.attempt.status
-        : undefined,
-    name: <FormattedMessage id="sources.attemptNum" values={{ number: index + 1 }} />,
-  }));
+  const attemptsTabs: TabsData[] =
+    job.attempts?.map((item, index) => ({
+      id: index.toString(),
+      isPartialSuccess: isPartialSuccess(item),
+      status: item.status === AttemptStatus.failed || item.status === AttemptStatus.succeeded ? item.status : undefined,
+      name: <FormattedMessage id="sources.attemptNum" values={{ number: index + 1 }} />,
+    })) ?? [];
+
+  const attempts = job.attempts ?? 0;
 
   return (
     <>
-      {job.attempts.length > 1 ? (
+      {attempts > 1 ? (
         <Tabs
           activeStep={attemptNumber.toString()}
           onSelect={(at) => setAttemptNumber(parseInt(at))}
@@ -65,13 +75,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
           isFailed={jobIsFailed}
         />
       ) : null}
-      <LogsDetails
-        id={job.job.id}
-        path={path}
-        currentAttempt={job.attempts.length > 1 ? currentAttempt : null}
-        logs={logs}
-        jobDebugInfo={debugInfo.job}
-      />
+      <LogsDetails id={job.job.id} path={path} currentAttempt={currentAttempt} jobDebugInfo={debugInfo.job} />
     </>
   );
 };

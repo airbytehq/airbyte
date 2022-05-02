@@ -7,8 +7,12 @@ import styled from "styled-components";
 import { Button, StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
-import { AttemptRead, JobInfoRead, JobStatus, JobWithAttemptsRead } from "../../../core/request/AirbyteClient";
+import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
+
+import { AttemptRead, JobInfoRead, JobStatus } from "../../../core/request/AirbyteClient";
 import { useCancelJob } from "../../../services/job/JobService";
+import { getJobId, getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
 
 const MainView = styled(Row)<{
@@ -76,8 +80,14 @@ const Text = styled.div`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-type IProps = {
-  job: Exclude<JobWithAttemptsRead["job"], undefined>;
+const getJobConfig = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
+  (job as SynchronousJobReadWithStatus).configType ?? (job as JobsWithJobs).job.configType;
+
+const getJobCreatedAt = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
+  (job as SynchronousJobReadWithStatus).createdAt ?? (job as JobsWithJobs).job.createdAt;
+
+type MainInfoProps = {
+  job: SynchronousJobReadWithStatus | JobsWithJobs;
   attempts?: AttemptRead[];
   isOpen?: boolean;
   onExpand: () => void;
@@ -86,7 +96,7 @@ type IProps = {
   shortInfo?: boolean;
 };
 
-const MainInfo: React.FC<IProps> = ({
+const MainInfo: React.FC<MainInfoProps> = ({
   job,
   attempts = [],
   isOpen,
@@ -100,18 +110,19 @@ const MainInfo: React.FC<IProps> = ({
   const onCancelJob = async (event: React.SyntheticEvent): Promise<JobInfoRead | void> => {
     event.stopPropagation();
     if (job) {
-      return cancelJob(job.id);
+      return cancelJob(Number(getJobId(job)));
     }
   };
 
-  const isNotCompleted =
-    job.status && [JobStatus.pending, JobStatus.running, JobStatus.incomplete].includes(job.status);
+  const isNotCompleted = [JobStatus.pending, JobStatus.running, JobStatus.incomplete].includes(getJobStatus(job));
 
   const jobStatus = isPartialSuccess ? (
     <FormattedMessage id="sources.partialSuccess" />
   ) : (
-    <FormattedMessage id={`sources.${job.status}`} />
+    <FormattedMessage id={`sources.${getJobStatus(job)}`} />
   );
+
+  console.log(getJobStatus(job), { isFailed, isPartialSuccess });
 
   const getIcon = () => {
     if (isPartialSuccess) {
@@ -136,7 +147,7 @@ const MainInfo: React.FC<IProps> = ({
                   <FormattedMessage id="sources.lastAttempt" />
                 </Text>
               )}
-              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={job.configType} />
+              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
             </div>
           ) : null}
         </Title>
@@ -147,10 +158,10 @@ const MainInfo: React.FC<IProps> = ({
             <FormattedMessage id="form.cancel" />
           </CancelButton>
         )}
-        <FormattedTimeParts value={job.createdAt * 1000} hour="numeric" minute="2-digit">
+        <FormattedTimeParts value={getJobCreatedAt(job) * 1000} hour="numeric" minute="2-digit">
           {(parts) => <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>}
         </FormattedTimeParts>
-        <FormattedDateParts value={job.createdAt * 1000} month="2-digit" day="2-digit">
+        <FormattedDateParts value={getJobCreatedAt(job) * 1000} month="2-digit" day="2-digit">
           {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
         </FormattedDateParts>
         {attempts.length > 1 && (

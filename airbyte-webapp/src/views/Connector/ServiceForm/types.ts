@@ -1,9 +1,5 @@
-import { ConnectionConfiguration } from "core/domain/connection";
-
-type ServiceFormValues = {
+export type ServiceFormValues<T = unknown> = {
   name: string;
   serviceType: string;
-  connectionConfiguration: ConnectionConfiguration;
+  connectionConfiguration: T;
 };
-
-export type { ServiceFormValues };

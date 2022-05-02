@@ -11,7 +11,7 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { SynchronousJobRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -174,7 +174,7 @@ const useDiscoverSchema = (
 ): {
   isLoading: boolean;
   schema: SyncSchema;
-  schemaErrorStatus: { status: number; response: JobInfo } | null;
+  schemaErrorStatus: { status: number; response: SynchronousJobRead } | null;
   catalogId: string | undefined;
   onDiscoverSchema: () => Promise<void>;
 } => {

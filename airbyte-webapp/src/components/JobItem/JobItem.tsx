@@ -4,9 +4,10 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
-import Status from "core/statuses";
+import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
-import { AttemptRead, JobStatus, JobWithAttemptsRead } from "../../core/request/AirbyteClient";
+import { JobStatus } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import JobLogs from "./components/JobLogs";
@@ -29,27 +30,29 @@ const LoadLogs = styled.div`
   min-height: 58px;
 `;
 
-const isPartialSuccessCheck = (attempts?: AttemptRead[]) => {
-  if (attempts && attempts.length > 0 && attempts[attempts.length - 1].status === Status.FAILED) {
-    return attempts.some((attempt) => attempt.failureSummary && attempt.failureSummary.partialSuccess);
-  } else {
-    return false;
-  }
-};
-
-type IProps = {
+type JobItemProps = {
   shortInfo?: boolean;
-  job: JobWithAttemptsRead;
+  job: SynchronousJobReadWithStatus | JobsWithJobs;
 };
 
-export const JobItem: React.FC<IProps> = ({ shortInfo, job }) => {
+const didJobSucceed = (job: SynchronousJobReadWithStatus | JobsWithJobs) => {
+  return getJobStatus(job) !== "failed";
+};
+
+export const getJobStatus: (job: SynchronousJobReadWithStatus | JobsWithJobs) => JobStatus = (job) => {
+  return (job as JobsWithJobs).job?.status ?? (job as SynchronousJobReadWithStatus).status;
+};
+
+export const getJobId = (job: SynchronousJobReadWithStatus | JobsWithJobs) =>
+  (job as SynchronousJobReadWithStatus).id ?? (job as JobsWithJobs).job.id;
+
+export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
-  const [isOpen, setIsOpen] = useState(linkedJobId === String(job.job?.id));
+  const [isOpen, setIsOpen] = useState(linkedJobId === getJobId(job));
   const onExpand = () => setIsOpen(!isOpen);
   const scrollAnchor = useRef<HTMLDivElement>(null);
 
-  const isFailed = job.job?.status === JobStatus.failed;
-  const isPartialSuccess = isPartialSuccessCheck(job.attempts);
+  const isFailed = didJobSucceed(job);
 
   useEffectOnce(() => {
     if (linkedJobId) {
@@ -60,21 +63,13 @@ export const JobItem: React.FC<IProps> = ({ shortInfo, job }) => {
     }
   });
 
-  if (!job.job) {
+  if (!job) {
     return null;
   }
 
   return (
     <Item isFailed={isFailed} ref={scrollAnchor}>
-      <MainInfo
-        shortInfo={shortInfo}
-        isOpen={isOpen}
-        isFailed={isFailed}
-        isPartialSuccess={isPartialSuccess}
-        onExpand={onExpand}
-        job={job.job}
-        attempts={job.attempts}
-      />
+      <MainInfo shortInfo={shortInfo} isOpen={isOpen} isFailed={isFailed} onExpand={onExpand} job={job} />
       <ContentWrapper isOpen={isOpen}>
         <div>
           <Suspense
@@ -84,7 +79,7 @@ export const JobItem: React.FC<IProps> = ({ shortInfo, job }) => {
               </LoadLogs>
             }
           >
-            {isOpen && job.job.id ? <JobLogs id={job.job.id} jobIsFailed={isFailed} /> : null}
+            {isOpen && <JobLogs job={job} jobIsFailed={isFailed} />}
           </Suspense>
         </div>
       </ContentWrapper>

@@ -1,7 +1,10 @@
 import { ConnectionConfiguration } from "core/domain/connection";
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { LogsRequestError } from "core/request/LogsRequestError";
 
 import {
+  CheckConnectionRead,
+  CheckConnectionReadStatus,
   checkConnectionToDestination,
   checkConnectionToDestinationForUpdate,
   createDestination,
@@ -23,18 +26,19 @@ export class DestinationService extends AirbyteRequestService {
     },
     requestParams?: RequestInit
   ) {
+    let result: CheckConnectionRead;
     if (!params.destinationId) {
-      return executeDestinationCheckConnection(params as DestinationCoreConfig, {
+      result = await executeDestinationCheckConnection(params as DestinationCoreConfig, {
         ...this.requestOptions,
         signal: requestParams?.signal,
       });
     } else if (params.connectionConfiguration) {
-      return checkConnectionToDestinationForUpdate(params as DestinationUpdate, {
+      result = await checkConnectionToDestinationForUpdate(params as DestinationUpdate, {
         ...this.requestOptions,
         signal: requestParams?.signal,
       });
     } else {
-      return checkConnectionToDestination(
+      result = await checkConnectionToDestination(
         { destinationId: params.destinationId },
         {
           ...this.requestOptions,
@@ -42,6 +46,17 @@ export class DestinationService extends AirbyteRequestService {
         }
       );
     }
+
+    if (result.status === CheckConnectionReadStatus.failed) {
+      const jobInfo = {
+        ...result.jobInfo,
+        status: result.status,
+      };
+
+      throw new LogsRequestError(jobInfo, result.message);
+    }
+
+    return result;
   }
 
   public get(destinationId: string) {

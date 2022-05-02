@@ -1,7 +1,10 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { CommonRequestError } from "core/request/CommonRequestError";
+import { LogsRequestError } from "core/request/LogsRequestError";
 
 import {
+  CheckConnectionRead,
+  CheckConnectionReadStatus,
   checkConnectionToSource,
   checkConnectionToSourceForUpdate,
   createSource,
@@ -25,22 +28,34 @@ export class SourceService extends AirbyteRequestService {
     },
     requestParams?: RequestInit
   ) {
+    let result: CheckConnectionRead;
     if (!params.sourceId) {
-      return executeSourceCheckConnection(params as SourceCoreConfig, {
+      result = await executeSourceCheckConnection(params as SourceCoreConfig, {
         ...this.requestOptions,
         signal: requestParams?.signal,
       });
     } else if (params.connectionConfiguration) {
-      return checkConnectionToSourceForUpdate(params as SourceUpdate, {
+      result = await checkConnectionToSourceForUpdate(params as SourceUpdate, {
         ...this.requestOptions,
         signal: requestParams?.signal,
       });
     } else {
-      return checkConnectionToSource(
+      result = await checkConnectionToSource(
         { sourceId: params.sourceId },
         { ...this.requestOptions, signal: requestParams?.signal }
       );
     }
+
+    if (result.status === CheckConnectionReadStatus.failed) {
+      const jobInfo = {
+        ...result.jobInfo,
+        status: result.status,
+      };
+
+      throw new LogsRequestError(jobInfo, result.message);
+    }
+
+    return result;
   }
 
   public get(sourceId: string) {

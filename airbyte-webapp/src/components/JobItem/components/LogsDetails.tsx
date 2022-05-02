@@ -1,8 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 
-import { Logs } from "core/domain/job";
-
 import { AttemptRead, JobDebugRead } from "../../../core/request/AirbyteClient";
 import AttemptDetails from "./AttemptDetails";
 import DebugInfoButton from "./DebugInfoButton";
@@ -32,10 +30,9 @@ const LogPath = styled.span`
 const LogsDetails: React.FC<{
   id: number | string;
   path: string;
-  currentAttempt?: AttemptRead | null;
-  logs?: Logs;
+  currentAttempt?: AttemptRead;
   jobDebugInfo?: JobDebugRead;
-}> = ({ path, logs, id, currentAttempt, jobDebugInfo }) => (
+}> = ({ path, id, currentAttempt, jobDebugInfo }) => (
   <>
     {currentAttempt && (
       <AttemptDetailsSection>
@@ -45,10 +42,10 @@ const LogsDetails: React.FC<{
     <LogHeader>
       <LogPath>{path}</LogPath>
       <LinkToAttemptButton jobId={id} attemptId={currentAttempt?.id} />
-      {logs?.logLines && <DownloadButton logs={logs?.logLines ?? []} fileName={`logs-${id}`} />}
+      {currentAttempt && <DownloadButton currentAttempt={currentAttempt} fileName={`logs-${id}`} />}
       {jobDebugInfo && <DebugInfoButton jobDebugInfo={jobDebugInfo} />}
     </LogHeader>
-    <LogsTable logsArray={logs?.logLines} />
+    <LogsTable logsArray={currentAttempt?.failureSummary?.failures.map((failure) => JSON.stringify(failure))} />
   </>
 );
 
