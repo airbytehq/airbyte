@@ -490,6 +490,8 @@
   "errorView.notFound": "Resource not found",
   "errorView.unknown": "Unknown",
 
+  "ui.input.showPassword": "Show password",
+  "ui.input.hidePassword": "Hide password",
   "ui.keyValuePair": "{key}: {value}",
   "ui.keyValuePairV2": "{key} ({value})",
   "ui.keyValuePairV3": "{key}, {value}",
