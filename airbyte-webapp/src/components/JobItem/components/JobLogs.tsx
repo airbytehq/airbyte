@@ -30,7 +30,8 @@ const jobIsSynchronousJobRead = (
 
 const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   const isSynchronousJobRead = jobIsSynchronousJobRead(job);
-  const debugInfo = useGetDebugInfoJob((job as JobsWithJobs).job?.id, !isSynchronousJobRead);
+
+  const debugInfo = useGetDebugInfoJob((job as JobsWithJobs).job?.id ?? (job as SynchronousJobReadWithStatus).id);
 
   const { hash } = useLocation();
   const [attemptNumber, setAttemptNumber] = useState<number>(() => {
@@ -49,7 +50,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   });
 
   if (isSynchronousJobRead) {
-    return <Logs logsArray={job.logs?.logLines} />;
+    return <Logs logsArray={debugInfo.attempts.slice(-1)[0].logs.logLines} />;
   }
 
   const currentAttempt = job.attempts?.[attemptNumber];
@@ -75,7 +76,7 @@ const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
           isFailed={jobIsFailed}
         />
       ) : null}
-      <LogsDetails id={job.job.id} path={path} currentAttempt={currentAttempt} jobDebugInfo={debugInfo.job} />
+      <LogsDetails id={job.job.id} path={path} currentAttempt={currentAttempt} jobDebugInfo={debugInfo} />
     </>
   );
 };

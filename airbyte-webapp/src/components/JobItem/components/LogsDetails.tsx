@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { AttemptRead, JobDebugRead } from "../../../core/request/AirbyteClient";
+import { AttemptRead, JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 import AttemptDetails from "./AttemptDetails";
 import DebugInfoButton from "./DebugInfoButton";
 import DownloadButton from "./DownloadButton";
@@ -27,11 +27,11 @@ const LogPath = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const LogsDetails: React.FC<{
+export const LogsDetails: React.FC<{
   id: number | string;
   path: string;
   currentAttempt?: AttemptRead;
-  jobDebugInfo?: JobDebugRead;
+  jobDebugInfo?: JobDebugInfoRead;
 }> = ({ path, id, currentAttempt, jobDebugInfo }) => (
   <>
     {currentAttempt && (
@@ -45,8 +45,6 @@ const LogsDetails: React.FC<{
       {currentAttempt && <DownloadButton currentAttempt={currentAttempt} fileName={`logs-${id}`} />}
       {jobDebugInfo && <DebugInfoButton jobDebugInfo={jobDebugInfo} />}
     </LogHeader>
-    <LogsTable logsArray={currentAttempt?.failureSummary?.failures.map((failure) => JSON.stringify(failure))} />
+    <LogsTable logsArray={jobDebugInfo?.attempts.slice(-1)[0].logs.logLines} />
   </>
 );
-
-export { LogsDetails };

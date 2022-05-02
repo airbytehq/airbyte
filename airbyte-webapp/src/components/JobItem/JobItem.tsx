@@ -52,7 +52,7 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
   const onExpand = () => setIsOpen(!isOpen);
   const scrollAnchor = useRef<HTMLDivElement>(null);
 
-  const isFailed = didJobSucceed(job);
+  const didSucceed = didJobSucceed(job);
 
   useEffectOnce(() => {
     if (linkedJobId) {
@@ -68,8 +68,8 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
   }
 
   return (
-    <Item isFailed={isFailed} ref={scrollAnchor}>
-      <MainInfo shortInfo={shortInfo} isOpen={isOpen} isFailed={isFailed} onExpand={onExpand} job={job} />
+    <Item isFailed={didSucceed} ref={scrollAnchor}>
+      <MainInfo shortInfo={shortInfo} isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} />
       <ContentWrapper isOpen={isOpen}>
         <div>
           <Suspense
@@ -79,7 +79,7 @@ export const JobItem: React.FC<JobItemProps> = ({ shortInfo, job }) => {
               </LoadLogs>
             }
           >
-            {isOpen && <JobLogs job={job} jobIsFailed={isFailed} />}
+            {isOpen && <JobLogs job={job} jobIsFailed={didSucceed} />}
           </Suspense>
         </div>
       </ContentWrapper>

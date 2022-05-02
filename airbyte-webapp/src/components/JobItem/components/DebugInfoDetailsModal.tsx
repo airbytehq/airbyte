@@ -5,11 +5,11 @@ import styled from "styled-components";
 import { Button } from "components";
 import Modal from "components/Modal";
 
-import { JobDebugRead } from "../../../core/request/AirbyteClient";
+import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 
 export type IProps = {
   onClose: () => void;
-  jobDebugInfo: JobDebugRead;
+  jobDebugInfo: JobDebugInfoRead;
 };
 
 const Content = styled.div`
@@ -40,7 +40,7 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
       },
       {
         key: formatMessage({ id: "sources.airbyteVersion" }),
-        value: jobDebugInfo.airbyteVersion,
+        value: jobDebugInfo.job.airbyteVersion,
       }
     );
   };
@@ -51,8 +51,8 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
         id: "ui.keyValuePairV2",
       },
       {
-        key: jobDebugInfo.sourceDefinition.name,
-        value: jobDebugInfo.sourceDefinition.dockerImageTag,
+        key: jobDebugInfo.job.sourceDefinition.name,
+        value: jobDebugInfo.job.sourceDefinition.dockerImageTag,
       }
     );
 
@@ -73,8 +73,8 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
         id: "ui.keyValuePairV2",
       },
       {
-        key: jobDebugInfo.destinationDefinition.name,
-        value: jobDebugInfo.destinationDefinition.dockerImageTag,
+        key: jobDebugInfo.job.destinationDefinition.name,
+        value: jobDebugInfo.job.destinationDefinition.dockerImageTag,
       }
     );
 

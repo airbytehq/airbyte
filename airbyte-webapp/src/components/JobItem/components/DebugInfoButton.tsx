@@ -5,11 +5,11 @@ import { useIntl } from "react-intl";
 
 import { Button } from "components";
 
-import { JobDebugRead } from "../../../core/request/AirbyteClient";
+import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
 
 type IProps = {
-  jobDebugInfo: JobDebugRead;
+  jobDebugInfo: JobDebugInfoRead;
 };
 
 const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {

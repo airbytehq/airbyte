@@ -122,8 +122,6 @@ const MainInfo: React.FC<MainInfoProps> = ({
     <FormattedMessage id={`sources.${getJobStatus(job)}`} />
   );
 
-  console.log(getJobStatus(job), { isFailed, isPartialSuccess });
-
   const getIcon = () => {
     if (isPartialSuccess) {
       return <ErrorSign status="warning" />;

@@ -39,12 +39,11 @@ export const useGetJob = (id: number, enabled = true) => {
   });
 };
 
-export const useGetDebugInfoJob = (id: number, enabled: boolean) => {
+export const useGetDebugInfoJob = (id: number) => {
   const service = useGetJobService();
 
   return useSuspenseQuery(jobsKeys.getDebugInfo(id), () => service.getDebugInfo(id), {
     refetchInterval: false,
-    enabled,
   });
 };
 
