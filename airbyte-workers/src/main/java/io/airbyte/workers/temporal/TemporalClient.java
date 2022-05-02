@@ -26,7 +26,6 @@ import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.exception.DeletedWorkflowException;
 import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
@@ -317,9 +316,10 @@ public class TemporalClient {
   public ManualOperationResult startNewCancellation(final UUID connectionId) {
     log.info("Manual cancellation request");
 
-    final ConnectionManagerWorkflow connectionManagerWorkflow;
+    final long jobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
+
     try {
-      connectionManagerWorkflow = ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::cancelJob);
+      ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::cancelJob);
     } catch (final DeletedWorkflowException e) {
       log.error("Can't cancel a deleted workflow", e);
       return new ManualOperationResult(
@@ -339,8 +339,6 @@ public class TemporalClient {
 
     log.info("end of manual cancellation");
 
-    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
-
     return new ManualOperationResult(
         Optional.empty(),
         Optional.of(jobId));
@@ -350,13 +348,7 @@ public class TemporalClient {
     log.info("reset sync request");
 
     // get the job ID before the reset, defaulting to NON_RUNNING_JOB_ID if workflow is unreachable
-    long oldJobId = ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID;
-    try {
-      final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
-      oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
-    } catch (final Exception e) {
-      log.error("Failed to retrieve workflow", e);
-    }
+    final long oldJobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
 
     final ConnectionManagerWorkflow connectionManagerWorkflow;
     try {

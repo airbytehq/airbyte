@@ -513,8 +513,12 @@ public class SchedulerHandler {
     final Job job = jobPersistence.getJob(jobId);
 
     final ManualOperationResult cancellationResult = eventRunner.startNewCancellation(UUID.fromString(job.getScope()));
+    if (cancellationResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(cancellationResult.getFailingReason().get());
+    }
 
-    return readJobFromResult(cancellationResult);
+    // return job info for already-queried job
+    return jobConverter.getJobInfoRead(job);
   }
 
   private JobInfoRead submitManualSyncToWorker(final UUID connectionId) throws IOException {

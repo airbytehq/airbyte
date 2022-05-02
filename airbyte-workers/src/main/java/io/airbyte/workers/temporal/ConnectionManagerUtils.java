@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal;
 import io.airbyte.workers.temporal.exception.DeletedWorkflowException;
 import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionUpdaterInput;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.temporal.client.BatchRequest;
@@ -157,6 +158,15 @@ public class ConnectionManagerUtils {
     }
 
     return connectionManagerWorkflow;
+  }
+
+  static long getCurrentJobId(final WorkflowClient client, final UUID connectionId) {
+    try {
+      final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
+      return connectionManagerWorkflow.getJobInformation().getJobId();
+    } catch (final Exception e) {
+      return ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID;
+    }
   }
 
   static ConnectionManagerWorkflow newConnectionManagerWorkflowStub(final WorkflowClient client, final UUID connectionId) {
