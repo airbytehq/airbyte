@@ -24,6 +24,17 @@ import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Provides utility methods to create configured {@link Database} instances.
+ *
+ * @deprecated This class has been marked as deprecated as we move to using an application framework
+ *             to manage resources. This class will be removed in a future release.
+ *
+ * @see io.airbyte.db.factory.DataSourceFactory
+ * @see io.airbyte.db.factory.DSLContextFactory
+ * @see io.airbyte.db.factory.FlywayFactory
+ */
+@Deprecated(forRemoval = true)
 public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
