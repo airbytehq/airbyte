@@ -120,7 +120,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         }
         return stream_kwargs
 
-    def get_role(self, config):
+    def get_role(self, config: ConnectorConfig) -> dict:
         boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
         *_, arn_resource = config.role_arn.split(":")
         if arn_resource.startswith("user"):
