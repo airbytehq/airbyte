@@ -66,7 +66,7 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
 
     trackNewSourceAction("Select a connector", {
       connector_source: sourceDefinition?.name,
-      connector_source_id: sourceDefinition?.sourceDefinitionId,
+      connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
     });
 
     setError(null);

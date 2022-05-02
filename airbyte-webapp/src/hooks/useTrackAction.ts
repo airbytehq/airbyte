@@ -9,7 +9,7 @@ export const enum TrackActionType {
 
 interface TrackActionProperties {
   connector_source?: string;
-  connector_source_id?: string;
+  connector_source_definition_id?: string;
   connector_destination?: string;
   connector_destination_definition_id?: string;
 }

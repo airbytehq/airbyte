@@ -55,7 +55,7 @@ const ConnectorCard: React.FC<
       if (props.formType === "source") {
         trackNewSourceAction(action, {
           connector_source: connector?.name,
-          connector_source_id: Connector.id(connector),
+          connector_source_definition_id: Connector.id(connector),
         });
       } else {
         trackNewDestinationAction(action, {
