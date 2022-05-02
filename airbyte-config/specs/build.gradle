@@ -21,5 +21,4 @@ task generateSeedConnectorSpecs(type: JavaExec, dependsOn: compileJava) {
     args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
 }
 
-// TODO: see what removing this does
 //project(":airbyte-config:init").tasks.processResources.dependsOn(generateSeedConnectorSpecs)

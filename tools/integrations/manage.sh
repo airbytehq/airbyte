@@ -169,13 +169,17 @@ cmd_bump_version() {
   yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
 
 
-  # 3) Seed files TODO broken  from publish spec to cache step
+  # 3) Generate Spec, dont push to cache though since PR has not been merged yet
+#  local tmp_spec_file; tmp_spec_file=$(mktemp)
+#  publish_spec_to_cache="true" _publish_spec_to_cache "$image_name" "$bumped_version"
+
+  # 4) processResources to update
   ./gradlew :airbyte-config:init:processResources
 
   echo "Woohoo! Successfully bumped $connector:$current_version to $connector:$bumped_version"
-
 }
 
+# TODO: also should be post merge step
 # Checking if the image was successfully registered on DockerHub
 # see the description of this PR to understand why this is needed https://github.com/airbytehq/airbyte/pull/11654/
 _ensure_docker_image_registered() {
@@ -190,22 +194,28 @@ _ensure_docker_image_registered() {
   fi
 }
 
-_publish_spec_to_cache() {
+_generate_spec() {
   local versioned_image; versioned_image="$1"
+
+  docker run --rm "$versioned_image" spec | \
+    # 1. filter out any lines that are not valid json.
+    jq -R "fromjson? | ." | \
+    # 2. grab any json that has a spec in it.
+    # 3. if there are more than one, take the first one.
+    # 4. if there are none, throw an error.
+    jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end"
+}
+
+_publish_spec_to_cache() {
+  local image_name; image_name=$1
+  local image_version; image_version=$2
 
   if [[ "true" == "${publish_spec_to_cache}" ]]; then
     echo "Publishing and writing to spec cache."
 
-    # publish spec to cache. do so, by running get spec locally and then pushing it to gcs.
+    # Create tmp spec file
     local tmp_spec_file; tmp_spec_file=$(mktemp)
-    docker run --rm "$versioned_image" spec | \
-      # 1. filter out any lines that are not valid json.
-      jq -R "fromjson? | ." | \
-      # 2. grab any json that has a spec in it.
-      # 3. if there are more than one, take the first one.
-      # 4. if there are none, throw an error.
-      jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end" \
-      > "$tmp_spec_file"
+    _generate_spec "$image_name:$image_version" > "$tmp_spec_file"
 
     # use service account key file is provided.
     if [[ -n "${spec_cache_writer_sa_key_file}" ]]; then
@@ -289,7 +299,7 @@ cmd_publish() {
   fi
 
   _ensure_docker_image_registered "$image_name" "$image_version"
-  _publish_spec_to_cache "$versioned_image"
+  _publish_spec_to_cache "$image_name" "$image_version"
 }
 
 cmd_publish_external() {
