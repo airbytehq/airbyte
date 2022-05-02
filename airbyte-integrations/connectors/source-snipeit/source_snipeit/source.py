@@ -3,7 +3,6 @@
 #
 from typing import Any, List, Mapping, Tuple
 
-from copy import deepcopy
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
