@@ -158,6 +158,8 @@ jobs:
       ############################
       - name: Bump Connector Version
         id: bump-version
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         if: success()
         run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
