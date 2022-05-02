@@ -61,24 +61,22 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
 
     if (version >= VERSION_INTRODUCING_CHECK_BEFORE_SYNC) {
-      System.out.println("--- START SOURCE CHECK");
       final StandardCheckConnectionOutput sourceCheckResponse = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
       if (sourceCheckResponse.getStatus() == Status.FAILED) {
-        System.out.println("--- SOURCE CHECK FAILED");
-        System.out.println(sourceCheckResponse);
+        LOGGER.info("SOURCE CHECK: Failed");
         return CheckFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobRunConfig, sourceCheckResponse);
+      } else {
+        LOGGER.info("SOURCE CHECK: Successful");
       }
-      System.out.println("--- SOURCE CHECK OK");
 
-      System.out.println("--- START DESTINATION CHECK");
       final StandardCheckConnectionOutput destinationCheckResponse =
           checkActivity.check(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
       if (destinationCheckResponse.getStatus() == Status.FAILED) {
-        System.out.println("--- DESTINATION CHECK FAILED");
-        System.out.println(destinationCheckResponse);
+        LOGGER.info("DESTINATION CHECK: Failed");
         return CheckFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobRunConfig, destinationCheckResponse);
+      } else {
+        LOGGER.info("DESTINATION CHECK: Successful");
       }
-      System.out.println("--- DESTINATION CHECK OK");
     }
 
     StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
