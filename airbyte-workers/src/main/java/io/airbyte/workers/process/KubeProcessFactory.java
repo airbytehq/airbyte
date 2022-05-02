@@ -39,7 +39,7 @@ public class KubeProcessFactory implements ProcessFactory {
   public static final String NORMALISE_STEP = "normalise";
   public static final String CUSTOM_STEP = "custom";
 
-  private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");;
+  private static final Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");
   private static final String JOB_LABEL_KEY = "job_id";
   private static final String ATTEMPT_LABEL_KEY = "attempt_id";
   private static final String WORKER_POD_LABEL_KEY = "airbyte";
@@ -110,7 +110,7 @@ public class KubeProcessFactory implements ProcessFactory {
     try {
       // used to differentiate source and destination processes with the same id and attempt
       final String podName = createPodName(imageName, jobId, attempt);
-      LOGGER.info("Attempting to start pod = {}", podName);
+      LOGGER.info("Attempting to start pod = {} for {}", podName, imageName);
 
       final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
       LOGGER.info("{} stdoutLocalPort = {}", podName, stdoutLocalPort);
@@ -124,11 +124,11 @@ public class KubeProcessFactory implements ProcessFactory {
           isOrchestrator,
           processRunnerHost,
           fabricClient,
-          workerConfigs.getWorkerStatusCheckInterval(),
           podName,
           namespace,
           imageName,
           workerConfigs.getJobImagePullPolicy(),
+          workerConfigs.getSidecarImagePullPolicy(),
           stdoutLocalPort,
           stderrLocalPort,
           kubeHeartbeatUrl,
@@ -140,6 +140,7 @@ public class KubeProcessFactory implements ProcessFactory {
           workerConfigs.getWorkerKubeTolerations(),
           workerConfigs.getworkerKubeNodeSelectors(),
           allLabels,
+          workerConfigs.getWorkerKubeAnnotations(),
           workerConfigs.getJobSocatImage(),
           workerConfigs.getJobBusyboxImage(),
           workerConfigs.getJobCurlImage(),

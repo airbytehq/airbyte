@@ -181,7 +181,7 @@ public class WorkerApp {
             jobCreator),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
-        new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs));
+        new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier));
   }
 
   private void registerSync(final WorkerFactory factory) {
@@ -281,7 +281,11 @@ public class WorkerApp {
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
       LOGGER.info("Using Kubernetes namespace: {}", configs.getJobKubeNamespace());
-      return new KubeProcessFactory(workerConfigs, configs.getJobKubeNamespace(), fabricClient, kubeHeartbeatUrl, false);
+      return new KubeProcessFactory(workerConfigs,
+          configs.getJobKubeNamespace(),
+          fabricClient,
+          kubeHeartbeatUrl,
+          false);
     } else {
       return new DockerProcessFactory(
           workerConfigs,
@@ -369,9 +373,12 @@ public class WorkerApp {
         configs.getConfigDatabasePassword(),
         configs.getConfigDatabaseUrl())
             .getInitialized();
-    final JsonSecretsProcessor jsonSecretsProcessor = new JsonSecretsProcessor();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor, featureFlags);
+    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+        .maskSecrets(!featureFlags.exposeSecretsInExport())
+        .copySecrets(false)
+        .build();
+    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
     final Database jobDatabase = new JobsDatabaseInstance(

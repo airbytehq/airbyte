@@ -2,196 +2,206 @@
 
 ## Connector Release Stages
 
-Airbyte uses a grading system for connectors to help users understand what to expect from a connector. There are three grades, explained below:
+Airbyte uses a grading system for connectors to help you understand what to expect from a connector:
 
-**Generally Available**: This connector has been proven to be robust via usage by a large number of users and extensive testing. Generally available connectors are ready for production use.
+**Generally Available**: A generally available connector has been deemed ready for use in a production environment and is officially supported by Airbyte. Its documentation is considered sufficient to support widespread adoption.
 
-**Beta**: A beta connector is considered to be stable and reliable but has not been validated by a larger group of users and therefor users should be cautious using these connectors in production. Any issues with beta connectors will be prioritized and worked on when the connector is ready for the next release stage.
+**Beta**: A beta connector is considered stable and reliable with no backwards incompatible changes but has not been validated by a broader group of users. We expect to find and fix a few issues and bugs in the release before it’s ready for GA.
 
-**Alpha**: This connector is either not sufficiently tested, has extremely limited functionality \(e.g: created as an example connector\), or for any other reason may not be very mature. We strongly discourage using alpha connectors for production use cases as we do not offer Cloud Support SLAs and issues will looked into when the connector is to be priortized for the next release stage.
+**Alpha**: An alpha connector signifies a connector under development and helps Airbyte gather early feedback and issues reported by early adopters. We strongly discourage using alpha releases for production use cases and do not offer Cloud Support SLAs around these products, features, or connectors.
 
-**Note:** Some connectors on this list are currently not available on the Airbyte Cloud platform.
+For more information about the grading system, see [Product Release Stages](https://docs.airbyte.com/project-overview/product-release-stages)
 
-### Sources
+## Sources
 
-| Connector | Stage |
-| :--- | :--- |
-| [3PL Central](sources/tplcentral.md) | Alpha |
-| [Airtable](sources/airtable.md) | Alpha |
-| [Amazon SQS](sources/amazon-sqs.md) | Alpha |
-| [Amazon Seller Partner](sources/amazon-seller-partner.md) | Alpha |
-| [Amplitude](sources/amplitude.md) | Alpha |
-| [Apify Dataset](sources/apify-dataset.md) | Alpha |
-| [Appstore](sources/appstore.md) | Alpha |
-| [Asana](sources/asana.md) | Alpha |
-| [AWS CloudTrail](sources/aws-cloudtrail.md) | Alpha |
-| [Azure Table Storage](sources/azure-table.md) | Alpha |
-| [BambooHR](sources/bamboo-hr.md) | Alpha |
-| [Braintree](sources/braintree.md) | Alpha |
-| [BigCommerce](sources/bigcommerce.md) | Alpha |
-| [BigQuery](sources/bigquery.md) | Alpha |
-| [Bing Ads](sources/bing-ads.md) | Alpha |
-| [Cart.com](sources/cart.md) | Alpha |
-| [Chargebee](sources/chargebee.md) | Alpha |
-| [Chartmogul](sources/chartmogul.md) | Alpha |
-| [ClickHouse](sources/clickhouse.md) | Alpha |
-| [Close.com](sources/close-com.md) | Alpha |
-| [CockroachDB](sources/cockroachdb.md) | Alpha |
-| [Customer.io](sources/customer-io.md) | Alpha |
-| [Db2](sources/db2.md) | Alpha |
-| [Delighted](sources/delighted.md) | Alpha |
-| [Dixa](sources/dixa.md) | Alpha |
-| [Drift](sources/drift.md) | Alpha |
-| [Drupal](sources/drupal.md) | Alpha |
-| [End-to-End Testing](sources/e2e-test.md) | Alpha |
-| [Exchange Rates API](sources/exchangeratesapi.md) | Alpha |
-| [Facebook Marketing](sources/facebook-marketing.md) | Beta |
-| [Facebook Pages](sources/facebook-pages.md) | Alpha |
-| [Files](sources/file.md) | Alpha |
-| [Flexport](sources/flexport.md) | Alpha |
-| [Freshdesk](sources/freshdesk.md) | Alpha |
-| [GitHub](sources/github.md) | Beta |
-| [GitLab](sources/gitlab.md) | Alpha |
-| [Google Ads](sources/google-ads.md) | Beta |
-| [Google Adwords](sources/google-adwords.md) | Alpha |
-| [Google Analytics v4](sources/google-analytics-v4.md) | Beta |
-| [Google Directory](sources/google-directory.md) | Alpha |
-| [Google Search Console](sources/google-search-console.md) | Alpha |
-| [Google Sheets](sources/google-sheets.md) | Beta |
-| [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md) | Alpha |
-| [Greenhouse](sources/greenhouse.md) | Alpha |
-| [Harness](sources/harness.md) | Alpha |
-| [HubSpot](sources/hubspot.md) | Beta |
-| [Instagram](sources/instagram.md) | Alpha |
-| [Intercom](sources/intercom.md) | Beta |
-| [Iterable](sources/iterable.md) | Alpha |
-| [Jenkins](sources/jenkins.md) | Alpha |
-| [Jira](sources/jira.md) | Alpha |
-| [Klaviyo](sources/klaviyo.md) | Alpha |
-| [Kustomer](sources/kustomer.md) | Alpha |
-| [Lemlist](sources/lemlist.md) | Alpha |
-| [LinkedIn Ads](sources/linkedin-ads.md) | Alpha |
-| [Linnworks](sources/linnworks.md) | Alpha |
-| [Kustomer](sources/kustomer.md) | Alpha |
-| [Lever Hiring](sources/lever-hiring.md) | Alpha |
-| [Looker](sources/looker.md) | Alpha |
-| [Magento](sources/magento.md) | Alpha |
-| [Mailchimp](sources/mailchimp.md) | Alpha |
-| [Marketo](sources/marketo.md) | Alpha |
-| [Microsoft SQL Server \(MSSQL\)](sources/mssql.md) | Alpha |
-| [Microsoft Dynamics AX](sources/microsoft-dynamics-ax.md) | Alpha |
-| [Microsoft Dynamics Customer Engagement](sources/microsoft-dynamics-customer-engagement.md) | Alpha |
-| [Microsoft Dynamics GP](sources/microsoft-dynamics-gp.md) | Alpha |
-| [Microsoft Dynamics NAV](sources/microsoft-dynamics-nav.md) | Alpha |
-| [Microsoft Teams](sources/microsoft-teams.md) | Alpha |
-| [Mixpanel](sources/mixpanel.md) | Alpha |
-| [Monday](sources/monday.md) | Alpha |
-| [Mongo DB](sources/mongodb-v2.md) | Alpha |
-| [My Hours](sources/my-hours.md) | Alpha |
-| [MySQL](sources/mysql.md) | Alpha |
-| [Notion](sources/notion.md) | Alpha |
-| [Okta](sources/okta.md) | Alpha |
-| [OneSignal](sources/onesignal.md) | Alpha |
-| [OpenWeather](sources/openweather.md) | Alpha |
-| [Oracle DB](sources/oracle.md) | Alpha |
-| [Oracle PeopleSoft](sources/oracle-peoplesoft.md) | Alpha |
-| [Oracle Siebel CRM](sources/oracle-siebel-crm.md) | Alpha |
-| [Outreach](./sources/outreach.md)| Alpha |
-| [PagerDuty](sources/pagerduty.md) | Alpha |
-| [PayPal Transaction](sources/paypal-transaction.md) | Alpha |
-| [Paystack](sources/paystack.md) | Alpha |
-| [PersistIq](sources/persistiq.md) | Alpha |
-| [Pinterest](sources/pinterest.md) | Alpha |
-| [Pipedrive](sources/pipedrive.md) | Alpha |
-| [Plaid](sources/plaid.md) | Alpha |
-| [PokéAPI](sources/pokeapi.md) | Alpha |
-| [Postgres](sources/postgres.md) | Alpha |
-| [PostHog](sources/posthog.md) | Alpha |
-| [PrestaShop](sources/presta-shop.md) | Alpha |
-| [Qualaroo](sources/qualaroo.md) | Alpha |
-| [QuickBooks](sources/quickbooks.md) | Alpha |
-| [Recharge](sources/recharge.md) | Alpha |
-| [Recurly](sources/recurly.md) | Alpha |
-| [Redshift](sources/redshift.md) | Alpha |
-| [Retently](sources/retently.md) | Alpha |
-| [S3](sources/s3.md) | Beta |
-| [Salesforce](sources/salesforce.md) | Certified |
-| [Salesloft](./sources/salesloft.md)| Alpha |
-| [SAP Business One](sources/sap-business-one.md) | Alpha |
-| [SearchMetrics](./sources/search-metrics.md)| Alpha |
-| [Sendgrid](sources/sendgrid.md) | Alpha |
-| [Sentry](sources/sentry.md) | Alpha |
-| [Shopify](sources/shopify.md) | Alpha |
-| [Short.io](sources/shortio.md) | Alpha |
-| [Slack](sources/slack.md) | Alpha |
-| [Spree Commerce](sources/spree-commerce.md) | Alpha |
-| [Smartsheets](sources/smartsheets.md) | Alpha |
-| [Snowflake](sources/snowflake.md) | Alpha |
-| [Square](sources/square.md) | Alpha |
-| [Strava](sources/strava.md) | Alpha |
-| [Stripe](sources/stripe.md) | Beta |
-| [Sugar CRM](sources/sugar-crm.md) | Alpha |
-| [SurveyMonkey](sources/surveymonkey.md) | Alpha |
-| [Tempo](sources/tempo.md) | Alpha |
-| [TikTok Marketing](./sources/tiktok-marketing.md)| Alpha |
-| [Trello](sources/trello.md) | Alpha |
-| [Twilio](sources/twilio.md) | Alpha |
-| [Typeform](sources/typeform.md) | Alpha |
-| [US Census](sources/us-census.md) | Alpha |
-| [VictorOps](sources/victorops.md) | Alpha |
-| [WooCommerce](sources/woocommerce.md) | Alpha |
-| [Wordpress](sources/wordpress.md) | Alpha |
-| [YouTube Analytics](sources/youtube-analytics.md) | Alpha |
-| [Zencart](sources/zencart.md) | Alpha |
-| [Zendesk Chat](sources/zendesk-chat.md) | Alpha |
-| [Zendesk Sunshine](sources/zendesk-sunshine.md) | Alpha |
-| [Zendesk Support](sources/zendesk-support.md) | Alpha |
-| [Zendesk Talk](sources/zendesk-talk.md) | Alpha |
-| [Zenloop](sources/zenloop.md)| Alpha |
-| [Zoom](sources/zoom.md) | Alpha |
-| [Zuora](sources/zuora.md) | Alpha |
+| Connector                                                                                   | Product Release Stage| Available in Cloud? |
+| :------------------------------------------------------------------------------------------ | :------------------- | :------------------ |
+| [3PL Central](sources/tplcentral.md)                                                        | Alpha                | No                  |
+| [Airtable](sources/airtable.md)                                                             | Alpha                | Yes                 |
+| [Amazon Ads](sources/amazon-ads.md)                                                         | Alpha                | No                  |
+| [Amazon Seller Partner](sources/amazon-seller-partner.md)                                   | Alpha                | No                  |
+| [Amazon SQS](sources/amazon-sqs.md)                                                         | Alpha                | Yes                 |
+| [Amplitude](sources/amplitude.md)                                                           | Alpha                | Yes                 |
+| [Apify Dataset](sources/apify-dataset.md)                                                   | Alpha                | Yes                 |
+| [Appstore](sources/appstore.md)                                                             | Alpha                | No                  |
+| [Asana](sources/asana.md)                                                                   | Alpha                | No                  |
+| [AWS CloudTrail](sources/aws-cloudtrail.md)                                                 | Alpha                | Yes                 |
+| [Azure Table Storage](sources/azure-table.md)                                               | Alpha                | Yes                 |
+| [BambooHR](sources/bamboo-hr.md)                                                            | Alpha                | No                  |
+| [Baton](sources/hellobaton.md)                                                              | Alpha                | No                  |
+| [BigCommerce](sources/bigcommerce.md)                                                       | Alpha                | Yes                 |
+| [BigQuery](sources/bigquery.md)                                                             | Alpha                | Yes                 |
+| [Bing Ads](sources/bing-ads.md)                                                             | Alpha                | No                  |
+| [Braintree](sources/braintree.md)                                                           | Alpha                | Yes                 |
+| [Cart.com](sources/cart.md)                                                                 | Alpha                | No                  |
+| [Chargebee](sources/chargebee.md)                                                           | Alpha                | Yes                 |
+| [Chargify](sources/chargify.md)                                                             | Alpha                | No                  |
+| [Chartmogul](sources/chartmogul.md)                                                         | Alpha                | Yes                 |
+| [ClickHouse](sources/clickhouse.md)                                                         | Alpha                | Yes                 |
+| [Close.com](sources/close-com.md)                                                           | Alpha                | Yes                 |
+| [CockroachDB](sources/cockroachdb.md)                                                       | Alpha                | No                  |
+| [Commercetools](sources/commercetools.md)                                                   | Alpha                | No                  |
+| [Confluence](sources/confulence.md)                                                         | Alpha                | No                  |
+| [Customer.io](sources/customer-io.md)                                                       | Alpha                | No                  |
+| [Db2](sources/db2.md)                                                                       | Alpha                | No                  |
+| [Delighted](sources/delighted.md)                                                           | Alpha                | Yes                 |
+| [Dixa](sources/dixa.md)                                                                     | Alpha                | Yes                 |
+| [Drift](sources/drift.md)                                                                   | Alpha                | No                  |
+| [Drupal](sources/drupal.md)                                                                 | Alpha                | No                  |
+| [End-to-End Testing](sources/e2e-test.md)                                                   | Alpha                | Yes                 |
+| [Exchange Rates API](sources/exchangeratesapi.md)                                           | Alpha                | Yes                 |
+| [Facebook Marketing](sources/facebook-marketing.md)                                         | Generally Available  | Yes                 |
+| [Facebook Pages](sources/facebook-pages.md)                                                 | Alpha                | No                  |
+| [Faker](sources/faker.md)                                                                   | Alpha                | No                  |
+| [File](sources/file.md)                                                                     | Alpha                | Yes                 |
+| [Flexport](sources/flexport.md)                                                             | Alpha                | No                  |
+| [Freshdesk](sources/freshdesk.md)                                                           | Alpha                | Yes                 |
+| [Freshsales](sources/freshsales.md)                                                         | Alpha                | No                  |
+| [Freshservice](sources/freshservice.md)                                                     | Alpha                | No                  |
+| [GitHub](sources/github.md)                                                                 | Beta                 | Yes                 |
+| [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
+| [Google Ads](sources/google-ads.md)                                                         | Beta                 | Yes                 |
+| [Google Analytics v4](sources/google-analytics-v4.md)                                       | Beta                 | Yes                 |
+| [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
+| [Google Search Console](sources/google-search-console.md)                                   | Alpha                | Yes                 |
+| [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
+| [Google Workspace Admin Reports](sources/google-workspace-admin-reports.md)                 | Alpha                | Yes                 |
+| [Greenhouse](sources/greenhouse.md)                                                         | Alpha                | Yes                 |
+| [Harness](sources/harness.md)                                                               | Alpha                | No                  |
+| [Harvest](sources/harvest.md)                                                               | Alpha                | No                  |
+| [http-request](sources/http-request.md)                                                     | Alpha                | No                  |
+| [HubSpot](sources/hubspot.md)                                                               | Beta                 | Yes                 |
+| [Instagram](sources/instagram.md)                                                           | Beta                 | Yes                 |
+| [Intercom](sources/intercom.md)                                                             | Beta                 | Yes                 |
+| [Iterable](sources/iterable.md)                                                             | Alpha                | Yes                 |
+| [Jenkins](sources/jenkins.md)                                                               | Alpha                | No                  |
+| [Jira](sources/jira.md)                                                                     | Alpha                | No                  |
+| [Kafka](sources/kafka.md)                                                                   | Alpha                | No                  |
+| [Klaviyo](sources/klaviyo.md)                                                               | Alpha                | Yes                 |
+| [Kustomer](sources/kustomer.md)                                                             | Alpha                | Yes                 |
+| [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
+| [Lever](sources/level-hiring.md)                                                            | Alpha                | No                  |
+| [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Beta                 | Yes                 |
+| [Linnworks](sources/linnworks.md)                                                           | Alpha                | Yes                 |
+| [Looker](sources/looker.md)                                                                 | Alpha                | Yes                 |
+| [Magento](sources/magento.md)                                                               | Alpha                | No                  |
+| [Mailchimp](sources/mailchimp.md)                                                           | Alpha                | Yes                 |
+| [Marketo](sources/marketo.md)                                                               | Alpha                | Yes                 |
+| [Microsoft Dynamics AX](sources/microsoft-dynamics-ax.md)                                   | Alpha                | No                  |
+| [Microsoft Dynamics Customer Engagement](sources/microsoft-dynamics-customer-engagement.md) | Alpha                | No                  |
+| [Microsoft Dynamics GP](sources/microsoft-dynamics-gp.md)                                   | Alpha                | No                  |
+| [Microsoft Dynamics NAV](sources/microsoft-dynamics-nav.md)                                 | Alpha                | No                  |
+| [Microsoft SQL Server (MSSQL)](sources/mssql.md)                                            | Alpha                | Yes                 |
+| [Microsoft Teams](sources/microsoft-teams.md)                                               | Alpha                | Yes                 |
+| [Mixpanel](sources/mixpanel.md)                                                             | Alpha                | Yes                 |
+| [Monday](sources/monday.md)                                                                 | Alpha                | Yes                 |
+| [Mongo DB](sources/mongodb-v2.md)                                                           | Alpha                | Yes                 |
+| [My Hours](sources/my-hours.md)                                                             | Alpha                | Yes                 |
+| [MySQL](sources/mysql.md)                                                                   | Alpha                | Yes                 |
+| [Notion](sources/notion.md)                                                                 | Alpha                | No                  |
+| [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
+| [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
+| [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
+| [Oracle DB](sources/oracle.md)                                                              | Alpha                | Yes                 |
+| [Oracle PeopleSoft](sources/oracle-peoplesoft.md)                                           | Alpha                | No                  |
+| [Oracle Siebel CRM](sources/oracle-siebel-crm.md)                                           | Alpha                | No                  |
+| [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
+| [Outreach](./sources/outreach.md)                                                           | Alpha                | No                  |
+| [PagerDuty](sources/pagerduty.md)                                                           | Alpha                | No                  |
+| [PayPal Transaction](sources/paypal-transaction.md)                                         | Alpha                | No                  |
+| [Paystack](sources/paystack.md)                                                             | Alpha                | No                  |
+| [PersistIq](sources/persistiq.md)                                                           | Alpha                | Yes                 |
+| [Pinterest](sources/pinterest.md)                                                           | Alpha                | No                  |
+| [Pipedrive](sources/pipedrive.md)                                                           | Alpha                | No                  |
+| [Pivotal Tracker](sources/pivotal-tracker.md)                                               | Alpha                | No                  |
+| [Plaid](sources/plaid.md)                                                                   | Alpha                | No                  |
+| [PokéAPI](sources/pokeapi.md)                                                               | Alpha                | Yes                 |
+| [Postgres](sources/postgres.md)                                                             | Alpha                | Yes                 |
+| [PostHog](sources/posthog.md)                                                               | Alpha                | Yes                 |
+| [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
+| [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
+| [QuickBooks](sources/quickbooks.md)                                                         | Alpha                | No                  |
+| [Recharge](sources/recharge.md)                                                             | Alpha                | Yes                 |
+| [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
+| [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
+| [Retently](sources/retently.md)                                                             | Alpha                | Yes                 |
+| [S3](sources/s3.md)                                                                         | Beta                 | Yes                 |
+| [Salesforce](sources/salesforce.md)                                                         | Generally Available  | Yes                 |
+| [Salesloft](sources/salesloft.md)                                                           | Alpha                | No                  |
+| [SAP Business One](sources/sap-business-one.md)                                             | Alpha                | No                  |
+| [SearchMetrics](./sources/search-metrics.md)                                                | Alpha                | No                  |
+| [Sendgrid](sources/sendgrid.md)                                                             | Alpha                | Yes                 |
+| [Sentry](sources/sentry.md)                                                                 | Alpha                | Yes                 |
+| [Shopify](sources/shopify.md)                                                               | Alpha                | Yes                 |
+| [Short.io](sources/shortio.md)                                                              | Alpha                | Yes                 |
+| [Slack](sources/slack.md)                                                                   | Alpha                | No                  |
+| [Smartsheets](sources/smartsheets.md)                                                       | Alpha                | No                  |
+| [Snapchat Marketing](sources/snapchat-marketing.md)                                         | Alpha                | Yes                 |
+| [Snowflake](sources/snowflake.md)                                                           | Alpha                | Yes                 |
+| [Spree Commerce](sources/spree-commerce.md)                                                 | Alpha                | No                  |
+| [Square](sources/square.md)                                                                 | Alpha                | Yes                 |
+| [Strava](sources/strava.md)                                                                 | Alpha                | No                  |
+| [Stripe](sources/stripe.md)                                                                 | Beta                 | Yes                 |
+| [Sugar CRM](sources/sugar-crm.md)                                                           | Alpha                | No                  |
+| [SurveyMonkey](sources/surveymonkey.md)                                                     | Alpha                | No                  |
+| [Tempo](sources/tempo.md)                                                                   | Alpha                | Yes                 |
+| [TiDB](sources/tidb.md)                                                                     | Alpha                | No                  |
+| [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Alpha                | No                  |
+| [Trello](sources/trello.md)                                                                 | Alpha                | No                  |
+| [Twilio](sources/twilio.md)                                                                 | Alpha                | Yes                 |
+| [Typeform](sources/typeform.md)                                                             | Alpha                | Yes                 |
+| [US Census](sources/us-census.md)                                                           | Alpha                | Yes                 |
+| [VictorOps](sources/victorops.md)                                                           | Alpha                | No                  |
+| [WooCommerce](sources/woocommerce.md)                                                       | Alpha                | No                  |
+| [Wordpress](sources/wordpress.md)                                                           | Alpha                | No                  |
+| [YouTube Analytics](sources/youtube-analytics.md)                                           | Alpha                | No                  |
+| [Zencart](sources/zencart.md)                                                               | Alpha                | No                  |
+| [Zendesk Chat](sources/zendesk-chat.md)                                                     | Alpha                | Yes                 |
+| [Zendesk Sunshine](sources/zendesk-sunshine.md)                                             | Alpha                | Yes                 |
+| [Zendesk Support](sources/zendesk-support.md)                                               | Beta                 | Yes                 |
+| [Zendesk Talk](sources/zendesk-talk.md)                                                     | Alpha                | No                  |
+| [Zenloop](sources/zenloop.md)                                                               | Alpha                | Yes                 |
+| [Zoho CRM](sources/zoho-crm.md)                                                             | Alpha                | No                  |
+| [Zoom](sources/zoom.md)                                                                     | Alpha                | No                  |
+| [Zuora](sources/zuora.md)                                                                   | Alpha                | Yes                 |
 
-### Destinations
+## Destinations
 
-| Connector | Stage |
-| :--- | :--- |
-| [Amazon SQS](destinations/amazon-sqs.md) | Alpha |
-| [AzureBlobStorage](destinations/azureblobstorage.md) | Alpha |
-| [BigQuery](destinations/bigquery.md) | Beta |
-| [Cassandra](sources/cassandra.md) | Alpha |
-| [Chargify \(Keen\)](destinations/chargify.md) | Alpha |
-| [ClickHouse](destinations/clickhouse.md) | Alpha |
-| [Databricks](destinations/databricks.md) | Alpha |
-| [DynamoDB](sources/dynamodb.md) | Alpha |
-| [Elasticsearch](destinations/elasticsearch.md) | Alpha |
-| [End-to-End Testing](destinations/e2e-test.md) | Alpha |
-| [Google Cloud Storage \(GCS\)](destinations/gcs.md) | Beta |
-| [Google Firestore](destinations/firestore.md) | Alpha |
-| [Google Pubsub](destinations/pubsub.md) | Alpha |
-| [Kafka](destinations/kafka.md) | Alpha |
-| [Keen](destinations/keen.md) | Alpha |
-| [Local CSV](destinations/local-csv.md) | Alpha |
-| [Local JSON](destinations/local-json.md) | Alpha |
-| [MariaDB ColumnStore](destinations/mariadb-columnstore.md) | Alpha |
-| [MeiliSearch](destinations/meilisearch.md) | Alpha |
-| [MongoDB](destinations/mongodb.md) | Alpha |
-| [MQTT](destinations/mqtt.md) | Alpha |
-| [MS SQL Server](sources/mssql.md) | Alpha |
-| [MySQL](destinations/mysql.md) | Alpha |
-| [Oracle](destinations/oracle.md) | Alpha |
-| [Postgres](destinations/postgres.md) | Alpha |
-| [Pulsar](destinations/pulsar.md) | Alpha |
-| [RabbitMQ](destinations/rabbitmq.md) | Alpha |
-| [Redis](sources/redis.md) | Alpha |
-| [Redshift](destinations/redshift.md) | Beta |
-| [Rockset](destinations/rockset.md) | Alpha |
-| [S3](destinations/s3.md) | Beta |
-| [Scylla](sources/scylla.md) | Alpha |
-| [SFTP JSON](./destinations/sftp-json.md)| Alpha |
-| [SQL Server \(MSSQL\)](destinations/mssql.md) | Alpha |
-| [Snowflake](destinations/snowflake.md) | Generally Available |
-| [Cassandra](destinations/cassandra.md) | Alpha |
-| [Scylla](destinations/scylla.md) | Alpha |
-| [Redis](destinations/redis.md) | Alpha |
-| [Kinesis](destinations/kinesis.md) | Alpha |
-| [Streamr](destinations/streamr.md) | Alpha |
+| Connector                                                  | Product Release Stage| Available in Cloud? |
+| :--------------------------------------------------------- | :------------------- | :------------------ |
+| [Amazon SQS](destinations/amazon-sqs.md)                   | Alpha                | Yes                 |
+| [Amazon Datalake](destinations/aws-datalake.md)            | Alpha                | No                  |
+| [AzureBlobStorage](destinations/azureblobstorage.md)       | Alpha                | Yes                 |
+| [BigQuery](destinations/bigquery.md)                       | Generally Available  | Yes                 |
+| [Cassandra](destinations/cassandra.md)                     | Alpha                | Yes                 |
+| [Chargify (Keen)](destinations/chargify.md)                | Alpha                | Yes                 |
+| [ClickHouse](destinations/clickhouse.md)                   | Alpha                | Yes                 |
+| [Databricks](destinations/databricks.md)                   | Alpha                | Yes                 |
+| [DynamoDB](sources/dynamodb.md)                            | Alpha                | Yes                 |
+| [Elasticsearch](destinations/elasticsearch.md)             | Alpha                | Yes                 |
+| [End-to-End Testing](destinations/e2e-test.md)             | Alpha                | Yes                 |
+| [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
+| [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
+| [Kafka](destinations/kafka.md)                             | Alpha                | No                  |
+| [Keen](destinations/keen.md)                               | Alpha                | No                  |
+| [Kinesis](destinations/kinesis.md)                         | Alpha                | No                  |
+| [Local CSV](destinations/local-csv.md)                     | Alpha                | No                  |
+| [Local JSON](destinations/local-json.md)                   | Alpha                | No                  |
+| [MariaDB ColumnStore](destinations/mariadb-columnstore.md) | Alpha                | Yes                 |
+| [MeiliSearch](destinations/meilisearch.md)                 | Alpha                | Yes                 |
+| [MongoDB](destinations/mongodb.md)                         | Alpha                | Yes                 |
+| [MQTT](destinations/mqtt.md)                               | Alpha                | Yes                 |
+| [MS SQL Server](destinations/mssql.md)                     | Alpha                | Yes                 |
+| [MySQL](destinations/mysql.md)                             | Alpha                | Yes                 |
+| [Oracle](destinations/oracle.md)                           | Alpha                | Yes                 |
+| [Postgres](destinations/postgres.md)                       | Alpha                | Yes                 |
+| [Pulsar](destinations/pulsar.md)                           | Alpha                | Yes                 |
+| [RabbitMQ](destinations/rabbitmq.md)                       | Alpha                | Yes                 |
+| [Redis](sources/redis.md)                                  | Alpha                | Yes                 |
+| [Redshift](destinations/redshift.md)                       | Beta                 | Yes                 |
+| [Rockset](destinations/rockset.md)                         | Alpha                | Yes                 |
+| [S3](destinations/s3.md)                                   | Beta                 | Yes                 |
+| [Scylla](destinations/scylla.md)                           | Alpha                | Yes                 |
+| [SFTP JSON](destinations/sftp-json.md)                     | Alpha                | Yes                 |
+| [Snowflake](destinations/snowflake.md)                     | Generally Available  | Yes                 |
+| [Streamr](destinations/streamr.md)                         | Alpha                | No                  |

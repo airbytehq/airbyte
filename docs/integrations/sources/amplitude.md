@@ -45,6 +45,7 @@ Please read [How to get your API key and Secret key](https://help.amplitude.com/
 
 | Version | Date       | Pull Request                                           | Subject |
 | :------ | :--------- | :----------------------------------------------------- | :------ |
+| 0.1.5   | 2022-04-28 | [12430](https://github.com/airbytehq/airbyte/pull/12430) | Added HTTP error descriptions and fixed `Events` stream fail caused by `404` HTTP Error |
 | 0.1.4   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.1.3   | 2021-10-12 | [6375](https://github.com/airbytehq/airbyte/pull/6375) | Log Transient 404 Error in Events stream  |
 | 0.1.2   | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353) | Correct output schemas on cohorts, events, active\_users, and average\_session\_lengths streams |

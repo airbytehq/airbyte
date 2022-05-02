@@ -1,8 +1,10 @@
 import React from "react";
-
 import { FormattedMessage } from "react-intl";
+
 import { isVersionError } from "core/request/VersionError";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 type BoundaryState = { errorId?: string; message?: string };
 
@@ -18,11 +20,7 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
     this.state = {};
   }
 
-  static getDerivedStateFromError(error: {
-    message: string;
-    status?: number;
-    __type?: string;
-  }): BoundaryState {
+  static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): BoundaryState {
     // Update state so the next render will show the fallback UI.
     if (isVersionError(error)) {
       return { errorId: ErrorId.VersionMismatch, message: error.message };
@@ -47,15 +45,13 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
     }
 
     if (this.state.errorId === ErrorId.ServerUnavailable) {
-      return (
-        <ErrorOccurredView
-          message={<FormattedMessage id="webapp.cannotReachServer" />}
-        />
-      );
+      return <ErrorOccurredView message={<FormattedMessage id="webapp.cannotReachServer" />} />;
     }
 
     return !this.state.errorId ? (
-      this.props.children
+      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+        {this.props.children}
+      </ResourceNotFoundErrorBoundary>
     ) : (
       <ErrorOccurredView message="Unknown error occurred" />
     );

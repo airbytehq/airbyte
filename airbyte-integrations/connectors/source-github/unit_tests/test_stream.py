@@ -29,13 +29,16 @@ from source_github.streams import (
     PullRequests,
     Releases,
     Repositories,
+    Reviews,
     Stargazers,
     Tags,
+    TeamMembers,
+    TeamMemberships,
     Teams,
     Users,
 )
 
-from .utils import ProjectsResponsesAPI, read_full_refresh, read_incremental
+from .utils import ProjectsResponsesAPI, read_full_refresh, read_incremental, urlbase
 
 DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 
@@ -659,3 +662,118 @@ def test_streams_read_full_refresh():
     stream = Stargazers(**repository_args_with_start_date)
     records = read_full_refresh(stream)
     assert records == [{"repository": "organization/repository", "starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}, "user_id": 2}]
+
+
+@responses.activate
+def test_stream_reviews_incremental_read():
+
+    url_pulls = "https://api.github.com/repos/organization/repository/pulls"
+
+    repository_args_with_start_date = {
+        "start_date": "2000-01-01T00:00:00Z",
+        "page_size_for_large_streams": 30,
+        "repositories": ["organization/repository"],
+    }
+    stream = Reviews(parent=PullRequests(**repository_args_with_start_date), **repository_args_with_start_date)
+
+    responses.add(
+        "GET",
+        url_pulls,
+        json=[
+            {"updated_at": "2022-01-01T00:00:00Z", "number": 1},
+            {"updated_at": "2022-01-02T00:00:00Z", "number": 2},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/pulls/1/reviews",
+        json=[{"id": 1000, "body": "commit1"}, {"id": 1001, "body": "commit1"}],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/pulls/2/reviews",
+        json=[{"id": 1002, "body": "commit1"}],
+    )
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+
+    assert records == [
+        {"body": "commit1", "id": 1000, "pull_request_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit1", "id": 1001, "pull_request_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit1", "id": 1002, "pull_request_updated_at": "2022-01-02T00:00:00Z", "repository": "organization/repository"},
+    ]
+
+    assert stream_state == {"organization/repository": {"pull_request_updated_at": "2022-01-02T00:00:00Z"}}
+
+    responses.add(
+        "GET",
+        url_pulls,
+        json=[
+            {"updated_at": "2022-01-03T00:00:00Z", "number": 1},
+            {"updated_at": "2022-01-02T00:00:00Z", "number": 2},
+            {"updated_at": "2022-01-04T00:00:00Z", "number": 3},
+        ],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/pulls/1/reviews",
+        json=[{"id": 1000, "body": "commit1"}, {"id": 1001, "body": "commit2"}],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/organization/repository/pulls/3/reviews",
+        json=[{"id": 1003, "body": "commit1"}],
+    )
+
+    records = read_incremental(stream, stream_state)
+
+    assert records == [
+        {"body": "commit1", "id": 1000, "pull_request_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit2", "id": 1001, "pull_request_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
+        {"body": "commit1", "id": 1003, "pull_request_updated_at": "2022-01-04T00:00:00Z", "repository": "organization/repository"},
+    ]
+
+    assert stream_state == {"organization/repository": {"pull_request_updated_at": "2022-01-04T00:00:00Z"}}
+
+    assert len(responses.calls) == 6
+    assert urlbase(responses.calls[0].request.url) == url_pulls
+    # make sure parent stream PullRequests used ascending sorting for both HTTP requests
+    assert responses.calls[0].request.params["direction"] == "asc"
+    assert urlbase(responses.calls[3].request.url) == url_pulls
+    assert responses.calls[3].request.params["direction"] == "asc"
+
+
+@responses.activate
+def test_stream_team_members_full_refresh():
+    organization_args = {"organizations": ["org1"]}
+    repository_args = {"repositories": [], "page_size_for_large_streams": 100}
+
+    responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"slug": "team1"}, {"slug": "team2"}])
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team1/members", json=[{"login": "login1"}, {"login": "login2"}])
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team1/memberships/login1", json={"username": "login1"})
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team1/memberships/login2", json={"username": "login2"})
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/members", json=[{"login": "login2"}])
+    responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/memberships/login2", json={"username": "login2"})
+
+    stream = TeamMembers(parent=Teams(**organization_args), **repository_args)
+    records = read_full_refresh(stream)
+
+    assert records == [
+        {"login": "login1", "organization": "org1", "team_slug": "team1"},
+        {"login": "login2", "organization": "org1", "team_slug": "team1"},
+        {"login": "login2", "organization": "org1", "team_slug": "team2"},
+    ]
+
+    stream = TeamMemberships(parent=stream, **repository_args)
+    records = read_full_refresh(stream)
+
+    assert records == [
+        {"username": "login1", "organization": "org1", "team_slug": "team1"},
+        {"username": "login2", "organization": "org1", "team_slug": "team1"},
+        {"username": "login2", "organization": "org1", "team_slug": "team2"},
+    ]

@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 
-import StepItem from "./components/StepItem";
-import StarsIcon from "./components/StarsIcon";
 import { StepType } from "../../types";
+import StarsIcon from "./components/StarsIcon";
+import StepItem from "./components/StepItem";
 
 type StepsCounterProps = {
   steps: { id: StepType; name?: React.ReactNode }[];
@@ -48,11 +48,7 @@ const StepsCounter: React.FC<StepsCounterProps> = ({ steps, currentStep }) => {
     <Content>
       <Steps>
         {steps.map((stepItem, key) => (
-          <StepItem
-            key={`step-${stepItem.id}-${key}`}
-            active={stepIndex >= key}
-            current={stepItem.id === currentStep}
-          >
+          <StepItem key={`step-${stepItem.id}-${key}`} active={stepIndex >= key} current={stepItem.id === currentStep}>
             {key === steps.length - 1 ? <StarsIcon /> : key}
           </StepItem>
         ))}
@@ -60,10 +56,7 @@ const StepsCounter: React.FC<StepsCounterProps> = ({ steps, currentStep }) => {
       <Stars isLastStep={isLastStep}>
         <StarsIcon />
       </Stars>
-      <Rocket
-        src="/rocket.png"
-        stepNumber={isLastStep ? steps.length : stepIndex}
-      />
+      <Rocket src="/rocket.png" stepNumber={isLastStep ? steps.length : stepIndex} />
     </Content>
   );
 };

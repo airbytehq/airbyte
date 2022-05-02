@@ -1,15 +1,16 @@
-import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
+
+import { H6, Link } from "components";
+import StepsMenu from "components/StepsMenu";
 
 import { Source, Destination } from "core/domain/connector/types";
-import { H6, Link } from "components";
-import { RoutePaths } from "pages/routes";
-import StepsMenu from "components/StepsMenu";
 import useRouter from "hooks/useRouter";
 
+import { RoutePaths } from "../../../../routePaths";
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
 type IProps = {
@@ -40,11 +41,7 @@ const ConnectorsLink = styled(Link)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const ConnectionPageTitle: React.FC<IProps> = ({
-  source,
-  destination,
-  currentStep,
-}) => {
+const ConnectionPageTitle: React.FC<IProps> = ({ source, destination, currentStep }) => {
   const { push } = useRouter<{ id: string }>();
 
   const steps = [
@@ -80,22 +77,13 @@ const ConnectionPageTitle: React.FC<IProps> = ({
         <FormattedMessage id="connection.title" />
       </H6>
       <Links>
-        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>
-          {source.name}
-        </ConnectorsLink>
+        <ConnectorsLink to={`../../${RoutePaths.Source}/${source.sourceId}`}>{source.name}</ConnectorsLink>
         <FontAwesomeIcon icon={faArrowRight} />
-        <ConnectorsLink
-          to={`../../${RoutePaths.Destination}/${destination.destinationId}`}
-        >
+        <ConnectorsLink to={`../../${RoutePaths.Destination}/${destination.destinationId}`}>
           {destination.name}
         </ConnectorsLink>
       </Links>
-      <StepsMenu
-        lightMode
-        data={steps}
-        onSelect={onSelectStep}
-        activeStep={currentStep}
-      />
+      <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </Title>
   );
 };

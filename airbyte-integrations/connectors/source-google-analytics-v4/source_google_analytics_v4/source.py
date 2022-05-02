@@ -14,6 +14,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import jwt
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -92,7 +93,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
     url_base = "https://analyticsreporting.googleapis.com/v4/"
     report_field = "reports"
-    data_fields = ["data", "rows"]
 
     map_type = dict(INTEGER="integer", FLOAT="number", PERCENT="number", TIME="number")
 
@@ -226,33 +226,29 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             ...]
         """
 
+        today = pendulum.now().date()
         start_date = pendulum.parse(self.start_date).date()
-        end_date = pendulum.now().date()
-
-        # Determine stream_state, if no stream_state we use start_date
         if stream_state:
-            start_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
+            prev_end_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
+            start_date = prev_end_date.add(days=1)
+        end_date = today
+        if start_date > end_date:
+            return [None]
 
-        # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
-        start_date = min(start_date, end_date)
         date_slices = []
-        while start_date <= end_date:
-            end_date_slice = start_date.add(days=self.window_in_days)
+        slice_start_date = start_date
+        while slice_start_date <= end_date:
+            slice_end_date = slice_start_date.add(days=self.window_in_days)
             # limit the slice range with end_date
-            end_date_slice = min(end_date_slice, end_date)
-            date_slices.append({"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date_slice)})
-            # add 1 day for start next slice from next day and not duplicate data from previous slice end date.
-            start_date = end_date_slice.add(days=1)
-        return date_slices
+            slice_end_date = min(slice_end_date, end_date)
+            date_slices.append({"startDate": self.to_datetime_str(slice_start_date), "endDate": self.to_datetime_str(slice_end_date)})
+            # start next slice 1 day after previous slice ended to prevent duplicate reads
+            slice_start_date = slice_end_date.add(days=1)
+        return date_slices or [None]
 
-    #   TODO: the method has to be updated for more logical and obvious
-    def get_data(self, data):  # type: ignore[no-untyped-def]
-        for data_field in self.data_fields:
-            if data and isinstance(data, dict):
-                data = data.get(data_field, [])
-            else:
-                return []
-        return data
+    @staticmethod
+    def report_rows(report_body: MutableMapping[Any, Any]) -> List[MutableMapping[Any, Any]]:
+        return report_body.get("data", {}).get("rows", [])
 
     def lookup_data_type(self, field_type: str, attribute: str) -> str:
         """
@@ -268,7 +264,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 attr_type = self.dimensions_ref[attribute]
             elif field_type == "metric":
                 # Custom Google Analytics Metrics {ga:goalXXStarts, ga:metricXX, ... }
-                # We always treat them as as strings as we can not be sure of their data type
+                # We always treat them as strings as we can not be sure of their data type
                 if attribute.startswith("ga:goal") and attribute.endswith(
                     ("Starts", "Completions", "Value", "ConversionRate", "Abandons", "AbandonRate")
                 ):
@@ -282,10 +278,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 attr_type = self.metrics_ref[attribute]
             else:
                 attr_type = None
-                self.logger.error(f"Unsuported GA type: {field_type}")
+                self.logger.error(f"Unsupported GA type: {field_type}")
         except KeyError:
             attr_type = None
-            self.logger.error(f"Unsuported GA {field_type}: {attribute}")
+            self.logger.error(f"Unsupported GA {field_type}: {attribute}")
 
         return self.map_type.get(attr_type, "string")
 
@@ -387,7 +383,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
             self.check_for_sampled_result(report.get("data", {}))
 
-            for row in self.get_data(report):
+            for row in self.report_rows(report):
                 record = {}
                 dimensions = row.get("dimensions", [])
                 metrics = row.get("metrics", [])
@@ -421,10 +417,18 @@ class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
     cursor_field = "ga_date"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Update the state value, default CDK method.
-        """
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if not stream_slice:
+            return []
+        return super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
 class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
@@ -519,21 +523,20 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         if config.get("credentials_json"):
             return GoogleAnalyticsServiceOauth2Authenticator(config)
 
-        auth_params = config.get("credentials")
+        auth_params = config["credentials"]
 
-        if auth_params.get("auth_type") == "Service" or auth_params.get("credentials_json"):
+        if auth_params["auth_type"] == "Service" or auth_params.get("credentials_json"):
             return GoogleAnalyticsServiceOauth2Authenticator(auth_params)
         else:
             return Oauth2Authenticator(
                 token_refresh_endpoint="https://oauth2.googleapis.com/token",
-                client_secret=auth_params.get("client_secret"),
-                client_id=auth_params.get("client_id"),
-                refresh_token=auth_params.get("refresh_token"),
+                client_secret=auth_params["client_secret"],
+                client_id=auth_params["client_id"],
+                refresh_token=auth_params["refresh_token"],
                 scopes=["https://www.googleapis.com/auth/analytics.readonly"],
             )
 
     def check_connection(self, logger: logging.Logger, config: MutableMapping) -> Tuple[bool, Any]:
-
         # declare additional variables
         authenticator = self.get_authenticator(config)
         config["authenticator"] = authenticator

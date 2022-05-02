@@ -17,10 +17,10 @@
       "subdomain": {
         "type": "string",
         "title": "Subdomain",
-        "description": "Identifier of your Zendesk Subdomain, like: https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain"
+        "description": "This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain."
       },
       "credentials": {
-        "title": "Authorization Method",
+        "title": "Authentication *",
         "type": "object",
         "description": "Zendesk service provides two authentication methods. Choose between: `OAuth2.0` or `API token`.",
         "oneOf": [
@@ -33,8 +33,6 @@
               "credentials": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": ["oauth2.0"],
-                "default": "oauth2.0",
                 "order": 0
               },
               "access_token": {
@@ -54,8 +52,6 @@
               "credentials": {
                 "type": "string",
                 "const": "api_token",
-                "enum": ["api_token"],
-                "default": "api_token",
                 "order": 0
               },
               "email": {
@@ -66,7 +62,7 @@
               "api_token": {
                 "title": "API Token",
                 "type": "string",
-                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/zendesk-support\">docs</a> for more information.",
+                "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-support#setup-guide\">docs</a> for more information.",
                 "airbyte_secret": true
               }
             }

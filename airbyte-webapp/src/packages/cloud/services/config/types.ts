@@ -1,5 +1,6 @@
-import { Config } from "config";
 import * as Fullstory from "@fullstory/browser";
+
+import { Config } from "config";
 
 declare global {
   interface Window {
@@ -7,6 +8,7 @@ declare global {
     FULLSTORY?: string;
     FIREBASE_API_KEY?: string;
     FIREBASE_AUTH_DOMAIN?: string;
+    FIREBASE_AUTH_EMULATOR_HOST?: string;
     CLOUD_API_URL?: string;
   }
 }
@@ -17,6 +19,7 @@ export type CloudConfigExtension = {
   firebase: {
     apiKey: string;
     authDomain: string;
+    authEmulatorHost: string;
   };
   intercom: {
     appId: string;

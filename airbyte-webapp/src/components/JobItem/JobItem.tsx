@@ -1,17 +1,17 @@
 import React, { Suspense, useRef, useState } from "react";
-import styled from "styled-components";
 import { useEffectOnce } from "react-use";
+import styled from "styled-components";
 
 import { Spinner } from "components";
 
 import { JobInfo, JobListItem, Logs, Attempt } from "core/domain/job/Job";
 import Status from "core/statuses";
 
-import JobLogs from "./components/JobLogs";
-import ContentWrapper from "./components/ContentWrapper";
-import MainInfo from "./components/MainInfo";
-import { LogsDetails } from "./components/LogsDetails";
 import { useAttemptLink } from "./attemptLinkUtils";
+import ContentWrapper from "./components/ContentWrapper";
+import JobLogs from "./components/JobLogs";
+import { LogsDetails } from "./components/LogsDetails";
+import MainInfo from "./components/MainInfo";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -19,8 +19,7 @@ const Item = styled.div<{ isFailed: boolean }>`
   line-height: 18px;
 
   &:hover {
-    background: ${({ theme, isFailed }) =>
-      isFailed ? theme.dangerTransparentColor : theme.greyColor0};
+    background: ${({ theme, isFailed }) => (isFailed ? theme.dangerTransparentColor : theme.greyColor0)};
   }
 `;
 
@@ -31,9 +30,7 @@ const LoadLogs = styled.div`
   min-height: 58px;
 `;
 
-const isJobEntity = (
-  props: { job: JobListItem } | { jobInfo: JobInfo }
-): props is { job: JobListItem } => {
+const isJobEntity = (props: { job: JobListItem } | { jobInfo: JobInfo }): props is { job: JobListItem } => {
   return props.hasOwnProperty("job");
 };
 
@@ -48,14 +45,8 @@ const JobCurrentLogs: React.FC<{
 };
 
 const isPartialSuccessCheck = (attempts: Attempt[]) => {
-  if (
-    attempts.length > 0 &&
-    attempts[attempts.length - 1].status === Status.FAILED
-  ) {
-    return attempts.some(
-      (attempt) =>
-        attempt.failureSummary && attempt.failureSummary.partialSuccess
-    );
+  if (attempts.length > 0 && attempts[attempts.length - 1].status === Status.FAILED) {
+    return attempts.some((attempt) => attempt.failureSummary && attempt.failureSummary.partialSuccess);
   } else {
     return false;
   }
@@ -73,9 +64,7 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
   const scrollAnchor = useRef<HTMLDivElement>(null);
 
   const isFailed = jobMeta.status === Status.FAILED;
-  const isPartialSuccess = isJobEntity(props)
-    ? isPartialSuccessCheck(props.job.attempts)
-    : undefined;
+  const isPartialSuccess = isJobEntity(props) ? isPartialSuccessCheck(props.job.attempts) : undefined;
 
   useEffectOnce(() => {
     if (linkedJobId) {
@@ -110,11 +99,7 @@ const JobItem: React.FC<IProps> = ({ shortInfo, ...props }) => {
               isJobEntity(props) ? (
                 <JobLogs id={jobMeta.id} jobIsFailed={isFailed} />
               ) : (
-                <JobCurrentLogs
-                  id={jobMeta.id}
-                  jobIsFailed={isFailed}
-                  logs={props.jobInfo.logs}
-                />
+                <JobCurrentLogs id={jobMeta.id} jobIsFailed={isFailed} logs={props.jobInfo.logs} />
               )
             ) : null}
           </Suspense>

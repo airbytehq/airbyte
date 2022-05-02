@@ -21,18 +21,29 @@
         "type": "string",
         "default": "",
         "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
-        "examples": ["http://localhost:9000"]
+        "examples": ["http://localhost:9000"],
+        "order": 0
       },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",
         "type": "string",
         "description": "The name of the S3 bucket.",
-        "examples": ["airbyte_sync"]
+        "examples": ["airbyte_sync"],
+        "order": 1
       },
       "s3_bucket_path": {
         "description": "Directory under the S3 bucket where data will be written.",
         "type": "string",
-        "examples": ["data_sync/test"]
+        "examples": ["data_sync/test"],
+        "order": 2
+      },
+      "s3_path_format": {
+        "description": "Format string on how data will be organized inside the S3 bucket directory",
+        "type": "string",
+        "examples": [
+          "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
+        ],
+        "order": 3
       },
       "s3_bucket_region": {
         "title": "S3 Bucket Region",
@@ -66,21 +77,24 @@
           "me-south-1",
           "us-gov-east-1",
           "us-gov-west-1"
-        ]
+        ],
+        "order": 4
       },
       "access_key_id": {
         "type": "string",
         "description": "The access key id to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket, if not set, Airbyte will rely on Instance Profile.",
         "title": "S3 Key Id",
         "airbyte_secret": true,
-        "examples": ["A012345678910EXAMPLE"]
+        "examples": ["A012345678910EXAMPLE"],
+        "order": 5
       },
       "secret_access_key": {
         "type": "string",
         "description": "The corresponding secret to the access key id, if S3 Key Id is set, then S3 Access Key must also be provided",
         "title": "S3 Access Key",
         "airbyte_secret": true,
-        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
+        "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
+        "order": 6
       },
       "format": {
         "title": "Output Format",
@@ -230,6 +244,35 @@
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "compression": {
+                "title": "Compression",
+                "type": "object",
+                "description": "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".csv.gz\").",
+                "oneOf": [
+                  {
+                    "title": "No Compression",
+                    "requires": ["compression_type"],
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["No Compression"],
+                        "default": "No Compression"
+                      }
+                    }
+                  },
+                  {
+                    "title": "GZIP",
+                    "requires": ["compression_type"],
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["GZIP"],
+                        "default": "GZIP"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -248,6 +291,35 @@
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "compression": {
+                "title": "Compression",
+                "type": "object",
+                "description": "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+                "oneOf": [
+                  {
+                    "title": "No Compression",
+                    "requires": "compression_type",
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["No Compression"],
+                        "default": "No Compression"
+                      }
+                    }
+                  },
+                  {
+                    "title": "GZIP",
+                    "requires": "compression_type",
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["GZIP"],
+                        "default": "GZIP"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -311,7 +383,8 @@
               }
             }
           }
-        ]
+        ],
+        "order": 7
       }
     }
   }

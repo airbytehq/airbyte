@@ -1,8 +1,8 @@
+import { faFile } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { DropzoneOptions, useDropzone } from "react-dropzone";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile } from "@fortawesome/free-regular-svg-icons";
 
 const Content = styled.div<{ hasFiles: boolean }>`
   width: 100%;
@@ -12,11 +12,8 @@ const Content = styled.div<{ hasFiles: boolean }>`
   font-size: 14px;
   line-height: 20px;
   font-weight: normal;
-  border: 1px solid
-    ${({ theme, hasFiles }) =>
-      hasFiles ? theme.primaryColor : theme.greyColor0};
-  background: ${({ theme, hasFiles }) =>
-    hasFiles ? theme.primaryColor12 : theme.greyColor0};
+  border: 1px solid ${({ theme, hasFiles }) => (hasFiles ? theme.primaryColor : theme.greyColor0)};
+  background: ${({ theme, hasFiles }) => (hasFiles ? theme.primaryColor12 : theme.greyColor0)};
   color: ${({ theme }) => theme.greyColor40};
   cursor: pointer;
   min-height: 95px;
@@ -64,10 +61,7 @@ const FileDropZone: React.FC<IProps> = ({ className, mainText, options }) => {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone(options);
 
   return (
-    <Content
-      {...getRootProps({ className: `dropzone ${className}` })}
-      hasFiles={!!acceptedFiles.length}
-    >
+    <Content {...getRootProps({ className: `dropzone ${className}` })} hasFiles={!!acceptedFiles.length}>
       <input {...getInputProps()} />
       {mainText}
       <div>

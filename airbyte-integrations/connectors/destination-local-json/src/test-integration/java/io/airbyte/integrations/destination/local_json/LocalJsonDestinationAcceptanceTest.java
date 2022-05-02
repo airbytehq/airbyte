@@ -12,6 +12,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -48,6 +50,26 @@ public class LocalJsonDestinationAcceptanceTest extends DestinationAcceptanceTes
   // override test that this integration cannot pass.
   @Override
   public void testCheckConnectionInvalidCredentials() {}
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,

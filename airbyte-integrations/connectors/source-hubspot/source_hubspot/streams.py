@@ -145,7 +145,7 @@ class API:
         elif credentials_title == "API Key Credentials":
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
-            raise Exception("No supported `credentials_title` specified. See spec.json for references")
+            raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
 
         self._session.headers = {
             "Content-Type": "application/json",
@@ -1319,35 +1319,35 @@ class Contacts(CRMSearchStream):
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsMeetings(CRMSearchStream):
     entity = "meetings"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company"]
+    associations = ["contacts", "deal", "company", "tickets"]
     primary_key = "id"
 
 

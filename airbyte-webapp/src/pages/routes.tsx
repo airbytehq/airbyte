@@ -1,50 +1,28 @@
 import React, { useMemo } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
 import { useIntl } from "react-intl";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
-import { useLocation } from "react-router-dom";
 
 import { useConfig } from "config";
-
-import SourcesPage from "./SourcesPage";
-import DestinationPage from "./DestinationPage";
-import PreferencesPage from "./PreferencesPage";
-import OnboardingPage from "./OnboardingPage";
-import ConnectionPage from "./ConnectionPage";
-import SettingsPage from "./SettingsPage";
-import MainView from "views/layout/MainView";
-import { CompleteOauthRequest } from "views/CompleteOauthRequest";
-
-import { useNotificationService } from "hooks/services/Notification";
+import { Workspace } from "core/domain/workspace/Workspace";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useTrackPageAnalytics } from "hooks/services/Analytics/useTrackPageAnalytics";
 import { useApiHealthPoll } from "hooks/services/Health";
-import {
-  TrackPageAnalytics,
-  useAnalyticsIdentifyUser,
-  useAnalyticsRegisterValues,
-} from "hooks/services/Analytics";
-import { useListWorkspaces } from "services/workspaces/WorkspacesService";
+import { useNotificationService } from "hooks/services/Notification";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { Workspace } from "core/domain/workspace/Workspace";
+import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { storeUtmFromQuery } from "utils/utmStorage";
+import { CompleteOauthRequest } from "views/CompleteOauthRequest";
+import MainView from "views/layout/MainView";
 
-export enum RoutePaths {
-  AuthFlow = "/auth_flow",
-  Root = "/",
-
-  Workspaces = "workspaces",
-  Preferences = "preferences",
-  Onboarding = "onboarding",
-  Connections = "connections",
-  Destination = "destination",
-  Source = "source",
-  Settings = "settings",
-
-  Connection = "connection",
-  ConnectionNew = "new-connection",
-  SourceNew = "new-source",
-  DestinationNew = "new-destination",
-}
+import ConnectionPage from "./ConnectionPage";
+import DestinationPage from "./DestinationPage";
+import OnboardingPage from "./OnboardingPage";
+import PreferencesPage from "./PreferencesPage";
+import { RoutePaths } from "./routePaths";
+import SettingsPage from "./SettingsPage";
+import SourcesPage from "./SourcesPage";
 
 function useDemo() {
   const { formatMessage } = useIntl();
@@ -78,35 +56,17 @@ const useAddAnalyticsContextForWorkspace = (workspace: Workspace): void => {
 const MainViewRoutes: React.FC<{ workspace: Workspace }> = ({ workspace }) => {
   return (
     <MainView>
-      <TrackPageAnalytics />
       <Routes>
-        <Route
-          path={`${RoutePaths.Destination}/*`}
-          element={<DestinationPage />}
-        />
+        <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-        <Route
-          path={`${RoutePaths.Connections}/*`}
-          element={<ConnectionPage />}
-        />
+        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
         {workspace.displaySetupWizard ? (
-          <Route
-            path={`${RoutePaths.Onboarding}/*`}
-            element={<OnboardingPage />}
-          />
+          <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
         ) : null}
         <Route
           path="*"
-          element={
-            <Navigate
-              to={
-                workspace.displaySetupWizard
-                  ? RoutePaths.Onboarding
-                  : RoutePaths.Connections
-              }
-            />
-          }
+          element={<Navigate to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections} />}
         />
       </Routes>
     </MainView>
@@ -120,18 +80,14 @@ const PreferencesRoutes = () => (
   </Routes>
 );
 
-export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({
-  includePath,
-}) => {
+export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ includePath }) => {
   const location = useLocation();
   const workspaces = useListWorkspaces();
   const currentWorkspace = workspaces[0];
 
   return (
     <Navigate
-      to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${
-        includePath ? location.pathname : ""
-      }`}
+      to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${includePath ? location.pathname : ""}`}
       replace={true}
     />
   );
@@ -140,16 +96,13 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({
 const RoutingWithWorkspace: React.FC = () => {
   const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
+  useTrackPageAnalytics();
   useApiHealthPoll();
   useDemo();
 
   return (
     <OnboardingServiceProvider>
-      {workspace.initialSetupComplete ? (
-        <MainViewRoutes workspace={workspace} />
-      ) : (
-        <PreferencesRoutes />
-      )}
+      {workspace.initialSetupComplete ? <MainViewRoutes workspace={workspace} /> : <PreferencesRoutes />}
     </OnboardingServiceProvider>
   );
 };
@@ -165,11 +118,7 @@ export const Routing: React.FC = () => {
   const OldRoutes = useMemo(
     () =>
       Object.values(RoutePaths).map((r) => (
-        <Route
-          path={`${r}/*`}
-          key={r}
-          element={<AutoSelectFirstWorkspace includePath />}
-        />
+        <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace includePath />} />
       )),
     []
   );
@@ -177,10 +126,7 @@ export const Routing: React.FC = () => {
     <Routes>
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
-      <Route
-        path={`${RoutePaths.Workspaces}/:workspaceId/*`}
-        element={<RoutingWithWorkspace />}
-      />
+      <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />
       <Route path="*" element={<AutoSelectFirstWorkspace />} />
     </Routes>
   );

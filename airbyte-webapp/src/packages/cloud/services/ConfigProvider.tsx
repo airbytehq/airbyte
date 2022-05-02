@@ -1,12 +1,6 @@
 import React from "react";
 
-import {
-  Config,
-  ConfigServiceProvider,
-  ValueProvider,
-  envConfigProvider,
-  windowConfigProvider,
-} from "config";
+import { Config, ConfigServiceProvider, ValueProvider, envConfigProvider, windowConfigProvider } from "config";
 
 import {
   cloudEnvConfigProvider,
@@ -28,10 +22,7 @@ const configProviders: ValueProvider<Config> = [
  * all required subconfigs if necessary
  */
 const ConfigProvider: React.FC = ({ children }) => (
-  <ConfigServiceProvider
-    defaultConfig={defaultConfig}
-    providers={configProviders}
-  >
+  <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
     {children}
   </ConfigServiceProvider>
 );

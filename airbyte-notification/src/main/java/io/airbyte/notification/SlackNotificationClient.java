@@ -47,7 +47,7 @@ public class SlackNotificationClient extends NotificationClient {
   public boolean notifyJobFailure(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
       throws IOException, InterruptedException {
     return notifyFailure(renderJobData(
-        "failure_slack_notification_template.txt",
+        "slack/failure_slack_notification_template.txt",
         sourceConnector,
         destinationConnector,
         jobDescription,
@@ -58,11 +58,53 @@ public class SlackNotificationClient extends NotificationClient {
   public boolean notifyJobSuccess(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
       throws IOException, InterruptedException {
     return notifySuccess(renderJobData(
-        "success_slack_notification_template.txt",
+        "slack/success_slack_notification_template.txt",
         sourceConnector,
         destinationConnector,
         jobDescription,
         logUrl));
+  }
+
+  @Override
+  public boolean notifyConnectionDisabled(final String receiverEmail,
+                                          final String sourceConnector,
+                                          final String destinationConnector,
+                                          final String jobDescription,
+                                          final String logUrl)
+      throws IOException, InterruptedException {
+    final String message = renderJobData(
+        "slack/auto_disable_slack_notification_template.txt",
+        sourceConnector,
+        destinationConnector,
+        jobDescription,
+        logUrl);
+
+    final String webhookUrl = config.getWebhook();
+    if (!Strings.isEmpty(webhookUrl)) {
+      return notify(message);
+    }
+    return false;
+  }
+
+  @Override
+  public boolean notifyConnectionDisableWarning(final String receiverEmail,
+                                                final String sourceConnector,
+                                                final String destinationConnector,
+                                                final String jobDescription,
+                                                final String logUrl)
+      throws IOException, InterruptedException {
+    final String message = renderJobData(
+        "slack/auto_disable_warning_slack_notification_template.txt",
+        sourceConnector,
+        destinationConnector,
+        jobDescription,
+        logUrl);
+
+    final String webhookUrl = config.getWebhook();
+    if (!Strings.isEmpty(webhookUrl)) {
+      return notify(message);
+    }
+    return false;
   }
 
   private String renderJobData(final String templateFile,

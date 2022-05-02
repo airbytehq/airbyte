@@ -174,7 +174,7 @@ public class SnowflakeDatabase {
     return new DefaultJdbcDatabase(dataSource);
   }
 
-  private static Runnable getRefreshTokenTask(final HikariDataSource dataSource){
+  private static Runnable getRefreshTokenTask(final HikariDataSource dataSource) {
     return () -> {
       LOGGER.info("Refresh token process started");
       var props = dataSource.getDataSourceProperties();
