@@ -12,6 +12,7 @@ import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
 
 public class CheckConnectionWorkflowImpl implements CheckConnectionWorkflow {
+
   private final CheckConnectionActivity activity =
       Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.CHECK_ACTIVITY_OPTIONS);
 

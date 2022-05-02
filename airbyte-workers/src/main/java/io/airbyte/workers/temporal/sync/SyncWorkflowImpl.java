@@ -59,7 +59,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final StandardCheckConnectionInput destinationConfiguration =
         new StandardCheckConnectionInput().withConnectionConfiguration(syncInput.getDestinationConfiguration());
 
-
     if (version >= VERSION_INTRODUCING_CHECK_BEFORE_SYNC) {
       final StandardCheckConnectionOutput sourceCheckResponse = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
       if (sourceCheckResponse.getStatus() == Status.FAILED) {
@@ -116,10 +115,12 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     return syncOutput;
   }
 
-  private StandardSyncOutput CheckFailureSyncOutput(FailureReason.FailureOrigin origin, JobRunConfig jobRunConfig, StandardCheckConnectionOutput checkResponse) {
+  private StandardSyncOutput CheckFailureSyncOutput(FailureReason.FailureOrigin origin,
+                                                    JobRunConfig jobRunConfig,
+                                                    StandardCheckConnectionOutput checkResponse) {
     final Exception ex = new IllegalArgumentException(checkResponse.getMessage());
     final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobRunConfig.getJobId()),
-          Math.toIntExact(jobRunConfig.getAttemptId()), origin);
+        Math.toIntExact(jobRunConfig.getAttemptId()), origin);
     final StandardSyncOutput output = new StandardSyncOutput()
         .withFailures(List.of(checkFailureReason))
         .withStandardSyncSummary(
@@ -133,8 +134,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                     .withRecordsEmitted(0L)
                     .withBytesEmitted(0L)
                     .withStateMessagesEmitted(0L)
-                    .withRecordsCommitted(0L))
-        );
+                    .withRecordsCommitted(0L)));
     return output;
   }
+
 }
