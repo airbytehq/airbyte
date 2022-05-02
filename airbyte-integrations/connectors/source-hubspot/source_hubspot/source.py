@@ -52,7 +52,7 @@ class SourceHubspot(AbstractSource):
         error_msg = None
         common_params = self.get_common_params(config=config)
         try:
-            contacts = Workflows(**common_params)
+            contacts = Contacts(**common_params)
             _ = contacts.properties
         except HTTPError as error:
             alive = False
