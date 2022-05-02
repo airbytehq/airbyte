@@ -157,7 +157,8 @@ public class SecretMigrator {
       if (secretValue.get().isTextual()) {
         final JsonNode stringSecretValue = secretValue.get();
 
-        final SecretCoordinate coordinate = new SecretCoordinate("airbyte_workspace_" + workspaceId + "_secret_" + uuidProvider.get(), 1);
+        final SecretCoordinate coordinate =
+            new SecretCoordinate(SecretsHelpers.getCoordinatorBase("airbyte_workspace_", workspaceId, uuidProvider), 1);
         secretPersistence.get().write(coordinate, stringSecretValue.textValue());
         connectorConfigurationJson.set(replaceAtJsonNode(connectorConfigurationJson.get(), secretPath,
             Jsons.jsonNode(Map.of(COORDINATE_FIELD, coordinate.getFullCoordinate()))));
