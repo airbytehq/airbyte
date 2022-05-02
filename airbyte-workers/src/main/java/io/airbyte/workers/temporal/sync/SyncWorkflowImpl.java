@@ -135,8 +135,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                     .withStateMessagesEmitted(0L)
                     .withRecordsCommitted(0L))
         );
-    System.out.println("--- FAILURE REASON:");
-    System.out.println(output);
     return output;
   }
 }
