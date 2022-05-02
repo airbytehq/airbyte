@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -43,15 +44,14 @@ public class S3StreamCopierTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopierTest.class);
 
   private static final int PART_SIZE = 5;
-  private static final S3DestinationConfig S3_CONFIG = new S3DestinationConfig(
-      "fake-endpoint",
+  private static final S3DestinationConfig S3_CONFIG = S3DestinationConfig.create(
       "fake-bucket",
       "fake-bucketPath",
-      "fake-region",
-      "fake-access-key-id",
-      "fake-secret-access-key",
-      PART_SIZE,
-      null);
+      "fake-region")
+      .withEndpoint("fake-endpoint")
+      .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
+      .withPartSize(PART_SIZE)
+      .get();
   private static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
       .withDestinationSyncMode(DestinationSyncMode.APPEND)
       .withStream(new AirbyteStream()
@@ -177,7 +177,10 @@ public class S3StreamCopierTest {
   }
 
   private void checkCsvWriterArgs(final S3CsvWriterArguments args) {
-    assertEquals(S3_CONFIG.cloneWithFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE)), args.config);
+    final S3DestinationConfig s3Config = S3DestinationConfig.create(S3_CONFIG)
+        .withFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE, CompressionType.NO_COMPRESSION))
+        .get();
+    assertEquals(s3Config, args.config);
     assertEquals(CONFIGURED_STREAM, args.stream);
     assertEquals(UPLOAD_TIME, args.uploadTime);
     assertEquals(UPLOAD_THREADS, args.uploadThreads);

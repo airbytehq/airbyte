@@ -1,13 +1,10 @@
-import React, { useCallback } from "react";
 import { Field, FieldProps, setIn } from "formik";
+import React, { useCallback } from "react";
 
-import {
-  AirbyteStreamConfiguration,
-  DestinationSyncMode,
-  SyncSchemaStream,
-} from "core/domain/catalog";
-import { CatalogSection } from "./CatalogSection";
+import { AirbyteStreamConfiguration, DestinationSyncMode, SyncSchemaStream } from "core/domain/catalog";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+
+import { CatalogSection } from "./CatalogSection";
 
 type IProps = {
   streams: SyncSchemaStream[];
@@ -15,21 +12,13 @@ type IProps = {
   onChangeStream: (stream: SyncSchemaStream) => void;
 };
 
-const CatalogTree: React.FC<IProps> = ({
-  streams,
-  destinationSupportedSyncModes,
-  onChangeStream,
-}) => {
+const CatalogTree: React.FC<IProps> = ({ streams, destinationSupportedSyncModes, onChangeStream }) => {
   const onUpdateStream = useCallback(
     (id: string, newConfig: Partial<AirbyteStreamConfiguration>) => {
       const streamNode = streams.find((streamNode) => streamNode.id === id);
 
       if (streamNode) {
-        const newStreamNode = setIn(
-          streamNode,
-          "config",
-          Object.assign({}, streamNode.config, newConfig)
-        );
+        const newStreamNode = setIn(streamNode, "config", Object.assign({}, streamNode.config, newConfig));
 
         onChangeStream(newStreamNode);
       }
@@ -40,10 +29,7 @@ const CatalogTree: React.FC<IProps> = ({
   return (
     <>
       {streams.map((streamNode) => (
-        <Field
-          key={`schema.streams[${streamNode.id}].config`}
-          name={`schema.streams[${streamNode.id}].config`}
-        >
+        <Field key={`schema.streams[${streamNode.id}].config`} name={`schema.streams[${streamNode.id}].config`}>
           {({ form }: FieldProps<FormikConnectionFormValues>) => (
             <CatalogSection
               key={`schema.streams[${streamNode.id}].config`}

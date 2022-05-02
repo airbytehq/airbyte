@@ -178,8 +178,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
             config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( "
-            + algorithm + " )"));
+            "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
 
     final String network_service_banner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
@@ -204,8 +203,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
             clone.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-            "oracle.net.encryption_types_client=( "
-            + algorithm + " )"));
+            "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
 
     final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.unsafeQuery(network_service_banner).collect(Collectors.toList());

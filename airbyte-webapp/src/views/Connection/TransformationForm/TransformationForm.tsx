@@ -1,16 +1,18 @@
-import React from "react";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
-import * as yup from "yup";
-import { getIn, useFormik } from "formik";
 import type { FormikErrors } from "formik/dist/types";
 
-import { equal } from "utils/objects";
+import { getIn, useFormik, useFormikContext } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
+import * as yup from "yup";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
+import { FormChangeTracker } from "components/FormChangeTracker";
+
+import { OperationService } from "core/domain/connection";
 import { Transformation } from "core/domain/connection/operation";
 import { useGetService } from "core/servicesProvider";
-import { OperationService } from "core/domain/connection";
+import { equal } from "utils/objects";
 
 const Content = styled.div`
   display: flex;
@@ -43,6 +45,7 @@ interface TransformationProps {
   transformation: Transformation;
   onCancel: () => void;
   onDone: (tr: Transformation) => void;
+  isNewTransformation?: boolean;
 }
 
 const validationSchema = yup.object({
@@ -80,6 +83,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
   transformation,
   onCancel,
   onDone,
+  isNewTransformation,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const operationService = useGetService<OperationService>("OperationService");
@@ -92,9 +96,11 @@ const TransformationForm: React.FC<TransformationProps> = ({
       onDone(values);
     },
   });
+  const { dirty } = useFormikContext();
 
   return (
     <>
+      <FormChangeTracker changed={isNewTransformation || dirty} />
       <Content>
         <Column>
           <Label
@@ -105,21 +111,13 @@ const TransformationForm: React.FC<TransformationProps> = ({
           </Label>
 
           <Label
-            {...prepareLabelFields(
-              formik.errors,
-              "operatorConfiguration.dbt.dockerImage"
-            )}
+            {...prepareLabelFields(formik.errors, "operatorConfiguration.dbt.dockerImage")}
             label={<FormattedMessage id="form.dockerUrl" />}
           >
-            <Input
-              {...formik.getFieldProps("operatorConfiguration.dbt.dockerImage")}
-            />
+            <Input {...formik.getFieldProps("operatorConfiguration.dbt.dockerImage")} />
           </Label>
           <Label
-            {...prepareLabelFields(
-              formik.errors,
-              "operatorConfiguration.dbt.gitRepoUrl"
-            )}
+            {...prepareLabelFields(formik.errors, "operatorConfiguration.dbt.gitRepoUrl")}
             label={<FormattedMessage id="form.repositoryUrl" />}
           >
             <Input
@@ -141,31 +139,17 @@ const TransformationForm: React.FC<TransformationProps> = ({
           </Label>
           <Label
             label={<FormattedMessage id="form.entrypoint" />}
-            {...prepareLabelFields(
-              formik.errors,
-              "operatorConfiguration.dbt.dbtArguments"
-            )}
+            {...prepareLabelFields(formik.errors, "operatorConfiguration.dbt.dbtArguments")}
             message={
-              <a
-                href="https://docs.getdbt.com/reference/dbt-commands"
-                target="_blanc"
-              >
+              <a href="https://docs.getdbt.com/reference/dbt-commands" target="_blanc">
                 <FormattedMessage id="form.entrypoint.docs" />
               </a>
             }
           >
-            <Input
-              {...formik.getFieldProps(
-                "operatorConfiguration.dbt.dbtArguments"
-              )}
-            />
+            <Input {...formik.getFieldProps("operatorConfiguration.dbt.dbtArguments")} />
           </Label>
           <Label label={<FormattedMessage id="form.gitBranch" />}>
-            <Input
-              {...formik.getFieldProps(
-                "operatorConfiguration.dbt.gitRepoBranch"
-              )}
-            />
+            <Input {...formik.getFieldProps("operatorConfiguration.dbt.gitRepoBranch")} />
           </Label>
         </Column>
       </Content>

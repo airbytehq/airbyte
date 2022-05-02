@@ -144,7 +144,6 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
     cursor_field = "updated_at"
 
     response_list_name: str = None
-    parent: "SourceZendeskSupportStream" = None
     future_requests: deque = None
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -290,10 +289,11 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
 
 class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
     """
-    # endpoints don't provide the updated_at/created_at fields
-    # thus we can't implement an incremental logic for them
+    Endpoints don't provide the updated_at/created_at fields
+    Thus we can't implement an incremental logic for them
     """
 
+    page_size = 100
     primary_key = "id"
     response_list_name: str = None
 
@@ -324,7 +324,7 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
 
 class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefreshStream):
     """
-    # endpoints provide a cursor pagination and sorting mechanism
+    Endpoints provide a cursor pagination and sorting mechanism
     """
 
     next_page_field = "next_page"
@@ -340,18 +340,20 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         start_time = dict(parse_qsl(urlparse(response.json().get(self.next_page_field), "").query)).get("start_time")
         if start_time != self.prev_start_time:
             self.prev_start_time = start_time
-            return {self.cursor_field: start_time}
+            return {self.cursor_field: int(start_time)}
+
+    def check_stream_state(self, stream_state: Mapping[str, Any] = None):
+        """
+        Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
+        """
+        state = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
+        return calendar.timegm(pendulum.parse(state).utctimetuple())
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
-        if stream_state:
-            # use the state value if exists
-            parsed_state = calendar.timegm(pendulum.parse(stream_state.get(self.cursor_field)).utctimetuple())
-        else:
-            # for full-refresh use start_date
-            parsed_state = calendar.timegm(pendulum.parse(self._start_date).utctimetuple())
+        parsed_state = self.check_stream_state(stream_state)
         if self.cursor_field:
             params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         else:
@@ -359,31 +361,32 @@ class SourceZendeskSupportCursorPaginationStream(SourceZendeskSupportFullRefresh
         return params
 
 
-class ZendeskSupportTicketEventsExportStream(SourceZendeskSupportCursorPaginationStream):
-    """Incremental Export from TicketEvents stream:
-    https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
+class SourceZendeskIncrementalExportStream(SourceZendeskSupportCursorPaginationStream):
+    """Incremental Export from Tickets stream:
+    https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based
 
-    @ param response_list_name: the main nested entity to look at inside of response, defualt = "ticket_events"
-    @ param response_target_entity: nested property inside of `response_list_name`, default = "child_events"
-    @ param list_entities_from_event : the list of nested child_events entities to include from parent record
-    @ param sideload_param : parameter variable to include various information to child_events property
+    @ param response_list_name: the main nested entity to look at inside of response, default = response_list_name
+    @ param sideload_param : parameter variable to include various information to response
         more info: https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/side_loading/#supported-endpoints
-    @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
     """
 
-    response_list_name: str = "ticket_events"
-    response_target_entity: str = "child_events"
-    list_entities_from_event: List[str] = None
+    cursor_field = "updated_at"
+    response_list_name: str = None
     sideload_param: str = None
-    event_type: str = None
 
-    @property
-    def update_event_from_record(self) -> bool:
-        """Returns True/False based on list_entities_from_event property"""
-        return True if len(self.list_entities_from_event) > 0 else False
+    @staticmethod
+    def check_start_time_param(requested_start_time: int, value: int = 1):
+        """
+        Requesting tickets in the future is not allowed, hits 400 - bad request.
+        We get current UNIX timestamp minus `value` from now(), default = 1 (minute).
+
+        Returns: either close to now UNIX timestamp or previously requested UNIX timestamp.
+        """
+        now = calendar.timegm(pendulum.now().subtract(minutes=value).utctimetuple())
+        return now if requested_start_time > now else requested_start_time
 
     def path(self, **kwargs) -> str:
-        return "incremental/ticket_events"
+        return f"incremental/{self.response_list_name}.json"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -396,12 +399,40 @@ class ZendeskSupportTicketEventsExportStream(SourceZendeskSupportCursorPaginatio
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, next_page_token, **kwargs)
+        # check "start_time" is not in the future
+        params["start_time"] = self.check_start_time_param(params["start_time"])
         if self.sideload_param:
             params["include"] = self.sideload_param
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in response.json().get(self.response_list_name, []):
+            yield record
+
+
+class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExportStream):
+    """Incremental Export from TicketEvents stream:
+    https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
+
+    @ param response_list_name: the main nested entity to look at inside of response, default = "ticket_events"
+    @ param response_target_entity: nested property inside of `response_list_name`, default = "child_events"
+    @ param list_entities_from_event : the list of nested child_events entities to include from parent record
+    @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
+    """
+
+    cursor_field = "created_at"
+    response_list_name: str = "ticket_events"
+    response_target_entity: str = "child_events"
+    list_entities_from_event: List[str] = None
+    event_type: str = None
+
+    @property
+    def update_event_from_record(self) -> bool:
+        """Returns True/False based on list_entities_from_event property"""
+        return True if len(self.list_entities_from_event) > 0 else False
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
             for event in record.get(self.response_target_entity, []):
                 if event.get("event_type") == self.event_type:
                     if self.update_event_from_record:
@@ -410,35 +441,27 @@ class ZendeskSupportTicketEventsExportStream(SourceZendeskSupportCursorPaginatio
                     yield event
 
 
-class Users(SourceZendeskSupportStream):
-    """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
+class Users(SourceZendeskIncrementalExportStream):
+    """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
+
+    response_list_name: str = "users"
 
 
 class Organizations(SourceZendeskSupportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
 
-class Tickets(SourceZendeskSupportStream):
-    """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
+class Tickets(SourceZendeskIncrementalExportStream):
+    """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
-    # The API compares the start_time with the ticket's generated_timestamp value, not its updated_at value.
-    # The generated_timestamp value is updated for all entity updates, including system updates.
-    # If a system update occurs after an event, the unchanged updated_at time will become earlier
-    # relative to the updated generated_timestamp time.
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        """Adds the field 'comment_count'"""
-        params = super().request_params(**kwargs)
-        params["include"] = "comment_count"
-        return params
+    response_list_name: str = "tickets"
 
 
-class TicketComments(ZendeskSupportTicketEventsExportStream):
+class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
     Fetch the TicketComments incrementaly from TicketEvents Export stream
     """
 
-    cursor_field = "created_at"
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
     sideload_param = "comment_events"
     event_type = "Comment"
@@ -506,7 +529,6 @@ class Macros(SourceZendeskSupportStream):
 class TicketAudits(SourceZendeskSupportCursorPaginationStream):
     """TicketAudits stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_audits/"""
 
-    parent = Tickets
     # can request a maximum of 1,000 results
     page_size = 1000
     # ticket audits doesn't have the 'updated_by' field

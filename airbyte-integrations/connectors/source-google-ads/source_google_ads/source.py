@@ -11,7 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
-from pendulum import timezone
+from pendulum import parse, timezone, today
 from pendulum.tz.timezone import Timezone
 
 from .custom_query_stream import CustomQuery
@@ -51,12 +51,16 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], tz: Union[timezone, str] = "local"):
+        true_end_date = None
+        configured_end_date = config.get("end_date")
+        if configured_end_date is not None:
+            true_end_date = min(today(), parse(configured_end_date)).to_date_string()
         incremental_stream_config = dict(
             api=google_api,
             conversion_window_days=config["conversion_window_days"],
             start_date=config["start_date"],
             time_zone=tz,
-            end_date=config.get("end_date"),
+            end_date=true_end_date,
         )
         return incremental_stream_config
 
@@ -126,7 +130,6 @@ class SourceGoogleAds(AbstractSource):
             CampaignLabels(google_api),
             ClickView(**incremental_stream_config),
         ]
-
         custom_query_streams = [
             CustomQuery(custom_query_config=single_query_config, **incremental_stream_config)
             for single_query_config in config.get("custom_queries", [])

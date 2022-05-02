@@ -77,13 +77,39 @@ By default, string inputs in the UI can lose their linebreaks. In order to accep
 
 this will display a multi-line textbox in the UI like the following screenshot: ![Screen Shot 2021-08-04 at 11 13 09 PM](https://user-images.githubusercontent.com/6246757/128300404-1dc35323-bceb-4f93-9b81-b23cc4beb670.png)
 
+### Hiding inputs in the UI
+In some rare cases, a connector may wish to expose an input that is not available in the UI, but is still potentially configurable when running the connector outside of Airbyte, or via the UI. For example, exposing a very technical configuration like the page size of an outgoing HTTP requests may only be relevant to power users, and therefore shouldn't be available via the UI but might make sense to expose via the API. 
+
+In this case, use the `"airbyte_hidden": true` keyword to hide that field from the UI. E.g: 
+
+```
+{
+  "first_name": {
+    "type": "string",
+    "title": "First Name"
+  },
+  "secret_name": {
+    "type": "string",
+    "title": "You can't see me!!!",
+    "airbyte_hidden": true
+  }
+}
+```
+
+![hidden fields](../.gitbook/assets/spec_reference_hidden_field_screenshot.png)
+
+Results in the following form: 
+
+
 ### Using `oneOf`s
 
 In some cases, a connector needs to accept one out of many options. For example, a connector might need to know the compression codec of the file it will read, which will render in the Airbyte UI as a list of the available codecs. In JSONSchema, this can be expressed using the [oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
 
-{% hint style="info" %}
+:::info
+
 Some connectors may follow an older format for dropdown lists, we are currently migrating away from that to this standard.
-{% endhint %}
+
+:::
 
 In order for the Airbyte UI to correctly render a specification, however, a few extra rules must be followed:
 
@@ -93,7 +119,7 @@ In order for the Airbyte UI to correctly render a specification, however, a few 
 
 Let's look at the [source-file](../integrations/sources/file.md) implementation as an example. In this example, we have `provider` as a dropdown list option, which allows the user to select what provider their file is being hosted on. We note that the `oneOf` keyword lives under the `provider` object as follows:
 
-In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const`, `default` and `enum` value unique to that item. There is a [Github issue](https://github.com/airbytehq/airbyte/issues/6384) to improve it and use only `const` in the specification. This helps the UI and the connector distinguish between the option that was chosen by the user. This can be displayed with adapting the file source spec to this example:
+In each item in the `oneOf` array, the `option_title` string field exists with the aforementioned `const` value unique to that item. This helps the UI and the connector distinguish between the option that was chosen by the user. This can be displayed with adapting the file source spec to this example:
 
 ```javascript
 {
@@ -127,8 +153,6 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
               "option_title": {
                 "type": "string",
                 "const": "HTTPS: Public Web",
-                "enum": ["HTTPS: Public Web"],
-                "default": "HTTPS: Public Web",
                 "order": 0
               }
             }
@@ -141,8 +165,6 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
               "option_title": {
                 "type": "string",
                 "const": "GCS: Google Cloud Storage",
-                "enum": ["GCS: Google Cloud Storage"],
-                "default": "GCS: Google Cloud Storage",
                 "order": 0
               },
               "service_account_json": {

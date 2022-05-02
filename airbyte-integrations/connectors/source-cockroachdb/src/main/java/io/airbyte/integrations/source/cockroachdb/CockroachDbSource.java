@@ -12,6 +12,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -40,7 +41,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   public static final List<String> PORT_KEY = List.of("port");
 
   public CockroachDbSource() {
-    super(DRIVER_CLASS, null, new CockroachJdbcSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new CockroachJdbcSourceOperations());
   }
 
   public static Source sshWrappedSource() {

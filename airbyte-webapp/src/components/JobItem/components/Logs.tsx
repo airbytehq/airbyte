@@ -1,7 +1,7 @@
-import styled from "styled-components";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { LazyLog } from "react-lazylog";
+import styled from "styled-components";
 
 const LogsView = styled.div<{ isEmpty?: boolean }>`
   padding: 11px ${({ isEmpty }) => (isEmpty ? 42 : 12)}px 20px;
@@ -37,9 +37,7 @@ type LogsProps = {
 };
 
 const Logs: React.FC<LogsProps> = ({ logsArray }) => {
-  const logsJoin = logsArray?.length
-    ? logsArray.join("\n")
-    : "No logs available";
+  const logsJoin = logsArray?.length ? logsArray.join("\n") : "No logs available";
 
   return (
     <LogsView isEmpty={!logsArray}>

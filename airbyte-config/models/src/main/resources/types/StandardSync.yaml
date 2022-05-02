@@ -69,5 +69,8 @@ properties:
   # When manual is true, schedule should be null, and will be ignored.
   manual:
     type: boolean
+  source_catalog_id:
+    type: string
+    format: uuid
   resourceRequirements:
     "$ref": ResourceRequirements.yaml

@@ -1,24 +1,20 @@
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useResource, useSubscription } from "rest-hooks";
+import styled from "styled-components";
 
-import VideoItem from "./VideoItem";
-import ProgressBlock from "./ProgressBlock";
-import HighlightedText from "./HighlightedText";
-import { H1 } from "components/base";
-import UseCaseBlock from "./UseCaseBlock";
-import ConnectionResource from "core/resources/Connection";
-import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
-import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
-import Status from "core/statuses";
-import useWorkspace from "hooks/services/useWorkspace";
+import { H1 } from "components";
+
 import { useConfig } from "config";
+import Status from "core/statuses";
+import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
+import { useConnectionList, useGetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
+import useWorkspace from "hooks/services/useWorkspace";
+import SyncCompletedModal from "views/Feedback/SyncCompletedModal";
 
-type FinalStepProps = {
-  connectionId: string;
-  onSync: () => void;
-};
+import HighlightedText from "./HighlightedText";
+import ProgressBlock from "./ProgressBlock";
+import UseCaseBlock from "./UseCaseBlock";
+import VideoItem from "./VideoItem";
 
 const Title = styled(H1)`
   margin: 21px 0;
@@ -35,29 +31,19 @@ const Videos = styled.div`
   padding: 0 27px;
 `;
 
-const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
+const FinalStep: React.FC = () => {
   const config = useConfig();
   const { sendFeedback } = useWorkspace();
-  const {
-    feedbackPassed,
-    passFeedback,
-    visibleUseCases,
-    useCaseLinks,
-    skipCase,
-  } = useOnboardingService();
-  const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId,
-  });
-  useSubscription(ConnectionResource.detailShape(), {
-    connectionId: connectionId,
+  const { feedbackPassed, passFeedback, visibleUseCases, useCaseLinks, skipCase } = useOnboardingService();
+  const { mutateAsync: syncConnection } = useSyncConnection();
+  const { connections } = useConnectionList();
+  const connection = useGetConnection(connections[0].connectionId, {
+    refetchInterval: 2500,
   });
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (
-      connection.latestSyncJobStatus === Status.SUCCEEDED &&
-      !feedbackPassed
-    ) {
+    if (connection.latestSyncJobStatus === Status.SUCCEEDED && !feedbackPassed) {
       setIsOpen(true);
     }
   }, [connection.latestSyncJobStatus, feedbackPassed]);
@@ -77,6 +63,8 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
     setIsOpen(false);
   };
 
+  const onSync = () => syncConnection(connections[0]);
+
   return (
     <>
       <Videos>
@@ -93,37 +81,22 @@ const FinalStep: React.FC<FinalStepProps> = ({ connectionId, onSync }) => {
           img="/videoCover.png"
         />
       </Videos>
-      {!feedbackPassed && (
-        <ProgressBlock connection={connection} onSync={onSync} />
-      )}
+      {!feedbackPassed && <ProgressBlock connection={connection} onSync={onSync} />}
 
       <Title bold>
         <FormattedMessage
           id="onboarding.useCases"
           values={{
-            name: (name: React.ReactNode[]) => (
-              <HighlightedText>{name}</HighlightedText>
-            ),
+            name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
           }}
         />
       </Title>
 
       {visibleUseCases?.map((item, key) => (
-        <UseCaseBlock
-          key={item}
-          count={key + 1}
-          href={useCaseLinks[item]}
-          onSkip={skipCase}
-          id={item}
-        />
+        <UseCaseBlock key={item} count={key + 1} href={useCaseLinks[item]} onSkip={skipCase} id={item} />
       ))}
 
-      {isOpen ? (
-        <SyncCompletedModal
-          onClose={onSkipFeedback}
-          onPassFeedback={onSendFeedback}
-        />
-      ) : null}
+      {isOpen ? <SyncCompletedModal onClose={onSkipFeedback} onPassFeedback={onSendFeedback} /> : null}
     </>
   );
 };

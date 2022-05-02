@@ -59,10 +59,11 @@ Information about expected report generation waiting time you may find [here](ht
 * client\_id
 * client\_secret
 * refresh\_token
-* scope
-* profiles
 * region
+* report\_wait\_timeout
+* report\_generation\_max\_retries
 * start\_date \(optional\)
+* profiles \(optional\)
 
 More how to get client\_id and client\_secret you can find on [AWS docs](https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app).
 
@@ -76,6 +77,10 @@ Start date used for generating reports starting from the specified start date. S
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.7` | 2022-04-27 | [\#11730](https://github.com/airbytehq/airbyte/pull/11730) | Update fields in source-connectors specifications |
+| `0.1.6` | 2022-04-20 | [\#11659](https://github.com/airbytehq/airbyte/pull/11659) | Add adId to products report |
+| `0.1.5` | 2022-04-08 | [\#11430](https://github.com/airbytehq/airbyte/pull/11430) | `Added support OAuth2.0` |
+| `0.1.4` | 2022-02-21 | [\#10513](https://github.com/airbytehq/airbyte/pull/10513) | `Increasing REPORT_WAIT_TIMEOUT for supporting report generation which takes longer time ` |
 | `0.1.3` | 2021-12-28 | [\#8388](https://github.com/airbytehq/airbyte/pull/8388) | `Add retry if recoverable error  occured for reporting stream processing` |
 | `0.1.2` | 2021-10-01 | [\#6367](https://github.com/airbytehq/airbyte/pull/6461) | `Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback` |
 | `0.1.1` | 2021-09-22 | [\#6367](https://github.com/airbytehq/airbyte/pull/6367) | `Add seller and vendor filters to profiles stream` |

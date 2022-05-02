@@ -28,14 +28,16 @@ tests:
         issue_events: ["airbytehq/integration-test", "created_at"]
         issue_milestones: ["airbytehq/integration-test", "updated_at"]
         issues: ["airbytehq/integration-test", "updated_at"]
-        project_cards: ["airbytehq/integration-test", "13167124", "17807006", "updated_at"]
-        project_columns: ["airbytehq/integration-test", "13167124", "updated_at"]
+        project_cards:
+          ["airbytehq/integration-test", "13167124", "17807006", "updated_at"]
+        project_columns:
+          ["airbytehq/integration-test", "13167124", "updated_at"]
         projects: ["airbytehq/integration-test", "updated_at"]
         pull_request_stats: ["airbytehq/integration-test", "updated_at"]
         pull_requests: ["airbytehq/integration-test", "updated_at"]
         releases: ["airbytehq/integration-test", "created_at"]
         review_comments: ["airbytehq/integration-test", "updated_at"]
-        reviews: ["airbytehq/integration-test", "submitted_at"]
+        reviews: ["airbytehq/integration-test", "pull_request_updated_at"]
         stargazers: ["airbytehq/integration-test", "starred_at"]
   full_refresh:
     - config_path: "secrets/config.json"

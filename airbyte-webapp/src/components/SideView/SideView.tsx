@@ -1,9 +1,8 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useRef } from "react";
 import { createPortal } from "react-dom";
 import { useClickAway, useKey } from "react-use";
-
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { Actions, Body, Close, Container, Content, Header } from "./styled";
 

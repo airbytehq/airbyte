@@ -1,6 +1,6 @@
 import React from "react";
-
 import styled from "styled-components";
+
 import { H3 } from "components";
 
 type IProps = {
@@ -12,8 +12,7 @@ type IProps = {
 
 export const MainContainer = styled.div<{ withLine?: boolean }>`
   padding: 20px 32px 18px;
-  border-bottom: ${({ theme, withLine }) =>
-    withLine ? `1px solid ${theme.greyColor20}` : "none"};
+  border-bottom: ${({ theme, withLine }) => (withLine ? `1px solid ${theme.greyColor20}` : "none")};
   position: relative;
   z-index: 2;
   color: ${({ theme }) => theme.darkPrimaryColor};
@@ -43,12 +42,7 @@ export const TitleBlock = styled(H3)`
   text-overflow: ellipsis;
 `;
 
-const PageTitle: React.FC<IProps> = ({
-  title,
-  withLine,
-  middleComponent,
-  endComponent,
-}) => (
+const PageTitle: React.FC<IProps> = ({ title, withLine, middleComponent, endComponent }) => (
   <MainContainer withLine={withLine}>
     <TitleBlock>{title}</TitleBlock>
     <MiddleBlock>{middleComponent}</MiddleBlock>
