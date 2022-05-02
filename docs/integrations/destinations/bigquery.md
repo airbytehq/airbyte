@@ -1,5 +1,7 @@
 ---
-description: >- BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
+description: >-
+  BigQuery is a serverless, highly scalable, and cost-effective data warehouse
+  offered by Google Cloud Provider.
 ---
 
 # BigQuery
@@ -18,7 +20,8 @@ Each stream will be output into its own table in BigQuery. Each table will conta
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
 * `_airbyte_data`: a json blob representing with the event data. The column type in BigQuery is `String`.
 
-The output tables from the BigQuery destination are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time. This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a WHERE clause). Filters on the partitioning column will be used to prune the partitions and reduce the query cost. (The parameter "Require partition filter" is not enabled by Airbyte, but you may toggle this by updating the produced tables if you wish so)
+The output tables from the BigQuery destination are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
+This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a WHERE clause). Filters on the partitioning column will be used to prune the partitions and reduce the query cost. (The parameter "Require partition filter" is not enabled by Airbyte, but you may toggle this by updating the produced tables if you wish so)
 
 #### Features
 
@@ -71,8 +74,8 @@ Note that queries written in BigQuery can only reference Datasets in the same ph
 
 #### Service account
 
-In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User"(roles/bigquery.user) and "BigQuery Data Editor"(roles/bigquery.dataEditor) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control). We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions. "BigQuery User"(roles/bigquery.user) role permissions:
-
+In order for Airbyte to sync data into BigQuery, it needs credentials for a [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the "BigQuery User"(roles/bigquery.user) and "BigQuery Data Editor"(roles/bigquery.dataEditor) roles, which grants permissions to run BigQuery jobs, write to BigQuery Datasets, and read table metadata. More read about BigQuery roles permissions ypu can read [here](https://cloud.google.com/bigquery/docs/access-control). 
+We highly recommend that this Service Account is exclusive to Airbyte for ease of permissioning and auditing. However, you can use a pre-existing Service Account if you already have one with the correct permissions. "BigQuery User"(roles/bigquery.user) role permissions: 
 ``` 
 bigquery.bireservations.get
 bigquery.capacityCommitments.get
@@ -99,7 +102,6 @@ resourcemanager.projects.list
 ```
 
 "BigQuery Data Editor"(roles/bigquery.dataEditor) role permissions:
-
 ```
 bigquery.config.get
 bigquery.datasets.create
