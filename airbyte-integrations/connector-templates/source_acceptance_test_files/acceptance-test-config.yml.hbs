@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-{{dashCase name}}:dev
+connector_image: {{ connectorImage }}
 tests:
   spec:
-    - spec_path: "source_{{snakeCase name}}/spec.yaml"
+    - spec_path: "{{ specPath }}"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
