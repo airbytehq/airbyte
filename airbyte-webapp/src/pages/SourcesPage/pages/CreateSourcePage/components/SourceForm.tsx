@@ -55,8 +55,8 @@ const SourceForm: React.FC<IProps> = ({ onSubmit, sourceDefinitions, error, hasS
     }
 
     trackNewSourceAction("Select a connector", {
-      connector_source_definition: connector?.name,
-      connector_source_definition_id: sourceDefinitionId,
+      connector_source: connector?.name,
+      connector_source_id: sourceDefinitionId,
     });
   };
 
