@@ -8,6 +8,7 @@ import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
 import { JobInfo } from "core/domain/job/Job";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalytics } from "hooks/services/Analytics";
+import { useTrackNewSourceAction } from "hooks/useTrackNewSourceAction";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
@@ -40,6 +41,7 @@ const ConnectorCard: React.FC<
   const { testConnector, isTestConnectionInProgress, onStopTesting, error } = useTestConnector(props);
 
   const analyticsService = useAnalytics().service;
+  const trackNewSourceAction = useTrackNewSourceAction();
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
@@ -49,8 +51,7 @@ const ConnectorCard: React.FC<
     try {
       if (connector) {
         if (props.formType === "source") {
-          analyticsService.track("New Source - Action", {
-            action: "Test a connector",
+          trackNewSourceAction("Test a connector", {
             connector_source: connector?.name,
             connector_source_definition_id: Connector.id(connector),
           });

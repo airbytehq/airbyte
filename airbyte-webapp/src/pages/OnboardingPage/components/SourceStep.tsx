@@ -4,8 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useCreateSource } from "hooks/services/useSourceHook";
+import { useTrackNewSourceAction } from "hooks/useTrackNewSourceAction";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -31,7 +31,7 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
 
   const { mutateAsync: createSource } = useCreateSource();
 
-  const analyticsService = useAnalyticsService();
+  const trackNewSourceAction = useTrackNewSourceAction();
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
@@ -64,8 +64,7 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   const onServiceSelect = (sourceId: string) => {
     const sourceDefinition = getSourceDefinitionById(sourceId);
 
-    analyticsService.track("New Source - Action", {
-      action: "Select a connector",
+    trackNewSourceAction("Select a connector", {
       connector_source: sourceDefinition?.name,
       connector_source_id: sourceDefinition?.sourceDefinitionId,
     });
