@@ -1,5 +1,4 @@
-import { act, Queries, render as rtlRender, RenderResult } from "@testing-library/react";
-import { History } from "history";
+import { act, Queries, queries, render as rtlRender, RenderOptions, RenderResult } from "@testing-library/react";
 import React, { Suspense } from "react";
 import { IntlProvider } from "react-intl";
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -11,20 +10,14 @@ import { ServicesProvider } from "core/servicesProvider";
 import { FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
 
-export type RenderOptions = {
-  // optionally pass in a history object to control routes in the test
-  history?: History;
-  container?: HTMLElement;
-};
-
 type WrapperProps = {
-  children?: React.ReactNode;
+  children?: React.ReactElement;
 };
 
-export async function render(
-  ui: React.ReactNode,
-  renderOptions?: RenderOptions
-): Promise<RenderResult<Queries, HTMLElement>> {
+export async function render<
+  Q extends Queries = typeof queries,
+  Container extends Element | DocumentFragment = HTMLElement
+>(ui: React.ReactNode, renderOptions?: RenderOptions<Q, Container>): Promise<RenderResult<Q, Container>> {
   function Wrapper({ children }: WrapperProps) {
     const queryClient = new QueryClient();
 
@@ -45,9 +38,9 @@ export async function render(
     );
   }
 
-  let renderResult: RenderResult<Queries, HTMLElement>;
+  let renderResult: RenderResult<Q, Container>;
   await act(async () => {
-    renderResult = await rtlRender(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
+    renderResult = await rtlRender<Q, Container>(<div>{ui}</div>, { wrapper: Wrapper, ...renderOptions });
   });
 
   return renderResult!;
