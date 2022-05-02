@@ -15,19 +15,18 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.SyncStats;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.temporal.workflow.Workflow;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class SyncWorkflowImpl implements SyncWorkflow {
 
@@ -58,19 +57,24 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final StandardCheckConnectionInput destinationConfiguration =
         new StandardCheckConnectionInput().withConnectionConfiguration(syncInput.getDestinationConfiguration());
 
+    System.out.println("--- START SOURCE CHECK");
     final StandardCheckConnectionOutput sourceCheckResponse = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
     if (sourceCheckResponse.getStatus() == Status.FAILED) {
-      final Exception ex = new IllegalArgumentException(sourceCheckResponse.toString());
-      final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobRunConfig.getJobId()), Math.toIntExact(jobRunConfig.getAttemptId()), FailureReason.FailureOrigin.SOURCE);
-      return new StandardSyncOutput().withFailures(List.of(checkFailureReason));
+      System.out.println("--- SOURCE CHECK FAILED");
+      System.out.println(sourceCheckResponse);
+      return CheckFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobRunConfig, sourceCheckResponse);
     }
+    System.out.println("--- SOURCE CHECK OK");
 
-    final StandardCheckConnectionOutput destinationCheckResponse = checkActivity.check(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+    System.out.println("--- START DESTINATION CHECK");
+    final StandardCheckConnectionOutput destinationCheckResponse =
+        checkActivity.check(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
     if (destinationCheckResponse.getStatus() == Status.FAILED) {
-      final Exception ex = new IllegalArgumentException(destinationCheckResponse.toString());
-      final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobRunConfig.getJobId()), Math.toIntExact(jobRunConfig.getAttemptId()), FailureReason.FailureOrigin.DESTINATION);
-      return new StandardSyncOutput().withFailures(List.of(checkFailureReason));
+      System.out.println("--- DESTINATION CHECK FAILED");
+      System.out.println(destinationCheckResponse);
+      return CheckFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobRunConfig, destinationCheckResponse);
     }
+    System.out.println("--- DESTINATION CHECK OK");
 
     StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
@@ -109,5 +113,29 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     }
 
     return syncOutput;
+  }
+
+  private StandardSyncOutput CheckFailureSyncOutput(FailureReason.FailureOrigin origin, JobRunConfig jobRunConfig, StandardCheckConnectionOutput checkResponse) {
+    final Exception ex = new IllegalArgumentException(checkResponse.getMessage());
+    final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobRunConfig.getJobId()),
+          Math.toIntExact(jobRunConfig.getAttemptId()), origin);
+    final StandardSyncOutput output = new StandardSyncOutput()
+        .withFailures(List.of(checkFailureReason))
+        .withStandardSyncSummary(
+            new StandardSyncSummary()
+                .withStatus(StandardSyncSummary.ReplicationStatus.FAILED)
+                .withStartTime(System.currentTimeMillis())
+                .withEndTime(System.currentTimeMillis())
+                .withRecordsSynced(0L)
+                .withBytesSynced(0L)
+                .withTotalStats(new SyncStats()
+                    .withRecordsEmitted(0L)
+                    .withBytesEmitted(0L)
+                    .withStateMessagesEmitted(0L)
+                    .withRecordsCommitted(0L))
+        );
+    System.out.println("--- FAILURE REASON:");
+    System.out.println(output);
+    return output;
   }
 }
