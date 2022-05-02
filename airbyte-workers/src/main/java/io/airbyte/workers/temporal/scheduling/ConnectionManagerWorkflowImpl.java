@@ -136,9 +136,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // when a reset is triggered, the previous attempt, cancels itself (unless it is already a reset, in
       // which case it does nothing). the previous run that cancels itself then passes on the
       // resetConnection flag to the next run so that that run can execute the actual reset
-      workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
-
-      workflowState.setResetWithScheduling(connectionUpdaterInput.isFromJobResetFailure());
+      if (connectionUpdaterInput.isResetConnection()) {
+        workflowState.setResetConnection(true);
+      }
+      if (connectionUpdaterInput.isFromJobResetFailure()) {
+        workflowState.setResetWithScheduling(true);
+      }
 
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
