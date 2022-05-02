@@ -50,6 +50,12 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
   public AutoDisableConnectionOutput autoDisableFailingConnection(final AutoDisableConnectionActivityInput input) {
     if (featureFlags.autoDisablesFailingConnections()) {
       try {
+        // if connection is already inactive, no need to disable
+        final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
+        if (standardSync.getStatus() == Status.INACTIVE) {
+          return new AutoDisableConnectionOutput(false);
+        }
+
         final int maxDaysOfOnlyFailedJobs = configs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
         final int maxDaysOfOnlyFailedJobsBeforeWarning = maxDaysOfOnlyFailedJobs / 2;
         final int maxFailedJobsInARowBeforeConnectionDisableWarning = configs.getMaxFailedJobsInARowBeforeConnectionDisable() / 2;
@@ -82,7 +88,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
           return new AutoDisableConnectionOutput(false);
         } else if (numFailures >= configs.getMaxFailedJobsInARowBeforeConnectionDisable()) {
           // disable connection if max consecutive failed jobs limit has been hit
-          disableConnection(input.getConnectionId(), lastJob);
+          disableConnection(standardSync, lastJob);
           return new AutoDisableConnectionOutput(true);
         } else if (numFailures == maxFailedJobsInARowBeforeConnectionDisableWarning && !warningPreviouslySentForMaxDays) {
           // warn if number of consecutive failures hits 50% of MaxFailedJobsInARow
@@ -102,7 +108,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
 
         // disable connection if only failed jobs in the past maxDaysOfOnlyFailedJobs days
         if (firstReplicationOlderThanMaxDisableDays && noPreviousSuccess) {
-          disableConnection(input.getConnectionId(), lastJob);
+          disableConnection(standardSync, lastJob);
           return new AutoDisableConnectionOutput(true);
         }
 
@@ -172,8 +178,7 @@ public class AutoDisableConnectionActivityImpl implements AutoDisableConnectionA
     return Math.toIntExact(TimeUnit.SECONDS.toDays(currentTimestampInSeconds - timestampInSeconds));
   }
 
-  private void disableConnection(final UUID connectionId, final Job lastJob) throws JsonValidationException, IOException, ConfigNotFoundException {
-    final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+  private void disableConnection(final StandardSync standardSync, final Job lastJob) throws JsonValidationException, IOException {
     standardSync.setStatus(Status.INACTIVE);
     configRepository.writeStandardSync(standardSync);
 
