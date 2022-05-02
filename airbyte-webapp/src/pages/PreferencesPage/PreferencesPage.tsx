@@ -2,13 +2,13 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
+import { H1 } from "components";
 import { PageViewContainer } from "components/CenteredPageComponents";
 import HeadTitle from "components/HeadTitle";
-import { H1 } from "components";
-import { PreferencesForm } from "views/Settings/PreferencesForm";
 
 import { useTrackPage } from "hooks/services/Analytics/useAnalyticsService";
 import useWorkspace from "hooks/services/useWorkspace";
+import { PreferencesForm } from "views/Settings/PreferencesForm";
 
 const Title = styled(H1)`
   margin-bottom: 47px;

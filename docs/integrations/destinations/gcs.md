@@ -1,4 +1,4 @@
-# Google Cloud Storage \(GCS\)
+# Google Cloud Storage (GCS)
 
 ## Overview
 
@@ -6,7 +6,9 @@ This destination writes data to GCS bucket.
 
 The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
 
-## Sync Mode
+### Sync overview
+
+#### Features
 
 | Feature | Support | Notes |
 | :--- | :---: | :--- |
@@ -24,10 +26,10 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 | GCS Region | string | See [here](https://cloud.google.com/storage/docs/locations) for all region codes. |
 | HMAC Key Access ID | string | HMAC key access ID . The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details. |
 | HMAC Key Secret | string | The corresponding secret for the access ID. It is a 40-character base-64 encoded string. |
-| Format | object | Format specific configuration. See below for details. |
+| Format | object | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema). |
 | Part Size | integer | Arg to configure a block size. Max allowed blocks by GCS = 10,000, i.e. max stream size = blockSize \* 10,000 blocks. |
 
-Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future.
+Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
 
 ⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
 
@@ -40,7 +42,7 @@ The full path of the output data is:
 For example:
 
 ```text
-testing_bucket/data_output_path/public/users/2021_01_01_1609541171643_0.csv
+testing_bucket/data_output_path/public/users/2021_01_01_1609541171643_0.csv.gz
 ↑              ↑                ↑      ↑     ↑          ↑             ↑ ↑
 |              |                |      |     |          |             | format extension
 |              |                |      |     |          |             partition id
@@ -56,7 +58,7 @@ Please note that the stream name may contain a prefix, if it is configured on th
 
 The rationales behind this naming pattern are: 1. Each stream has its own directory. 2. The data output files can be sorted by upload time. 3. The upload time composes of a date part and millis part so that it is both readable and unique.
 
-Currently, each data sync will only create one file per stream. In the future, the output file can be partitioned by size. Each partition is identifiable by the partition ID, which is always 0 for now.
+A data sync may create multiple files as the output files can be partitioned by size (targeting a size of 200MB compressed or lower) .
 
 ## Output Schema
 
@@ -135,6 +137,8 @@ With root level normalization, the output CSV is:
 | :--- | :--- | :--- | :--- |
 | `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | 123 | `{ "first": "John", "last": "Doe" }` |
 
+Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.csv.gz`).
+
 ### JSON Lines \(JSONL\)
 
 [Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Each line has a structure as follows:
@@ -175,6 +179,8 @@ They will be like this in the output file:
 { "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
 ```
 
+Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.jsonl.gz`).
+
 ### Parquet
 
 #### Configuration
@@ -190,7 +196,7 @@ The following configuration is available to configure the Parquet output:
 | `dictionary_page_size_kb` | integer | 1024 \(KB\) | **Dictionary Page Size** in KB. There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. |
 | `dictionary_encoding` | boolean | `true` | **Dictionary encoding**. This parameter controls whether dictionary encoding is turned on. |
 
-These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/documentation/latest/#configurations) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
+These parameters are related to the `ParquetOutputFormat`. See the [Java doc](https://www.javadoc.io/doc/org.apache.parquet/parquet-hadoop/1.12.0/org/apache/parquet/hadoop/ParquetOutputFormat.html) for more details. Also see [Parquet documentation](https://parquet.apache.org/docs/file-format/configurations) for their recommended configurations \(512 - 1024 MB block size, 8 KB page size\).
 
 #### Data schema
 
@@ -229,6 +235,11 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.4  | 2022-04-22 | [\#12167](https://github.com/airbytehq/airbyte/pull/12167) | Add gzip compression option for CSV and JSONL formats. |
+| 0.2.3  | 2022-04-22 | [\#11795](https://github.com/airbytehq/airbyte/pull/11795) | Fix the connection check to verify the provided bucket path. |
+| 0.2.2  | 2022-04-05 | [\#11728](https://github.com/airbytehq/airbyte/pull/11728) | Properly clean-up bucket when running OVERWRITE sync mode |
+| 0.2.1  | 2022-04-05 | [\#11499](https://github.com/airbytehq/airbyte/pull/11499) | Updated spec and documentation. |
+| 0.2.0  | 2022-04-04 | [\#11686](https://github.com/airbytehq/airbyte/pull/11686) | Use serialized buffering strategy to reduce memory consumption; compress CSV and JSONL formats. |
 | 0.1.22 | 2022-02-12 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add JVM flag to exist on OOME. |
 | 0.1.21 | 2022-02-12 | [\#10299](https://github.com/airbytehq/airbyte/pull/10299) | Fix connection check to require only the necessary permissions. |
 | 0.1.20 | 2022-01-11 | [\#9367](https://github.com/airbytehq/airbyte/pull/9367) | Avro & Parquet: support array field with unknown item type; default any improperly typed field to string. |

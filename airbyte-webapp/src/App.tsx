@@ -1,20 +1,19 @@
 import React, { Suspense } from "react";
-import { ThemeProvider } from "styled-components";
 import { IntlProvider } from "react-intl";
 import { BrowserRouter as Router } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
 
-import en from "./locales/en.json";
-import GlobalStyle from "./global-styles";
-import { theme } from "./theme";
-
-import { Routing } from "./pages/routes";
-import LoadingPage from "./components/LoadingPage";
-import ApiErrorBoundary from "./components/ApiErrorBoundary";
+import { ApiServices } from "core/ApiServices";
+import { ServicesProvider } from "core/servicesProvider";
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { FeatureService } from "hooks/services/Feature";
+import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
-import { FeatureService } from "hooks/services/Feature";
-import { ServicesProvider } from "core/servicesProvider";
-import { ApiServices } from "core/ApiServices";
+import { StoreProvider } from "views/common/StoreProvider";
+
+import ApiErrorBoundary from "./components/ApiErrorBoundary";
+import LoadingPage from "./components/LoadingPage";
 import {
   Config,
   ConfigServiceProvider,
@@ -23,8 +22,11 @@ import {
   ValueProvider,
   windowConfigProvider,
 } from "./config";
+import GlobalStyle from "./global-styles";
+import en from "./locales/en.json";
+import { Routing } from "./pages/routes";
 import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
-import { StoreProvider } from "views/common/StoreProvider";
+import { theme } from "./theme";
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
@@ -45,10 +47,7 @@ const I18NProvider: React.FC = ({ children }) => (
   </IntlProvider>
 );
 
-const configProviders: ValueProvider<Config> = [
-  envConfigProvider,
-  windowConfigProvider,
-];
+const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
 
 const Services: React.FC = ({ children }) => (
   <AnalyticsProvider>
@@ -56,7 +55,11 @@ const Services: React.FC = ({ children }) => (
       <WorkspaceServiceProvider>
         <FeatureService>
           <NotificationService>
-            <ApiServices>{children}</ApiServices>
+            <ConfirmationModalService>
+              <FormChangeTrackerService>
+                <ApiServices>{children}</ApiServices>
+              </FormChangeTrackerService>
+            </ConfirmationModalService>
           </NotificationService>
         </FeatureService>
       </WorkspaceServiceProvider>
@@ -72,10 +75,7 @@ const App: React.FC = () => {
           <StoreProvider>
             <ServicesProvider>
               <Suspense fallback={<LoadingPage />}>
-                <ConfigServiceProvider
-                  defaultConfig={defaultConfig}
-                  providers={configProviders}
-                >
+                <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
                   <Router>
                     <Services>
                       <Routing />

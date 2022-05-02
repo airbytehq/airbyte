@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceConnection;
@@ -120,9 +121,15 @@ public class ConfigRepositoryE2EReadWriteTest {
   void testWorkspaceCountConnections() throws IOException {
 
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    assertEquals(MockData.standardSyncs().size() - 1, configRepository.countConnectionsForWorkspace(workspaceId));
-    assertEquals(MockData.destinationConnections().size() - 1, configRepository.countDestinationsForWorkspace(workspaceId));
-    assertEquals(MockData.sourceConnections().size() - 1, configRepository.countSourcesForWorkspace(workspaceId));
+    assertEquals(4, configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(2, configRepository.countDestinationsForWorkspace(workspaceId));
+    assertEquals(2, configRepository.countSourcesForWorkspace(workspaceId));
+  }
+
+  @Test
+  void testWorkspaceCountConnectionsDeprecated() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    assertEquals(1, configRepository.countConnectionsForWorkspace(workspaceId));
   }
 
   @Test
@@ -150,24 +157,24 @@ public class ConfigRepositoryE2EReadWriteTest {
     configRepository.writeActorCatalogFetchEvent(
         actorCatalog, source.getSourceId(), "1.2.0", "ConfigHash");
 
-    final Optional<AirbyteCatalog> catalog =
+    final Optional<ActorCatalog> catalog =
         configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "ConfigHash");
     assertTrue(catalog.isPresent());
-    assertEquals(actorCatalog, catalog.get());
-    assertFalse(configRepository.getSourceCatalog(source.getSourceId(), "1.3.0", "ConfigHash").isPresent());
-    assertFalse(configRepository.getSourceCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash").isPresent());
+    assertEquals(actorCatalog, Jsons.object(catalog.get().getCatalog(), AirbyteCatalog.class));
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash").isPresent());
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash").isPresent());
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.3.0", "ConfigHash");
-    final Optional<AirbyteCatalog> catalogNewConnectorVersion =
+    final Optional<ActorCatalog> catalogNewConnectorVersion =
         configRepository.getActorCatalog(source.getSourceId(), "1.3.0", "ConfigHash");
     assertTrue(catalogNewConnectorVersion.isPresent());
-    assertEquals(actorCatalog, catalogNewConnectorVersion.get());
+    assertEquals(actorCatalog, Jsons.object(catalogNewConnectorVersion.get().getCatalog(), AirbyteCatalog.class));
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", "OtherConfigHash");
-    final Optional<AirbyteCatalog> catalogNewConfig =
+    final Optional<ActorCatalog> catalogNewConfig =
         configRepository.getActorCatalog(source.getSourceId(), "1.2.0", "OtherConfigHash");
     assertTrue(catalogNewConfig.isPresent());
-    assertEquals(actorCatalog, catalogNewConfig.get());
+    assertEquals(actorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
 
     final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
     assertEquals(1, catalogDbEntry);
@@ -375,6 +382,36 @@ public class ConfigRepositoryE2EReadWriteTest {
 
     result = configRepository.getSourceOAuthParamByDefinitionIdOptional(missingId, sourceOAuthParameter.getSourceDefinitionId());
     assertFalse(result.isPresent());
+  }
+
+  @Test
+  public void testGetStandardSyncUsingOperation() throws IOException {
+    final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
+    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+
+    final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
+
+    assertThat(syncs).hasSameElementsAs(expectedSyncs);
+
+  }
+
+  @Test
+  public void testDeleteStandardSyncOperation()
+      throws IOException, JsonValidationException, ConfigNotFoundException {
+    final UUID deletedOperationId = MockData.standardSyncOperations().get(0).getOperationId();
+    final List<StandardSync> syncs = MockData.standardSyncs();
+    configRepository.deleteStandardSyncOperation(deletedOperationId);
+
+    for (final StandardSync sync : syncs) {
+      final StandardSync retrievedSync = configRepository.getStandardSync(sync.getConnectionId());
+      for (final UUID operationId : sync.getOperationIds()) {
+        if (operationId.equals(deletedOperationId)) {
+          assertThat(retrievedSync.getOperationIds()).doesNotContain(deletedOperationId);
+        } else {
+          assertThat(retrievedSync.getOperationIds()).contains(operationId);
+        }
+      }
+    }
   }
 
 }

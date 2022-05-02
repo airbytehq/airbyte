@@ -1,16 +1,18 @@
-import { useEffect, useRef } from "react";
+import { DependencyList, useEffect, useRef } from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useInitService<T extends new (...args: unknown[]) => any>(
-  f: () => InstanceType<T>,
-  deps: ConstructorParameters<T>
-): InstanceType<T> {
-  const service = useRef<InstanceType<T>>(f());
+export function useInitService<T>(f: () => T, deps: DependencyList): T {
+  const service = useRef<T | null>(null);
 
   useEffect(() => {
-    service.current = f();
+    if (service.current !== null) {
+      service.current = f();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
+
+  if (service.current === null) {
+    service.current = f();
+  }
 
   return service.current;
 }

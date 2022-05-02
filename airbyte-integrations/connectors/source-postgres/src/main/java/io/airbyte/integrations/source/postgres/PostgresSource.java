@@ -17,7 +17,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -57,7 +57,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), new PostgresSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
   }
 
   @Override
@@ -129,15 +129,15 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-      for (String schema : schemas) {
+      for (final String schema : schemas) {
         LOGGER.debug("Discovering schema: {}", schema);
         internals.addAll(super.discoverInternal(database, schema));
       }
-      for (TableInfo<CommonField<JDBCType>> info : internals) {
+      for (final TableInfo<CommonField<JDBCType>> info : internals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
       return internals;
@@ -300,18 +300,21 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                  Unnest(COALESCE(relacl::text[], Format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl,
                         Regexp_split_to_array(acl, '=|/') s
                  WHERE  r.rolname = ?
-                 AND    nspname = 'public'
+                 AND    (
+                               nspname = 'public'
+                          OR   nspname = ?)
                         -- 'm' means Materialized View
                  AND    c.relkind = 'm'
                  AND    (
                                -- all grants
                                c.relacl IS NULL
                                -- read grant
-                        OR     s[2] = 'r');
+                          OR     s[2] = 'r');
           """);
       final String username = database.getDatabaseConfig().get("username").asText();
       ps.setString(1, username);
       ps.setString(2, username);
+      ps.setString(3, username);
       return ps;
     }, sourceOperations::rowToJson)
         .collect(toSet())
@@ -324,7 +327,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
     return false;
   }
 

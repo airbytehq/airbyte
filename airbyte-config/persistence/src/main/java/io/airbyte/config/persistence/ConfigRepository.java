@@ -12,6 +12,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION_WORKSP
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
 import static org.jooq.impl.DSL.asterisk;
 
@@ -23,7 +24,6 @@ import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.ActorCatalog;
-import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -37,10 +37,12 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.enums.StatusType;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
@@ -64,7 +66,6 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.JoinType;
 import org.jooq.Record;
-import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectJoinStep;
@@ -82,6 +83,23 @@ public class ConfigRepository {
   public ConfigRepository(final ConfigPersistence persistence, final Database database) {
     this.persistence = persistence;
     this.database = new ExceptionWrappingDatabase(database);;
+  }
+
+  /**
+   * Conduct a health check by attempting to read from the database. Since there isn't an
+   * out-of-the-box call for this, mimic doing so by reading the ID column from the Workspace table's
+   * first row. This query needs to be fast as this call can be made multiple times a second.
+   *
+   * @return true if read succeeds, even if the table is empty, and false if any error happens.
+   */
+  public boolean healthCheck() {
+    try {
+      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+    } catch (final Exception e) {
+      LOGGER.error("Health check error: ", e);
+      return false;
+    }
+    return true;
   }
 
   public StandardWorkspace getStandardWorkspace(final UUID workspaceId, final boolean includeTombstone)
@@ -585,11 +603,25 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
   }
 
+  public List<StandardSync> listStandardSyncsUsingOperation(final UUID operationId)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+        .from(CONNECTION)
+        .join(CONNECTION_OPERATION)
+        .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+        .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))).fetch();
+    return getStandardSyncsFromResult(result);
+  }
+
   public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
+    return getStandardSyncsFromResult(result);
+  }
+
+  private List<StandardSync> getStandardSyncsFromResult(final Result<Record> result) throws IOException {
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
       final UUID connectionId = record.get(CONNECTION.ID);
@@ -651,6 +683,17 @@ public class ConfigRepository {
           .values(UUID.randomUUID(), connectionId, operationId)
           .execute());
 
+      return null;
+    });
+  }
+
+  public void deleteStandardSyncOperation(final UUID standardSyncOperationId) throws IOException {
+    database.transaction(ctx -> {
+      ctx.deleteFrom(CONNECTION_OPERATION)
+          .where(CONNECTION_OPERATION.OPERATION_ID.eq(standardSyncOperationId)).execute();
+      ctx.update(OPERATION)
+          .set(OPERATION.TOMBSTONE, true)
+          .where(OPERATION.ID.eq(standardSyncOperationId)).execute();
       return null;
     });
   }
@@ -737,64 +780,6 @@ public class ConfigRepository {
     }
   }
 
-  public Optional<ActorCatalog> getSourceCatalog(final UUID sourceId,
-                                                 final String configurationHash,
-                                                 final String connectorVersion)
-      throws JsonValidationException, IOException {
-    for (final ActorCatalogFetchEvent event : listActorCatalogFetchEvents()) {
-      if (event.getConnectorVersion().equals(connectorVersion)
-          && event.getConfigHash().equals(configurationHash)
-          && event.getActorId().equals(sourceId)) {
-        return getCatalogById(event.getActorCatalogId());
-      }
-    }
-    return Optional.empty();
-  }
-
-  public List<ActorCatalogFetchEvent> listActorCatalogFetchEvents()
-      throws JsonValidationException, IOException {
-    final List<ActorCatalogFetchEvent> actorCatalogFetchEvents = new ArrayList<>();
-
-    for (final ActorCatalogFetchEvent event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT,
-        ActorCatalogFetchEvent.class)) {
-      actorCatalogFetchEvents.add(event);
-    }
-    return actorCatalogFetchEvents;
-  }
-
-  public Optional<ActorCatalog> getCatalogById(final UUID catalogId)
-      throws IOException {
-    try {
-      return Optional.of(persistence.getConfig(ConfigSchema.ACTOR_CATALOG, catalogId.toString(),
-          ActorCatalog.class));
-    } catch (final ConfigNotFoundException e) {
-      return Optional.empty();
-    } catch (final JsonValidationException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  public Optional<ActorCatalog> findExistingCatalog(final ActorCatalog actorCatalog)
-      throws JsonValidationException, IOException {
-    for (final ActorCatalog fetchedCatalog : listActorCatalogs()) {
-      if (actorCatalog.getCatalogHash().equals(fetchedCatalog.getCatalogHash())) {
-        return Optional.of(fetchedCatalog);
-      }
-    }
-    return Optional.empty();
-  }
-
-  public List<ActorCatalog> listActorCatalogs()
-      throws JsonValidationException, IOException {
-    final List<ActorCatalog> actorCatalogs = new ArrayList<>();
-
-    for (final ActorCatalog event : persistence.listConfigs(ConfigSchema.ACTOR_CATALOG,
-        ActorCatalog.class)) {
-      actorCatalogs.add(event);
-    }
-    return actorCatalogs;
-  }
-
   private Map<UUID, AirbyteCatalog> findCatalogByHash(final String catalogHash, final DSLContext context) {
     final Result<Record2<UUID, JSONB>> records = context.select(ACTOR_CATALOG.ID, ACTOR_CATALOG.CATALOG)
         .from(ACTOR_CATALOG)
@@ -843,11 +828,11 @@ public class ConfigRepository {
     return catalogId;
   }
 
-  public Optional<AirbyteCatalog> getActorCatalog(final UUID actorId,
-                                                  final String actorVersion,
-                                                  final String configHash)
+  public Optional<ActorCatalog> getActorCatalog(final UUID actorId,
+                                                final String actorVersion,
+                                                final String configHash)
       throws IOException {
-    final Result<Record1<JSONB>> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG.CATALOG)
+    final Result<Record> records = database.transaction(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
         .from(ACTOR_CATALOG).join(ACTOR_CATALOG_FETCH_EVENT)
         .on(ACTOR_CATALOG.ID.eq(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID))
         .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(actorId))
@@ -856,8 +841,7 @@ public class ConfigRepository {
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1)).fetch();
 
     if (records.size() >= 1) {
-      final JSONB record = records.get(0).get(ACTOR_CATALOG.CATALOG);
-      return Optional.of(Jsons.deserialize(record.toString(), AirbyteCatalog.class));
+      return Optional.of(DbConverter.buildActorCatalog(records.get(0)));
     }
     return Optional.empty();
 
@@ -887,9 +871,9 @@ public class ConfigRepository {
       throws IOException {
     final OffsetDateTime timestamp = OffsetDateTime.now();
     final UUID fetchEventID = UUID.randomUUID();
-    database.transaction(ctx -> {
+    return database.transaction(ctx -> {
       final UUID catalogId = getOrInsertActorCatalog(catalog, ctx);
-      return ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+      ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
           .set(ACTOR_CATALOG_FETCH_EVENT.ID, fetchEventID)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID, actorId)
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID, catalogId)
@@ -897,9 +881,8 @@ public class ConfigRepository {
           .set(ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION, connectorVersion)
           .set(ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT, timestamp)
           .set(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT, timestamp).execute();
+      return catalogId;
     });
-
-    return fetchEventID;
   }
 
   public int countConnectionsForWorkspace(final UUID workspaceId) throws IOException {
@@ -907,6 +890,7 @@ public class ConfigRepository {
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .and(CONNECTION.STATUS.notEqual(StatusType.deprecated))
         .andNot(ACTOR.TOMBSTONE)).fetchOne().into(int.class);
   }
 
@@ -985,6 +969,17 @@ public class ConfigRepository {
     } else {
       return tombstoneField.eq(false);
     }
+  }
+
+  public WorkspaceServiceAccount getWorkspaceServiceAccountNoSecrets(final UUID workspaceId)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return persistence.getConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceId.toString(), WorkspaceServiceAccount.class);
+  }
+
+  public void writeWorkspaceServiceAccountNoSecrets(final WorkspaceServiceAccount workspaceServiceAccount)
+      throws JsonValidationException, IOException {
+    persistence.writeConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceServiceAccount.getWorkspaceId().toString(),
+        workspaceServiceAccount);
   }
 
 }

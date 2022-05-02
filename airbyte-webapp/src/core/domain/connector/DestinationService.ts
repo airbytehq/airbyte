@@ -1,9 +1,9 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-
-import Status from "core/statuses";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { Scheduler } from "./types";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import Status from "core/statuses";
+
+import { Destination, Scheduler } from "./types";
 
 class DestinationService extends AirbyteRequestService {
   get url(): string {
@@ -38,6 +38,39 @@ class DestinationService extends AirbyteRequestService {
     }
 
     return result;
+  }
+
+  public get(destinationId: string): Promise<Destination> {
+    return this.fetch<Destination>(`${this.url}/get`, {
+      destinationId,
+    });
+  }
+
+  public list(workspaceId: string): Promise<{ destinations: Destination[] }> {
+    return this.fetch(`${this.url}/list`, {
+      workspaceId,
+    });
+  }
+
+  public create(body: {
+    name: string;
+    destinationDefinitionId?: string;
+    workspaceId: string;
+    connectionConfiguration: ConnectionConfiguration;
+  }): Promise<Destination> {
+    return this.fetch<Destination>(`${this.url}/create`, body);
+  }
+
+  public update(body: {
+    destinationId: string;
+    name: string;
+    connectionConfiguration: ConnectionConfiguration;
+  }): Promise<Destination> {
+    return this.fetch<Destination>(`${this.url}/update`, body);
+  }
+
+  public delete(destinationId: string): Promise<Destination> {
+    return this.fetch<Destination>(`${this.url}/delete`, { destinationId });
   }
 }
 

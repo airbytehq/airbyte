@@ -40,7 +40,9 @@
       "s3_path_format": {
         "description": "Format string on how data will be organized inside the S3 bucket directory",
         "type": "string",
-        "examples": ["${NAMESPACE}/${STREAM_NAME}/"],
+        "examples": [
+          "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
+        ],
         "order": 3
       },
       "s3_bucket_region": {
@@ -242,6 +244,35 @@
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "compression": {
+                "title": "Compression",
+                "type": "object",
+                "description": "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".csv.gz\").",
+                "oneOf": [
+                  {
+                    "title": "No Compression",
+                    "requires": ["compression_type"],
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["No Compression"],
+                        "default": "No Compression"
+                      }
+                    }
+                  },
+                  {
+                    "title": "GZIP",
+                    "requires": ["compression_type"],
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["GZIP"],
+                        "default": "GZIP"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -260,6 +291,35 @@
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "compression": {
+                "title": "Compression",
+                "type": "object",
+                "description": "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+                "oneOf": [
+                  {
+                    "title": "No Compression",
+                    "requires": "compression_type",
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["No Compression"],
+                        "default": "No Compression"
+                      }
+                    }
+                  },
+                  {
+                    "title": "GZIP",
+                    "requires": "compression_type",
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["GZIP"],
+                        "default": "GZIP"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },

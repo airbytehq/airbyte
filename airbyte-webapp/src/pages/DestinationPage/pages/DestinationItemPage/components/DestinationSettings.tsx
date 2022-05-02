@@ -1,16 +1,15 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { useResource } from "rest-hooks";
 
 import DeleteBlock from "components/DeleteBlock";
-import useDestination from "hooks/services/useDestinationHook";
-import { Connection } from "core/resources/Connection";
-import { ConnectionConfiguration } from "core/domain/connection";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
+
+import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { Connector, Destination } from "core/domain/connector";
+import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 
 const Content = styled.div`
   max-width: 813px;
@@ -22,22 +21,13 @@ type IProps = {
   connectionsWithDestination: Connection[];
 };
 
-const DestinationsSettings: React.FC<IProps> = ({
-  currentDestination,
-  connectionsWithDestination,
-}) => {
-  const destinationSpecification = useGetDestinationDefinitionSpecification(
-    currentDestination.destinationDefinitionId
-  );
+const DestinationsSettings: React.FC<IProps> = ({ currentDestination, connectionsWithDestination }) => {
+  const destinationSpecification = useGetDestinationDefinitionSpecification(currentDestination.destinationDefinitionId);
 
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    {
-      destinationDefinitionId: currentDestination.destinationDefinitionId,
-    }
-  );
+  const destinationDefinition = useDestinationDefinition(currentDestination.destinationDefinitionId);
 
-  const { updateDestination, deleteDestination } = useDestination();
+  const { mutateAsync: updateDestination } = useUpdateDestination();
+  const { mutateAsync: deleteDestination } = useDeleteDestination();
 
   const onSubmitForm = async (values: {
     name: string;

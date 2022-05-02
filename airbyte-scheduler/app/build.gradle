@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'io.fabric8:kubernetes-client:5.9.0'
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'io.temporal:temporal-sdk:1.8.1'
 
     implementation project(':airbyte-analytics')
@@ -65,6 +65,6 @@ task copyGeneratedTar(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("scheduler",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("scheduler", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyGeneratedTar)
 assemble.dependsOn(dockerBuildTask)

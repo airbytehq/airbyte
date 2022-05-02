@@ -1,41 +1,22 @@
-import { Connection } from "core/resources/Connection";
+import { Connection, ConnectionStatus } from "core/domain/connection";
+import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
 import Status from "core/statuses";
-import {
-  ITableDataItem,
-  EntityTableDataItem,
-  Status as ConnectionStatus,
-} from "./types";
-import {
-  Destination,
-  DestinationDefinition,
-  Source,
-  SourceDefinition,
-} from "core/domain/connector";
+
+import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
   SoD extends S extends "source" ? Source : Destination,
   Def extends S extends "source" ? SourceDefinition : DestinationDefinition
->(
-  entities: SoD[],
-  connections: Connection[],
-  definitions: Def[],
-  type: S
-): EntityTableDataItem[] {
+>(entities: SoD[], connections: Connection[], definitions: Def[], type: S): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
-    const entitySoDId = (entityItem[
-      `${type}Id` as keyof SoD
-    ] as unknown) as string;
-    const entitySoDName = (entityItem[
-      `${type}Name` as keyof SoD
-    ] as unknown) as string;
+    const entitySoDId = entityItem[`${type}Id` as keyof SoD] as unknown as string;
+    const entitySoDName = entityItem[`${type}Name` as keyof SoD] as unknown as string;
     const entityConnections = connections.filter(
-      (connectionItem) =>
-        connectionItem[`${type}Id` as "sourceId" | "destinationId"] ===
-        entitySoDId
+      (connectionItem) => connectionItem[`${type}Id` as "sourceId" | "destinationId"] === entitySoDId
     );
 
     const definitionId = `${type}DefinitionId` as keyof Def;
@@ -63,10 +44,7 @@ export function getEntityTableData<
       // @ts-ignore ts is not that clever to infer such types
       connector: connection[connectType]?.[`${connectType}Name`] || "",
       status: connection.status,
-      lastSyncStatus: getConnectionSyncStatus(
-        connection.status,
-        connection.latestSyncJobStatus
-      ),
+      lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
     }));
 
     const sortBySync = entityConnections.sort((item1, item2) =>
@@ -99,13 +77,10 @@ export const getConnectionTableData = (
 
   return connections.map((connection) => {
     const sourceIcon = sourceDefinitions.find(
-      (definition) =>
-        definition.sourceDefinitionId === connection.source.sourceDefinitionId
+      (definition) => definition.sourceDefinitionId === connection.source.sourceDefinitionId
     )?.icon;
     const destinationIcon = destinationDefinitions.find(
-      (definition) =>
-        definition.destinationDefinitionId ===
-        connection.destination.destinationDefinitionId
+      (definition) => definition.destinationDefinitionId === connection.destination.destinationDefinitionId
     )?.icon;
 
     return {
@@ -124,10 +99,7 @@ export const getConnectionTableData = (
       schedule: connection.schedule,
       status: connection.status,
       isSyncing: connection.isSyncing,
-      lastSyncStatus: getConnectionSyncStatus(
-        connection.status,
-        connection.latestSyncJobStatus
-      ),
+      lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
       connectorIcon: type === "destination" ? sourceIcon : destinationIcon,
       entityIcon: type === "destination" ? destinationIcon : sourceIcon,
     };
@@ -135,12 +107,24 @@ export const getConnectionTableData = (
 };
 
 export const getConnectionSyncStatus = (
-  status: string,
-  lastSyncStatus: string | null
-): string | null => {
-  if (status === ConnectionStatus.INACTIVE) return ConnectionStatus.INACTIVE;
-  if (!lastSyncStatus) return ConnectionStatus.EMPTY;
-  if (lastSyncStatus === Status.FAILED) return ConnectionStatus.FAILED;
+  status: ConnectionStatus,
+  lastSyncJobStatus: Status | null
+): ConnectionSyncStatus => {
+  if (status === ConnectionStatus.INACTIVE) return ConnectionSyncStatus.INACTIVE;
 
-  return ConnectionStatus.ACTIVE;
+  switch (lastSyncJobStatus) {
+    case Status.SUCCEEDED:
+      return ConnectionSyncStatus.ACTIVE;
+
+    case Status.FAILED:
+    case Status.CANCELLED:
+      return ConnectionSyncStatus.FAILED;
+
+    case Status.PENDING:
+    case Status.RUNNING:
+      return ConnectionSyncStatus.PENDING;
+
+    default:
+      return ConnectionSyncStatus.EMPTY;
+  }
 };

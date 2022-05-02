@@ -1,18 +1,16 @@
+import { clamp } from "lodash";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-router-dom";
 
-import { clamp } from "lodash";
-
+import { Attempt } from "core/domain/job/Job";
 import Status from "core/statuses";
 import { useGetJob, useGetDebugInfoJob } from "services/job/JobService";
 
-import { Attempt } from "core/domain/job/Job";
-
-import Logs from "./Logs";
-import Tabs from "./Tabs";
-import { LogsDetails } from "./LogsDetails";
-import { useLocation } from "react-router-dom";
 import { parseAttemptLink } from "../attemptLinkUtils";
+import Logs from "./Logs";
+import { LogsDetails } from "./LogsDetails";
+import Tabs from "./Tabs";
 
 type IProps = {
   id: number | string;
@@ -51,16 +49,10 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
     id: index.toString(),
     isPartialSuccess: isPartialSuccess(item.attempt),
     status:
-      item.attempt.status === Status.FAILED ||
-      item.attempt.status === Status.SUCCEEDED
+      item.attempt.status === Status.FAILED || item.attempt.status === Status.SUCCEEDED
         ? item.attempt.status
         : undefined,
-    name: (
-      <FormattedMessage
-        id="sources.attemptNum"
-        values={{ number: index + 1 }}
-      />
-    ),
+    name: <FormattedMessage id="sources.attemptNum" values={{ number: index + 1 }} />,
   }));
 
   return (

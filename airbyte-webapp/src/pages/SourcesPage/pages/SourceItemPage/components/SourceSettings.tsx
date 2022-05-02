@@ -1,16 +1,15 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
+import styled from "styled-components";
 
-import useSource from "hooks/services/useSourceHook";
 import DeleteBlock from "components/DeleteBlock";
-import { Connection } from "core/resources/Connection";
-import { ConnectionConfiguration } from "core/domain/connection";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
+
+import { Connection, ConnectionConfiguration } from "core/domain/connection";
 import { Source } from "core/domain/connector";
+import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 
 const Content = styled.div`
   max-width: 813px;
@@ -22,19 +21,13 @@ type IProps = {
   connectionsWithSource: Connection[];
 };
 
-const SourceSettings: React.FC<IProps> = ({
-  currentSource,
-  connectionsWithSource,
-}) => {
-  const { updateSource, deleteSource } = useSource();
+const SourceSettings: React.FC<IProps> = ({ currentSource, connectionsWithSource }) => {
+  const { mutateAsync: updateSource } = useUpdateSource();
+  const { mutateAsync: deleteSource } = useDeleteSource();
 
-  const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(
-    currentSource.sourceDefinitionId
-  );
+  const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(currentSource.sourceDefinitionId);
 
-  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
-    sourceDefinitionId: currentSource.sourceDefinitionId,
-  });
+  const sourceDefinition = useSourceDefinition(currentSource?.sourceDefinitionId);
 
   const onSubmit = async (values: {
     name: string;
@@ -46,8 +39,7 @@ const SourceSettings: React.FC<IProps> = ({
       sourceId: currentSource.sourceId,
     });
 
-  const onDelete = () =>
-    deleteSource({ connectionsWithSource, source: currentSource });
+  const onDelete = () => deleteSource({ connectionsWithSource, source: currentSource });
 
   return (
     <Content>

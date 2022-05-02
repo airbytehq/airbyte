@@ -4,12 +4,14 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +65,11 @@ public class KubePortManagerSingleton {
 
   public Integer take() throws InterruptedException {
     return workerPorts.poll(10, TimeUnit.MINUTES);
+  }
+
+  @VisibleForTesting
+  public @Nullable Integer takeImmediately() {
+    return workerPorts.poll();
   }
 
   public void offer(final Integer port) {

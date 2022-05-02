@@ -1,21 +1,14 @@
 import merge from "lodash/merge";
 
 import { CommonRequestError } from "./CommonRequestError";
-import { VersionError } from "./VersionError";
 import { RequestMiddleware } from "./RequestMiddleware";
+import { VersionError } from "./VersionError";
 
 abstract class AirbyteRequestService {
-  constructor(
-    protected rootUrl: string,
-    private middlewares: RequestMiddleware[] = []
-  ) {}
+  constructor(protected rootUrl: string, private middlewares: RequestMiddleware[] = []) {}
 
   /** Perform network request */
-  public async fetch<T = Response>(
-    url: string,
-    body?: unknown,
-    options?: Partial<RequestInit>
-  ): Promise<T> {
+  public async fetch<T = Response>(url: string, body?: unknown, options?: Partial<RequestInit>): Promise<T> {
     const path = `${this.rootUrl}${url}`;
 
     const requestOptions: RequestInit = merge(

@@ -1,60 +1,120 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/amazon-ads",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
   "connectionSpecification": {
     "title": "Amazon Ads Spec",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
+      "auth_type": {
+        "title": "Auth Type",
+        "const": "oauth2.0",
+        "order": 0,
+        "type": "string"
+      },
       "client_id": {
-        "title": "Client Id",
-        "description": "Oauth client id <a href=\"https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app\">How to create your Login with Amazon</a>",
-        "name": "Client ID",
+        "title": "Client ID",
+        "description": "The Client ID of your Amazon Ads developer application.",
+        "order": 1,
         "type": "string"
       },
       "client_secret": {
         "title": "Client Secret",
-        "description": "Oauth client secret <a href=\"https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app\">How to create your Login with Amazon</a>",
-        "name": "Client secret",
+        "description": "The Client Secret of your Amazon Ads developer application.",
         "airbyte_secret": true,
-        "type": "string"
-      },
-      "scope": {
-        "title": "Scope",
-        "description": "By default its advertising::campaign_management, but customers may need to set scope to cpc_advertising:campaign_management.",
-        "default": "advertising::campaign_management",
-        "name": "Client scope",
-        "examples": ["cpc_advertising:campaign_management"],
+        "order": 2,
         "type": "string"
       },
       "refresh_token": {
         "title": "Refresh Token",
-        "description": "Oauth 2.0 refresh_token, <a href=\"https://developer.amazon.com/docs/login-with-amazon/conceptual-overview.html\">read details here</a>",
-        "name": "Oauth refresh token",
+        "description": "Amazon Ads Refresh Token. See the <a href=\"https://docs.airbyte.com/integrations/sources/amazon-ads\">docs</a> for more information on how to obtain this token.",
         "airbyte_secret": true,
-        "type": "string"
-      },
-      "start_date": {
-        "title": "Start Date",
-        "description": "Start date for collectiong reports, should not be more than 60 days in past. In YYYY-MM-DD format",
-        "name": "Start date",
-        "examples": ["2022-10-10", "2022-10-22"],
+        "order": 3,
         "type": "string"
       },
       "region": {
-        "description": "An enumeration.",
+        "title": "Region *",
+        "description": "Region to pull data from (EU/NA/FE/SANDBOX). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
         "default": "NA",
-        "name": "Region",
-        "title": "AmazonAdsRegion",
         "enum": ["NA", "EU", "FE", "SANDBOX"],
+        "order": 4,
+        "type": "string"
+      },
+      "report_wait_timeout": {
+        "title": "Report Wait Timeout *",
+        "description": "Timeout duration in minutes for Reports. Eg. 30",
+        "default": 30,
+        "examples": [30, 120],
+        "order": 5,
+        "type": "integer"
+      },
+      "report_generation_max_retries": {
+        "title": "Report Generation Maximum Retries *",
+        "description": "Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
+        "default": 5,
+        "examples": [5, 10, 15],
+        "order": 6,
+        "type": "integer"
+      },
+      "start_date": {
+        "title": "Start Date (Optional)",
+        "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
+        "examples": ["2022-10-10", "2022-10-22"],
+        "order": 7,
         "type": "string"
       },
       "profiles": {
-        "title": "Profiles",
-        "description": "profile Ids you want to fetch data for",
-        "name": "Profile Ids",
+        "title": "Profile IDs (Optional)",
+        "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details.",
+        "order": 8,
         "type": "array",
-        "items": { "type": "integer" }
+        "items": {
+          "type": "integer"
+        }
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"]
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["auth_type"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["client_secret"]
+          }
+        }
+      }
+    }
   }
 }

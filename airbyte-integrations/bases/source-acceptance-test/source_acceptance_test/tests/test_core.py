@@ -59,7 +59,7 @@ class TestSpec(BaseTest):
     def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
         """Check that spec call returns a spec equals to expected one"""
         if connector_spec:
-            assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.json file"
+            assert actual_connector_spec == connector_spec, "Spec should be equal to the one in spec.yaml or spec.json file"
 
     def test_docker_env(self, actual_connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
         """Check that connector's docker image has required envs"""
@@ -88,12 +88,28 @@ class TestSpec(BaseTest):
             for variant in variants:
                 assert "properties" in variant, f"Each item in the oneOf array should be a property with type object. {docs_msg}"
 
-            variant_props = [set(list(v["properties"].keys())) for v in variants]
+            oneof_path = ".".join(variant_path)
+            variant_props = [set(v["properties"].keys()) for v in variants]
             common_props = set.intersection(*variant_props)
-            assert common_props, "There should be at least one common property for oneOf subobjects"
-            assert any(
-                [all(["const" in var["properties"][prop] for var in variants]) for prop in common_props]
-            ), f"Any of {common_props} properties in {'.'.join(variant_path)} has no const keyword. {docs_msg}"
+            assert common_props, f"There should be at least one common property for {oneof_path} subobjects. {docs_msg}"
+
+            const_common_props = set()
+            for common_prop in common_props:
+                if all(["const" in variant["properties"][common_prop] for variant in variants]):
+                    const_common_props.add(common_prop)
+            assert (
+                len(const_common_props) == 1
+            ), f"There should be exactly one common property with 'const' keyword for {oneof_path} subobjects. {docs_msg}"
+
+            const_common_prop = const_common_props.pop()
+            for n, variant in enumerate(variants):
+                prop_obj = variant["properties"][const_common_prop]
+                assert (
+                    "default" not in prop_obj
+                ), f"There should not be 'default' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
+                assert (
+                    "enum" not in prop_obj
+                ), f"There should not be 'enum' keyword in common property {oneof_path}[{n}].{const_common_prop}. Use `const` instead. {docs_msg}"
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
@@ -240,8 +256,8 @@ class TestBasicRead(BaseTest):
         just running schema validation is not enough case schema could have
         additionalProperties parameter set to true and no required fields
         therefore any arbitrary object would pass schema validation.
-        This method is here to catch those cases by extracting all the pathes
-        from the object and compare it to pathes expected from jsonschema. If
+        This method is here to catch those cases by extracting all the paths
+        from the object and compare it to paths expected from jsonschema. If
         there no common pathes then raise an alert.
 
         :param records: List of airbyte record messages gathered from connector instances.

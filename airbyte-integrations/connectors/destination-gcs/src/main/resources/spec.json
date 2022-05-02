@@ -9,34 +9,30 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "GCS Destination Spec",
     "type": "object",
-    "required": [
-      "gcs_bucket_name",
-      "gcs_bucket_path",
-      "gcs_bucket_region",
-      "credential",
-      "format"
-    ],
+    "required": ["gcs_bucket_name", "gcs_bucket_path", "credential", "format"],
     "additionalProperties": false,
     "properties": {
       "gcs_bucket_name": {
         "title": "GCS Bucket Name",
+        "order": 1,
         "type": "string",
-        "description": "You can find the bucket name in the  App Engine Admin console Application Settings page, under the label  Google Cloud Storage Bucket.",
+        "description": "You can find the bucket name in the App Engine Admin console Application Settings page, under the label Google Cloud Storage Bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\">here</a>.",
         "examples": ["airbyte_sync"]
       },
       "gcs_bucket_path": {
+        "title": "GCS Bucket Path",
         "description": "GCS Bucket Path string Subdirectory under the above bucket to sync the data into.",
+        "order": 2,
         "type": "string",
         "examples": ["data_sync/test"]
       },
       "gcs_bucket_region": {
-        "title": "GCS Bucket Region",
+        "title": "GCS Bucket Region (Optional)",
         "type": "string",
-        "default": "",
-        "description": "Select a Region of the GCS Bucket.",
+        "order": 3,
+        "default": "us",
+        "description": "Select a Region of the GCS Bucket. Read more <a href=\"https://cloud.google.com/storage/docs/locations\">here</a>.",
         "enum": [
-          "",
-          "-- North America --",
           "northamerica-northeast1",
           "northamerica-northeast2",
           "us-central1",
@@ -46,10 +42,8 @@
           "us-west2",
           "us-west3",
           "us-west4",
-          "-- South America --",
           "southamerica-east1",
           "southamerica-west1",
-          "-- Europe --",
           "europe-central2",
           "europe-north1",
           "europe-west1",
@@ -57,7 +51,6 @@
           "europe-west3",
           "europe-west4",
           "europe-west6",
-          "-- Asia --",
           "asia-east1",
           "asia-east2",
           "asia-northeast1",
@@ -67,22 +60,21 @@
           "asia-south2",
           "asia-southeast1",
           "asia-southeast2",
-          "-- Australia --",
           "australia-southeast1",
           "australia-southeast2",
-          "-- Multi-regions --",
           "asia",
           "eu",
           "us",
-          "-- Dual-regions --",
           "asia1",
           "eur4",
           "nam4"
         ]
       },
       "credential": {
-        "title": "Credential",
+        "title": "Authentication",
+        "description": "An HMAC key is a type of credential and can be associated with a service account or a user account in Cloud Storage. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\">here</a>.",
         "type": "object",
+        "order": 0,
         "oneOf": [
           {
             "title": "HMAC Key",
@@ -99,16 +91,18 @@
               },
               "hmac_key_access_id": {
                 "type": "string",
-                "description": "HMAC key access ID. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long.",
-                "title": "HMAC Key Access ID",
+                "description": "When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys#overview\">here</a>.",
+                "title": "Access ID",
                 "airbyte_secret": true,
+                "order": 0,
                 "examples": ["1234567890abcdefghij1234"]
               },
               "hmac_key_secret": {
                 "type": "string",
-                "description": "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.",
-                "title": "HMAC Key Secret",
+                "description": "The corresponding secret for the access ID. It is a 40-character base-64 encoded string.  Read more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys#secrets\">here</a>.",
+                "title": "Secret",
                 "airbyte_secret": true,
+                "order": 1,
                 "examples": ["1234567890abcdefghij1234567890ABCDEFGHIJ"]
               }
             }
@@ -118,7 +112,8 @@
       "format": {
         "title": "Output Format",
         "type": "object",
-        "description": "Output data format",
+        "description": "Output data format. One of the following formats must be selected - <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#advantages_of_avro\">AVRO</a> format, <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet#parquet_schemas\">PARQUET</a> format, <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv#loading_csv_data_into_a_table\">CSV</a> format, or <a href=\"https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#loading_json_data_into_a_new_table\">JSONL</a> format.",
+        "order": 4,
         "oneOf": [
           {
             "title": "Avro: Apache Avro",
@@ -147,7 +142,7 @@
                   },
                   {
                     "title": "Deflate",
-                    "required": ["codec", "compression_level"],
+                    "required": ["codec"],
                     "properties": {
                       "codec": {
                         "type": "string",
@@ -155,7 +150,7 @@
                         "default": "Deflate"
                       },
                       "compression_level": {
-                        "title": "Deflate level",
+                        "title": "Deflate level (Optional)",
                         "description": "0: no compression & fastest, 9: best compression & slowest.",
                         "type": "integer",
                         "default": 0,
@@ -177,7 +172,7 @@
                   },
                   {
                     "title": "xz",
-                    "required": ["codec", "compression_level"],
+                    "required": ["codec"],
                     "properties": {
                       "codec": {
                         "type": "string",
@@ -185,8 +180,8 @@
                         "default": "xz"
                       },
                       "compression_level": {
-                        "title": "Compression Level",
-                        "description": "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\">here</a> for details.",
+                        "title": "Compression Level (Optional)",
+                        "description": "The presets 0-3 are fast presets with medium compression. The presets 4-6 are fairly slow presets with high compression. The default preset is 6. The presets 7-9 are like the preset 6 but use bigger dictionaries and have higher compressor and decompressor memory requirements. Unless the uncompressed size of the file exceeds 8 MiB, 16 MiB, or 32 MiB, it is waste of memory to use the presets 7, 8, or 9, respectively. Read more <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\">here</a> for details.",
                         "type": "integer",
                         "default": 6,
                         "minimum": 0,
@@ -196,7 +191,7 @@
                   },
                   {
                     "title": "zstandard",
-                    "required": ["codec", "compression_level"],
+                    "required": ["codec"],
                     "properties": {
                       "codec": {
                         "type": "string",
@@ -204,7 +199,7 @@
                         "default": "zstandard"
                       },
                       "compression_level": {
-                        "title": "Compression Level",
+                        "title": "Compression Level (Optional)",
                         "description": "Negative levels are 'fast' modes akin to lz4 or snappy, levels above 9 are generally for archival purposes, and levels above 18 use a lot of memory.",
                         "type": "integer",
                         "default": 3,
@@ -212,7 +207,7 @@
                         "maximum": 22
                       },
                       "include_checksum": {
-                        "title": "Include Checksum",
+                        "title": "Include Checksum (Optional)",
                         "description": "If true, include a checksum with each data block.",
                         "type": "boolean",
                         "default": false
@@ -233,7 +228,7 @@
                 ]
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for GCS multipart upload",
+                "title": "Block Size (MB) for GCS multipart upload (Optional)",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
@@ -243,7 +238,7 @@
           },
           {
             "title": "CSV: Comma-Separated Values",
-            "required": ["format_type", "flattening"],
+            "required": ["format_type"],
             "properties": {
               "format_type": {
                 "type": "string",
@@ -252,17 +247,46 @@
               },
               "flattening": {
                 "type": "string",
-                "title": "Normalization (Flattening)",
-                "description": "Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
+                "title": "Normalization (Optional)",
+                "description": "Whether the input JSON data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for GCS multipart upload",
+                "title": "Block Size (MB) for GCS multipart upload (Optional)",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "compression": {
+                "title": "Compression",
+                "type": "object",
+                "description": "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".csv.gz\").",
+                "oneOf": [
+                  {
+                    "title": "No Compression",
+                    "requires": ["compression_type"],
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["No Compression"],
+                        "default": "No Compression"
+                      }
+                    }
+                  },
+                  {
+                    "title": "GZIP",
+                    "requires": ["compression_type"],
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["GZIP"],
+                        "default": "GZIP"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -276,11 +300,40 @@
                 "default": "JSONL"
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for GCS multipart upload",
+                "title": "Block Size (MB) for GCS multipart upload (Optional)",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
                 "examples": [5]
+              },
+              "compression": {
+                "title": "Compression",
+                "type": "object",
+                "description": "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+                "oneOf": [
+                  {
+                    "title": "No Compression",
+                    "requires": "compression_type",
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["No Compression"],
+                        "default": "No Compression"
+                      }
+                    }
+                  },
+                  {
+                    "title": "GZIP",
+                    "requires": "compression_type",
+                    "properties": {
+                      "compression_type": {
+                        "type": "string",
+                        "enum": ["GZIP"],
+                        "default": "GZIP"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -294,9 +347,10 @@
                 "default": "Parquet"
               },
               "compression_codec": {
-                "title": "Compression Codec",
+                "title": "Compression Codec (Optional)",
                 "description": "The compression algorithm used to compress data pages.",
                 "type": "string",
+                "default": "UNCOMPRESSED",
                 "enum": [
                   "UNCOMPRESSED",
                   "SNAPPY",
@@ -305,39 +359,38 @@
                   "BROTLI",
                   "LZ4",
                   "ZSTD"
-                ],
-                "default": "UNCOMPRESSED"
+                ]
               },
               "block_size_mb": {
-                "title": "Block Size (Row Group Size) (MB)",
+                "title": "Block Size (Row Group Size) (MB) (Optional)",
                 "description": "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
                 "type": "integer",
                 "default": 128,
                 "examples": [128]
               },
               "max_padding_size_mb": {
-                "title": "Max Padding Size (MB)",
+                "title": "Max Padding Size (MB) (Optional)",
                 "description": "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB.",
                 "type": "integer",
                 "default": 8,
                 "examples": [8]
               },
               "page_size_kb": {
-                "title": "Page Size (KB)",
+                "title": "Page Size (KB) (Optional)",
                 "description": "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB.",
                 "type": "integer",
                 "default": 1024,
                 "examples": [1024]
               },
               "dictionary_page_size_kb": {
-                "title": "Dictionary Page Size (KB)",
+                "title": "Dictionary Page Size (KB) (Optional)",
                 "description": "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB.",
                 "type": "integer",
                 "default": 1024,
                 "examples": [1024]
               },
               "dictionary_encoding": {
-                "title": "Dictionary Encoding",
+                "title": "Dictionary Encoding (Optional)",
                 "description": "Default: true.",
                 "type": "boolean",
                 "default": true
