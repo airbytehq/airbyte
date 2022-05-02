@@ -8,6 +8,7 @@ import static io.airbyte.db.instance.jobs.jooq.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -498,6 +499,15 @@ class DefaultJobPersistenceTest {
         }
       });
     });
+  }
+
+  @Test
+  void testMigrationMetadata() throws IOException {
+    boolean isMigrated = jobPersistence.isSecretMigrated();
+    assertFalse(isMigrated);
+    jobPersistence.setSecretMigrationDone();
+    isMigrated = jobPersistence.isSecretMigrated();
+    assertTrue(isMigrated);
   }
 
   private long createJobAt(final Instant created_at) throws IOException {
