@@ -104,17 +104,18 @@ cmd_bump_version() {
   git fetch origin --quiet
   git --no-pager show "origin/master:$dockerfile" > "$master_dockerfile"
 
-  # Current version always comes from master, this way we can always bump correctly relative to master
-  # verses a potentially stale local branch
-  current_version=$(_get_docker_image_version "$master_dockerfile")
+  # Get connector version on current branch and from master. Because we need to know what
+  # tag is on ths current branch for search/replace, but we need to know what version is in master
+  # to know what to bump to.
+  branch_version=$(_get_docker_image_version "$dockerfile")
+  master_version=$(_get_docker_image_version "$master_dockerfile")
   local image_name; image_name=$(_get_docker_image_name "$dockerfile")
   rm "$master_dockerfile"
 
-  ## Create bumped version
-#  IFS=. read -r major_version minor_version patch_version <<<"${current_version##*-}"
-  major_version=$(echo "$current_version" | cut -d. -f1)
-  minor_version=$(echo "$current_version" | cut -d. -f2)
-  patch_version=$(echo "$current_version" | cut -d. -f3)
+  ## Create bumped version based on master
+  major_version=$(echo "$master_version" | cut -d. -f1)
+  minor_version=$(echo "$master_version" | cut -d. -f2)
+  patch_version=$(echo "$master_version" | cut -d. -f3)
 
   echo "major_version: $major_version"
   echo "minor_version: $minor_version"
@@ -140,12 +141,12 @@ cmd_bump_version() {
   esac
 
   bumped_version="$major_version.$minor_version.$patch_version"
-  if [[ "$bumped_version" != "$current_version" ]]; then
+  if [[ "$bumped_version" != "$master_version" ]]; then
     _error_if_tag_exists "$image_name:$bumped_version"
-    echo "$connector:$current_version will be bumped to $connector:$bumped_version"
+    echo "$connector:$branch_version will be bumped to $connector:$bumped_version"
 
     # Set outputs back to Github Actions for later steps
-    echo ::set-output name=current_version::"${current_version}"
+    echo ::set-output name=master_version::"${master_version}"
     echo ::set-output name=bumped_version::"${bumped_version}"
     echo ::set-output name=bumped::"true"
   else
@@ -155,7 +156,7 @@ cmd_bump_version() {
 
   ## Write new version to files
   # 1) Dockerfile
-  sed -i "s/$current_version/$bumped_version/g" "$dockerfile"
+  sed -i "s/$branch_version/$bumped_version/g" "$dockerfile"
 
   # 2) Definitions YAML file
   definitions_check=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$image_name\")" "$definitions_path")
@@ -168,6 +169,8 @@ cmd_bump_version() {
   connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$image_name\") | .name" "$definitions_path")
   yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
 
+  # Show changes
+  git status
 
   # 3) Generate Spec, dont push to cache though since PR has not been merged yet
 #  local tmp_spec_file; tmp_spec_file=$(mktemp)
@@ -176,7 +179,10 @@ cmd_bump_version() {
   # 4) processResources to update
   ./gradlew :airbyte-config:init:processResources
 
-  echo "Woohoo! Successfully bumped $connector:$current_version to $connector:$bumped_version"
+#  Show changes
+  git status
+
+  echo "Woohoo! Successfully bumped $connector:$branch_version to $connector:$bumped_version"
 }
 
 # TODO: also should be post merge step
