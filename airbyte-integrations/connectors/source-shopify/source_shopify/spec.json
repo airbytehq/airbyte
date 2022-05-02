@@ -27,8 +27,6 @@
               "auth_method": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": ["oauth2.0"],
-                "default": "oauth2.0",
                 "order": 0
               },
               "client_id": {
@@ -59,8 +57,6 @@
               "auth_method": {
                 "type": "string",
                 "const": "api_password",
-                "enum": ["api_password"],
-                "default": "api_password",
                 "order": 0
               },
               "api_password": {
