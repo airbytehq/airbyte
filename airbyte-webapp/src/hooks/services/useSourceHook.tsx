@@ -8,7 +8,6 @@ import { Source } from "core/domain/connector";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useTrackNewSourceAction } from "hooks/useTrackNewSourceAction";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
@@ -69,16 +68,9 @@ const useCreateSource = () => {
   const queryClient = useQueryClient();
   const workspace = useCurrentWorkspace();
 
-  const trackNewSourceAction = useTrackNewSourceAction();
-
   return useMutation(
     async (createSourcePayload: { values: ValuesProps; sourceConnector?: ConnectorProps }) => {
       const { values, sourceConnector } = createSourcePayload;
-      trackNewSourceAction("Test a connector", {
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId,
-      });
-
       try {
         // Try to crete source
         const result = await service.create({
@@ -88,17 +80,8 @@ const useCreateSource = () => {
           connectionConfiguration: values.connectionConfiguration,
         });
 
-        trackNewSourceAction("Tested connector - success", {
-          connector_source: sourceConnector?.name,
-          connector_source_id: sourceConnector?.sourceDefinitionId,
-        });
-
         return result;
       } catch (e) {
-        trackNewSourceAction("Tested connector - failure", {
-          connector_source: sourceConnector?.name,
-          connector_source_id: sourceConnector?.sourceDefinitionId,
-        });
         throw e;
       }
     },
