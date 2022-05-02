@@ -56,6 +56,8 @@ public class BootloaderApp {
   private final SecretMigrator secretMigrator;
   private ConfigPersistence configPersistence;
   private Database configDatabase;
+  private Database jobDatabase;
+  private JobPersistence jobPersistence;
 
   @VisibleForTesting
   public BootloaderApp(final Configs configs, final FeatureFlags featureFlags, final SecretMigrator secretMigrator) {
@@ -89,13 +91,13 @@ public class BootloaderApp {
     try {
       initPersistences();
       final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-      secretMigrator = new SecretMigrator(configPersistence, secretPersistence);
+      secretMigrator = new SecretMigrator(configPersistence, jobPersistence, secretPersistence);
 
       postLoadExecution = () -> {
         try {
           configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
 
-          if (featureFlags.runSecretMigration()) {
+          if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
             secretMigrator.migrateSecrets();
           }
           LOGGER.info("Loaded seed data..");
@@ -112,10 +114,7 @@ public class BootloaderApp {
   public void load() throws Exception {
     LOGGER.info("Setting up config database and default workspace..");
 
-    try (
-
-        final Database jobDatabase =
-            new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize()) {
+    try {
       LOGGER.info("Created initial jobs and configs database...");
 
       final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
@@ -136,9 +135,13 @@ public class BootloaderApp {
 
       jobPersistence.setVersion(currAirbyteVersion.serialize());
       LOGGER.info("Set version to {}", currAirbyteVersion);
+
+      postLoadExecution.run();
+    } finally {
+      jobDatabase.close();
+      configDatabase.close();
     }
 
-    postLoadExecution.run();
     LOGGER.info("Finished running post load Execution..");
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
@@ -157,6 +160,10 @@ public class BootloaderApp {
           .build();
 
       configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+
+      jobDatabase = new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize();
+
+      jobPersistence = new DefaultJobPersistence(jobDatabase);
     } catch (final IOException e) {
       e.printStackTrace();
     }
