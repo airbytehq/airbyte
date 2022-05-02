@@ -85,7 +85,6 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
         title={
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
-            {/* todo: is this right? or should users be allowed to click these for "inactive" connections?  */}
             {connection.status === ConnectionStatus.ACTIVE && (
               <div>
                 <Button onClick={() => setIsModalOpen(true)}>

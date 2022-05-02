@@ -33,15 +33,15 @@ const EnabledCell = styled(Cell)`
   margin-top: -18px;
 `;
 
-type IProps = {
+interface StatusMainInfoProps {
   connection: Connection;
   frequencyText?: string;
   destinationDefinition?: DestinationDefinition;
   sourceDefinition?: SourceDefinition;
   allowSync?: boolean;
-};
+}
 
-const StatusMainInfo: React.FC<IProps> = ({
+export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   connection,
   frequencyText,
   destinationDefinition,
@@ -83,5 +83,3 @@ const StatusMainInfo: React.FC<IProps> = ({
     </MainInfo>
   );
 };
-
-export default StatusMainInfo;
