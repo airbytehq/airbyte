@@ -23,12 +23,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DockerProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessFactory.class);
+  private static final String VERSION_DELIMITER = ":";
+  private static final String DOCKER_DELIMITER = "/";
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
@@ -114,6 +117,9 @@ public class DockerProcessFactory implements ProcessFactory {
           rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
           "--log-driver",
           "none");
+      final String containerName = createContainerName(imageName, jobId, attempt);
+      cmd.add("--name");
+      cmd.add(containerName);
 
       if (networkName != null) {
         cmd.add("--network");
@@ -161,6 +167,26 @@ public class DockerProcessFactory implements ProcessFactory {
     } catch (final IOException e) {
       throw new WorkerException(e.getMessage(), e);
     }
+  }
+
+  private static String createContainerName(final String fullImagePath, final String jobId, final int attempt) {
+    final var noVersion = fullImagePath.split(VERSION_DELIMITER)[0];
+
+    final var nameParts = noVersion.split(DOCKER_DELIMITER);
+    var imageName = nameParts[nameParts.length - 1];
+
+    final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final String suffix = "sync" + "-" + jobId + "-" + attempt + "-" + randSuffix;
+
+    var podName = imageName + "-" + suffix;
+    final var podNameLenLimit = 128;
+    if (podName.length() > podNameLenLimit) {
+      final var extra = podName.length() - podNameLenLimit;
+      imageName = imageName.substring(extra);
+      podName = imageName + "-" + suffix;
+    }
+
+    return podName;
   }
 
   private Path rebasePath(final Path jobRoot) {
