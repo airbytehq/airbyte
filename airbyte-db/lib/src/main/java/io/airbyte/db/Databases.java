@@ -5,8 +5,6 @@
 package io.airbyte.db;
 
 import com.google.common.collect.Maps;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.factory.DSLContextFactory;
