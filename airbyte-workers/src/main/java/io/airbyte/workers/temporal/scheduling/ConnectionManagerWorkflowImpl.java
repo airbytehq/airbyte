@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import io.airbyte.config.FailureReason;
+import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
@@ -130,6 +131,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
+      System.out.println("----- TICK");
+      System.out.println(connectionUpdaterInput);
+
       connectionId = connectionUpdaterInput.getConnectionId();
 
       // Clean the job state by failing any jobs for this connection that are currently non-terminal.
@@ -182,13 +186,22 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
         if (workflowState.isFailed()) {
           reportFailure(connectionUpdaterInput, standardSyncOutput);
+
+          final FailureType failureType = standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType();
+          System.out.println(failureType);
+          if (failureType == FailureType.CONFIG_ERROR) {
+            // In the case that the failure is attributable to config_error, we will not retry again
+            // TODO: In the UI, the job still appears to be "retrying".  The Job is state=incomplete and the attempt=failed
+            workflowState.setFailed(true);
+            workflowState.setRetryFailedActivity(false);
+            cancellableSyncWorkflow.cancel();
+          } else {
+            prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+          }
+        } else {
+          reportSuccess(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         }
-
-        // If we don't fail, it's a success.
-        reportSuccess(connectionUpdaterInput, standardSyncOutput);
-        prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-
       } catch (final ChildWorkflowFailure childWorkflowFailure) {
         // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
         // exception since we expect it, we just

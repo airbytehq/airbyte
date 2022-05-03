@@ -121,7 +121,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final Exception ex = new IllegalArgumentException(checkResponse.getMessage());
     final FailureReason checkFailureReason = FailureHelper.checkFailure(ex, Long.valueOf(jobRunConfig.getJobId()),
         Math.toIntExact(jobRunConfig.getAttemptId()), origin);
-    final StandardSyncOutput output = new StandardSyncOutput()
+    return new StandardSyncOutput()
         .withFailures(List.of(checkFailureReason))
         .withStandardSyncSummary(
             new StandardSyncSummary()
@@ -135,7 +135,5 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                     .withBytesEmitted(0L)
                     .withStateMessagesEmitted(0L)
                     .withRecordsCommitted(0L)));
-    return output;
   }
-
 }
