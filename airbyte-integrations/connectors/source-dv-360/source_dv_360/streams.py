@@ -233,9 +233,12 @@ class DBMStream(Stream, ABC):
       header = [sanitize(field) for field in header] #sanitize the field names
       data = self.buffer_reader(csv_response) # Remove the unnecessary rows that do not have data
       reader = csv.DictReader(data, fieldnames=header) #convert csv data into dict rows to be yielded by the generator
-      for row in reader:
-        #sometimes the report comes with an additional line for the some of the KPIs, which should be discarded
-        if row["partner_id"] != "":
+      report_type = query["params"]["type"]
+      list_reader = list(reader)
+      nb_rows = len(list_reader)
+      for index, row in enumerate(list_reader):
+        # In the case of the standard report, we are getting an additional summary row, therefore we need to exclude it.
+        if not (report_type == "TYPE_GENERAL" and index > nb_rows - 2):
           yield row
 
 
