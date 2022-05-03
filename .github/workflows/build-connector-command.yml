@@ -164,6 +164,7 @@ jobs:
         id: bump-version
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          FORCE_BUMP: ${{ github.event.inputs.force }}
         if: success()
         run: |
           ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
@@ -178,7 +179,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
-          FORCE_BUMP: ${{ github.event.inputs.force }}
       ############################
       ##     PROCESS BUILD      ##
       ############################
