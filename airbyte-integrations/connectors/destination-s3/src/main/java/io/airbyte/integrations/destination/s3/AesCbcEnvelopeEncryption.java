@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.security.NoSuchAlgorithmException;
 import javax.annotation.Nonnull;
 import javax.crypto.KeyGenerator;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @param key     The key to use for encryption.
@@ -17,13 +18,15 @@ public record AesCbcEnvelopeEncryption(@Nonnull byte[] key, @Nonnull KeyType key
   }
 
   public static AesCbcEnvelopeEncryption fromJson(final JsonNode encryptionNode) {
-    final JsonNode kekNode = encryptionNode.get("key_encrypting_key");
-    final String keyType = kekNode.get("key_type").asText();
-    return switch (keyType) {
-      case "user_provided" -> new AesCbcEnvelopeEncryption(BASE64_DECODER.decode(kekNode.get("key").asText()), KeyType.USER_PROVIDED);
-      case "ephemeral" -> encryptionWithRandomKey();
-      default -> throw new IllegalArgumentException("Invalid key type: " + keyType);
-    };
+    if (!encryptionNode.has("key_encrypting_key")) {
+      return encryptionWithRandomKey();
+    }
+    final String kek = encryptionNode.get("key_encrypting_key").asText();
+    if (StringUtils.isEmpty(kek)) {
+      return encryptionWithRandomKey();
+    } else {
+      return new AesCbcEnvelopeEncryption(BASE64_DECODER.decode(kek), KeyType.USER_PROVIDED);
+    }
   }
 
   private static AesCbcEnvelopeEncryption encryptionWithRandomKey() {

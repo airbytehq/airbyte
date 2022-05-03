@@ -273,7 +273,7 @@
                     "title": "AES-CBC envelope encryption",
                     "description": "Staging data will be encrypted using AES-CBC envelope encryption.",
                     "type": "object",
-                    "required": ["encryption_type", "key_encrypting_key"],
+                    "required": ["encryption_type"],
                     "properties": {
                       "encryption_type": {
                         "type": "string",
@@ -282,44 +282,10 @@
                         "default": "aes_cbc_envelope"
                       },
                       "key_encrypting_key": {
-                        "title": "Key-encrypting key",
-                        "description": "The type of key-encrypting key to use",
-                        "type": "object",
-                        "oneOf": [
-                          {
-                            "title": "Ephemeral",
-                            "description": "A random key will be generated for each sync.",
-                            "type": "object",
-                            "properties": {
-                              "key_type": {
-                                "type": "string",
-                                "const": "ephemeral",
-                                "enum": ["ephemeral"],
-                                "default": "ephemeral"
-                              }
-                            }
-                          },
-                          {
-                            "title": "User-provided",
-                            "description": "A key you provide will be used for all syncs.",
-                            "type": "object",
-                            "required": ["key_type", "key"],
-                            "properties": {
-                              "key_type": {
-                                "type": "string",
-                                "const": "user_provided",
-                                "enum": ["user_provided"],
-                                "default": "user_provided"
-                              },
-                              "key": {
-                                "type": "string",
-                                "title": "Key",
-                                "description": "The key, base64-encoded. Must be either 128, 192, or 256 bits.",
-                                "airbyte_secret": true
-                              }
-                            }
-                          }
-                        ]
+                        "type": "string",
+                        "title": "Key",
+                        "description": "The key, base64-encoded. Must be either 128, 192, or 256 bits. Leave blank to have Airbyte generate an ephemeral key for each sync.",
+                        "airbyte_secret": true
                       }
                     }
                   }
