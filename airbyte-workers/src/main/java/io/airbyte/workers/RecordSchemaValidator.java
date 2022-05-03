@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -35,8 +36,8 @@ public class RecordSchemaValidator {
    * @throws RecordSchemaValidationException
    */
   public void validateSchema(final AirbyteRecordMessage message) throws RecordSchemaValidationException {
-    // the stream this message corresponds to
-    final String messageStream = message.getNamespace() + message.getStream();
+    // the stream this message corresponds to, including the stream namespace
+    final String messageStream = String.format("%s" + message.getStream(), Objects.toString(message.getNamespace(), ""));
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
 

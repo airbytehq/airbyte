@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -101,7 +102,8 @@ public class WorkerUtils {
   public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
     final String streamPrefix = syncInput.getPrefix();
     return syncInput.getCatalog().getStreams().stream().collect(
-        Collectors.toMap(k -> String.format(k.getStream().getNamespace() + streamPrefix + k.getStream().getName().trim()),
+        Collectors.toMap(
+            k -> String.format("%s".trim() + streamPrefix + k.getStream().getName().trim(), Objects.toString(k.getStream().getNamespace(), "")),
             v -> v.getStream().getJsonSchema()));
 
   }
