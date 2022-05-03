@@ -35,7 +35,7 @@
       "s3_bucket_name": {
         "title": "S3 Bucket Name *",
         "type": "string",
-        "description": "The name of the S3 bucket. See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket. to create an S3 bucket",
+        "description": "The name of the S3 bucket. See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket.",
         "examples": ["airbyte_sync"],
         "order": 2
       },
@@ -50,7 +50,7 @@
         "title": "S3 Bucket Region *",
         "type": "string",
         "default": "",
-        "description": "The region of the S3 bucket. See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.",
+        "description": "The region of the S3 bucket. See [this](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.",
         "enum": [
           "",
           "us-east-1",
@@ -84,7 +84,7 @@
       "format": {
         "title": "Output Format *",
         "type": "object",
-        "description": "Output data format See [here](https://docs.airbyte.com/integrations/destinations/s3/#output-schema) for more details",
+        "description": "Format of the data output. See [this](https://docs.airbyte.com/integrations/destinations/s3/#output-schema) for more details",
         "oneOf": [
           {
             "title": "Avro: Apache Avro",
@@ -103,7 +103,7 @@
                 "type": "object",
                 "oneOf": [
                   {
-                    "title": "no compression",
+                    "title": "No Compression",
                     "required": ["codec"],
                     "properties": {
                       "codec": {
@@ -123,7 +123,7 @@
                         "default": "Deflate"
                       },
                       "compression_level": {
-                        "title": "Deflate level",
+                        "title": "Deflate Level",
                         "description": "0: no compression & fastest, 9: best compression & slowest.",
                         "type": "integer",
                         "default": 0,
@@ -153,7 +153,7 @@
                         "default": "xz"
                       },
                       "compression_level": {
-                        "title": "Compression level",
+                        "title": "Compression Level",
                         "description": "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\">here</a> for details.",
                         "type": "integer",
                         "default": 6,
@@ -172,7 +172,7 @@
                         "default": "zstandard"
                       },
                       "compression_level": {
-                        "title": "Compression level",
+                        "title": "Compression Level",
                         "description": "Negative levels are 'fast' modes akin to lz4 or snappy, levels above 9 are generally for archival purposes, and levels above 18 use a lot of memory.",
                         "type": "integer",
                         "default": 3,
@@ -180,7 +180,7 @@
                         "maximum": 22
                       },
                       "include_checksum": {
-                        "title": "Include checksum",
+                        "title": "Include Checksum",
                         "description": "If true, include a checksum with each data block.",
                         "type": "boolean",
                         "default": false
@@ -229,7 +229,7 @@
                 "enum": ["No flattening", "Root level flattening"]
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for Amazon S3 multipart upload (Optional)",
+                "title": "Block Size (MB) For Amazon S3 Multipart Upload (Optional)",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
@@ -267,7 +267,7 @@
             }
           },
           {
-            "title": "JSON Lines: newline-delimited JSON",
+            "title": "JSON Lines: Newline-delimited JSON",
             "required": ["format_type"],
             "properties": {
               "format_type": {
@@ -277,7 +277,7 @@
                 "default": "JSONL"
               },
               "part_size_mb": {
-                "title": "Block Size (MB) for Amazon S3 multipart upload (Optional)",
+                "title": "Block Size (MB) For Amazon S3 Multipart Upload (Optional)",
                 "description": "This is the size of a \"Part\" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB.",
                 "type": "integer",
                 "default": 5,
