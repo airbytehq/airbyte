@@ -275,6 +275,52 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testDiscoverRecursiveRolePermissions() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final Database database = getDatabaseFromConfig(config)) {
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name_7(id INTEGER, name VARCHAR(200));");
+          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+
+          ctx.fetch("CREATE USER test_user_4 password '132';");
+
+          ctx.fetch("CREATE ROLE airbyte LOGIN password 'airbyte';");
+          ctx.fetch("CREATE ROLE read_only LOGIN password 'read_only';");
+          ctx.fetch("CREATE ROLE intermediate LOGIN password 'intermediate';");
+
+          ctx.fetch("CREATE ROLE access_nothing LOGIN password 'access_nothing';");
+
+          ctx.fetch("GRANT intermediate TO airbyte;");
+          ctx.fetch("GRANT read_only TO intermediate;");
+
+          ctx.fetch("GRANT SELECT ON id_and_name, id_and_name_7 TO read_only;");
+          ctx.fetch("GRANT airbyte TO test_user_4;");
+
+          ctx.fetch("CREATE TABLE unseen(id INTEGER, name VARCHAR(200));");
+          ctx.fetch("GRANT CONNECT ON DATABASE test TO test_user_4;");
+          return null;
+        });
+      }
+      try (final Database database = getDatabaseWithSpecifiedUser(config, "test_user_4", "132")) {
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+          return null;
+        });
+      }
+      AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "test_user_4", "132"));
+      Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      assertEquals(Sets.newHashSet("id_and_name", "id_and_name_7", "id_and_name_3"), tableNames);
+
+      actual = new PostgresSource().discover(getConfig(db, "access_nothing", "access_nothing"));
+      tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      assertEquals(Sets.newHashSet(), tableNames);
+      db.stop();
+    }
+  }
+
+  @Test
   void testReadSuccess() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog =
         CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
