@@ -325,6 +325,7 @@ subprojects {
 
         // adds owasp plugin
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+        implementation 'com.github.spotbugs:spotbugs-annotations:4.6.0'
     }
 
     tasks.withType(Tar) {

@@ -1,6 +1,7 @@
 package io.airbyte.integrations.destination.s3;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.OutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -80,6 +81,10 @@ public class AesCbcEnvelopeEncryptionBlobDecorator extends BlobDecorator {
     this.initializationVector = initializationVector;
   }
 
+  @SuppressFBWarnings(
+      value = {"PADORA", "CIPINT"},
+      justification = "We're using this cipher for compatibility with Redshift/Snowflake."
+  )
   @Override
   public OutputStream wrap(final OutputStream stream) {
     try {
@@ -91,6 +96,10 @@ public class AesCbcEnvelopeEncryptionBlobDecorator extends BlobDecorator {
     }
   }
 
+  @SuppressFBWarnings(
+      value = {"CIPINT", "SECECB"},
+      justification = "We're using this cipher for compatibility with Redshift/Snowflake."
+  )
   @Override
   public void updateMetadata(final Map<String, String> metadata, final Map<String, String> metadataKeyMapping) {
     try {
