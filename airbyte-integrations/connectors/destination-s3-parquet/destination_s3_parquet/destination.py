@@ -50,7 +50,7 @@ import logging
 
 LOGGER = logging.getLogger()
 filenames = []
-
+stream_file_name = {}
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
@@ -292,7 +292,7 @@ class DestinationS3Parquet(Destination):
         #LOGGER.info('persist_messages stream name: ' + stream_name)
         state = None
         filename = None
-        timestamp_file_part = '-' + datetime.now().strftime('%Y%m%dT%H%M%S') if do_timestamp_file else ''
+        timestamp_file_part = '-' + datetime.now().strftime('%Y%m%dT%H%M') if do_timestamp_file else ''
         max_file_size_mb = config.get('max_temp_file_size_mb', 50)
 
         record_to_load = data
@@ -302,6 +302,27 @@ class DestinationS3Parquet(Destination):
         filename = os.path.join(tempfile.gettempdir(), filename)
         filename = os.path.expanduser(filename)
         #LOGGER.info(" persist_messages file name = {}" + filename)
+        
+        old_file = None
+        if stream_name in stream_file_name:
+            old_file = stream_file_name[stream_name]
+        else:
+            old_file = filename
+            
+        stream_file_name[stream_name] = filename
+        
+        if filename != old_file:
+            file_to_upload = old_file
+            self.upload_to_s3(s3_client, config.get("s3_bucket_name"), config.get("s3_bucket_path"), old_file,
+                              stream_name,
+                              config.get('field_to_partition_by_time'),
+                              config.get('record_unique_field'),
+                              config.get("compression"),
+                              config.get('encryption_type'),
+                              config.get('encryption_key'))
+            filenames.remove((old_file, stream_name))
+            stream_file_name.pop(stream_name)
+        
         if not (filename, stream_name) in filenames:
             filenames.append((filename, stream_name))
 
@@ -322,5 +343,6 @@ class DestinationS3Parquet(Destination):
                               config.get('encryption_type'),
                               config.get('encryption_key'))
             filenames.remove((filename, stream_name))
+            stream_file_name.pop(stream_name)
 
         return state

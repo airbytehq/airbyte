@@ -113,5 +113,5 @@
 - destinationDefinitionId: 48e72244-f2f7-11eb-9a03-0242ac130003
   name: S3-Parquet
   dockerRepository: blotout/destination-s3-parquet
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/s3
