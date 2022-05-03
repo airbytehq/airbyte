@@ -209,7 +209,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
       for (final FailureReason reason : failureSummary.getFailures()) {
-        DogStatsDMetricSingleton.count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1, MetricTags.getFailureOrigin(reason.getFailureOrigin()));
+        DogStatsDMetricSingleton.count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
+            MetricTags.getFailureOrigin(reason.getFailureOrigin()));
       }
     } catch (final IOException e) {
       throw new RetryableException(e);
