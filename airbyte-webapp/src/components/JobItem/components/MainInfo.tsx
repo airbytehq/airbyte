@@ -4,12 +4,13 @@ import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 import styled from "styled-components";
 
-import { Button, StatusIcon } from "components";
+import { LoadingButton, StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
 import { Attempt, JobInfo, JobMeta as JobApiItem } from "core/domain/job/Job";
 import Status from "core/statuses";
 
+import useLoadingState from "../../../hooks/useLoadingState";
 import { useCancelJob } from "../../../services/job/JobService";
 import AttemptDetails from "./AttemptDetails";
 
@@ -41,7 +42,7 @@ const AttemptCount = styled.div`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const CancelButton = styled(Button)`
+const CancelButton = styled(LoadingButton)`
   margin-right: 10px;
   padding: 3px 7px;
   z-index: 1;
@@ -97,11 +98,12 @@ const MainInfo: React.FC<IProps> = ({
   shortInfo,
   isPartialSuccess,
 }) => {
+  const { isLoading, showFeedback, startAction } = useLoadingState();
   const cancelJob = useCancelJob();
 
-  const onCancelJob = async (event: React.SyntheticEvent) => {
+  const onCancelJob = (event: React.SyntheticEvent) => {
     event.stopPropagation();
-    return cancelJob(job.id);
+    return startAction({ action: () => cancelJob(job.id) });
   };
 
   const isNotCompleted = job.status && [Status.PENDING, Status.RUNNING, Status.INCOMPLETE].includes(job.status);
@@ -142,8 +144,14 @@ const MainInfo: React.FC<IProps> = ({
       </InfoCell>
       <InfoCell>
         {!shortInfo && isNotCompleted && (
-          <CancelButton secondary onClick={onCancelJob}>
-            <FormattedMessage id="form.cancel" />
+          <CancelButton
+            secondary
+            disabled={isLoading}
+            isLoading={isLoading}
+            wasActive={showFeedback}
+            onClick={onCancelJob}
+          >
+            {showFeedback ? <FormattedMessage id="form.canceling" /> : <FormattedMessage id="form.cancel" />}
           </CancelButton>
         )}
         <FormattedTimeParts value={job.createdAt * 1000} hour="numeric" minute="2-digit">

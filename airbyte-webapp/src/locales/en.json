@@ -48,6 +48,7 @@
   "form.dataSync": "Activate the streams you want to sync",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",
+  "form.canceling": "Canceling",
   "form.submit": "Submit",
   "form.delete": "Delete",
   "form.change": "Change",
