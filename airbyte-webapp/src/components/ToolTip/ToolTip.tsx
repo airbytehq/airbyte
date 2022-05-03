@@ -5,10 +5,10 @@ type ToolTipProps = {
   control: React.ReactNode;
   className?: string;
   disabled?: boolean;
-  cursor?: "pointer" | "help";
+  cursor?: "pointer" | "help" | "not-allowed";
 };
 
-const Control = styled.div<{ $cursor?: "pointer" | "help" }>`
+const Control = styled.div<{ $cursor?: "pointer" | "help" | "not-allowed" }>`
   display: inline-block;
   position: relative;
   cursor: ${({ $cursor }) => $cursor ?? "pointer"};
