@@ -1,4 +1,3 @@
-import { setIn } from "formik";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as yup from "yup";
@@ -6,13 +5,7 @@ import * as yup from "yup";
 import { DropDownRow } from "components";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import {
-  AirbyteStreamConfiguration,
-  DestinationSyncMode,
-  SyncMode,
-  SyncSchema,
-  SyncSchemaStream,
-} from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode, SyncSchema, SyncSchemaStream } from "core/domain/catalog";
 import { Connection, ScheduleProperties } from "core/domain/connection";
 import { ConnectionNamespaceDefinition, ConnectionSchedule } from "core/domain/connection";
 import {
@@ -27,6 +20,8 @@ import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
+import { getOptimalSyncMode, verifyConfigCursorField, verifySupportedSyncModes } from "./formConfigHelpers";
 
 type FormikConnectionFormValues = {
   schedule?: ScheduleProperties | null;
@@ -197,54 +192,17 @@ function mapFormPropsToOperation(
   return newOperations;
 }
 
-function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
-  if (streamNode.stream.defaultCursorField.length) {
-    return streamNode.stream.defaultCursorField;
-  }
-  return streamNode.config.cursorField;
-}
-
-const useInitialSchema = (schema: SyncSchema): SyncSchema =>
+const useInitialSchema = (schema: SyncSchema, supportedDestinationSyncModes: DestinationSyncMode[]): SyncSchema =>
   useMemo<SyncSchema>(
     () => ({
       streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
         const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
+        const nodeStream = verifyConfigCursorField(verifySupportedSyncModes(nodeWithId));
 
-        // If the value in supportedSyncModes is empty assume the only supported sync mode is FULL_REFRESH.
-        // Otherwise, it supports whatever sync modes are present.
-        const streamNode = nodeWithId.stream.supportedSyncModes?.length
-          ? nodeWithId
-          : setIn(nodeWithId, "stream.supportedSyncModes", [SyncMode.FullRefresh]);
-
-        // If syncMode isn't null - don't change item
-        if (streamNode.config.syncMode) {
-          return streamNode;
-        }
-
-        const updateStreamConfig = (config: Partial<AirbyteStreamConfiguration>): SyncSchemaStream => ({
-          ...streamNode,
-          config: { ...streamNode.config, ...config },
-        });
-
-        const supportedSyncModes = streamNode.stream.supportedSyncModes;
-
-        // Prefer INCREMENTAL sync mode over other sync modes
-        if (supportedSyncModes.includes(SyncMode.Incremental)) {
-          return updateStreamConfig({
-            cursorField: streamNode.config.cursorField.length
-              ? streamNode.config.cursorField
-              : getDefaultCursorField(streamNode),
-            syncMode: SyncMode.Incremental,
-          });
-        }
-
-        // If source don't support INCREMENTAL and FULL_REFRESH - set first value from supportedSyncModes list
-        return updateStreamConfig({
-          syncMode: streamNode.stream.supportedSyncModes[0],
-        });
+        return getOptimalSyncMode(nodeStream, supportedDestinationSyncModes);
       }),
     }),
-    [schema.streams]
+    [schema.streams, supportedDestinationSyncModes]
   );
 
 const getInitialTransformations = (operations: Operation[]): Transformation[] => operations.filter(isDbtTransformation);
@@ -266,7 +224,7 @@ const useInitialValues = (
   destDefinition: DestinationDefinitionSpecification,
   isEditMode?: boolean
 ): FormikConnectionFormValues => {
-  const initialSchema = useInitialSchema(connection.syncCatalog);
+  const initialSchema = useInitialSchema(connection.syncCatalog, destDefinition.supportedDestinationSyncModes);
 
   return useMemo(() => {
     const initialValues: FormikConnectionFormValues = {
