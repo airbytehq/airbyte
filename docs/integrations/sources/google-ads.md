@@ -49,7 +49,7 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 
 **Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v8/ad_group_ad#segments.date) without time. Also, some report cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
-**Note**: Due to contraints from Google Ads API, data is only able to sync from the previous days data.
+**Note**: The Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday 5pm, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday e.g: 12:01am on Thursday, and so on. The connector does this to avoid syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday 5pm would get ads performance data for Wednesday between 12:01am-5pm on Wednesday, then it would need to run again once the day is done to get all of Wednesday's data once more. This is due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day. 
 
 ## Getting Started \(Airbyte-Cloud\)
 
