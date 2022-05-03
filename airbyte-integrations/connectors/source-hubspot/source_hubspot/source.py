@@ -6,7 +6,7 @@ import copy
 import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
@@ -48,14 +48,17 @@ from source_hubspot.streams import (
 class SourceHubspot(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
+        alive = True
+        error_msg = None
+        common_params = self.get_common_params(config=config)
         try:
-            for stream in self.streams(config=config):
-                next(stream.read_records(sync_mode=SyncMode.full_refresh))
+            contacts = Contacts(**common_params)
+            _ = contacts.properties
         except HTTPError as error:
+            alive = False
             error_msg = repr(error)
 
-            return False, error_msg
-        return True, None
+        return alive, error_msg
 
     @staticmethod
     def get_api(config: Mapping[str, Any]) -> API:
