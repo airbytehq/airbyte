@@ -29,6 +29,12 @@ NUMBER_OF_PROPERTIES = 2000
 logger = logging.getLogger("test_client")
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 def test_check_connection_ok(requests_mock, config):
     responses = [
         {"json": [], "status_code": 200},

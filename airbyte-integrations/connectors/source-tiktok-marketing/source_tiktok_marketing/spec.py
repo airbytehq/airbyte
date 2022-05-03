@@ -13,6 +13,18 @@ from pydantic import BaseModel, Field
 from .streams import DEFAULT_START_DATE, ReportGranularity
 
 
+class OauthCredSpec(BaseModel):
+    class Config:
+        title = "OAuth2.0"
+
+    auth_type: str = Field(default="oauth2.0", const=True, order=0)
+
+    app_id: str = Field(title="App ID", description="The App ID applied by the developer.", airbyte_secret=True)
+
+    secret: str = Field(title="Secret", description="The private key of the developer's application.", airbyte_secret=True)
+
+    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
+
 class SandboxEnvSpec(BaseModel):
     class Config:
         title = "Sandbox"

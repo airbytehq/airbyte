@@ -43,7 +43,7 @@ class SourceGitlab(AbstractSource):
         auth = TokenAuthenticator(token=config["private_token"])
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
 
-        pids = list(filter(None, config.get("projects").split(" ")))
+        pids = list(filter(None, config.get("projects", "").split(" ")))
         gids = config.get("groups")
 
         if gids:
