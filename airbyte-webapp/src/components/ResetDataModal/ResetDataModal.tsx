@@ -2,14 +2,15 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button } from "components";
+import { LoadingButton } from "components";
 import Modal from "components/Modal";
 
+import useLoadingState from "../../hooks/useLoadingState";
 import { ModalTypes } from "./types";
 
 export type IProps = {
   onClose: () => void;
-  onSubmit: (data: unknown) => void;
+  onSubmit: (data?: unknown) => void;
   modalType?: ModalTypes;
 };
 
@@ -23,11 +24,14 @@ const ButtonContent = styled.div`
   padding-top: 27px;
   text-align: right;
 `;
-const ButtonWithMargin = styled(Button)`
+const ButtonWithMargin = styled(LoadingButton)`
   margin-right: 9px;
 `;
 
 const ResetDataModal: React.FC<IProps> = ({ onClose, onSubmit, modalType }) => {
+  const { isLoading, startAction } = useLoadingState();
+  const onSubmitBtnClick = () => startAction({ action: () => onSubmit() });
+
   const modalText = () => {
     if (modalType === ModalTypes.RESET_CHANGED_COLUMN) {
       return <FormattedMessage id="form.changedColumns" />;
@@ -69,10 +73,12 @@ const ResetDataModal: React.FC<IProps> = ({ onClose, onSubmit, modalType }) => {
       <Content>
         {modalText()}
         <ButtonContent>
-          <ButtonWithMargin onClick={onClose} secondary>
+          <ButtonWithMargin onClick={onClose} secondary disabled={isLoading}>
             {modalCancelButtonText()}
           </ButtonWithMargin>
-          <Button onClick={onSubmit}>{modalSubmitButtonText()}</Button>
+          <LoadingButton onClick={onSubmitBtnClick} isLoading={isLoading} disabled={isLoading}>
+            {modalSubmitButtonText()}
+          </LoadingButton>
         </ButtonContent>
       </Content>
     </Modal>
