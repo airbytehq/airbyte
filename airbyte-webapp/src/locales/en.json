@@ -46,6 +46,7 @@
   "form.primaryKey": "Primary key",
   "form.cursorField": "Cursor field",
   "form.dataSync": "Activate the streams you want to sync",
+  "form.dataSync.readonly": "Activated streams",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",
   "form.submit": "Submit",
@@ -338,6 +339,7 @@
   "connection.transfer": "Transfer",
   "connection.linkCopied": "Link copied!",
   "connection.copyLogLink": "Copy link to log",
+  "connection.connectionDeletedView": "This connection has been deleted. You can’t make any changes or run syncs.",
 
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",
