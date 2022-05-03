@@ -88,6 +88,26 @@ class SourceFilesAbstractSpec(BaseModel):
         del pyschema["definitions"]
         return pyschema
 
+    @staticmethod
+    def order_fields(schema: dict) -> dict:
+        props_to_ordering = schema["required"]
+
+        for index, prop in enumerate(props_to_ordering):
+            schema["properties"][prop]["order"] = index
+
+        return schema
+
+    @staticmethod
+    def set_title_optional(schema: dict) -> dict:
+        required_props = schema.get("required", [])
+        props = schema.get("properties", {})
+
+        for prop in props:
+            if prop not in required_props:
+                props[prop]["title"] += " (Optional)"
+            props[prop] = SourceFilesAbstractSpec.set_title_optional(props[prop])
+        return schema
+
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """we're overriding the schema classmethod to enable some post-processing"""
@@ -95,4 +115,6 @@ class SourceFilesAbstractSpec(BaseModel):
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)
         schema = cls.resolve_refs(schema)
+        schema = cls.order_fields(schema)
+        schema = cls.set_title_optional(schema)
         return schema
