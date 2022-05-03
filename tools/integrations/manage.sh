@@ -246,6 +246,9 @@ _publish_spec_to_cache() {
     local tmp_spec_file; tmp_spec_file=$(mktemp)
     _generate_spec "$image_name:$image_version" > "$tmp_spec_file"
 
+    echo "Created $image_name:$image_version spec file:"
+    jq . "$tmp_spec_file"
+
     # use service account key file is provided.
     if [[ -n "${spec_cache_writer_sa_key_file}" ]]; then
       echo "Using provided service account key"
