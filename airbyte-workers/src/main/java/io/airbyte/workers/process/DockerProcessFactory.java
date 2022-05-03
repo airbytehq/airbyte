@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 public class DockerProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessFactory.class);
+  private static final String VERSION_DELIMITER = ":";
+  private static final String DOCKER_DELIMITER = "/";
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
@@ -168,11 +170,9 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   private static String createContainerName(final String fullImagePath, final String jobId, final int attempt) {
-    final var versionDelimiter = ":";
-    final var noVersion = fullImagePath.split(versionDelimiter)[0];
+    final var noVersion = fullImagePath.split(VERSION_DELIMITER)[0];
 
-    final var dockerDelimiter = "/";
-    final var nameParts = noVersion.split(dockerDelimiter);
+    final var nameParts = noVersion.split(DOCKER_DELIMITER);
     var imageName = nameParts[nameParts.length - 1];
 
     final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
