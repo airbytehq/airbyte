@@ -158,9 +158,9 @@ cmd_bump_version() {
       ;;
   esac
 
-# TODO make force-bump tag
+  # TODO force option
   bumped_version="$major_version.$minor_version.$patch_version"
-#  if [[ "$bumped_version" != "$master_version" ]]; then
+  if [[ "$bumped_version" != "$master_version" ]]; then
     _error_if_tag_exists "$image_name:$bumped_version"
     echo "$connector:$branch_version will be bumped to $connector:$bumped_version"
 
@@ -168,10 +168,10 @@ cmd_bump_version() {
     echo ::set-output name=master_version::"${master_version}"
     echo ::set-output name=bumped_version::"${bumped_version}"
     echo ::set-output name=bumped::"true"
-#  else
-#    echo "No version bump was necessary, this PR has probably already been bumped"
-#    exit 0
-#  fi
+  else
+    echo "No version bump was necessary, this PR has probably already been bumped"
+    exit 0
+  fi
 
   ## Write new version to files
   # 1) Dockerfile

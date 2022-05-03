@@ -28,6 +28,10 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      force:
+        description: "Force entire build and bump pipeline to execute, even if bump as already happened"
+        default: "false"
+        required: false
 
 jobs:
   find_valid_pat:
@@ -179,7 +183,12 @@ jobs:
       ############################
       - name: Process Build ${{ github.event.inputs.connector }}
         run: |
+          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json
+          publish_spec_to_cache=true
+          spec_cache_writer_sa_key_file=spec_cache_key_file.json
           ./tools/integrations/manage.sh process_build airbyte-integrations/${{ github.event.inputs.connector }}
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       ############################
       ##          TEST          ##
       ############################
