@@ -1748,7 +1748,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.44"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.45"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2595,7 +2595,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.4"
+- dockerImage: "airbyte/source-gitlab:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/gitlab"
     connectionSpecification:
@@ -2797,7 +2797,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.19"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -2826,10 +2826,10 @@
           - "2020-06-01"
         window_in_days:
           type: "integer"
-          title: "Window in days (Optional)"
-          description: "The amount of days each stream slice would consist of beginning\
-            \ from start_date. Bigger the value - faster the fetch. (Min=1, as for\
-            \ a Day; Max=364, as for a Year)."
+          title: "Data request window (Optional)"
+          description: "The amount of data batched by the number of days. The bigger\
+            \ the value, the bigger the batch size and the lower the API requests\
+            \ made. (Min=1, as for a Day; Max=364, as for a Year)."
           examples:
           - 30
           - 60
@@ -5038,7 +5038,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.13"
+- dockerImage: "airbyte/source-mixpanel:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -8666,7 +8666,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.7"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -8700,7 +8700,7 @@
                 type: "string"
               access_token:
                 title: "Access Token"
-                description: "Long-term Authorized Access Token."
+                description: "The long-term authorized access token."
                 airbyte_secret: true
                 type: "string"
             required:
@@ -8726,7 +8726,7 @@
                 type: "string"
               access_token:
                 title: "Access Token"
-                description: "The Long-term Authorized Access Token."
+                description: "The long-term authorized access token."
                 airbyte_secret: true
                 type: "string"
             required:
@@ -8743,12 +8743,12 @@
                 type: "string"
               advertiser_id:
                 title: "Advertiser ID"
-                description: "The Advertiser ID  which generated for the developer's\
+                description: "The Advertiser ID which generated for the developer's\
                   \ Sandbox application."
                 type: "string"
               access_token:
                 title: "Access Token"
-                description: "The Long-term Authorized Access Token."
+                description: "The long-term authorized access token."
                 airbyte_secret: true
                 type: "string"
             required:
@@ -8757,17 +8757,16 @@
         start_date:
           title: "Start Date *"
           description: "The Start Date in format: YYYY-MM-DD. Any data before this\
-            \ date will not be replicated. If this parameter is not set, all data\
-            \ will be replicated."
+            \ date will not be replicated.If this parameter is not set, all data will\
+            \ be replicated."
           default: "2016-09-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 1
           type: "string"
         report_granularity:
           title: "Report Granularity *"
-          description: "Which time granularity should be grouped by; for LIFETIME\
-            \ there will be no grouping. This option is used for reports' streams\
-            \ only."
+          description: "Grouping of your reports based on time. Lifetime will have\
+            \ no grouping. This option is used for reports' streams only."
           default: "DAY"
           enum:
           - "LIFETIME"
