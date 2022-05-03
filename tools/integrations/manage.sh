@@ -158,9 +158,8 @@ cmd_bump_version() {
       ;;
   esac
 
-  # TODO force option
   bumped_version="$major_version.$minor_version.$patch_version"
-  if [[ "$bumped_version" != "$master_version" ]]; then
+  if [[ "$FORCE_BUMP" == "true" ]] || [[ "$bumped_version" != "$master_version" ]] && [[ "$bumped_version" != "$branch_version" ]]; then
     _error_if_tag_exists "$image_name:$bumped_version"
     echo "$connector:$branch_version will be bumped to $connector:$bumped_version"
 

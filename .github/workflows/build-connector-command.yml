@@ -178,6 +178,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+          FORCE_BUMP: ${{ github.event.inputs.force }}
       ############################
       ##     PROCESS BUILD      ##
       ############################
@@ -202,7 +203,6 @@ jobs:
         run: |
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
-          git status
           git add -u
           git commit -m "bump-version ${{github.event.inputs.connector}} ${{ steps.bump-version.outputs.master_version }} to ${{ steps.bump-version.outputs.bumped_version }}"
           git pull origin ${{ github.event.inputs.gitref }}

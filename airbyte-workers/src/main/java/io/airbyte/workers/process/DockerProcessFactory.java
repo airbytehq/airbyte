@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 public class DockerProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessFactory.class);
+  private static final int DOCKER_NAME_LEN_LIMIT = 128;
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
@@ -114,6 +115,9 @@ public class DockerProcessFactory implements ProcessFactory {
           rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
           "--log-driver",
           "none");
+      final String containerName = ProcessFactory.createProcessName(imageName, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
+      cmd.add("--name");
+      cmd.add(containerName);
 
       if (networkName != null) {
         cmd.add("--network");
