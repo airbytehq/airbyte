@@ -363,7 +363,7 @@ class Stream(HttpStream, ABC):
         except requests.exceptions.HTTPError as e:
             status_code = e.response.status_code
             if status_code == 403:
-                raise RuntimeError("Invalid permissions. Please ensure the all scopes are authorized for.")
+                raise RuntimeError(f"Invalid permissions for {self.name}. Please ensure the all scopes are authorized for.")
             else:
                 raise e
 
