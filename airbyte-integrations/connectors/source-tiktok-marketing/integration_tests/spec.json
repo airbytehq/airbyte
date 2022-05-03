@@ -5,43 +5,13 @@
     "title": "TikTok Marketing Source Spec",
     "type": "object",
     "properties": {
-      "credentials": {
+      "credentials_all": {
         "title": "Authentication *",
         "default": {},
         "order": 0,
         "type": "object",
         "oneOf": [{
-            "title": "OAuth2.0",
-            "type": "object",
-            "properties": {
-              "auth_type": {
-                "title": "Auth Type",
-                "const": "oauth2.0",
-                "order": 0,
-                "type": "string"
-              },
-              "app_id": {
-                "title": "App ID",
-                "description": "The App ID applied by the developer.",
-                "airbyte_secret": true,
-                "type": "string"
-              },
-              "secret": {
-                "title": "Secret",
-                "description": "The private key of the developer's application.",
-                "airbyte_secret": true,
-                "type": "string"
-              },
-              "access_token": {
-                "title": "Access Token",
-                "description": "The long-term authorized access token.",
-                "airbyte_secret": true,
-                "type": "string"
-              }
-            },
-            "required": ["app_id", "secret", "access_token"]
-          }, {
-            "title": "Production Access Token",
+            "title": "Production (Oauth)",
             "type": "object",
             "properties": {
               "auth_type": {
@@ -70,7 +40,7 @@
             },
             "required": ["app_id", "secret", "access_token"]
           }, {
-            "title": "Sandbox Access Token",
+            "title": "Sandbox",
             "type": "object",
             "properties": {
               "auth_type": {
@@ -117,8 +87,8 @@
   "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": ["credentials", "auth_type"],
-    "predicate_value": "oauth2.0",
+    "predicate_key": ["credentials_all", "auth_type"],
+    "predicate_value": "prod_access_token",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "title": "CompleteOauthOutputSpecification",
@@ -126,7 +96,7 @@
         "properties": {
           "access_token": {
             "title": "Access Token",
-            "path_in_connector_config": ["credentials", "access_token"],
+            "path_in_connector_config": ["credentials_all", "access_token"],
             "type": "string"
           }
         },
@@ -153,12 +123,12 @@
         "properties": {
           "app_id": {
             "title": "App Id",
-            "path_in_connector_config": ["credentials", "app_id"],
+            "path_in_connector_config": ["credentials_all", "app_id"],
             "type": "string"
           },
           "secret": {
             "title": "Secret",
-            "path_in_connector_config": ["credentials", "secret"],
+            "path_in_connector_config": ["credentials_all", "secret"],
             "type": "string"
           }
         },
