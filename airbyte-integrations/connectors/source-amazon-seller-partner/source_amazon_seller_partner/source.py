@@ -131,12 +131,12 @@ class SourceAmazonSellerPartner(AbstractSource):
         boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
         *_, arn_resource = config.role_arn.split(":")
         if arn_resource.startswith("user"):
-            role = boto3_client.get_session_token()
+            sts_credentials = boto3_client.get_session_token()
         elif arn_resource.startswith("role"):
-            role = boto3_client.assume_role(RoleArn=config.role_arn, RoleSessionName="guid")
+            sts_credentials = boto3_client.assume_role(RoleArn=config.role_arn, RoleSessionName="guid")
         else:
             raise ValueError("Invalid ARN, your ARN is not for a user or a role")
-        return role
+        return sts_credentials
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
