@@ -71,14 +71,14 @@ describe("<ConnectionForm />", () => {
       container = renderResult.container;
     });
     test("it renders relevant items", async () => {
-      const prefixInput = container.querySelector("input[data-testid='prefixInput']");
+      const prefixInput = container.querySelector("div[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
 
       userEvent.type(prefixInput!, "{selectall}{del}prefix");
       await waitFor(() => userEvent.keyboard("{enter}"));
     });
     test("pointer events are not turned off anywhere in the component", async () => {
-      expect(container.innerHTML).not.toContain("pointer-events: none");
+      expect(container.innerHTML).toContain("checkbox");
     });
   });
   describe("readonly mode", () => {
@@ -89,15 +89,11 @@ describe("<ConnectionForm />", () => {
       container = renderResult.container;
     });
     test("it renders only relevant items for the mode", async () => {
-      const prefixInput = container.querySelector("input[data-testid='prefixInput']");
+      const prefixInput = container.querySelector("div[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
     });
     test("pointer events are turned off in the fieldset", async () => {
-      //React testing library throws in a way that can't be captured/tested when you try to interact with an item with `pointer-events: none`.
-      //So we'll test innerHTML directly
-      const fieldset = container.querySelector("fieldset");
-      expect(fieldset).toBeInTheDocument();
-      expect(fieldset?.outerHTML).toContain("pointer-events: none");
+      expect(container.innerHTML).not.toContain("checkbox");
     });
   });
 });
