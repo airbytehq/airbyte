@@ -25,11 +25,7 @@ dependencies {
     implementation group: 'org.apache.hadoop', name: 'hadoop-aws', version: '3.3.0'
     implementation group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.0'
     implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
-    implementation('tech.allegro.schema.json2avro:converter') {
-        version {
-            branch = 'master'
-        }
-    }
+    implementation group: 'com.github.airbytehq', name: 'json-avro-converter', version: '1.0.0'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation "org.mockito:mockito-inline:4.1.0"
