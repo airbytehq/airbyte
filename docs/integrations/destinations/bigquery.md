@@ -209,6 +209,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request | Subject                                                                                     |
 |:--------|:-----------| :--- |:--------------------------------------------------------------------------------------------|
+| 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528/) | Update Dataset location field description                                                   |
 | 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
 | 1.1.1   | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068) | Fixed bug with GCS bucket conditional binding                                               |
 | 1.1.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption.                             |
@@ -231,9 +232,9 @@ This uploads data directly from your source to BigQuery. While this is faster to
 | 0.4.1   | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers                                                       |
 | 0.4.0   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option                                                          |
 | 0.3.12  | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size    |
-| 0.3.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125) | Enable `additionalPropertities` in spec.json                                                |
+| 0.3.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                |
 | 0.3.10  | 2021-07-28 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId                           |
-| 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026) | Add sanitized json fields in raw tables to handle quotes in column names                    |
+| 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026)   | Add sanitized json fields in raw tables to handle quotes in column names                    |
 | 0.3.6   | 2021-06-18 | [\#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional.                                               |
 | 0.3.4   | 2021-06-07 | [\#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option                                                                 |
 
@@ -241,6 +242,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528/) | Update Dataset location field description                                                   |
 | 0.3.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
 | 0.3.1   | 2022-04-15 | [11978](https://github.com/airbytehq/airbyte/pull/11978) | Fixed emittedAt timestamp. |
 | 0.3.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption. |
