@@ -7,13 +7,15 @@ import styled from "styled-components";
 import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
+import ToolTip from "components/ToolTip";
 
+import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import Status from "core/statuses";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import { useListJobs } from "services/job/JobService";
 
-import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 import JobsList from "./JobsList";
 
 interface StatusViewProps {
@@ -58,12 +60,49 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
   });
+  const isAtLeastOneJobRunningOrPending = jobs.some((jobWithAttempts) => {
+    const status = jobWithAttempts?.job?.status;
+    return status === Status.RUNNING || status === Status.PENDING;
+  });
 
   const { mutateAsync: resetConnection } = useResetConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
 
   const onSync = () => syncConnection(connection);
   const onReset = () => resetConnection(connection.connectionId);
+
+  const resetDataBtn = (
+    <Button disabled={isAtLeastOneJobRunningOrPending || isStatusUpdating} onClick={() => setIsModalOpen(true)}>
+      <FormattedMessage id={"connection.resetData"} />
+    </Button>
+  );
+
+  const syncNowBtn = (
+    <SyncButton
+      disabled={!allowSync || isAtLeastOneJobRunningOrPending || isStatusUpdating}
+      isLoading={isLoading}
+      wasActive={showFeedback}
+      onClick={() => startAction({ action: onSync })}
+    >
+      {showFeedback ? (
+        <FormattedMessage id={"sources.syncingNow"} />
+      ) : (
+        <>
+          <TryArrow icon={faRedoAlt} />
+          <FormattedMessage id={"sources.syncNow"} />
+        </>
+      )}
+    </SyncButton>
+  );
+
+  const wrapWithTooltip = (component: JSX.Element) =>
+    isAtLeastOneJobRunningOrPending ? (
+      <ToolTip control={component} cursor="not-allowed">
+        <FormattedMessage id={"connection.pendingSync"} />
+      </ToolTip>
+    ) : (
+      component
+    );
 
   return (
     <Content>
@@ -73,24 +112,8 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
             <FormattedMessage id={"sources.syncHistory"} />
             {connection.status === ConnectionStatus.active && (
               <div>
-                <Button onClick={() => setIsModalOpen(true)} disabled={isStatusUpdating}>
-                  <FormattedMessage id={"connection.resetData"} />
-                </Button>
-                <SyncButton
-                  disabled={!allowSync || isStatusUpdating}
-                  isLoading={isLoading}
-                  wasActive={showFeedback}
-                  onClick={() => startAction({ action: onSync })}
-                >
-                  {showFeedback ? (
-                    <FormattedMessage id={"sources.syncingNow"} />
-                  ) : (
-                    <>
-                      <TryArrow icon={faRedoAlt} />
-                      <FormattedMessage id={"sources.syncNow"} />
-                    </>
-                  )}
-                </SyncButton>
+                {wrapWithTooltip(resetDataBtn)}
+                {wrapWithTooltip(syncNowBtn)}
               </div>
             )}
           </Title>
