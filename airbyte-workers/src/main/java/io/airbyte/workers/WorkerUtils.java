@@ -101,7 +101,7 @@ public class WorkerUtils {
   public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
     final String streamPrefix = syncInput.getPrefix();
     return syncInput.getCatalog().getStreams().stream().collect(
-        Collectors.toMap(k -> String.format(streamPrefix + k.getStream().getName().trim()), v -> v.getStream().getJsonSchema()));
+        Collectors.toMap(k -> String.format(k.getStream().getNamespace().trim() + streamPrefix + k.getStream().getName().trim()), v -> v.getStream().getJsonSchema()));
 
   }
 
