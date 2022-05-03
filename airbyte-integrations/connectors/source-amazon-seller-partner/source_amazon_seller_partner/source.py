@@ -92,8 +92,8 @@ class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
-        sts_crendentials = self.get_role(config)
-        role_creds = role["Credentials"]
+        sts_credentials = self.get_role(config)
+        role_creds = sts_credentials["Credentials"]
         aws_signature = AWSSignature(
             service="execute-api",
             aws_access_key_id=role_creds.get("AccessKeyId"),
@@ -121,21 +121,22 @@ class SourceAmazonSellerPartner(AbstractSource):
         return stream_kwargs
 
     def get_role(self, config: ConnectorConfig) -> dict:
+        """
+        We can only use a IAM User arn entity or a IAM Role entity.
+        If we use an IAM user arn entity in the connector configuration we need to get the credentials directly from the boto3 sts client
+        If we use an IAM role arn entity we need to invoke the assume_role from the boto3 sts client to get the credentials related to that role
+
+        :param config:
+        """
         boto3_client = boto3.client("sts", aws_access_key_id=config.aws_access_key, aws_secret_access_key=config.aws_secret_key)
         *_, arn_resource = config.role_arn.split(":")
         if arn_resource.startswith("user"):
-            role = self._get_session_token(boto3_client)
+            role = boto3_client.get_session_token()
         elif arn_resource.startswith("role"):
-            role = self._assume_role(boto3_client, config.role_arn)
+            role = boto3_client.assume_role(RoleArn=config.role_arn, RoleSessionName="guid")
         else:
             raise ValueError("Invalid ARN, your ARN is not for a user or a role")
         return role
-
-    def _get_session_token(self, boto3_client):
-        return boto3_client.get_session_token()
-
-    def _assume_role(self, boto3_client, role_arn: str):
-        return boto3_client.assume_role(RoleArn=role_arn, RoleSessionName="guid")
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
