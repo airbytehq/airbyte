@@ -2,7 +2,6 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-
 import base64
 import json
 import time
@@ -144,8 +143,25 @@ class Cohorts(MixpanelStream):
     data_field: str = None
     primary_key: str = "id"
 
+    cursor_field = "created"
+
     def path(self, **kwargs) -> str:
         return "cohorts/list"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        records = super().parse_response(response, stream_state=stream_state, **kwargs)
+        for record in records:
+            record_cursor = record.get(self.cursor_field, "")
+            state_cursor = stream_state.get(self.cursor_field, "")
+            if not stream_state or record_cursor >= state_cursor:
+                yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        state_cursor = (current_stream_state or {}).get(self.cursor_field, "")
+
+        record_cursor = latest_record.get(self.cursor_field, self.start_date)
+
+        return {self.cursor_field: max(state_cursor, record_cursor)}
 
 
 class FunnelsList(MixpanelStream):
@@ -410,6 +426,14 @@ class Engage(MixpanelStream):
     page_size: int = 1000  # min 100
     _total: Any = None
 
+    @property
+    def source_defined_cursor(self) -> bool:
+        return False
+
+    @property
+    def supports_incremental(self) -> bool:
+        return True
+
     # enable automatic object mutation to align with desired schema before outputting to the destination
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
@@ -448,7 +472,7 @@ class Engage(MixpanelStream):
             self._total = None
             return None
 
-    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """
         {
             "page": 0
@@ -472,6 +496,7 @@ class Engage(MixpanelStream):
                     "$name":"Nadine Burzler"
                     "id":"632540fa-d1af-4535-bc52-e331955d363e"
                     "$last_seen":"2020-06-28T12:12:31"
+                    ...
                     }
                 },{
                 ...
@@ -481,6 +506,7 @@ class Engage(MixpanelStream):
         }
         """
         records = response.json().get(self.data_field, {})
+        cursor_field = stream_state.get(self.usr_cursor_key())
         for record in records:
             item = {"distinct_id": record["$distinct_id"]}
             properties = record["$properties"]
@@ -492,7 +518,10 @@ class Engage(MixpanelStream):
                     # to stream: 'browser'
                     this_property_name = this_property_name[1:]
                 item[this_property_name] = properties[property_name]
-            yield item
+            item_cursor = item.get(cursor_field, "")
+            state_cursor = stream_state.get(cursor_field, "")
+            if not stream_state or item_cursor >= state_cursor:
+                yield item
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
@@ -533,6 +562,32 @@ class Engage(MixpanelStream):
 
         return schema
 
+    def usr_cursor_key(self):
+        return "usr_cursor_key"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if sync_mode == SyncMode.incremental:
+            cursor_name = cursor_field[-1]
+            if stream_state:
+                stream_state[self.usr_cursor_key()] = cursor_name
+            else:
+                stream_state = {self.usr_cursor_key(): cursor_name}
+        return super().read_records(sync_mode, cursor_field, stream_slice, stream_state=stream_state)
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        cursor_field = current_stream_state.get(self.usr_cursor_key())
+        state_cursor = (current_stream_state or {}).get(cursor_field, "")
+
+        record_cursor = latest_record.get(cursor_field, self.start_date)
+
+        return {cursor_field: max(state_cursor, record_cursor)}
+
 
 class CohortMembers(Engage):
     """Return list of users grouped by cohort"""
@@ -550,7 +605,9 @@ class CohortMembers(Engage):
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_slices = []
-        cohorts = Cohorts(**self.get_stream_params()).read_records(sync_mode=sync_mode)
+        # full refresh is needed because even though some cohorts might already have been read
+        # they can still have new members added
+        cohorts = Cohorts(**self.get_stream_params()).read_records(SyncMode.full_refresh)
         for cohort in cohorts:
             stream_slices.append({"id": cohort["id"]})
 
@@ -788,12 +845,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         return schema
 
 
-class TokenAuthenticatorBase64(TokenAuthenticator):
-    def __init__(self, token: str, auth_method: str = "Basic", **kwargs):
-        token = base64.b64encode(token.encode("utf8")).decode("utf8")
-        super().__init__(token=token, auth_method=auth_method, **kwargs)
-
-
 class SourceMixpanel(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
@@ -856,3 +907,9 @@ class SourceMixpanel(AbstractSource):
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
         ]
+
+
+class TokenAuthenticatorBase64(TokenAuthenticator):
+    def __init__(self, token: str, auth_method: str = "Basic", **kwargs):
+        token = base64.b64encode(token.encode("utf8")).decode("utf8")
+        super().__init__(token=token, auth_method=auth_method, **kwargs)
