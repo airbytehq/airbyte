@@ -10,6 +10,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -221,19 +222,7 @@ public class Databases {
                                                  final String jdbcConnectionString,
                                                  final String driverClassName,
                                                  final Map<String, String> connectionProperties) {
-    final HikariConfig config = new HikariConfig();
-    config.setDriverClassName(driverClassName);
-    config.setJdbcUrl(jdbcConnectionString);
-    config.setMaximumPoolSize(5);
-    config.setMinimumIdle(0);
-    config.setPassword(password);
-    config.setUsername(username);
-
-    connectionProperties.forEach(config::addDataSourceProperty);
-
-    final HikariDataSource dataSource = new HikariDataSource(config);
-    dataSource.validate();
-    return dataSource;
+    return DataSourceFactory.create(username, password, driverClassName, jdbcConnectionString, connectionProperties);
   }
 
   public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {
