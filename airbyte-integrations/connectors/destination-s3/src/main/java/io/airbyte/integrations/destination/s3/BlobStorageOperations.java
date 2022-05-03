@@ -15,7 +15,7 @@ public abstract class BlobStorageOperations {
 
   protected final List<BlobDecorator> blobDecorators;
 
-  public BlobStorageOperations() {
+  protected BlobStorageOperations() {
     this.blobDecorators = new ArrayList<>();
   }
 
@@ -39,7 +39,7 @@ public abstract class BlobStorageOperations {
    */
   public abstract void cleanUpBucketObject(String objectPath, List<String> stagedFiles) throws Exception;
 
-  public abstract void cleanUpBucketObject(String namespace, String StreamName, String objectPath, String pathFormat);
+  public abstract void cleanUpBucketObject(String namespace, String streamName, String objectPath, String pathFormat);
 
   public abstract void dropBucketObject(String objectPath);
 

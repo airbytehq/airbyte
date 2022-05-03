@@ -37,7 +37,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Snowflake only supports client-side encryption in S3 and Azure Storage; it does not support this feature in GCS (https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html).
  * Azure Storage uses a similar envelope encryption technique to S3 (https://docs.microsoft.com/en-us/azure/storage/common/storage-client-side-encryption?tabs=dotnet#encryption-via-the-envelope-technique).
  */
-public class AesCbcEnvelopeEncryptionBlobDecorator extends BlobDecorator {
+public class AesCbcEnvelopeEncryptionBlobDecorator implements BlobDecorator {
 
   public static final String ENCRYPTED_CONTENT_ENCRYPTING_KEY = "aes_cbc_envelope_encryption-content-encrypting-key";
   public static final String INITIALIZATION_VECTOR = "aes_cbc_envelope_encryption-initialization-vector";
@@ -107,8 +107,8 @@ public class AesCbcEnvelopeEncryptionBlobDecorator extends BlobDecorator {
       keyCipher.init(Cipher.ENCRYPT_MODE, keyEncryptingKey);
       final byte[] encryptedCekBytes = keyCipher.doFinal(contentEncryptingKey.getEncoded());
 
-      insertMetadata(metadata, metadataKeyMapping, ENCRYPTED_CONTENT_ENCRYPTING_KEY, BASE64_ENCODER.encodeToString(encryptedCekBytes));
-      insertMetadata(metadata, metadataKeyMapping, INITIALIZATION_VECTOR, BASE64_ENCODER.encodeToString(initializationVector));
+      BlobDecorator.insertMetadata(metadata, metadataKeyMapping, ENCRYPTED_CONTENT_ENCRYPTING_KEY, BASE64_ENCODER.encodeToString(encryptedCekBytes));
+      BlobDecorator.insertMetadata(metadata, metadataKeyMapping, INITIALIZATION_VECTOR, BASE64_ENCODER.encodeToString(initializationVector));
     } catch (final NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
       throw new RuntimeException(e);
     }

@@ -53,14 +53,14 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
               "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
     }
     final NamingConventionTransformer nameTransformer = getNamingResolver();
-    final SnowflakeS3StagingSqlOperations SnowflakeS3StagingSqlOperations =
+    final SnowflakeS3StagingSqlOperations snowflakeS3StagingSqlOperations =
         new SnowflakeS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
     try (final JdbcDatabase database = getDatabase(config)) {
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
-          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, SnowflakeS3StagingSqlOperations));
+          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations));
       AirbyteSentry.executeWithTracing("CreateAndDropStage",
-          () -> attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, SnowflakeS3StagingSqlOperations));
+          () -> attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeS3StagingSqlOperations));
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);

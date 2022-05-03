@@ -111,7 +111,7 @@ public class S3StorageOperations extends BlobStorageOperations {
                                       final String objectPath) {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
-      if (exceptionsThrown.size() > 0) {
+      if (!exceptionsThrown.isEmpty()) {
         LOGGER.info("Retrying to upload records into storage {} ({}/{}})", objectPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
         // Force a reconnection before retrying in case error was due to network issues...
         s3Client = s3Config.resetS3Client();

@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import javax.annotation.Nonnull;
 import javax.crypto.KeyGenerator;
 import org.apache.commons.lang3.StringUtils;
@@ -37,5 +38,29 @@ public record AesCbcEnvelopeEncryption(@Nonnull byte[] key, @Nonnull KeyType key
     } catch (final NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    final AesCbcEnvelopeEncryption that = (AesCbcEnvelopeEncryption) o;
+
+    if (!Arrays.equals(key, that.key)) {
+      return false;
+    }
+    return keyType == that.keyType;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = Arrays.hashCode(key);
+    result = 31 * result + keyType.hashCode();
+    return result;
   }
 }

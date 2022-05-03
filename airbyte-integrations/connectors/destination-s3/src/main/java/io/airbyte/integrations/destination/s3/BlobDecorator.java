@@ -7,9 +7,9 @@ import java.util.Map;
 /**
  * Represents the ability to modify how a blob is stored, by modifying the data being written and/or the blob's metadata.
  */
-public abstract class BlobDecorator {
+public interface BlobDecorator {
 
-  public abstract OutputStream wrap(OutputStream stream);
+  OutputStream wrap(OutputStream stream);
 
   /**
    * Modifies the blob's metadata.
@@ -23,7 +23,7 @@ public abstract class BlobDecorator {
    * @param metadata           The blob's metadata
    * @param metadataKeyMapping The mapping from canonical to vendor-specific key names
    */
-  public abstract void updateMetadata(Map<String, String> metadata, Map<String, String> metadataKeyMapping);
+  void updateMetadata(Map<String, String> metadata, Map<String, String> metadataKeyMapping);
 
   /**
    * A convenience method for subclasses. Handles inserting new metadata entries according to the metadataKeyMapping.
