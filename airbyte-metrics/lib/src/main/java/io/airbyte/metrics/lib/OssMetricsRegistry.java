@@ -29,7 +29,7 @@ import com.google.api.client.util.Preconditions;
  * <p>
  * - Include the time period in the name if the metric is meant to be run at a certain interval.
  */
-public enum MetricsRegistries implements MetricsRegistry {
+public enum OssMetricRegistry implements MetricsRegistry {
 
   ATTEMPT_CREATED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
@@ -97,7 +97,7 @@ public enum MetricsRegistries implements MetricsRegistry {
   private final String metricName;
   private final String metricDescription;
 
-  MetricsRegistries(final MetricEmittingApp application, final String metricName, final String metricDescription) {
+  OssMetricRegistry(final MetricEmittingApp application, final String metricName, final String metricDescription) {
     Preconditions.checkNotNull(metricDescription);
     Preconditions.checkNotNull(application);
 
@@ -107,17 +107,17 @@ public enum MetricsRegistries implements MetricsRegistry {
   }
 
   @Override
-  MetricEmittingApp getApplication() {
+  public MetricEmittingApp getApplication() {
     return application;
   }
 
   @Override
-  String getMetricName() {
+  public String getMetricName() {
     return metricName;
   }
 
   @Override
-  String getMetricDescription() {
+  public String getMetricDescription() {
     return metricDescription;
   }
 
