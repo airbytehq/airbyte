@@ -180,9 +180,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
             config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver");
 
-    final String network_service_banner =
+    final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
         .contains("Oracle Advanced Security: encryption"));
