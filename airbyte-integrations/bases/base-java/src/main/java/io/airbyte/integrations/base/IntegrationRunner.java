@@ -176,8 +176,7 @@ public class IntegrationRunner {
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
-        TimeUnit.MINUTES
-    );
+        TimeUnit.MINUTES);
   }
 
   @VisibleForTesting
