@@ -25,6 +25,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.bigquery.factory.GoogleCredentialType;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
@@ -85,7 +86,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     try {
       final String datasetId = BigQueryUtils.getDatasetId(config);
       final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-      final BigQuery bigquery = BigQueryCredentialsFactory.createBigQueryClientWithCredentials(config);
+      final BigQuery bigquery = BigQueryCredentialsFactory.createCredentialsClient(config);
       final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
 
       BigQueryUtils.createDataset(bigquery, datasetId, datasetLocation);
@@ -185,7 +186,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
-          .bigQuery(BigQueryCredentialsFactory.createBigQueryClientWithCredentials(config))
+          .bigQuery(BigQueryCredentialsFactory.createCredentialsClient(config, GoogleCredentialType.BIGQUERY_WITH_CREDENTIALS))
           .configStream(configStream)
           .config(config)
           .formatterMap(getFormatterMap(stream.getJsonSchema()))
@@ -235,7 +236,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                      final Consumer<AirbyteMessage> outputRecordCollector) throws IOException {
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
-    final BigQuery bigQuery = BigQueryCredentialsFactory.createBigQueryClientWithCredentials(config);
+    final BigQuery bigQuery = BigQueryCredentialsFactory.createCredentialsClient(config, GoogleCredentialType.BIGQUERY_WITH_CREDENTIALS);
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config, bigQuery.getOptions().getCredentials());
     final UUID stagingId = UUID.randomUUID();
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);

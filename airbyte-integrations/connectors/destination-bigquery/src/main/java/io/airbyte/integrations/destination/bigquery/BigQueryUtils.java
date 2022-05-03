@@ -10,7 +10,6 @@ import static io.airbyte.integrations.destination.gcs.credential.GcsCredentialTy
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.Credentials;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
@@ -35,6 +34,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.factory.BigQueryCredentialsFactory;
+import io.airbyte.integrations.destination.bigquery.factory.GoogleCredentialType;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -184,7 +184,7 @@ public class BigQueryUtils {
   }
 
   private static JsonNode determineAuthMethodForGcsStaging(JsonNode config, JsonNode loadingMethod) {
-    return BigQueryCredentialsFactory.isOauth(config) ?
+    return BigQueryCredentialsFactory.createCredentialsClient(config) == GoogleCredentialType.OAUTH2 ?
         Jsons.jsonNode(ImmutableMap.builder().put(BigQueryConsts.CREDENTIAL_TYPE, OAUTH2).build()) :
         loadingMethod.get(BigQueryConsts.CREDENTIAL);
   }

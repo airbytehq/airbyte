@@ -2,6 +2,8 @@ package io.airbyte.integrations.destination.bigquery.factory;
 
 import static io.airbyte.integrations.destination.bigquery.BigQueryConsts.CONFIG_PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -71,31 +73,19 @@ public class BigQueryCredentialsFactoryTest {
 
   @Test
   public void testIsOauth() {
-    assertTrue(BigQueryCredentialsFactory.isOauth(config));
+    assertSame(BigQueryCredentialsFactory.createCredentialsClient(config), GoogleCredentialType.OAUTH2);
   }
 
   @Test
   public void testIsNotOauth() {
     when(config.get(CREDENTIALS).get(AUTH_TYPE).asText()).thenReturn("Service account");
-    assertFalse(BigQueryCredentialsFactory.isOauth(config));
-  }
-
-  @Test
-  public void testIsNotOauthWhenCredentialsAreNotPresent() {
-    when(config.has(CREDENTIALS)).thenReturn(false);
-    assertFalse(BigQueryCredentialsFactory.isOauth(config));
-  }
-
-  @Test
-  public void testIsNotOauthWhenCredentialsAreNotObject() {
-    when(config.get(CREDENTIALS).isObject()).thenReturn(false);
-    assertFalse(BigQueryCredentialsFactory.isOauth(config));
+    assertNotSame(BigQueryCredentialsFactory.createCredentialsClient(config), GoogleCredentialType.OAUTH2);
   }
 
   @Test
   public void testIsNotOauthWhenConfigIsNull() {
     assertThrows(IllegalArgumentException.class, () -> {
-      BigQueryCredentialsFactory.isOauth(null);
+      BigQueryCredentialsFactory.createCredentialsClient(null);
     });
   }
 }
