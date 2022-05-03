@@ -92,7 +92,7 @@ class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
-        sts_credentials = self.get_role(config)
+        sts_credentials = self.get_sts_credentials(config)
         role_creds = sts_credentials["Credentials"]
         aws_signature = AWSSignature(
             service="execute-api",
@@ -120,7 +120,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         }
         return stream_kwargs
 
-    def get_role(self, config: ConnectorConfig) -> dict:
+    def get_sts_credentials(self, config: ConnectorConfig) -> dict:
         """
         We can only use a IAM User arn entity or a IAM Role entity.
         If we use an IAM user arn entity in the connector configuration we need to get the credentials directly from the boto3 sts client
