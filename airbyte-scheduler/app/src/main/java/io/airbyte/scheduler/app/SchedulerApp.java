@@ -26,6 +26,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
@@ -52,6 +53,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -76,6 +79,14 @@ public class SchedulerApp {
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
+  private static final String DRIVER_CLASS_NAME = "org.postgresql.Driver";
+  private static DSLContext configsDslContext;
+  private static DSLContext jobsDslContext;
+
+  private static final Thread SHUTDOWN_HOOK = new Thread(() -> {
+    closeDslContext(configsDslContext);
+    closeDslContext(jobsDslContext);
+  });
 
   private final Path workspaceRoot;
   private final JobPersistence jobPersistence;
@@ -234,21 +245,19 @@ public class SchedulerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
+    // Manual configuration that will be replaced by Dependency Injection in the future
+    configsDslContext = DSLContextFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), DRIVER_CLASS_NAME,
+        configs.getConfigDatabaseUrl(), SQLDialect.POSTGRES);
+    jobsDslContext = DSLContextFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(), DRIVER_CLASS_NAME, configs.getDatabaseUrl(),
+        SQLDialect.POSTGRES);
+
     // Wait for the server to initialize the database and run migration
     // This should be converted into check for the migration version. Everything else as per.
     waitForServer(configs);
     LOGGER.info("Creating Job DB connection pool...");
-    final Database jobDatabase = new JobsDatabaseInstance(
-        configs.getDatabaseUser(),
-        configs.getDatabasePassword(),
-        configs.getDatabaseUrl())
-            .getInitialized();
+    final Database jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
 
-    final Database configDatabase = new ConfigsDatabaseInstance(
-        configs.getConfigDatabaseUser(),
-        configs.getConfigDatabasePassword(),
-        configs.getConfigDatabaseUrl())
-            .getInitialized();
+    final Database configDatabase = new ConfigsDatabaseInstance(configsDslContext).getInitialized();
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
     final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(!featureFlags.exposeSecretsInExport())
@@ -293,6 +302,12 @@ public class SchedulerApp {
         configs.getSyncJobMaxAttempts(),
         configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
             .start();
+  }
+
+  private static void closeDslContext(final DSLContext dslContext) {
+    if (dslContext != null) {
+      dslContext.close();
+    }
   }
 
 }

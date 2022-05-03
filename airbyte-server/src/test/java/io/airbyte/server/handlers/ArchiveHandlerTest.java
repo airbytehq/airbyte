@@ -38,11 +38,13 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +58,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -111,7 +116,9 @@ public class ArchiveHandlerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    final DataSource dataSource = DatabaseConnectionHelper.createDataSource(container);
+    final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
     jobDatabase = databaseProviders.createNewJobsDatabase();
     configDatabase = databaseProviders.createNewConfigsDatabase();
     jobPersistence = new DefaultJobPersistence(jobDatabase);

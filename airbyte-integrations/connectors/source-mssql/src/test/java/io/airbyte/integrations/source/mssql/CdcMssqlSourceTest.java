@@ -21,12 +21,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
@@ -85,22 +87,22 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("replication_method", "CDC")
         .build());
 
-    database = Databases.createDatabase(
+    database = new Database(DSLContextFactory.create(
         container.getUsername(),
         container.getPassword(),
+        DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%s",
             container.getHost(),
             container.getFirstMappedPort()),
-        DRIVER_CLASS,
-        null);
+        null));
 
-    testJdbcDatabase = Databases.createJdbcDatabase(
+    testJdbcDatabase = new DefaultJdbcDatabase(DataSourceFactory.create(
         TEST_USER_NAME,
         TEST_USER_PASSWORD,
+        DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%s",
             container.getHost(),
-            container.getFirstMappedPort()),
-        DRIVER_CLASS);
+            container.getFirstMappedPort())));
 
     executeQuery("CREATE DATABASE " + dbName + ";");
     switchSnapshotIsolation(true, dbName);
@@ -309,17 +311,17 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     } catch (final InterruptedException e) {
       throw new RuntimeException(e);
     }
-    final JdbcDatabase jdbcDatabase = Databases.createStreamingJdbcDatabase(
-        config.get("username").asText(),
+    final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
+        DataSourceFactory.create(config.get("username").asText(),
         config.get("password").asText(),
+        DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
             config.get("host").asText(),
             config.get("port").asInt(),
-            dbName),
-        DRIVER_CLASS,
-        AdaptiveStreamingQueryConfig::new,
-        Maps.newHashMap(),
-        new MssqlSourceOperations());
+            dbName)),
+        new MssqlSourceOperations(),
+            AdaptiveStreamingQueryConfig::new
+    );
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 

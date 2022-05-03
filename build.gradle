@@ -39,6 +39,11 @@ if (!env.containsKey('VERSION')) {
 ext {
     version = System.getenv("VERSION") ?: env.VERSION
     image_tag = System.getenv("VERSION") ?: 'dev'
+
+    flyway_version = '7.14.0'
+    jooq_version = '3.13.4'
+    postgresql_version = '42.3.4'
+    test_containers_version = '1.17.1'
 }
 
 def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->

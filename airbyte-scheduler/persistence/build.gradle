@@ -15,6 +15,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:models')
 
-    testImplementation "org.flywaydb:flyway-core:7.14.0"
-    testImplementation "org.testcontainers:postgresql:1.15.3"
+    testImplementation "org.flywaydb:flyway-core:${rootProject.ext.flyway_version}"
+    testImplementation "org.testcontainers:postgresql:${rootProject.ext.test_containers_version}"
+    testImplementation project(':airbyte-test-utils')
 }

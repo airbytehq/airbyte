@@ -29,9 +29,9 @@ dependencies {
 
     // MIT
     // https://www.testcontainers.org/
-    //implementation "org.testcontainers:testcontainers:1.16.0"
-    testImplementation "org.testcontainers:elasticsearch:1.15.3"
-    integrationTestJavaImplementation "org.testcontainers:elasticsearch:1.15.3"
+    //implementation "org.testcontainers:testcontainers:${rootProject.ext.test_containers_version}"
+    testImplementation "org.testcontainers:elasticsearch:${rootProject.ext.test_containers_version}"
+    integrationTestJavaImplementation "org.testcontainers:elasticsearch:${rootProject.ext.test_containers_version}"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-elasticsearch')

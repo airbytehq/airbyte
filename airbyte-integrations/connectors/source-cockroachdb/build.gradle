@@ -17,11 +17,11 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation "org.postgresql:postgresql:42.3.1"
+    implementation "org.postgresql:postgresql:${rootProject.ext.postgresql_version}"
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
-    testImplementation "org.testcontainers:cockroachdb:1.15.3"
+    testImplementation "org.testcontainers:cockroachdb:${rootProject.ext.test_containers_version}"
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb')

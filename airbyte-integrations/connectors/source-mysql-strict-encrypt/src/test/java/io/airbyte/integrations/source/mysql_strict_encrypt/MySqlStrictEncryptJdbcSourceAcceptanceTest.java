@@ -14,6 +14,9 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -22,6 +25,8 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -60,16 +65,15 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .put("password", TEST_PASSWORD)
         .build());
 
-    database = Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
-        config.get("password").asText(),
+        "",
+        DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            String.join("&", SSL_PARAMETERS)),
-        MySqlSource.DRIVER_CLASS,
-
-        SQLDialect.MYSQL);
+            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
+    database = new Database(dslContext);
 
     database.query(ctx -> {
       ctx.fetch("CREATE DATABASE " + config.get("database").asText());

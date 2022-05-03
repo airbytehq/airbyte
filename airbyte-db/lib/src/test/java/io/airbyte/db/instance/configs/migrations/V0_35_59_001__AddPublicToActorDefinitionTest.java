@@ -4,7 +4,6 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import io.airbyte.db.Database;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.configs.migrations.V0_32_8_001__AirbyteConfigDatabaseDenormalization.ActorType;
 import java.io.IOException;
@@ -21,9 +20,7 @@ public class V0_35_59_001__AddPublicToActorDefinitionTest extends AbstractConfig
 
   @Test
   public void test() throws SQLException, IOException {
-
-    final Database database = getDatabase();
-    final DSLContext context = DSL.using(database.getDataSource().getConnection());
+    final DSLContext context = getDslContext();
 
     // necessary to add actor_definition table
     V0_32_8_001__AirbyteConfigDatabaseDenormalization.migrate(context);

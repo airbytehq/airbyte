@@ -24,7 +24,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.testcontainers:mysql:1.15.3'
+    testImplementation "org.testcontainers:mysql:${rootProject.ext.test_containers_version}"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')

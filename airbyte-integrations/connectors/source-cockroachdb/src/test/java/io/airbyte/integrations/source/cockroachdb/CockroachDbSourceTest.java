@@ -15,7 +15,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -33,6 +35,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -126,15 +130,15 @@ class CockroachDbSourceTest {
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
+            config.get("port").asInt(),
+            config.get("database").asText()), SQLDialect.POSTGRES);
+    return new Database(dslContext);
   }
 
   private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName) {
@@ -208,7 +212,7 @@ class CockroachDbSourceTest {
 
   @Test
   void testDiscoverWithPermissions() throws Exception {
-    JsonNode config = getConfig(PSQL_DB, dbName);
+    final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
     database.query(ctx -> {
       ctx.fetch(
@@ -225,9 +229,9 @@ class CockroachDbSourceTest {
       return null;
     });
 
-    List<String> expected = List.of("id_and_name_perm1", "id_and_name_perm2");
+    final List<String> expected = List.of("id_and_name_perm1", "id_and_name_perm2");
 
-    AirbyteCatalog airbyteCatalog = new CockroachDbSource().discover(getConfig(PSQL_DB, dbName, "cock"));
+    final AirbyteCatalog airbyteCatalog = new CockroachDbSource().discover(getConfig(PSQL_DB, dbName, "cock"));
     final List<String> actualNamesWithPermission =
         airbyteCatalog
             .getStreams()

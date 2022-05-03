@@ -5,8 +5,12 @@
 package io.airbyte.db;
 
 import com.google.common.collect.Maps;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.bigquery.BigQueryDatabase;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
@@ -18,8 +22,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import javax.sql.DataSource;
 import lombok.val;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +53,7 @@ public class Databases {
   }
 
   public static Database createPostgresDatabase(final String username, final String password, final String jdbcConnectionString) {
-    return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
+    return createDatabase(username, password, jdbcConnectionString, DatabaseDriver.POSTGRESQL.getDriverClassName(), SQLDialect.POSTGRES);
   }
 
   public static Database createPostgresDatabaseWithRetry(final String username,
@@ -141,9 +145,7 @@ public class Databases {
                                         final String jdbcConnectionString,
                                         final String driverClassName,
                                         final SQLDialect dialect) {
-    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
-
-    return new Database(connectionPool, dialect);
+    return new Database(DSLContextFactory.create(username, password, driverClassName, jdbcConnectionString, dialect));
   }
 
   public static Database createDatabase(final String username,
@@ -152,10 +154,7 @@ public class Databases {
                                         final String driverClassName,
                                         final SQLDialect dialect,
                                         final Map<String, String> connectionProperties) {
-    final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
-
-    return new Database(connectionPool, dialect);
+    return new Database(DSLContextFactory.create(username, password, driverClassName, jdbcConnectionString, dialect, connectionProperties));
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
@@ -170,7 +169,7 @@ public class Databases {
                                                 final String jdbcConnectionString,
                                                 final String driverClassName,
                                                 final JdbcSourceOperations sourceOperations) {
-    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+    final DataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
 
     return new DefaultJdbcDatabase(connectionPool, sourceOperations);
   }
@@ -190,7 +189,7 @@ public class Databases {
                                                 final String driverClassName,
                                                 final Map<String, String> connectionProperties,
                                                 final JdbcCompatibleSourceOperations<?> sourceOperations) {
-    final BasicDataSource connectionPool =
+    final DataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
     return new DefaultJdbcDatabase(connectionPool, sourceOperations);
@@ -203,34 +202,38 @@ public class Databases {
                                                          final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
                                                          final Map<String, String> connectionProperties,
                                                          final JdbcCompatibleSourceOperations<?> sourceOperations) {
-    final BasicDataSource connectionPool =
+    final DataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
     return new StreamingJdbcDatabase(connectionPool, sourceOperations, streamingQueryConfigProvider);
   }
 
-  private static BasicDataSource createBasicDataSource(final String username,
-                                                       final String password,
-                                                       final String jdbcConnectionString,
-                                                       final String driverClassName) {
+  private static DataSource createBasicDataSource(final String username,
+                                                  final String password,
+                                                  final String jdbcConnectionString,
+                                                  final String driverClassName) {
     return createBasicDataSource(username, password, jdbcConnectionString, driverClassName,
         Maps.newHashMap());
   }
 
-  public static BasicDataSource createBasicDataSource(final String username,
-                                                      final String password,
-                                                      final String jdbcConnectionString,
-                                                      final String driverClassName,
-                                                      final Map<String, String> connectionProperties) {
-    final BasicDataSource connectionPool = new BasicDataSource();
-    connectionPool.setDriverClassName(driverClassName);
-    connectionPool.setUsername(username);
-    connectionPool.setPassword(password);
-    connectionPool.setInitialSize(0);
-    connectionPool.setMaxTotal(5);
-    connectionPool.setUrl(jdbcConnectionString);
-    connectionProperties.forEach(connectionPool::addConnectionProperty);
-    return connectionPool;
+  public static DataSource createBasicDataSource(final String username,
+                                                 final String password,
+                                                 final String jdbcConnectionString,
+                                                 final String driverClassName,
+                                                 final Map<String, String> connectionProperties) {
+    final HikariConfig config = new HikariConfig();
+    config.setDriverClassName(driverClassName);
+    config.setJdbcUrl(jdbcConnectionString);
+    config.setMaximumPoolSize(5);
+    config.setMinimumIdle(0);
+    config.setPassword(password);
+    config.setUsername(username);
+
+    connectionProperties.forEach(config::addDataSourceProperty);
+
+    final HikariDataSource dataSource = new HikariDataSource(config);
+    dataSource.validate();
+    return dataSource;
   }
 
   public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {

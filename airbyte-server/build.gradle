@@ -63,7 +63,7 @@ dependencies {
     implementation 'org.glassfish.jersey.inject:jersey-hk2'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
-    implementation "org.flywaydb:flyway-core:7.14.0"
+    implementation "org.flywaydb:flyway-core:${rootProject.ext.flyway_version}"
 
     implementation 'com.github.slugify:slugify:2.4'
 
@@ -85,11 +85,10 @@ dependencies {
     implementation project(':airbyte-scheduler:persistence')
     implementation project(':airbyte-workers')
 
-    testImplementation "org.postgresql:postgresql:42.2.18"
-
+    testImplementation "org.postgresql:postgresql:${rootProject.ext.postgresql_version}"
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
-
-    testImplementation "org.testcontainers:postgresql:1.15.3"
+    testImplementation "org.testcontainers:postgresql:${rootProject.ext.test_containers_version}"
+    testImplementation project(':airbyte-test-utils')
 }
 
 // we want to be able to access the generated db files from config/init when we build the server docker image.

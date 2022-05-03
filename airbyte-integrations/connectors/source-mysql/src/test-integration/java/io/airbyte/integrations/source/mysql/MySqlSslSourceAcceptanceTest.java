@@ -9,9 +9,11 @@ import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -32,16 +34,16 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
-    final Database database = Databases.createDatabase(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
+        DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s/%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText(),
-            String.join("&", SSL_PARAMETERS)),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
+    final Database database = new Database(dslContext);
 
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");

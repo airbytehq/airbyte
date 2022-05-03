@@ -86,19 +86,16 @@ public class BootloaderAppTest {
     val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
     bootloader.load();
 
-    val jobDatabase = new JobsDatabaseInstance(
-        container.getUsername(),
-        container.getPassword(),
-        container.getJdbcUrl()).getInitialized();
-    val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, this.getClass().getName());
+    val jobsFlyway = FlywayFactory.create(bootloader.getJobsDataSource(), getClass().getName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    val jobDatabase = new JobsDatabaseInstance(bootloader.getJobsDslContext()).getInitialized();
+    val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
     assertEquals("0.35.62.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
 
-    val configDatabase = new ConfigsDatabaseInstance(
-        mockedConfigs.getConfigDatabaseUser(),
-        mockedConfigs.getConfigDatabasePassword(),
-        mockedConfigs.getConfigDatabaseUrl())
-            .getAndInitialize();
-    val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, this.getClass().getName());
+    val configsFlyway = FlywayFactory.create(bootloader.getJobsDataSource(), getClass().getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    val configDatabase = new ConfigsDatabaseInstance(bootloader.getConfigsDslContext()).getAndInitialize();
+    val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
     assertEquals("0.35.65.001", configsMigrator.getLatestMigration().getVersion().getVersion());
 
     val jobsPersistence = new DefaultJobPersistence(jobDatabase);

@@ -8,7 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,9 +48,9 @@ class BaseDatabaseInstanceTest {
 
   @BeforeEach
   void createDatabase() {
-    database = Databases.createPostgresDatabaseWithRetry(
-        container.getUsername(), container.getPassword(), container.getJdbcUrl(),
-        BaseDatabaseInstance.isDatabaseConnected(DATABASE_NAME));
+    final DataSource dataSource = DatabaseConnectionHelper.createDataSource(container);
+    final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    database = Database.createWithRetry(dslContext, BaseDatabaseInstance.isDatabaseConnected(DATABASE_NAME));
   }
 
   @AfterEach

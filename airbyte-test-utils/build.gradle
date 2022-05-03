@@ -5,8 +5,9 @@ plugins {
 dependencies {
     implementation project(':airbyte-db:lib')
 
-    implementation 'org.testcontainers:postgresql:1.15.3'
-    implementation "org.testcontainers:cockroachdb:1.15.3"
+    implementation "org.testcontainers:jdbc:${rootProject.ext.test_containers_version}"
+    implementation "org.testcontainers:postgresql:${rootProject.ext.test_containers_version}"
+    implementation "org.testcontainers:cockroachdb:${rootProject.ext.test_containers_version}"
 
     implementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
 }

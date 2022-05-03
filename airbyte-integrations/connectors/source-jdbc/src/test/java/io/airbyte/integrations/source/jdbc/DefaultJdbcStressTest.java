@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -95,7 +96,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
 
-    static final String DRIVER_CLASS = "org.postgresql.Driver";
+    static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
     public PostgresTestSource() {
       super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
@@ -105,9 +106,9 @@ class DefaultJdbcStressTest extends JdbcStressTest {
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
-          .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+          .put("jdbc_url", String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               config.get("host").asText(),
-              config.get("port").asText(),
+              config.get("port").asInt(),
               config.get("database").asText()));
 
       if (config.has("password")) {

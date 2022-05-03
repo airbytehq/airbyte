@@ -13,6 +13,8 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -26,6 +28,7 @@ import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.JSONB;
+import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -115,7 +118,9 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
       }
       // If the environment variables exist, it means the migration is run in production.
       // Connect to the official job database.
-      final Database jobsDatabase = new JobsDatabaseInstance(databaseUser, databasePassword, databaseUrl).getInitialized();
+      final DSLContext dslContext =
+          DSLContextFactory.create(databaseUser, databasePassword, DatabaseDriver.POSTGRESQL.getDriverClassName(), databaseUrl, SQLDialect.POSTGRES);
+      final Database jobsDatabase = new JobsDatabaseInstance(dslContext).getInitialized();
       LOGGER.info("[{}] Connected to jobs database: {}", MIGRATION_NAME, databaseUrl);
       return Optional.of(jobsDatabase);
     } catch (final IllegalArgumentException e) {

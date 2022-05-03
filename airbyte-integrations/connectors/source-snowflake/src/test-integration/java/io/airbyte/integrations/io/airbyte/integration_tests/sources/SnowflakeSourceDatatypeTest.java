@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
@@ -50,17 +51,18 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   }
 
   private Database getDatabase() {
-    return Databases.createDatabase(
-        config.get("credentials").get("username").asText(),
-        config.get("credentials").get("password").asText(),
-        String.format("jdbc:snowflake://%s/",
-            config.get("host").asText()),
-        SnowflakeSource.DRIVER_CLASS,
-        SQLDialect.DEFAULT,
-        Map.of(
-            "role", config.get("role").asText(),
-            "warehouse", config.get("warehouse").asText(),
-            "database", config.get("database").asText()));
+    return new Database(
+        DSLContextFactory.create(
+            config.get("credentials").get("username").asText(),
+            config.get("credentials").get("password").asText(),
+            SnowflakeSource.DRIVER_CLASS,
+            String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
+            SQLDialect.DEFAULT,
+            Map.of(
+                "role", config.get("role").asText(),
+                "warehouse", config.get("warehouse").asText(),
+                "database", config.get("database").asText()))
+    );
   }
 
   @Override
