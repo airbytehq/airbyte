@@ -22,6 +22,9 @@ public class BigQueryCredentialsFactory {
   private static Map<GoogleCredentialType, Object> GOOGLE_INITIALIZED_CREDENTIALS_MAP = new ConcurrentHashMap<>();
 
   public static <T> T createCredentialsClient(JsonNode config) {
+    if (config == null) {
+      throw new IllegalArgumentException("Config cannot be null");
+    }
     GoogleCredentialType googleCredentialType = determineAuthMethod(config).apply(config);
     return (T) GOOGLE_INITIALIZED_CREDENTIALS_MAP
         .computeIfAbsent(googleCredentialType,
@@ -29,12 +32,15 @@ public class BigQueryCredentialsFactory {
   }
 
   public static <T> T createCredentialsClient(JsonNode config, GoogleCredentialType googleCredentialType) {
+    if (config == null) {
+      throw new IllegalArgumentException("Config cannot be null");
+    }
     return (T) GOOGLE_INITIALIZED_CREDENTIALS_MAP
         .computeIfAbsent(googleCredentialType,
             value -> googleCredentialType.getCredentialFunction().apply(config));
   }
 
-  private static Function<JsonNode, GoogleCredentialType> determineAuthMethod(JsonNode config) {
+  public static Function<JsonNode, GoogleCredentialType> determineAuthMethod(JsonNode config) {
     return innerConfig -> {
       if (isOAuth2(config)) {
         return OAUTH2;

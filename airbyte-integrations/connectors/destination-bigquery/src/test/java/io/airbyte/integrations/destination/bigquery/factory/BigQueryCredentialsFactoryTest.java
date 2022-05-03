@@ -73,17 +73,17 @@ public class BigQueryCredentialsFactoryTest {
 
   @Test
   public void testIsOauth() {
-    assertSame(BigQueryCredentialsFactory.createCredentialsClient(config), GoogleCredentialType.OAUTH2);
+    assertSame(BigQueryCredentialsFactory.determineAuthMethod(config).apply(config), GoogleCredentialType.OAUTH2);
   }
 
   @Test
-  public void testIsNotOauth() {
+  public void testIsServiceAccount() {
     when(config.get(CREDENTIALS).get(AUTH_TYPE).asText()).thenReturn("Service account");
-    assertNotSame(BigQueryCredentialsFactory.createCredentialsClient(config), GoogleCredentialType.OAUTH2);
+    assertSame(BigQueryCredentialsFactory.determineAuthMethod(config).apply(config), GoogleCredentialType.SERVICE_ACCOUNT);
   }
 
   @Test
-  public void testIsNotOauthWhenConfigIsNull() {
+  public void textIllegalArgumentException() {
     assertThrows(IllegalArgumentException.class, () -> {
       BigQueryCredentialsFactory.createCredentialsClient(null);
     });

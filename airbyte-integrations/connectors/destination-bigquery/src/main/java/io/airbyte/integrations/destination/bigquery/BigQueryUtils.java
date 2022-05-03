@@ -184,7 +184,7 @@ public class BigQueryUtils {
   }
 
   private static JsonNode determineAuthMethodForGcsStaging(JsonNode config, JsonNode loadingMethod) {
-    return BigQueryCredentialsFactory.createCredentialsClient(config) == GoogleCredentialType.OAUTH2 ?
+    return BigQueryCredentialsFactory.determineAuthMethod(config).apply(config).equals(GoogleCredentialType.OAUTH2) ?
         Jsons.jsonNode(ImmutableMap.builder().put(BigQueryConsts.CREDENTIAL_TYPE, OAUTH2).build()) :
         loadingMethod.get(BigQueryConsts.CREDENTIAL);
   }
