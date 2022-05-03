@@ -6,14 +6,14 @@ package io.airbyte.workers.process;
 
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
-import org.apache.commons.lang3.RandomStringUtils;
-
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public interface ProcessFactory {
+
   String VERSION_DELIMITER = ":";
   String DOCKER_DELIMITER = "/";
   Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");
@@ -75,7 +75,8 @@ public interface ProcessFactory {
       processName = imageName + "-" + suffix;
     }
 
-    // Kubernetes pod names must start with an alphabetic character while Docker names accept alphanumeric.
+    // Kubernetes pod names must start with an alphabetic character while Docker names accept
+    // alphanumeric.
     // Use the stricter convention for simplicity.
     final Matcher m = ALPHABETIC.matcher(processName);
     // Since we add sync-UUID as a suffix a couple of lines up, there will always be a substring
@@ -84,4 +85,5 @@ public interface ProcessFactory {
     m.find();
     return processName.substring(m.start());
   }
+
 }
