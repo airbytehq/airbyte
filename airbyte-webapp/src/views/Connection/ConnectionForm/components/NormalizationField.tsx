@@ -8,15 +8,18 @@ import { LabeledRadioButton, Link } from "components";
 import { useConfig } from "config";
 import { NormalizationType } from "core/domain/connection/operation";
 
+import { ConnectionFormMode } from "../ConnectionForm";
+
 const Normalization = styled.div`
   margin: 16px 0;
 `;
 
-type NormalizationBlockProps = FieldProps<string>;
+type NormalizationBlockProps = FieldProps<string> & {
+  mode: ConnectionFormMode;
+};
 
-const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field }) => {
+const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mode }) => {
   const config = useConfig();
-
   return (
     <Normalization>
       <LabeledRadioButton
@@ -25,6 +28,7 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field }) 
         label={<FormattedMessage id="form.rawData" />}
         value={NormalizationType.RAW}
         checked={field.value === NormalizationType.RAW}
+        disabled={mode === "readonly"}
       />
       <LabeledRadioButton
         {...form.getFieldProps(field.name)}
@@ -32,17 +36,20 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field }) 
         label={<FormattedMessage id="form.basicNormalization" />}
         value={NormalizationType.BASIC}
         checked={field.value === NormalizationType.BASIC}
+        disabled={mode === "readonly"}
         message={
-          <FormattedMessage
-            id="form.basicNormalization.message"
-            values={{
-              lnk: (lnk: React.ReactNode) => (
-                <Link target="_blank" href={config.ui.normalizationLink} as="a">
-                  {lnk}
-                </Link>
-              ),
-            }}
-          />
+          mode !== "readonly" && (
+            <FormattedMessage
+              id="form.basicNormalization.message"
+              values={{
+                lnk: (lnk: React.ReactNode) => (
+                  <Link target="_blank" href={config.ui.normalizationLink} as="a">
+                    {lnk}
+                  </Link>
+                ),
+              }}
+            />
+          )
         }
       />
     </Normalization>
