@@ -229,6 +229,7 @@ public class DataSourceFactory {
       Preconditions.checkNotNull(databaseDriver, "Unknown or blank driver class name: '" + driverClassName + "'.");
 
       final HikariConfig config = new HikariConfig();
+
       config.setDriverClassName(databaseDriver.getDriverClassName());
       config.setJdbcUrl(jdbcUrl != null ? jdbcUrl : String.format(databaseDriver.getUrlFormatString(), host, port, database));
       config.setMaximumPoolSize(maximumPoolSize);
@@ -236,8 +237,15 @@ public class DataSourceFactory {
       config.setPassword(password);
       config.setUsername(username);
 
+      /*
+       * Disable to prevent failing on startup. Applications may start prior to the database container
+       * being available. To avoid failing to create the connection pool, disable the fail check. This
+       * will preserve existing behavior that tests for the connection on first use, not on creation.
+       */
+      config.setInitializationFailTimeout(Integer.MIN_VALUE);
+
       connectionProperties.forEach(config::addDataSourceProperty);
-      
+
       return new HikariDataSource(config);
     }
 
