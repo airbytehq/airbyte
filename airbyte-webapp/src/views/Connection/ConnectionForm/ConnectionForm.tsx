@@ -202,7 +202,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       })}
                     />
                   </LeftFieldCol>
-                  <RightFieldCol>
+                  <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
                     <DropDown
                       {...field}
                       error={!!meta.error && meta.touched}
@@ -218,7 +218,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </Field>
           </Section>
           <Section title={<FormattedMessage id="connection.streams" />}>
-            <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
+            <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+              <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
+            </span>
             {values.namespaceDefinition === ConnectionNamespaceDefinition.CustomFormat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
@@ -231,7 +233,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                         message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
                       />
                     </LeftFieldCol>
-                    <RightFieldCol>
+                    <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
                       <Input
                         {...field}
                         error={!!meta.error}
@@ -266,6 +268,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                         id: `form.prefix.placeholder`,
                       })}
                       data-testid="prefixInput"
+                      style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </RightFieldCol>
                 </FlexRow>
