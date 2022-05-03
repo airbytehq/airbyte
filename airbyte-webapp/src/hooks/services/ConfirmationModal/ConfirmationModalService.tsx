@@ -4,8 +4,8 @@ import { ConfirmationModal } from "components/ConfirmationModal";
 
 import useTypesafeReducer from "hooks/useTypesafeReducer";
 
-import { ConfirmationModalOptions, ConfirmationModalServiceApi, ConfirmationModalState } from "./types";
 import { actions, initialState, confirmationModalServiceReducer } from "./reducer";
+import { ConfirmationModalOptions, ConfirmationModalServiceApi, ConfirmationModalState } from "./types";
 
 const ConfirmationModalServiceContext = React.createContext<ConfirmationModalServiceApi | undefined>(undefined);
 
@@ -64,6 +64,7 @@ export const ConfirmationModalService = ({ children }: { children: React.ReactNo
           text={state.confirmationModal.text}
           onSubmit={state.confirmationModal.onSubmit}
           submitButtonText={state.confirmationModal.submitButtonText}
+          submitButtonDataId={state.confirmationModal.submitButtonDataId}
         />
       ) : null}
     </>

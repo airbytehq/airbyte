@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 
 public final class S3DestinationConstants {
@@ -16,6 +17,11 @@ public final class S3DestinationConstants {
   // WARNING: Too large a part size can cause potential OOM errors.
   public static final int DEFAULT_PART_SIZE_MB = 10;
   public static final String DEFAULT_PATH_FORMAT = "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_";
+
+  // gzip compression for CSV and JSONL
+  public static final String COMPRESSION_ARG_NAME = "compression";
+  public static final String COMPRESSION_TYPE_ARG_NAME = "compression_type";
+  public static final CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.GZIP;
 
   private S3DestinationConstants() {}
 

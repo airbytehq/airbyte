@@ -2,8 +2,8 @@ import React from "react";
 
 import Modal from "components/Modal";
 
-import ModalHeader from "./components/ModalHeader";
 import ModalBody from "./components/ModalBody";
+import ModalHeader from "./components/ModalHeader";
 
 type SyncCompletedModalProps = {
   onClose: () => void;

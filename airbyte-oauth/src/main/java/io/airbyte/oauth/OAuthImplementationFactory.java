@@ -66,6 +66,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/destination-bigquery", new GoogleBigQueryOAuthFlow(configRepository, httpClient))
         .put("airbyte/destination-bigquery-denormalized", new GoogleBigQueryOAuthFlow(configRepository, httpClient))
         .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
         .build();
   }
 

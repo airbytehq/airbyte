@@ -1,22 +1,22 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
+import styled from "styled-components";
 
+import { PageTitle } from "components";
 import HeadTitle from "components/HeadTitle";
+import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import SideMenu from "components/SideMenu";
-import LoadingPage from "components/LoadingPage";
 import { CategoryItem } from "components/SideMenu/SideMenu";
-import { PageTitle } from "components";
 
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import useRouter from "hooks/useRouter";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
-import RemainingCredits from "./components/RemainingCredits";
 import CreditsUsagePage from "./components/CreditsUsagePage";
 import { EmailVerificationHint } from "./components/EmailVerificationHint";
+import RemainingCredits from "./components/RemainingCredits";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;

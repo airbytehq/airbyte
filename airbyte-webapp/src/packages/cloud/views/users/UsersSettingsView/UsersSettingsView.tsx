@@ -1,17 +1,17 @@
 import React from "react";
-import styled from "styled-components";
-import { CellProps } from "react-table";
 import { FormattedMessage } from "react-intl";
+import { CellProps } from "react-table";
 import { useToggle } from "react-use";
+import styled from "styled-components";
 
 import { Button, H5, LoadingButton } from "components";
 import Table from "components/Table";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
+import { User } from "packages/cloud/lib/domain/users";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useListUsers, useUserHook } from "packages/cloud/services/users/UseUserHook";
-import { User } from "packages/cloud/lib/domain/users";
+import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
 
 import RoleToolTip from "./components/RoleToolTip";
 

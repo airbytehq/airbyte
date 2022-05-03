@@ -6,7 +6,14 @@ from datetime import datetime, timedelta
 
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from dateutil.parser import isoparse
+from pytest import fixture
 from source_paypal_transaction.source import Balances, PaypalTransactionStream, Transactions
+
+
+@fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 def test_get_field():
