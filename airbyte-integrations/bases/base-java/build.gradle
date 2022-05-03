@@ -22,4 +22,6 @@ dependencies {
     implementation "org.testcontainers:jdbc:${rootProject.ext.test_containers_version}"
 
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
+
+    testImplementation 'commons-lang:commons-lang:2.6'
 }
