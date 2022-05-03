@@ -13,9 +13,12 @@
             "balance": {
                 "type": ["null", "number"]
             },
-            "createdAt": {
-                "type": ["null", "integer"]
-            },
+             "createdAt": {
+          		"type":["null","string"]
+        	},
+	        "updatedAt": {
+	            "type": ["null", "string"]
+	        },
             "createdBy": {
                 "type": ["null", "string"]
             },
