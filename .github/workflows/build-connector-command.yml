@@ -156,15 +156,41 @@ jobs:
       ############################
       ##          BUMP          ##
       ############################
-      - name: Bump Connector Version
+      - name: Bump ${{ github.event.inputs.connector }} Version
         id: bump-version
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         if: success()
         run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }} --publish_spec_to_cache
-      - name: Commit and Push Version Bump
+          ./tools/integrations/manage.sh bump_version airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.bump-version }}
+      ############################
+      ##         BUILD          ##
+      ############################
+      - name: Build ${{ github.event.inputs.connector }}
+        run: |
+          ./tools/integrations/manage.sh build_experiment airbyte-integrations/${{ github.event.inputs.connector }}
+        id: build
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
+          TZ: UTC
+      ############################
+      ##     PROCESS BUILD      ##
+      ############################
+      - name: Process Build ${{ github.event.inputs.connector }}
+        run: |
+          ./tools/integrations/manage.sh process_build airbyte-integrations/${{ github.event.inputs.connector }}
+      ############################
+      ##          TEST          ##
+      ############################
+      - name: Test ${{ github.event.inputs.connector }}
+        if: github.event.inputs.run-tests == 'true'
+        run: |
+          ./tools/integrations/manage.sh test airbyte-integrations/${{ github.event.inputs.connector }}
+      ############################
+      ##          COMMIT        ##
+      ############################
+      - name: Commit and Push Bump ${{ github.event.inputs.connector }}
         if: success() && steps.bump-version.outputs.bumped == 'true'
         run: |
           git config user.name 'Octavia Squidington III'
@@ -187,13 +213,6 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: Couldn't bump version for ${{github.event.inputs.connector}}
-      ############################
-      ##          TEST          ##
-      ############################
-      - name: Test ${{ github.event.inputs.connector }}
-        if: github.event.inputs.run-tests == 'true'
-        run: |
-          ./tools/integrations/manage.sh test airbyte-integrations/${{ github.event.inputs.connector }}
       #        - name: Finalize Sentry release
       #          if: startsWith(github.event.inputs.connector, 'connectors')
       #          run: |
@@ -202,20 +221,6 @@ jobs:
       #            SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
       #            SENTRY_ORG: airbyte-5j
       #            SENTRY_PROJECT: airbyte-connectors
-      - name: Build and Test Success Comment
-        if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :rocket: Successfully built and tested ${{github.event.inputs.connector}}
-      - name: Build and Test Failure Comment
-        if: github.event.inputs.comment-id && !success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :x: Failed to build and test ${{github.event.inputs.connector}}
   #      - name: Slack Notification - Failure
   #        if: failure()
   #        uses: rtCamp/action-slack-notify@master

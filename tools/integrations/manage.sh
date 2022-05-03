@@ -75,8 +75,7 @@ cmd_test() {
   ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
 }
 
-# Bumps connector version in Dockerfile, definitions.yaml file, and updates seeds with gradle.
-# This does not build or test, it solely manages the versions of connectors to be +1'd.
+# Bumps connector version in Dockerfile, definitions.yaml file
 #
 # NOTE: this does NOT update changelogs because the changelog markdown files do not have a reliable machine-readable
 # format to automatically handle this. Someday it could though: https://github.com/airbytehq/airbyte/issues/12031
@@ -159,6 +158,7 @@ cmd_bump_version() {
       ;;
   esac
 
+# TODO make force-bump tag
   bumped_version="$major_version.$minor_version.$patch_version"
 #  if [[ "$bumped_version" != "$master_version" ]]; then
     _error_if_tag_exists "$image_name:$bumped_version"
@@ -188,14 +188,20 @@ cmd_bump_version() {
   connector_name=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$image_name\") | .name" "$definitions_path")
   yq e "(.[] | select(.name == \"$connector_name\").dockerImageTag)|=\"$bumped_version\"" -i "$definitions_path"
 
-  # 3) Generate seed specs
-  local tmp_spec_file; tmp_spec_file=$(mktemp)
-  publish_spec_to_cache="true" _publish_spec_to_cache "$image_name" "$bumped_version"
-
-  # 4) processResources to update
-  ./gradlew :airbyte-config:init:processResources
-
   echo "Woohoo! Successfully bumped $connector:$branch_version to $connector:$bumped_version"
+}
+
+# Generate new spec, publish to GCS, generate updated seeds.yaml file. Runs after cmd_bumped_version
+cmd_process_build() {
+  local connector_path
+  connector_path="$1"; shift || error "Missing target (path) $USAGE"
+  dockerfile="$connector_path/Dockerfile"
+  local image_name; image_name=$(_get_docker_image_name "$dockerfile")
+  bumped_version=$(_get_docker_image_version "$dockerfile")
+  local tmp_spec_file; tmp_spec_file=$(mktemp)
+
+  _publish_spec_to_cache "$image_name" "$bumped_version"
+  ./gradlew :airbyte-config:init:processResources
 }
 
 # TODO: also should be post merge step
@@ -213,6 +219,8 @@ _ensure_docker_image_registered() {
   fi
 }
 
+# We generate a spec based on the built image rather than using spec.json because not all connectors actually
+# use spec.json, some use a python pydantic file, and Java based connectors can place spec.json in the src dir
 _generate_spec() {
   local versioned_image; versioned_image="$1"
 
@@ -225,6 +233,8 @@ _generate_spec() {
     jq -s "map(select(.spec != null)) | map(.spec) | first | if . != null then . else error(\"no spec found\") end"
 }
 
+# Generates spec from container and pushes it into a GCS bucket which Airbyte can pull from to more efficiently
+# get a connector's spec to render the UI rather than running a container first
 _publish_spec_to_cache() {
   local image_name; image_name=$1
   local image_version; image_version=$2
@@ -244,7 +254,7 @@ _publish_spec_to_cache() {
       echo "Using environment gcloud"
     fi
 
-#    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
+    gsutil cp "$tmp_spec_file" "gs://io-airbyte-cloud-spec-cache/specs/$image_name/$image_version/spec.json"
   else
     echo "Publishing without writing to spec cache."
   fi
