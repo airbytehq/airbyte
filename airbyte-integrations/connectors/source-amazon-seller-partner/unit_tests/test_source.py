@@ -59,3 +59,10 @@ def test_stream_user_role(connector_source, connector_config, mock_boto_client):
     connector_config.role_arn = "arn:aws:iam::123456789098:user/some-user"
     result = connector_source.get_sts_credentials(connector_config)
     assert "Credentials" in result
+
+
+def test_stream_bad_arn_value(connector_source, connector_config, mock_boto_client):
+    connector_config.role_arn = "bad-arn"
+    with pytest.raises(ValueError) as e:
+        connector_source.get_sts_credentials(connector_config)
+        assert "Invalid" in e.message
