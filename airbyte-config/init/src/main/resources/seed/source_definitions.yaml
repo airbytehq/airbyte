@@ -911,3 +911,9 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
   sourceType: api
+- name: Firebolt
+  sourceDefinitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
+  dockerRepository: airbyte/source-firebolt
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.firebolt.io/
+  sourceType: database

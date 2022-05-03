@@ -54,6 +54,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Facebook Pages](sources/facebook-pages.md)                                                 | Alpha                | No                  |
 | [Faker](sources/faker.md)                                                                   | Alpha                | No                  |
 | [File](sources/file.md)                                                                     | Alpha                | Yes                 |
+| [Firebolt](sources/firebolt.md)                                                             | Alpha                | Yes                 |
 | [Flexport](sources/flexport.md)                                                             | Alpha                | No                  |
 | [Freshdesk](sources/freshdesk.md)                                                           | Alpha                | Yes                 |
 | [Freshsales](sources/freshsales.md)                                                         | Alpha                | No                  |

@@ -74,6 +74,7 @@
     - [Facebook Pages](integrations/sources/facebook-pages.md)
     - [Faker](integrations/sources/faker.md)
     - [Files](integrations/sources/file.md)
+    - [Firebolt](integrations/sources/firebolt.md)
     - [Flexport](integrations/sources/flexport.md)
     - [Freshdesk](integrations/sources/freshdesk.md)
     - [Freshsales](integrations/sources/freshsales.md)
