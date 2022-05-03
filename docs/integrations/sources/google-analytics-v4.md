@@ -97,7 +97,9 @@ When sampling occurs, a warning is logged to the sync log.
 ## IsDataGolden
 
 Google Analytics API may return provisional or incomplete data. When this occurs, the returned data will set the flag `isDataGolden` to false, and the connector will log a warning to the sync log.
-The connector always syncs data from 2 days ago due to the fact it [takes](https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article) Google Analytics up to 48 hours to update the data. To determine whether data is finished processing or not, the `isDataGolden` flag is exposed and should be used.
+The connector adds a lookback window of 2 days to ensure any previously synced non-golden data is re-synced with its potential updates. This is done because [Google Analytics takes up to 48 hours](https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article) to update the data. For example:
+- If your last sync occurred 5 days ago and a sync kicks off today, it will attempt to sync data from 7 days ago up to the latest data available.
+To determine whether data is finished processing or not, the `isDataGolden` flag is exposed and should be used.
 
 ## Reading Custom Reports
 
