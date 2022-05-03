@@ -237,10 +237,8 @@ public class DataSourceFactory {
       config.setUsername(username);
 
       connectionProperties.forEach(config::addDataSourceProperty);
-
-      final HikariDataSource dataSource = new HikariDataSource(config);
-      dataSource.validate();
-      return dataSource;
+      
+      return new HikariDataSource(config);
     }
 
   }
