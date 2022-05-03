@@ -131,9 +131,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
-      System.out.println("----- TICK");
-      System.out.println(connectionUpdaterInput);
-
       connectionId = connectionUpdaterInput.getConnectionId();
 
       // Clean the job state by failing any jobs for this connection that are currently non-terminal.
@@ -188,13 +185,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           reportFailure(connectionUpdaterInput, standardSyncOutput);
 
           final FailureType failureType = standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType();
-          System.out.println(failureType);
           if (failureType == FailureType.CONFIG_ERROR) {
             // In the case that the failure is attributable to config_error, we will not retry again
-            // TODO: In the UI, the job still appears to be "retrying".  The Job is state=incomplete and the attempt=failed
-            workflowState.setFailed(true);
-            workflowState.setRetryFailedActivity(false);
-            cancellableSyncWorkflow.cancel();
+            runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(
+                connectionUpdaterInput.getJobId(),
+                "Check Failed" + connectionId));
           } else {
             prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
           }
