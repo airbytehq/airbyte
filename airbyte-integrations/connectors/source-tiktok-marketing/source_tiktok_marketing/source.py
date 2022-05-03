@@ -63,8 +63,8 @@ class SourceTiktokMarketing(AbstractSource):
             additionalProperties=True,
             advanced_auth=AdvancedAuth(
                 auth_flow_type=AuthFlowType.oauth2_0,
-                predicate_key=["credentials", "auth_type"],
-                predicate_value="oauth2.0",
+                predicate_key=["credentials_all", "auth_type"],
+                predicate_value="prod_access_token",
                 oauth_config_specification=OAuthConfigSpecification(
                     complete_oauth_output_specification=CompleteOauthOutputSpecification.schema(),
                     complete_oauth_server_input_specification=CompleteOauthServerInputSpecification.schema(),
@@ -76,7 +76,9 @@ class SourceTiktokMarketing(AbstractSource):
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
-        credentials = config.get("credentials")
+
+        # support obsolete 'credentials' field is needed to support old configs
+        credentials = config.get("credentials_all", config.get("credentials"))
         if credentials:
             # used for new config format
             access_token = credentials["access_token"]

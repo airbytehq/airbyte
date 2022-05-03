@@ -13,22 +13,9 @@ from pydantic import BaseModel, Field
 from .streams import DEFAULT_START_DATE, ReportGranularity
 
 
-class OauthCredSpec(BaseModel):
-    class Config:
-        title = "OAuth2.0"
-
-    auth_type: str = Field(default="oauth2.0", const=True, order=0)
-
-    app_id: str = Field(title="App ID", description="The App ID applied by the developer.", airbyte_secret=True)
-
-    secret: str = Field(title="Secret", description="The private key of the developer's application.", airbyte_secret=True)
-
-    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
-
-
 class SandboxEnvSpec(BaseModel):
     class Config:
-        title = "Sandbox Access Token"
+        title = "Sandbox"
 
     auth_type: str = Field(default="sandbox_access_token", const=True, order=0)
 
@@ -42,7 +29,7 @@ class SandboxEnvSpec(BaseModel):
 
 class ProductionEnvSpec(BaseModel):
     class Config:
-        title = "Production Access Token"
+        title = "Production (Oauth)"
 
     auth_type: str = Field(default="prod_access_token", const=True, order=0)
 
@@ -57,9 +44,7 @@ class SourceTiktokMarketingSpec(BaseModel):
     class Config:
         title = "TikTok Marketing Source Spec"
 
-    credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
-        title="Authentication *", order=0, default={}, type="object"
-    )
+    credentials_all: Union[ProductionEnvSpec, SandboxEnvSpec] = Field(title="Authentication *", order=0, default={}, type="object")
 
     start_date: str = Field(
         title="Start Date *",
@@ -110,7 +95,7 @@ class SourceTiktokMarketingSpec(BaseModel):
 
 
 class CompleteOauthOutputSpecification(BaseModel):
-    access_token: str = Field(path_in_connector_config=["credentials", "access_token"])
+    access_token: str = Field(path_in_connector_config=["credentials_all", "access_token"])
 
 
 class CompleteOauthServerInputSpecification(BaseModel):
@@ -119,5 +104,5 @@ class CompleteOauthServerInputSpecification(BaseModel):
 
 
 class CompleteOauthServerOutputSpecification(BaseModel):
-    app_id: str = Field(path_in_connector_config=["credentials", "app_id"])
-    secret: str = Field(path_in_connector_config=["credentials", "secret"])
+    app_id: str = Field(path_in_connector_config=["credentials_all", "app_id"])
+    secret: str = Field(path_in_connector_config=["credentials_all", "secret"])
