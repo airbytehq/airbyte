@@ -55,13 +55,17 @@ def test_streams(connector_source, connector_config, mock_boto_client):
         assert isinstance(stream, Stream)
 
 
-def test_stream_user_role(connector_source, connector_config, mock_boto_client):
-    connector_config.role_arn = "arn:aws:iam::123456789098:user/some-user"
+@pytest.mark.parametrize(
+    "arn",
+    ("arn:aws:iam::123456789098:user/some-user", "arn:aws:iam::123456789098:role/some-role")
+)
+def test_stream_with_good_iam_arn_value(connector_source, connector_config, mock_boto_client, arn):
+    connector_config.role_arn = arn
     result = connector_source.get_sts_credentials(connector_config)
     assert "Credentials" in result
 
 
-def test_stream_bad_arn_value(connector_source, connector_config, mock_boto_client):
+def test_stream_with_bad_iam_arn_value(connector_source, connector_config, mock_boto_client):
     connector_config.role_arn = "bad-arn"
     with pytest.raises(ValueError) as e:
         connector_source.get_sts_credentials(connector_config)
