@@ -128,7 +128,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         elif arn_resource.startswith("role"):
             role = self._assume_role(boto3_client, config.role_arn)
         else:
-            raise ValueError("Invalid User/Role Arn")
+            raise ValueError("Invalid ARN, your ARN is not for a user or a role")
         return role
 
     def _get_session_token(self, boto3_client):
