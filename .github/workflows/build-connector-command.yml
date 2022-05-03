@@ -184,8 +184,8 @@ jobs:
       - name: Process Build ${{ github.event.inputs.connector }}
         run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json
-          publish_spec_to_cache=true
-          spec_cache_writer_sa_key_file=spec_cache_key_file.json
+          export publish_spec_to_cache=true
+          export spec_cache_writer_sa_key_file=spec_cache_key_file.json
           ./tools/integrations/manage.sh process_build airbyte-integrations/${{ github.event.inputs.connector }}
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
