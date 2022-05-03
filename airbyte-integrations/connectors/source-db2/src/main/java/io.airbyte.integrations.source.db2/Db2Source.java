@@ -8,14 +8,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.Db2JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -35,13 +36,12 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
   public static final String USERNAME = "username";
   public static final String PASSWORD = "password";
-  private static Db2SourceOperations operations;
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
 
   public Db2Source() {
-    super(DRIVER_CLASS, new Db2JdbcStreamingQueryConfiguration(), new Db2SourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new Db2SourceOperations());
   }
 
   public static void main(final String[] args) throws Exception {
@@ -96,7 +96,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   }
 
   @Override
-  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
     return false;
   }
 
@@ -105,7 +105,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
         "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
   }
 
-  private JdbcPrivilegeDto getPrivilegeDto(JsonNode jsonNode) {
+  private JdbcPrivilegeDto getPrivilegeDto(final JsonNode jsonNode) {
     return JdbcPrivilegeDto.builder()
         .schemaName(jsonNode.get("OBJECTSCHEMA").asText().trim())
         .tableName(jsonNode.get("OBJECTNAME").asText())
@@ -144,7 +144,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   private static void convertAndImportCertificate(final String certificate, final String keyStorePassword)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
-    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
+    try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);

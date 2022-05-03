@@ -3,6 +3,8 @@
 This page guides you through the process of setting up the TikTok Marketing source connector.
 
 ## Prerequisites
+* Start date
+* Report Granularity (LIFETIME, DAY, HOUR)
 
 For Production environment:
 * Access token 
@@ -13,8 +15,6 @@ For Sandbox environment:
 * Access token 
 * Advertiser ID
 
-* Start date
-* Report Granularity (LIFETIME, DAY, HOUR)
 
 ## Step 1: Set up TikTok
 
@@ -521,6 +521,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | updated spec descriptions                                                                     |
 | 0.1.7   | 2022-04-27 | [12380](https://github.com/airbytehq/airbyte/pull/12380) | fixed spec descriptions and documentation                                                     |
 | 0.1.6   | 2022-04-19 | [11378](https://github.com/airbytehq/airbyte/pull/11378) | updated logic for stream initializations, fixed errors in schemas, updated SAT and unit tests |
 | 0.1.5   | 2022-02-17 | [10398](https://github.com/airbytehq/airbyte/pull/10398) | Add Audience reports                                                                          |
