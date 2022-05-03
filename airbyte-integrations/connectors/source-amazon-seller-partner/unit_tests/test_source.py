@@ -57,5 +57,5 @@ def test_streams(connector_source, connector_config, mock_boto_client):
 
 def test_stream_user_role(connector_source, connector_config, mock_boto_client):
     connector_config.role_arn = "arn:aws:iam::123456789098:user/some-user"
-    result = connector_source.get_role(connector_config)
+    result = connector_source.get_sts_credentials(connector_config)
     assert "Credentials" in result
