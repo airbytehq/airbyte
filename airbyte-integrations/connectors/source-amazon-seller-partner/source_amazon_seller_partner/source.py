@@ -80,7 +80,7 @@ class ConnectorConfig(BaseModel):
         airbyte_secret=True,
     )
     role_arn: str = Field(
-        description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
+        description="Specifies the Amazon Resource Name (ARN) of an IAM user or role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         title="Role ARN",
         airbyte_secret=True,
     )
