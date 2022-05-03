@@ -13,7 +13,7 @@ import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/co
 import { equal } from "utils/objects";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
-import ReplicationView from "./components/ReplicationView";
+import { ReplicationView } from "./components/ReplicationView";
 import SettingsView from "./components/SettingsView";
 import StatusView from "./components/StatusView";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
