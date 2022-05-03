@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,10 +102,9 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    return database
-        .unsafeQuery(getPrivileges(database), sourceOperations::rowToJson)
-        .map(this::getPrivilegeDto)
-        .collect(Collectors.toSet());
+    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(database), sourceOperations::rowToJson)) {
+      return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
+    }
   }
 
   @Override

@@ -88,10 +88,10 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -101,9 +101,8 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    return jdbcDB.unsafeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-        .collect(Collectors.toList());
+    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    return jdbcDB.queryJsons(query);
   }
 
   @Override
@@ -131,13 +130,13 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     db = new ClickHouseContainer("yandex/clickhouse-server");
     db.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }

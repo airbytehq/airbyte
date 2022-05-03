@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,10 +90,9 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    return database
-        .unsafeQuery(getPrivileges(), sourceOperations::rowToJson)
-        .map(this::getPrivilegeDto)
-        .collect(Collectors.toSet());
+    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {
+      return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
+    }
   }
 
   @Override
