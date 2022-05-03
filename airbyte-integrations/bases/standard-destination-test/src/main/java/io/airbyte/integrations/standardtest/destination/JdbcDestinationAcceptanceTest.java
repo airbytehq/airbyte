@@ -22,7 +22,7 @@ public abstract class JdbcDestinationAcceptanceTest extends DestinationAcceptanc
       var value = record.get(field);
 
       switch (field.getDataType().getTypeName()) {
-        case "varchar", "other":
+        case "varchar", "jsonb", "other":
           var stringValue = (value != null ? value.toString() : null);
           if (stringValue != null && (stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\[.*\\]$")
               || stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\{.*\\}$"))) {
