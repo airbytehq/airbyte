@@ -92,7 +92,7 @@ class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: ConnectorConfig) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.aws_environment)[config.region]
 
-        role = self.get_role(config)
+        sts_crendentials = self.get_role(config)
         role_creds = role["Credentials"]
         aws_signature = AWSSignature(
             service="execute-api",
