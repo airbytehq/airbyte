@@ -17,7 +17,7 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { useListJobs } from "services/job/JobService";
 
 import JobsList from "./JobsList";
-import StatusMainInfo from "./StatusMainInfo";
+import { StatusMainInfo } from "./StatusMainInfo";
 
 interface StatusViewProps {
   connection: Connection;
