@@ -7,6 +7,7 @@ from datetime import datetime
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
+from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from pendulum import duration
 from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
@@ -16,6 +17,7 @@ from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJo
 def api_fixture(mocker):
     api = mocker.Mock()
     api.api.ads_insights_throttle = (0, 0)
+    api.accounts = [FBAdAccount("act_unknown_account_id")]
     return api
 
 

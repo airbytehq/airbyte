@@ -23,12 +23,19 @@ def account_id_fixture():
 
 @fixture(scope="session", name="some_config")
 def some_config_fixture(account_id):
-    return {"start_date": "2021-01-23T00:00:00Z", "account_id": f"{account_id}", "access_token": "unknown_token"}
+    return {"start_date": "2021-01-23T00:00:00Z", "access_token": "unknown_token"}
 
 
 @fixture(autouse=True)
 def mock_default_sleep_interval(mocker):
     mocker.patch("source_facebook_marketing.streams.common.DEFAULT_SLEEP_INTERVAL", return_value=pendulum.duration(seconds=5))
+
+
+@fixture(autouse=True)
+def mock_accounts(mocker, account_id):
+    mock_account = mocker.Mock()
+    mock_account.account_id = account_id
+    mocker.patch("facebook_business.adobjects.user.User.get_ad_accounts", return_value=[mock_account])
 
 
 @fixture(name="fb_account_response")
@@ -48,9 +55,9 @@ def fb_account_response_fixture(account_id):
 
 
 @fixture(name="api")
-def api_fixture(some_config, requests_mock, fb_account_response):
-    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"])
+def api_fixture(some_config, requests_mock, fb_account_response, account_id):
+    api = API(access_token=some_config["access_token"])
 
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_config['account_id']}/", [fb_account_response])
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", [fb_account_response])
     return api

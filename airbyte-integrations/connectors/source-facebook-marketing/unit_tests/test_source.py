@@ -12,7 +12,6 @@ from source_facebook_marketing.spec import ConnectorConfig
 @pytest.fixture(name="config")
 def config_fixture():
     config = {
-        "account_id": 123,
         "access_token": "TOKEN",
         "start_date": "2019-10-10T00:00:00",
         "end_date": "2020-10-10T00:00:00",
@@ -21,10 +20,15 @@ def config_fixture():
     return config
 
 
+@pytest.fixture(scope="session", name="account_id")
+def account_id_fixture():
+    return "unknown_account"
+
+
 @pytest.fixture(name="api")
-def api_fixture(mocker):
+def api_fixture(mocker, account_id):
     api_mock = mocker.patch("source_facebook_marketing.source.API")
-    api_mock.return_value = mocker.Mock(account=123)
+    api_mock.return_value = mocker.Mock()
     return api_mock
 
 
@@ -39,8 +43,7 @@ class TestSourceFacebookMarketing:
 
         assert ok
         assert not error_msg
-        api.assert_called_once_with(account_id="123", access_token="TOKEN")
-        logger_mock.info.assert_called_once_with(f"Select account {api.return_value.account}")
+        api.assert_called_once_with(access_token="TOKEN")
 
     def test_check_connection_end_date_before_start_date(self, api, config, logger_mock):
         config["start_date"] = "2019-10-10T00:00:00"

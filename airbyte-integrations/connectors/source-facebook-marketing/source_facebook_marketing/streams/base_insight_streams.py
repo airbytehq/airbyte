@@ -178,7 +178,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
-            yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
+
+            for account in self._api.accounts:
+                yield InsightAsyncJob(api=self._api.api, edge_object=account, interval=interval, params=params)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -199,9 +201,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         if stream_state:
             self.state = stream_state
 
-        manager = InsightAsyncJobManager(api=self._api, jobs=self._generate_async_jobs(params=self.request_params()))
-        for job in manager.completed_jobs():
-            yield {"insight_job": job}
+        for account in self._api.accounts:
+            manager = InsightAsyncJobManager(api=self._api, account=account, jobs=self._generate_async_jobs(params=self.request_params()))
+            for job in manager.completed_jobs():
+                yield {"insight_job": job}
 
     def _get_start_date(self) -> pendulum.Date:
         """Get start date to begin sync with. It is not that trivial as it might seem.

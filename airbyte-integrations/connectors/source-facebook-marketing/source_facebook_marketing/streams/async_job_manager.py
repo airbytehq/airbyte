@@ -6,6 +6,7 @@ import logging
 import time
 from typing import TYPE_CHECKING, Iterator, List
 
+from facebook_business.adobjects.adaccount import AdAccount
 from source_facebook_marketing.streams.common import JobException
 
 from .async_job import AsyncJob, ParentAsyncJob, update_in_batch
@@ -32,13 +33,14 @@ class InsightAsyncJobManager:
     # limit is not reliable indicator of async workload capability we still have to use this parameter.
     MAX_JOBS_IN_QUEUE = 100
 
-    def __init__(self, api: "API", jobs: Iterator[AsyncJob]):
+    def __init__(self, api: "API", account: AdAccount, jobs: Iterator[AsyncJob]):
         """Init
 
         :param api:
         :param jobs:
         """
         self._api = api
+        self._account = account
         self._jobs = iter(jobs)
         self._running_jobs = []
 
@@ -141,4 +143,4 @@ class InsightAsyncJobManager:
         respond with empty list of data so api use "x-fb-ads-insights-throttle"
         header to update current insights throttle limit.
         """
-        self._api.account.get_insights()
+        self._account.get_insights()

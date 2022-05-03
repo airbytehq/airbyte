@@ -85,13 +85,6 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-    account_id: str = Field(
-        title="Account ID",
-        order=0,
-        description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.",
-        examples=["111111111111111"],
-    )
-
     start_date: datetime = Field(
         title="Start Date",
         order=1,

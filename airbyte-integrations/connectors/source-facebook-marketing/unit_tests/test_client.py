@@ -8,6 +8,7 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
+from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams import AdAccount, AdCreatives, Campaigns
 
@@ -36,6 +37,17 @@ def fb_call_rate_response_fixture():
         "status_code": 400,
         "headers": headers,
     }
+
+
+@pytest.fixture(scope="session", name="account_id")
+def account_id_fixture():
+    return "unknown_account"
+
+
+@pytest.fixture(autouse=True)
+def mock_accounts(mocker, account_id):
+    account = FBAdAccount(f"act_{account_id}")
+    mocker.patch("facebook_business.adobjects.user.User.get_ad_accounts", return_value=[account])
 
 
 class TestBackoff:
