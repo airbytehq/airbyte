@@ -10,9 +10,14 @@ const Content = styled(ContentCard)`
   padding: 50px 15px;
 `;
 
-const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({ message, children }) => {
+interface ErrorOccurredViewProps {
+  message: React.ReactNode;
+  onLogoClick?: React.MouseEventHandler;
+}
+
+const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, onLogoClick, children }) => {
   return (
-    <BaseClearView>
+    <BaseClearView onLogoClick={onLogoClick}>
       <Content>
         <H4 center>{message}</H4>
         {children}

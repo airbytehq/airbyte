@@ -13,10 +13,14 @@ const Content = styled.div`
   justify-content: space-between;
 `;
 
-const Img = styled.img`
+const LogoImg = styled.img`
   width: 90px;
   height: 94px;
   margin-bottom: 20px;
+
+  &.clickable:hover {
+    cursor: pointer;
+  }
 `;
 
 const MainInfo = styled.div`
@@ -25,12 +29,21 @@ const MainInfo = styled.div`
   flex-direction: column;
 `;
 
-const BaseClearView: React.FC = (props) => {
+interface BaseClearViewProps {
+  onLogoClick?: React.MouseEventHandler;
+}
+
+const BaseClearView: React.FC<BaseClearViewProps> = ({ children, onLogoClick }) => {
   return (
     <Content>
       <MainInfo>
-        <Img src="/logo.png" alt="logo" />
-        {props.children}
+        <LogoImg
+          src="/logo.png"
+          alt="Airbyte logo"
+          onClick={onLogoClick}
+          className={onLogoClick ? "clickable" : undefined}
+        />
+        {children}
       </MainInfo>
       <Version />
     </Content>
