@@ -21,7 +21,7 @@ fi
 
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
-source ./tools/bin/bump_version.sh
+#source ./tools/bin/bump_version.sh
 
 echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
 VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
