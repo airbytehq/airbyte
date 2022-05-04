@@ -100,7 +100,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
                 + algorithm + " )")
-        )
+        ));
 
     final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
