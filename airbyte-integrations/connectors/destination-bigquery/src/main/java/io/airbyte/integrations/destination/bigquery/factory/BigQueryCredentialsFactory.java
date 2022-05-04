@@ -50,6 +50,9 @@ public class BigQueryCredentialsFactory {
   }
 
   private static boolean isOAuth2(JsonNode config) {
+    if (!config.has(CREDENTIALS) || !config.get(CREDENTIALS).has(AUTH_TYPE)) {
+      throw new IllegalArgumentException("Config must contain both " + CREDENTIALS + " and " + AUTH_TYPE);
+    }
     return config.has(CREDENTIALS)
         && config.get(CREDENTIALS).has(AUTH_TYPE)
         && "oauth2.0".contains(config.get(CREDENTIALS).get(AUTH_TYPE).asText());
