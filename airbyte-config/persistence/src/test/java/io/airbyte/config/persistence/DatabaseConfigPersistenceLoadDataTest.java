@@ -6,7 +6,6 @@ package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
@@ -77,13 +76,13 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Lists.newArrayList(DESTINATION_S3, DESTINATION_SNOWFLAKE));
 
-    configPersistence.loadData(seedPersistence, true);
+    configPersistence.loadData(seedPersistence);
 
     // the new destination is added
     assertRecordCount(3, ACTOR_DEFINITION);
     assertHasDestination(DESTINATION_SNOWFLAKE);
 
-    verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class), eq(true));
+    verify(configPersistence, times(1)).updateConfigsFromSeed(any(DSLContext.class), any(ConfigPersistence.class));
   }
 
   @Test
@@ -118,7 +117,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
         .withSourceDefinitionId(sourceGithubV2.getSourceDefinitionId());
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, githubConnection.getSourceId().toString(), githubConnection);
 
-    configPersistence.loadData(seedPersistence, true);
+    configPersistence.loadData(seedPersistence);
     // s3 destination is not updated
     assertHasDestination(DESTINATION_S3);
     assertHasSource(SOURCE_GITHUB);
@@ -133,7 +132,7 @@ public class DatabaseConfigPersistenceLoadDataTest extends BaseDatabaseConfigPer
     when(seedPersistence.listConfigs(ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class))
         .thenReturn(Collections.singletonList(snowflakeV2));
 
-    configPersistence.loadData(seedPersistence, true);
+    configPersistence.loadData(seedPersistence);
     assertHasDestination(snowflakeV2);
   }
 

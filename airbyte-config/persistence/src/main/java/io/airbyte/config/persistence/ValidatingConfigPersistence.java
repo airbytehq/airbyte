@@ -120,8 +120,8 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(final ConfigPersistence seedPersistence, final boolean runVersionCheckOnCustomConnectors) throws IOException {
-    decoratedPersistence.loadData(seedPersistence, runVersionCheckOnCustomConnectors);
+  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
+    decoratedPersistence.loadData(seedPersistence);
   }
 
   private <T> void validateJson(final T config, final AirbyteConfig configType) throws JsonValidationException {
