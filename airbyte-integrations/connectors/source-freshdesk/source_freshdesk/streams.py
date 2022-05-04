@@ -197,6 +197,11 @@ class Tickets(IncrementalFreshdeskStream):
         return params
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This block extends Incremental stream to overcome '300 page' server error.
+        Since the Ticket endpoint has a 300 page pagination limit, after 300 pages, update the parameters with
+        query using 'updated_since' = last_record, if there is more data remaining.
+        """
         next_page_token = super().next_page_token(response=response)
 
         if next_page_token and int(next_page_token["page"]) > self.ticket_paginate_limit:
