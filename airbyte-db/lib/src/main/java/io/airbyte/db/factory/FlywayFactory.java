@@ -55,18 +55,20 @@ public class FlywayFactory {
    * @param dbIdentifier The name of the database to be migrated. This is used to name the table to
    *        hold the migration history for the database.
    * @param baselineVersion The version to tag an existing schema with when executing baseline.
-   * @param baselineDescription The description to tag an existing schema with when executing baseline.
-   * @param baselineOnMigrate Whether to automatically call baseline when migrate is executed against a non-empty schema with no schema history table.
+   * @param baselineDescription The description to tag an existing schema with when executing
+   *        baseline.
+   * @param baselineOnMigrate Whether to automatically call baseline when migrate is executed against
+   *        a non-empty schema with no schema history table.
    * @param migrationFileLocations The array of migration files to be used.
    * @return The configured {@link Flyway} instance.
    */
   public static Flyway create(final DataSource dataSource,
-      final String installedBy,
-      final String dbIdentifier,
-      final String baselineVersion,
-      final String baselineDescription,
-      final boolean baselineOnMigrate,
-      final String... migrationFileLocations) {
+                              final String installedBy,
+                              final String dbIdentifier,
+                              final String baselineVersion,
+                              final String baselineDescription,
+                              final boolean baselineOnMigrate,
+                              final String... migrationFileLocations) {
     return Flyway.configure()
         .dataSource(dataSource)
         .baselineVersion(baselineVersion)

@@ -60,11 +60,12 @@ public abstract class MigrationDevCenter {
     try (final PostgreSQLContainer<?> container = createContainer()) {
       final DataSource dataSource =
           DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-      final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-      final Flyway flyway = getFlyway(dataSource);
-      final Database database = getDatabase(dslContext);
-      final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);
-      MigrationDevHelper.createNextMigrationFile(dbIdentifier, migrator);
+      try(final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
+        final Flyway flyway = getFlyway(dataSource);
+        final Database database = getDatabase(dslContext);
+        final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);
+        MigrationDevHelper.createNextMigrationFile(dbIdentifier, migrator);
+      }
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -74,14 +75,15 @@ public abstract class MigrationDevCenter {
     try (final PostgreSQLContainer<?> container = createContainer()) {
       final DataSource dataSource =
           DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-      final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-      final Flyway flyway = getFlyway(dataSource);
-      final Database database = getDatabase(dslContext);
-      final FlywayDatabaseMigrator fullMigrator = getMigrator(database, flyway);
-      final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
-      MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-      final String schema = fullMigrator.dumpSchema();
-      MigrationDevHelper.dumpSchema(schema, schemaDumpFile, false);
+      try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
+        final Flyway flyway = getFlyway(dataSource);
+        final Database database = getDatabase(dslContext);
+        final FlywayDatabaseMigrator fullMigrator = getMigrator(database, flyway);
+        final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(fullMigrator);
+        MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+        final String schema = fullMigrator.dumpSchema();
+        MigrationDevHelper.dumpSchema(schema, schemaDumpFile, false);
+      }
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -91,13 +93,14 @@ public abstract class MigrationDevCenter {
     try (final PostgreSQLContainer<?> container = createContainer()) {
       final DataSource dataSource =
           DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-      final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-      final Flyway flyway = getFlyway(dataSource);
-      final Database database = getDatabase(dslContext);
-      final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);
-      migrator.migrate();
-      final String schema = migrator.dumpSchema();
-      MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
+      try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
+        final Flyway flyway = getFlyway(dataSource);
+        final Database database = getDatabase(dslContext);
+        final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);
+        migrator.migrate();
+        final String schema = migrator.dumpSchema();
+        MigrationDevHelper.dumpSchema(schema, schemaDumpFile, true);
+      }
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }

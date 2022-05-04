@@ -27,7 +27,8 @@ public class FlywayFactoryTest extends AbstractFactoryTest {
     final boolean baselineOnMigrate = true;
     final String migrationFileLocation = "classpath:io/airbyte/db/instance/toys/migrations";
     final DataSource dataSource = DatabaseConnectionHelper.createDataSource(container);
-    final Flyway flyway = FlywayFactory.create(dataSource, installedBy, dbIdentifier, baselineVersion, baselineDescription, baselineOnMigrate, migrationFileLocation);
+    final Flyway flyway =
+        FlywayFactory.create(dataSource, installedBy, dbIdentifier, baselineVersion, baselineDescription, baselineOnMigrate, migrationFileLocation);
     assertNotNull(flyway);
     assertTrue(flyway.getConfiguration().isBaselineOnMigrate());
     assertEquals(baselineDescription, flyway.getConfiguration().getBaselineDescription());
