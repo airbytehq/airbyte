@@ -38,6 +38,7 @@ mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version 
 assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
 junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.6.2" }
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.11.0" }
+spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.6.0" }
 
 [bundles]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]

@@ -128,4 +128,40 @@ To share catalog for further usage by other Projects need to do 2 steps:
             from(files("deps.toml")) < --- declere either dependencies or specify existing TOML file
         }
     }
-    ```
+    ``` 
+
+#### Configure the Plugin Publishing Plugin
+For **Publishing** need to define `maven-publish` plugin in `build.gradle` file (ignore if this record exists):
+```gradle
+plugins {
+    id '...'
+    id 'maven-publish'
+}
+```
+Further on need to describe publishing section. Please use [this](https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html) official documentation for more details.
+> Example:
+> ```gradle
+> publishing {
+>     publications {
+>         maven(MavenPublication) {
+>             groupId = 'io.airbyte'
+>             artifactId = 'oss-catalog'
+> 
+>                 from components.versionCatalog
+>         }
+>     }
+> 
+>     repositories {
+>         maven {
+>             url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+>             credentials {
+>                 name 'cloudrepo'
+>                 username System.getenv('CLOUDREPO_USER')
+>                 password System.getenv('CLOUDREPO_PASSWORD')
+>             }
+>         }
+> 
+>         mavenLocal()
+>     }
+> }
+> ```

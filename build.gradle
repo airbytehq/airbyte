@@ -319,7 +319,7 @@ subprojects {
 
         // adds owasp plugin
         spotbugsPlugins libs.findsecbugs.plugin
-        implementation 'com.github.spotbugs:spotbugs-annotations:4.6.0'
+        implementation libs.spotbugs.annotations
     }
 
     tasks.withType(Tar) {
