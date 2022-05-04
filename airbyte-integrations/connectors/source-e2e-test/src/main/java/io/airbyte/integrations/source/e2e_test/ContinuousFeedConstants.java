@@ -10,7 +10,14 @@ import net.jimblackler.jsongenerator.DefaultConfig;
 public final class ContinuousFeedConstants {
 
   public static final int MOCK_JSON_MAX_TREE_SIZE = 100;
-  public static final Configuration MOCK_JSON_CONFIG = new DefaultConfig();
+  public static final Configuration MOCK_JSON_CONFIG = DefaultConfig.build()
+      .setPedanticTypes(true)
+      .setGenerateNulls(false)
+      .setGenerateMinimal(false)
+      .setGenerateAdditionalProperties(false)
+      .setUseRomanCharsOnly(true)
+      .setNonRequiredPropertyChance(1.0f)
+      .get();
 
   private ContinuousFeedConstants() {}
 
