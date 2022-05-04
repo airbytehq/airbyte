@@ -271,4 +271,7 @@ public class S3StorageOperations implements BlobStorageOperations {
     return true;
   }
 
+  public void uploadManifest(String bucketName, String manifestFilePath, String manifestContents) {
+            s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
+  }
 }

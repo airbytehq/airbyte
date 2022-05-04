@@ -42,7 +42,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   public static Map<DestinationType, Destination> getTypeToDestination() {
     return Map.of(
         DestinationType.INSERT_WITH_SUPER_TMP_TYPE, new RedshiftInsertDestination(RedshiftDataTmpTableMode.SUPER),
-        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.SUPER));
+        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, new RedshiftStagingS3Destination(RedshiftDataTmpTableMode.SUPER));
+//        DestinationType.COPY_S3_WITH_SUPER_TMP_TYPE, new RedshiftCopyS3Destination(RedshiftDataTmpTableMode.SUPER));
   }
 
   public static DestinationType determineUploadMode(final JsonNode config) {

@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
-  private static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
+  public static final String DRIVER_CLASS = "com.amazon.redshift.jdbc.Driver";
   private static final String USERNAME = "username";
   private static final String PASSWORD = "password";
   private static final String SCHEMA = "schema";
