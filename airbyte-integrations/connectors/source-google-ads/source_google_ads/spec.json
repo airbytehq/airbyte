@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "",
+  "documentationUrl": "https://developers.google.com/google-ads/api/docs/start",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Ads Spec",

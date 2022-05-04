@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "",
-  "changelogUrl": "",
+  "documentationUrl": "https://developers.klaviyo.com/en",
+  "changelogUrl": "https://developers.klaviyo.com/en",
   "connectionSpecification": {
     "title": "Klaviyo Spec",
     "type": "object",
