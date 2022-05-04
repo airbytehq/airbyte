@@ -106,6 +106,7 @@ definitions:
       - emitted_at
     properties:
       type:
+        title: "trace type"
         description: "the type of trace message"
         type: string
         enum:
