@@ -70,14 +70,48 @@ definitions:
         type: string
   AirbyteStateMessage:
     type: object
-    additionalProperties: true
-    required:
-      - data
+    additionalProperties: false
     properties:
+      type:
+        "$ref": "#/definitions/AirbyteStateType"
       data:
-        description: "the state data"
-        type: object
-        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+        description: "Deprecated"
+        "$ref": "#/definitions/AirbyteStateBlob"
+      global:
+        "$ref": "#/definitions/AirbyteStateBlob"
+      streams:
+        type: array
+        items:
+          "$ref": "#/definitions/AirbyteStreamState"
+
+  AirbyteStateType:
+    type: string
+    description: >
+      The type of state the other fields represent.
+      If not set, the state data is interpreted as GLOBAL and should be read from the `data` field for backwards compatibility.
+      GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams.
+      PER_STREAM means that the state should be read from `streams`. Each item in the ist represents the state for the associated stream.
+    enum:
+      - GLOBAL
+      - PER_STREAM
+
+  AirbyteStreamState:
+    type: object
+    description: "per stream state data"
+    additionalProperties: false
+    properties:
+      name:
+        description: "Stream name"
+        type: string
+      state:
+        "$ref": "#/definitions/AirbyteStateBlob"
+
+  AirbyteStateBlob:
+    type: object
+    description: "the state data"
+    additionalProperties: false
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+
   AirbyteLogMessage:
     type: object
     additionalProperties: true
