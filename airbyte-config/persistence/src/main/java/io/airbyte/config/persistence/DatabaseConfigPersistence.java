@@ -1093,6 +1093,7 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
             .set(CONNECTION.MANUAL, standardSync.getManual())
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
+            .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
             .where(CONNECTION.ID.eq(standardSync.getConnectionId()))
             .execute();
 
