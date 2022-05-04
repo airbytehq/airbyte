@@ -30,11 +30,13 @@ from .rate_limiting import default_backoff_handler
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
+DEFAULT_ENCODING = "utf-8"
+
 
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    encoding = "ISO-8859-1"
+    encoding = DEFAULT_ENCODING
 
     def __init__(
         self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
@@ -45,6 +47,18 @@ class SalesforceStream(HttpStream, ABC):
         self.stream_name = stream_name
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
+
+    def decode(self, chunk):
+        if self.encoding == DEFAULT_ENCODING:
+            try:
+                decoded = chunk.decode(self.encoding)
+                return decoded
+            except UnicodeDecodeError as e:
+                self.encoding = "ISO-8859-1"
+                self.logger.info(f"Could not decode chunk. Falling back to {self.encoding} encoding. Error: {e}")
+                return self.decode(chunk)
+        else:
+            return chunk.decode(self.encoding)
 
     @property
     def name(self) -> str:
@@ -275,7 +289,7 @@ class BulkSalesforceStream(SalesforceStream):
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response:
             with open(tmp_file, "w") as data_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
-                    data_file.writelines(self.filter_null_bytes(chunk.decode(self.encoding)))
+                    data_file.writelines(self.filter_null_bytes(self.decode(chunk)))
         # check the file exists
         if os.path.isfile(tmp_file):
             return tmp_file

@@ -527,5 +527,7 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     assert isinstance(rest_stream, IncrementalSalesforceStream)
 
 
-def test_decoding():
-    assert b"0\xe5".decode(SalesforceStream.encoding) == "0å"
+def test_decoding(stream_config, stream_api):
+    stream_name = "AcceptedEventRelation"
+    stream = generate_stream(stream_name, stream_config, stream_api)
+    assert stream.decode(b"0\xe5") == "0å"
