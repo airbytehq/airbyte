@@ -1,5 +1,3 @@
 {
-  "test": {
-    "_ab_source_file_last_modified": "2999-01-01T00:00:00+0000"
-  }
+  "test": {"_ab_source_file_last_modified": "2021-12-12T12:35:05+0000", "schema": {"id": "integer", "name": "string", "valid": "boolean", "_ab_additional_properties": "object", "_ab_source_file_last_modified": "string", "_ab_source_file_url": "string"}, "history": {"2021-12-12": ["simple_test_2.csv"]}}
 }

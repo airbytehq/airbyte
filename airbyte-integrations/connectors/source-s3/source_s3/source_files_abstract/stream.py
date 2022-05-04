@@ -6,10 +6,11 @@
 import json
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from cuckoo.filter import ScalableCuckooFilter
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -248,7 +249,7 @@ class FileStream(Stream, ABC):
         return self.master_schema
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Dict[str, Any]]]:
         """
         This builds full-refresh stream_slices regardless of sync_mode param.
@@ -348,6 +349,7 @@ class FileStream(Stream, ABC):
 class IncrementalFileStream(FileStream, ABC):
     # TODO: ideally want to checkpoint after every file or stream slice rather than N records
     state_checkpoint_interval = None
+    days = 3  # keeping track of all files synced in the last N days
 
     @property
     def cursor_field(self) -> str:
@@ -355,6 +357,13 @@ class IncrementalFileStream(FileStream, ABC):
         :return: The name of the cursor field.
         """
         return self.ab_last_mod_col
+
+    @staticmethod
+    def file_in_history(file_info: FileInfo, history: dict) -> bool:
+        for slot in history.values():
+            if file_info.key in slot:
+                return file_info.key in slot
+        return False
 
     def _get_datetime_from_stream_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
         """if no state, we default to 1970-01-01 in order to pick up all files present."""
@@ -381,6 +390,19 @@ class IncrementalFileStream(FileStream, ABC):
         state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
 
         state_dict["schema"] = self._get_schema_map()
+
+        history = current_stream_state.get("history", {})
+
+        # add record to history if record modified date in range delta start from state
+        if latest_record_datetime.date() + timedelta(days=self.days) >= self._get_datetime_from_stream_state(state_dict).date():
+            history.setdefault(latest_record_datetime.strftime("%Y-%m-%d"), set()).add(latest_record["_ab_source_file_url"])
+
+        # reset history to new date state
+        if current_parsed_datetime.date() != self._get_datetime_from_stream_state(state_dict).date():
+            history = {date: history[date] for date in history if datetime.strptime(date, "%Y-%m-%d").date() + timedelta(days=self.days) >= self._get_datetime_from_stream_state(state_dict).date()}
+
+        state_dict["history"] = deepcopy(history)
+
         return state_dict
 
     def stream_slices(
@@ -392,7 +414,7 @@ class IncrementalFileStream(FileStream, ABC):
         This ensures we only update the cursor state to a given timestamp after ALL files with that timestamp have been successfully read.
 
         Slight nuance: as we iterate through get_time_ordered_file_infos(),
-        we yield the stream_slice containing file(s) up to and EXcluding the file on the current iteration.
+        we yield the stream_slice containing file(s) up to and Excluding the file on the current iteration.
         The stream_slice is then cleared (if we yielded it) and this iteration's file appended to the (next) stream_slice
         """
         if sync_mode == SyncMode.full_refresh:
@@ -408,11 +430,14 @@ class IncrementalFileStream(FileStream, ABC):
             prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
             grouped_files_by_time: List[Dict[str, Any]] = []
             for file_info in self.get_time_ordered_file_infos():
-                # skip this file if last_mod is earlier than our cursor value from state
+                # skip this file if last_mod is earlier than our cursor value from state and already in history
+                # or skip this file if last_mod plus delta is earlier than our cursor value
                 if (
                     stream_state is not None
                     and self.cursor_field in stream_state.keys()
                     and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
+                    and self.file_in_history(file_info, stream_state.get("history", {}))
+                    or file_info.last_modified + timedelta(days=self.days) < self._get_datetime_from_stream_state(stream_state)
                 ):
                     continue
 
