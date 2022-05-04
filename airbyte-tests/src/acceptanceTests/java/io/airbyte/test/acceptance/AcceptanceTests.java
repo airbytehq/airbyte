@@ -224,7 +224,7 @@ public class AcceptanceTests {
     }
 
     // by default use airbyte deployment governed by a test container.
-    if (false) {
+    if (!USE_EXTERNAL_DEPLOYMENT) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
           .setEnv(MoreProperties.envFileToProperties(ENV_FILE))
@@ -1280,7 +1280,7 @@ public class AcceptanceTests {
     // This case only occurs with the new scheduler, so the entire test is inside the feature flag
     // conditional.
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    if (true) {
+    if (featureFlags.usesNewScheduler()) {
       final String connectionName = "test-connection";
       final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
       final SourceRead source = createSource(
