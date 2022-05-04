@@ -49,6 +49,11 @@ class SalesforceStream(HttpStream, ABC):
         self.sobject_options = sobject_options
 
     def decode(self, chunk):
+        """
+        Most Salesforce instances use UTF-8, but some use ISO-8859-1.
+        By default, we'll decode using UTF-8, and fallback to ISO-8859-1 if it doesn't work.
+        See implementation considerations for more details https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/implementation_considerations.htm
+        """
         if self.encoding == DEFAULT_ENCODING:
             try:
                 decoded = chunk.decode(self.encoding)
