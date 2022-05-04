@@ -17,6 +17,20 @@ import java.util.List;
 import java.util.Map;
 
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
+  /**
+   * The following variables help, either via names or labels, add metadata to processes actually running operations.
+   * These are more readable forms of {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
+   */
+  public static String JOB_TYPE = "job_type";
+  public static String SYNC_JOB = "sync";
+  public static String SPEC_JOB = "spec";
+  public static String CHECK_JOB = "check";
+  public static String DISCOVER_JOB = "discover";
+
+
+  public static String NORMALIZE_STEP = "normalize";
+  public static String CUSTOM_STEP = "custom";
+
 
   private final String jobId;
   private final int attempt;
@@ -39,6 +53,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Override
   public Process spec(final Path jobRoot) throws WorkerException {
     return processFactory.create(
+        SPEC_JOB,
         jobId,
         attempt,
         jobRoot,
@@ -47,7 +62,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SPEC_JOB),
+        Map.of(JOB_TYPE, SPEC_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "spec");
@@ -56,6 +71,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Override
   public Process check(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
     return processFactory.create(
+        CHECK_JOB,
         jobId,
         attempt,
         jobRoot,
@@ -64,7 +80,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.CHECK_JOB),
+        Map.of(JOB_TYPE, CHECK_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "check",
@@ -74,6 +90,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   @Override
   public Process discover(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
     return processFactory.create(
+        DISCOVER_JOB,
         jobId,
         attempt,
         jobRoot,
@@ -82,7 +99,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.DISCOVER_JOB),
+        Map.of(JOB_TYPE, DISCOVER_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "discover",
@@ -116,6 +133,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     }
 
     return processFactory.create(
+        SYNC_JOB,
         jobId,
         attempt,
         jobRoot,
@@ -124,7 +142,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         arguments.toArray(new String[arguments.size()]));
@@ -142,6 +160,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         catalogFilename, catalogContents);
 
     return processFactory.create(
+        SYNC_JOB,
         jobId,
         attempt,
         jobRoot,
@@ -150,7 +169,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "write",

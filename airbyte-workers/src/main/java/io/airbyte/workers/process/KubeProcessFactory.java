@@ -25,17 +25,9 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
-  public static final String JOB_TYPE = "job_type";
-  public static final String SYNC_JOB = "sync";
-  public static final String SPEC_JOB = "spec";
-  public static final String CHECK_JOB = "check";
-  public static final String DISCOVER_JOB = "discover";
-
   public static final String SYNC_STEP = "sync_step";
   public static final String READ_STEP = "read";
   public static final String WRITE_STEP = "write";
-  public static final String NORMALISE_STEP = "normalise";
-  public static final String CUSTOM_STEP = "custom";
 
   private static final String JOB_LABEL_KEY = "job_id";
   private static final String ATTEMPT_LABEL_KEY = "attempt_id";
@@ -91,9 +83,11 @@ public class KubeProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(final String jobId,
+  public Process create(
+                        final String jobType,
+                        final String jobId,
                         final int attempt,
-                        final Path jobRoot, // todo: remove unused
+                        final Path jobRoot,
                         final String imageName,
                         final boolean usesStdin,
                         final Map<String, String> files,
@@ -106,7 +100,7 @@ public class KubeProcessFactory implements ProcessFactory {
       throws WorkerException {
     try {
       // used to differentiate source and destination processes with the same id and attempt
-      final String podName = ProcessFactory.createProcessName(imageName, jobId, attempt, KUBE_NAME_LEN_LIMIT);
+      final String podName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, KUBE_NAME_LEN_LIMIT);
       LOGGER.info("Attempting to start pod = {} for {}", podName, imageName);
 
       final int stdoutLocalPort = KubePortManagerSingleton.getInstance().take();
