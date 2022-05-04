@@ -3,6 +3,8 @@ from source_amazon_seller_partner import SourceAmazonSellerPartner
 from source_amazon_seller_partner import ConnectorConfig
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.streams import Stream
+from unittest.mock import MagicMock
+from source_amazon_seller_partner.source import boto3
 
 
 @pytest.fixture
@@ -25,8 +27,9 @@ def connector_config():
     )
 
 
-class FakeBotoClient:
-    role = {
+@pytest.fixture
+def sts_credentials():
+    return {
         "Credentials": {
             "AccessKeyId": "foo",
             "SecretAccessKey": "bar",
@@ -34,16 +37,14 @@ class FakeBotoClient:
         }
     }
 
-    def assume_role(self, *args, **kwargs):
-        return self.role
-
-    def get_session_token(self, *args, **kwargs):
-        return self.role
-
 
 @pytest.fixture
-def mock_boto_client(mocker):
-    mocker.patch("boto3.client", return_value=FakeBotoClient())
+def mock_boto_client(mocker, sts_credentials):
+    boto_client = MagicMock()
+    mocker.patch.object(boto3, "client", return_value=boto_client)
+    boto_client.assume_role.return_value = sts_credentials
+    boto_client.get_session_token.return_value = sts_credentials
+    return boto_client
 
 
 def test_spec(connector_source):
@@ -59,10 +60,14 @@ def test_streams(connector_source, connector_config, mock_boto_client):
     "arn",
     ("arn:aws:iam::123456789098:user/some-user", "arn:aws:iam::123456789098:role/some-role")
 )
-def test_stream_with_good_iam_arn_value(connector_source, connector_config, mock_boto_client, arn):
+def test_stream_with_good_iam_arn_value(mock_boto_client, connector_source, connector_config, arn):
     connector_config.role_arn = arn
     result = connector_source.get_sts_credentials(connector_config)
     assert "Credentials" in result
+    if "user" in arn:
+        mock_boto_client.get_session_token.assert_called_once()
+    if "role" in arn:
+        mock_boto_client.assume_role.assert_called_once_with(RoleArn=arn, RoleSessionName="guid")
 
 
 def test_stream_with_bad_iam_arn_value(connector_source, connector_config, mock_boto_client):
