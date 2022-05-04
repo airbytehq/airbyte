@@ -28,4 +28,9 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
     return Boolean.parseBoolean(System.getenv("EXPOSE_SECRETS_IN_EXPORT"));
   }
 
+  @Override
+  public boolean runSecretMigration() {
+    return Boolean.parseBoolean(System.getenv("MIGRATE_SECRET_STORE"));
+  }
+
 }

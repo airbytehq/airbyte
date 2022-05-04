@@ -714,6 +714,15 @@
           type: "string"
           description: "Api key of bamboo hr"
           airbyte_secret: true
+        custom_reports_fields:
+          type: "string"
+          default: ""
+          description: "Comma-separated list of fields to include in custom reports."
+        custom_reports_include_default_fields:
+          type: "boolean"
+          default: true
+          description: "If true, the custom reports endpoint will include the default\
+            \ fields defined here: https://documentation.bamboohr.com/docs/list-of-field-names."
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -1409,7 +1418,7 @@
     supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-confluence:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/confluence"
+    documentationUrl: "https://docsurl.com"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Confluence Spec"
@@ -2372,8 +2381,7 @@
           title: "Domain"
           examples:
           - "myaccount.freshdesk.com"
-          pattern:
-          - "^[a-zA-Z0-9._-]*\\.freshdesk\\.com$"
+          pattern: "^[a-zA-Z0-9._-]*\\.freshdesk\\.com$"
         api_key:
           type: "string"
           title: "API Key"
@@ -4054,6 +4062,7 @@
                 - "OAUTHBEARER"
                 - "SCRAM-SHA-256"
                 - "SCRAM-SHA-512"
+                - "PLAIN"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "The JAAS login context parameters for SASL connections\
@@ -4178,7 +4187,7 @@
     - "append"
 - dockerImage: "airbyte/source-lemlist:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/source-lemlist"
+    documentationUrl: "https://docsurl.com"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Lemlist Spec"
@@ -8474,6 +8483,15 @@
           description: "Access Token for making authenticated requests. See the <a\
             \ href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a>\
             \ for information on how to generate this key."
+        survey_ids:
+          type: "array"
+          items:
+            type: "string"
+            pattern: "^[0-9]{8,9}$"
+          title: "Survey Monkey survey IDs"
+          description: "IDs of the surveys from which you'd like to replicate data.\
+            \ If left empty, data from all boards to which you have access will be\
+            \ replicated."
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -9691,11 +9709,13 @@
       additionalProperties: true
       properties:
         api_token:
+          title: "API Token"
           type: "string"
           description: "Kustomer API Token. See the <a href=\"https://developer.kustomer.com/kustomer-api-docs/reference/authentication\"\
             >docs</a> on how to obtain this"
           airbyte_secret: true
         start_date:
+          title: "Start Date"
           type: "string"
           description: "The date from which you'd like to replicate the data"
           examples:
