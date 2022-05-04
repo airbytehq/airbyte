@@ -1,6 +1,17 @@
 # Amazon Ads
 This page contains the setup guide and reference information for the Amazon Ads source connector.
 
+## Prerequisites
+
+* Client ID
+* Client Secret
+* Refresh Token
+* Region
+* Report Wait Timeout
+* Report Generation Maximum Retries
+* Start Date (Optional)
+* Profile IDs (Optional)
+
 ## Setup guide
 ### Step 1: Set up Amazon Ads
 Create an [Amazon user](https://www.amazon.com) with access to [Amazon Ads account](https://advertising.amazon.com).
@@ -70,17 +81,6 @@ All the reports are generated for day before relatively to target profile' timez
 Information about expected report generation waiting time you may find [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
 ## Getting started
-
-### Requirements
-
-* client\_id
-* client\_secret
-* refresh\_token
-* region
-* report\_wait\_timeout
-* report\_generation\_max\_retries
-* start\_date \(optional\)
-* profiles \(optional\)
 
 More how to get client\_id and client\_secret you can find on [AWS docs](https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app).
 
