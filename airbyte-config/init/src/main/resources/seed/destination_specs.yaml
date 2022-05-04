@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.1"
+- dockerImage: "airbyte/destination-bigquery:1.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -294,6 +294,7 @@
       type: "object"
       required:
       - "project_id"
+      - "dataset_location"
       - "dataset_id"
       additionalProperties: true
       properties:
@@ -317,20 +318,12 @@
             \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
             >here</a>."
           title: "Project ID"
-        dataset_id:
-          type: "string"
-          description: "The default BigQuery Dataset ID that tables are replicated\
-            \ to if the source does not specify a namespace. Read more <a href=\"\
-            https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
-          title: "Default Dataset ID"
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
-            \ will not be applied. The default \"US\" value is used if not set explicitly.\
-            \ Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\"\
+            \ will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\"\
             >here</a>."
-          title: "Dataset Location (Optional)"
-          default: "US"
+          title: "Dataset Location"
           enum:
           - "US"
           - "EU"
@@ -363,6 +356,12 @@
           - "us-west2"
           - "us-west3"
           - "us-west4"
+        dataset_id:
+          type: "string"
+          description: "The default BigQuery Dataset ID that tables are replicated\
+            \ to if the source does not specify a namespace. Read more <a href=\"\
+            https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
+          title: "Default Dataset ID"
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
@@ -495,7 +494,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.1"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -793,7 +792,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.1.4"
+- dockerImage: "airbyte/destination-clickhouse:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -2267,7 +2266,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.16"
+- dockerImage: "airbyte/destination-mssql:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -2819,7 +2818,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-oracle:0.1.15"
+- dockerImage: "airbyte/destination-oracle:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
@@ -3047,7 +3046,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.18"
+- dockerImage: "airbyte/destination-postgres:0.3.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
@@ -4077,7 +4076,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.24"
+- dockerImage: "airbyte/destination-snowflake:0.4.25"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4144,6 +4143,7 @@
           order: 5
         credentials:
           title: "Authorization Method"
+          description: ""
           type: "object"
           oneOf:
           - type: "object"
@@ -4213,6 +4213,8 @@
             - "method"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "Standard"
@@ -4226,6 +4228,8 @@
             - "method"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "Internal Staging"
@@ -4242,6 +4246,8 @@
             - "secret_access_key"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "S3 Staging"
@@ -4325,6 +4331,46 @@
                   \ to true."
                 default: true
                 order: 6
+              encryption:
+                title: "Encryption"
+                type: "object"
+                description: "How to encrypt the staging data"
+                default:
+                  encryption_type: "none"
+                order: 7
+                oneOf:
+                - title: "No encryption"
+                  description: "Staging data will be stored in plaintext."
+                  type: "object"
+                  required:
+                  - "encryption_type"
+                  properties:
+                    encryption_type:
+                      type: "string"
+                      const: "none"
+                      enum:
+                      - "none"
+                      default: "none"
+                - title: "AES-CBC envelope encryption"
+                  description: "Staging data will be encrypted using AES-CBC envelope\
+                    \ encryption."
+                  type: "object"
+                  required:
+                  - "encryption_type"
+                  properties:
+                    encryption_type:
+                      type: "string"
+                      const: "aes_cbc_envelope"
+                      enum:
+                      - "aes_cbc_envelope"
+                      default: "aes_cbc_envelope"
+                    key_encrypting_key:
+                      type: "string"
+                      title: "Key"
+                      description: "The key, base64-encoded. Must be either 128, 192,\
+                        \ or 256 bits. Leave blank to have Airbyte generate an ephemeral\
+                        \ key for each sync."
+                      airbyte_secret: true
           - title: "GCS Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
@@ -4337,6 +4383,8 @@
             - "credentials_json"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "GCS Staging"
@@ -4383,6 +4431,8 @@
             - "azure_blob_storage_sas_token"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "Azure Blob Staging"

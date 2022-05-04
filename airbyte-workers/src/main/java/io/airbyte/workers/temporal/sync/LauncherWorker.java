@@ -21,6 +21,7 @@ import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,6 +56,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig;
   private final ResourceRequirements resourceRequirements;
   private final Class<OUTPUT> outputClass;
+  private final Supplier<ActivityExecutionContext> activityContext;
 
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
@@ -65,7 +68,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final Map<String, String> additionalFileMap,
                         final WorkerApp.ContainerOrchestratorConfig containerOrchestratorConfig,
                         final ResourceRequirements resourceRequirements,
-                        final Class<OUTPUT> outputClass) {
+                        final Class<OUTPUT> outputClass,
+                        final Supplier<ActivityExecutionContext> activityContext) {
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
@@ -74,6 +78,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.resourceRequirements = resourceRequirements;
     this.outputClass = outputClass;
+    this.activityContext = activityContext;
   }
 
   @Override
@@ -172,7 +177,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           throw new WorkerException("Running the launcher " + application + " failed", e);
         }
       }
-    });
+    }, activityContext);
   }
 
   /**

@@ -1,12 +1,36 @@
 # Amplitude
 
-## Overview
-
-The Amplitude supports full refresh and incremental sync.
-
+This page contains the setup guide and reference information for the `Amplitude` source connector.
 This source can sync data for the [Amplitude API](https://developers.amplitude.com/docs/http-api-v2).
 
-### Output schema
+## Prerequisites
+
+Before you begin replicating the data from `Amplitude`, please follow this guide to obtain your credentials [How to get your API key and Secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information). 
+Once you have your credentials, you now can use them in order to setup the connection in Airbyte.
+
+## Setup guide
+### Requirements
+* Amplitude API Key
+* Amplitude Secret Key
+* Start Date
+
+Please read [How to get your API key and Secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information) before you begin setup the Airbyte connection.
+
+### For OSS Airbyte:
+1. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+2. On the Set up the `source` page, enter the name for the `Amplitude` connector and select **Amplitude** from the Source type dropdown.
+3. Enter your `API Key` and `Secret Key` to corresponding fields
+4. Enter the `Start Date` as the statrting point for your data replication.
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the Set up the `source` page, enter the name for the `Amplitude` connector and select **Amplitude** from the Source type dropdown.
+4. Enter your `API Key` and `Secret Key` to corresponding fields
+5. Enter the `Start Date` as the statrting point for your data replication.
+
+## Supported Streams
 
 Several output streams are available from this source:
 
@@ -18,33 +42,24 @@ Several output streams are available from this source:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
-### Features
+## Supported sync modes
+
+The `Amplitude` source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental Sync | Yes |
-| SSL connection | Yes |
 
 ### Performance considerations
 
 The Amplitude connector should gracefully handle Amplitude API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## Getting started
-
-### Requirements
-
-* Amplitude API Key
-* Amplitude Secret Key
-
-### Setup guide
-<!-- markdown-link-check-disable-next-line -->
-Please read [How to get your API key and Secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information).
-
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject |
 | :------ | :--------- | :----------------------------------------------------- | :------ |
+| 0.1.5   | 2022-04-28 | [12430](https://github.com/airbytehq/airbyte/pull/12430) | Added HTTP error descriptions and fixed `Events` stream fail caused by `404` HTTP Error |
 | 0.1.4   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
 | 0.1.3   | 2021-10-12 | [6375](https://github.com/airbytehq/airbyte/pull/6375) | Log Transient 404 Error in Events stream  |
 | 0.1.2   | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353) | Correct output schemas on cohorts, events, active\_users, and average\_session\_lengths streams |

@@ -94,6 +94,12 @@ class InsightAsyncJobManager:
         self._wait_throttle_limit_down()
         for job in self._running_jobs:
             if job.failed:
+                if isinstance(job, ParentAsyncJob):
+                    # if this job is a ParentAsyncJob, it holds X number of jobs
+                    # we want to check that none of these nested jobs have exceeded MAX_NUMBER_OF_ATTEMPTS
+                    for nested_job in job._jobs:
+                        if nested_job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
+                            raise JobException(f"{nested_job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
                 if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
                     raise JobException(f"{job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
                 elif job.attempt_number == 2:
