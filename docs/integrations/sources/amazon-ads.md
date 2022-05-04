@@ -17,7 +17,7 @@ This page contains the setup guide and reference information for the Amazon Ads 
 Create an [Amazon user](https://www.amazon.com) with access to [Amazon Ads account](https://advertising.amazon.com).
 
 ### Airbyte Open Source additional setup steps
-To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps, and may take several days to complete. After completing all steps you will has to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
+To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you must first complete the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview). The onboarding process has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
 
 ### Step 2: Set up the Amazon Ads connector in Airbyte
 **For Airbyte Cloud:**
