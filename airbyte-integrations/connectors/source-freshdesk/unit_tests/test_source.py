@@ -18,8 +18,7 @@ def test_check_connection_ok(requests_mock, config):
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", json=json_resp)
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert ok
-    assert not error_msg
+    assert ok and not error_msg
 
 
 def test_check_connection_invalid_api_key(requests_mock, config):
@@ -34,8 +33,7 @@ def test_check_connection_invalid_api_key(requests_mock, config):
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert not ok
-    assert error_msg == "invalid_credentials: You have to be logged in to perform this action."
+    assert not ok and error_msg == "invalid_credentials: You have to be logged in to perform this action."
 
 
 def test_check_connection_empty_config(config):
@@ -43,8 +41,7 @@ def test_check_connection_empty_config(config):
 
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert not ok
-    assert error_msg
+    assert not ok and error_msg
 
 
 def test_check_connection_invalid_config(config):
@@ -52,18 +49,16 @@ def test_check_connection_invalid_config(config):
 
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert not ok
-    assert error_msg
+    assert not ok and error_msg
 
 
 def test_check_connection_exception(config):
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert not ok
-    assert error_msg
+    assert not ok and error_msg
 
 
 def test_streams(config):
     streams = SourceFreshdesk().streams(config)
 
-    assert len(streams) == 10
+    assert len(streams) == 11

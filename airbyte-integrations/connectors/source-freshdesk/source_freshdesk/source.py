@@ -3,13 +3,14 @@
 #
 
 import logging
+from urllib.parse import urljoin
 import requests
 from typing import Any, List, Mapping, Optional, Tuple
 from requests.auth import AuthBase, HTTPBasicAuth
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_freshdesk.streams import Agents, Companies, Contacts, Conversations, Groups, Roles, SatisfactionRatings, Skills, Tickets, TimeEntries
+from source_freshdesk.streams import Agents, Companies, Contacts, Conversations, Groups, Roles, SatisfactionRatings, Skills, Surveys, Tickets, TimeEntries
 
 
 class SourceFreshdesk(AbstractSource):
@@ -21,7 +22,7 @@ class SourceFreshdesk(AbstractSource):
         alive = True
         error_msg = None
         try:
-            url = f"https://{config['domain'].rstrip('/')}/api/v2/settings/helpdesk"
+            url = urljoin(f"https://{config['domain'].rstrip('/')}", "/api/v2/settings/helpdesk")
             r = requests.get(url=url, auth=self._create_authenticator(config["api_key"]))
             if not r.ok:
                 alive = False
@@ -46,6 +47,7 @@ class SourceFreshdesk(AbstractSource):
             Groups(authenticator=authenticator, config=config),
             Roles(authenticator=authenticator, config=config),
             Skills(authenticator=authenticator, config=config),
+            Surveys(authenticator=authenticator, config=config),
             TimeEntries(authenticator=authenticator, config=config),
             Tickets(authenticator=authenticator, config=config),
             SatisfactionRatings(authenticator=authenticator, config=config)

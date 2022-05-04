@@ -41,19 +41,11 @@ class FreshdeskStream(HttpStream, ABC):
     
     @property
     def url_base(self) -> str:
-        return f"https://{self.domain.rstrip('/')}/api/v2"
+        return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2")
     
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
             return float(response.headers.get("Retry-After"))
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return {
-            "Content-Type": "application/json",
-            "User-Agent": "Airbyte",
-        }
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
@@ -173,8 +165,15 @@ class TimeEntries(FreshdeskStream):
         return "time_entries"
 
 
+class Surveys(FreshdeskStream):
+
+    def path(self, **kwargs) -> str:
+        return "surveys"
+
+
 class Tickets(IncrementalFreshdeskStream):
     ticket_paginate_limit = 300
+    state_checkpoint_interval = 100
 
     def path(self, **kwargs) -> str:
         return "tickets"
@@ -197,55 +196,18 @@ class Tickets(IncrementalFreshdeskStream):
             params["updated_since"] = link_query_params["updated_since"][0]
         return params
     
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        Read ticket records
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page_token = super().next_page_token(response=response)
 
-        This block extends Incremental stream to overcome '300 page' server error.
-        Since the Ticket endpoint has a 300 page pagination limit, after 300 pages, update the parameters with
-        query using 'updated_since' = last_record, if there is more data remaining.
-        """
-        stream_state = stream_state or {}
-        pagination_complete = False
+        if next_page_token and int(next_page_token["page"]) > self.ticket_paginate_limit:
+            # get last_record from latest batch, pos. -1, because of ACS order of records
+            last_record_updated_at = response.json()[-1]["updated_at"]
+            last_record_updated_at = pendulum.parse(last_record_updated_at)
+            # updating request parameters with last_record state
+            next_page_token["updated_since"] = last_record_updated_at
+            del next_page_token["page"]
 
-        next_page_token = None
-        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-            while not pagination_complete:
-                request_headers = self.request_headers(
-                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-                )
-                request = self._create_prepared_request(
-                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                )
-                response = self._send_request(request, {})
-                tickets = response.json()
-                yield from tickets
-
-                next_page_token = self.next_page_token(response)
-                # checkpoint & switch the pagination
-                if next_page_token and int(next_page_token["page"]) > self.ticket_paginate_limit:
-                    # get last_record from latest batch, pos. -1, because of ACS order of records
-                    last_record_updated_at = tickets[-1]["updated_at"]
-                    last_record_updated_at = pendulum.parse(last_record_updated_at)
-                    # updating request parameters with last_record state
-                    next_page_token["updated_since"] = last_record_updated_at
-                    del next_page_token["page"]
-
-                if not next_page_token:
-                    pagination_complete = True
-
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+        return next_page_token
 
 
 class Conversations(FreshdeskStream):
