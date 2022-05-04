@@ -14,7 +14,6 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 import net.jimblackler.jsongenerator.Configuration;
-import net.jimblackler.jsongenerator.DefaultConfig;
 import net.jimblackler.jsongenerator.Generator;
 import net.jimblackler.jsonschemafriend.Schema;
 import net.jimblackler.jsonschemafriend.SchemaStore;

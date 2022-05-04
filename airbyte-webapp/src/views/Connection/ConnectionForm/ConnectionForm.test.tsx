@@ -43,6 +43,7 @@ const mockConnection: Connection = {
   source: mockSource,
   destination: mockDestination,
   operations: [],
+  catalogId: "",
 };
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => {
