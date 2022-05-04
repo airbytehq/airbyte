@@ -56,4 +56,5 @@ export interface Connection {
   source: Source;
   destination: Destination;
   operations: Operation[];
+  catalogId: string;
 }

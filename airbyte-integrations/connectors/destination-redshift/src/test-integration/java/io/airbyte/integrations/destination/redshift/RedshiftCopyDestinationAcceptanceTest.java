@@ -13,14 +13,12 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
  * credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
-public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class RedshiftCopyDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftCopyDestinationAcceptanceTest.class);
 
@@ -119,29 +117,6 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
       tableName = "\"" + tableName + "\"";
     }
     return retrieveRecordsFromTable(tableName, namespace);
-  }
-
-  private JsonNode getJsonFromRecord(Record record) {
-    ObjectNode node = mapper.createObjectNode();
-
-    Arrays.stream(record.fields()).forEach(field -> {
-      var value = record.get(field);
-
-      switch (field.getDataType().getTypeName()) {
-        case "varchar", "other":
-          var stringValue = (value != null ? value.toString() : null);
-          if (stringValue != null && (stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\[.*\\]$")
-              || stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\{.*\\}$"))) {
-            node.set(field.getName(), Jsons.deserialize(stringValue));
-          } else {
-            node.put(field.getName(), stringValue);
-          }
-          break;
-        default:
-          node.put(field.getName(), (value != null ? value.toString() : null));
-      }
-    });
-    return node;
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
