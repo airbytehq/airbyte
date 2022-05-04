@@ -93,7 +93,7 @@ binlog_row_image  = FULL
 expire_logs_days  = 10
 ```
 
-* server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id) 
+* server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
 * log\_bin :  The value of log\_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
 * binlog\_format : The `binlog_format` must be set to `ROW`. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
 * binlog\_row\_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are written to the binary log. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
@@ -185,7 +185,8 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
-| 0.5.10  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
+| 0.5.11  | 2022-05-03 | [12544](https://github.com/airbytehq/airbyte/pull/12544)   | Prevent source from hanging under certain circumstances by adding a watcher for orphaned threads. |
+| 0.5.10  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480)   | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.5.9   | 2022-04-06 | [11729](https://github.com/airbytehq/airbyte/pull/11729)   | Bump mina-sshd from 2.7.0 to 2.8.0            |
 | 0.5.6   | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats           |
 | 0.5.5   | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242)   | Updated timestamp transformation with microseconds                                                               |
