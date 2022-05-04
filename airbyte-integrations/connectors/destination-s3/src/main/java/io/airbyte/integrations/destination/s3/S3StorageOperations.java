@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.s3;
 
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
-import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
@@ -15,14 +14,18 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
@@ -30,7 +33,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3StorageOperations implements BlobStorageOperations {
+public class S3StorageOperations extends BlobStorageOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StorageOperations.class);
 
@@ -108,7 +111,7 @@ public class S3StorageOperations implements BlobStorageOperations {
                                       final String objectPath) {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
-      if (exceptionsThrown.size() > 0) {
+      if (!exceptionsThrown.isEmpty()) {
         LOGGER.info("Retrying to upload records into storage {} ({}/{}})", objectPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
         // Force a reconnection before retrying in case error was due to network issues...
         s3Client = s3Config.resetS3Client();
@@ -133,13 +136,25 @@ public class S3StorageOperations implements BlobStorageOperations {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
     final String fullObjectKey = objectPath + getPartId(objectPath) + getExtension(recordsData.getFilename());
+
+    final Map<String, String> metadata = new HashMap<>();
+    for (final BlobDecorator blobDecorator : blobDecorators) {
+      blobDecorator.updateMetadata(metadata, getMetadataMapping());
+    }
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
-        .getDefault(bucket, fullObjectKey, s3Client, partSize)
+        .getDefault(bucket, fullObjectKey, s3Client, partSize, metadata)
         .checkIntegrity(true)
         .numUploadThreads(DEFAULT_UPLOAD_THREADS)
         .queueCapacity(DEFAULT_QUEUE_CAPACITY);
     boolean succeeded = false;
-    try (final MultiPartOutputStream outputStream = uploadManager.getMultiPartOutputStreams().get(0);
+
+    // Wrap output stream in decorators
+    OutputStream rawOutputStream = uploadManager.getMultiPartOutputStreams().get(0);
+    for (final BlobDecorator blobDecorator : blobDecorators) {
+      rawOutputStream = blobDecorator.wrap(rawOutputStream);
+    }
+
+    try (final OutputStream outputStream = rawOutputStream;
         final InputStream dataStream = recordsData.getInputStream()) {
       dataStream.transferTo(outputStream);
       succeeded = true;
@@ -271,4 +286,11 @@ public class S3StorageOperations implements BlobStorageOperations {
     return true;
   }
 
+  @Override
+  protected Map<String, String> getMetadataMapping() {
+    return ImmutableMap.of(
+        AesCbcEnvelopeEncryptionBlobDecorator.ENCRYPTED_CONTENT_ENCRYPTING_KEY, "x-amz-key",
+        AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "x-amz-iv"
+    );
+  }
 }
