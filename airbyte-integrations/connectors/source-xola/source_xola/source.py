@@ -98,7 +98,7 @@ class IncrementalXolaStream(XolaStream, ABC):
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
         :return str: The name of the cursor field.
         """
-        return ["updatedAt"]
+        return "updatedAt"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
             Mapping[str, Any]:
@@ -251,6 +251,7 @@ class Transactions(IncrementalXolaStream):
             if "amount" in data.keys(): resp["amount"] = data["amount"]
             if "balance" in data.keys(): resp["balance"] = data["balance"]
             if "createdAt" in data.keys(): resp["createdAt"] = data["createdAt"]
+            if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
             if "currency" in data.keys(): resp["currency"] = data["currency"]
             if "method" in data.keys(): resp["method"] = data["method"]
             if "source" in data.keys(): resp["source"] = data["source"]
