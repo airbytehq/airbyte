@@ -13,7 +13,7 @@ Dependencies should be represented as dependency coordinates, that a user can pi
 
 #### The version catalog TOML file format
 Gradle offers a conventional file to declare a catalog.   
-It’s a conventional location where dependencies can be declared and then declaring in `settings.gradle` file.
+It’s a conventional location to declare dependencies that are both consumed and published.
 
 The TOML file consists of 4 major sections:
   - the [versions] section is used to declare versions which can be referenced by dependencies 
