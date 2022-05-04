@@ -30,7 +30,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 public class GeneratorTest {
 
   private static final JsonSchemaValidator JSON_VALIDATOR = new JsonSchemaValidator();
-  private static final Configuration CONFIG = new DefaultConfig();
+  private static final Configuration CONFIG = ContinuousFeedConstants.MOCK_JSON_CONFIG;
   private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
   public static class GeneratorSchemaProvider implements ArgumentsProvider {
