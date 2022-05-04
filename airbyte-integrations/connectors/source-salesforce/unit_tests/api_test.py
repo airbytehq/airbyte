@@ -24,6 +24,12 @@ from source_salesforce.streams import (
 )
 
 
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
+
+
 def test_bulk_sync_creation_failed(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     with requests_mock.Mocker() as m:
@@ -429,16 +435,16 @@ def test_csv_reader_dialect_unix():
     "stream_names,catalog_stream_names,",
     (
         (
-            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
             None,
         ),
         (
             ["stream_1", "stream_2"],
-            ["stream_1", "stream_2"],
+            ["stream_1", "stream_2", "Describe"],
         ),
         (
-            ["stream_1", "stream_2", "stream_3"],
-            ["stream_1"],
+            ["stream_1", "stream_2", "stream_3", "Describe"],
+            ["stream_1", "Describe"],
         ),
     ),
 )
@@ -483,6 +489,7 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                         "queryable": True,
                     }
                     for stream_name in stream_names
+                    if stream_name != "Describe"
                 ],
             },
         )
@@ -491,7 +498,8 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
     assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
 
     for stream in streams:
-        assert stream.sobject_options == {"flag1": True, "queryable": True}
+        if stream.name != "Describe":
+            assert stream.sobject_options == {"flag1": True, "queryable": True}
     return
 
 
@@ -517,3 +525,7 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalSalesforceStream)
+
+
+def test_decoding():
+    assert b"0\xe5".decode(SalesforceStream.encoding) == "0å"
