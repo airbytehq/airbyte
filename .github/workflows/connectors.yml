@@ -49,12 +49,17 @@ jobs:
         run: |
           ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:build
           docker tag docker.io/airbyte/${{ matrix.connector }}:dev ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
-          docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
 
       - name: Push ${{ matrix.connector }} image with 'dev' tag
         if: ${{ github.event_name == 'push' }}
         id: push-dev
         run: |
+          DOCKERFILE=airbyte-integrations/${{ github.event.inputs.connector }}/Dockerfile
+          source tools/lib/lib.sh
+          IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})
+
           docker pull ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
           docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:dev
+          docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:$IMAGE_VERSION
           docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:dev
+          docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:$IMAGE_VERSION
