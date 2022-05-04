@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.process;
 
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.*;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.config.EnvConfigs;
@@ -16,8 +18,6 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.*;
 
 class AirbyteIntegrationLauncherTest {
 
@@ -55,7 +55,8 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(SPEC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null,
-        workerConfigs.getResourceRequirements(), Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SPEC_JOB), JOB_METADATA, Map.of(),
+        workerConfigs.getResourceRequirements(), Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SPEC_JOB), JOB_METADATA,
+        Map.of(),
         "spec");
   }
 
@@ -89,9 +90,9 @@ class AirbyteIntegrationLauncherTest {
   void read() throws WorkerException {
     launcher.read(JOB_ROOT, "config", "{}", "catalog", "{}", "state", "{}");
 
-    Mockito.verify(processFactory).create(SYNC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
+    Mockito.verify(processFactory).create(READ_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, READ_STEP),
         JOB_METADATA,
         Map.of(),
         Lists.newArrayList(
@@ -105,9 +106,9 @@ class AirbyteIntegrationLauncherTest {
   void write() throws WorkerException {
     launcher.write(JOB_ROOT, "config", "{}", "catalog", "{}");
 
-    Mockito.verify(processFactory).create(SYNC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
+    Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
         JOB_METADATA,
         Map.of(),
         "write",

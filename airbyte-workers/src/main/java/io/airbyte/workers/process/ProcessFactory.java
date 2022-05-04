@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.RandomStringUtils;
 
 public interface ProcessFactory {
+
   String VERSION_DELIMITER = ":";
   String DOCKER_DELIMITER = "/";
   Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");

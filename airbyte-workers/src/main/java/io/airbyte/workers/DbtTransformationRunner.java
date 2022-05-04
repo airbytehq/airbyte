@@ -16,7 +16,6 @@ import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -104,7 +103,8 @@ public class DbtTransformationRunner implements AutoCloseable {
               files,
               "/bin/bash",
               resourceRequirements,
-              Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, KubeProcessFactory.SYNC_STEP, AirbyteIntegrationLauncher.CUSTOM_STEP),
+              Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
+                  AirbyteIntegrationLauncher.CUSTOM_STEP),
               Collections.emptyMap(),
               Collections.emptyMap(),
               dbtArguments.toArray(new String[0]));

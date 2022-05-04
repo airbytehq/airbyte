@@ -27,7 +27,6 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -77,9 +76,11 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    when(processFactory.create(AirbyteIntegrationLauncher.NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME, false, files, null,
+    when(processFactory.create(AirbyteIntegrationLauncher.NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot,
+        NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME, false, files, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, KubeProcessFactory.SYNC_STEP, AirbyteIntegrationLauncher.NORMALIZE_STEP),
+        Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
+            AirbyteIntegrationLauncher.NORMALIZE_STEP),
         Map.of(),
         Map.of(),
         "run",

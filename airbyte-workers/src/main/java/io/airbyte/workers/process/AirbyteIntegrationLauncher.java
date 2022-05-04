@@ -17,9 +17,11 @@ import java.util.List;
 import java.util.Map;
 
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
+
   /**
-   * The following variables help, either via names or labels, add metadata to processes actually running operations.
-   * These are more readable forms of {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
+   * The following variables help, either via names or labels, add metadata to processes actually
+   * running operations. These are more readable forms of
+   * {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
    */
   public static String JOB_TYPE = "job_type";
   public static String SYNC_JOB = "sync";
@@ -27,10 +29,15 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   public static String CHECK_JOB = "check";
   public static String DISCOVER_JOB = "discover";
 
-
+  /**
+   * A sync job can actually be broken down into the following steps. Try to be as precise as possible
+   * with naming/labels to help operations.
+   */
+  public static final String SYNC_STEP = "sync_step";
+  public static final String READ_STEP = "read";
+  public static final String WRITE_STEP = "write";
   public static String NORMALIZE_STEP = "normalize";
   public static String CUSTOM_STEP = "custom";
-
 
   private final String jobId;
   private final int attempt;
@@ -133,7 +140,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     }
 
     return processFactory.create(
-        SYNC_JOB,
+        READ_STEP,
         jobId,
         attempt,
         jobRoot,
@@ -142,7 +149,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.READ_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, READ_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         arguments.toArray(new String[arguments.size()]));
@@ -160,7 +167,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         catalogFilename, catalogContents);
 
     return processFactory.create(
-        SYNC_JOB,
+        WRITE_STEP,
         jobId,
         attempt,
         jobRoot,
@@ -169,7 +176,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.WRITE_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "write",

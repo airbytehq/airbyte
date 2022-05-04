@@ -32,9 +32,9 @@ public class EntrypointEnvChecker {
                                                 final int jobAttempt,
                                                 final Path jobRoot,
                                                 final String imageName)
-    throws IOException, InterruptedException, WorkerException {
+      throws IOException, InterruptedException, WorkerException {
     final Process process = processFactory.create(
-"entrypoint-checker",
+        "entrypoint-checker",
         jobId,
         jobAttempt,
         jobRoot,

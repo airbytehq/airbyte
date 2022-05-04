@@ -25,10 +25,6 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
-  public static final String SYNC_STEP = "sync_step";
-  public static final String READ_STEP = "read";
-  public static final String WRITE_STEP = "write";
-
   private static final String JOB_LABEL_KEY = "job_id";
   private static final String ATTEMPT_LABEL_KEY = "attempt_id";
   private static final String WORKER_POD_LABEL_KEY = "airbyte";

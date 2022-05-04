@@ -21,7 +21,6 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -130,7 +129,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           false, files,
           null,
           resourceRequirements,
-          Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, KubeProcessFactory.SYNC_STEP, AirbyteIntegrationLauncher.NORMALIZE_STEP),
+          Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
+              AirbyteIntegrationLauncher.NORMALIZE_STEP),
           Collections.emptyMap(),
           Collections.emptyMap(),
           args);
