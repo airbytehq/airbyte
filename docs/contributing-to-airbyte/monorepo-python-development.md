@@ -96,7 +96,8 @@ By default, the find function in IntelliJ is not scoped and will include all fil
 
 1. Open the project structure using `cmd-;`
 2. Navigate to the "Project Settings / Modules" section in the right-side of the menu
-3. Add the following filter to the `Exclude files` option: `connectors/**/.venv`
-4. Press OK to confirm your options.
+3. Select the top level `airbyte` module so the change is applied to all submodules
+4. Add the following filter to the `Exclude files` option: `connectors/**/.venv`
+5. Press OK to confirm your options.
 
 ![](../.gitbook/assets/monorepo-exclude-files.png)
