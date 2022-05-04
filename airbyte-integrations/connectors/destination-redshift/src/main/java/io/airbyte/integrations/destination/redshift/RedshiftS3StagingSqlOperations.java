@@ -22,11 +22,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static io.airbyte.integrations.destination.s3.S3StorageOperations.getFilename;
+
 public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implements StagingOperations {
     private final NamingConventionTransformer nameTransformer;
     private final S3StorageOperations s3StorageOperations;
     private final S3DestinationConfig s3Config;
     private final ObjectMapper objectMapper;
+    private UUID connectionId;
 
     public RedshiftS3StagingSqlOperations(NamingConventionTransformer nameTransformer, AmazonS3 s3Client, S3DestinationConfig s3Config, RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
         super(redshiftDataTmpTableMode);
@@ -45,7 +48,8 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
     @Override
     public String getStagingPath(UUID connectionId, String namespace, String streamName, DateTime writeDatetime) {
-        return nameTransformer.applyDefaultCase(String.format("%s/%s/%02d/%02d/%02d/%s/",
+        this.connectionId = connectionId;
+        return nameTransformer.applyDefaultCase(String.format("%s/%s_%02d_%02d_%02d_%s/",
                 getStageName(namespace, streamName),
                 writeDatetime.year().get(),
                 writeDatetime.monthOfYear().get(),
@@ -63,10 +67,14 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
     @Override
     public String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String stageName, String stagingPath) throws Exception {
-        AirbyteSentry.executeWithTracing("UploadRecordsToStage",
-                () -> s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
-                Map.of("stage", stageName, "path", stagingPath));
-        return recordsData.getFilename();
+        String filename = s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
+
+        //        AirbyteSentry.executeWithTracing("UploadRecordsToStage",
+//                () -> s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
+//                Map.of("stage", stageName, "path", stagingPath));
+//        String fullObjectKey = s3StorageOperations.getFullObjectKey(stagingPath, recordsData);
+//        return getFilename(fullObjectKey);
+        return filename;
     }
     /**
      * Upload the supplied manifest file to S3
@@ -78,7 +86,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
      */
     private String putManifest(final String manifestContents, String schemaName, String stagingPath) {
         String manifestFilePath =
-                String.join("/", s3Config.getBucketPath(), stagingPath, schemaName, String.format("%s.manifest", UUID.randomUUID()));
+                stagingPath + String.format("%s.manifest", UUID.randomUUID());
 //                String.join("/", s3Config.getBucketPath(), stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
         s3StorageOperations.uploadManifest(s3Config.getBucketName(), manifestFilePath, manifestContents);
 //        s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
@@ -94,7 +102,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
                                           String schemaName) throws Exception {
         LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
 
-        final var possibleManifest = Optional.ofNullable(createManifest(stagedFiles));
+        final var possibleManifest = Optional.ofNullable(createManifest(stagedFiles, stagingPath));
 
 //        possibleManifest.stream()
 //                .map(manifestContent -> putManifest(manifestContent,schemaName))
@@ -140,14 +148,15 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
      *
      * @return null if no stagingFiles exist otherwise the manifest body String
      * @param stagedFiles
+     * @param stagingPath
      */
-    private String createManifest(List<String> stagedFiles) {
+    private String createManifest(List<String> stagedFiles, String stagingPath) {
         if (stagedFiles.isEmpty()) {
             return null;
         }
 
         final var s3FileEntries = stagedFiles.stream()
-                .map(filePath -> new Entry(getFullS3Path(s3Config.getBucketName(), filePath)))
+                .map(file -> new Entry(getFullS3Path(s3Config.getBucketName(), file, stagingPath)))
                 .collect(Collectors.toList());
         final var manifest = new Manifest(s3FileEntries);
 
@@ -169,11 +178,15 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 //    }
 
 //    private String generateBucketPath(final String stageName, final String stagingPath) {
-//        return "s3://" + s3Config.getBucketName() + "/" + stagingPath;
+//        return "s3://" + s3Config.getBucketName() + "/" + stagingPath + s3StagingFile;
 //    }
+private static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {
+    return String.join("/", "s3:/", s3BucketName,  s3StagingFile);
+}
+    private static String getFullS3Path(final String s3BucketName, final String s3StagingFile, final String stagingPath) {
+//        return String.join("/", "s3:/", s3BucketName, stagingPath,  s3StagingFile);
+        return "s3://" + s3BucketName + "/" + stagingPath + s3StagingFile;
 
-    private static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {
-        return String.join("/", "s3:/", s3BucketName, s3StagingFile);
     }
 
     @Override

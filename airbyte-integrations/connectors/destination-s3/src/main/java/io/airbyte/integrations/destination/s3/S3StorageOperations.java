@@ -132,7 +132,7 @@ public class S3StorageOperations implements BlobStorageOperations {
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
     final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
-    final String fullObjectKey = objectPath + getPartId(objectPath) + getExtension(recordsData.getFilename());
+    final String fullObjectKey = getFullObjectKey(objectPath, recordsData);
     final StreamTransferManager uploadManager = StreamTransferManagerHelper
         .getDefault(bucket, fullObjectKey, s3Client, partSize)
         .checkIntegrity(true)
@@ -162,8 +162,12 @@ public class S3StorageOperations implements BlobStorageOperations {
     return newFilename;
   }
 
+  public String getFullObjectKey(String objectPath, SerializableBuffer recordsData) throws IOException {
+    return objectPath + getPartId(objectPath) + getExtension(recordsData.getFilename());
+  }
+
   @VisibleForTesting
-  static String getFilename(final String fullPath) {
+  public static String getFilename(final String fullPath) {
     return fullPath.substring(fullPath.lastIndexOf("/") + 1);
   }
 
