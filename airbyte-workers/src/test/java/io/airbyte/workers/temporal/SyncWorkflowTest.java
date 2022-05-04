@@ -291,7 +291,6 @@ class SyncWorkflowTest {
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
   }
 
-
   private static void verifySourceCheck(final CheckConnectionActivity checkActivity, final StandardSyncInput syncInput) {
     final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput()
         .withConnectionConfiguration(syncInput.getSourceConfiguration());
