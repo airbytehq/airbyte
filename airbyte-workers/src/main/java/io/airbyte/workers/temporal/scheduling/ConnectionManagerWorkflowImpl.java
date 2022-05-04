@@ -178,25 +178,24 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       StandardSyncOutput standardSyncOutput = null;
       try {
         standardSyncOutput = runChildWorkflow(jobInputs);
-
         workflowState.setFailed(getFailStatus(standardSyncOutput));
 
         if (workflowState.isFailed()) {
-          reportFailure(connectionUpdaterInput, standardSyncOutput);
-
           final FailureType failureType = standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType();
+          reportFailure(connectionUpdaterInput, standardSyncOutput, failureType == FailureType.CONFIG_ERROR ? "Check Failed" + connectionId : null);
           if (failureType == FailureType.CONFIG_ERROR) {
             // In the case that the failure is attributable to config_error, we will not retry again
-            runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(
-                connectionUpdaterInput.getJobId(),
-                "Check Failed" + connectionId));
-          } else {
-            prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+            // The first time we fail in this way (from a new connection or a success) we will allow 2 attempts, but only one with repeated failures
+            log.info("Not retrying due to config_error");
+            final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
+            connectionUpdaterInput.setAttemptNumber(maxAttempt);
+            workflowInternalState.setAttemptNumber(maxAttempt);
           }
         } else {
           reportSuccess(connectionUpdaterInput, standardSyncOutput);
-          prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         }
+
+        prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
       } catch (final ChildWorkflowFailure childWorkflowFailure) {
         // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
         // exception since we expect it, we just
@@ -247,7 +246,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     resetNewConnectionInput(connectionUpdaterInput);
   }
 
-  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput, final StandardSyncOutput standardSyncOutput) {
+  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput, final StandardSyncOutput standardSyncOutput, final String failureReason) {
     final int attemptCreationVersion =
         Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
 
@@ -277,9 +276,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
       connectionUpdaterInput.setFromFailure(true);
     } else {
-      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(
-          connectionUpdaterInput.getJobId(),
-          "Job failed after too many retries for connection " + connectionId));
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(), failureReason));
 
       final int autoDisableConnectionVersion =
           Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);
@@ -299,6 +296,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         connectionUpdaterInput.setFromJobResetFailure(true);
       }
     }
+  }
+
+  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput, final StandardSyncOutput standardSyncOutput) {
+    final String failureReason = "Job failed after too many retries for connection " + connectionId;
+    reportFailure(connectionUpdaterInput, standardSyncOutput, failureReason);
   }
 
   private void resetNewConnectionInput(final ConnectionUpdaterInput connectionUpdaterInput) {
