@@ -133,6 +133,7 @@ public class IntegrationRunner {
           // if validation fails don't throw an exception, return a failed connection check message
           outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
               new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
+          // TODO george: do we want to throw an AirbyteLoggedException here to get an AirbyteTraceMessage?
         }
 
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
@@ -152,6 +153,8 @@ public class IntegrationRunner {
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
         try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
           AirbyteSentry.executeWithTracing("ReadSource", () -> produceMessages(messageIterator));
+        } catch (Exception e) { // generic catch to output AirbyteTraceMessage on error
+          throw new AirbyteLoggedException(e, "TODO: Some generic, not-very-useful user-facing error message goes here");
         }
       }
       // destination only
