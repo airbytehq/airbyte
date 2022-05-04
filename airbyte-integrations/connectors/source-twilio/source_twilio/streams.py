@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
@@ -96,8 +96,9 @@ class TwilioStream(HttpStream, ABC):
 class IncrementalTwilioStream(TwilioStream, ABC):
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
+    time_filter_cursor_field = "%a, %d %b %Y %H:%M:%S +0000" #'Tue, 03 May 2022 21:09:04 +0000'
 
-    def __init__(self, start_date: str = None, lookback: int = None, **kwargs):
+    def __init__(self, start_date: str = None, lookback: str = None, **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date  
         self._lookback = lookback
@@ -114,7 +115,7 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        latest_benchmark = pendulum.parse(latest_record[self.cursor_field], strict=False).strftime(self.time_filter_template)#-timedelta(hours=self._lookback))
+        latest_benchmark = pendulum.parse((datetime.strptime(latest_record[self.cursor_field],self.time_filter_template)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template), strict=False).strftime(self.time_filter_template)
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
@@ -123,6 +124,7 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state.get(self.cursor_field) or self._start_date
         if start_date:
+          #  params.update({self.incremental_filter_field: pendulum.parse((datetime.strptime(start_date,self.time_filter_template)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template), strict=False).strftime(self.time_filter_template)})
             params.update({self.incremental_filter_field: pendulum.parse(start_date, strict=False).strftime(self.time_filter_template)})
         return params
 
@@ -130,7 +132,8 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         stream_state = stream_state or {}
         records = super().read_records(stream_state=stream_state, **kwargs)
         for record in records:
-            record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)
+           # record[self.cursor_field] = pendulum.parse((datetime.strptime(record[self.cursor_field],self.time_filter_cursor_field)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template), strict=False).strftime(self.time_filter_template)
+            record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)           
             yield record
 
 

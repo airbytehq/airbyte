@@ -34,9 +34,9 @@
       },
       "lookback": {
         "title": "Lookback",
-        "description": "format in hours. Any data from lookback setting in hours to sync time be replicated.",
+        "description": "format in minutes. Any data from lookback setting in hours to sync time be replicated.",
         "examples": [
-          "24"
+          "60"
         ],
         "type": "string"
       }
