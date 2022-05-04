@@ -1,5 +1,7 @@
 import { Config } from "../../config";
+import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
+import { VersionError } from "./VersionError";
 
 export interface ApiOverrideRequestOptions {
   config: Pick<Config, "apiUrl">;
@@ -40,6 +42,7 @@ export const apiOverride = async <T, U = unknown>(
   if (!options) {
     throw new Error("Please provide middlewares and config!");
   }
+
   const { apiUrl } = options.config;
   const requestUrl = `${apiUrl}${url}`;
 
@@ -60,7 +63,42 @@ export const apiOverride = async <T, U = unknown>(
    * If it references a type that is `type: string, and format: binary` it does not interpret
    * it correct. So I am making an assumption that if it's not explicitly JSON, it's a binary file.
    */
-  return responseType === "blob" || response.headers.get("Content-Type") !== "application/json"
-    ? response.blob()
-    : response.json();
+  return parseResponse(response, responseType);
 };
+
+/** Parses errors from server */
+async function parseResponse<T>(response: Response, responseType?: "blob"): Promise<T> {
+  if (response.status === 204) {
+    return {} as T;
+  }
+  if (response.status >= 200 && response.status < 300) {
+    /*
+     * Orval only generates `responseType: "blob"` if the schema for an endpoint
+     * is `type: string, and format: binary`.
+     * If it references a type that is `type: string, and format: binary` it does not interpret
+     * it correct. So I am making an assumption that if it's not explicitly JSON, it's a binary file.
+     */
+    return responseType === "blob" || response.headers.get("Content-Type") !== "application/json"
+      ? response.blob()
+      : response.json();
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let resultJsonResponse: any;
+
+  // If some error returned in json, lets try to parse it
+  try {
+    resultJsonResponse = await response.json();
+  } catch (e) {
+    // non json result
+    console.log("// non json result");
+    throw new CommonRequestError(response, "non-json response");
+  }
+
+  if (resultJsonResponse?.error) {
+    if (resultJsonResponse.error.startsWith("Version mismatch between")) {
+      throw new VersionError(resultJsonResponse.error);
+    }
+  }
+
+  throw new CommonRequestError(response, resultJsonResponse?.message);
+}
