@@ -27,10 +27,12 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 3. On the source setup page, select **Amazon Ads** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your account`.
 5. Log in and Authorize to the Amazon account.
-6. **Start Date** used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today date is used. Date for specific profile is calculated according to its timezone, this parameter should be specified in UTC timezone. Since it have no sense of generate report for current day \(metrics could be changed\) it generates report for day before \(e.g. if **Start Date** is 2021-10-11 it would use 20211010 as reportDate parameter for request\).
+6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)** or **Sandbox Environment**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
 7. **Report Wait Timeout** maximum number of minutes connector waits for generation of a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
 8. **Report Generation Maximum Retries** maximum number of attempts connector tries to generate a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
-9. Click `Set up source`.
+9. **Start Date (Optional)** used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today date is used. Date for specific profile is calculated according to its timezone, this parameter should be specified in UTC timezone. Since it have no sense of generate report for current day \(metrics could be changed\) it generates report for day before \(e.g. if **Start Date** is 2021-10-11 it would use 20211010 as reportDate parameter for request\).
+10. **Profile IDs (Optional)** you want to fetch data for. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+11. Click `Set up source`.
 
 
 ## Supported sync modes
