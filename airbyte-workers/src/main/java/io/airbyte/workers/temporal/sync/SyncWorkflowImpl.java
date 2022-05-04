@@ -61,7 +61,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
     if (version >= VERSION_INTRODUCING_CHECK_BEFORE_SYNC) {
       final StandardCheckConnectionOutput sourceCheckResponse = checkActivity.check(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
-      if (sourceCheckResponse.getStatus() == Status.FAILED) {
+      if (sourceCheckResponse != null && sourceCheckResponse.getStatus() == Status.FAILED) {
         LOGGER.info("SOURCE CHECK: Failed");
         return CheckFailureSyncOutput(FailureReason.FailureOrigin.SOURCE, jobRunConfig, sourceCheckResponse);
       } else {
@@ -70,7 +70,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
       final StandardCheckConnectionOutput destinationCheckResponse =
           checkActivity.check(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
-      if (destinationCheckResponse.getStatus() == Status.FAILED) {
+      if (destinationCheckResponse != null && destinationCheckResponse.getStatus() == Status.FAILED) {
         LOGGER.info("DESTINATION CHECK: Failed");
         return CheckFailureSyncOutput(FailureReason.FailureOrigin.DESTINATION, jobRunConfig, destinationCheckResponse);
       } else {

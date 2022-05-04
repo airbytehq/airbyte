@@ -17,12 +17,14 @@ import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivityImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
@@ -141,11 +143,47 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
+    verifySourceCheck(checkActivity, syncInput);
+    verifyDestinationCheck(checkActivity, syncInput);
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
     assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary), actualOutput);
+  }
+
+  @Test
+  void testSourceCheckFailure() {
+    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(syncInput.getSourceConfiguration());
+    doThrow(new IllegalArgumentException("source check exception")).when(checkActivity).check(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        sourceConfiguration);
+
+    assertThrows(WorkflowFailedException.class, this::execute);
+
+    verifyNoInteractions(replicationActivity);
+    verifyNoInteractions(persistStateActivity);
+    verifyNoInteractions(normalizationActivity);
+    verifyNoInteractions(dbtTransformationActivity);
+  }
+
+  @Test
+  void testDestinationCheckFailure() {
+    final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(syncInput.getDestinationConfiguration());
+    doThrow(new IllegalArgumentException("destination check exception")).when(checkActivity).check(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        destinationConfiguration);
+
+    assertThrows(WorkflowFailedException.class, this::execute);
+
+    verifyNoInteractions(replicationActivity);
+    verifyNoInteractions(persistStateActivity);
+    verifyNoInteractions(normalizationActivity);
+    verifyNoInteractions(dbtTransformationActivity);
   }
 
   @Test
@@ -158,6 +196,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifySourceCheck(checkActivity, syncInput);
+    verifyDestinationCheck(checkActivity, syncInput);
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -179,6 +219,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifySourceCheck(checkActivity, syncInput);
+    verifyDestinationCheck(checkActivity, syncInput);
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -198,6 +240,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifySourceCheck(checkActivity, syncInput);
+    verifyDestinationCheck(checkActivity, syncInput);
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -222,6 +266,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifySourceCheck(checkActivity, syncInput);
+    verifyDestinationCheck(checkActivity, syncInput);
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -243,6 +289,25 @@ class SyncWorkflowTest {
         .build();
 
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
+  }
+
+
+  private static void verifySourceCheck(final CheckConnectionActivity checkActivity, final StandardSyncInput syncInput) {
+    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(syncInput.getSourceConfiguration());
+    verify(checkActivity).check(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        sourceConfiguration);
+  }
+
+  private static void verifyDestinationCheck(final CheckConnectionActivity checkActivity, final StandardSyncInput syncInput) {
+    final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(syncInput.getDestinationConfiguration());
+    verify(checkActivity).check(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        destinationConfiguration);
   }
 
   private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput, final UUID connectionId) {
