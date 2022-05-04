@@ -1,4 +1,5 @@
 # Amazon Ads
+This page contains the setup guide and reference information for the Amazon Ads source connector.
 
 ## Setup guide
 ### Step 1: Set up Amazon Ads
@@ -21,12 +22,7 @@ The Amazon Ads source connector supports the following [sync modes](https://docs
  - Full Refresh
  - Incremental
 
-## Sync overview
-
-This source can sync data for the [Amazon Advertising API](https://advertising.amazon.com/API/docs/en-us/what-is/amazon-advertising-api).
-
-### Output schema
-
+## Supported Streams
 This source is capable of syncing the following streams:
 
 * [Profiles](https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles)
