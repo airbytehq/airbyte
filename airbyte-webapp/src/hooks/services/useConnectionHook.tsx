@@ -71,7 +71,6 @@ export const useConnectionLoad = (
   refreshConnectionCatalog: () => Promise<WebBackendConnectionRead>;
 } => {
   const connection = useGetConnection(connectionId);
-
   const connectionService = useWebConnectionService();
 
   const refreshConnectionCatalog = async () => await connectionService.getConnection(connectionId, true);

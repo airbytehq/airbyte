@@ -6,7 +6,7 @@ import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
 import FrequencyConfig from "config/FrequencyConfig.json";
-import { ConnectionStatus } from "core/domain/connection";
+import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetConnection } from "hooks/services/useConnectionHook";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
@@ -44,7 +44,7 @@ const ConnectionItemPage: React.FC = () => {
     });
   };
 
-  const isConnectionDeleted = connection.status === ConnectionStatus.DEPRECATED;
+  const isConnectionDeleted = connection.status === ConnectionStatus.deprecated;
 
   return (
     <MainPageWithScroll

@@ -25,6 +25,10 @@ const CreateSourcePage: React.FC = () => {
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
     const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
+    if (!connector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
+    }
     const result = await createSource({ values, sourceConnector: connector });
     setSuccessRequest(true);
     setTimeout(() => {

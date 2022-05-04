@@ -1,8 +1,8 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import { Connection, ConnectionNamespaceDefinition, ConnectionStatus } from "core/domain/connection";
 import { Destination, Source } from "core/domain/connector";
+import { ConnectionStatus, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { render } from "utils/testutils";
 
 import ConnectionForm from "./ConnectionForm";
@@ -25,25 +25,25 @@ const mockDestination: Destination = {
   connectionConfiguration: undefined,
 };
 
-const mockConnection: Connection = {
+const mockConnection: WebBackendConnectionRead = {
   connectionId: "test-connection",
   name: "test connection",
   prefix: "test",
   sourceId: "test-source",
   destinationId: "test-destination",
-  status: ConnectionStatus.ACTIVE,
+  status: ConnectionStatus.active,
   schedule: null,
   syncCatalog: {
     streams: [],
   },
-  namespaceDefinition: ConnectionNamespaceDefinition.Source,
+  namespaceDefinition: NamespaceDefinitionType.source,
   namespaceFormat: "",
-  latestSyncJobStatus: null,
   operationIds: [],
   source: mockSource,
   destination: mockDestination,
   operations: [],
   catalogId: "",
+  isSyncing: false,
 };
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => {

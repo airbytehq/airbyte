@@ -1,6 +1,6 @@
+// TODO: create separate component for source and destinations forms
 import React, { useState } from "react";
 
-// TODO: create separate component for source and destinations forms
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
@@ -22,8 +22,12 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
-    const result = await createSource({ values, sourceConnector: connector });
+    const sourceConnector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
+    if (!sourceConnector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
+    }
+    const result = await createSource({ values, sourceConnector });
     setSuccessRequest(true);
     setTimeout(() => {
       setSuccessRequest(false);

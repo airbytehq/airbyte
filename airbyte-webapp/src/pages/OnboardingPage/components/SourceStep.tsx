@@ -47,6 +47,11 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
     setError(null);
     const sourceConnector = getSourceDefinitionById(values.serviceType);
 
+    if (!sourceConnector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
+    }
+
     try {
       await createSource({ values, sourceConnector });
 

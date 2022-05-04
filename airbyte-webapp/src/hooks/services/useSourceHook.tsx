@@ -65,7 +65,7 @@ const useCreateSource = () => {
   const workspace = useCurrentWorkspace();
 
   return useMutation(
-    async (createSourcePayload: { values: ValuesProps; sourceConnector?: ConnectorProps }) => {
+    async (createSourcePayload: { values: ValuesProps; sourceConnector: ConnectorProps }) => {
       const { values, sourceConnector } = createSourcePayload;
       try {
         // Try to create source
