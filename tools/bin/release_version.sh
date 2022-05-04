@@ -24,7 +24,7 @@ docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 #source ./tools/bin/bump_version.sh
 
 echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
-VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew clean build
-VERSION=$NEW_VERSION SUB_BUILD=PLATFORM ./gradlew publish
-VERSION=$NEW_VERSION GIT_REVISION=$GIT_REVISION ./tools/bin/publish_docker.sh
+VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew clean build
+VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew publish
+VERSION=$VERSION ./tools/bin/publish_docker.sh
 echo "Completed building and publishing PLATFORM..."
