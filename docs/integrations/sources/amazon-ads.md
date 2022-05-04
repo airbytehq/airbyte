@@ -16,6 +16,11 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. Click `Authenticate your account`.
 5. Log in and Authorize to the Amazon account and click `Set up source`.
 
+## Supported sync modes
+The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+ - Full Refresh
+ - Incremental
+
 ## Sync overview
 
 This source can sync data for the [Amazon Advertising API](https://advertising.amazon.com/API/docs/en-us/what-is/amazon-advertising-api).
