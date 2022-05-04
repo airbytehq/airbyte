@@ -4,15 +4,20 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -124,6 +129,51 @@ public class PostgresDestinationTest {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
         buildConfigNoJdbcParameters());
     assertEquals(PostgresDestination.SSL_JDBC_PARAMETERS, defaultProperties);
+  }
+
+  @Test
+  void testCheckIncorrectPasswordFailure() {
+    var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put("password", "fake");
+    var destination = new PostgresDestination();
+    var actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() {
+    var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put("username", "");
+    var destination = new PostgresDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() {
+    var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put("host", "localhost2");
+    var destination = new PostgresDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() {
+    var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put("port", "0000");
+    var destination = new PostgresDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() {
+    var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put("database", "wrongdatabase");
+    var destination = new PostgresDestination();
+    final AirbyteConnectionStatus actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_DB_NAME.getValue());
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the
