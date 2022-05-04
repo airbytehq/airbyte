@@ -35,7 +35,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean supportsNormalization() {
-    return true;
+    return false;
   }
 
   @Override
@@ -188,4 +188,8 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
   }
 
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
+  }
 }
