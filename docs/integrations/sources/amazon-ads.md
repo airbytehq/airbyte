@@ -90,6 +90,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.8` | 2022-05-04 | [\#12541](https://github.com/airbytehq/airbyte/pull/12541) | Improve documentation for Beta |
 | `0.1.7` | 2022-04-27 | [\#11730](https://github.com/airbytehq/airbyte/pull/11730) | Update fields in source-connectors specifications |
 | `0.1.6` | 2022-04-20 | [\#11659](https://github.com/airbytehq/airbyte/pull/11659) | Add adId to products report |
 | `0.1.5` | 2022-04-08 | [\#11430](https://github.com/airbytehq/airbyte/pull/11430) | `Added support OAuth2.0` |
