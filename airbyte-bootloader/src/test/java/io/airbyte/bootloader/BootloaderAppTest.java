@@ -148,15 +148,15 @@ public class BootloaderAppTest {
     configRepository.loadDataNoSecrets(localSchema);
 
     final String sourceSpecs = """
-        {
-          "account_id": "1234567891234567",
-          "start_date": "2022-04-01T00:00:00Z",
-          "access_token": "nonhiddensecret",
-          "include_deleted": false,
-          "fetch_thumbnail_images": false
-        }
-                
-        """;
+                               {
+                                 "account_id": "1234567891234567",
+                                 "start_date": "2022-04-01T00:00:00Z",
+                                 "access_token": "nonhiddensecret",
+                                 "include_deleted": false,
+                                 "fetch_thumbnail_images": false
+                               }
+
+                               """;
 
     final ObjectMapper mapper = new ObjectMapper();
 
@@ -167,16 +167,14 @@ public class BootloaderAppTest {
         .withSlug("wSlug")
         .withEmail("email@mail.com")
         .withTombstone(false)
-        .withInitialSetupComplete(false)
-    );
+        .withInitialSetupComplete(false));
     final UUID sourceId = UUID.randomUUID();
     configRepository.writeSourceConnectionNoSecrets(new SourceConnection()
-            .withSourceDefinitionId(UUID.fromString("e7778cfc-e97c-4458-9ecb-b4f2bba8946c")) // Facebook Marketing
-            .withSourceId(sourceId)
+        .withSourceDefinitionId(UUID.fromString("e7778cfc-e97c-4458-9ecb-b4f2bba8946c")) // Facebook Marketing
+        .withSourceId(sourceId)
         .withName("test source")
-            .withWorkspaceId(workspaceId)
+        .withWorkspaceId(workspaceId)
         .withConfiguration(mapper.readTree(sourceSpecs)));
-
 
     when(mockedFeatureFlags.runSecretMigration()).thenReturn(true);
     val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
