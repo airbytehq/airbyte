@@ -106,7 +106,7 @@ definitions:
       - emitted_at
     properties:
       type:
-        title: "trace type"
+        title: "trace type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
         description: "the type of trace message"
         type: string
         enum:
