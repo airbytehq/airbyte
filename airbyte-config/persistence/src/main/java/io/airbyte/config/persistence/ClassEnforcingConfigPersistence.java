@@ -92,8 +92,8 @@ public class ClassEnforcingConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
-    decoratedPersistence.loadData(seedPersistence);
+  public void loadData(final ConfigPersistence seedPersistence, final boolean runVersionCheckOnCustomConnectors) throws IOException {
+    decoratedPersistence.loadData(seedPersistence, runVersionCheckOnCustomConnectors);
   }
 
 }

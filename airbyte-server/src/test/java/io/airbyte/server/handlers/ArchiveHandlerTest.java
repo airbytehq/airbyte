@@ -122,7 +122,7 @@ public class ArchiveHandlerTest {
         .build();;
     configPersistence = new DatabaseConfigPersistence(jobDatabase, jsonSecretsProcessor);
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, true);
     configRepository = new ConfigRepository(configPersistence, configDatabase);
     secretsRepositoryReader = new SecretsRepositoryReader(configRepository, new NoOpSecretsHydrator());
     secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, Optional.empty(), Optional.empty());
@@ -246,7 +246,7 @@ public class ArchiveHandlerTest {
     assertSameConfigDump(Collections.emptyMap(), secretsRepositoryReader.dumpConfigsWithSecrets());
 
     // Restore default seed data
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, true);
     assertSameConfigDump(seedPersistence.dumpConfigs(), secretsRepositoryReader.dumpConfigsWithSecrets());
 
     setupWorkspaceData(workspaceId);
@@ -312,7 +312,7 @@ public class ArchiveHandlerTest {
     // (that contains similar connections from importing the same archive)
     archive = archiveHandler.exportWorkspace(new WorkspaceIdRequestBody().workspaceId(workspaceId));
     configPersistence.replaceAllConfigs(Collections.emptyMap(), false);
-    configPersistence.loadData(seedPersistence);
+    configPersistence.loadData(seedPersistence, true);
     setupWorkspaceData(workspaceId);
     uploadRead = archiveHandler.uploadArchiveResource(archive);
     assertEquals(UploadRead.StatusEnum.SUCCEEDED, uploadRead.getStatus());

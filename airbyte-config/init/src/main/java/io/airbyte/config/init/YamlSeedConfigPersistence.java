@@ -204,7 +204,7 @@ public class YamlSeedConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(final ConfigPersistence seedPersistence) throws IOException {
+  public void loadData(final ConfigPersistence seedPersistence, final boolean runVersionCheckOnCustomConnectors) throws IOException {
     throw new UnsupportedOperationException("The seed config persistence is read only.");
   }
 

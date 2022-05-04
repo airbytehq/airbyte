@@ -92,7 +92,7 @@ public class BootloaderApp {
             .build();
         final ConfigPersistence configPersistence =
             DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-        configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+        configPersistence.loadData(YamlSeedConfigPersistence.getDefault(), configs.getRunVersionCheckOnCustomConnectors());
         LOGGER.info("Loaded seed data..");
       } catch (final IOException e) {
         e.printStackTrace();

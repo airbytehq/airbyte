@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -214,10 +215,36 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withDockerImageTag(newVersion);
     writeSource(configPersistence, source1);
     writeSource(configPersistence, source2);
-    final Map<String, ConnectorInfo> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx));
+    final Map<String, ConnectorInfo> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx, true));
     // when there are duplicated connector definitions, the one with the latest version should be
     // retrieved
     assertEquals(newVersion, result.get(connectorRepository).dockerImageTag);
+  }
+
+  @Test
+  public void testGetConnectorRepositoryToInfoMapWithoutCustomCheck() throws Exception {
+    final String connectorRepository1 = "airbyte/connector1";
+    final String connectorRepository2 = "airbyte/connector2";
+    final String version = "0.1.10";
+
+    final StandardSourceDefinition source1 = new StandardSourceDefinition()
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withName("source-1")
+        .withDockerRepository(connectorRepository1)
+        .withDockerImageTag(version)
+        .withReleaseStage(ReleaseStage.GENERALLY_AVAILABLE);
+    final StandardSourceDefinition source2 = new StandardSourceDefinition()
+        .withSourceDefinitionId(UUID.randomUUID())
+        .withName("source-2")
+        .withDockerRepository(connectorRepository2)
+        .withDockerImageTag(version)
+        .withReleaseStage(ReleaseStage.CUSTOM);
+    writeSource(configPersistence, source1);
+    writeSource(configPersistence, source2);
+    final Map<String, ConnectorInfo> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx, false));
+
+    Assertions.assertThat(result).hasSize(1);
+    Assertions.assertThat(result).containsOnlyKeys(connectorRepository1);
   }
 
   @Test

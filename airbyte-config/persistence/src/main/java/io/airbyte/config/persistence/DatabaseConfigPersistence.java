@@ -32,7 +32,6 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.SourceConnection;
@@ -1517,22 +1516,23 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public void loadData(final ConfigPersistence seedConfigPersistence) throws IOException {
+  public void loadData(final ConfigPersistence seedConfigPersistence, final boolean runVersionCheckOnCustomConnectors) throws IOException {
     database.transaction(ctx -> {
-      updateConfigsFromSeed(ctx, seedConfigPersistence);
+      updateConfigsFromSeed(ctx, seedConfigPersistence, runVersionCheckOnCustomConnectors);
       return null;
     });
   }
 
   @VisibleForTesting
-  void updateConfigsFromSeed(final DSLContext ctx, final ConfigPersistence seedConfigPersistence) throws SQLException {
+  void updateConfigsFromSeed(final DSLContext ctx, final ConfigPersistence seedConfigPersistence, final boolean runVersionCheckOnCustomConnectors)
+      throws SQLException {
     LOGGER.info("Updating connector definitions from the seed if necessary...");
 
     try {
       final Set<String> connectorRepositoriesInUse = getConnectorRepositoriesInUse(ctx);
       LOGGER.info("Connectors in use: {}", connectorRepositoriesInUse);
 
-      final Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx);
+      final Map<String, ConnectorInfo> connectorRepositoryToInfoMap = getConnectorRepositoryToInfoMap(ctx, runVersionCheckOnCustomConnectors);
       LOGGER.info("Current connector versions: {}", connectorRepositoryToInfoMap.values());
 
       final OffsetDateTime timestamp = OffsetDateTime.now();
@@ -1589,14 +1589,13 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    *         users, and are not always the same as those in the seed.
    */
   @VisibleForTesting
-  Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx) {
+  Map<String, ConnectorInfo> getConnectorRepositoryToInfoMap(final DSLContext ctx, final boolean runVersionCheckOnCustomConnectors) {
     return ctx.select(asterisk())
         .from(ACTOR_DEFINITION)
         .fetch()
         .stream()
         .filter(
-            row -> new EnvConfigs().getRunVersionCheckOnCustomConnectors() || row.get(ACTOR_DEFINITION.RELEASE_STAGE) != ReleaseStage.custom
-        )
+            row -> runVersionCheckOnCustomConnectors || row.get(ACTOR_DEFINITION.RELEASE_STAGE) != ReleaseStage.custom)
         .collect(Collectors.toMap(
             row -> row.getValue(ACTOR_DEFINITION.DOCKER_REPOSITORY),
             row -> {
