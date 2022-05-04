@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import AnyUrl, BaseModel, Extra, Field
 
 
-class Type(Enum):
+class TraceType(Enum):
     RECORD = "RECORD"
     STATE = "STATE"
     LOG = "LOG"
@@ -60,7 +60,7 @@ class AirbyteLogMessage(BaseModel):
     message: str = Field(..., description="the log message")
 
 
-class Type1(Enum):
+class TraceType1(Enum):
     ERROR = "ERROR"
 
 
@@ -161,7 +161,7 @@ class AirbyteTraceMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    type: Type1 = Field(..., description="the type of trace message")
+    TraceType: TraceType1 = Field(..., alias="type", description="the type of trace message")
     emitted_at: float = Field(..., description="the time in ms that the message was emitted")
     error: Optional[AirbyteErrorTraceMessage] = Field(None, description="error trace message: the error object")
 
@@ -262,7 +262,7 @@ class AirbyteMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    type: Type = Field(..., description="Message type")
+    TraceType: TraceType = Field(..., alias="type", description="Message type")
     log: Optional[AirbyteLogMessage] = Field(
         None,
         description="log message: any kind of logging you want the platform to know about.",
