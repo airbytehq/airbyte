@@ -34,6 +34,7 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    encoding = "ISO-8859-1"
 
     def __init__(
         self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
@@ -274,7 +275,7 @@ class BulkSalesforceStream(SalesforceStream):
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response:
             with open(tmp_file, "w") as data_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
-                    data_file.writelines(self.filter_null_bytes(chunk.decode("utf-8")))
+                    data_file.writelines(self.filter_null_bytes(chunk.decode(self.encoding)))
         # check the file exists
         if os.path.isfile(tmp_file):
             return tmp_file
@@ -288,7 +289,7 @@ class BulkSalesforceStream(SalesforceStream):
         @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
         """
         try:
-            with open(path, "r", encoding="utf-8") as data:
+            with open(path, "r", encoding=self.encoding) as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
