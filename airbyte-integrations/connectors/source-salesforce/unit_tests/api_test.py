@@ -525,3 +525,7 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalSalesforceStream)
+
+
+def test_decoding():
+    assert b"0\xe5".decode(SalesforceStream.encoding) == "0å"
