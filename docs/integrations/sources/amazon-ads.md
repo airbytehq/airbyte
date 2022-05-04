@@ -55,7 +55,13 @@ This source is capable of syncing the following streams:
 * [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports)
 * [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
 
+## Connector-specific features and highlights
+
 All the reports are generated for day before relatively to target profile' timezone
+
+## Performance considerations
+
+Information about expected report generation waiting time you may find [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
 ### Data type mapping
 
@@ -67,18 +73,6 @@ All the reports are generated for day before relatively to target profile' timez
 | `datetime` | `datetime` |  |
 | `array` | `array` |  |
 | `object` | `object` |  |
-
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | yes |  |
-| Incremental Sync | yes |  |
-| Namespaces | No |  |
-
-### Performance considerations
-
-Information about expected report generation waiting time you may find [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
 ## Getting started
 
