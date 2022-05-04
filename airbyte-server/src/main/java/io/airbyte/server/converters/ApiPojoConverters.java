@@ -85,7 +85,8 @@ public class ApiPojoConverters {
         .withPrefix(update.getPrefix())
         .withOperationIds(update.getOperationIds())
         .withCatalog(CatalogConverter.toProtocol(update.getSyncCatalog()))
-        .withStatus(toPersistenceStatus(update.getStatus()));
+        .withStatus(toPersistenceStatus(update.getStatus()))
+        .withSourceCatalogId(update.getSourceCatalogId());
 
     if (update.getName() != null) {
       newConnection.withName(update.getName());

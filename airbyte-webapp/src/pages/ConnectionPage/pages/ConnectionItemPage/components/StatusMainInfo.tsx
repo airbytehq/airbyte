@@ -9,7 +9,7 @@ import { Cell, Header, Row } from "components/SimpleTableComponents";
 
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 
-import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
+import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 import EnabledControl from "./EnabledControl";
 
 const MainInfo = styled(ContentCard)`
@@ -33,15 +33,15 @@ const EnabledCell = styled(Cell)`
   margin-top: -18px;
 `;
 
-type IProps = {
+interface StatusMainInfoProps {
   connection: WebBackendConnectionRead;
   frequencyText?: string;
   destinationDefinition?: DestinationDefinition;
   sourceDefinition?: SourceDefinition;
   allowSync?: boolean;
-};
+}
 
-const StatusMainInfo: React.FC<IProps> = ({
+export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   connection,
   frequencyText,
   destinationDefinition,
@@ -60,7 +60,7 @@ const StatusMainInfo: React.FC<IProps> = ({
         <Cell>
           <FormattedMessage id="tables.frequency" />
         </Cell>
-        <Cell flex={1.1}></Cell>
+        {connection.status !== ConnectionStatus.deprecated && <Cell flex={1.1}></Cell>}
       </Header>
       <Row>
         <SourceCell flex={2}>
@@ -74,12 +74,12 @@ const StatusMainInfo: React.FC<IProps> = ({
           <ReleaseStageBadge stage={destinationDefinition?.releaseStage} />
         </SourceCell>
         <Cell>{frequencyText}</Cell>
-        <EnabledCell flex={1.1}>
-          <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
-        </EnabledCell>
+        {connection.status !== ConnectionStatus.deprecated && (
+          <EnabledCell flex={1.1}>
+            <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
+          </EnabledCell>
+        )}
       </Row>
     </MainInfo>
   );
 };
-
-export default StatusMainInfo;

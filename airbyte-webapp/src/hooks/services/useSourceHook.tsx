@@ -64,20 +64,9 @@ const useCreateSource = () => {
   const queryClient = useQueryClient();
   const workspace = useCurrentWorkspace();
 
-  const analyticsService = useAnalyticsService();
-
   return useMutation(
     async (createSourcePayload: { values: ValuesProps; sourceConnector?: ConnectorProps }) => {
       const { values, sourceConnector } = createSourcePayload;
-      if (!sourceConnector?.sourceDefinitionId) {
-        throw new Error("No Source Connector Provided");
-      }
-      analyticsService.track("New Source - Action", {
-        action: "Test a connector",
-        connector_source: sourceConnector?.name,
-        connector_source_id: sourceConnector?.sourceDefinitionId,
-      });
-
       try {
         // Try to create source
         const result = await service.create({
@@ -87,19 +76,8 @@ const useCreateSource = () => {
           connectionConfiguration: values.connectionConfiguration,
         });
 
-        analyticsService.track("New Source - Action", {
-          action: "Tested connector - success",
-          connector_source: sourceConnector?.name,
-          connector_source_id: sourceConnector?.sourceDefinitionId,
-        });
-
         return result;
       } catch (e) {
-        analyticsService.track("New Source - Action", {
-          action: "Tested connector - failure",
-          connector_source: sourceConnector?.name,
-          connector_source_id: sourceConnector?.sourceDefinitionId,
-        });
         throw e;
       }
     },

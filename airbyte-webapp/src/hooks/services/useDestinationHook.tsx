@@ -60,8 +60,6 @@ const useCreateDestination = () => {
   const queryClient = useQueryClient();
   const workspace = useCurrentWorkspace();
 
-  const analyticsService = useAnalyticsService();
-
   return useMutation(
     async (createDestinationPayload: { values: ValuesProps; destinationConnector?: ConnectorProps }) => {
       const { values, destinationConnector } = createDestinationPayload;
@@ -78,22 +76,10 @@ const useCreateDestination = () => {
       });
     },
     {
-      onSuccess: (data, ctx) => {
-        analyticsService.track("New Destination - Action", {
-          action: "Tested connector - success",
-          connector_destination: ctx.destinationConnector?.name,
-          connector_destination_definition_id: ctx.destinationConnector?.destinationDefinitionId,
-        });
+      onSuccess: (data) => {
         queryClient.setQueryData(destinationsKeys.lists(), (lst: DestinationList | undefined) => ({
           destinations: [data, ...(lst?.destinations ?? [])],
         }));
-      },
-      onError: (_, ctx) => {
-        analyticsService.track("New Destination - Action", {
-          action: "Tested connector - failure",
-          connector_destination: ctx.destinationConnector?.name,
-          connector_destination_definition_id: ctx.destinationConnector?.destinationDefinitionId,
-        });
       },
     }
   );
