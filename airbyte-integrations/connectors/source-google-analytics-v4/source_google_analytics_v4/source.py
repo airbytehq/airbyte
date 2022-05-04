@@ -182,7 +182,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         schema: Dict[str, Any] = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["object"],
-            "additionalProperties": False,
             "required": ["view_id"],
             "properties": {
                 "view_id": {"type": ["string"]},
