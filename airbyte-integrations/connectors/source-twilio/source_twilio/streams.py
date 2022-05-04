@@ -96,7 +96,6 @@ class TwilioStream(HttpStream, ABC):
 class IncrementalTwilioStream(TwilioStream, ABC):
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
-    time_filter_cursor_field = "%a, %d %b %Y %H:%M:%S +0000" #'Tue, 03 May 2022 21:09:04 +0000'
 
     def __init__(self, start_date: str = None, lookback: str = None, **kwargs):
         super().__init__(**kwargs)
@@ -124,7 +123,6 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state.get(self.cursor_field) or self._start_date
         if start_date:
-          #  params.update({self.incremental_filter_field: pendulum.parse((datetime.strptime(start_date,self.time_filter_template)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template), strict=False).strftime(self.time_filter_template)})
             params.update({self.incremental_filter_field: pendulum.parse(start_date, strict=False).strftime(self.time_filter_template)})
         return params
 
@@ -132,7 +130,6 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         stream_state = stream_state or {}
         records = super().read_records(stream_state=stream_state, **kwargs)
         for record in records:
-           # record[self.cursor_field] = pendulum.parse((datetime.strptime(record[self.cursor_field],self.time_filter_cursor_field)-timedelta(minutes=int(self._lookback))).strftime(self.time_filter_template), strict=False).strftime(self.time_filter_template)
             record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)           
             yield record
 
