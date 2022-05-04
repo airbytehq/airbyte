@@ -82,9 +82,9 @@ public class BootloaderApp {
     initPersistences();
   }
 
-  public BootloaderApp() {
-    configs = new EnvConfigs();
-    featureFlags = new EnvVariableFeatureFlags();
+  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
+    this.configs = configs;
+    this.featureFlags = featureFlags;
 
     try {
       initPersistences();
@@ -107,6 +107,10 @@ public class BootloaderApp {
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public BootloaderApp() {
+    this(new EnvConfigs(), new EnvVariableFeatureFlags());
   }
 
   public void load() throws Exception {
