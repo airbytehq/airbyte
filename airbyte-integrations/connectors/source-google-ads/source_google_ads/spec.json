@@ -78,6 +78,7 @@
         "items": {
           "type": "object",
           "required": [
+            "query",
             "table_name"
           ],
           "properties": {
