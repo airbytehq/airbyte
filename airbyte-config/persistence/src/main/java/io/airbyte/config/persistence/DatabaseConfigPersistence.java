@@ -32,7 +32,6 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.SourceConnection;
@@ -1594,9 +1593,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .from(ACTOR_DEFINITION)
         .fetch()
         .stream()
+        // The validation is based on the of the connector name is based on the seed which doesn't contains
+        // any custom connectors. They can thus be
+        // filtered out.
         .filter(
-            row -> new EnvConfigs().getRunVersionCheckOnCustomConnectors() || row.get(ACTOR_DEFINITION.RELEASE_STAGE) != ReleaseStage.custom
-        )
+            row -> row.get(ACTOR_DEFINITION.RELEASE_STAGE) != ReleaseStage.custom)
         .collect(Collectors.toMap(
             row -> row.getValue(ACTOR_DEFINITION.DOCKER_REPOSITORY),
             row -> {
