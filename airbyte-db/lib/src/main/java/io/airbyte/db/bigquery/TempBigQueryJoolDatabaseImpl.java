@@ -36,11 +36,6 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
     return transform.query(new FakeDefaultDSLContext(realDatabase));
   }
 
-  @Override
-  public void close() throws Exception {
-    realDatabase.close();
-  }
-
   public BigQueryDatabase getRealDatabase() {
     return realDatabase;
   }

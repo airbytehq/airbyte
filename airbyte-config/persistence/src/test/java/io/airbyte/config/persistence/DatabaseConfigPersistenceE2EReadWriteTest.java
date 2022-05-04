@@ -32,6 +32,7 @@ import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import org.jooq.SQLDialect;
@@ -58,8 +59,11 @@ public class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfi
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    database.close();
+  void tearDown() throws IOException {
+    dslContext.close();
+    if (dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
   @Test

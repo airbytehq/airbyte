@@ -160,8 +160,6 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
         ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
     database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-    database.close();
-
     ((ObjectNode) config).put("schema", dbName);
   }
 

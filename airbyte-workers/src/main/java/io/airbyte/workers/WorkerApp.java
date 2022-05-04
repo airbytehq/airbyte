@@ -23,6 +23,7 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
@@ -75,6 +76,7 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
@@ -82,6 +84,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
+import javax.sql.DataSource;
 import lombok.AllArgsConstructor;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -99,14 +102,6 @@ public class WorkerApp {
   // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
   // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
-
-  private static DSLContext configsDslContext;
-  private static DSLContext jobsDslContext;
-
-  private static final Thread SHUTDOWN_HOOK = new Thread(() -> {
-    closeDslContext(configsDslContext);
-    closeDslContext(jobsDslContext);
-  });
 
   private final Path workspaceRoot;
   private final ProcessFactory defaultProcessFactory;
@@ -345,7 +340,7 @@ public class WorkerApp {
     }
   }
 
-  private static void launchWorkerApp(final Configs configs) throws IOException {
+  private static void launchWorkerApp(final Configs configs, final DSLContext configsDslContext, final DSLContext jobsDslContext) throws IOException {
     DogStatsDMetricSingleton.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration(configs));
 
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
@@ -461,15 +456,24 @@ public class WorkerApp {
     try {
       final Configs configs = new EnvConfigs();
 
+      final DataSource configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(),
+          DRIVER_CLASS_NAME, configs.getConfigDatabaseUrl());
+      final DataSource jobsDataSource = DataSourceFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(),
+          DRIVER_CLASS_NAME, configs.getDatabaseUrl());
+
       // Manual configuration that will be replaced by Dependency Injection in the future
-      configsDslContext = DSLContextFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), DRIVER_CLASS_NAME,
-          configs.getConfigDatabaseUrl(), SQLDialect.POSTGRES);
-      jobsDslContext = DSLContextFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(), DRIVER_CLASS_NAME, configs.getDatabaseUrl(),
-          SQLDialect.POSTGRES);
+      try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
+          final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES)) {
 
-      Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+          closeDslContext(configsDslContext);
+          closeDslContext(jobsDslContext);
+          closeDataSource(configsDataSource);
+          closeDataSource(jobsDataSource);
+        }));
 
-      launchWorkerApp(configs);
+        launchWorkerApp(configs, configsDslContext, jobsDslContext);
+      }
     } catch (final Throwable t) {
       LOGGER.error("Worker app failed", t);
       System.exit(1);
@@ -479,6 +483,18 @@ public class WorkerApp {
   private static void closeDslContext(final DSLContext dslContext) {
     if (dslContext != null) {
       dslContext.close();
+    }
+  }
+
+  private static void closeDataSource(final DataSource dataSource) {
+    if (dataSource != null) {
+      if (dataSource instanceof Closeable closeable) {
+        try {
+          closeable.close();
+        } catch (final IOException e) {
+          LOGGER.error("Unable to close data source.", e);
+        }
+      }
     }
   }
 

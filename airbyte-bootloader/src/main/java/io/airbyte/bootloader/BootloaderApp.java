@@ -80,6 +80,7 @@ public class BootloaderApp {
    *
    * @param configs
    * @param postLoadExecution
+   * @param featureFlags
    */
   public BootloaderApp(final Configs configs,
                        final Runnable postLoadExecution,
@@ -120,31 +121,31 @@ public class BootloaderApp {
     try {
       LOGGER.info("Created initial jobs and configs database...");
 
-      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-      final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
-      assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
+    assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
 
-      // TODO Will be converted to an injected singleton during DI migration
-      final Flyway configsFlyway = FlywayFactory.create(configsDataSource, BootloaderApp.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-          ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-      final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, BootloaderApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
-          JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    // TODO Will be converted to an injected singleton during DI migration
+    final Flyway configsFlyway = FlywayFactory.create(configsDataSource, BootloaderApp.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
+        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, BootloaderApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+        JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
-      // TODO Will be converted to an injected singleton during DI migration
-      final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
-      final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
+    // TODO Will be converted to an injected singleton during DI migration
+    final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
+    final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
 
-      runFlywayMigration(configs, configDbMigrator, jobDbMigrator);
-      LOGGER.info("Ran Flyway migrations...");
+    runFlywayMigration(configs, configDbMigrator, jobDbMigrator);
+    LOGGER.info("Ran Flyway migrations...");
 
       final ConfigRepository configRepository =
           new ConfigRepository(configPersistence, configDatabase);
 
-      createWorkspaceIfNoneExists(configRepository);
-      LOGGER.info("Default workspace created..");
+    createWorkspaceIfNoneExists(configRepository);
+    LOGGER.info("Default workspace created..");
 
-      createDeploymentIfNoneExists(jobPersistence);
-      LOGGER.info("Default deployment created..");
+    createDeploymentIfNoneExists(jobPersistence);
+    LOGGER.info("Default deployment created..");
 
       jobPersistence.setVersion(currAirbyteVersion.serialize());
       LOGGER.info("Set version to {}", currAirbyteVersion);
@@ -207,7 +208,16 @@ public class BootloaderApp {
     final var bootloader = new BootloaderApp(configs, featureFlags, secretMigrator);
     bootloader.load();
 
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> bootloader.shutdown()));
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        configsDslContext.close();
+        jobsDslContext.close();
+        closeDataSource(configsDataSource);
+        closeDataSource(jobsDataSource);
+      }));
+
+      final var bootloader = new BootloaderApp(configs, configsDataSource, configsDslContext, jobsDataSource, jobsDslContext);
+      bootloader.load();
+    }
   }
 
   private static void createDeploymentIfNoneExists(final JobPersistence jobPersistence) throws IOException {

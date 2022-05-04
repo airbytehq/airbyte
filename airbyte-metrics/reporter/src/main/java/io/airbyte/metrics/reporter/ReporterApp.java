@@ -8,13 +8,16 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricEmittingApps;
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Executors;
+import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -24,37 +27,40 @@ public class ReporterApp {
 
   public static Database configDatabase;
 
-  private static DSLContext dslContext;
-
-  private static final Thread SHUTDOWN_HOOK = new Thread(() -> {
-    if (dslContext != null) {
-      dslContext.close();
-    }
-  });
-
   public static void main(final String[] args) throws IOException {
     final Configs configs = new EnvConfigs();
 
     DogStatsDMetricSingleton.initialize(MetricEmittingApps.METRICS_REPORTER, new DatadogClientConfiguration(configs));
 
-    dslContext = DSLContextFactory.create(
+    final DataSource dataSource = DataSourceFactory.create(
         configs.getConfigDatabaseUser(),
         configs.getConfigDatabasePassword(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        configs.getConfigDatabaseUrl(),
-        SQLDialect.POSTGRES);
+        configs.getConfigDatabaseUrl());
 
-    configDatabase = new ConfigsDatabaseInstance(dslContext)
-        .getInitialized();
+    try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
 
-    Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        dslContext.close();
+        if (dataSource instanceof Closeable closeable) {
+          try {
+            closeable.close();
+          } catch (final IOException e) {
+            log.error("Unable to close data source.", e);
+          }
+        }
+      }));
 
-    final var toEmits = ToEmit.values();
-    final var pollers = Executors.newScheduledThreadPool(toEmits.length);
+      configDatabase = new ConfigsDatabaseInstance(dslContext)
+          .getInitialized();
 
-    log.info("Scheduling {} metrics for emission..", toEmits.length);
-    for (final ToEmit toEmit : toEmits) {
-      pollers.scheduleAtFixedRate(toEmit.emitRunnable, 0, toEmit.period, toEmit.timeUnit);
+      final var toEmits = ToEmit.values();
+      final var pollers = Executors.newScheduledThreadPool(toEmits.length);
+
+      log.info("Scheduling {} metrics for emission..", toEmits.length);
+      for (final ToEmit toEmit : toEmits) {
+        pollers.scheduleAtFixedRate(toEmit.emitRunnable, 0, toEmit.period, toEmit.timeUnit);
+      }
     }
   }
 

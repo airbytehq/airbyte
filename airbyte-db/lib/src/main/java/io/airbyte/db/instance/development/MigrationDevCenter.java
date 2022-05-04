@@ -60,7 +60,7 @@ public abstract class MigrationDevCenter {
     try (final PostgreSQLContainer<?> container = createContainer()) {
       final DataSource dataSource =
           DataSourceFactory.create(container.getUsername(), container.getPassword(), container.getDriverClassName(), container.getJdbcUrl());
-      try(final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
+      try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
         final Flyway flyway = getFlyway(dataSource);
         final Database database = getDatabase(dslContext);
         final FlywayDatabaseMigrator migrator = getMigrator(database, flyway);

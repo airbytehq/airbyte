@@ -27,6 +27,7 @@ import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
@@ -42,6 +43,7 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -53,6 +55,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -80,13 +83,6 @@ public class SchedulerApp {
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
   private static final String DRIVER_CLASS_NAME = "org.postgresql.Driver";
-  private static DSLContext configsDslContext;
-  private static DSLContext jobsDslContext;
-
-  private static final Thread SHUTDOWN_HOOK = new Thread(() -> {
-    closeDslContext(configsDslContext);
-    closeDslContext(jobsDslContext);
-  });
 
   private final Path workspaceRoot;
   private final JobPersistence jobPersistence;
@@ -245,68 +241,90 @@ public class SchedulerApp {
     final String temporalHost = configs.getTemporalHost();
     LOGGER.info("temporalHost = " + temporalHost);
 
+    final DataSource configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(),
+        DRIVER_CLASS_NAME, configs.getConfigDatabaseUrl());
+
+    final DataSource jobsDataSource = DataSourceFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(),
+        DRIVER_CLASS_NAME, configs.getDatabaseUrl());
+
     // Manual configuration that will be replaced by Dependency Injection in the future
-    configsDslContext = DSLContextFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), DRIVER_CLASS_NAME,
-        configs.getConfigDatabaseUrl(), SQLDialect.POSTGRES);
-    jobsDslContext = DSLContextFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(), DRIVER_CLASS_NAME, configs.getDatabaseUrl(),
-        SQLDialect.POSTGRES);
+    try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
+        final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES)) {
 
-    // Wait for the server to initialize the database and run migration
-    // This should be converted into check for the migration version. Everything else as per.
-    waitForServer(configs);
-    LOGGER.info("Creating Job DB connection pool...");
-    final Database jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        closeDslContext(configsDslContext);
+        closeDslContext(jobsDslContext);
+        closeDataSource(configsDataSource);
+        closeDataSource(jobsDataSource);
+      }));
 
-    final Database configDatabase = new ConfigsDatabaseInstance(configsDslContext).getInitialized();
-    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .maskSecrets(!featureFlags.exposeSecretsInExport())
-        .copySecrets(true)
-        .build();
-    final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-    final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
+      // Wait for the server to initialize the database and run migration
+      // This should be converted into check for the migration version. Everything else as per.
+      waitForServer(configs);
+      LOGGER.info("Creating Job DB connection pool...");
+      final Database jobDatabase = new JobsDatabaseInstance(jobsDslContext).getInitialized();
 
-    final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
-    final JobCleaner jobCleaner = new JobCleaner(
-        configs.getWorkspaceRetentionConfig(),
-        workspaceRoot,
-        jobPersistence);
-    AirbyteVersion.assertIsCompatible(
-        configs.getAirbyteVersion(),
-        jobPersistence.getVersion().map(AirbyteVersion::new).orElseThrow());
+      final Database configDatabase = new ConfigsDatabaseInstance(configsDslContext).getInitialized();
+      final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+          .maskSecrets(!featureFlags.exposeSecretsInExport())
+          .copySecrets(true)
+          .build();
+      final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+      final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
 
-    TrackingClientSingleton.initialize(
-        configs.getTrackingStrategy(),
-        new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
-        configs.getAirbyteRole(),
-        configs.getAirbyteVersion(),
-        configRepository);
-    final JobNotifier jobNotifier = new JobNotifier(
-        configs.getWebappUrl(),
-        configRepository,
-        new WorkspaceHelper(configRepository, jobPersistence),
-        TrackingClientSingleton.get());
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
+      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+      final JobCleaner jobCleaner = new JobCleaner(
+          configs.getWorkspaceRetentionConfig(),
+          workspaceRoot,
+          jobPersistence);
+      AirbyteVersion.assertIsCompatible(
+          configs.getAirbyteVersion(),
+          jobPersistence.getVersion().map(AirbyteVersion::new).orElseThrow());
 
-    DogStatsDMetricSingleton.initialize(MetricEmittingApps.SCHEDULER, new DatadogClientConfiguration(configs));
+      TrackingClientSingleton.initialize(
+          configs.getTrackingStrategy(),
+          new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
+          configs.getAirbyteRole(),
+          configs.getAirbyteVersion(),
+          configRepository);
+      final JobNotifier jobNotifier = new JobNotifier(
+          configs.getWebappUrl(),
+          configRepository,
+          new WorkspaceHelper(configRepository, jobPersistence),
+          TrackingClientSingleton.get());
+      final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
 
-    LOGGER.info("Launching scheduler...");
-    new SchedulerApp(
-        workspaceRoot,
-        jobPersistence,
-        configRepository,
-        jobCleaner,
-        jobNotifier,
-        temporalClient,
-        Integer.parseInt(configs.getSubmitterNumThreads()),
-        configs.getSyncJobMaxAttempts(),
-        configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
-            .start();
+      DogStatsDMetricSingleton.initialize(MetricEmittingApps.SCHEDULER, new DatadogClientConfiguration(configs));
+
+      LOGGER.info("Launching scheduler...");
+      new SchedulerApp(
+          workspaceRoot,
+          jobPersistence,
+          configRepository,
+          jobCleaner,
+          jobNotifier,
+          temporalClient,
+          Integer.parseInt(configs.getSubmitterNumThreads()),
+          configs.getSyncJobMaxAttempts(),
+          configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
+              .start();
+    }
   }
 
   private static void closeDslContext(final DSLContext dslContext) {
     if (dslContext != null) {
       dslContext.close();
+    }
+  }
+
+  private static void closeDataSource(final DataSource dataSource) {
+    if (dataSource instanceof Closeable closeable) {
+      try {
+        closeable.close();
+      } catch (final IOException e) {
+        LOGGER.error("Unable to close data source.", e);
+      }
     }
   }
 

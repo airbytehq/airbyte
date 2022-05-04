@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Database object for interacting with a Jooq connection.
  */
-public class Database implements AutoCloseable {
+public class Database {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Database.class);
 
@@ -35,11 +35,6 @@ public class Database implements AutoCloseable {
 
   public <T> T transaction(final ContextQueryFunction<T> transform) throws SQLException {
     return dslContext.transactionResult(configuration -> transform.query(DSL.using(configuration)));
-  }
-
-  @Override
-  public void close() throws Exception {
-    dslContext.close();
   }
 
   public static Database createWithRetry(final DSLContext dslContext,

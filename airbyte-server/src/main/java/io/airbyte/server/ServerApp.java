@@ -87,17 +87,6 @@ public class ServerApp implements ServerRunnable {
   private static final String DRIVER_CLASS_NAME = "org.postgresql.Driver";
 
   private static Configs configs;
-  private static DataSource configsDataSource;
-  private static DataSource jobsDataSource;
-  private static DSLContext configsDslContext;
-  private static DSLContext jobsDslContext;
-
-  private static final Thread SHUTDOWN_HOOK = new Thread(() -> {
-    closeDslContext(configsDslContext);
-    closeDslContext(jobsDslContext);
-    closeDataSource(configsDataSource);
-    closeDataSource(jobsDataSource);
-  });
 
   private final AirbyteVersion airbyteVersion;
   private final Set<Class<?>> customComponentClasses;
@@ -150,7 +139,9 @@ public class ServerApp implements ServerRunnable {
 
   private static void assertDatabasesReady(final Configs configs,
                                            final DatabaseInstance configsDatabaseInstance,
-                                           final DatabaseInstance jobsDatabaseInstance)
+                                           final DataSource configsDataSource,
+                                           final DatabaseInstance jobsDatabaseInstance,
+                                           final DataSource jobsDataSource)
       throws InterruptedException {
     LOGGER.info("Checking configs database flyway migration version..");
     MinimumFlywayMigrationVersionCheck.assertDatabase(configsDatabaseInstance, MinimumFlywayMigrationVersionCheck.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
@@ -170,7 +161,13 @@ public class ServerApp implements ServerRunnable {
 
   }
 
-  public static ServerRunnable getServer(final ServerFactory apiFactory, final ConfigPersistence seed) throws Exception {
+  public static ServerRunnable getServer(final ServerFactory apiFactory,
+                                         final ConfigPersistence seed,
+                                         final DSLContext configsDslContext,
+                                         final DataSource configsDataSource,
+                                         final DSLContext jobsDslContext,
+                                         final DataSource jobsDataSource)
+      throws Exception {
     final WorkerConfigs workerConfigs = new WorkerConfigs(configs);
 
     LogClientSingleton.getInstance().setWorkspaceMdc(
@@ -183,7 +180,7 @@ public class ServerApp implements ServerRunnable {
         new ConfigsDatabaseInstance(configsDslContext);
     final DatabaseInstance jobsDatabaseInstance =
         new JobsDatabaseInstance(jobsDslContext);
-    assertDatabasesReady(configs, configsDatabaseInstance, jobsDatabaseInstance);
+    assertDatabasesReady(configs, configsDatabaseInstance, configsDataSource, jobsDatabaseInstance, jobsDataSource);
 
     LOGGER.info("Creating Staged Resource folder...");
     ConfigDumpImporter.initStagedResourceFolder();
@@ -280,16 +277,25 @@ public class ServerApp implements ServerRunnable {
       configs = new EnvConfigs();
 
       // Manual configuration that will be replaced by Dependency Injection in the future
-      configsDataSource = DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), DRIVER_CLASS_NAME,
-          configs.getConfigDatabaseUrl());
-      configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
-      jobsDataSource =
+      final DataSource configsDataSource =
+          DataSourceFactory.create(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), DRIVER_CLASS_NAME,
+              configs.getConfigDatabaseUrl());
+      final DataSource jobsDataSource =
           DataSourceFactory.create(configs.getDatabaseUser(), configs.getDatabasePassword(), DRIVER_CLASS_NAME, configs.getDatabaseUrl());
-      jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES);
 
-      Runtime.getRuntime().addShutdownHook(SHUTDOWN_HOOK);
+      try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
+          final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES)) {
 
-      getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault()).start();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+          closeDslContext(configsDslContext);
+          closeDslContext(jobsDslContext);
+          closeDataSource(configsDataSource);
+          closeDataSource(jobsDataSource);
+        }));
+
+        getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault(),
+            configsDslContext, configsDataSource, jobsDslContext, jobsDataSource).start();
+      }
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);
       System.exit(1); // so the app doesn't hang on background threads
@@ -298,11 +304,11 @@ public class ServerApp implements ServerRunnable {
 
   private static void closeDataSource(final DataSource dataSource) {
     if (dataSource != null) {
-      if (dataSource instanceof Closeable) {
+      if (dataSource instanceof Closeable closeable) {
         try {
-          ((Closeable) dataSource).close();
+          closeable.close();
         } catch (final IOException e) {
-          e.printStackTrace();
+          LOGGER.error("Unable to close data source.", e);
         }
       }
     }

@@ -38,6 +38,8 @@ import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
+import java.io.Closeable;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -78,8 +80,11 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    database.close();
+  void tearDown() throws IOException {
+    dslContext.close();
+    if (dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
   @Test

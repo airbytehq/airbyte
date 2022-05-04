@@ -46,6 +46,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -79,6 +80,8 @@ public class ArchiveHandlerTest {
   private static final AirbyteVersion VERSION = new AirbyteVersion("0.6.8");
   private static PostgreSQLContainer<?> container;
 
+  private DataSource dataSource;
+  private DSLContext dslContext;
   private Database jobDatabase;
   private Database configDatabase;
   private JobPersistence jobPersistence;
@@ -116,8 +119,8 @@ public class ArchiveHandlerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    final DataSource dataSource = DatabaseConnectionHelper.createDataSource(container);
-    final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    dataSource = DatabaseConnectionHelper.createDataSource(container);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
     jobDatabase = databaseProviders.createNewJobsDatabase();
     configDatabase = databaseProviders.createNewConfigsDatabase();
@@ -149,9 +152,11 @@ public class ArchiveHandlerTest {
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    jobDatabase.close();
-    configDatabase.close();
+  void tearDown() throws IOException {
+    dslContext.close();
+    if (dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
   /**
