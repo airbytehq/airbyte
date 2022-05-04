@@ -224,7 +224,7 @@ public class AcceptanceTests {
     }
 
     // by default use airbyte deployment governed by a test container.
-    if (!USE_EXTERNAL_DEPLOYMENT) {
+    if (false) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
           .setEnv(MoreProperties.envFileToProperties(ENV_FILE))
@@ -1280,9 +1280,19 @@ public class AcceptanceTests {
     // This case only occurs with the new scheduler, so the entire test is inside the feature flag
     // conditional.
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-    if (featureFlags.usesNewScheduler()) {
+    if (true) {
       final String connectionName = "test-connection";
-      final UUID sourceId = createPostgresSource().getSourceId();
+      final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+      final SourceRead source = createSource(
+          "E2E Test Source -" + UUID.randomUUID(),
+          workspaceId,
+          sourceDefinition.getSourceDefinitionId(),
+          Jsons.jsonNode(ImmutableMap.builder()
+              .put("type", "INFINITE_FEED")
+              .put("max_records", 5000)
+              .put("message_interval", 100)
+              .build()));
+      final UUID sourceId = source.getSourceId();
       final UUID destinationId = createDestination().getDestinationId();
       final UUID operationId = createOperation().getOperationId();
       final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
@@ -1294,11 +1304,15 @@ public class AcceptanceTests {
           .destinationSyncMode(destinationSyncMode)
           .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-      LOGGER.info("Testing connection update when temporal is in a terminal state");
+      LOGGER.info("Testing manual sync when temporal is in a terminal state");
       final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
+      LOGGER.info("Starting first manual sync");
+      final JobInfoRead firstJobInfo = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+      LOGGER.info("Terminating workflow during first sync");
       terminateTemporalWorkflow(connectionId);
 
+      LOGGER.info("Submitted another manual sync");
       apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
       LOGGER.info("Waiting for workflow to be recreated...");
@@ -1307,6 +1321,10 @@ public class AcceptanceTests {
       final WorkflowState workflowState = getWorkflowState(connectionId);
       assertTrue(workflowState.isRunning());
       assertTrue(workflowState.isSkipScheduling());
+
+      // verify that the first manual sync was marked as failed
+      final JobInfoRead terminatedJobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(firstJobInfo.getJob().getId()));
+      assertEquals(JobStatus.FAILED, terminatedJobInfo.getJob().getStatus());
     }
   }
 
@@ -1332,7 +1350,7 @@ public class AcceptanceTests {
           .destinationSyncMode(destinationSyncMode)
           .primaryKey(List.of(List.of(COLUMN_NAME))));
 
-      LOGGER.info("Testing connection update when temporal is in a terminal state");
+      LOGGER.info("Testing reset connection when temporal is in a terminal state");
       final UUID connectionId = createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
       terminateTemporalWorkflow(connectionId);

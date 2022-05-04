@@ -137,9 +137,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         workflowState = connectionUpdaterInput.getWorkflowState();
       }
 
-      // ensure we are starting from a clean job state for the first run
-      ensureCleanJobState(connectionUpdaterInput);
-
       // when a reset is triggered, the previous attempt, cancels itself (unless it is already a reset, in
       // which case it does nothing). the previous run that cancels itself then passes on the
       // resetConnection flag to the next run so that that run can execute the actual reset
@@ -218,7 +215,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private void ensureCleanJobState(final ConnectionUpdaterInput connectionUpdaterInput) {
-    final int ensureCleanJobStateVersion = Workflow.getVersion(ENSURE_CLEAN_JOB_STATE, Workflow.DEFAULT_VERSION, ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION);
+    final int ensureCleanJobStateVersion =
+        Workflow.getVersion(ENSURE_CLEAN_JOB_STATE, Workflow.DEFAULT_VERSION, ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION);
     log.info("Ensuring clean job state! Version: {}, connectionUpdaterInput: {}", ensureCleanJobStateVersion, connectionUpdaterInput);
 
     // For backwards compatibility and determinism, skip if workflow existed before this change
@@ -226,11 +224,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return;
     }
 
-    if (connectionUpdaterInput.isFirstRun()) {
-      runMandatoryActivity(jobCreationAndStatusUpdateActivity::failNonTerminalJobs, new FailNonTerminalJobsInput(
-          connectionUpdaterInput.getConnectionId(),
-          "Failing job in order to start from clean job state for new temporal workflow run."));
-    }
+    runMandatoryActivity(jobCreationAndStatusUpdateActivity::failNonTerminalJobs, new FailNonTerminalJobsInput(
+        connectionUpdaterInput.getConnectionId(),
+        "Failing job in order to start from clean job state for new temporal workflow run."));
   }
 
   private void reportSuccess(final ConnectionUpdaterInput connectionUpdaterInput, final StandardSyncOutput standardSyncOutput) {
@@ -398,7 +394,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
     // Continue the workflow as new
     connectionUpdaterInput.setResetConnection(workflowState.isContinueAsReset());
-    connectionUpdaterInput.setFirstRun(false);
     workflowInternalState.getFailures().clear();
     workflowInternalState.setPartialSuccess(null);
     final boolean isDeleted = workflowState.isDeleted();
@@ -461,13 +456,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   /**
    * Creates a new job if it is not present in the input. If the jobId is specified in the input of
-   * the connectionManagerWorkflow, we will return it. Otherwise we will create a job and return its
-   * id.
+   * the connectionManagerWorkflow, we will return it. Otherwise we will ensure there are no other
+   * non-terminal jobs, and create a job and return its id.
    */
   private Long getOrCreateJobId(final ConnectionUpdaterInput connectionUpdaterInput) {
     if (connectionUpdaterInput.getJobId() != null) {
       return connectionUpdaterInput.getJobId();
     }
+
+    ensureCleanJobState(connectionUpdaterInput);
 
     final JobCreationOutput jobCreationOutput =
         runMandatoryActivityWithOutput(

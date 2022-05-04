@@ -226,8 +226,10 @@ public interface JobCreationAndStatusUpdateActivity {
   @NoArgsConstructor
   @AllArgsConstructor
   class FailNonTerminalJobsInput {
+
     private UUID connectionId;
     private String reason;
+
   }
 
   @ActivityMethod

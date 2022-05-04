@@ -188,7 +188,6 @@ public class ConnectionManagerUtils {
         .workflowState(null)
         .resetConnection(false)
         .fromJobResetFailure(false)
-        .firstRun(true)
         .build();
   }
 

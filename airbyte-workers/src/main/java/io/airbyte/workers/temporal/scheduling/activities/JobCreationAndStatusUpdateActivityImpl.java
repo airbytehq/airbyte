@@ -24,6 +24,7 @@ import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.MetricsRegistry;
+import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
@@ -33,6 +34,7 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.JobStatus;
+import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.exception.RetryableException;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.workers.worker_run.WorkerRun;
@@ -273,9 +275,24 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(input.getConnectionId(), Job.REPLICATION_TYPES, nonTerminalJobStatuses);
       log.info("failNonTerminalJobs jobs result: {}", jobs);
       for (final Job job : jobs) {
-        log.info("Failing non-terminal job {}", job.getId());
-        jobPersistence.failJob(job.getId());
-        final Job failedJob = jobPersistence.getJob(job.getId());
+        final long jobId = job.getId();
+        log.info("Failing non-terminal job {}", jobId);
+        jobPersistence.failJob(jobId);
+
+        // fail all non-terminal attempts
+        for (final Attempt attempt : job.getAttempts()) {
+          if (Attempt.isAttemptInTerminalState(attempt)) {
+            continue;
+          }
+
+          // the Attempt object 'id' is actually the value of the attempt_number column in the db
+          final int attemptNumber = (int) attempt.getId();
+          jobPersistence.failAttempt(jobId, attemptNumber);
+          jobPersistence.writeAttemptFailureSummary(jobId, attemptNumber,
+              FailureHelper.failureSummaryForTemporalCleaningJobState(jobId, attemptNumber));
+        }
+
+        final Job failedJob = jobPersistence.getJob(jobId);
         jobNotifier.failJob(input.getReason(), failedJob);
         trackCompletion(failedJob, JobStatus.FAILED);
       }
