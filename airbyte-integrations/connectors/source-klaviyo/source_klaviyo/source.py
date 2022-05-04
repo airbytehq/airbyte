@@ -69,8 +69,8 @@ class SourceKlaviyo(AbstractSource):
         required to run this integration.
         """
         return ConnectorSpecification(
-            documentationUrl="",
-            changelogUrl="",
+            documentationUrl="https://developers.klaviyo.com/en",
+            changelogUrl="https://developers.klaviyo.com/en",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
