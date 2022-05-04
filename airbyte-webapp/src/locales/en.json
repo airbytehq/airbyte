@@ -233,7 +233,7 @@
   "onboarding.syncFailed": "Your sync is failed. Please try again",
   "onboarding.startAgain": "Your sync was cancelled. You can start it again",
 
-  "sources.description": "<b>Sources</b> Sources are where you want to <b>pull data</b> from.",
+  "sources.description": "<b>Sources</b> are where you want to <b>pull data</b> from.",
   "sources.searchIncremental": "Search cursor value for incremental",
   "sources.incrementalDefault": "{value} (default)",
   "sources.incrementalSourceCursor": "Incremental - source-defined cursor",
