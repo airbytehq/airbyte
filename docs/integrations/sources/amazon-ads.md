@@ -28,7 +28,9 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. Click `Authenticate your account`.
 5. Log in and Authorize to the Amazon account.
 6. **Start Date** used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today date is used. Date for specific profile is calculated according to its timezone, this parameter should be specified in UTC timezone. Since it have no sense of generate report for current day \(metrics could be changed\) it generates report for day before \(e.g. if **Start Date** is 2021-10-11 it would use 20211010 as reportDate parameter for request\).
-7. Click `Set up source`.
+7. **Report Wait Timeout** maximum number of minutes connector waits for generation of a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
+8. **Report Generation Maximum Retries** maximum number of attempts connector tries to generate a report for streams `Brands Reports`, `Brand Video Reports`, `Display Reports`, `Products Reports`.
+9. Click `Set up source`.
 
 
 ## Supported sync modes
