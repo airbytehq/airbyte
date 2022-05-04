@@ -1,7 +1,6 @@
 # Introduction
 
-This document helps to avoid tedious steps for updating **dependency** versions from old (non-relevant) to proper (relevant).    
-Here describes following procedure about how to update dependency versions for **Gradle** build and how to share them with other **projects**.      
+This document describes how to update dependency versions for Airbyte's **Gradle** build and how to share them with other **projects**.      
 Dependencies should be represented as dependency coordinates, that a user can pick from when declaring dependencies in a build script.
 
 > Version Catalog Example:
