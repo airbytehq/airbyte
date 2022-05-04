@@ -23,11 +23,11 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
    * running operations. These are more readable forms of
    * {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
    */
-  public static String JOB_TYPE = "job_type";
-  public static String SYNC_JOB = "sync";
-  public static String SPEC_JOB = "spec";
-  public static String CHECK_JOB = "check";
-  public static String DISCOVER_JOB = "discover";
+  public static final String JOB_TYPE = "job_type";
+  public static final String SYNC_JOB = "sync";
+  public static final String SPEC_JOB = "spec";
+  public static final String CHECK_JOB = "check";
+  public static final String DISCOVER_JOB = "discover";
 
   /**
    * A sync job can actually be broken down into the following steps. Try to be as precise as possible
@@ -36,8 +36,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   public static final String SYNC_STEP = "sync_step";
   public static final String READ_STEP = "read";
   public static final String WRITE_STEP = "write";
-  public static String NORMALIZE_STEP = "normalize";
-  public static String CUSTOM_STEP = "custom";
+  public static final String NORMALIZE_STEP = "normalize";
+  public static final String CUSTOM_STEP = "custom";
 
   private final String jobId;
   private final int attempt;
