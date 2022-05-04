@@ -46,10 +46,6 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-databricks')
 }
 
-repositories {
-    maven { url 'https://jitpack.io' }
-}
-
 task downloadJdbcDriverZip(type: Download) {
     src 'https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.21/SimbaSparkJDBC42-2.6.21.1039.zip'
     dest new File(buildDir, 'SimbaSparkJDBC42-2.6.21.1039.zip')

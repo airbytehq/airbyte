@@ -29,7 +29,3 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-e2e-test')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
-
-repositories {
-    maven { url 'https://jitpack.io' }
-}

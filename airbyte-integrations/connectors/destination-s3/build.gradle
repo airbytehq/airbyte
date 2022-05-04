@@ -33,7 +33,3 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-s3')
 }
-
-repositories {
-    maven { url 'https://jitpack.io' }
-}
