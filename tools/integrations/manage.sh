@@ -158,6 +158,12 @@ cmd_bump_version() {
       ;;
   esac
 
+   if ! (git diff --quiet && git diff --staged --quiet); then
+      git commit -a -m "auto-bump-versiorsion.outputs.bumped_version }}"
+      git pull origin ${{ github.event.inputs.gitref }}
+      git push origin ${{ github.event.inputs.gitref }}
+   fi
+
   bumped_version="$major_version.$minor_version.$patch_version"
   if [[ "$FORCE_BUMP" == "true" ]] || [[ "$bumped_version" != "$master_version" && "$bumped_version" != "$branch_version" ]]; then
     _error_if_tag_exists "$image_name:$bumped_version"
