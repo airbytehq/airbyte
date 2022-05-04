@@ -209,7 +209,8 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request | Subject                                                                                     |
 |:--------|:-----------| :--- |:--------------------------------------------------------------------------------------------|
-| 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528/) | Update Dataset location field description                                                   |
+| 1.1.4   | 2022-05-04 | [\#](https://github.com/airbytehq/airbyte/pull/)         | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
+| 1.1.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                   |
 | 1.1.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
 | 1.1.1   | 2022-04-15 | [12068](https://github.com/airbytehq/airbyte/pull/12068) | Fixed bug with GCS bucket conditional binding                                               |
 | 1.1.0   | 2022-04-06 | [11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption.                             |
@@ -242,6 +243,7 @@ This uploads data directly from your source to BigQuery. While this is faster to
 
 | Version | Date       | Pull Request                                               | Subject |
 |:--------|:-----------|:-----------------------------------------------------------| :--- |
+| 1.1.4   | 2022-05-04 | [\#](https://github.com/airbytehq/airbyte/pull/)         | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging. |
 | 0.3.3   | 2022-05-02 | [12528](https://github.com/airbytehq/airbyte/pull/12528/) | Update Dataset location field description                                                   |
 | 0.3.2   | 2022-04-29 | [12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                        |
 | 0.3.1   | 2022-04-15 | [11978](https://github.com/airbytehq/airbyte/pull/11978) | Fixed emittedAt timestamp. |
