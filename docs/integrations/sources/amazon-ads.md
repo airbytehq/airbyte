@@ -65,14 +65,14 @@ Information about expected report generation waiting time you may find [here](ht
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `int`, `float`, `number` | `number` |  |
-| `date` | `date` |  |
-| `datetime` | `datetime` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| Integration Type | Airbyte Type |
+| :--- | :--- |
+| `string` | `string` |
+| `int`, `float`, `number` | `number` |
+| `date` | `date` |
+| `datetime` | `datetime` |
+| `array` | `array` |
+| `object` | `object` |
 
 ## Getting started
 
