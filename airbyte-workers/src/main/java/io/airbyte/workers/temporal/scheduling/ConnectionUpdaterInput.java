@@ -41,4 +41,5 @@ public class ConnectionUpdaterInput {
   @Builder.Default
   private boolean fromJobResetFailure = false;
 
+  private boolean firstRun;
 }

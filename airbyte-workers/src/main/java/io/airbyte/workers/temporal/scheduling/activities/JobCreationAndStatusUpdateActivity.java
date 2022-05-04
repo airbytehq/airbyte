@@ -222,4 +222,15 @@ public interface JobCreationAndStatusUpdateActivity {
   @ActivityMethod
   void reportJobStart(ReportJobStartInput reportJobStartInput);
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class FailNonTerminalJobsInput {
+    private UUID connectionId;
+    private String reason;
+  }
+
+  @ActivityMethod
+  void failNonTerminalJobs(FailNonTerminalJobsInput input);
+
 }

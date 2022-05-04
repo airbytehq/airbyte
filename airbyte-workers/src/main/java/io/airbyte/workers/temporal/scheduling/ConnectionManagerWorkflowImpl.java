@@ -29,6 +29,7 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.FailNonTerminalJobsInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
@@ -68,6 +69,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private static final String RENAME_ATTEMPT_ID_TO_NUMBER_TAG = "rename_attempt_id_to_number";
   private static final int RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION = 1;
+
+  private static final String ENSURE_CLEAN_JOB_STATE = "ensure_clean_job_state";
+  private static final int ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION = 1;
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
@@ -132,6 +136,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       if (connectionUpdaterInput.getWorkflowState() != null) {
         workflowState = connectionUpdaterInput.getWorkflowState();
       }
+
+      // ensure we are starting from a clean job state for the first run
+      ensureCleanJobState(connectionUpdaterInput);
 
       // when a reset is triggered, the previous attempt, cancels itself (unless it is already a reset, in
       // which case it does nothing). the previous run that cancels itself then passes on the
@@ -208,6 +215,22 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         }
       }
     });
+  }
+
+  private void ensureCleanJobState(final ConnectionUpdaterInput connectionUpdaterInput) {
+    final int ensureCleanJobStateVersion = Workflow.getVersion(ENSURE_CLEAN_JOB_STATE, Workflow.DEFAULT_VERSION, ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION);
+    log.info("Ensuring clean job state! Version: {}, connectionUpdaterInput: {}", ensureCleanJobStateVersion, connectionUpdaterInput);
+
+    // For backwards compatibility and determinism, skip if workflow existed before this change
+    if (ensureCleanJobStateVersion < ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION) {
+      return;
+    }
+
+    if (connectionUpdaterInput.isFirstRun()) {
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::failNonTerminalJobs, new FailNonTerminalJobsInput(
+          connectionUpdaterInput.getConnectionId(),
+          "Failing job in order to start from clean job state for new temporal workflow run."));
+    }
   }
 
   private void reportSuccess(final ConnectionUpdaterInput connectionUpdaterInput, final StandardSyncOutput standardSyncOutput) {
@@ -375,6 +398,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
     // Continue the workflow as new
     connectionUpdaterInput.setResetConnection(workflowState.isContinueAsReset());
+    connectionUpdaterInput.setFirstRun(false);
     workflowInternalState.getFailures().clear();
     workflowInternalState.setPartialSuccess(null);
     final boolean isDeleted = workflowState.isDeleted();
