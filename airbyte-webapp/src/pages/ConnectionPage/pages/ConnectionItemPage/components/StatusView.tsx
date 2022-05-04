@@ -8,7 +8,7 @@ import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
 
-import { Connection } from "core/domain/connection";
+import { Connection, ConnectionStatus } from "core/domain/connection";
 import Status from "core/statuses";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
@@ -19,12 +19,12 @@ import { useListJobs } from "services/job/JobService";
 
 import ToolTip from "../../../../../components/ToolTip";
 import JobsList from "./JobsList";
-import StatusMainInfo from "./StatusMainInfo";
+import { StatusMainInfo } from "./StatusMainInfo";
 
-type IProps = {
+interface StatusViewProps {
   connection: Connection;
   frequencyText?: string;
-};
+}
 
 const Content = styled.div`
   margin: 0 10px;
@@ -53,7 +53,7 @@ const SyncButton = styled(LoadingButton)`
   min-height: 28px;
 `;
 
-const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
+const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoading, showFeedback, startAction } = useLoadingState();
   const { hasFeature } = useFeatureService();
@@ -123,10 +123,12 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
         title={
           <Title>
             <FormattedMessage id={"sources.syncHistory"} />
-            <div>
-              {wrapWithTooltip(resetDataBtn)}
-              {wrapWithTooltip(syncNowBtn)}
-            </div>
+            {connection.status === ConnectionStatus.ACTIVE && (
+              <div>
+                {wrapWithTooltip(resetDataBtn)}
+                {wrapWithTooltip(syncNowBtn)}
+              </div>
+            )}
           </Title>
         }
       >

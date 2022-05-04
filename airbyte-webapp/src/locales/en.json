@@ -46,6 +46,7 @@
   "form.primaryKey": "Primary key",
   "form.cursorField": "Cursor field",
   "form.dataSync": "Activate the streams you want to sync",
+  "form.dataSync.readonly": "Activated streams",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",
   "form.canceling": "Canceling",
@@ -233,7 +234,7 @@
   "onboarding.syncFailed": "Your sync is failed. Please try again",
   "onboarding.startAgain": "Your sync was cancelled. You can start it again",
 
-  "sources.description": "<b>Sources</b> Sources are where you want to <b>pull data</b> from.",
+  "sources.description": "<b>Sources</b> are where you want to <b>pull data</b> from.",
   "sources.searchIncremental": "Search cursor value for incremental",
   "sources.incrementalDefault": "{value} (default)",
   "sources.incrementalSourceCursor": "Incremental - source-defined cursor",
@@ -339,6 +340,7 @@
   "connection.transfer": "Transfer",
   "connection.linkCopied": "Link copied!",
   "connection.copyLogLink": "Copy link to log",
+  "connection.connectionDeletedView": "This connection has been deleted. You can’t make any changes or run syncs.",
 
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",

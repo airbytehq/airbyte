@@ -3822,7 +3822,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.2.18"
+- dockerImage: "airbyte/source-jira:0.2.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/jira"
     connectionSpecification:
@@ -3860,8 +3860,7 @@
           examples:
           - "PROJ1"
           - "PROJ2"
-          description: "Comma-separated list of Jira project keys to replicate data\
-            \ for."
+          description: "List of Jira project keys to replicate data for."
         start_date:
           type: "string"
           title: "Start Date"
@@ -3877,11 +3876,10 @@
           title: "Additional Fields"
           items:
             type: "string"
-          description: "Comma-separated list of additional fields to include in replicating\
-            \ issues."
+          description: "List of additional fields to include in replicating issues."
           examples:
-          - "Field A"
-          - "Field B"
+          - "customfield_10096"
+          - "customfield_10071"
         expand_issue_changelog:
           type: "boolean"
           title: "Expand Issue Changelog"
@@ -5381,7 +5379,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.10"
+- dockerImage: "airbyte/source-mysql:0.5.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -7360,7 +7358,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.6"
+- dockerImage: "airbyte/source-salesforce:1.0.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
