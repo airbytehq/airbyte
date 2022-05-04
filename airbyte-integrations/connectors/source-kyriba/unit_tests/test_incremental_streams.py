@@ -25,7 +25,10 @@ def test_cursor_field(patch_incremental_base_class):
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = IncrementalKyribaStream(**config())
-    inputs = {"current_stream_state": {"updateDateTime": "2022-01-01T00:00:00Z"}, "latest_record": {"updateDateTime": "2022-01-01T00:00:01Z"}}
+    inputs = {
+        "current_stream_state": {"updateDateTime": "2022-01-01T00:00:00Z"},
+        "latest_record": {"updateDateTime": "2022-01-01T00:00:01Z"},
+    }
     expected_state = {"updateDateTime": "2022-01-01T00:00:01Z"}
     assert stream.get_updated_state(**inputs) == expected_state
 
@@ -53,11 +56,13 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
     expected_checkpoint_interval = 100
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
 
+
 def test_all_request_params(patch_incremental_base_class):
     stream = IncrementalKyribaStream(**config())
     inputs = {"stream_state": {"updateDateTime": "2022-01-01T00:00:00Z"}, "stream_slice": {}, "next_page_token": {"page.offset": 100}}
     expected = {"sort": "updateDateTime", "page.offset": 100, "filter": "updateDateTime=gt='2022-01-01T00:00:00Z'"}
     assert stream.request_params(**inputs) == expected
+
 
 def test_min_request_params(patch_incremental_base_class):
     stream = IncrementalKyribaStream(**config())

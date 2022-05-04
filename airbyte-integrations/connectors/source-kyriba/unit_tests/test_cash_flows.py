@@ -18,9 +18,11 @@ def patch_base_class(mocker):
     mocker.patch.object(CashFlows, "primary_key", "test_primary_key")
     mocker.patch.object(CashFlows, "__abstractmethods__", set())
 
+
 def test_path(patch_base_class):
     stream = CashFlows(**config())
     assert stream.path() == "cash-flows"
+
 
 def test_stream_slices_new(patch_base_class):
     stream = CashFlows(**config())
@@ -35,9 +37,10 @@ def test_stream_slices_new(patch_base_class):
         {
             "startDate": "2022-01-02",
             "endDate": "2022-03-01",
-        }
+        },
     ]
     assert stream.stream_slices(**inputs) == expected_stream_slice
+
 
 def test_stream_slices_state(patch_base_class):
     stream = CashFlows(**config())
@@ -51,6 +54,7 @@ def test_stream_slices_state(patch_base_class):
         }
     ]
     assert stream.stream_slices(**inputs) == expected_stream_slice
+
 
 def test_all_request_params(patch_base_class):
     stream = CashFlows(**config())
@@ -77,17 +81,10 @@ def test_all_request_params(patch_base_class):
     }
     assert stream.request_params(**inputs) == expected
 
+
 def test_parse_response(patch_base_class):
     stream = CashFlows(**config())
     resp = requests.Response()
-    resp_data = {
-        "results": [
-            {
-                "date": {
-                    "updateDateTime": "2022-03-01T00:00:00Z"
-                }
-            }
-        ]
-    }
+    resp_data = {"results": [{"date": {"updateDateTime": "2022-03-01T00:00:00Z"}}]}
     resp.json = MagicMock(return_value=resp_data)
     assert next(stream.parse_response(resp)) == {"updateDateTime": "2022-03-01T00:00:00Z"}

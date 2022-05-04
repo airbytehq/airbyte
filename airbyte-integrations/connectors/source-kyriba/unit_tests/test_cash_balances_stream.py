@@ -13,6 +13,7 @@ def patch_base_class(mocker):
     mocker.patch.object(CashBalancesStream, "primary_key", "test_primary_key")
     mocker.patch.object(CashBalancesStream, "__abstractmethods__", set())
 
+
 def test_stream_slices(patch_base_class):
     stream = CashBalancesStream(**config())
     account_uuids = [{"account_uuid": "first"}, {"account_uuid": "second"}]
@@ -44,20 +45,18 @@ def test_stream_slices(patch_base_class):
     slices = stream.stream_slices()
     assert slices == expected
 
+
 def test_path(patch_base_class):
     stream = CashBalancesStream(**config())
     inputs = {"stream_slice": {"account_uuid": "uuid"}}
     path = stream.path(**inputs)
     assert path == "cash-balances/accounts/uuid/balances"
 
+
 def test_request_params(patch_base_class):
     stream = CashBalancesStream(**config())
     inputs = {
-        "stream_slice": {
-            "account_uuid": "uuid",
-            "startDate": "2022-01-01",
-            "endDate": "2022-02-01"
-        },
+        "stream_slice": {"account_uuid": "uuid", "startDate": "2022-01-01", "endDate": "2022-02-01"},
         "stream_state": {},
     }
     stream.intraday = False

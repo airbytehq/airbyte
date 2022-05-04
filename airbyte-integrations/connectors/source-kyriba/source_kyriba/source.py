@@ -15,17 +15,14 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.models import SyncMode
 
+
 class KyribaClient:
     def __init__(self, username: str, password: str, gateway_url: str):
         self.username = username
         self.password = password
         self.url = f"{gateway_url}/oauth/token"
 
-    @backoff.on_exception(
-        backoff.expo,
-        requests.exceptions.RequestException,
-        max_tries=10
-    )
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=10)
     def login(self) -> TokenAuthenticator:
         data = {"grant_type": "client_credentials"}
         auth = requests.auth.HTTPBasicAuth(self.username, self.password)
@@ -38,12 +35,12 @@ class KyribaClient:
 # Basic full refresh stream
 class KyribaStream(HttpStream):
     def __init__(
-            self,
-            gateway_url: str,
-            client: KyribaClient,
-            version: str = 1,
-            start_date: str = None,
-            end_date: str = None,
+        self,
+        gateway_url: str,
+        client: KyribaClient,
+        version: str = 1,
+        start_date: str = None,
+        end_date: str = None,
     ):
         self.gateway_url = gateway_url
         self.version = version
@@ -63,7 +60,7 @@ class KyribaStream(HttpStream):
         metadata = response.json()["metadata"]
         next_page = metadata["links"].get("next")
         next_offset = metadata["pageOffset"] + metadata["pageLimit"]
-        return { "page.offset": next_offset } if next_page else None
+        return {"page.offset": next_offset} if next_page else None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -83,11 +80,11 @@ class KyribaStream(HttpStream):
         return response.status_code == 429 or 500 <= response.status_code < 600
 
     def unnest(self, key: str, data: Mapping[str, Any]) -> Mapping[str, Any]:
-        '''
+        """
         Kyriba loves to nest fields, but nested fields cannot be used in an
         incremental cursor. This method grabs the hash where the increment field
         is nested and puts it at the top level
-        '''
+        """
         nested = data.pop(key)
         return {**data, **nested}
 
@@ -113,7 +110,7 @@ class IncrementalKyribaStream(KyribaStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = { "sort": self.cursor_field }
+        params = {"sort": self.cursor_field}
         latest_cursor = stream_state.get(self.cursor_field) or self.start_date + "T00:00:00Z"
         if latest_cursor:
             filter = f"{self.cursor_field}=gt='{latest_cursor}'"
@@ -130,11 +127,11 @@ class Accounts(KyribaStream):
 
 class AccountSubStream(HttpSubStream, KyribaStream):
     def __init__(self, **kwargs):
-        super().__init__(parent = Accounts, **kwargs)
+        super().__init__(parent=Accounts, **kwargs)
         self.parent = Accounts(**kwargs)
 
     def get_account_uuids(self) -> Iterable[Optional[Mapping[str, str]]]:
-        return [{"account_uuid": a["uuid"]} for a in self.parent.read_records(sync_mode = SyncMode.full_refresh)]
+        return [{"account_uuid": a["uuid"]} for a in self.parent.read_records(sync_mode=SyncMode.full_refresh)]
 
     def next_page_token(self, response: requests.Response):
         pass
@@ -164,7 +161,7 @@ class CashBalancesStream(AccountSubStream):
         return slices
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        account_uuid = stream_slice['account_uuid']
+        account_uuid = stream_slice["account_uuid"]
         return f"cash-balances/accounts/{account_uuid}/balances"
 
     def request_params(
@@ -202,7 +199,7 @@ class BankBalancesStream(AccountSubStream):
         return slices
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        account_uuid = stream_slice['account_uuid']
+        account_uuid = stream_slice["account_uuid"]
         return f"bank-balances/accounts/{account_uuid}/balances"
 
     def request_params(
