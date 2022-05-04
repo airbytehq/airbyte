@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
-from cuckoo.filter import ScalableCuckooFilter
+
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
