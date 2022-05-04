@@ -530,4 +530,5 @@ def test_convert_to_standard_instance(stream_config, stream_api):
 def test_decoding(stream_config, stream_api):
     stream_name = "AcceptedEventRelation"
     stream = generate_stream(stream_name, stream_config, stream_api)
+    assert stream.decode(b"\xe9\x97\xb4\xe5\x8d\x95\xe7\x9a\x84\xe8\xaf\xb4 \xf0\x9f\xaa\x90") == "间单的说 🪐"
     assert stream.decode(b"0\xe5") == "0å"
