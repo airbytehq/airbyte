@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.9-slim
 
 # Bash is installed for more convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
@@ -13,5 +13,5 @@ ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 
-LABEL io.airbyte.version=0.2.36
+LABEL io.airbyte.version=0.2.45
 LABEL io.airbyte.name=airbyte/source-facebook-marketing

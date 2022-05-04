@@ -10,23 +10,43 @@ import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
 import io.airbyte.db.mongodb.MongoDatabase;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import lombok.val;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Provides utility methods to create configured {@link Database} instances.
+ *
+ * @deprecated This class has been marked as deprecated as we move to using an application framework
+ *             to manage resources. This class will be removed in a future release.
+ *
+ * @see io.airbyte.db.factory.DataSourceFactory
+ * @see io.airbyte.db.factory.DSLContextFactory
+ * @see io.airbyte.db.factory.FlywayFactory
+ */
+@Deprecated(forRemoval = true)
 public class Databases {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
   private static final long DEFAULT_WAIT_MS = 5 * 1000;
+
+  public static Database createPostgresDatabase(final String username,
+                                                final String password,
+                                                final String host,
+                                                final int port,
+                                                final String database) {
+    return createPostgresDatabase(username, password, String.format("jdbc:postgresql://%s:%s/%s", host, port, database));
+  }
 
   public static Database createPostgresDatabase(final String username, final String password, final String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
@@ -180,13 +200,13 @@ public class Databases {
                                                          final String password,
                                                          final String jdbcConnectionString,
                                                          final String driverClassName,
-                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
+                                                         final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
                                                          final Map<String, String> connectionProperties,
                                                          final JdbcCompatibleSourceOperations<?> sourceOperations) {
     final BasicDataSource connectionPool =
         createBasicDataSource(username, password, jdbcConnectionString, driverClassName, connectionProperties);
 
-    return new StreamingJdbcDatabase(connectionPool, sourceOperations, jdbcStreamingQuery);
+    return new StreamingJdbcDatabase(connectionPool, sourceOperations, streamingQueryConfigProvider);
   }
 
   private static BasicDataSource createBasicDataSource(final String username,

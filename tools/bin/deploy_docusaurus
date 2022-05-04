@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+
+# ------------- Import some defaults for the shell
+
+# Source shell defaults
+# $0 is the currently running program (this file)
+this_file_directory=$(dirname $0)
+relative_path_to_defaults=$this_file_directory/../shell_defaults
+
+# if a file exists there, source it. otherwise complain
+if test -f $relative_path_to_defaults; then
+  # source and '.' are the same program
+  source $relative_path_to_defaults
+else
+  echo -e "\033[31m\nFAILED TO SOURCE TEST RUNNING OPTIONS.\033[39m"
+  echo -e "\033[31mTried $relative_path_to_defaults\033[39m"
+  exit 1
+fi
+
+# if a string
+if $(git remote get-url origin | grep --quiet "http"); then
+  set +o xtrace
+  echo -e "$red_text""This program requires a ssh-based github repo""$default_text"
+  echo -e "$red_text""https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account""$default_text"
+  echo -e "$red_text""You will need to change your remote to continue.  Yell @topher for help""$default_text"
+  echo -e "$red_text""change your remote command:""$default_text"
+  echo -e "$red_text""git remote set-url origin git@github.com:airbytehq/airbyte.git""$default_text"
+  exit 1
+fi
+
+
+# ------------- Start Main
+set +o xtrace
+echo -e "$blue_text""This script pushes changes (somewhat pointlessly) to ""$default_text"
+echo -e "$blue_text""airbyte's gh_pages branch\n""$default_text"
+echo -e "$blue_text""It also actually deploys by copying those assets to""$default_text"
+echo -e "$blue_text""the repo airbytehq/airbytehq.github.io\n\n""$default_text"
+
+
+echo -e "$blue_text""Current path:""$default_text"
+pwd
+
+
+# Yarn check (which is commonly used to check for program existance)
+# -s/--silent doesn't exist in cloud's Ubuntu
+if ! which yarn > /dev/null; then
+  echo -e "$red_text""yarn not found HALP!!\n\n""$default_text"
+  exit 1
+fi
+
+set -o xtrace
+
+# local check for changes.  Fail here early instead of 40 seconds from now
+if ! test -z "$(git status --short)"; then
+  set +o xtrace
+  echo -e "$red_text""You have uncommitted changes!!!\n\n""$default_text"
+  echo -e "$red_text""Commit and try again""$default_text"
+  exit 1
+fi
+
+cd docusaurus
+pwd
+
+# install packages
+yarn install
+
+# generate static content
+yarn build
+
+# Check tty for local/remote deploys (we expect cloud to be non-interactive)
+# results like /dev/ttys000 || not a tty
+if test "$(tty)" == "not a tty"; then
+  set +o xtrace
+  echo -e "$blue_text""github email not found adding Octavia's""$default_text"
+  set -o xtrace
+  git config user.email="octavia-squidington-iii@users.noreply.github.com"
+  git config user.name="octavia-squidington-iii"
+  echo "machine github.com login octavia-squidington-iii password $GITHUB_TOKEN" > $HOME/.netrc
+  # context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
+  # write a prod website to airbytehq/airbyte gh_pages branch
+  # NOT ACTUALLY WORKING
+  GIT_USER="octavia-squidington-iii" yarn run publish-gh-pages
+else
+  yarn run deploy
+fi
+
+
+
+
+# Git makes more sense from /
+cd ..
+pwd
+
+# We should be here but we are playing with fire
+git fetch
+# We force push gh-pages.  Local copies confuse things
+# This line uses || true to enure we don't error if that branch doesn't exist
+git branch -D gh-pages 2> /dev/null || true
+# checkout the branch tracking it's remote
+git switch --track origin/gh-pages
+
+# For tracking in the commit message
+revision=$(git rev-parse --short HEAD)
+
+# explained at length below
+set +o xtrace
+echo -e "$blue_text""Writing CNAME file!\n\n""$default_text"
+set -o xtrace
+
+# This is a weird one.  GH Pages expects a CNAME file when redirecting
+# we redirect docs.airbyte.io to airbytehq.github.io
+# this tells github to expect docs.airbyte.com points to us
+echo "docs.airbyte.com" > CNAME
+
+git add CNAME
+
+git commit --message "Adds CNAME to deploy for $revision"
+
+# non functional. for debugging
+git branch
+
+if test "$(tty)" == "not a tty"; then
+  # note that this is NOT airbyte repo
+  git push --force https://octavia-squidington-iii:$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
+else
+  git push --force git@github.com:airbytehq/airbytehq.github.io.git
+fi
+
+# Let's leave the tire fire of force pushes
+git checkout -
+
+
+# Want to push from your own computer? uncomment this line and comment out the push above
+
+set +o xtrace
+echo -e "$blue_text""Script exiting 0 GREAT SUCCESS!!!?""$default_text"

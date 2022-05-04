@@ -4,78 +4,114 @@
 
 from typing import List
 
-from pydantic import BaseModel, Field
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
+from pydantic import BaseModel, Extra, Field
 from source_amazon_ads.constants import AmazonAdsRegion
 
 
 class AmazonAdsConfig(BaseModel):
     class Config:
         title = "Amazon Ads Spec"
+        # ignore extra attributes during model initialization
+        # https://pydantic-docs.helpmanual.io/usage/model_config/
+        extra = Extra.ignore
+        # it's default, but better to be more explicit
+        schema_extra = {"additionalProperties": True}
+
+    auth_type: str = Field(default="oauth2.0", const=True, order=0)
 
     client_id: str = Field(
-        name="Client ID",
-        description=(
-            'Oauth client id <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">'
-            "How to create your Login with Amazon</a>"
-        ),
-    )
-    client_secret: str = Field(
-        name="Client secret",
-        description=(
-            'Oauth client secret <a href="https://advertising.amazon.com/API/docs/en-us/setting-up/step-1-create-lwa-app">'
-            "How to create your Login with Amazon</a>"
-        ),
-        airbyte_secret=True,
+        title="Client ID",
+        description="The Client ID of your Amazon Ads developer application.",
+        order=1,
     )
 
-    # Amazon docs don't describe which of the below scopes to use under what circumstances so
-    # we default to the first but allow the user to override it
-    scope: str = Field(
-        "advertising::campaign_management",
-        name="Client scope",
-        examples=[
-            "cpc_advertising:campaign_management",
-        ],
-        description=(
-            "By default its advertising::campaign_management,"
-            " but customers may need to set scope to cpc_advertising:campaign_management."
-        ),
-    )
-    refresh_token: str = Field(
-        name="Oauth refresh token",
-        description=(
-            'Oauth 2.0 refresh_token, <a href="https://developer.amazon.com/docs/login-with-amazon/conceptual-overview.html">'
-            "read details here</a>"
-        ),
+    client_secret: str = Field(
+        title="Client Secret",
+        description="The Client Secret of your Amazon Ads developer application.",
         airbyte_secret=True,
+        order=2,
+    )
+
+    refresh_token: str = Field(
+        title="Refresh Token",
+        description='Amazon Ads Refresh Token. See the <a href="https://docs.airbyte.com/integrations/sources/amazon-ads">docs</a> for more information on how to obtain this token.',
+        airbyte_secret=True,
+        order=3,
+    )
+
+    region: AmazonAdsRegion = Field(
+        title="Region *",
+        description='Region to pull data from (EU/NA/FE/SANDBOX). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a> for more details.',
+        default=AmazonAdsRegion.NA,
+        order=4,
+    )
+
+    report_wait_timeout: int = Field(
+        title="Report Wait Timeout *",
+        description="Timeout duration in minutes for Reports. Eg. 30",
+        default=30,
+        examples=[30, 120],
+        order=5,
+    )
+
+    report_generation_max_retries: int = Field(
+        title="Report Generation Maximum Retries *",
+        description="Maximum retries Airbyte will attempt for fetching Report Data. Eg. 5",
+        default=5,
+        examples=[5, 10, 15],
+        order=6,
     )
 
     start_date: str = Field(
         None,
-        name="Start date",
-        description="Start date for collectiong reports, should not be more than 60 days in past. In YYYY-MM-DD format",
+        title="Start Date (Optional)",
+        description="The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
         examples=["2022-10-10", "2022-10-22"],
+        order=7,
     )
-
-    region: AmazonAdsRegion = Field(name="Region", description="Region to pull data from (EU/NA/FE/SANDBOX)", default=AmazonAdsRegion.NA)
 
     profiles: List[int] = Field(
         None,
-        name="Profile Ids",
-        description="profile Ids you want to fetch data for",
+        title="Profile IDs (Optional)",
+        description='Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a> for more details.',
+        order=8,
     )
 
     @classmethod
-    def schema(cls, **kvargs):
-        schema = super().schema(**kvargs)
-        # We are using internal _host parameter to set API host to sandbox
-        # environment for SAT but dont want it to be visible for end users,
-        # filter out it from the jsonschema output
-        schema["properties"] = {name: desc for name, desc in schema["properties"].items() if not name.startswith("_")}
+    def schema(cls, **kwargs):
+        schema = super().schema(**kwargs)
+        expand_refs(schema)
         # Transform pydantic generated enum for region
-        definitions = schema.pop("definitions", None)
-        if definitions:
-            schema["properties"]["region"].update(definitions["AmazonAdsRegion"])
-            schema["properties"]["region"].pop("allOf", None)
-            schema["properties"]["region"].pop("$ref", None)
+        if schema["properties"]["region"].get("allOf"):
+            schema["properties"]["region"] = {**schema["properties"]["region"]["allOf"][0], **schema["properties"]["region"]}
+            schema["properties"]["region"].pop("allOf")
         return schema
+
+
+advanced_auth = AdvancedAuth(
+    auth_flow_type=AuthFlowType.oauth2_0,
+    predicate_key=["auth_type"],
+    predicate_value="oauth2.0",
+    oauth_config_specification=OAuthConfigSpecification(
+        complete_oauth_output_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {"refresh_token": {"type": "string", "path_in_connector_config": ["refresh_token"]}},
+        },
+        complete_oauth_server_input_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+        },
+        complete_oauth_server_output_specification={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+            },
+        },
+    ),
+)

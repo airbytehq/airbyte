@@ -4,7 +4,8 @@
   "description": "Airbyte e2e testing",
   "scripts": {
     "cypress:open": "cypress open",
-    "cypress:ci": "CYPRESS_BASE_URL=http://localhost:8000 cypress run"
+    "cypress:ci": "CYPRESS_BASE_URL=http://localhost:8000 cypress run",
+    "cypress:ci:record": "CYPRESS_BASE_URL=http://localhost:8000 cypress run --record --key $CYPRESS_KEY"
   },
   "eslintConfig": {
     "env": {

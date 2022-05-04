@@ -64,12 +64,6 @@ public interface ConnectionManagerWorkflow {
   void retryFailedActivity();
 
   /**
-   * Use for testing in order to simulate a job failure.
-   */
-  @SignalMethod
-  void simulateFailure();
-
-  /**
    * Return the current state of the workflow.
    */
   @QueryMethod

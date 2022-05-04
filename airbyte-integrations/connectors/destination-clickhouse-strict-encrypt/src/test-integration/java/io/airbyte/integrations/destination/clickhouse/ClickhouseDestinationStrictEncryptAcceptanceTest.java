@@ -97,10 +97,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -110,9 +110,8 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    return jdbcDB.query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-        .collect(Collectors.toList());
+    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    return jdbcDB.queryJsons(query);
   }
 
   @Override
@@ -141,7 +140,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server")
         .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
         .withClasspathResourceMapping("config.xml", "/etc/clickhouse-server/config.xml", BindMode.READ_ONLY)
@@ -156,7 +155,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }

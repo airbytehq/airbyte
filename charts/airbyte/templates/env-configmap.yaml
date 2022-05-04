@@ -1,30 +1,35 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: airbyte-env
+  name: {{ include "common.names.fullname" . }}-env
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
     helm.sh/hook-weight: "-1"
 data:
   AIRBYTE_VERSION: {{ .Values.version | default .Chart.AppVersion }}
   API_URL: {{ .Values.webapp.api.url }}
-  AWS_ACCESS_KEY_ID: {{ .Values.logs.accessKey.password }}
-  AWS_SECRET_ACCESS_KEY: {{ .Values.logs.secretKey.password }}
   CONFIG_ROOT: /configs
   CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.15.001"
   DATA_DOCKER_MOUNT: airbyte_data
   DATABASE_DB: {{ include "airbyte.database.name" . }}
   DATABASE_HOST: {{ include "airbyte.database.host" . }}
-  DATABASE_PASSWORD: {{ .Values.postgresql.postgresqlPassword }}
   DATABASE_PORT: {{ include "airbyte.database.port" . | quote }}
   DATABASE_URL: {{ include "airbyte.database.url" . | quote }}
-  DATABASE_USER: {{ include "airbyte.database.user" . }}
   DB_DOCKER_MOUNT: airbyte_db
   FULLSTORY: {{ ternary "enabled" "disabled" .Values.webapp.fullstory.enabled }}
   GCS_LOG_BUCKET: {{ .Values.logs.gcs.bucket | quote }}
-  GOOGLE_APPLICATION_CREDENTIALS: {{ .Values.logs.gcs.credentials | quote }}
+  GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
   INTERNAL_API_HOST: {{ include "common.names.fullname" . }}-server:{{ .Values.server.service.port }}
   IS_DEMO: {{ ternary "true" "false" .Values.webapp.isDemo | quote }}
+{{- if $.Values.jobs.kube.annotations }}
+  JOB_KUBE_ANNOTATIONS: {{ $.Values.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}
+{{- end }}
+{{- if $.Values.jobs.kube.nodeSelector }}
+  JOB_KUBE_NODE_SELECTORS: {{ $.Values.jobs.kube.nodeSelector | include "airbyte.flattenMap" | quote }}
+{{- end }}
+{{- if $.Values.jobs.kube.tolerations }}
+  JOB_KUBE_TOLERATIONS: {{ $.Values.jobs.kube.tolerations | include "airbyte.flattenArrayMap" | quote }}
+{{- end }}
   JOB_MAIN_CONTAINER_CPU_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).cpu | default "" | quote }}
   JOB_MAIN_CONTAINER_CPU_REQUEST: {{ ((.Values.jobs.resources | default dict).requests | default dict).cpu | default "" | quote }}
   JOB_MAIN_CONTAINER_MEMORY_LIMIT: {{ ((.Values.jobs.resources | default dict).limits | default dict).memory | default "" | quote }}
@@ -32,14 +37,12 @@ data:
   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.29.15.001"
   LOCAL_ROOT: /tmp/airbyte_local
   RUN_DATABASE_MIGRATION_ON_STARTUP: "true"
-  S3_LOG_BUCKET: {{ .Values.logs.s3.bucket }}
+  S3_LOG_BUCKET: {{ .Values.logs.s3.bucket | quote }}
   S3_LOG_BUCKET_REGION: {{ .Values.logs.s3.bucketRegion | quote }}
   S3_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . | quote }}
   S3_PATH_STYLE_ACCESS: {{ include "airbyte.s3PathStyleAccess" . | quote }}
   STATE_STORAGE_MINIO_BUCKET_NAME: airbyte-state-storage
   STATE_STORAGE_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . | quote }}
-  STATE_STORAGE_MINIO_ACCESS_KEY: {{ .Values.minio.accessKey.password | quote }}
-  STATE_STORAGE_MINIO_SECRET_ACCESS_KEY: {{ .Values.minio.secretKey.password | quote }}
   SUBMITTER_NUM_THREADS: "10"
   TEMPORAL_HOST: {{ include "common.names.fullname" . }}-temporal:{{ .Values.temporal.service.port }}
   TEMPORAL_WORKER_PORTS: 9001,9002,9003,9004,9005,9006,9007,9008,9009,9010,9011,9012,9013,9014,9015,9016,9017,9018,9019,9020,9021,9022,9023,9024,9025,9026,9027,9028,9029,9030,9031,9032,9033,9034,9035,9036,9037,9038,9039,9040

@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -86,10 +85,10 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -102,10 +101,11 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
         getConfig(),
         ClickhouseDestination.HOST_KEY,
         ClickhouseDestination.PORT_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabase(mangledConfig)
-            .query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .collect(Collectors.toList()));
+        mangledConfig -> {
+          final JdbcDatabase database = getDatabase(mangledConfig);
+          final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+          return database.queryJsons(query);
+        });
   }
 
   @Override
@@ -133,14 +133,14 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     bastion.initAndStartBastion();
     db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(bastion.getNetWork());
     db.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
   }
 

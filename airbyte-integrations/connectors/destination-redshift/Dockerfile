@@ -16,5 +16,5 @@ ENV APPLICATION destination-redshift
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.3.27
+LABEL io.airbyte.version=0.3.32
 LABEL io.airbyte.name=airbyte/destination-redshift

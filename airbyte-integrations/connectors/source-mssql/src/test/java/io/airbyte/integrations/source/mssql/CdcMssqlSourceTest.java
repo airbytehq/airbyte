@@ -21,11 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
@@ -315,8 +317,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             config.get("port").asInt(),
             dbName),
         DRIVER_CLASS,
-        new MssqlJdbcStreamingQueryConfiguration(),
-        null,
+        AdaptiveStreamingQueryConfig::new,
+        Maps.newHashMap(),
         new MssqlSourceOperations());
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }

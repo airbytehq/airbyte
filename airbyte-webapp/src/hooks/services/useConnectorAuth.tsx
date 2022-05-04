@@ -1,21 +1,21 @@
 import { useCallback, useMemo, useRef } from "react";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
+import { useConfig } from "config";
 import {
   ConnectorDefinitionSpecification,
   ConnectorSpecification,
   DestinationGetConsentPayload,
   SourceGetConsentPayload,
 } from "core/domain/connector";
-
-import { useConfig } from "config";
-import { useCurrentWorkspace } from "./useWorkspace";
-import { SourceAuthService } from "core/domain/connector/SourceAuthService";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
-import { useGetService } from "core/servicesProvider";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
+import { SourceAuthService } from "core/domain/connector/SourceAuthService";
+import { RequestMiddleware } from "core/request/RequestMiddleware";
+import { useGetService } from "core/servicesProvider";
+
 import useRouter from "../useRouter";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 let windowObjectReference: Window | null = null; // global variable
 
@@ -24,8 +24,7 @@ function openWindow(url: string): void {
     /* if the pointer to the window object in memory does not exist
        or if such pointer exists but the window was closed */
 
-    const strWindowFeatures =
-      "toolbar=no,menubar=no,width=600,height=700,top=100,left=100";
+    const strWindowFeatures = "toolbar=no,menubar=no,width=600,height=700,top=100,left=100";
     windowObjectReference = window.open(url, "name", strWindowFeatures);
     /* then create it. The new window will be created and
        will be brought on top of any other window. */
@@ -53,19 +52,11 @@ export function useConnectorAuth(): {
 } {
   const { workspaceId } = useCurrentWorkspace();
   const { apiUrl, oauthRedirectUrl } = useConfig();
-  const middlewares = useGetService<RequestMiddleware[]>(
-    "DefaultRequestMiddlewares"
-  );
+  const middlewares = useGetService<RequestMiddleware[]>("DefaultRequestMiddlewares");
 
   // TODO: move to separate initFacade and use refs instead
-  const sourceAuthService = useMemo(
-    () => new SourceAuthService(apiUrl, middlewares),
-    [apiUrl, middlewares]
-  );
-  const destinationAuthService = useMemo(
-    () => new DestinationAuthService(apiUrl, middlewares),
-    [apiUrl, middlewares]
-  );
+  const sourceAuthService = useMemo(() => new SourceAuthService(apiUrl, middlewares), [apiUrl, middlewares]);
+  const destinationAuthService = useMemo(() => new DestinationAuthService(apiUrl, middlewares), [apiUrl, middlewares]);
 
   return {
     getConsentUrl: async (
@@ -122,16 +113,11 @@ export function useRunOauthFlow(
   run: (oauthInputParams: Record<string, unknown>) => void;
 } {
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
-  const param = useRef<
-    SourceGetConsentPayload | DestinationGetConsentPayload
-  >();
+  const param = useRef<SourceGetConsentPayload | DestinationGetConsentPayload>();
 
   const [{ loading }, onStartOauth] = useAsyncFn(
     async (oauthInputParams: Record<string, unknown>) => {
-      const consentRequestInProgress = await getConsentUrl(
-        connector,
-        oauthInputParams
-      );
+      const consentRequestInProgress = await getConsentUrl(connector, oauthInputParams);
 
       param.current = consentRequestInProgress.payload;
       openWindow(consentRequestInProgress.consentUrl);
@@ -144,10 +130,7 @@ export function useRunOauthFlow(
       const oauthStartedPayload = param.current;
 
       if (oauthStartedPayload) {
-        const completeOauthResponse = await completeOauthRequest(
-          oauthStartedPayload,
-          queryParams
-        );
+        const completeOauthResponse = await completeOauthRequest(oauthStartedPayload, queryParams);
 
         onDone?.(completeOauthResponse);
         return true;

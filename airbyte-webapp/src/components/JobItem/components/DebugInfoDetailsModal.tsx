@@ -1,9 +1,9 @@
 import React from "react";
-import styled from "styled-components";
 import { useIntl, FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-import Modal from "components/Modal";
 import { Button } from "components";
+import Modal from "components/Modal";
 
 import { JobDebugInfoMeta } from "core/domain/job";
 
@@ -94,9 +94,7 @@ const DebugInfoDetailsModal: React.FC<IProps> = ({ onClose, jobDebugInfo }) => {
     const sourceDetails = getSourceDetails();
     const destinationDetails = getDestinationDetails();
 
-    navigator.clipboard.writeText(
-      [airbyteVersionDetails, sourceDetails, destinationDetails].join("\n")
-    );
+    navigator.clipboard.writeText([airbyteVersionDetails, sourceDetails, destinationDetails].join("\n"));
   };
 
   return (

@@ -26,5 +26,6 @@
     "status": {
       "type": "string"
     }
-  }
+  },
+  "required": ["id", "created_at", "status"]
 }

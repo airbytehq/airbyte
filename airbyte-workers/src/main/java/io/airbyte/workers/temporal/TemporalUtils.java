@@ -10,7 +10,7 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
 import io.temporal.api.namespace.v1.NamespaceInfo;
@@ -71,11 +71,11 @@ public class TemporalUtils {
 
   public static final String DEFAULT_NAMESPACE = "default";
 
-  private static final Duration WORKFLOW_EXECUTION_TTL = Duration.ofDays(7);
+  private static final Duration WORKFLOW_EXECUTION_TTL = Duration.ofDays(configs.getTemporalRetentionInDays());
   private static final String HUMAN_READABLE_WORKFLOW_EXECUTION_TTL =
       DurationFormatUtils.formatDurationWords(WORKFLOW_EXECUTION_TTL.toMillis(), true, true);
 
-  public static void configureTemporalNamespace(WorkflowServiceStubs temporalService) {
+  public static void configureTemporalNamespace(final WorkflowServiceStubs temporalService) {
     final var client = temporalService.blockingStub();
     final var describeNamespaceRequest = DescribeNamespaceRequest.newBuilder().setNamespace(DEFAULT_NAMESPACE).build();
     final var currentRetentionGrpcDuration = client.describeNamespace(describeNamespaceRequest).getConfig().getWorkflowExecutionRetentionTtl();
@@ -217,19 +217,20 @@ public class TemporalUtils {
    * Runs the code within the supplier while heartbeating in the backgroud. Also makes sure to shut
    * down the heartbeat server after the fact.
    */
-  public static <T> T withBackgroundHeartbeat(Callable<T> callable) {
+  public static <T> T withBackgroundHeartbeat(final Callable<T> callable,
+                                              final Supplier<ActivityExecutionContext> activityContext) {
     final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     try {
-      scheduledExecutor.scheduleAtFixedRate(() -> {
-        Activity.getExecutionContext().heartbeat(null);
-      }, 0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+      scheduledExecutor.scheduleAtFixedRate(
+          () -> new CancellationHandler.TemporalCancellationHandler(activityContext.get()).checkAndHandleCancellation(() -> {}),
+          0, SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       return callable.call();
     } catch (final ActivityCompletionException e) {
       LOGGER.warn("Job either timed out or was cancelled.");
       throw new RuntimeException(e);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     } finally {
       LOGGER.info("Stopping temporal heartbeating...");
@@ -237,12 +238,14 @@ public class TemporalUtils {
     }
   }
 
-  public static <T> T withBackgroundHeartbeat(final AtomicReference<Runnable> cancellationCallbackRef, final Callable<T> callable) {
+  public static <T> T withBackgroundHeartbeat(final AtomicReference<Runnable> cancellationCallbackRef,
+                                              final Callable<T> callable,
+                                              final Supplier<ActivityExecutionContext> activityContext) {
     final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     try {
       scheduledExecutor.scheduleAtFixedRate(() -> {
-        final CancellationHandler cancellationHandler = new CancellationHandler.TemporalCancellationHandler();
+        final CancellationHandler cancellationHandler = new CancellationHandler.TemporalCancellationHandler(activityContext.get());
 
         cancellationHandler.checkAndHandleCancellation(() -> {
           if (cancellationCallbackRef != null) {
@@ -258,7 +261,7 @@ public class TemporalUtils {
     } catch (final ActivityCompletionException e) {
       LOGGER.warn("Job either timed out or was cancelled.");
       throw new RuntimeException(e);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     } finally {
       LOGGER.info("Stopping temporal heartbeating...");

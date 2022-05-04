@@ -16,6 +16,7 @@ plugins {
     id 'pmd'
     id 'com.diffplug.spotless' version '6.0.0'
     id 'com.github.hierynomus.license' version '0.16.1'
+    id 'com.github.spotbugs' version '5.0.5'
 }
 
 repositories {
@@ -27,6 +28,15 @@ rootProject.file('.env').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
+}
+
+// `version` is used as the application build version for artifacts like jars
+// `image_tag` is used as the docker tag applied to built images.
+// These values are the same for building an specific Airbyte release or branch via the 'VERSION' environment variable.
+// For local development builds, the 'VERSION' environment variable is unset, and built images are tagged with 'dev'.
+ext {
+    version = System.getenv("VERSION") ?: env.VERSION
+    image_tag = System.getenv("VERSION") ?: 'dev'
 }
 
 def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
@@ -128,14 +138,16 @@ spotless {
 check.dependsOn 'spotlessApply'
 
 @SuppressWarnings('GroovyAssignabilityCheck')
-def Task getDockerBuildTask(String artifactName, String projectDir) {
+def Task getDockerBuildTask(String artifactName, String projectDir, String buildVersion, String buildTag) {
     return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
-        def buildTag = System.getenv('VERSION') ?: 'dev'
-        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: 'linux/amd64'
-        def alpineImage = System.getenv('ALPINE_IMAGE') ?: 'alpine:3.4'
-        def postgresImage = System.getenv('POSTGRES_IMAGE') ?: 'postgres:13-alpine'
         def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
-        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: 'amd64'
+
+        def arch = System.getProperty("os.arch").toLowerCase()
+        def isArm64 = arch == "aarch64" || arch == "arm64"
+
+        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
+        def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
+        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
         inputDir = file("$projectDir/build/docker")
         platform = buildPlatform
@@ -143,16 +155,14 @@ def Task getDockerBuildTask(String artifactName, String projectDir) {
         buildArgs.put('JDK_VERSION', jdkVersion)
         buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
         buildArgs.put('ALPINE_IMAGE', alpineImage)
-        buildArgs.put('POSTGRES_IMAGE', postgresImage)
+        buildArgs.put('VERSION', buildVersion)
     })
 }
 
 allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
 
-    task copyDocker(type: Copy) {
-        delete "build/docker"
-
+    task copyDocker(type: Sync) {
         from "${project.projectDir}/Dockerfile"
         into "build/docker/"
     }
@@ -167,7 +177,7 @@ allprojects {
     group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
     project.archivesBaseName = "${project.group}-${project.name}"
 
-    version = env.VERSION
+    version = rootProject.ext.version
 }
 
 // Java projects common configurations
@@ -179,6 +189,7 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+    apply plugin: 'com.github.spotbugs'
 
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -188,6 +199,9 @@ subprojects {
         maven {
             // TODO(Issue-4915): Remove this when upstream is merged in.
             url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
+        maven {
+            url 'https://jitpack.io'
         }
     }
 
@@ -249,6 +263,11 @@ subprojects {
         finalizedBy jacocoTestReport
     }
 
+    spotbugs {
+        reportLevel = 'high'
+        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+    }
+
     dependencies {
         if (project.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
@@ -305,6 +324,10 @@ subprojects {
         testImplementation 'org.mockito:mockito-junit-jupiter:4.0.0'
         testImplementation 'org.assertj:assertj-core:3.21.0'
 
+        testImplementation 'org.junit-pioneer:junit-pioneer:1.6.2'
+
+        // adds owasp plugin
+        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     }
 
     tasks.withType(Tar) {

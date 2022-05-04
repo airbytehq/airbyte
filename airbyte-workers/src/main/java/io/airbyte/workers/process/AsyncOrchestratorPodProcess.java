@@ -114,7 +114,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     }
 
     // If the pod does exist, it may be in a terminal (error or completed) state.
-    final boolean isTerminal = KubePodProcess.isTerminal(pod);
+    final boolean isTerminal = KubePodResourceHelper.isTerminal(pod);
 
     if (isTerminal) {
       // In case the doc store was updated in between when we pulled it and when
@@ -171,13 +171,13 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     try {
       exitValue();
       return true;
-    } catch (IllegalThreadStateException e) {
+    } catch (final IllegalThreadStateException e) {
       return false;
     }
   }
 
   @Override
-  public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
+  public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
     // implementation copied from Process.java since this isn't a real Process
     long remainingNanos = unit.toNanos(timeout);
     if (hasExited())
@@ -185,7 +185,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     if (timeout <= 0)
       return false;
 
-    long deadline = System.nanoTime() + remainingNanos;
+    final long deadline = System.nanoTime() + remainingNanos;
     do {
       Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(remainingNanos) + 1, 100));
       if (hasExited())
@@ -198,7 +198,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
   @Override
   public int waitFor() throws InterruptedException {
-    boolean exited = waitFor(10, TimeUnit.DAYS);
+    final boolean exited = waitFor(10, TimeUnit.DAYS);
 
     if (exited) {
       return exitValue();
@@ -289,7 +289,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withVolumeMounts(volumeMounts)
         .build();
 
-    final Pod pod = new PodBuilder()
+    final Pod podToCreate = new PodBuilder()
         .withApiVersion("v1")
         .withNewMetadata()
         .withName(getInfo().name())
@@ -307,25 +307,23 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     // should only create after the kubernetes API creates the pod
     final var createdPod = kubernetesClient.pods()
         .inNamespace(getInfo().namespace())
-        .createOrReplace(pod);
+        .createOrReplace(podToCreate);
 
     log.info("Waiting for pod to be running...");
-    try {
-      kubernetesClient.pods()
-          .inNamespace(kubePodInfo.namespace())
-          .withName(kubePodInfo.name())
-          .waitUntilCondition(p -> {
-            return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
-          }, 5, TimeUnit.MINUTES);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    kubernetesClient.pods()
+        .inNamespace(kubePodInfo.namespace())
+        .withName(kubePodInfo.name())
+        .waitUntilCondition(p -> {
+          return !p.getStatus().getContainerStatuses().isEmpty() && p.getStatus().getContainerStatuses().get(0).getState().getWaiting() == null;
+        }, 5, TimeUnit.MINUTES);
 
-    final var containerState = kubernetesClient.pods()
+    final var podStatus = kubernetesClient.pods()
         .inNamespace(kubePodInfo.namespace())
         .withName(kubePodInfo.name())
         .get()
-        .getStatus()
+        .getStatus();
+
+    final var containerState = podStatus
         .getContainerStatuses()
         .get(0)
         .getState();
@@ -333,6 +331,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     if (containerState.getRunning() == null) {
       throw new RuntimeException("Pod was not running, state was: " + containerState);
     }
+
+    log.info(String.format("Pod %s/%s is running on %s", kubePodInfo.namespace(), kubePodInfo.name(), podStatus.getPodIP()));
 
     final var updatedFileMap = new HashMap<>(fileMap);
     updatedFileMap.put(KUBE_POD_INFO, Jsons.serialize(kubePodInfo));

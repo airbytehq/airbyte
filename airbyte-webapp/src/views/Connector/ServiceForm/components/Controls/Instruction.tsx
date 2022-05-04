@@ -1,24 +1,29 @@
+import type { PluggableList } from "react-markdown/lib/react-markdown";
+import type { Url } from "url";
+
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useToggle } from "react-use";
+import rehypeSlug from "rehype-slug";
 import urls from "rehype-urls";
-import type { PluggableList } from "react-markdown/lib/react-markdown";
+import styled from "styled-components";
 
-import {
-  useDocumentation,
-  getDocumentationType,
-} from "hooks/services/useDocumentation";
 import { LoadingPage } from "components";
-import { SideView } from "components/SideView";
 import { Markdown } from "components/Markdown";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { SideView } from "components/SideView";
+
 import { useConfig } from "config";
+import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import { useDocumentation, getDocumentationType } from "hooks/services/useDocumentation";
 
 type IProps = {
   selectedService: SourceDefinition | DestinationDefinition;
   documentationUrl: string;
 };
+
+interface Element {
+  tagName: string;
+}
 
 const SideViewButton = styled.button`
   cursor: pointer;
@@ -71,23 +76,33 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & IProps> = ({
   const config = useConfig();
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
-  const removeBaseUrl = (url: { path: string }) => {
-    if (url.path.startsWith("../../")) {
-      return url.path.replace("../../", `${config.integrationUrl}/`);
+  const sanitizeLinks = (url: Url, element: Element) => {
+    // Relative URLs pointing to another place within the documentation.
+    if (url.path?.startsWith("../../")) {
+      if (element.tagName === "img") {
+        // In images replace relative URLs with links to our bundled assets
+        return url.path.replace("../../", `${config.integrationUrl}/`);
+      } else {
+        // In links replace with a link to the external documentation instead
+        // The external path is the markdown URL without the "../../" prefix and the .md extension
+        const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
+        return `${config.ui.docsLink}/${docPath}`;
+      }
     }
-    return url.path;
+    return url.href;
   };
 
-  const urlReplacerPlugin: PluggableList = [[urls, removeBaseUrl]];
+  const urlReplacerPlugin: PluggableList = [
+    [urls, sanitizeLinks],
+    // @ts-expect-error rehype-slug currently has type conflicts due to duplicate vfile dependencies
+    [rehypeSlug],
+  ];
   return (
     <SideView
       onClose={onClose}
       headerLink={
         <HeaderLink href={documentationUrl} target="_blank" rel="noreferrer">
-          <FormattedMessage
-            id="onboarding.instructionsLink"
-            values={{ name: selectedService.name }}
-          />
+          <FormattedMessage id="onboarding.instructionsLink" values={{ name: selectedService.name }} />
         </HeaderLink>
       }
     >
@@ -102,10 +117,7 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & IProps> = ({
   );
 };
 
-const Instruction: React.FC<IProps> = ({
-  selectedService,
-  documentationUrl,
-}) => {
+const Instruction: React.FC<IProps> = ({ selectedService, documentationUrl }) => {
   const [isSideViewOpen, setIsSideViewOpen] = useToggle(false);
   const docType = getDocumentationType(documentationUrl);
 
@@ -125,11 +137,7 @@ const Instruction: React.FC<IProps> = ({
         </SideViewButton>
       )}
       {docType === "external" && (
-        <DocumentationLink
-          href={documentationUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <DocumentationLink href={documentationUrl} target="_blank" rel="noopener noreferrer">
           <FormattedMessage id="form.setupGuide" />
         </DocumentationLink>
       )}

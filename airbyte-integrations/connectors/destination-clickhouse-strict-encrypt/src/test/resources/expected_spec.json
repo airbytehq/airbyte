@@ -3,21 +3,12 @@
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": false,
-  "supported_destination_sync_modes": [
-    "overwrite",
-    "append",
-    "append_dedup"
-  ],
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ClickHouse Destination Spec",
     "type": "object",
-    "required": [
-      "host",
-      "port",
-      "database",
-      "username"
-    ],
+    "required": ["host", "port", "database", "username"],
     "additionalProperties": true,
     "properties": {
       "host": {
@@ -33,9 +24,7 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 8123,
-        "examples": [
-          "8123"
-        ],
+        "examples": ["8123"],
         "order": 1
       },
       "tcp-port": {
@@ -45,9 +34,7 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 9000,
-        "examples": [
-          "9000"
-        ],
+        "examples": ["9000"],
         "order": 2
       },
       "database": {
@@ -76,9 +63,7 @@
         "oneOf": [
           {
             "title": "No Tunnel",
-            "required": [
-              "tunnel_method"
-            ],
+            "required": ["tunnel_method"],
             "properties": {
               "tunnel_method": {
                 "description": "No ssh tunnel needed to connect to database",
@@ -117,9 +102,7 @@
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 22,
-                "examples": [
-                  "22"
-                ],
+                "examples": ["22"],
                 "order": 2
               },
               "tunnel_user": {
@@ -167,9 +150,7 @@
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 22,
-                "examples": [
-                  "22"
-                ],
+                "examples": ["22"],
                 "order": 2
               },
               "tunnel_user": {

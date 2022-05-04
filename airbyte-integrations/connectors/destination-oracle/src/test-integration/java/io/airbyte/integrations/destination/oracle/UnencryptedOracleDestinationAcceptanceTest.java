@@ -17,8 +17,8 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Test;
@@ -79,6 +79,26 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new OracleTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
                                                      final String streamName,
                                                      final String namespace)
@@ -94,25 +114,12 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     return invalidConfig;
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
-
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
     final List<org.jooq.Record> result = getDatabase(config)
         .query(ctx -> ctx.fetch(
-                String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                    OracleDestination.COLUMN_NAME_EMITTED_AT))
+            String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                OracleDestination.COLUMN_NAME_EMITTED_AT))
             .stream()
             .collect(Collectors.toList()));
     return result
@@ -173,9 +180,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
             config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver");
 
-    final String network_service_banner =
+    final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.query(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
         .contains("Oracle Advanced Security: encryption"));

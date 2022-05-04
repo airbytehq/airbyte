@@ -1,3 +1,6 @@
 # Frontend code
-/airbyte-webapp/  @airbytehq/frontend
 /airbyte-webapp-e2e-tests/  @airbytehq/frontend
+/airbyte-webapp/  @airbytehq/frontend
+## Exclude the package(-lock).json from code ownership to prevent version bump PRs from triggering codeowners review
+/airbyte-webapp/package.json
+/airbyte-webapp/package-lock.json

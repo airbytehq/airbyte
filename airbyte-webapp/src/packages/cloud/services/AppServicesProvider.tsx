@@ -1,19 +1,16 @@
 import React, { useMemo } from "react";
 
+import { LoadingPage } from "components";
+
+import { ApiServices } from "core/ApiServices";
+import { RequestMiddleware } from "core/request/RequestMiddleware";
+import { ServicesProvider, useGetService, useInjectServices } from "core/servicesProvider";
+import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
+import { UserService } from "packages/cloud/lib/domain/users";
 import { useAuth } from "packages/firebaseReact";
 
-import {
-  ServicesProvider,
-  useGetService,
-  useInjectServices,
-} from "core/servicesProvider";
-import { ApiServices } from "core/ApiServices";
-import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
-import { RequestAuthMiddleware } from "packages/cloud/lib/auth/RequestAuthMiddleware";
 import { useConfig } from "./config";
-import { UserService } from "packages/cloud/lib/domain/users";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
-import { LoadingPage } from "components";
+import { FirebaseSdkProvider } from "./FirebaseSdkProvider";
 
 /**
  * This Provider is main services entrypoint
@@ -58,11 +55,7 @@ const ServiceOverrides: React.FC = React.memo(({ children }) => {
 
   const registeredMiddlewares = useGetService("DefaultRequestMiddlewares");
 
-  return (
-    <ApiServices>
-      {registeredMiddlewares ? <>{children}</> : <LoadingPage />}
-    </ApiServices>
-  );
+  return <ApiServices>{registeredMiddlewares ? <>{children}</> : <LoadingPage />}</ApiServices>;
 });
 
 export { AppServicesProvider };

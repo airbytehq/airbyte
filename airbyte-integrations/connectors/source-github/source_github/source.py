@@ -20,6 +20,7 @@ from .streams import (
     CommitCommentReactions,
     CommitComments,
     Commits,
+    Deployments,
     Events,
     IssueCommentReactions,
     IssueEvents,
@@ -28,8 +29,11 @@ from .streams import (
     IssueReactions,
     Issues,
     Organizations,
+    ProjectCards,
+    ProjectColumns,
     Projects,
     PullRequestCommentReactions,
+    PullRequestCommits,
     PullRequests,
     PullRequestStats,
     Releases,
@@ -39,8 +43,12 @@ from .streams import (
     Reviews,
     Stargazers,
     Tags,
+    TeamMembers,
+    TeamMemberships,
     Teams,
     Users,
+    WorkflowRuns,
+    Workflows,
 )
 
 TOKEN_SEPARATOR = ","
@@ -176,6 +184,10 @@ class SourceGithub(AbstractSource):
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
+        projects_stream = Projects(**repository_args_with_start_date)
+        project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
+        teams_stream = Teams(**organization_args)
+        team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
 
         return [
             Assignees(**repository_args),
@@ -185,6 +197,7 @@ class SourceGithub(AbstractSource):
             CommitCommentReactions(**repository_args_with_start_date),
             CommitComments(**repository_args_with_start_date),
             Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches),
+            Deployments(**repository_args_with_start_date),
             Events(**repository_args_with_start_date),
             IssueCommentReactions(**repository_args_with_start_date),
             IssueEvents(**repository_args_with_start_date),
@@ -193,16 +206,23 @@ class SourceGithub(AbstractSource):
             IssueReactions(**repository_args_with_start_date),
             Issues(**repository_args_with_start_date),
             Organizations(**organization_args),
-            Projects(**repository_args_with_start_date),
+            ProjectCards(project_columns_stream, **repository_args_with_start_date),
+            project_columns_stream,
+            projects_stream,
             PullRequestCommentReactions(**repository_args_with_start_date),
+            PullRequestCommits(parent=pull_requests_stream, **repository_args),
             PullRequestStats(parent=pull_requests_stream, **repository_args_with_start_date),
-            PullRequests(**repository_args_with_start_date),
+            pull_requests_stream,
             Releases(**repository_args_with_start_date),
             Repositories(**organization_args),
             ReviewComments(**repository_args_with_start_date),
             Reviews(parent=pull_requests_stream, **repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
             Tags(**repository_args),
-            Teams(**organization_args),
+            teams_stream,
+            team_members_stream,
             Users(**organization_args),
+            Workflows(**repository_args),
+            WorkflowRuns(**repository_args),
+            TeamMemberships(parent=team_members_stream, **repository_args),
         ]

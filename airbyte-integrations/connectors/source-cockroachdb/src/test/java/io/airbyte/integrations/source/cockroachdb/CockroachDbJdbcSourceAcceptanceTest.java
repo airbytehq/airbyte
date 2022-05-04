@@ -121,28 +121,28 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaType.NUMBER),
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            TABLE_NAME,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_WITHOUT_PK,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaType.NUMBER),
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
-                Field.of(COL_ROW_ID, JsonSchemaType.NUMBER))
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+            Field.of(COL_ROW_ID, JsonSchemaType.NUMBER))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_COMPOSITE_PK,
-                defaultNamespace,
-                Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-                Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));

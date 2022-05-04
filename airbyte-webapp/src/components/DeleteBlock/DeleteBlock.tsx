@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
 import { Button, H5 } from "components";
-import DeleteModal from "./components/DeleteModal";
+import ContentCard from "components/ContentCard";
+
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import useRouter from "hooks/useRouter";
 
 type IProps = {
   type: "source" | "destination" | "connection";
-  onDelete: () => void;
+  onDelete: () => Promise<unknown>;
 };
 
 const DeleteBlockComponent = styled(ContentCard)`
@@ -28,7 +30,22 @@ const Text = styled.div`
 `;
 
 const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { push } = useRouter();
+
+  const onDeleteButtonClick = useCallback(() => {
+    openConfirmationModal({
+      text: `tables.${type}DeleteModalText`,
+      title: `tables.${type}DeleteConfirm`,
+      submitButtonText: "form.delete",
+      onSubmit: async () => {
+        await onDelete();
+        closeConfirmationModal();
+        push("../..");
+      },
+      submitButtonDataId: "delete",
+    });
+  }, [closeConfirmationModal, onDelete, openConfirmationModal, push, type]);
 
   return (
     <>
@@ -39,21 +56,10 @@ const DeleteBlock: React.FC<IProps> = ({ type, onDelete }) => {
           </H5>
           <FormattedMessage id={`tables.${type}DataDelete`} />
         </Text>
-        <Button
-          danger
-          onClick={() => setIsModalOpen(true)}
-          data-id="open-delete-modal"
-        >
+        <Button danger onClick={onDeleteButtonClick} data-id="open-delete-modal">
           <FormattedMessage id={`tables.${type}Delete`} />
         </Button>
       </DeleteBlockComponent>
-      {isModalOpen && (
-        <DeleteModal
-          type={type}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={onDelete}
-        />
-      )}
     </>
   );
 };

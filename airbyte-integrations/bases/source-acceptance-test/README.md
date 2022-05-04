@@ -57,3 +57,10 @@ Using Bash
 ./source-acceptance-test.sh -vv
 ```
 _Note: you can append any arguments to this command, they will be forwarded to pytest
+
+
+## Developing Locally
+
+To run the tests within this dir:
+* Ensure you have `venv` set up with `python3 -m venv .venv` & source it `source ./.venv/bin/activate`
+* Run tests with `python -m pytest -s unit_tests`

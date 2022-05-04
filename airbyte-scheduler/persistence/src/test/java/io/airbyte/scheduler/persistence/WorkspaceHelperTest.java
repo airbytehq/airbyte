@@ -26,7 +26,6 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.validation.json.JsonValidationException;
@@ -77,7 +76,6 @@ class WorkspaceHelperTest {
   ConfigRepository configRepository;
   JobPersistence jobPersistence;
   WorkspaceHelper workspaceHelper;
-  ConnectorSpecification emptyConnectorSpec;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
@@ -94,9 +92,6 @@ class WorkspaceHelperTest {
     when(configRepository.getStandardSyncOperation(not(eq(OPERATION_ID)))).thenThrow(ConfigNotFoundException.class);
 
     workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
-
-    emptyConnectorSpec = mock(ConnectorSpecification.class);
-    when(emptyConnectorSpec.getConnectionSpecification()).thenReturn(Jsons.emptyObject());
   }
 
   @Test

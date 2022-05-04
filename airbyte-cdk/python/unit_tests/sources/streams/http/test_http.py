@@ -167,8 +167,10 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
     send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
 
-    with pytest.raises(UserDefinedBackoffException):
+    with pytest.raises(UserDefinedBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429") as excinfo:
         list(stream.read_records(SyncMode.full_refresh))
+    assert isinstance(excinfo.value.request, requests.PreparedRequest)
+    assert isinstance(excinfo.value.response, requests.Response)
     if retries <= 0:
         assert send_mock.call_count == 1
     else:
@@ -219,7 +221,7 @@ def test_raise_on_http_errors_off_429(mocker):
     req.status_code = 429
 
     mocker.patch.object(requests.Session, "send", return_value=req)
-    with pytest.raises(DefaultBackoffException):
+    with pytest.raises(DefaultBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429"):
         list(stream.read_records(SyncMode.full_refresh))
 
 
@@ -422,3 +424,21 @@ def test_using_cache(mocker):
         pass
 
     assert parent_stream.cassete.play_count != 0
+
+
+class AutoFailTrueHttpStream(StubBasicReadHttpStream):
+    raise_on_http_errors = True
+
+
+@pytest.mark.parametrize("status_code", range(400, 600))
+def test_send_raise_on_http_errors_logs(mocker, status_code):
+    mocker.patch.object(AutoFailTrueHttpStream, "logger")
+    mocker.patch.object(AutoFailTrueHttpStream, "should_retry", mocker.Mock(return_value=False))
+    stream = AutoFailTrueHttpStream()
+    req = requests.Response()
+    req.status_code = status_code
+    mocker.patch.object(requests.Session, "send", return_value=req)
+    with pytest.raises(requests.exceptions.HTTPError):
+        response = stream._send_request(req, {})
+        stream.logger.error.assert_called_with(response.text)
+        assert response.status_code == status_code

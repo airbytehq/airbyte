@@ -160,7 +160,7 @@ def test_credits_ledger_entries_stream_slices(mocker):
 def test_credits_ledger_entries_request_params(mocker, current_stream_state, current_stream_slice, next_page_token):
     stream = CreditsLedgerEntries()
     inputs = {"stream_state": current_stream_state, "stream_slice": current_stream_slice, "next_page_token": next_page_token}
-    expected_params = dict(limit=CreditsLedgerEntries.page_size)
+    expected_params = dict(limit=CreditsLedgerEntries.page_size, entry_status="committed")
     current_slice_state = current_stream_state.get(current_stream_slice["customer_id"], {})
     if current_slice_state.get("created_at"):
         expected_params["created_at[gte]"] = current_slice_state["created_at"]
@@ -170,9 +170,30 @@ def test_credits_ledger_entries_request_params(mocker, current_stream_state, cur
     assert stream.request_params(**inputs) == expected_params
 
 
+def test_credits_ledger_entries_transform_record(mocker):
+    stream = CreditsLedgerEntries()
+    ledger_entry_record = {
+        "event_id": "foo-event-id",
+        "entry_type": "decrement",
+        "customer": {
+            "id": "foo-customer-id",
+        },
+        "credit_block": {"expiry_date": "2023-01-25T12:00:00+00:00", "per_unit_cost_basis": "2.50"},
+    }
+
+    # Validate that calling transform record unwraps nested customer and credit block fields.
+    assert stream.transform_record(ledger_entry_record) == {
+        "event_id": "foo-event-id",
+        "entry_type": "decrement",
+        "customer_id": "foo-customer-id",
+        "block_expiry_date": "2023-01-25T12:00:00+00:00",
+        "credit_block_per_unit_cost_basis": "2.50",
+    }
+
+
 @responses.activate
 def test_credits_ledger_entries_no_matching_events(mocker):
-    stream = CreditsLedgerEntries(event_properties_keys=["ping"])
+    stream = CreditsLedgerEntries(string_event_properties_keys=["ping"])
     ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, {"event_id": "bar-event-id", "entry_type": "decrement"}]
     mock_response = {
         "data": [
@@ -199,17 +220,23 @@ def test_credits_ledger_entries_no_matching_events(mocker):
 
 
 @pytest.mark.parametrize(
-    ("event_properties", "selected_property_keys", "resulting_properties"),
+    ("event_properties", "selected_string_property_keys", "selected_numeric_property_keys", "resulting_properties"),
     [
-        ({}, ["event-property-foo"], {}),
-        ({"ping": "pong"}, ["ping"], {"ping": "pong"}),
-        ({"ping": "pong", "unnamed_property": "foo"}, ["ping"], {"ping": "pong"}),
-        ({"unnamed_property": "foo"}, ["ping"], {}),
+        ({}, ["event-property-foo"], [], {}),
+        ({"ping": "pong"}, ["ping"], [], {"ping": "pong"}),
+        ({"ping": "pong", "unnamed_property": "foo"}, ["ping"], [], {"ping": "pong"}),
+        ({"unnamed_property": "foo"}, ["ping"], [], {}),
+        ({"numeric_property": 1}, ["ping"], ["numeric_property"], {"numeric_property": 1}),
+        ({"ping": "pong", "numeric_property": 1}, ["ping"], ["numeric_property"], {"ping": "pong", "numeric_property": 1}),
     ],
 )
 @responses.activate
-def test_credits_ledger_entries_enriches_selected_property_keys(mocker, event_properties, selected_property_keys, resulting_properties):
-    stream = CreditsLedgerEntries(event_properties_keys=selected_property_keys)
+def test_credits_ledger_entries_enriches_selected_property_keys(
+    mocker, event_properties, selected_string_property_keys, selected_numeric_property_keys, resulting_properties
+):
+    stream = CreditsLedgerEntries(
+        string_event_properties_keys=selected_string_property_keys, numeric_event_properties_keys=selected_numeric_property_keys
+    )
     original_entry_1 = {"entry_type": "increment"}
     ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, original_entry_1]
     mock_response = {

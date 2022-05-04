@@ -25,7 +25,6 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
 
   protected static final Logger c = LoggerFactory.getLogger(AbstractSourceFillDbWithTestData.class);
   private static final String TEST_VALUE_TEMPLATE_POSTGRES = "\'Value id_placeholder\'";
-  protected static Stream testArgs;
 
   /**
    * Setup the test database. All tables and data described in the registered tests will be put there.
@@ -42,12 +41,12 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
   @Disabled
   @ParameterizedTest
   @MethodSource("provideParameters")
-  public void addTestData(String dbName,
-                          String schemaName,
-                          int numberOfDummyRecords,
-                          int numberOfBatches,
-                          int numberOfColumns,
-                          int numberOfStreams)
+  public void addTestData(final String dbName,
+                          final String schemaName,
+                          final int numberOfDummyRecords,
+                          final int numberOfBatches,
+                          final int numberOfColumns,
+                          final int numberOfStreams)
       throws Exception {
 
     final Database database = setupDatabase(dbName);
@@ -55,11 +54,11 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
     database.query(ctx -> {
       for (int currentSteamNumber = 0; currentSteamNumber < numberOfStreams; currentSteamNumber++) {
 
-        String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
+        final String currentTableName = String.format(getTestStreamNameTemplate(), currentSteamNumber);
 
         ctx.fetch(prepareCreateTableQuery(schemaName, numberOfColumns, currentTableName));
         for (int i = 0; i < numberOfBatches; i++) {
-          String insertQueryTemplate = prepareInsertQueryTemplate(schemaName, i,
+          final String insertQueryTemplate = prepareInsertQueryTemplate(schemaName, i,
               numberOfColumns,
               numberOfDummyRecords);
           ctx.fetch(String.format(insertQueryTemplate, currentTableName));
@@ -86,15 +85,13 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
    *
    * Stream.of( Arguments.of("your_db_name", "your_schema_name", 100, 2, 240, 1000) );
    */
-  private static Stream<Arguments> provideParameters() {
-    return testArgs;
-  }
+  protected abstract Stream<Arguments> provideParameters();
 
   protected String prepareCreateTableQuery(final String dbSchemaName,
                                            final int numberOfColumns,
                                            final String currentTableName) {
 
-    StringJoiner sj = new StringJoiner(",");
+    final StringJoiner sj = new StringJoiner(",");
     for (int i = 0; i < numberOfColumns; i++) {
       sj.add(String.format(" %s%s %s", getTestColumnName(), i, TEST_DB_FIELD_TYPE));
     }
@@ -107,10 +104,10 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
                                               final int numberOfColumns,
                                               final int recordsNumber) {
 
-    StringJoiner fieldsNames = new StringJoiner(",");
+    final StringJoiner fieldsNames = new StringJoiner(",");
     fieldsNames.add("id");
 
-    StringJoiner baseInsertQuery = new StringJoiner(",");
+    final StringJoiner baseInsertQuery = new StringJoiner(",");
     baseInsertQuery.add("id_placeholder");
 
     for (int i = 0; i < numberOfColumns; i++) {
@@ -118,9 +115,9 @@ public abstract class AbstractSourceFillDbWithTestData extends AbstractSourceBas
       baseInsertQuery.add(TEST_VALUE_TEMPLATE_POSTGRES);
     }
 
-    StringJoiner insertGroupValuesJoiner = new StringJoiner(",");
+    final StringJoiner insertGroupValuesJoiner = new StringJoiner(",");
 
-    int batchMessages = batchNumber * 100;
+    final int batchMessages = batchNumber * 100;
 
     for (int currentRecordNumber = batchMessages;
         currentRecordNumber < recordsNumber + batchMessages;

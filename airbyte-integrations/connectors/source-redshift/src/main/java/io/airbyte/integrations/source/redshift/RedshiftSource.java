@@ -9,13 +9,18 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -31,7 +36,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
   public RedshiftSource() {
-    super(DRIVER_CLASS, new RedshiftJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override
@@ -58,7 +63,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     addSsl(additionalProperties);
 
-    builder.put("connection_properties", String.join(";", additionalProperties));
+    builder.put("connection_properties", String.join("&", additionalProperties));
 
     return Jsons.jsonNode(builder
         .build());
@@ -70,15 +75,15 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-      for (String schema : schemas) {
+      for (final String schema : schemas) {
         LOGGER.debug("Discovering schema: {}", schema);
         internals.addAll(super.discoverInternal(database, schema));
       }
-      for (TableInfo<CommonField<JDBCType>> info : internals) {
+      for (final TableInfo<CommonField<JDBCType>> info : internals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
       return internals;
@@ -91,6 +96,27 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
+
+  @Override
+  public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
+    return new HashSet<>(database.bufferedResultSetQuery(
+        connection -> {
+          connection.setAutoCommit(true);
+          final PreparedStatement ps = connection.prepareStatement(
+              "SELECT schemaname, tablename "
+                  + "FROM   pg_tables "
+                  + "WHERE  has_table_privilege(schemaname||'.'||tablename, 'select') = true AND schemaname = ?;");
+          ps.setString(1, schema);
+          return ps.executeQuery();
+        },
+        resultSet -> {
+          final JsonNode json = sourceOperations.rowToJson(resultSet);
+          return JdbcPrivilegeDto.builder()
+              .schemaName(json.get("schemaname").asText())
+              .tableName(json.get("tablename").asText())
+              .build();
+        }));
   }
 
   public static void main(final String[] args) throws Exception {

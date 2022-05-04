@@ -66,11 +66,11 @@ public class DogStatsDMetricSingleton {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
-        log.warn("singleton not initialized, count {} not emitted", metric.metricName);
+        log.warn("singleton not initialized, count {} not emitted", metric);
         return;
       }
 
-      log.info("publishing count, name: {}, value: {}, tags: {}", metric.metricName, amt, tags);
+      log.info("publishing count, name: {}, value: {}, tags: {}", metric, amt, tags);
       statsDClient.count(metric.metricName, amt, tags);
     }
   }
@@ -86,7 +86,7 @@ public class DogStatsDMetricSingleton {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
-        log.warn("singleton not initialized, gauge {} not emitted", metric.metricName);
+        log.warn("singleton not initialized, gauge {} not emitted", metric);
         return;
       }
 
@@ -113,11 +113,11 @@ public class DogStatsDMetricSingleton {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
-        log.warn("singleton not initialized, histogram {} not emitted", metric.metricName);
+        log.warn("singleton not initialized, histogram {} not emitted", metric);
         return;
       }
 
-      log.info("recording histogram, name: {}, value: {}, tags: {}", metric.metricName, val, tags);
+      log.info("recording histogram, name: {}, value: {}, tags: {}", metric, val, tags);
       statsDClient.histogram(metric.metricName, val, tags);
     }
   }
@@ -134,11 +134,11 @@ public class DogStatsDMetricSingleton {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
-        log.warn("singleton not initialized, distribution {} not emitted", metric.metricName);
+        log.warn("singleton not initialized, distribution {} not emitted", metric);
         return;
       }
 
-      log.info("recording distribution, name: {}, value: {}, tags: {}", metric.metricName, val, tags);
+      log.info("recording distribution, name: {}, value: {}, tags: {}", metric, val, tags);
       statsDClient.distribution(metric.metricName, val, tags);
     }
   }
@@ -156,6 +156,18 @@ public class DogStatsDMetricSingleton {
     runnable.run();
     final long end = System.currentTimeMillis();
     final long val = end - start;
+    recordTimeGlobal(metric, val, tags);
+  }
+
+  /**
+   * Wrapper around {@link #recordTimeGlobal(MetricsRegistry, double, String...)} with a different
+   * name to better represent what this function does.
+   *
+   * @param metric
+   * @param val
+   * @param tags
+   */
+  public static void percentile(final MetricsRegistry metric, final double val, final String... tags) {
     recordTimeGlobal(metric, val, tags);
   }
 

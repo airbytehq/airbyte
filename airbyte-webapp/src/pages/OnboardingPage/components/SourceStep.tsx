@@ -2,66 +2,80 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { useCreateSource } from "hooks/services/useSourceHook";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 
-import { useSourceDefinitionSpecificationLoad } from "hooks/services/useSourceHook";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
-import { SourceDefinition } from "core/domain/connector";
 
 type IProps = {
-  onSubmit: (values: {
-    name: string;
-    serviceType: string;
-    sourceDefinitionId?: string;
-    connectionConfiguration?: ConnectionConfiguration;
-  }) => void;
-  availableServices: SourceDefinition[];
-  hasSuccess?: boolean;
-  error?: null | { message?: string; status?: number };
-  afterSelectConnector?: () => void;
+  onSuccess: () => void;
+  onNextStep: () => void;
 };
 
-const SourceStep: React.FC<IProps> = ({
-  onSubmit,
-  availableServices,
-  hasSuccess,
-  error,
-  afterSelectConnector,
-}) => {
-  const [sourceDefinitionId, setSourceDefinitionId] = useState("");
-  const analyticsService = useAnalyticsService();
+const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
+  const { sourceDefinitions } = useSourceDefinitionList();
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(null);
+  const [successRequest, setSuccessRequest] = useState(false);
+  const [error, setError] = useState<{
+    status: number;
+    response: JobInfo;
+    message: string;
+  } | null>(null);
 
-  const {
-    sourceDefinitionSpecification,
-    isLoading,
-  } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
+  const { mutateAsync: createSource } = useCreateSource();
+
+  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
+
+  const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
+
+  const { data: sourceDefinitionSpecification, isLoading } =
+    useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
+
+  const onSubmitSourceStep = async (values: {
+    name: string;
+    serviceType: string;
+    sourceId?: string;
+    connectionConfiguration?: ConnectionConfiguration;
+  }) => {
+    setError(null);
+    const sourceConnector = getSourceDefinitionById(values.serviceType);
+
+    try {
+      await createSource({ values, sourceConnector });
+
+      setSuccessRequest(true);
+      onSuccess();
+      setTimeout(() => {
+        setSuccessRequest(false);
+        onNextStep();
+      }, 2000);
+    } catch (e) {
+      setError(e);
+    }
+  };
 
   const onServiceSelect = (sourceId: string) => {
-    const sourceDefinition = availableServices.find(
-      (s) => s.sourceDefinitionId === sourceId
-    );
+    const sourceDefinition = getSourceDefinitionById(sourceId);
 
-    analyticsService.track("New Source - Action", {
-      action: "Select a connector",
+    trackNewSourceAction("Select a connector", {
       connector_source: sourceDefinition?.name,
-      connector_source_id: sourceDefinition?.sourceDefinitionId,
+      connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
     });
 
-    if (afterSelectConnector) {
-      afterSelectConnector();
-    }
-
+    setError(null);
     setSourceDefinitionId(sourceId);
   };
 
   const onSubmitForm = async (values: { name: string; serviceType: string }) =>
-    onSubmit({
+    onSubmitSourceStep({
       ...values,
-      sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });
 
   const errorMessage = error ? createFormErrorMessage(error) : "";
@@ -73,9 +87,7 @@ const SourceStep: React.FC<IProps> = ({
           <FormattedMessage
             id="onboarding.createFirstSource"
             values={{
-              name: (name: React.ReactNode) => (
-                <HighlightedText>{name}</HighlightedText>
-              ),
+              name: (name: React.ReactNode) => <HighlightedText>{name}</HighlightedText>,
             }}
           />
         }
@@ -85,14 +97,13 @@ const SourceStep: React.FC<IProps> = ({
       <ConnectorCard
         full
         jobInfo={LogsRequestError.extractJobInfo(error)}
-        allowChangeConnector
         onServiceSelect={onServiceSelect}
         onSubmit={onSubmitForm}
         formType="source"
-        availableServices={availableServices}
-        hasSuccess={hasSuccess}
+        availableServices={sourceDefinitions}
+        hasSuccess={successRequest}
         errorMessage={errorMessage}
-        selectedConnector={sourceDefinitionSpecification}
+        selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
         isLoading={isLoading}
       />
     </>

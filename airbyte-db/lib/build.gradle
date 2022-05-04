@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     api 'org.apache.commons:commons-dbcp2:2.7.0'
+    api 'com.zaxxer:HikariCP:5.0.1'
     api 'org.jooq:jooq-meta:3.13.4'
     api 'org.jooq:jooq:3.13.4'
     api 'org.postgresql:postgresql:42.2.18'
@@ -79,6 +80,6 @@ task copyInitSql(type: Copy) {
     into 'build/docker/bin'
 }
 
-Task dockerBuildTask = getDockerBuildTask("db",  "$project.projectDir")
+Task dockerBuildTask = getDockerBuildTask("db", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
 dockerBuildTask.dependsOn(copyInitSql)
 assemble.dependsOn(dockerBuildTask)

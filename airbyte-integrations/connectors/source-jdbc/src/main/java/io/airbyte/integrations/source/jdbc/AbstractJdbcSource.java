@@ -29,8 +29,8 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -56,24 +57,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class contains helper functions and boilerplate for implementing a source connector for a relational DB source which can be accessed via JDBC
- * driver. If you are implementing a connector for a relational DB which has a JDBC driver, make an effort to use this class.
+ * This class contains helper functions and boilerplate for implementing a source connector for a
+ * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
+ * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
   protected final String driverClass;
-  protected final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
+  protected final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider;
   protected final JdbcCompatibleSourceOperations<Datatype> sourceOperations;
 
   protected String quoteString;
 
   public AbstractJdbcSource(final String driverClass,
-                            final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration,
+                            final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider,
                             final JdbcCompatibleSourceOperations<Datatype> sourceOperations) {
     this.driverClass = driverClass;
-    this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
+    this.streamingQueryConfigProvider = streamingQueryConfigProvider;
     this.sourceOperations = sourceOperations;
   }
 
@@ -114,10 +116,10 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
-            // retrieve column metadata from the database
-            conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
-            // store essential column metadata to a Json object from the result set about each column
-            this::getColumnMetadata)
+        // retrieve column metadata from the database
+        conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
+        // store essential column metadata to a Json object from the result set about each column
+        this::getColumnMetadata)
         .stream()
         .filter(excludeNotAccessibleTables(internalSchemas, tablesWithSelectGrantPrivilege))
         // group by schema and table name to handle the case where a table with the same name exists in
@@ -133,14 +135,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 .map(f -> {
                   final Datatype datatype = getFieldType(f);
                   final JsonSchemaType jsonType = getType(datatype);
-                  LOGGER.info("Table {} column {} (type {}[{}]) -> Json type {}",
+                  LOGGER.info("Table {} column {} (type {}[{}]) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
                       jsonType);
-                  return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {
-                  };
+                  return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
             .build())
@@ -156,7 +157,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       return tablesWithSelectGrantPrivilege.stream()
           .anyMatch(e -> e.getSchemaName().equals(jsonNode.get(INTERNAL_SCHEMA_NAME).asText()))
           && tablesWithSelectGrantPrivilege.stream()
-          .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
+              .anyMatch(e -> e.getTableName().equals(jsonNode.get(INTERNAL_TABLE_NAME).asText()))
           && !internalSchemas.contains(jsonNode.get(INTERNAL_SCHEMA_NAME).asText());
     };
   }
@@ -186,7 +187,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   /**
-   * @param field Essential column information returned from {@link AbstractJdbcSource#getColumnMetadata}.
+   * @param field Essential column information returned from
+   *        {@link AbstractJdbcSource#getColumnMetadata}.
    */
   public Datatype getFieldType(final JsonNode field) {
     return sourceOperations.getFieldType(field);
@@ -261,7 +263,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.query(
+        final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
@@ -288,17 +290,21 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
     final JdbcDatabase database = Databases.createStreamingJdbcDatabase(
-        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
-        jdbcStreamingQueryConfiguration,
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"),
+        streamingQueryConfigProvider,
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()),
         sourceOperations);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
+  }
+
+  protected String getJdbcParameterDelimiter() {
+    return "&";
   }
 
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mssql;
 
 import static java.lang.System.getProperty;
@@ -85,7 +89,7 @@ public class MSSQLDestinationTest {
     final String trustStoreLocation = getProperty("java.home") + "/lib/security/cacerts";
     assertEquals(properties.get("trustStore"), trustStoreLocation);
     assertNull(properties.get("trustStorePassword"));
-    assertNull(properties.get("hostNameInCertificate")); //TODO: add test with hostname in certificate
+    assertNull(properties.get("hostNameInCertificate")); // TODO: add test with hostname in certificate
   }
 
   @Test
@@ -94,9 +98,7 @@ public class MSSQLDestinationTest {
     final MSSQLDestination destination = new MSSQLDestination();
     final JsonNode config = createConfig("encrypted_verify_certificate");
 
-    assertThrows(RuntimeException.class, () ->
-        destination.getDefaultConnectionProperties(config)
-    );
+    assertThrows(RuntimeException.class, () -> destination.getDefaultConnectionProperties(config));
   }
 
   @Test

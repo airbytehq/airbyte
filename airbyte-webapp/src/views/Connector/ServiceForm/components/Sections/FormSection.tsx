@@ -1,27 +1,21 @@
 import React, { useMemo } from "react";
 
 import { FormBlock } from "core/form/types";
-import { useServiceForm } from "../../serviceFormContext";
-import { SectionContainer } from "./common";
 
-import { PropertySection } from "./PropertySection";
-import { ConditionSection } from "./ConditionSection";
+import { useServiceForm } from "../../serviceFormContext";
+import { makeConnectionConfigurationPath, OrderComparator } from "../../utils";
 import { ArraySection } from "./ArraySection";
 import { AuthSection } from "./auth/AuthSection";
-import { makeConnectionConfigurationPath, OrderComparator } from "../../utils";
+import { SectionContainer } from "./common";
+import { ConditionSection } from "./ConditionSection";
+import { PropertySection } from "./PropertySection";
 
 const FormNode: React.FC<{
   sectionPath: string;
   formField: FormBlock;
 }> = ({ sectionPath, formField }) => {
   if (formField._type === "formGroup") {
-    return (
-      <FormSection
-        path={sectionPath}
-        blocks={formField.properties}
-        hasOauth={formField.hasOauth}
-      />
-    );
+    return <FormSection path={sectionPath} blocks={formField.properties} hasOauth={formField.hasOauth} />;
   } else if (formField._type === "formCondition") {
     return <ConditionSection path={sectionPath} formField={formField} />;
   } else if (formField._type === "objectArray") {
@@ -53,11 +47,7 @@ const FormSection: React.FC<{
     return flattenedBlocks;
   }, [blocks]);
 
-  const {
-    selectedConnector,
-    isAuthFlowSelected,
-    authFieldsToHide,
-  } = useServiceForm();
+  const { selectedConnector, isAuthFlowSelected, authFieldsToHide } = useServiceForm();
 
   return (
     <>
@@ -67,24 +57,15 @@ const FormSection: React.FC<{
           (formField) =>
             !formField.airbyte_hidden &&
             // TODO: check that it is a good idea to add authFieldsToHide
-            (!isAuthFlowSelected ||
-              (isAuthFlowSelected &&
-                !authFieldsToHide.includes(formField.path)))
+            (!isAuthFlowSelected || (isAuthFlowSelected && !authFieldsToHide.includes(formField.path)))
         )
         .map((formField) => {
-          const sectionPath = path
-            ? skipAppend
-              ? path
-              : `${path}.${formField.fieldKey}`
-            : formField.fieldKey;
+          const sectionPath = path ? (skipAppend ? path : `${path}.${formField.fieldKey}`) : formField.fieldKey;
 
           const isAuthSection =
             isAuthFlowSelected &&
             selectedConnector?.advancedAuth?.predicateKey &&
-            sectionPath ===
-              makeConnectionConfigurationPath(
-                selectedConnector?.advancedAuth?.predicateKey
-              );
+            sectionPath === makeConnectionConfigurationPath(selectedConnector?.advancedAuth?.predicateKey);
 
           return (
             <React.Fragment key={sectionPath}>

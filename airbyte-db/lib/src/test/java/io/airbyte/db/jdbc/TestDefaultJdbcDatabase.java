@@ -16,7 +16,6 @@ import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -34,14 +33,18 @@ public class TestDefaultJdbcDatabase {
       Jsons.jsonNode(ImmutableMap.of("id", 3, "name", "vash")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
-
-  private JdbcDatabase database;
   private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
+  private JdbcDatabase database;
 
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
+  }
+
+  @AfterAll
+  static void cleanUp() {
+    PSQL_DB.close();
   }
 
   @BeforeEach
@@ -65,11 +68,6 @@ public class TestDefaultJdbcDatabase {
     database.close();
   }
 
-  @AfterAll
-  static void cleanUp() {
-    PSQL_DB.close();
-  }
-
   @Test
   void testBufferedResultQuery() throws SQLException {
     final List<JsonNode> actual = database.bufferedResultSetQuery(
@@ -81,22 +79,19 @@ public class TestDefaultJdbcDatabase {
 
   @Test
   void testResultSetQuery() throws SQLException {
-    final Stream<JsonNode> actual = database.resultSetQuery(
+    try (final Stream<JsonNode> actual = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM id_and_name;"),
-        sourceOperations::rowToJson);
-    final List<JsonNode> actualAsList = actual.collect(Collectors.toList());
-    actual.close();
-
-    assertEquals(RECORDS_AS_JSON, actualAsList);
+        sourceOperations::rowToJson)) {
+      assertEquals(RECORDS_AS_JSON, actual.toList());
+    }
   }
 
   @Test
   void testQuery() throws SQLException {
-    final Stream<JsonNode> actual = database.query(
+    final List<JsonNode> actual = database.queryJsons(
         connection -> connection.prepareStatement("SELECT * FROM id_and_name;"),
         sourceOperations::rowToJson);
-
-    assertEquals(RECORDS_AS_JSON, actual.collect(Collectors.toList()));
+    assertEquals(RECORDS_AS_JSON, actual);
   }
 
   private JdbcDatabase getDatabaseFromConfig(final JsonNode config) {

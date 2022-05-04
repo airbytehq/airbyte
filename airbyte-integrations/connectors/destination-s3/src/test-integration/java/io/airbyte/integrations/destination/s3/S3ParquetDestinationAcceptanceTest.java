@@ -13,11 +13,13 @@ import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.apache.avro.generic.GenericData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.avro.AvroReadSupport;
@@ -31,10 +33,9 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
 
   @Override
   protected JsonNode getFormatConfig() {
-    return Jsons.deserialize("{\n"
-        + "  \"format_type\": \"Parquet\",\n"
-        + "  \"compression_codec\": \"GZIP\"\n"
-        + "}");
+    return Jsons.jsonNode(Map.of(
+        "format_type", "Parquet",
+        "compression_codec", "GZIP"));
   }
 
   @Override
@@ -69,6 +70,11 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new S3AvroParquetTestDataComparator();
   }
 
 }
