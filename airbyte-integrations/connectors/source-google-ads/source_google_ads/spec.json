@@ -98,6 +98,7 @@
             "table_name": {
               "type": "string",
               "title": "Destination Table Name",
+              "pattern": "^[a-z_]*$",
               "description": "The table name in your destination database for choosen query. Only small case alpha numerics are allowed. No capital letters or special characters"
             }
           }
