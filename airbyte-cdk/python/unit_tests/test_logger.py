@@ -5,13 +5,10 @@
 
 import json
 import logging
-import subprocess
-import sys
 from typing import Dict
 
 import pytest
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 
 
 @pytest.fixture(scope="session")
