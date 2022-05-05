@@ -564,7 +564,7 @@ class Connection(BaseResource):
             "connection_id",
             "operation_ids",
             "source_catalog_id",
-        ]  # We do not allow local edition of these keys
+        ]  # We do not allow local editing of these keys
         return {k: v for k, v in self.remote_resource.to_dict().items() if k not in keys_to_filter_out}
 
 
