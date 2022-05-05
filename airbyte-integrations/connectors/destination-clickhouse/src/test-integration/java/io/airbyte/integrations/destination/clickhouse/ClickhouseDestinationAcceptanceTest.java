@@ -14,9 +14,9 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
 
@@ -35,7 +35,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean supportsNormalization() {
-    return true;
+    return false;
   }
 
   @Override
@@ -45,6 +45,26 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 
@@ -103,19 +123,6 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
     final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     return jdbcDB.queryJsons(query);
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
@@ -181,4 +188,8 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
   }
 
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
+  }
 }
