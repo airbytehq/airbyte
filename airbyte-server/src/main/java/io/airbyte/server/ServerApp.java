@@ -86,8 +86,6 @@ public class ServerApp implements ServerRunnable {
   private static final int PORT = 8001;
   private static final String DRIVER_CLASS_NAME = "org.postgresql.Driver";
 
-  private static Configs configs;
-
   private final AirbyteVersion airbyteVersion;
   private final Set<Class<?>> customComponentClasses;
   private final Set<Object> customComponents;
@@ -163,6 +161,7 @@ public class ServerApp implements ServerRunnable {
 
   public static ServerRunnable getServer(final ServerFactory apiFactory,
                                          final ConfigPersistence seed,
+                                         final Configs configs,
                                          final DSLContext configsDslContext,
                                          final DataSource configsDataSource,
                                          final DSLContext jobsDslContext,
@@ -274,7 +273,7 @@ public class ServerApp implements ServerRunnable {
 
   public static void main(final String[] args) throws Exception {
     try {
-      configs = new EnvConfigs();
+      final Configs configs = new EnvConfigs();
 
       // Manual configuration that will be replaced by Dependency Injection in the future
       final DataSource configsDataSource =
@@ -294,7 +293,7 @@ public class ServerApp implements ServerRunnable {
         }));
 
         getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault(),
-            configsDslContext, configsDataSource, jobsDslContext, jobsDataSource).start();
+            configs, configsDslContext, configsDataSource, jobsDslContext, jobsDataSource).start();
       }
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);
