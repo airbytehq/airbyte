@@ -73,7 +73,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:base'
     include ':airbyte-integrations:bases:base-java'
     include ':airbyte-integrations:bases:base-normalization'
-    include ':airbyte-integrations:bases:base-python'
     include ':airbyte-integrations:bases:base-standard-source-test-file'
     include ':airbyte-integrations:bases:source-acceptance-test'
     include ':airbyte-integrations:bases:standard-destination-test'
