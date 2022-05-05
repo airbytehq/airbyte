@@ -2,16 +2,27 @@ import type { Url } from "url";
 
 import { FormattedMessage } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
+import { ReflexElement } from "react-reflex";
 import rehypeSlug from "rehype-slug";
 import urls from "rehype-urls";
+import styled from "styled-components";
 
-import { LoadingPage } from "components";
+import { LoadingPage, PageTitle } from "components";
+import { Card } from "components/base";
 import Markdown from "components/Markdown/Markdown";
-import { Body } from "components/SideView/styled";
 
 import { useConfig } from "config";
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { useDocumentation } from "hooks/services/useDocumentation";
+
+export const DocumentationContainer = styled(Card)`
+  padding: 0px 0px 20px;
+  background-color: #ffffff;
+`;
+
+export const DocumentationContent = styled(Markdown)`
+  padding: 0px 35px 20px;
+`;
 
 type DocsPanelProps = {
   selectedService: SourceDefinition | DestinationDefinition | undefined;
@@ -50,13 +61,14 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & DocsPanelProps> = (
       {isLoading ? (
         <LoadingPage />
       ) : docs ? (
-        <div>
-          <Body>
-            <Markdown content={docs} rehypePlugins={urlReplacerPlugin} />
-          </Body>
-        </div>
+        <DocumentationContainer>
+          <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
+          <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
+        </DocumentationContainer>
       ) : (
-        <FormattedMessage id="docs.notFoundError" />
+        <ReflexElement className="right-pane" maxSize={1000}>
+          <FormattedMessage id="docs.notFoundError" />
+        </ReflexElement>
       )}
     </>
   );

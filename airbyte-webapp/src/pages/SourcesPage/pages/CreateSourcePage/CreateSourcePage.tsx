@@ -1,6 +1,9 @@
+import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
+import styled from "styled-components";
 
 import { PageTitle } from "components";
 import { FormPageContent } from "components/ConnectorBlocks";
@@ -14,6 +17,18 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 
 import SourceForm from "./components/SourceForm";
+
+const PanelGrabber = styled.div`
+  height: 100vh;
+  padding: 6px;
+  display: flex;
+`;
+
+const GrabberHandle = styled(FontAwesomeIcon)`
+  margin: auto;
+  height: 25px;
+  color: ${({ theme }) => theme.greyColor20};
+`;
 
 const CreateSourcePage: React.FC = () => {
   const { location, push } = useRouter();
@@ -62,7 +77,7 @@ const CreateSourcePage: React.FC = () => {
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <ReflexContainer orientation="vertical" windowResizeAware={true}>
         <ReflexElement className="left-pane">
-          <PageTitle withLine title={<FormattedMessage id="sources.newSourceTitle" />} />
+          <PageTitle title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
           <FormPageContent>
             <SourceForm
               onSubmit={onSubmitSourceForm}
@@ -73,19 +88,20 @@ const CreateSourcePage: React.FC = () => {
               hasSuccess={successRequest}
               isLoading={isLoading}
             />
-          </FormPageContent>{" "}
+          </FormPageContent>
         </ReflexElement>
-        <ReflexSplitter />
-        <ReflexElement className="right-pane" maxSize={800}>
-          {selectedService ? (
-            <DocumentationPanel
-              onClose={() => null}
-              selectedService={selectedService}
-              documentationUrl={selectedService?.documentationUrl || ""}
-            />
-          ) : (
-            "GET STARTED"
-          )}
+
+        <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
+          <PanelGrabber>
+            <GrabberHandle icon={faGripLinesVertical} size={"1x"} />
+          </PanelGrabber>
+        </ReflexSplitter>
+        <ReflexElement className="right-pane" size={1000}>
+          <DocumentationPanel
+            onClose={() => null}
+            selectedService={selectedService}
+            documentationUrl={selectedService?.documentationUrl || ""}
+          />
         </ReflexElement>
       </ReflexContainer>
     </>
