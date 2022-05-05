@@ -214,7 +214,7 @@ public class MongoUtils {
   }
 
   /**
-   * If one field has different types in 2 and more documents, the name is transofmed to
+   * If one field has different types in 2 and more documents, the name is transformed to
    * 'name_aibyte_transform'.
    *
    * @param types list with field types

@@ -99,7 +99,6 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
     // only one stream is expected; the schema that should be ignored
     // must not be included in the retrieved catalog
     assertEquals(1, streams.size());
-    ObjectMapper mapper = new ObjectMapper();
     final AirbyteStream actualStream = streams.get(0);
     assertEquals(CatalogHelpers.fieldsToJsonSchema(FIELDS), actualStream.getJsonSchema());
   }
