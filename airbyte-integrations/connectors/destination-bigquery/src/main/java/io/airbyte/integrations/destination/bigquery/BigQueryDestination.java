@@ -86,7 +86,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     try {
       final String datasetId = BigQueryUtils.getDatasetId(config);
       final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-      final BigQuery bigquery = BigQueryCredentialsFactory.createCredentialsClient(config);
+      final BigQuery bigquery = BigQueryCredentialsFactory.createCredentialsClient(config, GoogleCredentialType.BIGQUERY_WITH_CREDENTIALS);
       final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
 
       BigQueryUtils.createDataset(bigquery, datasetId, datasetLocation);
