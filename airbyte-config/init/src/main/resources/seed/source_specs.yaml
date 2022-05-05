@@ -2469,7 +2469,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.28"
+- dockerImage: "airbyte/source-github:0.2.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2488,7 +2488,7 @@
           order: 0
           oneOf:
           - type: "object"
-            title: "Authenticate via GitHub (OAuth)"
+            title: "OAuth"
             required:
             - "access_token"
             properties:
@@ -2502,7 +2502,7 @@
                 description: "OAuth access token"
                 airbyte_secret: true
           - type: "object"
-            title: "Authenticate with Personal Access Token"
+            title: "Personal Access Token"
             required:
             - "personal_access_token"
             properties:
@@ -2514,13 +2514,13 @@
                 type: "string"
                 title: "Personal Access Tokens"
                 description: "Log into GitHub and then generate a <a href=\"https://github.com/settings/tokens\"\
-                  > personal access token</a>. To load balance your API quota consumption\
+                  >personal access token</a>. To load balance your API quota consumption\
                   \ across multiple API tokens, input multiple tokens separated with\
                   \ \",\""
                 airbyte_secret: true
         start_date:
           type: "string"
-          title: "Start Date"
+          title: "Start date"
           description: "The date from which you'd like to replicate data from GitHub\
             \ in the format YYYY-MM-DDT00:00:00Z. For the streams which support this\
             \ configuration, only data generated on or after the start date will be\
@@ -2559,8 +2559,9 @@
           maximum: 100
           default: 10
           description: "The Github connector contains several streams with a large\
-            \ load. The page size of such streams depends on the size of your repository.\
-            \ Recommended to specify values between 10 and 30."
+            \ amount of data. The page size of such streams depends on the size of\
+            \ your repository. We recommended that you specify values between 10 and\
+            \ 30."
           order: 4
     supportsNormalization: false
     supportsDBT: false
