@@ -210,7 +210,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.45
+  dockerImageTag: 0.2.46
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -487,7 +487,7 @@
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.io/integrations/sources/mongodb-v2
   icon: mongodb.svg
   sourceType: database
