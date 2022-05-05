@@ -90,7 +90,7 @@ definitions:
       The type of state the other fields represent.
       If not set, the state data is interpreted as GLOBAL and should be read from the `data` field for backwards compatibility.
       GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams.
-      PER_STREAM means that the state should be read from `streams`. Each item in the ist represents the state for the associated stream.
+      PER_STREAM means that the state should be read from `streams`. Each item in the list represents the state for the associated stream.
     enum:
       - GLOBAL
       - PER_STREAM
