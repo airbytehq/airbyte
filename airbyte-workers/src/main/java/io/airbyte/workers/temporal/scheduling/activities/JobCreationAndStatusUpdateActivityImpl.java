@@ -5,7 +5,6 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.AttemptFailureSummary;
@@ -42,7 +41,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -269,10 +267,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   public void failNonTerminalJobs(final FailNonTerminalJobsInput input) {
     log.info("failNonTerminalJobs called with input: {}", input);
     try {
-      final Set<io.airbyte.scheduler.models.JobStatus> nonTerminalJobStatuses = Sets.difference(
-          Set.of(io.airbyte.scheduler.models.JobStatus.values()),
-          io.airbyte.scheduler.models.JobStatus.TERMINAL_STATUSES);
-      final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(input.getConnectionId(), Job.REPLICATION_TYPES, nonTerminalJobStatuses);
+      final List<Job> jobs = jobPersistence.listJobsForConnectionWithStatuses(input.getConnectionId(), Job.REPLICATION_TYPES,
+          io.airbyte.scheduler.models.JobStatus.NON_TERMINAL_STATUSES);
       log.info("failNonTerminalJobs jobs result: {}", jobs);
       for (final Job job : jobs) {
         final long jobId = job.getId();

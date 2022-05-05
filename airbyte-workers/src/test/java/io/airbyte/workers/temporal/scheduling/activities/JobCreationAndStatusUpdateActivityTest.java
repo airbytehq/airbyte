@@ -7,7 +7,6 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-import com.google.common.collect.Sets;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.FailureReason;
@@ -51,7 +50,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -319,10 +317,7 @@ public class JobCreationAndStatusUpdateActivityTest {
 
       final Job pendingJob = new Job(3, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(), JobStatus.PENDING, 4L, 4L, 5L);
 
-      final Set<JobStatus> nonTerminalJobStatuses = Sets.difference(
-          Set.of(io.airbyte.scheduler.models.JobStatus.values()),
-          io.airbyte.scheduler.models.JobStatus.TERMINAL_STATUSES);
-      Mockito.when(mJobPersistence.listJobsForConnectionWithStatuses(CONNECTION_ID, Job.REPLICATION_TYPES, nonTerminalJobStatuses))
+      Mockito.when(mJobPersistence.listJobsForConnectionWithStatuses(CONNECTION_ID, Job.REPLICATION_TYPES, JobStatus.NON_TERMINAL_STATUSES))
           .thenReturn(List.of(runningJob, pendingJob));
       Mockito.when(mJobPersistence.getJob(runningJob.getId())).thenReturn(runningJob);
       Mockito.when(mJobPersistence.getJob(pendingJob.getId())).thenReturn(pendingJob);
