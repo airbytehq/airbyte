@@ -14,6 +14,7 @@ jobs:
           pr_info="$(curl ${{ github.event.issue.pull_request.url }})"
           echo ::set-output name=ref::"$(echo $pr_info | jq -r '.head.ref')"
           echo ::set-output name=repo::"$(echo $pr_info | jq -r '.head.repo.full_name')"
+          echo ::set-output name=pull_request_number::"$(echo $pr_info | jq -r '.number')"
       - name: Slash Command Dispatch
         id: scd
         uses: peter-evans/slash-command-dispatch@v2
@@ -33,6 +34,7 @@ jobs:
             repo=${{ steps.getref.outputs.repo }}
             gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
+            pull_request_number=${{ github.event.outputs.pull_request_number }}
           dispatch-type: workflow
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message

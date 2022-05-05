@@ -158,6 +158,10 @@ cmd_bump_version() {
       ;;
   esac
 
+  curl \
+    -H "Accept: application/vnd.github.v3+json" \
+    https://api.github.com/repos/airbytehq/airbyte/pulls/12474
+
    if ! (git diff --quiet && git diff --staged --quiet); then
       git commit -a -m "auto-bump-versiorsion.outputs.bumped_version }}"
       git pull origin ${{ github.event.inputs.gitref }}

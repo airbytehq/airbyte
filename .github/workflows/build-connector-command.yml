@@ -32,6 +32,10 @@ on:
         description: "Force entire build and bump pipeline to execute, even if bump as already happened"
         default: "false"
         required: false
+      pull_request_number:
+        description: "The PR number associated where the workflow was called from, should be set by slash command"
+        default: "12474"
+        required: true
 
 jobs:
   find_valid_pat:
@@ -259,7 +263,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: publish-connectors-on-merge
-          number: ${{ github.event.issue.number }}
+          number: ${{ github.event.inputs.pull_request_number }}
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-bump-build-test-connector-runner:
