@@ -17,6 +17,8 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
 
@@ -42,7 +44,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected boolean supportsNormalization() {
-    return true;
+    return false;
   }
 
   @Override
@@ -52,6 +54,26 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 
@@ -182,6 +204,11 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   @Disabled
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
+  }
+
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
   }
 
 }
