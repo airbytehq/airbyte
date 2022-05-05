@@ -464,6 +464,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return connectionUpdaterInput.getJobId();
     }
 
+    // Clean the job state by failing any jobs for this connection that are currently non-terminal.
+    // This catches cases where the temporal workflow was terminated and restarted while a job was
+    // actively running, leaving that jobs in an orphaned and non-terminal state.
+    // This logic is placed here instead of at the beginning of the temporal workflow in order to
+    // guarantee that we are always in a clean job state before attempting to create a new job. Without
+    // this here, we could end up in a state where we try to repeatedly create a job which fails due to
+    // there already being a running job for this connection.
     ensureCleanJobState(connectionUpdaterInput);
 
     final JobCreationOutput jobCreationOutput =
