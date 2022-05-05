@@ -246,7 +246,7 @@
         resourceRequirements:
           memory_limit: "1Gi"
           memory_request: "1Gi"
-  releaseStage: alpha
+  releaseStage: beta
 - name: SFTP-JSON
   destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
   dockerRepository: airbyte/destination-sftp-json
