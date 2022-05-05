@@ -264,7 +264,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
 
     final FailureType failureType =
-        standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType();
+        standardSyncOutput != null ? standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType()
+            : null;
     if (maxAttempt > attemptNumber && failureType != FailureType.CONFIG_ERROR) {
       // restart from failure
       connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
