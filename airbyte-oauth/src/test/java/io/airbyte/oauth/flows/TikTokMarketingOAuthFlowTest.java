@@ -36,11 +36,6 @@ public class TikTokMarketingOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Override
-  protected List<String> getExpectedOutputPath() {
-    return List.of("credentials_all");
-  }
-
-  @Override
   protected OAuthConfigSpecification getOAuthConfigSpecification() {
     return getoAuthConfigSpecification()
         // change property types to induce json validation errors.

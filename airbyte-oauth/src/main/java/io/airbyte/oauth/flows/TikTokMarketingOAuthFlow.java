@@ -86,12 +86,6 @@ public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  @Deprecated
-  public List<String> getDefaultOAuthOutputPath() {
-    return List.of("credentials_all");
-  }
-
-  @Override
   protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
     // getting out access_token

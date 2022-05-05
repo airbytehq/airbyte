@@ -5,29 +5,30 @@
     "title": "TikTok Marketing Source Spec",
     "type": "object",
     "properties": {
-      "credentials_all": {
+      "credentials": {
         "title": "Authentication *",
         "default": {},
         "order": 0,
         "type": "object",
         "oneOf": [{
-            "title": "Production (Oauth)",
+            "title": "OAuth",
             "type": "object",
             "properties": {
               "auth_type": {
                 "title": "Auth Type",
-                "const": "prod_access_token",
+                "const": "oauth2.0",
                 "order": 0,
                 "type": "string"
               },
               "app_id": {
                 "title": "App ID",
                 "description": "The App ID applied by the developer.",
+                "airbyte_secret": true,
                 "type": "string"
               },
               "secret": {
                 "title": "Secret",
-                "description": "The private key of the developer application.",
+                "description": "The private key of the developer's application.",
                 "airbyte_secret": true,
                 "type": "string"
               },
@@ -87,8 +88,8 @@
   "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": ["credentials_all", "auth_type"],
-    "predicate_value": "prod_access_token",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "title": "CompleteOauthOutputSpecification",
@@ -96,7 +97,7 @@
         "properties": {
           "access_token": {
             "title": "Access Token",
-            "path_in_connector_config": ["credentials_all", "access_token"],
+            "path_in_connector_config": ["credentials", "access_token"],
             "type": "string"
           }
         },
@@ -123,12 +124,12 @@
         "properties": {
           "app_id": {
             "title": "App Id",
-            "path_in_connector_config": ["credentials_all", "app_id"],
+            "path_in_connector_config": ["credentials", "app_id"],
             "type": "string"
           },
           "secret": {
             "title": "Secret",
-            "path_in_connector_config": ["credentials_all", "secret"],
+            "path_in_connector_config": ["credentials", "secret"],
             "type": "string"
           }
         },
