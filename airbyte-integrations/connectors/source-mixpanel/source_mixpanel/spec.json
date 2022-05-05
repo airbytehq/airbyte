@@ -8,28 +8,28 @@
     "additionalProperties": true,
     "properties": {
       "api_secret": {
-        "title": "API Secret",
+        "title": "Project Token",
         "type": "string",
-        "description": "Mixpanel API Secret. See the <a href=\"https://docs.airbyte.io/integrations/sources/mixpanel\">docs</a> for more information on how to obtain this key.",
+        "description": "Mixpanel project token. See the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004502806-Find-Project-Token-\">docs</a> for more information on how to obtain this.",
         "airbyte_secret": true
       },
       "attribution_window": {
         "title": "Attribution Window",
         "type": "integer",
-        "description": " A period of time for attributing results to ads and the lookback period after those actions occur during which ad results are counted.Default attribution window is 5 days.",
+        "description": " A period of time for attributing results to ads and the lookback period after those actions occur during which ad results are counted. Default attribution window is 5 days.",
         "default": 5
       },
       "project_timezone": {
         "title": "Project Timezone",
         "type": "string",
-        "description": "Time zone in which integer date times are stored. The project timezone may be found in the project settings in the Mixpanel console.",
+        "description": "Time zone in which integer date times are stored. The project timezone may be found in the project settings in the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel\">Mixpanel console</a>.",
         "default": "US/Pacific",
         "examples": ["US/Pacific", "UTC"]
       },
       "select_properties_by_default": {
         "title": "Select Properties By Default",
         "type": "boolean",
-        "description": "Setting this config parameter to TRUE ensures that new properties on events and engage records are captured. Otherwise new properties will be ignored",
+        "description": "Setting this config parameter to TRUE ensures that new properties on events and engage records are captured. Otherwise new properties will be ignored.",
         "default": true
       },
       "start_date": {
