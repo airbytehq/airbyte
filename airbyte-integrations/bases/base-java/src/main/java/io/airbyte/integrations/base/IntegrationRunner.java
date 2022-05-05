@@ -107,7 +107,7 @@ public class IntegrationRunner {
     } catch (final Exception e) {
       transaction.setThrowable(e);
       transaction.finish(SpanStatus.INTERNAL_ERROR);
-      throw e;
+      throw new AirbyteLoggedException(e, "Something went wrong in the connector. See the logs for more details.");
     } finally {
       /*
        * This finally block may not run, probably because the container can be terminated by the worker.
@@ -133,7 +133,6 @@ public class IntegrationRunner {
           // if validation fails don't throw an exception, return a failed connection check message
           outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
               new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
-          // TODO george: do we want to throw an AirbyteLoggedException here to get an AirbyteTraceMessage?
         }
 
         outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
@@ -153,8 +152,6 @@ public class IntegrationRunner {
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
         try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
           AirbyteSentry.executeWithTracing("ReadSource", () -> produceMessages(messageIterator));
-        } catch (Exception e) { // generic catch to output AirbyteTraceMessage on error
-          throw new AirbyteLoggedException(e, "TODO: Some generic, not-very-useful user-facing error message goes here");
         }
       }
       // destination only

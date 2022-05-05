@@ -22,10 +22,10 @@ public class AirbyteLoggedException extends Exception {
     this.e = e;
     this.displayMessage = displayMessage;
     this.failureType = failureType;
-    // Not sure why defaultOutputRecordCollector is under Destination specifically but this matches
-    // IntegrationRunner usage
-    Consumer<AirbyteMessage> outputRecordCollector = Destination::defaultOutputRecordCollector;
 
+    // Not sure why defaultOutputRecordCollector is under Destination specifically,
+    // but this matches IntegrationRunner usage
+    Consumer<AirbyteMessage> outputRecordCollector = Destination::defaultOutputRecordCollector;
     outputRecordCollector.accept(new AirbyteMessage().withType(Type.TRACE).withTrace(makeAirbyteTraceMessage()));
   }
 
@@ -44,5 +44,4 @@ public class AirbyteLoggedException extends Exception {
         .withError(errorTraceMsg)
         .withEmittedAt((double) System.currentTimeMillis());
   }
-
 }
