@@ -132,6 +132,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date | Pull Request | Subject                                         |
 |:--------| :--- | :--- |:------------------------------------------------|
+| 0.3.15  | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.3.14  | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |
 | 0.3.13  | 2022-02-18 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Updated timestamp transformation with microseconds |
 | 0.3.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
@@ -145,4 +146,3 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 | 0.3.4   | 2021-09-01 | [6038](https://github.com/airbytehq/airbyte/pull/6038) | Remove automatic filtering of system schemas.   |
 | 0.3.3   | 2021-09-01 | [5779](https://github.com/airbytehq/airbyte/pull/5779) | Ability to only discover certain schemas.       |
 | 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699) | Added json config validator.                    |
-

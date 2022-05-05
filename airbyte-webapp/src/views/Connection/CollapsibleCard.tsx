@@ -24,12 +24,12 @@ const ArrowView = styled(FontAwesomeIcon)<{ $isOpen?: boolean }>`
   cursor: pointer;
 `;
 
-export type CollapsibleCardProps = {
+export interface CollapsibleCardProps {
   title: React.ReactNode;
   children: React.ReactNode;
   collapsible?: boolean;
   defaultCollapsedState?: boolean;
-};
+}
 
 export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
   title,
