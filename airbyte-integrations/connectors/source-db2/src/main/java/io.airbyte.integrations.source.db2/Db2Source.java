@@ -16,6 +16,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,10 +90,9 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    return database
-        .unsafeQuery(getPrivileges(), sourceOperations::rowToJson)
-        .map(this::getPrivilegeDto)
-        .collect(Collectors.toSet());
+    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {
+      return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
+    }
   }
 
   @Override
@@ -143,7 +144,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   private static void convertAndImportCertificate(final String certificate, final String keyStorePassword)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
-    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
+    try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
