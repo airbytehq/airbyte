@@ -20,17 +20,17 @@ def get_secrets(source: Source, config: Mapping[str, Any], logger: logging.Logge
     return [str(get_value_by_dot_notation(config, key)) for key in secret_key_names if config.get(key)]
 
 
-class AirbyteSecretHelper:
-    _secrets: List[str] = []
+__SECRETS_FROM_CONFIG: List[str] = []
 
-    @classmethod
-    def update_secrets(cls, secrets: List[str]):
-        """Update the list of secrets to be replaced"""
-        cls._secrets = secrets
 
-    @classmethod
-    def filter_secrets(cls, string: str) -> str:
-        """Filter secrets from a string by replacing them with ****"""
-        for secret in cls._secrets:
-            string = string.replace(secret, "****")
-        return string
+def update_secrets(secrets: List[str]):
+    """Update the list of secrets to be replaced"""
+    global __SECRETS_FROM_CONFIG
+    __SECRETS_FROM_CONFIG = secrets
+
+
+def filter_secrets(string: str) -> str:
+    """Filter secrets from a string by replacing them with ****"""
+    for secret in __SECRETS_FROM_CONFIG:
+        string = string.replace(secret, "****")
+    return string

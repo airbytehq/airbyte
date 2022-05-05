@@ -8,7 +8,7 @@ import traceback
 from typing import Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
-from airbyte_cdk.utils.airbyte_secrets_utils import AirbyteSecretHelper
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from deprecated import deprecated
 
 TRACE_LEVEL_NUM = 5
@@ -58,7 +58,7 @@ class AirbyteLogFormatter(logging.Formatter):
         """Return a JSON representation of the log message"""
         message = super().format(record)
         airbyte_level = self.level_mapping.get(record.levelno, "INFO")
-        message = AirbyteSecretHelper.filter_secrets(message)
+        message = filter_secrets(message)
         log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
         return log_message.json(exclude_unset=True)
 

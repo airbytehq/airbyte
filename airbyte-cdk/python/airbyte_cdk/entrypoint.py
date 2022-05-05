@@ -18,7 +18,7 @@ from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, get_secret_values, split_config
 from airbyte_cdk.sources.utils.sentry import AirbyteSentry
-from airbyte_cdk.utils.airbyte_secrets_utils import AirbyteSecretHelper, get_secrets
+from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 
 logger = init_logger("airbyte")
 init_uncaught_exception_handler(logger)
@@ -91,7 +91,7 @@ class AirbyteEntrypoint(object):
                 # Now that we have the config, we can use it to get a list of ai airbyte_secrets
                 # that we should filter in logging to avoid leaking secrets
                 config_secrets = get_secrets(self.source, config, self.logger)
-                AirbyteSecretHelper.update_secrets(config_secrets)
+                update_secrets(config_secrets)
 
                 # Remove internal flags from config before validating so
                 # jsonschema's additionalProperties flag wont fail the validation

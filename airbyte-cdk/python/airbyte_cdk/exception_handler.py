@@ -5,7 +5,7 @@
 import logging
 import sys
 
-from airbyte_cdk.utils.airbyte_secrets_utils import AirbyteSecretHelper
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -24,9 +24,13 @@ def init_uncaught_exception_handler(logger: logging.Logger) -> None:
         logger.fatal(exception_value, exc_info=exception_value)
 
         # emit an AirbyteTraceMessage for any exception that gets to this spot
-        traced_exc = exception_value if issubclass(exception_type, AirbyteTracedException) else AirbyteTracedException.from_exception(exception_value)
+        traced_exc = (
+            exception_value
+            if issubclass(exception_type, AirbyteTracedException)
+            else AirbyteTracedException.from_exception(exception_value)
+        )
         message = traced_exc.as_airbyte_message()
         message_json = message.json(exclude_unset=True)
-        print(AirbyteSecretHelper.filter_secrets(message_json))
+        print(filter_secrets(message_json))
 
     sys.excepthook = hook_fn
