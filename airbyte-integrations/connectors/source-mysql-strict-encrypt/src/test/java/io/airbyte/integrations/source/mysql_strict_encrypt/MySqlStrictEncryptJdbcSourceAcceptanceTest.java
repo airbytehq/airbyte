@@ -36,7 +36,6 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   protected static final String TEST_PASSWORD = "test";
   protected static MySQLContainer<?> container;
 
-  protected JsonNode config;
   protected Database database;
 
   @BeforeAll
@@ -47,7 +46,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .withEnv("MYSQL_ROOT_HOST", "%")
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
-    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
+    final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", container.getPassword());
     connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 

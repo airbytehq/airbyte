@@ -17,10 +17,14 @@ connectionSpecification:
   title: Python Http Tutorial Spec
   type: object
   required:
+    - access_key
     - start_date
     - base
   additionalProperties: false
   properties:
+    access_key:
+      type: string
+      description: API access key used to retrieve data from the Exchange Rates API.
     start_date:
       type: string
       description: Start getting data from that date.
@@ -37,6 +41,7 @@ connectionSpecification:
 
 In addition to metadata, we define two inputs:
 
+* `access_key`: The API access key used to authenticate requests to the API
 * `start_date`: The beginning date to start tracking currency exchange rates from
 * `base`: The currency whose rates we're interested in tracking
 
