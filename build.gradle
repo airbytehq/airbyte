@@ -200,6 +200,9 @@ subprojects {
             // TODO(Issue-4915): Remove this when upstream is merged in.
             url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
         }
+        maven {
+            url 'https://jitpack.io'
+        }
     }
 
     pmd {
@@ -325,6 +328,7 @@ subprojects {
 
         // adds owasp plugin
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+        implementation 'com.github.spotbugs:spotbugs-annotations:4.6.0'
     }
 
     tasks.withType(Tar) {

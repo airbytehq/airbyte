@@ -11,7 +11,7 @@ export class AnalyticsService {
 
   reset = (): void => this.getSegmentAnalytics()?.reset?.();
 
-  track = (name: string, properties: Record<string, unknown>): void =>
+  track = <P = Record<string, unknown>>(name: string, properties: P): void =>
     this.getSegmentAnalytics()?.track?.(name, {
       ...properties,
       ...this.context,
