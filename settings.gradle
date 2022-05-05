@@ -11,16 +11,21 @@ gradleEnterprise {
     }
 }
 
-sourceControl {
-    gitRepository("https://github.com/airbytehq/json-avro-converter.git") {
-        producesModule("tech.allegro.schema.json2avro:converter")
+rootProject.name = 'airbyte'
+
+// definition for dependency resolution
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
     }
-    gitRepository("https://github.com/airbytehq/jsongenerator.git") {
-        producesModule("net.jimblackler:jsongenerator")
+    versionCatalogs {
+        libs {
+            from(files("deps.toml"))
+        }
     }
 }
-
-rootProject.name = 'airbyte'
 
 // SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, ALL_CONNECTORS and OCTAVIA_CLI. Blank is equivalent to all.
 if (!System.getenv().containsKey("SUB_BUILD")) {

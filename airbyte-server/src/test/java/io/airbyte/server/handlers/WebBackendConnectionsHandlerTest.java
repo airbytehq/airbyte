@@ -384,6 +384,7 @@ class WebBackendConnectionsHandlerTest {
     final UUID newSourceId = UUID.randomUUID();
     final UUID newDestinationId = UUID.randomUUID();
     final UUID newOperationId = UUID.randomUUID();
+    final UUID sourceCatalogId = UUID.randomUUID();
     final WebBackendConnectionCreate input = new WebBackendConnectionCreate()
         .name("testConnectionCreate")
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), NamespaceDefinitionType.class))
@@ -394,7 +395,8 @@ class WebBackendConnectionsHandlerTest {
         .operationIds(List.of(newOperationId))
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .sourceCatalogId(sourceCatalogId);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -408,7 +410,8 @@ class WebBackendConnectionsHandlerTest {
         .operationIds(operationIds)
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .sourceCatalogId(sourceCatalogId);
 
     final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
 
@@ -460,7 +463,7 @@ class WebBackendConnectionsHandlerTest {
   public void testForConnectionCreateCompleteness() {
     final Set<String> handledMethods =
         Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "syncCatalog", "schedule",
-            "status", "resourceRequirements");
+            "status", "resourceRequirements", "sourceCatalogId");
 
     final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionCreate.class)
@@ -479,7 +482,7 @@ class WebBackendConnectionsHandlerTest {
   public void testForConnectionUpdateCompleteness() {
     final Set<String> handledMethods =
         Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
-            "resourceRequirements", "name");
+            "resourceRequirements", "name", "sourceCatalogId");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
@@ -503,7 +506,8 @@ class WebBackendConnectionsHandlerTest {
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
-        .syncCatalog(expected.getSyncCatalog());
+        .syncCatalog(expected.getSyncCatalog())
+        .sourceCatalogId(expected.getCatalogId());
 
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
         new ConnectionRead().connectionId(expected.getConnectionId()));

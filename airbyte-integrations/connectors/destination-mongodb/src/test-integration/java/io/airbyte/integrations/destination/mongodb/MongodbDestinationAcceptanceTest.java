@@ -12,6 +12,8 @@ import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
@@ -61,6 +63,26 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
                                            final String streamName,
                                            final String namespace,
@@ -87,6 +109,26 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.stop();
     container.close();
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   /* Helpers */

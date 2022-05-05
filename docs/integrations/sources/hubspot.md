@@ -67,9 +67,11 @@ Depending on the type of engagement, different properties will be set for that o
 2. Fill out a start date
 3. You're done.
 
-{% hint style="info" %}
+:::info
+
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-{% endhint %}
+
+:::
 
 ### Requirements \(Airbyte Open-Source\)
 
@@ -91,9 +93,11 @@ To obtain the API Key for the account, go to settings -&gt; integrations \(under
 
 See HubSpot [docs](https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart) if you need help finding these fields
 
-{% hint style="info" %}
+:::info
+
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
-{% endhint %}
+
+:::
 
 ## Rate Limiting & Performance
 
@@ -143,9 +147,15 @@ If you are using OAuth, most of the streams require the appropriate [scopes](htt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.58  | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
+| 0.1.57  | 2022-05-04 | [12198](https://github.com/airbytehq/airbyte/pull/12198) | Add deals associations for quotes
+| 0.1.56  | 2022-05-02 | [12515](https://github.com/airbytehq/airbyte/pull/12515) | Extra logs for troubleshooting 403 errors                                                                                                      |
+| 0.1.55  | 2022-04-28 | [12424](https://github.com/airbytehq/airbyte/pull/12424) | Correct schema for ticket_pipeline stream                                                                                                      |
+| 0.1.54  | 2022-04-28 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Mock time slep in unit test s                                                                                                                  |
+| 0.1.53  | 2022-04-20 | [12230](https://github.com/airbytehq/airbyte/pull/12230) | chaneg spec json to yaml format                                                                                                                |
 | 0.1.52  | 2022-03-25 | [11423](https://github.com/airbytehq/airbyte/pull/11423) | Add tickets associations to engagements streams                                                                                                |
-| 0.1.51  | 2022-03-24 | [11321](https://github.com/airbytehq/airbyte/pull/11321) | Fix updated at field non exists issue                                                                                                     |
-| 0.1.50  | 2022-03-22 | [11266](https://github.com/airbytehq/airbyte/pull/11266) | Fix Engagements Stream Pagination                                                                                                       |
+| 0.1.51  | 2022-03-24 | [11321](https://github.com/airbytehq/airbyte/pull/11321) | Fix updated at field non exists issue                                                                                                          |
+| 0.1.50  | 2022-03-22 | [11266](https://github.com/airbytehq/airbyte/pull/11266) | Fix Engagements Stream Pagination                                                                                                              |
 | 0.1.49  | 2022-03-17 | [11218](https://github.com/airbytehq/airbyte/pull/11218) | Anchor hyperlink in input configuration                                                                                                        |
 | 0.1.48  | 2022-03-16 | [11105](https://github.com/airbytehq/airbyte/pull/11105) | Fix float numbers, upd docs                                                                                                                    |
 | 0.1.47  | 2022-03-15 | [11121](https://github.com/airbytehq/airbyte/pull/11121) | Add partition keys where appropriate                                                                                                           |

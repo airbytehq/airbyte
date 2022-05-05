@@ -32,13 +32,13 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestination;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.s3.avro.AvroSerializedBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -135,12 +135,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .toList();
 
       if (!missingPermissions.isEmpty()) {
-        LOGGER.error("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
+        LOGGER.warn("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
+        // if user or service account has a conditional binding for processing handling in the GCS bucket,
+        // testIamPermissions will not work properly, so we use the standard check method of GCS destination
+        final GcsDestination gcsDestination = new GcsDestination();
+        final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
+        return gcsDestination.check(gcsJsonNodeConfig);
 
-        return new AirbyteConnectionStatus()
-            .withStatus(AirbyteConnectionStatus.Status.FAILED)
-            .withMessage("Could not connect to the Gcs bucket with the provided configuration. "
-                + "Missing permissions: " + missingPermissions);
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
 
@@ -282,7 +283,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             avroFormatConfig,
             recordFormatterCreator,
             getAvroSchemaCreator(),
-            () -> new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX));
+            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX));
 
     LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
     return new BigQueryStagingConsumerFactory().create(

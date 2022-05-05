@@ -120,6 +120,7 @@ public class WebBackendConnectionsHandler {
     final Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
     WebBackendConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
     setLatestSyncJobProperties(WebBackendConnectionRead, syncJobReadList);
+    WebBackendConnectionRead.setCatalogId(connectionRead.getSourceCatalogId());
     return WebBackendConnectionRead;
   }
 
@@ -206,6 +207,7 @@ public class WebBackendConnectionsHandler {
       final AirbyteCatalog discovered = discoverSchema.getCatalog();
       final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered);
 
+      connection.setSourceCatalogId(discoverSchema.getCatalogId());
       connection.setSyncCatalog(combined);
     }
 
@@ -380,6 +382,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
+    connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
 
     return connectionCreate;
   }
@@ -398,6 +401,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
+    connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
 
     return connectionUpdate;
   }

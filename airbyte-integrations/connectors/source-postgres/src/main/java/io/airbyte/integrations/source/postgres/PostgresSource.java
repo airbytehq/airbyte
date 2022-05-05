@@ -14,10 +14,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -33,6 +34,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
+import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -57,7 +59,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), new PostgresSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
   }
 
   @Override
@@ -129,15 +131,15 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
-      for (String schema : schemas) {
+      for (final String schema : schemas) {
         LOGGER.debug("Discovering schema: {}", schema);
         internals.addAll(super.discoverInternal(database, schema));
       }
-      for (TableInfo<CommonField<JDBCType>> info : internals) {
+      for (final TableInfo<CommonField<JDBCType>> info : internals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
       return internals;
@@ -155,7 +157,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (isCdc(config)) {
       checkOperations.add(database -> {
-        final List<JsonNode> matchingSlots = database.unsafeQuery(connection -> {
+        final List<JsonNode> matchingSlots = database.queryJsons(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
           final PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("replication_method").get("replication_slot").asText());
@@ -166,7 +168,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
               "Attempting to find the named replication slot using the query: " + ps.toString());
 
           return ps;
-        }, sourceOperations::rowToJson).collect(toList());
+        }, sourceOperations::rowToJson);
 
         if (matchingSlots.size() != 1) {
           throw new RuntimeException(
@@ -177,15 +179,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       });
 
       checkOperations.add(database -> {
-        final List<JsonNode> matchingPublications = database.unsafeQuery(connection -> {
-          final PreparedStatement ps = connection
-              .prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
+        final List<JsonNode> matchingPublications = database.queryJsons(connection -> {
+          final PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
           ps.setString(1, config.get("replication_method").get("publication").asText());
-
-          LOGGER.info("Attempting to find the publication using the query: " + ps.toString());
-
+          LOGGER.info("Attempting to find the publication using the query: " + ps);
           return ps;
-        }, sourceOperations::rowToJson).collect(toList());
+        }, sourceOperations::rowToJson);
 
         if (matchingPublications.size() != 1) {
           throw new RuntimeException(
@@ -274,7 +273,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database,
                                                                 final String schema)
       throws SQLException {
-    return database.unsafeQuery(connection -> {
+    final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator = connection -> {
       final PreparedStatement ps = connection.prepareStatement(
           """
                  SELECT DISTINCT table_catalog,
@@ -316,8 +315,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       ps.setString(2, username);
       ps.setString(3, username);
       return ps;
-    }, sourceOperations::rowToJson)
-        .collect(toSet())
+    };
+
+    return database.queryJsons(statementCreator, sourceOperations::rowToJson)
         .stream()
         .map(e -> JdbcPrivilegeDto.builder()
             .schemaName(e.get("table_schema").asText())
@@ -327,7 +327,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  protected boolean isNotInternalSchema(JsonNode jsonNode, Set<String> internalSchemas) {
+  protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
     return false;
   }
 

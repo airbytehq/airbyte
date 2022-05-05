@@ -26,7 +26,7 @@ This document is focused on the interfaces and primitives around connectors. You
 
 * **Airbyte Worker** - This is a core piece of the Airbyte stack that is responsible for 1\) initializing a Source and a Destinations and 2\) passing data from Source to Destination.
   * Someone implementing a connector need not ever touch this code, but in this article we mention it to contextualize how data is flowing through Airbyte.
-* **Connector** - A connector is code that allows Airbyte to interact with a specific underlying data source \(e.g. Postgres\). In Airbyte, an integration is either a Source or a Destination.
+* **Connector** - A connector is a code that allows Airbyte to interact with a specific underlying data source \(e.g. Postgres\). In Airbyte, an integration is either a Source or a Destination.
 * **Source** - A connector that _pulls_ data from an underlying data source. \(e.g. A Postgres Source reads data from a Postgres database. A Stripe Source reads data from the Stripe API\)
 * **Destination** - A connector that _pushes_ data to an underlying data source. \(e.g. A Postgres Destination writes data to a Postgres database\)
 * **AirbyteSpecification** - the specification that describes how to implement connectors using a standard interface.
@@ -99,7 +99,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
           "streams": [
             {
               "name": "users",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name"],
                 "properties": {
@@ -123,7 +123,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
           "streams": [
             {
               "name": "customers",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name"],
                 "properties": {
@@ -135,7 +135,7 @@ read(Config, ConfiguredAirbyteCatalog, State) -> Stream<AirbyteMessage>
             },
             {
               "name": "products",
-              "schema": {
+              "json_schema": {
                 "type": "object",
                 "required": ["name", "features"],
                 "properties": {
@@ -214,8 +214,9 @@ For the sake of brevity, we will not re-describe `spec` and `check`. They are ex
 ## The Airbyte Protocol
 
 * All messages passed to and from connectors must be wrapped in an `AirbyteMessage` envelope and serialized as JSON. The JsonSchema specification for these messages can be found [here](https://github.com/airbytehq/airbyte/blob/922bfd08a9182443599b78dbb273d70cb9f63d30/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L13-L45).
-* Even if a record is wrapped in an `AirbyteMessage` it will only be processed if it appropriate for the given command. e.g. If a source `read` action includes AirbyteMessages in its stream of type Catalog for instance, these messages will be ignored as the `read` interface only expects `AirbyteRecordMessage`s and `AirbyteStateMessage`s. The appropriate `AirbyteMessage` types have been described in each command above.
-* **ALL** actions are allowed to return `AirbyteLogMessage`s on stdout. For brevity, we have not mentioned these log messages in the description of each action, but they are always allowed. An `AirbyteLogMessage` wraps any useful logging that the connector wants to provide. These logs will be written to Airbyte's log files and output to the console.
+* Even if a record is wrapped in an `AirbyteMessage` it will only be processed if it is appropriate for the given command. e.g. If a source `read` action includes AirbyteMessages in its stream of type Catalog for instance, these messages will be ignored as the `read` interface only expects `AirbyteRecordMessage`s and `AirbyteStateMessage`s. The appropriate `AirbyteMessage` types have been described in each command above.
+* **ALL** actions are allowed to return `AirbyteLogMessage`s and `AirbyteTraceMessage`s on stdout. For brevity, we have not mentioned these messages in the description of each action, but they are always allowed. An `AirbyteLogMessage` wraps any useful logging that the connector wants to provide. These logs will be written to Airbyte's log files and output to the console. An `AirbyteTraceMessage` provides structured information about the performance and status of a connector, such as the failure reason in the event of an error. 
+
 * I/O:
   * Connectors receive arguments on the command line via JSON files. `e.g. --catalog catalog.json`
   * They read `AirbyteMessage`s from stdin. The destination `write` action is the only command that consumes `AirbyteMessage`s.
