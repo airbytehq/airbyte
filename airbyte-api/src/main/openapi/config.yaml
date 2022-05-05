@@ -3222,6 +3222,7 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+          nullable: true
     WebBackendConnectionUpdate:
       type: object
       required:
@@ -3308,6 +3309,7 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+          nullable: true
     ConnectionSearch:
       type: object
       properties:
