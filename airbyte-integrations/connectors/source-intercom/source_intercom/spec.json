@@ -17,7 +17,7 @@
       "access_token": {
         "title": "Access token",
         "type": "string",
-        "description": "Access token for making authenticated requests. See the <a href=\"https://developers.intercom.com/building-apps/docs/authentication-types#how-to-get-your-access-token">Intercom docs</a> for more information.",
+        "description": "Access token for making authenticated requests. See the <a href=\"https://developers.intercom.com/building-apps/docs/authentication-types#how-to-get-your-access-token\">Intercom docs</a> for more information.",
         "airbyte_secret": true
       }
     }

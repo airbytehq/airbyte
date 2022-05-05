@@ -36,6 +36,7 @@
       "authorization": {
         "type": "object",
         "title": "Authentication Type",
+        "description": "",
         "order": 3,
         "oneOf": [
           {
@@ -51,8 +52,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "Client",
-                "enum": ["Client"],
-                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -89,8 +88,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "Service",
-                "enum": ["Service"],
-                "default": "Service",
                 "order": 0
               },
               "service_account_info": {
