@@ -58,7 +58,7 @@ class SourceTiktokMarketingSpec(BaseModel):
         title="Replication Start Date *",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated."
+        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "
         "If this parameter is not set, all data will be replicated.",
         order=1,
     )
