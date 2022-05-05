@@ -13,6 +13,20 @@ gradleEnterprise {
 
 rootProject.name = 'airbyte'
 
+// definition for dependency resolution
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
+    }
+    versionCatalogs {
+        libs {
+            from(files("deps.toml"))
+        }
+    }
+}
+
 // SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, ALL_CONNECTORS and OCTAVIA_CLI. Blank is equivalent to all.
 if (!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
