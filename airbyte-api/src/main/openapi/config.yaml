@@ -3141,6 +3141,7 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+          nullable: true
     WebBackendConnectionCreate:
       type: object
       required:
