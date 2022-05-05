@@ -22,6 +22,7 @@
           {
             "type": "object",
             "title": "OAuth2.0",
+            "description": "OAuth2.0",
             "required": ["auth_method"],
             "properties": {
               "auth_method": {
@@ -51,6 +52,7 @@
           },
           {
             "title": "API Password",
+            "description": "API Password Auth",
             "type": "object",
             "required": ["auth_method", "api_password"],
             "properties": {
