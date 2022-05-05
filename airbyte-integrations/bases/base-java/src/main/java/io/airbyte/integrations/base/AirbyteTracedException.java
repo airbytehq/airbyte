@@ -12,13 +12,13 @@ import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-public class AirbyteLoggedException extends Exception {
+public class AirbyteTracedException extends Exception {
 
   private final Throwable e;
   private final String displayMessage;
   private final FailureType failureType;
 
-  public AirbyteLoggedException(final Throwable e, final String displayMessage, final FailureType failureType) {
+  public AirbyteTracedException(final Throwable e, final String displayMessage, final FailureType failureType) {
     this.e = e;
     this.displayMessage = displayMessage;
     this.failureType = failureType;
@@ -29,7 +29,7 @@ public class AirbyteLoggedException extends Exception {
     outputRecordCollector.accept(new AirbyteMessage().withType(Type.TRACE).withTrace(makeAirbyteTraceMessage()));
   }
 
-  public AirbyteLoggedException(final Throwable e, final String displayMessage) {
+  public AirbyteTracedException(final Throwable e, final String displayMessage) {
     this(e, displayMessage, FailureType.SYSTEM_ERROR);
   }
 

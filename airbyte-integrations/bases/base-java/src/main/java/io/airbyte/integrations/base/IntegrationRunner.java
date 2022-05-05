@@ -107,7 +107,7 @@ public class IntegrationRunner {
     } catch (final Exception e) {
       transaction.setThrowable(e);
       transaction.finish(SpanStatus.INTERNAL_ERROR);
-      throw new AirbyteLoggedException(e, "Something went wrong in the connector. See the logs for more details.");
+      throw new AirbyteTracedException(e, "Something went wrong in the connector. See the logs for more details.");
     } finally {
       /*
        * This finally block may not run, probably because the container can be terminated by the worker.
