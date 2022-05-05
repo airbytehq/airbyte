@@ -210,12 +210,6 @@ spec:
         securityContext: {{- toYaml .Values.server.containerSecurityContext | nindent 10 }}
         {{- end }}
         volumeMounts:
-        - name: airbyte-data
-          mountPath: /configs
-          subPath: configs
-        - name: airbyte-data
-          mountPath: /workspace
-          subPath: workspace
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
@@ -223,9 +217,6 @@ spec:
   {{ toYaml .Values.server.extraVolumeMounts | nindent 8 }}
         {{- end }}
       volumes:
-      - name: airbyte-data
-        persistentVolumeClaim:
-          claimName: {{ include "common.names.fullname" . }}-data
       - name: gcs-log-creds-volume
         secret:
           secretName: {{ include "common.names.fullname" . }}-gcs-log-creds

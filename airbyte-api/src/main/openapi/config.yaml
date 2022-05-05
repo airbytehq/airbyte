@@ -2323,6 +2323,7 @@ components:
           type: string
     CustomerioNotificationConfiguration:
       type: object
+      nullable: true
     NotificationType:
       type: string
       enum:
@@ -3143,7 +3144,6 @@ components:
     WebBackendConnectionCreate:
       type: object
       required:
-        - connection
         - sourceId
         - destinationId
         - status
@@ -3218,6 +3218,9 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        sourceCatalogId:
+          type: string
+          format: uuid
     WebBackendConnectionUpdate:
       type: object
       required:
@@ -3258,6 +3261,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WebBackendOperationCreateOrUpdate"
+        sourceCatalogId:
+          type: string
+          format: uuid
     ConnectionRead:
       type: object
       required:
@@ -3298,6 +3304,9 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        sourceCatalogId:
+          type: string
+          format: uuid
     ConnectionSearch:
       type: object
       properties:
@@ -3507,6 +3516,7 @@ components:
             #- unnesting
     OperatorDbt:
       type: object
+      nullable: true
       required:
         - gitRepoUrl
       properties:
@@ -3781,6 +3791,7 @@ components:
           $ref: "#/components/schemas/AttemptFailureSummary"
     AttemptStats:
       type: object
+      nullable: true
       properties:
         recordsEmitted:
           type: integer
@@ -3806,6 +3817,7 @@ components:
           $ref: "#/components/schemas/AttemptStats"
     AttemptFailureSummary:
       type: object
+      nullable: true
       required:
         - failures
       properties:
@@ -4016,6 +4028,7 @@ components:
     ResourceRequirements:
       description: optional resource requirements to run workers (blank for unbounded allocations)
       type: object
+      nullable: true
       properties:
         cpu_request:
           type: string
@@ -4359,6 +4372,9 @@ components:
           type: boolean
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        catalogId:
+          type: string
+          format: uuid
     WebBackendConnectionReadList:
       type: object
       required:

@@ -14,9 +14,9 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
 
@@ -35,7 +35,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean supportsNormalization() {
-    return true;
+    return false;
   }
 
   @Override
@@ -45,6 +45,26 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 
@@ -88,10 +108,10 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -101,22 +121,8 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    return jdbcDB.unsafeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-        .collect(Collectors.toList());
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
+    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    return jdbcDB.queryJsons(query);
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
@@ -131,13 +137,13 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv) {
     db = new ClickHouseContainer("yandex/clickhouse-server");
     db.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }
@@ -182,4 +188,8 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
   }
 
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
+  }
 }

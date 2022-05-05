@@ -108,7 +108,8 @@ public class SnowflakeDestinationTest {
         new SnowflakeSQLNameTransformer(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(".csv")),
         config,
-        getCatalog());
+        getCatalog(),
+        true);
     doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());
 
     airbyteMessageConsumer.start();
