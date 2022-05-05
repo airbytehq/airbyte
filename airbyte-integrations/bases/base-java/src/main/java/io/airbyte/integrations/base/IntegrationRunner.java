@@ -104,6 +104,10 @@ public class IntegrationRunner {
     try {
       runInternal(parsed);
       transaction.finish(SpanStatus.OK);
+    } catch (final AirbyteTracedException tracedException) {
+      transaction.setThrowable(tracedException);
+      transaction.finish(SpanStatus.INTERNAL_ERROR);
+      throw tracedException;
     } catch (final Exception e) {
       transaction.setThrowable(e);
       transaction.finish(SpanStatus.INTERNAL_ERROR);
