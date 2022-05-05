@@ -431,6 +431,7 @@ public class KubePodProcessIntegrationTest {
   private Process getProcess(final Map<String, String> customLabels, final String entrypoint, final Map<String, String> files)
       throws WorkerException {
     return processFactory.create(
+        "tester",
         "some-id",
         0,
         Path.of("/tmp/job-root"),
