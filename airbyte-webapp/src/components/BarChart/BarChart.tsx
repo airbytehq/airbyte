@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Bar, BarChart as BasicBarChart, CartesianGrid, Label, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { barChartColors, theme } from "theme";
 
@@ -16,9 +16,9 @@ const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel 
   const chartLinesColor = theme.greyColor20;
   const chartTicksColor = theme.lightTextColor;
 
-  const width = Math.min(
-    Math.max([...data].sort((a, b) => b.value - a.value)[0].value.toFixed(0).length * 10, 80),
-    130
+  const width = useMemo(
+    () => Math.min(Math.max([...data].sort((a, b) => b.value - a.value)[0].value.toFixed(0).length * 10, 80), 130),
+    [data]
   );
 
   return (
