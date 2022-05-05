@@ -34,6 +34,7 @@ public class EntrypointEnvChecker {
                                                 final String imageName)
       throws IOException, InterruptedException, WorkerException {
     final Process process = processFactory.create(
+        "entrypoint-checker",
         jobId,
         jobAttempt,
         jobRoot,
