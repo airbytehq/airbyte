@@ -9,6 +9,7 @@ import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE;
+import static io.airbyte.db.instance.configs.jooq.Tables.WORKSPACE_SERVICE_ACCOUNT;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -26,6 +27,7 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
@@ -54,7 +56,8 @@ public class DbConverter {
         .withSchedule(Jsons.deserialize(record.get(CONNECTION.SCHEDULE).data(), Schedule.class))
         .withManual(record.get(CONNECTION.MANUAL))
         .withOperationIds(connectionOperationId)
-        .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class));
+        .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
+        .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID));
   }
 
   public static StandardWorkspace buildStandardWorkspace(final Record record) {
@@ -145,6 +148,17 @@ public class DbConverter {
         .withId(record.get(ACTOR_CATALOG.ID))
         .withCatalog(Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString()))
         .withCatalogHash(record.get(ACTOR_CATALOG.CATALOG_HASH));
+  }
+
+  public static WorkspaceServiceAccount buildWorkspaceServiceAccount(final Record record) {
+    return new WorkspaceServiceAccount()
+        .withWorkspaceId(record.get(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID))
+        .withServiceAccountId(record.get(WORKSPACE_SERVICE_ACCOUNT.SERVICE_ACCOUNT_ID))
+        .withServiceAccountEmail(record.get(WORKSPACE_SERVICE_ACCOUNT.SERVICE_ACCOUNT_EMAIL))
+        .withJsonCredential(record.get(WORKSPACE_SERVICE_ACCOUNT.JSON_CREDENTIAL) == null ? null
+            : Jsons.deserialize(record.get(WORKSPACE_SERVICE_ACCOUNT.JSON_CREDENTIAL).data()))
+        .withHmacKey(record.get(WORKSPACE_SERVICE_ACCOUNT.HMAC_KEY) == null ? null
+            : Jsons.deserialize(record.get(WORKSPACE_SERVICE_ACCOUNT.HMAC_KEY).data()));
   }
 
 }

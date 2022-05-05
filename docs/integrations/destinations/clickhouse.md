@@ -79,6 +79,7 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 | Version | Date       | Pull Request | Subject                                      |
 |:--------|:-----------| :--- |:---------------------------------------------|
+| 0.1.5   | 2022-04-06 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0           |
 | 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling            |
 | 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.1   | 2021-12-21 | [\#8982](https://github.com/airbytehq/airbyte/pull/8982) | Set isSchemaRequired to false                |
