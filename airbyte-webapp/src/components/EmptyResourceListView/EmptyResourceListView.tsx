@@ -86,7 +86,7 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
         {resourceType !== "sources" && (
           <BowtieImg src="/images/bowtie-half.svg" alt="Right Bowtie" className="empty-list-bowtie--right" />
         )}
-        <OctaviaImg src={`/images/octavia/empty-${resourceType}.png`} alt="Octavia" resource={resourceType} />
+        <OctaviaImg src={`/images/octavia/empty-${resourceType}@2x.png`} alt="Octavia" resource={resourceType} />
       </IllustrationContainer>
       <Button onClick={onCreateClick} disabled={disableCreateButton} size="xl" data-id={`new-${singularResourceType}`}>
         <FormattedMessage id={buttonMessageId} />
