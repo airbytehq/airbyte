@@ -546,7 +546,7 @@ class TemporalClientTest {
       final ManualOperationResult result = temporalClient.startNewCancellation(CONNECTION_ID);
 
       assertTrue(result.getJobId().isPresent());
-      assertEquals(JOB_ID, result.getJobId().get());
+      assertEquals(ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID, result.getJobId().get());
       assertFalse(result.getFailingReason().isPresent());
       verify(workflowClient).signalWithStart(mBatchRequest);
 
