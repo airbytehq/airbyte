@@ -28,7 +28,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
 
     testImplementation "org.postgresql:postgresql:${rootProject.ext.postgresql_version}"
-    testImplementation "org.testcontainers:postgresql:${rootProject.ext.test_containers_version}3"
+    testImplementation "org.testcontainers:postgresql:${rootProject.ext.test_containers_version}"
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation "org.testcontainers:postgresql:${rootProject.ext.test_containers_version}"
