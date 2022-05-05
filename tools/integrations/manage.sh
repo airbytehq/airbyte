@@ -158,16 +158,6 @@ cmd_bump_version() {
       ;;
   esac
 
-  curl \
-    -H "Accept: application/vnd.github.v3+json" \
-    https://api.github.com/repos/airbytehq/airbyte/pulls/12474
-
-   if ! (git diff --quiet && git diff --staged --quiet); then
-      git commit -a -m "auto-bump-versiorsion.outputs.bumped_version }}"
-      git pull origin ${{ github.event.inputs.gitref }}
-      git push origin ${{ github.event.inputs.gitref }}
-   fi
-
   bumped_version="$major_version.$minor_version.$patch_version"
   if [[ "$FORCE_BUMP" == "true" ]] || [[ "$bumped_version" != "$master_version" && "$bumped_version" != "$branch_version" ]]; then
     _error_if_tag_exists "$image_name:$bumped_version"
@@ -275,12 +265,33 @@ cmd_scan_connectors_to_publish () {
   # 1) Get list of changed Dockerfiles
   base_sha=$(git rev-parse HEAD)
   merge_base="$(git merge-base "$base_sha" origin/master)"
-  changed_dockerfiles="$(git --no-pager diff --name-only "$base_sha" "$merge_base" airbyte-integrations/connectors/**/Dockerfile)"
-  echo "$changed_dockerfiles"
 
+  unset changed_dockerfiles
+  while IFS='' read -r line; do
+    changed_dockerfiles+=("$line")
+  done < <(git --no-pager diff --name-only "$base_sha" "$merge_base" airbyte-integrations/connectors/**/Dockerfile)
+
+#  git fetch origin --quiet
+
+  connectors_to_publish=()
   # 2) Find out which changed Dockerfiles had a version bump between merge_base and head_sha
-  for dockerfile in "${changed_dockerfiles}"; do
-    echo $dockerfile
+  for dockerfile in "${changed_dockerfiles[@]}"; do
+    echo "$dockerfile"
+    master_dockerfile="/tmp/merge_base/$dockerfile"
+
+    # This allows getting the contents of a file without checking it out
+    git --no-pager show "$merge_base:$dockerfile" > "$master_dockerfile"
+    # Connector version on branch
+    current_image_version=$(_get_docker_image_version "$dockerfile")
+    # Existing connector version on branch just merged too
+    merge_base_image_version=$(_get_docker_image_version "$master_dockerfile")
+
+    if [[ "${current_image_version}" != "${merge_base_image_version}" ]]; then
+      echo "$dockerfile has been bumped from $merge_base_image_version to $current_image_version in this PR, publishing"
+      connectors_to_publish+=("$(_get_docker_image_name "$dockerfile")")
+    fi
+
+    echo ::set-output name=connectors_to_publish::"${connectors_to_publish[*]}"
   done
 #  local head_sha=$1; shift || error "Missing target (base_sha) $USAGE"
 #  local base_sha=$1; shift || error "Missing target (base_sha) $USAGE"
