@@ -37,6 +37,7 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
@@ -75,6 +76,7 @@ class DefaultReplicationWorkerTest {
   private static final AirbyteMessage RECORD_MESSAGE1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
   private static final AirbyteMessage RECORD_MESSAGE2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
   private static final AirbyteMessage STATE_MESSAGE = AirbyteMessageUtils.createStateMessage("checkpoint", "1");
+  private static final AirbyteTraceMessage ERROR_TRACE_MESSAGE = AirbyteMessageUtils.createErrorTraceMessage("a connector error occurred");
 
   private Path jobRoot;
   private AirbyteSource source;
@@ -192,6 +194,24 @@ class DefaultReplicationWorkerTest {
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION) && f.getStacktrace().contains(DESTINATION_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testReplicationRunnableDestinationFailureViaTraceMessage() throws Exception {
+    when(messageTracker.getFirstDestinationErrorTraceMessage()).thenReturn(ERROR_TRACE_MESSAGE);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.DESTINATION)
+            && f.getExternalMessage().contains(ERROR_TRACE_MESSAGE.getError().getMessage())));
   }
 
   @Test

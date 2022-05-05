@@ -7,11 +7,13 @@ package io.airbyte.workers.protocols.airbyte;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.time.Instant;
 import java.util.Map;
 
@@ -54,6 +56,13 @@ public class AirbyteMessageUtils {
     return new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(key, value))));
+  }
+
+  public static AirbyteTraceMessage createErrorTraceMessage(final String message) {
+    return new AirbyteTraceMessage()
+        .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
+        .withEmittedAt(121212.0)
+        .withError(new AirbyteErrorTraceMessage().withMessage(message));
   }
 
 }

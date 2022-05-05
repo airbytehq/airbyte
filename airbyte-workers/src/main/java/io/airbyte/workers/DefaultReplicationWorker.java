@@ -15,6 +15,7 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.AirbyteMapper;
@@ -111,6 +112,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final long startTime = System.currentTimeMillis();
     final AtomicReference<FailureReason> replicationRunnableFailureRef = new AtomicReference<>();
     final AtomicReference<FailureReason> destinationRunnableFailureRef = new AtomicReference<>();
+    final AtomicReference<FailureReason> traceMessageFailureRef = new AtomicReference<>();
 
     try {
       LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
@@ -230,10 +232,21 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
 
-      // only .setFailures() if a failure occurred
+      // only .setFailures() if a failure occurred or if there is an AirbyteErrorTraceMessage
       final FailureReason sourceFailure = replicationRunnableFailureRef.get();
       final FailureReason destinationFailure = destinationRunnableFailureRef.get();
+      final AirbyteTraceMessage sourceErrorTraceMessage = messageTracker.getFirstSourceErrorTraceMessage();
+      final AirbyteTraceMessage destinationErrorTraceMessage = messageTracker.getFirstDestinationErrorTraceMessage();
+      traceMessageFailureRef
+          .set(FailureHelper.errorTraceMessageFailure(sourceErrorTraceMessage, destinationErrorTraceMessage, Long.valueOf(jobId), attempt));
+      final FailureReason traceMessageFailure = traceMessageFailureRef.get();
+
       final List<FailureReason> failures = new ArrayList<>();
+
+      if (traceMessageFailure != null) {
+        failures.add(traceMessageFailure);
+      }
+
       if (sourceFailure != null) {
         failures.add(sourceFailure);
       }

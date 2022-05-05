@@ -15,8 +15,11 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.protocols.airbyte.StateDeltaTracker.StateDeltaTrackerException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,6 +41,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final Map<Short, Long> streamToTotalBytesEmitted;
   private final Map<Short, Long> streamToTotalRecordsEmitted;
   private final StateDeltaTracker stateDeltaTracker;
+  private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
+  private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
 
   private short nextStreamIndex;
 
@@ -46,6 +51,11 @@ public class AirbyteMessageTracker implements MessageTracker {
    * not returned.
    */
   private boolean unreliableCommittedCounts;
+
+  private enum CONNECTOR_TYPES {
+    SOURCE,
+    DESTINATION
+  }
 
   public AirbyteMessageTracker() {
     this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES));
@@ -64,11 +74,14 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.stateDeltaTracker = stateDeltaTracker;
     this.nextStreamIndex = 0;
     this.unreliableCommittedCounts = false;
+    this.destinationErrorTraceMessages = new ArrayList<>();
+    this.sourceErrorTraceMessages = new ArrayList<>();
   }
 
   @Override
   public void acceptFromSource(final AirbyteMessage message) {
     switch (message.getType()) {
+      case TRACE -> handleEmittedTrace(message.getTrace(), CONNECTOR_TYPES.SOURCE.toString());
       case RECORD -> handleSourceEmittedRecord(message.getRecord());
       case STATE -> handleSourceEmittedState(message.getState());
       default -> log.warn("Invalid message type for message: {}", message);
@@ -78,6 +91,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   @Override
   public void acceptFromDestination(final AirbyteMessage message) {
     switch (message.getType()) {
+      case TRACE -> handleEmittedTrace(message.getTrace(), CONNECTOR_TYPES.DESTINATION.toString());
       case STATE -> handleDestinationEmittedState(message.getState());
       default -> log.warn("Invalid message type for message: {}", message);
     }
@@ -143,6 +157,27 @@ public class AirbyteMessageTracker implements MessageTracker {
     }
   }
 
+  /**
+   * When a connector emits a trace message, check the type
+   * and call the correct function. If it is an error trace message,
+   * add it to the list of errorTraceMessages for the connector type
+   */
+  private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final String connectorType) {
+    log.info(String.valueOf(traceMessage));
+    switch (traceMessage.getType()) {
+      case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
+      default -> log.warn("Invalid message type for trace message: {}", traceMessage);
+    }
+  }
+
+  private void handleEmittedErrorTrace(final AirbyteTraceMessage errorTraceMessage, final String connectorType) {
+    if(connectorType == CONNECTOR_TYPES.DESTINATION.toString()) {
+      destinationErrorTraceMessages.add(errorTraceMessage);
+    } else if(connectorType == CONNECTOR_TYPES.SOURCE.toString()) {
+      sourceErrorTraceMessages.add(errorTraceMessage);
+    }
+  }
+
   private short getStreamIndex(final String streamName) {
     if (!streamNameToIndex.containsKey(streamName)) {
       streamNameToIndex.put(streamName, nextStreamIndex);
@@ -153,6 +188,16 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   private int getStateHashCode(final AirbyteStateMessage stateMessage) {
     return hashFunction.hashBytes(Jsons.serialize(stateMessage.getData()).getBytes(Charsets.UTF_8)).hashCode();
+  }
+
+  @Override
+  public AirbyteTraceMessage getFirstSourceErrorTraceMessage(){
+    return sourceErrorTraceMessages.get(0);
+  }
+
+  @Override
+  public AirbyteTraceMessage getFirstDestinationErrorTraceMessage(){
+    return destinationErrorTraceMessages.get(0);
   }
 
   @Override
