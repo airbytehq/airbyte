@@ -29,7 +29,7 @@ class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
         .put("ssl", true)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
@@ -37,15 +37,15 @@ class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText(),
-            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
-    database = new Database(dslContext);
+            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL)) {
+      database = new Database(dslContext);
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
-      ctx.fetch("SHOW STATUS LIKE 'Ssl_cipher'");
-      return null;
-    });
-    database.close();
+      database.query(ctx -> {
+        ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+        ctx.fetch("SHOW STATUS LIKE 'Ssl_cipher'");
+        return null;
+      });
+    }
 
     super.setup();
   }

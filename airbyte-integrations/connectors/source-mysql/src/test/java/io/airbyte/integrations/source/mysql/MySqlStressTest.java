@@ -36,6 +36,7 @@ class MySqlStressTest extends JdbcStressTest {
 
   private JsonNode config;
   private Database database;
+  private DSLContext dslContext;
 
   @BeforeAll
   static void init() throws Exception {
@@ -59,7 +60,7 @@ class MySqlStressTest extends JdbcStressTest {
         .put("password", TEST_PASSWORD.call())
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
@@ -72,14 +73,13 @@ class MySqlStressTest extends JdbcStressTest {
       ctx.fetch("CREATE DATABASE " + config.get("database").asText());
       return null;
     });
-    database.close();
 
     super.setup();
   }
 
   @AfterEach
-  void tearDown() throws Exception {
-    database.close();
+  void tearDown() {
+    dslContext.close();
   }
 
   @AfterAll

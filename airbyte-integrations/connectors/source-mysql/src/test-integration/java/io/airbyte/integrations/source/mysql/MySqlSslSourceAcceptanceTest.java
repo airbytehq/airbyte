@@ -34,7 +34,7 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
@@ -42,20 +42,19 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText(),
-            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
-    final Database database = new Database(dslContext);
+            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL)) {
+      final Database database = new Database(dslContext);
 
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch(
-          "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
-
-    database.close();
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.fetch(
+            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+        ctx.fetch(
+            "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        return null;
+      });
+    }
   }
 
 }

@@ -75,31 +75,30 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("ssl", false)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.POSTGRES);
-    final Database database = new Database(dslContext);
+            config.get("database").asText()), SQLDialect.POSTGRES)) {
+      final Database database = new Database(dslContext);
 
-    /**
-     * cdc expects the INCREMENTAL tables to contain primary key checkout
-     * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
-     */
-    database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
-      ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
-      ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
-
-    database.close();
+      /**
+       * cdc expects the INCREMENTAL tables to contain primary key checkout
+       * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
+       */
+      database.query(ctx -> {
+        ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
+        ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
+        ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+        ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        return null;
+      });
+    }
   }
 
   @Override

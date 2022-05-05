@@ -118,16 +118,23 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
     final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT);
-    final List<org.jooq.Record> result = getDatabase(config).query(ctx -> ctx.fetch(query).stream().toList());
-    return result
-        .stream()
-        .map(r -> r.formatJSON(JSON_FORMAT))
-        .map(Jsons::deserialize)
-        .collect(Collectors.toList());
+
+    try (final DSLContext dslContext = getDslContext(config)) {
+      final List<org.jooq.Record> result = getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
+      return result
+          .stream()
+          .map(r -> r.formatJSON(JSON_FORMAT))
+          .map(Jsons::deserialize)
+          .collect(Collectors.toList());
+    }
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
+  }
+
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.ORACLE.getDriverClassName(),
@@ -135,7 +142,6 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
             config.get("host").asText(),
             config.get("port").asInt(),
             config.get("sid").asText()), null);
-    return new Database(dslContext);
   }
 
   @Override
@@ -149,14 +155,14 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
 
     config = getConfig(db);
 
-    final Database database = getDatabase(config);
-    database.query(
-        ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
-    database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
+    try (final DSLContext dslContext = getDslContext(config)) {
+      final Database database = getDatabase(dslContext);
+      database.query(
+          ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
+      database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-    database.close();
-
-    ((ObjectNode) config).put("schema", dbName);
+      ((ObjectNode) config).put("schema", dbName);
+    }
   }
 
   @Override

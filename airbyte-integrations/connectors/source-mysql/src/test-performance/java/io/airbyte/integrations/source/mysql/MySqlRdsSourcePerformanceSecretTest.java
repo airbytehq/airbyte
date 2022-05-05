@@ -15,6 +15,7 @@ import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourc
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.params.provider.Arguments;
 
@@ -40,23 +41,23 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         .put("replication_method", plainConfig.get("replication_method"))
         .build());
 
-    final Database database = new Database(
-        DSLContextFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            DatabaseDriver.MYSQL.getDriverClassName(),
-            String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText()),
-            SQLDialect.MYSQL,
-            Map.of("zeroDateTimeBehavior", "convertToNull"))
-    );
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("database").asText()),
+        SQLDialect.MYSQL,
+        Map.of("zeroDateTimeBehavior", "convertToNull"))) {
 
-    // It disable strict mode in the DB and allows to insert specific values.
-    // For example, it's possible to insert date with zero values "2021-00-00"
-    database.query(ctx -> ctx.execute("SET @@sql_mode=''"));
-    database.close();
+      final Database database = new Database(dslContext);
+
+      // It disable strict mode in the DB and allows to insert specific values.
+      // For example, it's possible to insert date with zero values "2021-00-00"
+      database.query(ctx -> ctx.execute("SET @@sql_mode=''"));
+    }
   }
 
   /**

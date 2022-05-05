@@ -24,8 +24,10 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.io.Closeable;
 import java.util.HashMap;
 import java.util.List;
+import javax.sql.DataSource;
 
 public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -56,19 +58,19 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
             .build()))
         .build());
 
-    final JdbcDatabase database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            DatabaseDriver.ORACLE.getDriverClassName(),
-            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("sid").asText()),
-            JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( 3DES168 )", ";")
-        )
+    final DataSource dataSource = DataSourceFactory.create(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("sid").asText()),
+        JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
+            "oracle.net.encryption_types_client=( 3DES168 )", ";")
     );
+
+    final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER JDBC_SPACE IDENTIFIED BY JDBC_SPACE DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
@@ -82,7 +84,9 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
       connection.createStatement().execute("INSERT INTO jdbc_space.starships (id, name) VALUES (3, 'yamato')");
     });
 
-    database.close();
+    if(dataSource instanceof Closeable closeable) {
+      closeable.close();
+    }
   }
 
   @Override

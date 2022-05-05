@@ -53,6 +53,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private String dbName;
   private Database database;
+  private DSLContext dslContext;
   private PostgresSource source;
   private JsonNode config;
 
@@ -60,7 +61,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    dslContext.close();
     container.close();
   }
 
@@ -80,7 +81,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     config = getConfig(dbName);
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
-    database = getDatabaseFromConfig(config);
+    dslContext = getDslContext(config);
+    database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
@@ -110,8 +112,12 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .build());
   }
 
-  private Database getDatabaseFromConfig(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
+  }
+
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
@@ -119,7 +125,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
             config.get("host").asText(),
             config.get("port").asInt(),
             config.get("database").asText()), SQLDialect.POSTGRES);
-    return new Database(dslContext);
   }
 
   @Test

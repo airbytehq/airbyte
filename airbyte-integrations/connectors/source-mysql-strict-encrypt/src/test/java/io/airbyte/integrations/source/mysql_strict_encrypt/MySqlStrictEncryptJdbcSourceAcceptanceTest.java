@@ -39,6 +39,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   protected static MySQLContainer<?> container;
 
   protected Database database;
+  protected DSLContext dslContext;
 
   @BeforeAll
   static void init() throws SQLException {
@@ -62,7 +63,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .put("password", TEST_PASSWORD)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         "",
         DatabaseDriver.MYSQL.getDriverClassName(),
@@ -76,14 +77,13 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
       ctx.fetch("CREATE DATABASE " + config.get("database").asText());
       return null;
     });
-    database.close();
 
     super.setup();
   }
 
   @AfterEach
   void tearDownMySql() throws Exception {
-    database.close();
+    dslContext.close();
     super.tearDown();
   }
 
