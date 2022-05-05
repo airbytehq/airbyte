@@ -74,7 +74,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     final String columnTypeName = metadata.getColumnTypeName(colIndex);
     final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
 
-    if(resultSet.getString(colIndex) == null){
+    if (resultSet.getString(colIndex) == null) {
       json.putNull(columnName);
     } else if (columnTypeName.equalsIgnoreCase("bool") || columnTypeName.equalsIgnoreCase("boolean")) {
       putBoolean(json, columnName, resultSet, colIndex);
