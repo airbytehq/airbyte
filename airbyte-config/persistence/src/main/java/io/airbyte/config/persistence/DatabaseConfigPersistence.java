@@ -49,6 +49,7 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.enums.ReleaseStage;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -1592,6 +1593,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         .from(ACTOR_DEFINITION)
         .fetch()
         .stream()
+        // The validation is based on the of the connector name is based on the seed which doesn't contains
+        // any custom connectors. They can thus be
+        // filtered out.
+        .filter(
+            row -> row.get(ACTOR_DEFINITION.RELEASE_STAGE) != ReleaseStage.custom)
         .collect(Collectors.toMap(
             row -> row.getValue(ACTOR_DEFINITION.DOCKER_REPOSITORY),
             row -> {
@@ -1658,30 +1664,15 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       final JsonNode latestDefinition = Jsons.jsonNode(definition);
       final String repository = latestDefinition.get("dockerRepository").asText();
 
-      final Map<String, ConnectorInfo> connectorRepositoryToIdVersionMapWithoutCustom = connectorRepositoryToIdVersionMap.entrySet().stream()
-          // The validation is based on the of the connector name is based on the seed which doesn't contain
-          // any custom connectors. They can thus be
-          // filtered out.
-          .filter(entry -> {
-            if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-              return !Jsons.object(entry.getValue().definition, StandardSourceDefinition.class).getCustom();
-            } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-              return !Jsons.object(entry.getValue().definition, StandardDestinationDefinition.class).getCustom();
-            } else {
-              return true;
-            }
-          })
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
       // Add new connector
-      if (!connectorRepositoryToIdVersionMapWithoutCustom.containsKey(repository)) {
+      if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
         LOGGER.info("Adding new connector {}: {}", repository, latestDefinition);
         writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         newCount++;
         continue;
       }
 
-      final ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMapWithoutCustom.get(repository);
+      final ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
       final JsonNode currentDefinition = connectorInfo.definition;
 
       // todo (lmossman) - this logic to remove the "spec" field is temporary; it is necessary to avoid

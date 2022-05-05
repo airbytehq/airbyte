@@ -35,7 +35,6 @@ import org.junit.jupiter.api.Test;
 public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends BaseDatabaseConfigPersistenceTest {
 
   private static final JsonNode SOURCE_GITHUB_JSON = Jsons.jsonNode(SOURCE_GITHUB);
-  private static final JsonNode SOURCE_CUSTOM_JSON = Jsons.jsonNode(SOURCE_CUSTOM);
 
   @BeforeAll
   public static void setup() throws Exception {
@@ -147,41 +146,11 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
         Collections.singletonList(currentSourceWithNewFields));
   }
 
-  @Test
-  @DisplayName("When an unused connector has missing fields, add the missing fields, do not update its version")
-  public void testNoUpdateOnConnectors() throws Exception {
-    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1000.0").withDocumentationUrl(null).withSourceType(null);
-    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.99.0");
-    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.1000.0");
-    final ConfigPersistence seedConfigPersistence =
-    database.query(ctx -> {
-      configPersistence.updateConnectorDefinitions(
-          ctx,
-          ConfigSchema.STANDARD_SOURCE_DEFINITION,
-          YamlSeedConfigPersistence.getDefault()
-      )
-    })
-
-
-    assertUpdateConnectorDefinition(
-        Collections.singletonList(currentSource),
-        Collections.emptyList(),
-        Collections.singletonList(latestSource),
-        Collections.singletonList(currentSourceWithNewFields));
-  }
-
   /**
    * Clone a source for modification and testing.
    */
   private StandardSourceDefinition getSource() {
     return Jsons.object(Jsons.clone(SOURCE_GITHUB_JSON), StandardSourceDefinition.class);
-  }
-
-  /**
-   * Clone a source for modification and testing.
-   */
-  private StandardSourceDefinition getCustomPostgresSource() {
-    return Jsons.object(Jsons.clone(SOURCE_CUSTOM_JSON), StandardSourceDefinition.class);
   }
 
   /**
