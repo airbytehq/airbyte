@@ -6,7 +6,6 @@ package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -55,7 +54,6 @@ public class TemporalClient {
   private final Path workspaceRoot;
   private final WorkflowClient client;
   private final WorkflowServiceStubs service;
-  private final Configs configs;
 
   /**
    * This is use to sleep between 2 temporal queries. The query are needed to ensure that the cancel
@@ -66,21 +64,19 @@ public class TemporalClient {
 
   private static final int MAXIMUM_SEARCH_PAGE_SIZE = 50;
 
-  public static TemporalClient production(final String temporalHost, final Path workspaceRoot, final Configs configs) {
+  public static TemporalClient production(final String temporalHost, final Path workspaceRoot) {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
-    return new TemporalClient(WorkflowClient.newInstance(temporalService), workspaceRoot, temporalService, configs);
+    return new TemporalClient(WorkflowClient.newInstance(temporalService), workspaceRoot, temporalService);
   }
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
   // one. either temporal decides and can report it or it is injected into temporal runs.
   public TemporalClient(final WorkflowClient client,
                         final Path workspaceRoot,
-                        final WorkflowServiceStubs workflowServiceStubs,
-                        final Configs configs) {
+                        final WorkflowServiceStubs workflowServiceStubs) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
     this.service = workflowServiceStubs;
-    this.configs = configs;
   }
 
   public TemporalResponse<ConnectorSpecification> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {

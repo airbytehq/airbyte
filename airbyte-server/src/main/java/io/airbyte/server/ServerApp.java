@@ -193,7 +193,7 @@ public class ServerApp implements ServerRunnable {
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(configs.getTemporalHost());
-    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
+    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot());
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final SchedulerJobClient schedulerJobClient =
         new DefaultSchedulerJobClient(
@@ -204,7 +204,7 @@ public class ServerApp implements ServerRunnable {
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final EventRunner eventRunner = new TemporalEventRunner(
-        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
+        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot()));
 
     LOGGER.info("Starting server...");
 

@@ -401,7 +401,7 @@ public class WorkerApp {
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
         temporalClient,

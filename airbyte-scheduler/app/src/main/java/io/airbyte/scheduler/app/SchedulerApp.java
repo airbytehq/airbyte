@@ -277,7 +277,7 @@ public class SchedulerApp {
         configRepository,
         new WorkspaceHelper(configRepository, jobPersistence),
         TrackingClientSingleton.get());
-    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot, configs);
+    final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     DogStatsDMetricSingleton.initialize(MetricEmittingApps.SCHEDULER, new DatadogClientConfiguration(configs));
 
