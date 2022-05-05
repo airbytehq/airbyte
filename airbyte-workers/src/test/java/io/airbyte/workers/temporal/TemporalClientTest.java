@@ -89,7 +89,7 @@ class TemporalClientTest {
     logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(LogClientSingleton.LOG_FILENAME);
     workflowClient = mock(WorkflowClient.class);
     workflowServiceStubs = mock(WorkflowServiceStubs.class);
-    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, configs));
+    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs));
   }
 
   @Nested
