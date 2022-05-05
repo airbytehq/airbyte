@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y docker-ce-cli jq
 # The following commands were taken from https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-RUN apt-get update && apt-get install -y kubectl
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y kubectl
 
 ARG VERSION=0.36.3-alpha
 
