@@ -31,7 +31,7 @@ def test_uncaught_exception_handler():
             emitted_at=0.0,
             error=AirbyteErrorTraceMessage(
                 failure_type="system_error",
-                message="an error occurred with the source",
+                message="Something went wrong in the connector. See the logs for more details.",
                 internal_message=exception_message,
                 stack_trace=f"{exception_trace}\n",
             ),

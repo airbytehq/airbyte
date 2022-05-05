@@ -33,7 +33,7 @@ def test_exception_as_airbyte_message():
     assert airbyte_message.trace.type == TraceType.ERROR
     assert airbyte_message.trace.emitted_at > 0
     assert airbyte_message.trace.error.failure_type == FailureType.system_error
-    assert airbyte_message.trace.error.message == "an error occurred with the source"
+    assert airbyte_message.trace.error.message == "Something went wrong in the connector. See the logs for more details."
     assert airbyte_message.trace.error.internal_message == "an internal message"
     assert airbyte_message.trace.error.stack_trace == "airbyte_cdk.utils.traced_exception.AirbyteTracedException: an internal message\n"
 
@@ -45,7 +45,7 @@ def test_existing_exception_as_airbyte_message(raised_exception):
     assert type(airbyte_message) == AirbyteMessage
     assert airbyte_message.type == MessageType.TRACE
     assert airbyte_message.trace.type == TraceType.ERROR
-    assert airbyte_message.trace.error.message == "an error occurred with the source"
+    assert airbyte_message.trace.error.message == "Something went wrong in the connector. See the logs for more details."
     assert airbyte_message.trace.error.internal_message == "an error has occurred"
     assert airbyte_message.trace.error.stack_trace.startswith("Traceback (most recent call last):")
     assert airbyte_message.trace.error.stack_trace.endswith(

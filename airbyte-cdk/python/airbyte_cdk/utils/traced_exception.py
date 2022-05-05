@@ -46,7 +46,7 @@ class AirbyteTracedException(Exception):
             type=TraceType.ERROR,
             emitted_at=now_millis,
             error=AirbyteErrorTraceMessage(
-                message=self.message or "an error occurred with the source",
+                message=self.message or "Something went wrong in the connector. See the logs for more details.",
                 internal_message=self.internal_message,
                 failure_type=self.failure_type,
                 stack_trace=stack_trace_str,
