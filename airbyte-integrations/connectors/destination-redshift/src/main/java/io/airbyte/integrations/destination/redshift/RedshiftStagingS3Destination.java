@@ -100,7 +100,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         isPurgeStagingData(config));
   }
 
-  private static boolean isPurgeStagingData(final JsonNode config) {
+  private boolean isPurgeStagingData(final JsonNode config) {
     return !config.has("purge_staging_data") || config.get("purge_staging_data").asBoolean();
   }
 
