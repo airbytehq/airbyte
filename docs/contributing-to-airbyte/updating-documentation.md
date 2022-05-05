@@ -135,8 +135,8 @@ When creating or updating connectors, we spend a lot of time manually transcribi
 ```
 
 ## Deploying the docs website
-We use Github Pages for hosting this docs website. 
+We use Github Pages for hosting this docs website, and Docusaurus as the docs framework.
 
-The source code for the docs lives in the [airbyte monorepo's `docs/` directory](https://github.com/airbytehq/airbyte/tree/master/docs). To publish the updated docs on this website after you've committed a change to the `docs/` markdown files, it is required to locally run a manual publish flow. This can be done by running `./tools/bin/deploy_docusaurus`. 
+The source code for the docs lives in the [airbyte monorepo's `docs/` directory](https://github.com/airbytehq/airbyte/tree/master/docs). To publish the updated docs on this website after you've committed a change to the `docs/` markdown files, it is required to locally run a manual publish flow. Locally run `./tools/bin/deploy_docusaurus` from the `airbyte` monorepo project root to deploy this docs website. 
 
-This is currently not easy to do in CI because we push to a [dedicated repo hosting the Github pages](https://github.com/airbytehq/airbytehq.github.io) from the `airbyte` monorepo, which is hard to do in CI. This is not intended to be the end state (we will need to publish these docs via CI eventually), but as of May 2022 have decided the juice isn't worth the squeeze just yet. 
+Automating this process via CI is currently not easy because we push to a [dedicated repo hosting the Github pages](https://github.com/airbytehq/airbytehq.github.io) from the `airbyte` monorepo, which is hard to do in CI. This is not intended to be the end state (we will need to publish these docs via CI eventually), but as of May 2022 have decided the juice isn't worth the squeeze just yet. 
