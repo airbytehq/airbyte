@@ -60,7 +60,7 @@ class AirbyteLogMessage(BaseModel):
     message: str = Field(..., description="the log message")
 
 
-class Type1(Enum):
+class TraceType(Enum):
     ERROR = "ERROR"
 
 
@@ -161,7 +161,7 @@ class AirbyteTraceMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    type: Type1 = Field(..., description="the type of trace message")
+    type: TraceType = Field(..., description="the type of trace message", title="trace type")
     emitted_at: float = Field(..., description="the time in ms that the message was emitted")
     error: Optional[AirbyteErrorTraceMessage] = Field(None, description="error trace message: the error object")
 
