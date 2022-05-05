@@ -12,5 +12,5 @@ dependencies {
 
     testImplementation project(':airbyte-config:persistence')
     testImplementation project(':airbyte-test-utils')
-    testImplementation "org.testcontainers:postgresql:${rootProject.ext.test_containers_version}"
+    testImplementation libs.testcontainers.postgresql
 }

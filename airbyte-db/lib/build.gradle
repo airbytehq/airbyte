@@ -3,16 +3,16 @@ plugins {
 }
 
 dependencies {
-    api 'com.zaxxer:HikariCP:5.0.1'
-    api "org.jooq:jooq-meta:${rootProject.ext.jooq_version}"
-    api "org.jooq:jooq:${rootProject.ext.jooq_version}"
-    api "org.postgresql:postgresql:${rootProject.ext.postgresql_version}"
+    api libs.hikaricp
+    api libs.jooq.meta
+    api libs.jooq
+    api libs.postgresql
 
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-config:models')
-    implementation "org.flywaydb:flyway-core:${rootProject.ext.flyway_version}"
-    implementation "org.testcontainers:postgresql:${rootProject.ext.test_containers_version}"
+    implementation libs.flyway.core
+    implementation libs.testcontainers.postgresql
     // These are required because gradle might be using lower version of Jna from other
     // library transitive dependency. Can be removed if we can figure out which library is the cause.
     // Refer: https://github.com/testcontainers/testcontainers-java/issues/3834#issuecomment-825409079

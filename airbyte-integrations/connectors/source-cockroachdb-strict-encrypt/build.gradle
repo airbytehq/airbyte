@@ -17,10 +17,10 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation project(':airbyte-integrations:connectors:source-cockroachdb')
 
-    implementation "org.testcontainers:testcontainers:${rootProject.ext.test_containers_version}"
-    implementation "org.testcontainers:jdbc:${rootProject.ext.test_containers_version}"
-    implementation "org.testcontainers:cockroachdb:${rootProject.ext.test_containers_version}"
-    implementation "org.postgresql:postgresql:${rootProject.ext.postgresql_version}"
+    implementation libs.testcontainers
+    implementation libs.testcontainers.jdbc
+    implementation libs.testcontainers.cockroachdb
+    implementation libs.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb-strict-encrypt')
