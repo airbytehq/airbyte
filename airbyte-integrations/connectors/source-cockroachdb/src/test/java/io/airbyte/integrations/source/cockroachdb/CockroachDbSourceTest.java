@@ -106,31 +106,36 @@ class CockroachDbSourceTest {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
-    final Database database = getDatabaseFromConfig(config);
-    database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + dbName + ";");
-      ctx.fetch(
-          "CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+    try (final DSLContext dslContext = getDslContext(config)) {
+      final Database database = getDatabase(dslContext);
+      database.query(ctx -> {
+        ctx.fetch("CREATE DATABASE " + dbName + ";");
+        ctx.fetch(
+            "CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
+        ctx.fetch(
+            "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-      ctx.fetch(
-          "CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
-      ctx.fetch(
-          "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+        ctx.fetch(
+            "CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+        ctx.fetch(
+            "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-      ctx.fetch(
-          "CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
-      ctx.fetch(
-          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
-      return null;
-    });
-    database.close();
+        ctx.fetch(
+            "CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
+        ctx.fetch(
+            "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
+        return null;
+      });
+    }
   }
 
-  private static Database getDatabaseFromConfig(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
+  }
+
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
@@ -138,7 +143,6 @@ class CockroachDbSourceTest {
             config.get("host").asText(),
             config.get("port").asInt(),
             config.get("database").asText()), SQLDialect.POSTGRES);
-    return new Database(dslContext);
   }
 
   private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName) {
@@ -173,7 +177,8 @@ class CockroachDbSourceTest {
       // .withCommand("postgres -c client_encoding=sql_ascii")
       db.start();
       final JsonNode config = getConfig(db);
-      try (final Database database = getDatabaseFromConfig(config)) {
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = getDatabase(dslContext);
         database.query(ctx -> {
           ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
           ctx.fetch(
@@ -213,21 +218,23 @@ class CockroachDbSourceTest {
   @Test
   void testDiscoverWithPermissions() throws Exception {
     final JsonNode config = getConfig(PSQL_DB, dbName);
-    final Database database = getDatabaseFromConfig(config);
-    database.query(ctx -> {
-      ctx.fetch(
-          "CREATE USER cock;");
-      ctx.fetch(
-          "CREATE TABLE id_and_name_perm1(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-      ctx.fetch(
-          "CREATE TABLE id_and_name_perm2(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-      ctx.fetch(
-          "CREATE TABLE id_and_name_perm3(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-      ctx.fetch("grant all on database " + dbName + " to cock;");
-      ctx.fetch("grant all on table " + dbName + ".public.id_and_name_perm1 to cock;");
-      ctx.fetch("grant select on table " + dbName + ".public.id_and_name_perm2 to cock;");
-      return null;
-    });
+    try (final DSLContext dslContext = getDslContext(config)) {
+      final Database database = getDatabase(dslContext);
+      database.query(ctx -> {
+        ctx.fetch(
+            "CREATE USER cock;");
+        ctx.fetch(
+            "CREATE TABLE id_and_name_perm1(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch(
+            "CREATE TABLE id_and_name_perm2(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch(
+            "CREATE TABLE id_and_name_perm3(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch("grant all on database " + dbName + " to cock;");
+        ctx.fetch("grant all on table " + dbName + ".public.id_and_name_perm1 to cock;");
+        ctx.fetch("grant select on table " + dbName + ".public.id_and_name_perm2 to cock;");
+        return null;
+      });
+    }
 
     final List<String> expected = List.of("id_and_name_perm1", "id_and_name_perm2");
 
