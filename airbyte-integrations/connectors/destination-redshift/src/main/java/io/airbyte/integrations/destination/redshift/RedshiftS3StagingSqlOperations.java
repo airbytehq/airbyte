@@ -29,7 +29,6 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     private final S3StorageOperations s3StorageOperations;
     private final S3DestinationConfig s3Config;
     private final ObjectMapper objectMapper;
-    private UUID connectionId;
 
     public RedshiftS3StagingSqlOperations(NamingConventionTransformer nameTransformer, AmazonS3 s3Client, S3DestinationConfig s3Config, RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
         super(redshiftDataTmpTableMode);
@@ -48,7 +47,6 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
     @Override
     public String getStagingPath(UUID connectionId, String namespace, String streamName, DateTime writeDatetime) {
-        this.connectionId = connectionId;
         return nameTransformer.applyDefaultCase(String.format("%s/%s_%02d_%02d_%02d_%s/",
                 getStageName(namespace, streamName),
                 writeDatetime.year().get(),
@@ -67,14 +65,7 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
     @Override
     public String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String stageName, String stagingPath) throws Exception {
-        String filename = s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
-
-        //        AirbyteSentry.executeWithTracing("UploadRecordsToStage",
-//                () -> s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
-//                Map.of("stage", stageName, "path", stagingPath));
-//        String fullObjectKey = s3StorageOperations.getFullObjectKey(stagingPath, recordsData);
-//        return getFilename(fullObjectKey);
-        return filename;
+        return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
     }
     /**
      * Upload the supplied manifest file to S3
@@ -85,11 +76,8 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
      * @return the path where the manifest file was placed in S3
      */
     private String putManifest(final String manifestContents, String schemaName, String stagingPath) {
-        String manifestFilePath =
-                stagingPath + String.format("%s.manifest", UUID.randomUUID());
-//                String.join("/", s3Config.getBucketPath(), stagingFolder, schemaName, String.format("%s.manifest", UUID.randomUUID()));
+        String manifestFilePath = stagingPath + String.format("%s.manifest", UUID.randomUUID());
         s3StorageOperations.uploadManifest(s3Config.getBucketName(), manifestFilePath, manifestContents);
-//        s3Client.putObject(s3Config.getBucketName(), manifestFilePath, manifestContents);
 
         return manifestFilePath;
     }
@@ -103,11 +91,6 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
         LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
 
         final var possibleManifest = Optional.ofNullable(createManifest(stagedFiles, stagingPath));
-
-//        possibleManifest.stream()
-//                .map(manifestContent -> putManifest(manifestContent,schemaName))
-//                .forEach(manifestPath -> executeCopy(manifestPath, database, schemaName, dstTableName));
-//        LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
 
         LOGGER.info("Staging PATH {}", stagingPath);
 
@@ -128,11 +111,13 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     private void executeCopy(final String manifestPath, JdbcDatabase db, String schemaName, String tmpTableName) {
         final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3Config.getS3CredentialConfig();
         final var copyQuery = String.format(
-                "COPY %s.%s FROM '%s'\n"
-                        + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
-                        + "CSV REGION '%s' TIMEFORMAT 'auto'\n"
-                        + "STATUPDATE OFF\n"
-                        + "MANIFEST;",
+                """
+                        COPY %s.%s FROM '%s'
+                        CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'
+                        CSV GZIP
+                        REGION '%s' TIMEFORMAT 'auto'
+                        STATUPDATE OFF
+                        MANIFEST;""",
                 schemaName,
                 tmpTableName,
                 getFullS3Path(s3Config.getBucketName(), manifestPath),
@@ -142,49 +127,24 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
         Exceptions.toRuntime(() -> db.execute(copyQuery));
     }
-    /**
-     * Creates the contents of a manifest file given the `s3StagingFiles`. There must be at least one
-     * entry in a manifest file otherwise it is not considered valid for the COPY command.
-     *
-     * @return null if no stagingFiles exist otherwise the manifest body String
-     * @param stagedFiles
-     * @param stagingPath
-     */
+
     private String createManifest(List<String> stagedFiles, String stagingPath) {
         if (stagedFiles.isEmpty()) {
             return null;
         }
 
         final var s3FileEntries = stagedFiles.stream()
-                .map(file -> new Entry(getFullS3Path(s3Config.getBucketName(), file, stagingPath)))
+                .map(file -> new Entry(getManifestPath(s3Config.getBucketName(), file, stagingPath)))
                 .collect(Collectors.toList());
         final var manifest = new Manifest(s3FileEntries);
 
         return Exceptions.toRuntime(() -> objectMapper.writeValueAsString(manifest));
     }
 
-
-//    protected String getCopyQuery(final String stageName,
-//                                  final String stagingPath,
-//                                  final List<String> stagedFiles,
-//                                  final String dstTableName,
-//                                  final String schemaName) {
-//        return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";",
-//                schemaName,
-//                dstTableName,
-//                generateBucketPath(stageName, stagingPath),
-//                s3Config.getAccessKeyId(),
-//                s3Config.getSecretAccessKey());
-//    }
-
-//    private String generateBucketPath(final String stageName, final String stagingPath) {
-//        return "s3://" + s3Config.getBucketName() + "/" + stagingPath + s3StagingFile;
-//    }
 private static String getFullS3Path(final String s3BucketName, final String s3StagingFile) {
     return String.join("/", "s3:/", s3BucketName,  s3StagingFile);
 }
-    private static String getFullS3Path(final String s3BucketName, final String s3StagingFile, final String stagingPath) {
-//        return String.join("/", "s3:/", s3BucketName, stagingPath,  s3StagingFile);
+    private static String getManifestPath(final String s3BucketName, final String s3StagingFile, final String stagingPath) {
         return "s3://" + s3BucketName + "/" + stagingPath + s3StagingFile;
 
     }
