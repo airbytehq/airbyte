@@ -12,12 +12,12 @@ const Content = styled(ContentCard)`
 
 interface ErrorOccurredViewProps {
   message: React.ReactNode;
-  onLogoClick?: React.MouseEventHandler;
+  onBackClick?: React.MouseEventHandler;
 }
 
-const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, onLogoClick, children }) => {
+export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, onBackClick, children }) => {
   return (
-    <BaseClearView onLogoClick={onLogoClick}>
+    <BaseClearView onBackClick={onBackClick}>
       <Content>
         <H4 center>{message}</H4>
         {children}
@@ -25,5 +25,3 @@ const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, onLogoCl
     </BaseClearView>
   );
 };
-
-export { ErrorOccurredView };

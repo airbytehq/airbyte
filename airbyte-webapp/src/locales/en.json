@@ -490,6 +490,7 @@
   "errorView.notAuthorized": "You don’t have permission to access this page.",
   "errorView.unknown": "Unknown",
 
+  "ui.goBack": "Go back",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",
   "ui.keyValuePair": "{key}: {value}",

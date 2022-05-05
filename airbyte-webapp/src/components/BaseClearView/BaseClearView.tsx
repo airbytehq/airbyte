@@ -1,4 +1,6 @@
 import React from "react";
+import { useIntl } from "react-intl";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 import Version from "components/Version";
@@ -17,10 +19,6 @@ const LogoImg = styled.img`
   width: 90px;
   height: 94px;
   margin-bottom: 20px;
-
-  &.clickable:hover {
-    cursor: pointer;
-  }
 `;
 
 const MainInfo = styled.div`
@@ -30,19 +28,17 @@ const MainInfo = styled.div`
 `;
 
 interface BaseClearViewProps {
-  onLogoClick?: React.MouseEventHandler;
+  onBackClick?: React.MouseEventHandler;
 }
 
-const BaseClearView: React.FC<BaseClearViewProps> = ({ children, onLogoClick }) => {
+const BaseClearView: React.FC<BaseClearViewProps> = ({ children, onBackClick }) => {
+  const { formatMessage } = useIntl();
   return (
     <Content>
       <MainInfo>
-        <LogoImg
-          src="/logo.png"
-          alt="Airbyte logo"
-          onClick={onLogoClick}
-          className={onLogoClick ? "clickable" : undefined}
-        />
+        <Link to=".." onClick={onBackClick}>
+          <LogoImg src="/logo.png" alt={formatMessage({ id: "ui.goBack" })} />
+        </Link>
         {children}
       </MainInfo>
       <Version />

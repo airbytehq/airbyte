@@ -1,19 +1,18 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import useRouter from "hooks/useRouter";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 
-export const StartOverErrorView: React.FC<{
+interface StartOverErrorViewProps {
   message?: string;
   onReset?: () => void;
-}> = ({ message, onReset }) => {
-  const { push } = useRouter();
+}
+
+export const StartOverErrorView: React.FC<StartOverErrorViewProps> = ({ message, onReset }) => {
   return (
     <ErrorOccurredView
       message={message ?? <FormattedMessage id="errorView.notFound" />}
-      onLogoClick={() => {
-        push("..");
+      onBackClick={() => {
         onReset?.();
       }}
     />
