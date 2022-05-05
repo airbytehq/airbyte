@@ -246,8 +246,9 @@ class TestBaseResource:
             result = resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "You have some invalid keys")
             assert result is None
         else:
-            with pytest.raises(resources.InvalidConfigurationError, match=f"You have some invalid keys: {', '.join(invalid_keys)}"):
+            with pytest.raises(resources.InvalidConfigurationError, match="You have some invalid keys: ") as error_info:
                 resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "You have some invalid keys")
+            assert all([invalid_key in str(error_info) for invalid_key in invalid_keys])
 
 
 class TestSourceAndDestination:
