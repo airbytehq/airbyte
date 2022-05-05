@@ -1,39 +1,8 @@
 # Amazon Seller Partner
 
-## Features
+This page guides you through the process of setting up the Amazon Seller Partner source connector.
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | Yes                  |       |
-
-This source syncs data from the [Amazon Seller Partner API](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md).
-
-## Supported Tables
-
-This source is capable of syncing the following streams:
-
-- [Order Report (by order date and by last update)](https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780)
-- [All Listings](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports)
-- [FBA Inventory Reports](https://sellercentral.amazon.com/gp/help/200740930)
-- [FBA Replacements Report](https://sellercentral.amazon.com/help/hub/reference/200453300)
-- [Amazon-Fulfilled Shipments Report](https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120)
-- [Open Listings Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#inventory-reports)
-- [Removal Order Detail Report (overview)](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
-- [Removal Shipment Detail Report](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
-- [Inventory Health & Planning Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#vendor-retail-analytics-reports)
-- [Orders](https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md) \(incremental\)
-- [VendorDirectFulfillmentShipping](https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md)
-- [Seller Feedback Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#performance-reports)
-- [Brand Analytics Alternate Purchase Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
-- [Brand Analytics Item Comparison Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
-- [Brand Analytics Market Basket Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
-- [Brand Analytics Repeat Purchase Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
-- [Brand Analytics Search Terms Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
-
-## Getting started
-
-**Requirements**
+## Prerequisites
 
 - replication_start_date
 - refresh_token
@@ -45,26 +14,65 @@ This source is capable of syncing the following streams:
 - aws_environment
 - region
 
-**Setup guide**
+## Step 1: Set up Amazon Seller Partner
 
-Information about how to get credentials you may find [here](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md).
+[Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application.
+
+
+## Step 2: Set up the source connector in Airbyte
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account. 
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+3. On the source setup page, select **Amazon Seller Partner** from the Source type dropdown and enter a name for this connector.
+4. Click `Authenticate your account`.
+5. Log in and Authorize to the Amazon Seller Partner account and click `Set up source`.
+
+
+## Supported sync modes
+
+The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+ - Full Refresh
+ - Incremental
+
+## Performance considerations
+
+Information about rate limits you may find [here](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
+
+## Supported streams
+
+This source is capable of syncing the following tables and their data:
+- [FBA Inventory Reports](https://sellercentral.amazon.com/gp/help/200740930)
+- [FBA Orders Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
+- [FBA Shipments Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
+- [FBA Replacements Reports](https://sellercentral.amazon.com/help/hub/reference/200453300)
+- [Flat File Open Listings Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Flat File Orders Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Flat File Orders Reports By Last Update](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
+- [Amazon-Fulfilled Shipments Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Merchant Listings Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference)
+- [Vendor Inventory Health Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [Orders](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) \(incremental\)
+- [Seller Feedback Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
+- [Brand Analytics Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
+- [Brand Analytics Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
+- [Brand Analytics Market Basket Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
+- [Brand Analytics Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
+- [Brand Analytics Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
 
 ## Data type mapping
 
-| Integration Type         | Airbyte Type | Notes |
-| :----------------------- | :----------- | :---- |
-| `string`                 | `string`     |       |
-| `int`, `float`, `number` | `number`     |       |
-| `date`                   | `date`       |       |
-| `datetime`               | `datetime`   |       |
-| `array`                  | `array`      |       |
-| `object`                 | `object`     |       |
+| Integration Type         | Airbyte Type |
+| :----------------------- | :----------- |
+| `string`                 | `string`     |
+| `int`, `float`, `number` | `number`     |
+| `date`                   | `date`       |
+| `datetime`               | `datetime`   |
+| `array`                  | `array`      |
+| `object`                 | `object`     |
 
-### Performance Considerations (Airbyte Open-Source)
 
-Information about rate limits you may find [here](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/usage-plans-rate-limits/Usage-Plans-and-Rate-Limits.md).
-
-## CHANGELOG
+## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                |
 | :------- | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
