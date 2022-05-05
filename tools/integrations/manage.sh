@@ -256,7 +256,6 @@ _publish_spec_to_cache() {
     _generate_spec "$image_name:$image_version" > "$tmp_spec_file"
 
     echo "Created $image_name:$image_version spec file:"
-    jq . "$tmp_spec_file"
 
     # use service account key file is provided.
     if [[ -n "${spec_cache_writer_sa_key_file}" ]]; then
@@ -270,6 +269,22 @@ _publish_spec_to_cache() {
   else
     echo "Publishing without writing to spec cache."
   fi
+}
+
+cmd_scan_connectors_to_publish () {
+  # 1) Get list of changed Dockerfiles
+  base_sha=$(git rev-parse HEAD)
+  merge_base="$(git merge-base "$base_sha" origin/master)"
+  changed_dockerfiles="$(git --no-pager diff --name-only "$base_sha" "$merge_base" airbyte-integrations/connectors/**/Dockerfile)"
+  echo "$changed_dockerfiles"
+
+  # 2) Find out which changed Dockerfiles had a version bump between merge_base and head_sha
+  for dockerfile in "${changed_dockerfiles}"; do
+    echo $dockerfile
+  done
+#  local head_sha=$1; shift || error "Missing target (base_sha) $USAGE"
+#  local base_sha=$1; shift || error "Missing target (base_sha) $USAGE"
+
 }
 
 cmd_publish() {

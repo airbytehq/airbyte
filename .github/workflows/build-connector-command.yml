@@ -181,7 +181,7 @@ jobs:
         id: build
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
+          # Oracle expects this variable to be set. Although usually present, this is not set by default on GitHub virtual runners.
           TZ: UTC
       ############################
       ##     PROCESS BUILD      ##
@@ -200,7 +200,7 @@ jobs:
         run: |
           ./tools/integrations/manage.sh test airbyte-integrations/${{ github.event.inputs.connector }}
       ############################
-      ##          COMMIT        ##
+      ##         COMMIT         ##
       ############################
       - name: Commit and Push Bump ${{ github.event.inputs.connector }}
         if: success() && steps.bump-version.outputs.bumped == 'true'
@@ -252,11 +252,9 @@ jobs:
       #          comment-id: ${{ github.event.inputs.comment-id }}
       #          body: |
       #            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Debug
-        run: |
-          echo ${{ github.event }}
-
-          env
+      ############################
+      ##          LABEL         ##
+      ############################
       - name: Set publish-connectors-on-merge label
         if: success() && steps.bump-version.outputs.bumped == 'true'
         uses: actions-ecosystem/action-add-labels@v1
