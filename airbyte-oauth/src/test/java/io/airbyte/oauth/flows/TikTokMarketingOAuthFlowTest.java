@@ -1,15 +1,17 @@
 /*
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
+
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.protocol.models.OAuthConfigSpecification;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-
-import io.airbyte.oauth.BaseOAuthFlow;
 
 public class TikTokMarketingOAuthFlowTest extends BaseOAuthFlowTest {
 
@@ -38,25 +40,39 @@ public class TikTokMarketingOAuthFlowTest extends BaseOAuthFlowTest {
     return List.of("credentials_all");
   }
 
-// {
-//   "message": "OK",
-//   "code": 0,
-//   "data": {
-//     "access_token": "xxxxxxxxxxxxx",
-//     "scope": [
-//       4
-//     ],
-//     "advertiser_ids": [
-//       1234,
-//       1234
-//     ]
-//   },
-//   "request_id": "2020042715295501023125104093250"
-// }
+  @Override
+  protected OAuthConfigSpecification getOAuthConfigSpecification() {
+    return getoAuthConfigSpecification()
+        // change property types to induce json validation errors.
+        .withCompleteOauthServerOutputSpecification(getJsonSchema(Map.of("app_id", Map.of("type", "integer"))))
+        .withCompleteOauthOutputSpecification(getJsonSchema(Map.of("access_token", Map.of("type", "integer"))));
+  }
 
   @Override
-  protected Map<String, String> getExpectedOutput() {
-//   protected Map<String, Object> getExpectedOutput() {
-    return Map.of("data", Map.of("access_token", "access_token_response"));
+  protected String getMockedResponse() {
+    return "{\n"
+        + "   \"data\":{\n"
+        + "      \"access_token\":\"access_token_response\"\n"
+        + "   }\n"
+        + "}";
   }
+
+  @Override
+  protected JsonNode getCompleteOAuthOutputSpecification() {
+    return getJsonSchema(Map.of("access_token", Map.of("type", "string")));
+  }
+
+  @Override
+  protected Map<String, String> getExpectedFilteredOutput() {
+    return Map.of("access_token", "access_token_response");
+  }
+
+  @Test
+  @Override
+  public void testDeprecatedCompleteDestinationOAuth() {}
+
+  @Test
+  @Override
+  public void testDeprecatedCompleteSourceOAuth() {}
+
 }
