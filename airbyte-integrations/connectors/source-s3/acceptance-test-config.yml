@@ -12,7 +12,7 @@ tests:
     - config_path: "secrets/parquet_config.json"
       status: "succeed"
     # # for Avro format
-    - config_path: "secrets/config.json"
+    - config_path: "secrets/avro_config.json"
       status: "succeed"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
@@ -42,11 +42,11 @@ tests:
       expect_records:
         path: "integration_tests/parquet_expected_records.txt"
       # for Avro format
-    - config_path: "secrets/config.json"
+    - config_path: "secrets/avro_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
       expect_records:
-        path: "integration_tests/avro_expected_records.txt"
+        path: "integration_tests/expected_records.txt"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -75,7 +75,7 @@ tests:
     # for Avro format
     - config_path: "secrets/avro_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/avro_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
