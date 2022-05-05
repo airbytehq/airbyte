@@ -28,7 +28,7 @@ class AirbyteTracedException(Exception):
         super().__init__(internal_message)
 
     def as_airbyte_message(self) -> AirbyteMessage:
-        now_millis = int(datetime.now().timestamp() * 1000)
+        now_millis = datetime.now().timestamp() * 1000.0
 
         trace_exc = self._exception or self
         stack_trace_str = "".join(traceback.TracebackException.from_exception(trace_exc).format())
