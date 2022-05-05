@@ -39,6 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -222,32 +223,6 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
   }
 
   @Test
-  public void testGetConnectorRepositoryToInfoMapWithoutCustomCheck() throws Exception {
-    final String connectorRepository1 = "airbyte/connector1";
-    final String connectorRepository2 = "airbyte/connector2";
-    final String version = "0.1.10";
-
-    final StandardSourceDefinition source1 = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
-        .withName("source-1")
-        .withDockerRepository(connectorRepository1)
-        .withDockerImageTag(version)
-        .withReleaseStage(ReleaseStage.GENERALLY_AVAILABLE);
-    final StandardSourceDefinition source2 = new StandardSourceDefinition()
-        .withSourceDefinitionId(UUID.randomUUID())
-        .withName("source-2")
-        .withDockerRepository(connectorRepository2)
-        .withDockerImageTag(version)
-        .withReleaseStage(ReleaseStage.CUSTOM);
-    writeSource(configPersistence, source1);
-    writeSource(configPersistence, source2);
-    final Map<String, ConnectorInfo> result = database.query(ctx -> configPersistence.getConnectorRepositoryToInfoMap(ctx));
-
-    Assertions.assertThat(result).hasSize(1);
-    Assertions.assertThat(result).containsOnlyKeys(connectorRepository1);
-  }
-
-  @Test
   public void testInsertConfigRecord() throws Exception {
     final UUID definitionId = UUID.randomUUID();
     final String connectorRepository = "airbyte/test-connector";
@@ -322,6 +297,33 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withName("random-name")
         .withTombstone(false);
     writeSource(configPersistence, source1);
+  }
+
+  @Test
+  public void filterCustomSource() {
+    final Map<String, ConnectorInfo> sourceMap = new HashMap<>();
+    final String nonCustomKey = "non-custom";
+    final String customKey = "custom";
+    sourceMap.put(nonCustomKey, new ConnectorInfo("id", Jsons.jsonNode(SOURCE_POSTGRES)));
+    sourceMap.put(customKey, new ConnectorInfo("id", Jsons.jsonNode(SOURCE_CUSTOM)));
+
+    final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap, ConfigSchema.STANDARD_SOURCE_DEFINITION);
+
+    Assertions.assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
+  }
+
+  @Test
+  public void filterCustomDestination() {
+    final Map<String, ConnectorInfo> sourceMap = new HashMap<>();
+    final String nonCustomKey = "non-custom";
+    final String customKey = "custom";
+    sourceMap.put(nonCustomKey, new ConnectorInfo("id", Jsons.jsonNode(DESTINATION_S3)));
+    sourceMap.put(customKey, new ConnectorInfo("id", Jsons.jsonNode(DESTINATION_CUSTOM)));
+
+    final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap,
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION);
+
+    Assertions.assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
   }
 
 }
