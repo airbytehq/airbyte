@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination.redshift.operations;
 
 import static io.airbyte.db.jdbc.JdbcUtils.getDefaultSourceOperations;
 
@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
-  protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
+  public static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   private static final String SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT = """
                                                                                        select tablename, schemaname

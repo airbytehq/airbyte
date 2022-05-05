@@ -11,6 +11,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
+import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.util.Map;
 import java.util.Optional;
 

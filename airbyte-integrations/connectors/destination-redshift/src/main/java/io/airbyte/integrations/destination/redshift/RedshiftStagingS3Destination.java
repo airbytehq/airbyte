@@ -18,6 +18,8 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
+import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
+import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
