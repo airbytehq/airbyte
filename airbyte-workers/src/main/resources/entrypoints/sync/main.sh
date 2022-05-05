@@ -13,7 +13,7 @@ else
   echo "Using existing AIRBYTE_ENTRYPOINT: $AIRBYTE_ENTRYPOINT"
 fi
 
-((eval "$AIRBYTE_ENTRYPOINT ARGS" 2> >(tee STDERR_PIPE_FILE >&2) | tee STDOUT_PIPE_FILE | grep -v '"type":"RECORD"' --line-buffered) OPTIONAL_STDIN) &
+((eval "$AIRBYTE_ENTRYPOINT ARGS" 2> >(tee STDERR_PIPE_FILE >&2) | tee STDOUT_PIPE_FILE | grep --invert-match '"type"[[:space:]]*:[[:space:]]*"RECORD"' --line-buffered) OPTIONAL_STDIN) &
 CHILD_PID=$!
 
 # Check for TERMINATION_FILE_CHECK in a loop to handle heartbeat failure
