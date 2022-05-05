@@ -9,6 +9,7 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.Metadata;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -34,16 +35,60 @@ public class FailureHelper {
         .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber));
   }
 
+  public static FailureReason genericFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
+    return new FailureReason()
+        .withInternalMessage(m.getError().getInternalMessage())
+        .withStacktrace(m.getError().getStackTrace())
+        .withTimestamp(m.getEmittedAt().longValue())
+        .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber));
+  }
+
   public static FailureReason sourceFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withExternalMessage("Something went wrong within the source connector");
   }
 
+  public static FailureReason sourceFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
+    return genericFailure(m, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withExternalMessage(m.getError().getMessage());
+  }
+
   public static FailureReason destinationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withExternalMessage("Something went wrong within the destination connector");
+  }
+
+  public static FailureReason destinationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
+    return genericFailure(m, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.DESTINATION)
+        .withExternalMessage(m.getError().getMessage());
+  }
+
+  public static FailureReason errorTraceMessageFailure(final AirbyteTraceMessage sourceMessage,
+                                                       final AirbyteTraceMessage destinationMessage,
+                                                       final Long jobId,
+                                                       final Integer attempt) {
+    if (sourceMessage == null && destinationMessage == null) {
+      return null;
+    }
+
+    if (sourceMessage != null && destinationMessage == null) {
+      return sourceFailure(sourceMessage, jobId, attempt);
+    }
+
+    if (sourceMessage == null && destinationMessage != null) {
+      return destinationFailure(destinationMessage, jobId, attempt);
+    }
+
+    if (sourceMessage.getEmittedAt() < destinationMessage.getEmittedAt()) {
+      return sourceFailure(sourceMessage, jobId, attempt);
+    } else {
+      return destinationFailure(destinationMessage, jobId, attempt);
+    }
+
   }
 
   public static FailureReason replicationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
