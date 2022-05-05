@@ -1757,7 +1757,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.45"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.46"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2062,6 +2062,16 @@
                 format: "date-time"
             required:
             - "name"
+        page_size:
+          title: "Page Size of Requests"
+          description: "Page size used when sending requests to Facebook API to specify\
+            \ number of records per page when response has pagination. Most users\
+            \ do not need to set this field unless they specifically need to tune\
+            \ the connector to address specific issues or use cases."
+          default: 100
+          order: 7
+          exclusiveMinimum: 0
+          type: "integer"
       required:
       - "account_id"
       - "start_date"
