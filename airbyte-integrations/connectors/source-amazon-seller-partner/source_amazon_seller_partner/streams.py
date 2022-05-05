@@ -406,10 +406,9 @@ class VendorInventoryHealthReports(ReportsAmazonSPStream):
 class GetXmlBrowseTreeData(ReportsAmazonSPStream):
     def parse_document(self, document):
         parsed = xmltodict.parse(document, dict_constructor=dict)
-        return parsed.get("Result", {}).get(self.result_key, [])
+        return parsed.get("Result", {}).get("Node", [])
 
     name = "GET_XML_BROWSE_TREE_DATA"
-    result_key = "Node"
 
 
 class BrandAnalyticsStream(ReportsAmazonSPStream):
