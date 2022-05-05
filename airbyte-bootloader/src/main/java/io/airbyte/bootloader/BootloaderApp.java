@@ -31,6 +31,7 @@ import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -80,18 +81,18 @@ public class BootloaderApp {
    *
    * @param configs
    * @param postLoadExecution
-   * @param featureFlags
    */
   public BootloaderApp(final Configs configs,
                        final Runnable postLoadExecution,
                        final FeatureFlags featureFlags,
-                       final SecretMigrator secretMigrator) {
+                       final SecretMigrator secretMigrator,
+                       final DSLContext configsDslContext) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
 
-    initPersistences();
+    initPersistences(configsDslContext);
   }
 
   public BootloaderApp(final Configs configs, final FeatureFlags featureFlags, final SecretMigrator secretMigrator) {
@@ -112,7 +113,6 @@ public class BootloaderApp {
         throw new RuntimeException(e);
       }
     };
-
   }
 
   public void load() throws Exception {
@@ -136,10 +136,9 @@ public class BootloaderApp {
     final DatabaseMigrator jobDbMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
 
     runFlywayMigration(configs, configDbMigrator, jobDbMigrator);
-    LOGGER.info("Ran Flyway migrations...");
 
-      final ConfigRepository configRepository =
-          new ConfigRepository(configPersistence, configDatabase);
+    final ConfigRepository configRepository =
+        new ConfigRepository(configPersistence, configDatabase);
 
     createWorkspaceIfNoneExists(configRepository);
     LOGGER.info("Default workspace created..");
@@ -161,6 +160,7 @@ public class BootloaderApp {
     LOGGER.info("Finished bootstrapping Airbyte environment..");
   }
 
+<<<<<<< HEAD
   private static Database getConfigDatabase(final Configs configs) throws IOException {
     return new ConfigsDatabaseInstance(
         configs.getConfigDatabaseUser(),
@@ -192,7 +192,7 @@ public class BootloaderApp {
       jobDatabase = getJobDatabase(configs);
       jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {
-      e.printStackTrace();
+      LOGGER.error("Unable to initialize persistence.", e);
     }
   }
 
@@ -215,8 +215,18 @@ public class BootloaderApp {
         closeDataSource(jobsDataSource);
       }));
 
-      final var bootloader = new BootloaderApp(configs, configsDataSource, configsDslContext, jobsDataSource, jobsDslContext);
-      bootloader.load();
+      final var bootloader = new BootloaderApp(configs, featureFlags, configsDslContext);
+      bootloader.load(configsDataSource, jobsDataSource, jobsDslContext);
+    }
+  }
+
+  private static void closeDataSource(final DataSource dataSource) {
+    if (dataSource != null && dataSource instanceof Closeable closeable) {
+      try {
+        closeable.close();
+      } catch (final IOException e) {
+        LOGGER.error("Unable to close data source.", e);
+      }
     }
   }
 
