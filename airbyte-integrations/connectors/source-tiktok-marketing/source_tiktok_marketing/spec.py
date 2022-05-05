@@ -30,7 +30,7 @@ class ProductionEnvSpec(BaseModel):
     auth_type: str = Field(default="prod_access_token", const=True, order=0)
     app_id: str = Field(title="App ID", description="The Developer Application App ID.", airbyte_secret=True)
     secret: str = Field(title="Secret", description="The Developer Application Secret.", airbyte_secret=True)
-    access_token: str = Field(title="Access Token", description="Long-term Authorized Access Token.", airbyte_secret=True)
+    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
 
 
 class SandboxEnvSpec(BaseModel):
@@ -40,9 +40,10 @@ class SandboxEnvSpec(BaseModel):
     auth_type: str = Field(default="sandbox_access_token", const=True, order=0)
     # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     advertiser_id: str = Field(
-        title="Advertiser ID", description="The Advertiser ID  which generated for the developer's Sandbox application."
+        title="Advertiser ID", description="The Advertiser ID which generated for the developer's Sandbox application."
     )
-    access_token: str = Field(title="Access Token", description="The Long-term Authorized Access Token.", airbyte_secret=True)
+
+    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
 
 
 class SourceTiktokMarketingSpec(BaseModel):
@@ -57,7 +58,7 @@ class SourceTiktokMarketingSpec(BaseModel):
         title="Replication Start Date *",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "
+        description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated."
         "If this parameter is not set, all data will be replicated.",
         order=1,
     )

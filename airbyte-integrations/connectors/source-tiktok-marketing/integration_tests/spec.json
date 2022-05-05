@@ -36,7 +36,7 @@
               },
               "access_token": {
                 "title": "Access Token",
-                "description": "Long-term Authorized Access Token.",
+                "description": "The long-term authorized access token.",
                 "airbyte_secret": true,
                 "type": "string"
               }
@@ -67,7 +67,7 @@
               },
               "access_token": {
                 "title": "Access Token",
-                "description": "Long-term Authorized Access Token.",
+                "description": "The long-term authorized access token.",
                 "airbyte_secret": true,
                 "type": "string"
               }
@@ -86,12 +86,12 @@
               },
               "advertiser_id": {
                 "title": "Advertiser ID",
-                "description": "The Advertiser ID  which generated for the developer's Sandbox application.",
+                "description": "The Advertiser ID which generated for the developer's Sandbox application.",
                 "type": "string"
               },
               "access_token": {
                 "title": "Access Token",
-                "description": "The Long-term Authorized Access Token.",
+                "description": "The long-term authorized access token.",
                 "airbyte_secret": true,
                 "type": "string"
               }

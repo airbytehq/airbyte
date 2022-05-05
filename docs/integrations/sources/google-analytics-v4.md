@@ -102,6 +102,10 @@ According to the [Google Analytics API documentation in the "Data Processing Lat
 When this occurs, the returned data will set the flag `isDataGolden` to false. Like mentioned in the [Google Analytics API docs](https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet#reportdata):
 > the `isDataGolden` flag indicates if [data] is golden or not. Data is golden when the exact same request [for a report] will not produce any new results if asked at a later point in time. 
 
+To address this issue, the connector adds a lookback window of 2 days to ensure any previously synced non-golden data is re-synced with its potential updates. For example: If your last sync occurred 5 days ago and a sync kicks off today, it will attempt to sync data from 7 days ago up to the latest data available.
+
+To determine whether data is finished processing or not, the `isDataGolden` flag is exposed and should be used.
+
 ## Requesting Custom Reports
 
 You can replicate Google Analytics [Custom Reports](https://support.google.com/analytics/answer/1033013?hl=en) using this connector. To do this, input a JSON object as a string in the "Custom Reports" field when setting up the connector. The JSON is an array of objects where each object has the following schema:
@@ -163,7 +167,8 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.1.20  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
+| 0.1.21  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
+| 0.1.20  | 2022-04-28 | [12426](https://github.com/airbytehq/airbyte/pull/12426) | Expose `isDataGOlden` field and always resync data two days back to make sure it is golden   |
 | 0.1.19  | 2022-04-19 | [12150](https://github.com/airbytehq/airbyte/pull/12150) | Minor changes to documentation                                                               |
 | 0.1.18  | 2022-04-07 | [11803](https://github.com/airbytehq/airbyte/pull/11803) | Improved documentation                                                                       |
 | 0.1.17  | 2022-03-31 | [11512](https://github.com/airbytehq/airbyte/pull/11512) | Improved Unit and Acceptance tests coverage, fixed `read` with abnormally large state values |
