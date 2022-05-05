@@ -4,7 +4,6 @@
 
 import logging
 import logging.config
-import sys
 import traceback
 from typing import Tuple
 
@@ -33,29 +32,12 @@ LOGGING_CONFIG = {
 }
 
 
-def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
-    """
-    Make sure unhandled exceptions are not printed to the console without passing through the Airbyte logger and having
-    secrets removed.
-    """
-
-    def hook_fn(exception_type, exception_value, traceback_):
-        # For developer ergonomics, we want to see the stack trace in the logs when we do a ctrl-c
-        if issubclass(exception_type, KeyboardInterrupt):
-            sys.__excepthook__(exception_type, exception_value, traceback_)
-        else:
-            logger.critical(exception_value, exc_info=exception_value)
-
-    sys.excepthook = hook_fn
-
-
 def init_logger(name: str = None):
     """Initial set up of logger"""
     logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")
     logger = logging.getLogger(name)
     logger.setLevel(TRACE_LEVEL_NUM)
     logging.config.dictConfig(LOGGING_CONFIG)
-    init_unhandled_exception_output_filtering(logger)
     return logger
 
 

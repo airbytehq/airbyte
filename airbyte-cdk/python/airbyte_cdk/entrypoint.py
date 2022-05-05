@@ -11,7 +11,8 @@ import sys
 import tempfile
 from typing import Any, Dict, Iterable, List
 
-from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
+from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
@@ -20,6 +21,7 @@ from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from airbyte_cdk.utils.airbyte_secrets_utils import AirbyteSecretHelper, get_secrets
 
 logger = init_logger("airbyte")
+init_uncaught_exception_handler(logger)
 
 
 class AirbyteEntrypoint(object):
