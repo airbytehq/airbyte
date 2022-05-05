@@ -251,6 +251,8 @@ jobs:
       - name: Debug
         run: |
           echo ${{ github.event }}
+
+          env
       - name: Set publish-connectors-on-merge label
         if: success() && steps.bump-version.outputs.bumped == 'true'
         uses: actions-ecosystem/action-add-labels@v1
