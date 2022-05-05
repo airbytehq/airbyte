@@ -797,7 +797,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.5"
+- dockerImage: "airbyte/source-bing-ads:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -820,22 +820,20 @@
       additionalProperties: false
       properties:
         accounts:
-          title: "Accounts"
+          title: "Accounts to replicate data from"
           type: "object"
-          description: "Account selection."
+          description: ""
           oneOf:
-          - title: "All accounts assigned to your user"
+          - title: "All Accounts"
             additionalProperties: false
-            description: "Fetch data for all available accounts."
+            description: "Replicate data from all accounts to which you have access."
             required:
             - "selection_strategy"
             properties:
               selection_strategy:
                 type: "string"
-                enum:
-                - "all"
                 const: "all"
-          - title: "Subset of your accounts"
+          - title: "Specific Accounts"
             additionalProperties: false
             description: "Fetch data for subset of account IDs."
             required:
@@ -844,13 +842,11 @@
             properties:
               selection_strategy:
                 type: "string"
-                enum:
-                - "subset"
                 const: "subset"
               ids:
                 type: "array"
-                title: "IDs"
-                description: "List of accounts from which data will be fetched."
+                title: "Account IDs"
+                description: "List of the account IDs from which data will be replicated."
                 items:
                   type: "string"
                 minItems: 1
@@ -860,72 +856,96 @@
           title: "Client ID"
           description: "The Client ID of your Microsoft Advertising developer application."
           airbyte_secret: true
+          order: 0
         client_secret:
           type: "string"
           title: "Client Secret"
           description: "The Client Secret of your Microsoft Advertising developer\
             \ application."
           airbyte_secret: true
-        customer_id:
-          type: "string"
-          title: "Customer ID"
-          description: "User's Customer ID. Go to your Accounts and Billing page.\
-            \ Your Customer ID will be listed on the Accounts tab under the heading\
-            \ Customer."
-        developer_token:
-          type: "string"
-          title: "Developer Token"
-          description: "Developer token associated with user."
-          airbyte_secret: true
-        tenant_id:
-          type: "string"
-          title: "Tenant ID"
-          description: "The Tenant ID of your Microsoft Advertising developer application."
-          airbyte_secret: true
-          default: "common"
-        redirect_uri:
-          type: "string"
-          title: "Redirect URI"
-          description: "The Redirect URI of your Microsoft Advertising developer application."
-          airbyte_secret: true
-          default: ""
+          order: 1
         refresh_token:
           type: "string"
           title: "Refresh Token"
           description: "Refresh Token to renew the expired Access Token."
           airbyte_secret: true
+          order: 2
+        developer_token:
+          type: "string"
+          title: "Developer Token"
+          description: "Developer token associated with user."
+          airbyte_secret: true
+          order: 3
+        tenant_id:
+          type: "string"
+          title: "Tenant ID"
+          description: "The Tenant ID of your Microsoft Advertising developer application.\
+            \ Set this to \"common\" unless you know you need a different value."
+          airbyte_secret: true
+          default: "common"
+          order: 4
+        redirect_uri:
+          type: "string"
+          title: "Redirect URI (Optional)"
+          description: "The Redirect URI of your Microsoft Advertising developer application.\
+            \ Leave this empty unless you know that you need it."
+          airbyte_secret: true
+          default: ""
+          order: 5
+        customer_id:
+          type: "string"
+          title: "Customer ID"
+          description: "Your Bing Customer ID. See the \"Getting Started\" section\
+            \ in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads\"\
+            >the docs</a> for information on how to obtain this ID"
+          order: 6
         user_id:
           type: "string"
           title: "Account ID"
-          description: "Bing Ads Account ID. You can find Account ID by going to your\
-            \ profile and selecting Accounts and Billing."
+          description: "Bing Ads Account ID. See the \"Getting Started\" section in\
+            \ <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads\">the\
+            \ docs</a> for information on how to obtain this ID"
+          order: 7
         reports_start_date:
           type: "string"
-          title: "Reports Start Date"
+          title: "Reports replication start date"
           format: "date"
           default: "2020-01-01"
-          description: "UTC date in YYYY-MM-DD format. Any reports before this date\
-            \ will not be replicated."
+          description: "The start date from which to begin replicating report data.\
+            \ Any data generated before this date will not be replicated in reports.\
+            \ This is a UTC date in YYYY-MM-DD format."
+          order: 8
         hourly_reports:
-          title: "Hourly reports"
+          title: "Enable hourly-aggregate reports"
           type: "boolean"
-          description: "The report data will be aggregated by each hour of the day."
+          description: "Toggle this to enable replicating reports aggregated using\
+            \ an hourly time window. More information about report aggregation can\
+            \ be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
+            >the docs</a>."
           default: false
         daily_reports:
-          title: "Daily reports"
+          title: "Enable daily-aggregate reports"
           type: "boolean"
-          description: "The report data will be aggregated by each day."
+          description: "Toggle this to enable replicating reports aggregated using\
+            \ a daily time window. More information about report aggregation can be\
+            \ found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
+            >the docs</a>."
           default: false
         weekly_reports:
-          title: "Weekly reports"
+          title: "Enable weekly-aggregate reports"
           type: "boolean"
-          description: "The report data will be aggregated by each week running from\
-            \ Sunday through Saturday."
+          description: "Toggle this to enable replicating reports aggregated using\
+            \ a weekly time window running from Sunday to Saturday. More information\
+            \ about report aggregation can be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
+            >the docs</a>."
           default: false
         monthly_reports:
-          title: "Monthly reports"
+          title: "Enable monthly-aggregate reports"
           type: "boolean"
-          description: "The report data will be aggregated by each month."
+          description: "Toggle this to enable replicating reports aggregated using\
+            \ a monthly time window. More information about report aggregation can\
+            \ be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
+            >the docs</a>."
           default: false
     supportsNormalization: false
     supportsDBT: false
