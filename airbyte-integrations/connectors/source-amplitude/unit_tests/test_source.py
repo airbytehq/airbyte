@@ -3,24 +3,22 @@
 #
 
 
+from unittest.mock import patch
+
 import pytest
 import requests
-from unittest.mock import patch
 from airbyte_cdk import AirbyteLogger
 from source_amplitude import SourceAmplitude
 from source_amplitude.api import ActiveUsers, Annotations, AverageSessionLength, Cohorts, Events
 
-    
-TEST_CONFIG: dict = {
-    "api_key": "test_api_key",
-    "secret_key": "test_secret_key",
-    "start_date": "2022-05-01T00:00:00Z"
-}
+TEST_CONFIG: dict = {"api_key": "test_api_key", "secret_key": "test_secret_key", "start_date": "2022-05-01T00:00:00Z"}
 TEST_INSTANCE: SourceAmplitude = SourceAmplitude()
+
 
 class MockRequest:
     def __init__(self, status_code):
         self.status_code = status_code
+
 
 def test_convert_auth_to_token():
     expected = "dXNlcm5hbWU6cGFzc3dvcmQ="
@@ -31,17 +29,18 @@ def test_convert_auth_to_token():
 @pytest.mark.parametrize(
     "response, check_passed",
     [
-        ({"id": 123}, True), 
-        (requests.HTTPError(), False), 
+        ({"id": 123}, True),
+        (requests.HTTPError(), False),
     ],
     ids=["Success", "Fail"],
-)   
+)
 def test_check(response, check_passed):
-    with patch.object(Cohorts, 'read_records', return_value=response) as mock_method:
+    with patch.object(Cohorts, "read_records", return_value=response) as mock_method:
         result = TEST_INSTANCE.check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
         mock_method.assert_called()
         assert check_passed == result[0]
-        
+
+
 @pytest.mark.parametrize(
     "expected_stream_cls",
     [
