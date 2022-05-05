@@ -171,7 +171,7 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
           "root",
           "test",
           db.getDriverClassName(),
-          String.format("jdbc:mysql://%s:%s/%s",
+          String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
               db.getHost(),
               db.getFirstMappedPort(),
               db.getDatabaseName()), SQLDialect.MYSQL);
