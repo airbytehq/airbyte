@@ -15,12 +15,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -33,12 +33,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -51,12 +51,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -69,12 +69,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -87,12 +87,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -105,12 +105,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -123,12 +123,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -141,12 +141,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -159,12 +159,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -177,12 +177,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -261,7 +261,7 @@
       "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
     },
     "branchDescription": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Account branch description"
     },
     "calendar": {
@@ -288,7 +288,7 @@
       "description": "Is account closed. Default value false"
     },
     "closingDate": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date",
       "example": "2020-06-23",
       "description": "Closing date"
@@ -348,12 +348,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -363,12 +363,12 @@
       "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
     },
     "description": {
-      "type": "string",
+      "type": ["null", "string"],
       "example": "Some description",
       "description": "Account description."
     },
     "description2": {
-      "type": "string",
+      "type": ["null", "string"],
       "example": "Some description2",
       "description": "Account description2."
     },
@@ -380,12 +380,12 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "CODE_ID",
           "description": "Code identifier."
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "format": "uuid",
           "example": "123e4567-e89b-12d3-a456-426655440001",
           "description": "UUID identifier. Has priority over the code"
@@ -395,11 +395,11 @@
       "description": "Represents possible identifiers for resource. Should be provided at least one identifier (code or uuid). In the case of providing uuid and code, uuid will be used for resolving the reference."
     },
     "ibanCode": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Account IBAN code"
     },
     "internalAccountCode": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Internal account code"
     },
     "marker1": {
@@ -423,7 +423,7 @@
       "description": "Signatory users."
     },
     "statementIdentifier": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Account statement identifier"
     },
     "status": {
@@ -442,7 +442,7 @@
       ]
     },
     "updateDate": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date",
       "example": "2020-06-22",
       "description": "Update date"
@@ -454,7 +454,7 @@
       "description": "UUID of the account."
     },
     "zbaIdentifier": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Account ZBA identifier"
     }
   },

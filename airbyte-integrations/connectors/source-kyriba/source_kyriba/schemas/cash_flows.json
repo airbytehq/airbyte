@@ -64,13 +64,13 @@
       "$ref": "_definitions.json#/definitions/AmountModel"
     },
     "description": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Cash flow's description",
       "minLength": 0,
       "maxLength": 2500
     },
     "reference": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Cash flow's reference",
       "minLength": 0,
       "maxLength": 250
@@ -86,9 +86,7 @@
       "format": "int32",
       "description": "Cash flow's number",
       "minimum": 0,
-      "maximum": 250,
-      "exclusiveMinimum": false,
-      "exclusiveMaximum": false
+      "maximum": 250
     },
     "glStatus": {
       "type": "string",

@@ -49,7 +49,7 @@ class KyribaStream(HttpStream):
         self.client = client
         super().__init__(self.client.login())
 
-    primary_key = "uuid"
+    primary_key = None
     max_retries = 10
 
     @property
@@ -121,6 +121,8 @@ class IncrementalKyribaStream(KyribaStream, ABC):
 
 
 class Accounts(KyribaStream):
+    primary_key = "uuid"
+
     def path(self, **kwargs) -> str:
         return "accounts"
 
@@ -141,7 +143,9 @@ class AccountSubStream(HttpSubStream, KyribaStream):
 
 
 class CashBalancesStream(AccountSubStream):
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+            self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
         # we can query a max of 31 days at a time
@@ -187,7 +191,9 @@ class CashBalancesIntraday(CashBalancesStream):
 
 
 class BankBalancesStream(AccountSubStream):
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+            self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
         # bank balances require the date to be specified
@@ -220,14 +226,20 @@ class BankBalancesIntraday(BankBalancesStream):
 
 
 class CashFlows(IncrementalKyribaStream):
+    primary_key = "uuid"
+
     def path(self, **kwargs) -> str:
         return "cash-flows"
 
-    def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+            self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         # cash flow date range has to be less than a year
-        latest = stream_state.get(self.cursor_field)
-        latest_date = datetime.strptime(latest, "%Y-%m-%dT%H:%M:%SZ").date() if latest else None
-        start = latest_date or date.fromisoformat(self.start_date)
+        if stream_state:
+            latest = stream_state.get(self.cursor_field)
+            start = datetime.strptime(latest, "%Y-%m-%dT%H:%M:%SZ").date() if latest else None
+        else:
+            start = date.fromisoformat(self.start_date)
         end_date = self.end_date or date.today()
         slices = []
         while start <= end_date:

@@ -54,11 +54,9 @@
                 "json_schema": {
                     "$schema": "http://json-schema.org/draft-04/schema"
                 },
-                "supported_sync_modes": ["full_refresh", "incremental"],
-                "source_defined_cursor": true,
-                "default_cursor_field": ["date"]
+                "supported_sync_modes": ["full_refresh"]
             },
-            "sync_mode": "incremental",
+            "sync_mode": "full_refresh",
             "destination_sync_mode": "overwrite"
         },
         {

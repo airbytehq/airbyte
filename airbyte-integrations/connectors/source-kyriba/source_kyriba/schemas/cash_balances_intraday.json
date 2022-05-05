@@ -12,7 +12,7 @@
           "maxLength": 12
         },
         "statementIdentifier": {
-          "type": "string",
+          "type": ["null", "string"],
           "example": "Statement identifier",
           "description": "Account Statement Identifier of the account.",
           "minLength": 0,
