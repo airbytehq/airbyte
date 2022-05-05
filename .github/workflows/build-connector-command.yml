@@ -248,13 +248,16 @@ jobs:
       #          comment-id: ${{ github.event.inputs.comment-id }}
       #          body: |
       #            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Debug
+        run: |
+          echo ${{ github.event }}
       - name: Set publish-connectors-on-merge label
         if: success() && steps.bump-version.outputs.bumped == 'true'
         uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: publish-connectors-on-merge
-          number: ${{ github.event.pull_request.number }}
+          number: ${{ github.event.issue.number }}
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-bump-build-test-connector-runner:
