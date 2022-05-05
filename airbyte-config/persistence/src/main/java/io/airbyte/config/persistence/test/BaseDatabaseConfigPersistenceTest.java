@@ -2,12 +2,10 @@
  * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.config.persistence;
+package io.airbyte.config.persistence.test;
 
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.count;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConfigSchema;
@@ -18,6 +16,8 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import java.sql.SQLException;
@@ -53,7 +53,7 @@ public abstract class BaseDatabaseConfigPersistenceTest {
         .withUsername("docker")
         .withPassword("docker");
     container.start();
-    jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
+    jsonSecretsProcessor = Mockito.mock(JsonSecretsProcessor.class);
   }
 
   @AfterAll
@@ -184,22 +184,22 @@ public abstract class BaseDatabaseConfigPersistenceTest {
   // assertEquals cannot correctly check the equality of two maps with stream values,
   // so streams are converted to sets before being compared.
   protected void assertSameConfigDump(final Map<String, Stream<JsonNode>> expected, final Map<String, Stream<JsonNode>> actual) {
-    assertEquals(getMapWithSet(expected), getMapWithSet(actual));
+    Assertions.assertEquals(getMapWithSet(expected), getMapWithSet(actual));
   }
 
   protected void assertRecordCount(final int expectedCount, final Table table) throws Exception {
     final Result<Record1<Integer>> recordCount = database.query(ctx -> ctx.select(count(asterisk())).from(table).fetch());
-    assertEquals(expectedCount, recordCount.get(0).value1());
+    Assertions.assertEquals(expectedCount, recordCount.get(0).value1());
   }
 
   protected void assertHasSource(final StandardSourceDefinition source) throws Exception {
-    assertEquals(source, configPersistence
+    Assertions.assertEquals(source, configPersistence
         .getConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId().toString(),
             StandardSourceDefinition.class));
   }
 
   protected void assertHasDestination(final StandardDestinationDefinition destination) throws Exception {
-    assertEquals(destination, configPersistence
+    Assertions.assertEquals(destination, configPersistence
         .getConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId().toString(),
             StandardDestinationDefinition.class));
   }

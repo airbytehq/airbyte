@@ -6,7 +6,6 @@ plugins {
 dependencies {
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:models')
-    implementation project(':airbyte-config:init')
     implementation project(':airbyte-db:lib')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-json-validation')
@@ -15,8 +14,13 @@ dependencies {
 
     implementation 'commons-io:commons-io:2.7'
     implementation 'com.google.cloud:google-cloud-secretmanager:2.0.5'
-    testImplementation "org.testcontainers:postgresql:1.15.3"
 
-    testImplementation project(':airbyte-test-utils')
+    // Those are set as an implementation dependency because it is used in the test package.
+    implementation 'org.testcontainers:postgresql:1.15.3'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    implementation project(':airbyte-test-utils')
+    implementation 'org.mockito:mockito-junit-jupiter:4.0.0'
+    implementation 'org.assertj:assertj-core:3.21.0'
+
     integrationTestJavaImplementation project(':airbyte-config:persistence')
 }

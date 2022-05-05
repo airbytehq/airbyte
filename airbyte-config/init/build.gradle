@@ -10,6 +10,9 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-json-validation')
+
+    testImplementation "org.testcontainers:postgresql:1.15.3"
+    testImplementation project(':airbyte-test-utils')
 }
 
 task copyScripts(type: Copy) {

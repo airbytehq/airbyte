@@ -23,6 +23,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.test.BaseDatabaseConfigPersistenceTest;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;

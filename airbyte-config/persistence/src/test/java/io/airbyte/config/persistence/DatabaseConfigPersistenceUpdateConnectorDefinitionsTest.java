@@ -12,6 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
+import io.airbyte.config.persistence.test.BaseDatabaseConfigPersistenceTest;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
@@ -139,29 +140,6 @@ public class DatabaseConfigPersistenceUpdateConnectorDefinitionsTest extends Bas
     final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1000.0").withDocumentationUrl(null).withSourceType(null);
     final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.99.0");
     final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.1000.0");
-
-    assertUpdateConnectorDefinition(
-        Collections.singletonList(currentSource),
-        Collections.emptyList(),
-        Collections.singletonList(latestSource),
-        Collections.singletonList(currentSourceWithNewFields));
-  }
-
-  @Test
-  @DisplayName("When an unused connector has missing fields, add the missing fields, do not update its version")
-  public void testNoUpdateOnConnectors() throws Exception {
-    final StandardSourceDefinition currentSource = getSource().withDockerImageTag("0.1000.0").withDocumentationUrl(null).withSourceType(null);
-    final StandardSourceDefinition latestSource = getSource().withDockerImageTag("0.99.0");
-    final StandardSourceDefinition currentSourceWithNewFields = getSource().withDockerImageTag("0.1000.0");
-    final ConfigPersistence seedConfigPersistence =
-    database.query(ctx -> {
-      configPersistence.updateConnectorDefinitions(
-          ctx,
-          ConfigSchema.STANDARD_SOURCE_DEFINITION,
-          YamlSeedConfigPersistence.getDefault()
-      )
-    })
-
 
     assertUpdateConnectorDefinition(
         Collections.singletonList(currentSource),
