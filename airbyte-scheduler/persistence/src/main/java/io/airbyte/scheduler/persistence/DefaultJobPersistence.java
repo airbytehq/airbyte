@@ -392,8 +392,8 @@ public class DefaultJobPersistence implements JobPersistence {
     return jobDatabase.query(ctx -> getJobsFromResult(ctx
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "scope = ? AND " +
-            "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
-            "CAST(jobs.status AS VARCHAR) IN " + Sqls.toSqlInFragment(statuses) + " " +
+            "config_type IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
+            "jobs.status IN " + Sqls.toSqlInFragment(statuses) + " " +
             ORDER_BY_JOB_TIME_ATTEMPT_TIME,
             connectionId.toString())));
   }
