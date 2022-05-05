@@ -34,13 +34,14 @@ class SourceFreshdesk(AbstractSource):
         try:
             url = urljoin(f"https://{config['domain'].rstrip('/')}", "/api/v2/settings/helpdesk")
             response = requests.get(url=url, auth=self._create_authenticator(config["api_key"]))
-            if not response.ok:
-                alive = False
-                try:
-                    body = response.json()
-                    error_msg = f"{body.get('code')}: {body['message']}"
-                except ValueError:
-                    error_msg = "Invalid credentials"
+            response.raise_for_status()
+        except requests.HTTPError as error:
+            alive = False
+            try:
+                body = error.response.json()
+                error_msg = f"{body.get('code')}: {body['message']}"
+            except ValueError:
+                error_msg = "Invalid credentials"
         except Exception as error:
             alive = False
             error_msg = repr(error)
