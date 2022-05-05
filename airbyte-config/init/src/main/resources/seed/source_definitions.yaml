@@ -1,7 +1,7 @@
 - name: Airtable
   sourceDefinitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
   dockerRepository: airbyte/source-airtable
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/airtable
   icon: airtable.svg
   sourceType: api
@@ -35,7 +35,7 @@
 - name: Amplitude
   sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
   dockerRepository: airbyte/source-amplitude
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/amplitude
   icon: amplitude.svg
   sourceType: api
@@ -91,7 +91,7 @@
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
   icon: bingads.svg
   sourceType: api
@@ -279,7 +279,7 @@
 - name: Google Analytics
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -737,7 +737,7 @@
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/smartsheets
   icon: smartsheet.svg
   sourceType: api
@@ -799,7 +799,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api

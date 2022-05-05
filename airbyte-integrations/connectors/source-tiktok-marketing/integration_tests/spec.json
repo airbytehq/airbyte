@@ -36,7 +36,7 @@
               },
               "access_token": {
                 "title": "Access Token",
-                "description": "The long-term authorized access token.",
+                "description": "Long-term Authorized Access Token.",
                 "airbyte_secret": true,
                 "type": "string"
               }
