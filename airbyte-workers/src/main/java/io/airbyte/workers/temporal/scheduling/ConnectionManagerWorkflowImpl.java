@@ -183,7 +183,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         if (workflowState.isFailed()) {
           final FailureType failureType =
               standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType();
-          reportFailure(connectionUpdaterInput, standardSyncOutput, failureType == FailureType.CONFIG_ERROR ? "Check Failed" + connectionId : null);
+          reportFailure(connectionUpdaterInput, standardSyncOutput, failureType == FailureType.CONFIG_ERROR ? "Check Failed " + connectionId : null);
           if (failureType == FailureType.CONFIG_ERROR) {
             // In the case that the failure is attributable to config_error, we will not retry again
             // The first time we fail in this way (from a new connection or a success) we will allow 2 attempts,
