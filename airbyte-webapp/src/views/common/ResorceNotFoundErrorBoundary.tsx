@@ -15,7 +15,7 @@ export class ResourceNotFoundErrorBoundary extends React.Component<
   BoundaryState
 > {
   static getDerivedStateFromError(error: CommonRequestError): BoundaryState {
-    if (error.status === 422 || error.status === 404 || error.status === 401) {
+    if ([401, 404, 422].includes(error.status)) {
       const messageId = error.status === 401 ? "errorView.notAuthorized" : "errorView.notFound";
       return {
         hasError: true,
