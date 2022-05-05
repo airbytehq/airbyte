@@ -7,7 +7,6 @@ import csv
 import json as json_lib
 import time
 import zlib
-import xmltodict
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -15,6 +14,7 @@ from urllib.parse import urljoin
 
 import pendulum
 import requests
+import xmltodict
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -402,11 +402,14 @@ class FbaReplacementsReports(ReportsAmazonSPStream):
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
+
 class GetXmlBrowseTreeData(ReportsAmazonSPStream):
     def parse_document(self, document):
-        yield xmltodict.parse(document, dict_constructor=dict)
+        parsed = xmltodict.parse(document, dict_constructor=dict)
+        return parsed.get("Result", {}).get(self.result_key, [])
 
-    name = "GET_XML_BROWSE_TREE_DATA" 
+    name = "GET_XML_BROWSE_TREE_DATA"
+    result_key = "Node"
 
 
 class BrandAnalyticsStream(ReportsAmazonSPStream):
