@@ -307,15 +307,13 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void failNonTerminalJobs() throws IOException {
-      final Job successfulJob = new Job(1, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(), JobStatus.SUCCEEDED, 0L, 0L, 1L);
-
-      final Attempt failedAttempt = new Attempt(0, 2, Path.of(""), null, AttemptStatus.FAILED, null, 2L, 3L, 3L);
+      final Attempt failedAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, 2L, 3L, 3L);
       final int runningAttemptNumber = 1;
-      final Attempt runningAttempt = new Attempt(runningAttemptNumber, 2, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
-      final Job runningJob = new Job(2, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(failedAttempt, runningAttempt),
+      final Attempt runningAttempt = new Attempt(runningAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);
+      final Job runningJob = new Job(1, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(failedAttempt, runningAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
-      final Job pendingJob = new Job(3, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(), JobStatus.PENDING, 4L, 4L, 5L);
+      final Job pendingJob = new Job(2, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(), JobStatus.PENDING, 4L, 4L, 5L);
 
       Mockito.when(mJobPersistence.listJobsForConnectionWithStatuses(CONNECTION_ID, Job.REPLICATION_TYPES, JobStatus.NON_TERMINAL_STATUSES))
           .thenReturn(List.of(runningJob, pendingJob));
