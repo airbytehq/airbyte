@@ -11,7 +11,7 @@ from airbyte_cdk.models import Type as MessageType
 
 class AirbyteTracedException(Exception):
     """
-    TODO: give this a meaningful description
+    An exception that should be emitted as an AirbyteTraceMessage
     """
 
     def __init__(
@@ -21,6 +21,12 @@ class AirbyteTracedException(Exception):
         failure_type: FailureType = FailureType.system_error,
         exception: BaseException = None,
     ):
+        """
+        :param internal_message: the internal error that caused the failure
+        :param message: a user-friendly message that indicates the cause of the error
+        :param failure_type: the type of error
+        :param exception: the exception that caused the error, from which the stack trace should be retrieved
+        """
         self.internal_message = internal_message
         self.message = message
         self.failure_type = failure_type
@@ -28,6 +34,9 @@ class AirbyteTracedException(Exception):
         super().__init__(internal_message)
 
     def as_airbyte_message(self) -> AirbyteMessage:
+        """
+        Builds an AirbyteTraceMessage from the exception
+        """
         now_millis = datetime.now().timestamp() * 1000.0
 
         trace_exc = self._exception or self
@@ -48,4 +57,8 @@ class AirbyteTracedException(Exception):
 
     @classmethod
     def from_exception(cls, exc: Exception, *args, **kwargs) -> "AirbyteTracedException":
+        """
+        Helper to create an AirbyteTracedException from an existing exception
+        :param exc: the exception that caused the error
+        """
         return cls(internal_message=str(exc), exception=exc, *args, **kwargs)
