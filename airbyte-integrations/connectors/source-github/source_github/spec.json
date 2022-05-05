@@ -83,7 +83,7 @@
         "minimum": 1,
         "maximum": 100,
         "default": 10,
-        "description": "The Github connector contains several streams with a large amounts of data. The page size of such streams depends on the size of your repository. We recommended that you specify values between 10 and 30.",
+        "description": "The Github connector contains several streams with a large amount of data. The page size of such streams depends on the size of your repository. We recommended that you specify values between 10 and 30.",
         "order": 4
       }
     }
