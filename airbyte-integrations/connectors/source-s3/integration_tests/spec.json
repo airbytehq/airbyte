@@ -162,7 +162,7 @@
         "type": "string"
       },
       "provider": {
-        "title": ["S3: Amazon Web Services"],
+        "title": "S3: Amazon Web Services",
         "type": "object",
         "properties": {
           "bucket": {

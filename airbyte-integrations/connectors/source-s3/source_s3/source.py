@@ -18,7 +18,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
 
     class S3Provider(BaseModel):
         class Config:
-            title = ("S3: Amazon Web Services",)
+            title = "S3: Amazon Web Services"
             # SourceFilesAbstractSpec field are ordered 10 apart to allow subclasses to insert their own spec's fields interspersed
             schema_extra = {"order": 11, "description": "Use this to load files from S3 or S3-compatible services"}
 
