@@ -7596,7 +7596,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.1.36"
+- dockerImage: "airbyte/source-shopify:0.1.37"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/shopify"
     connectionSpecification:
@@ -7616,20 +7616,19 @@
           order: 1
         credentials:
           title: "Shopify Authorization Method"
+          description: "The authorization method to use to retrieve data from Shopify"
           type: "object"
           order: 2
           oneOf:
           - type: "object"
             title: "OAuth2.0"
+            description: "OAuth2.0"
             required:
             - "auth_method"
             properties:
               auth_method:
                 type: "string"
                 const: "oauth2.0"
-                enum:
-                - "oauth2.0"
-                default: "oauth2.0"
                 order: 0
               client_id:
                 type: "string"
@@ -7647,6 +7646,7 @@
                 description: "The Access Token for making authenticated requests."
                 airbyte_secret: true
           - title: "API Password"
+            description: "API Password Auth"
             type: "object"
             required:
             - "auth_method"
@@ -7655,9 +7655,6 @@
               auth_method:
                 type: "string"
                 const: "api_password"
-                enum:
-                - "api_password"
-                default: "api_password"
                 order: 0
               api_password:
                 type: "string"
@@ -7667,7 +7664,7 @@
                 airbyte_secret: true
         start_date:
           type: "string"
-          title: "Start Date"
+          title: "Replication Start Date"
           description: "The date you would like to replicate data from. Format: YYYY-MM-DD.\
             \ Any data before this date will not be replicated."
           examples:
