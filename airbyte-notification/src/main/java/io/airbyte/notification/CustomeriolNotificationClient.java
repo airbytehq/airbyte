@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.UUID;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +30,15 @@ public class CustomeriolNotificationClient extends NotificationClient {
   // - receiver email
   // - customer.io identifier email
   // - customer.io TRANSACTION_MESSAGE_ID
-  private static final String SENDER_EMAIL = "Airbyte Notification <no-reply@airbyte.io>";
-  private static final String TRANSACTION_MESSAGE_ID = "6";
+
+  // DEFAULT_TRANSACTION_MESSAGE_ID is currently unused but the template can be used for any generic
+  // messaging.
+  // private static final String DEFAULT_TRANSACTION_MESSAGE_ID = "6";
+  private static final String AUTO_DISABLE_TRANSACTION_MESSAGE_ID = "7";
+  private static final String AUTO_DISABLE_WARNING_TRANSACTION_MESSAGE_ID = "8";
 
   private static final String CUSTOMERIO_EMAIL_API_ENDPOINT = "https://api.customer.io/v1/send/email";
   private static final String AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH = "customerio/auto_disable_notification_template.json";
-  private static final String AUTO_DISABLE_WARNING_NOTIFICATION_TEMPLATE_PATH = "customerio/auto_disable_warning_notification_template.json";
 
   private final HttpClient httpClient;
   private final String apiToken;
@@ -77,23 +81,24 @@ public class CustomeriolNotificationClient extends NotificationClient {
                                           final String sourceConnector,
                                           final String destinationConnector,
                                           final String jobDescription,
-                                          final String logUrl)
+                                          final UUID workspaceId,
+                                          final UUID connectionId)
       throws IOException, InterruptedException {
-    final String requestBody = renderTemplate(AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH, TRANSACTION_MESSAGE_ID, SENDER_EMAIL, receiverEmail,
-        receiverEmail, sourceConnector, destinationConnector, jobDescription, logUrl);
+    final String requestBody = renderTemplate(AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH, AUTO_DISABLE_TRANSACTION_MESSAGE_ID, receiverEmail,
+        receiverEmail, sourceConnector, destinationConnector, jobDescription, workspaceId.toString(), connectionId.toString());
     return notifyByEmail(requestBody);
   }
 
   @Override
-  public boolean notifyConnectionDisableWarning(
-                                                final String receiverEmail,
+  public boolean notifyConnectionDisableWarning(final String receiverEmail,
                                                 final String sourceConnector,
                                                 final String destinationConnector,
                                                 final String jobDescription,
-                                                final String logUrl)
+                                                final UUID workspaceId,
+                                                final UUID connectionId)
       throws IOException, InterruptedException {
-    final String requestBody = renderTemplate(AUTO_DISABLE_WARNING_NOTIFICATION_TEMPLATE_PATH, TRANSACTION_MESSAGE_ID, SENDER_EMAIL, receiverEmail,
-        receiverEmail, sourceConnector, destinationConnector, jobDescription, logUrl);
+    final String requestBody = renderTemplate(AUTO_DISABLE_NOTIFICATION_TEMPLATE_PATH, AUTO_DISABLE_WARNING_TRANSACTION_MESSAGE_ID, receiverEmail,
+        receiverEmail, sourceConnector, destinationConnector, jobDescription, workspaceId.toString(), connectionId.toString());
     return notifyByEmail(requestBody);
   }
 

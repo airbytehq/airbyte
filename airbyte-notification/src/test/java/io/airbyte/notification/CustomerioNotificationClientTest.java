@@ -26,6 +26,7 @@ class CustomerioNotificationClientTest {
   private static final String API_KEY = "api-key";
   private static final String URI_BASE = "https://customer.io";
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final StandardWorkspace WORKSPACE = new StandardWorkspace()
       .withWorkspaceId(WORKSPACE_ID)
       .withName("workspace-name")
@@ -60,7 +61,8 @@ class CustomerioNotificationClientTest {
     Mockito.when(httpResponse.statusCode()).thenReturn(200);
 
     final boolean result =
-        customeriolNotificationClient.notifyConnectionDisabled(WORKSPACE.getEmail(), RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT);
+        customeriolNotificationClient.notifyConnectionDisabled(WORKSPACE.getEmail(), RANDOM_INPUT, RANDOM_INPUT, RANDOM_INPUT, WORKSPACE_ID,
+            CONNECTION_ID);
     Mockito.verify(mHttpClient).send(expectedRequest, HttpResponse.BodyHandlers.ofString());
 
     assertTrue(result);

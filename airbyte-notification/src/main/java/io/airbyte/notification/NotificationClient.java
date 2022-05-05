@@ -4,8 +4,10 @@
 
 package io.airbyte.notification;
 
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Notification;
 import java.io.IOException;
+import java.util.UUID;
 
 public abstract class NotificationClient {
 
@@ -35,14 +37,16 @@ public abstract class NotificationClient {
                                                    String sourceConnector,
                                                    String destinationConnector,
                                                    String jobDescription,
-                                                   String logUrl)
+                                                   UUID workspaceId,
+                                                   UUID connectionId)
       throws IOException, InterruptedException;
 
   public abstract boolean notifyConnectionDisableWarning(String receiverEmail,
                                                          String sourceConnector,
                                                          String destinationConnector,
                                                          String jobDescription,
-                                                         String logUrl)
+                                                         UUID workspaceId,
+                                                         UUID connectionId)
       throws IOException, InterruptedException;
 
   public abstract boolean notifySuccess(String message) throws IOException, InterruptedException;
@@ -55,6 +59,11 @@ public abstract class NotificationClient {
       case CUSTOMERIO -> new CustomeriolNotificationClient(notification);
       default -> throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
     };
+  }
+
+  String renderTemplate(final String templateFile, final String... data) throws IOException {
+    final String template = MoreResources.readResource(templateFile);
+    return String.format(template, data);
   }
 
 }

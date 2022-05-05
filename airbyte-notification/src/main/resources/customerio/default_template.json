@@ -5,16 +5,13 @@
     "email": "%s"
   },
   "message_data": {
-    "source": "%s",
-    "destination": "%s",
-    "job_description": "%s",
-    "connection_id": "%s",
-    "workspace_id": "%s"
+    "email_title": "%s",
+    "email_body": "%s"
   },
 
   "disable_message_retention": false,
   "send_to_unsubscribed": true,
-  "tracked": false,
+  "tracked": true,
   "queue_draft": false,
   "disable_css_preprocessing": true
 }
