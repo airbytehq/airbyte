@@ -30,7 +30,6 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
-import io.airbyte.config.persistence.test.BaseDatabaseConfigPersistenceTest;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
