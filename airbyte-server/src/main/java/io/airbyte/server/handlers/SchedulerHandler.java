@@ -517,8 +517,8 @@ public class SchedulerHandler {
       throw new IllegalStateException(cancellationResult.getFailingReason().get());
     }
 
-    // return job info for already-queried job
-    return jobConverter.getJobInfoRead(job);
+    // query same job ID again to get updated job info after cancellation
+    return jobConverter.getJobInfoRead(jobPersistence.getJob(jobId));
   }
 
   private JobInfoRead submitManualSyncToWorker(final UUID connectionId) throws IOException {
