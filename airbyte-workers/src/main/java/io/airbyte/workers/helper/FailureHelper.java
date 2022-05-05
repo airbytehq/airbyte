@@ -97,7 +97,7 @@ public class FailureHelper {
 
   public static AttemptFailureSummary failureSummaryForTemporalCleaningJobState(final Long jobId, final Integer attemptNumber) {
     final FailureReason failureReason = new FailureReason()
-        .withFailureOrigin(FailureOrigin.CONNECTION_WORKFLOW)
+        .withFailureOrigin(FailureOrigin.PLATFORM)
         .withFailureType(FailureType.SYSTEM_ERROR)
         .withInternalMessage(
             "Setting attempt to FAILED because the temporal workflow for this connection was restarted, and existing job state was cleaned.")
