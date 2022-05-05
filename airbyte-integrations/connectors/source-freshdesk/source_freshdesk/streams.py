@@ -10,15 +10,11 @@ from urllib import parse
 import pendulum
 import requests
 import re
-from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from requests.auth import AuthBase
 from source_freshdesk.utils import CallCredit
-
-
-LINK_REGEX = re.compile(r'<(.*?)>;\s*rel="next"')
 
 
 class FreshdeskStream(HttpStream, ABC):
@@ -26,6 +22,7 @@ class FreshdeskStream(HttpStream, ABC):
     call_credit = 1  # see https://developers.freshdesk.com/api/#embedding
     result_return_limit = 100
     primary_key = "id"
+    link_regex = re.compile(r'<(.*?)>;\s*rel="next"')
 
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator)
@@ -52,7 +49,7 @@ class FreshdeskStream(HttpStream, ABC):
             link_header = response.headers.get("Link")
             if not link_header:
                 return {}
-            match = LINK_REGEX.search(link_header)
+            match = self.link_regex.search(link_header)
             next_url = match.group(1)
             params = parse.parse_qs(parse.urlparse(next_url).query)
             return self.parse_link_params(link_query_params=params)
@@ -88,28 +85,31 @@ class FreshdeskStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
         if not data:
-            return
+            return []
         for element in data:
             yield element
 
 
-class IncrementalFreshdeskStream(FreshdeskStream, ABC):
+class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
 
     state_filter = "updated_since"  # Name of filter that corresponds to the state
+
+    def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
+        super().__init__(authenticator=authenticator, config=config, *args, **kwargs)
+        self._state = None
 
     @property
     def cursor_field(self) -> str:
         return "updated_at"
+    
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return {"updated_at": self._state} if self._state else {}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        current_stream_state = current_stream_state or {}
-
-        current_stream_state_date = current_stream_state.get("updated_at", self.start_date)
-        if isinstance(current_stream_state_date, str):
-            current_stream_state_date = pendulum.parse(current_stream_state_date)
-        latest_record_date = pendulum.parse(latest_record.get("updated_at")) if latest_record.get("updated_at") else self.start_date
-
-        return {"updated_at": max(current_stream_state_date, latest_record_date).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        if "updated_at" in value:
+            self._state = value["updated_at"]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -120,6 +120,18 @@ class IncrementalFreshdeskStream(FreshdeskStream, ABC):
         else:
             params[self.state_filter] = self.start_date
         return params
+    
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
+            yield record
+            if not self.state or self.state["updated_at"] < record[self.cursor_field]:
+                self.state = record
 
 
 class Agents(FreshdeskStream):
@@ -136,6 +148,7 @@ class Companies(FreshdeskStream):
 
 class Contacts(IncrementalFreshdeskStream):
     state_filter = "_updated_since"
+    state_checkpoint_interval = 100
 
     def path(self, **kwargs) -> str:
         return "contacts"
@@ -235,6 +248,7 @@ class Conversations(FreshdeskStream):
 
 class SatisfactionRatings(IncrementalFreshdeskStream):
     state_filter = "created_since"
+    state_checkpoint_interval = 100
 
     def path(self, **kwargs) -> str:
         return "surveys/satisfaction_ratings"

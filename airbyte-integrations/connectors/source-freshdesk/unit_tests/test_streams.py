@@ -25,9 +25,8 @@ def _read_incremental(stream_instance: Stream, stream_state: MutableMapping[str,
     for slice in slices:
         records = stream_instance.read_records(sync_mode=SyncMode.incremental, stream_slice=slice, stream_state=stream_state)
         for record in records:
-            stream_state = stream_instance.get_updated_state(stream_state, record)
             res.append(record)
-    return res, stream_state
+    return res, stream_instance.state
 
 
 @pytest.mark.parametrize(
@@ -53,7 +52,7 @@ def test_full_refresh(stream, resource, authenticator, config, requests_mock):
 
 
 def test_full_refresh_conversations(authenticator, config, requests_mock):
-    requests_mock.register_uri("GET", f"/api/tickets", json=[{"id": x} for x in range(5)])
+    requests_mock.register_uri("GET", f"/api/tickets", json=[{"id": x, "updated_at": "2022-05-05T00:00:00Z"} for x in range(5)])
     for i in range(5):
         requests_mock.register_uri("GET", f"/api/tickets/{i}/conversations", json=[{"id": x} for x in range(10)])
 
