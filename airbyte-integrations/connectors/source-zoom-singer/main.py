@@ -5,7 +5,7 @@
 
 import sys
 
-from base_python.entrypoint import launch
+from airbyte_cdk.entrypoint import launch
 from source_zoom_singer import SourceZoomSinger
 
 if __name__ == "__main__":
