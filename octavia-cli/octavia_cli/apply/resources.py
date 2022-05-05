@@ -7,7 +7,7 @@ import os
 import time
 from copy import deepcopy
 from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Set, Union
 
 import airbyte_api_client
 import yaml
@@ -229,6 +229,22 @@ class BaseResource(abc.ABC):
             dict: Deserialized configuration
         """
         return deepcopy(self.raw_configuration["configuration"])
+
+    @staticmethod
+    def _check_for_invalid_configuration_keys(dict_to_check: dict, invalid_keys: Set[str], error_message: str):
+        """Utils function to check if a configuration dictionnary has legacy keys that were removed/renamed after an octavia update.
+
+        Args:
+            dict_to_check (dict): The dictionnary for which keys should be checked
+            invalid_keys (Set[str]): The set of invalid keys we want to check the existence
+            error_message (str): The error message to display to the user
+
+        Raises:
+            InvalidConfigurationError: Raised if an invalid key was found in the dict_to_check
+        """
+        invalid_keys = list(set(dict_to_check.keys()) & invalid_keys)
+        if invalid_keys:
+            raise InvalidConfigurationError(f"{error_message}: {', '.join(invalid_keys)}")
 
     @property
     def remote_resource(self):
@@ -485,6 +501,7 @@ class Connection(BaseResource):
             dict: Deserialized connection configuration
         """
         configuration = super()._deserialize_raw_configuration()
+        self._check_for_legacy_connection_configuration_keys(configuration)
         configuration["sync_catalog"] = self._create_configured_catalog(configuration["sync_catalog"])
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
         configuration["schedule"] = ConnectionSchedule(**configuration["schedule"])
@@ -555,6 +572,31 @@ class Connection(BaseResource):
                 )
             )
         return AirbyteCatalog(streams_and_configurations)
+
+    # TODO this check can be removed when all our active user are on >= 0.36.10
+    def _check_for_legacy_connection_configuration_keys(self, configuration_to_check):
+        """We changed connection configuration keys from camelCase to snake_case in 0.36.10.
+        This function check if the connection configuration has some camelCase keys and display a meaningful error message.
+
+        Args:
+            configuration_to_check (dict): Configuration to validate
+        """
+        error_message = (
+            "The following keys should be in snake_case since version 0.36.10, please edit or regenerate your connection configuration"
+        )
+        self._check_for_invalid_configuration_keys(
+            configuration_to_check, {"syncCatalog", "namespaceDefinition", "namespaceFormat", "resourceRequirements"}, error_message
+        )
+        self._check_for_invalid_configuration_keys(configuration_to_check["schedule"], {"timeUnit"}, error_message)
+        for stream in configuration_to_check["sync_catalog"]["streams"]:
+            self._check_for_invalid_configuration_keys(
+                stream["stream"],
+                {"defaultCursorField", "jsonSchema", "sourceDefinedCursor", "sourceDefinedPrimaryKey", "supportedSyncModes"},
+                error_message,
+            )
+            self._check_for_invalid_configuration_keys(
+                stream["config"], {"aliasName", "cursorField", "destinationSyncMode", "primaryKey", "syncMode"}, error_message
+            )
 
     def _get_remote_comparable_configuration(self) -> dict:
         keys_to_filter_out = [

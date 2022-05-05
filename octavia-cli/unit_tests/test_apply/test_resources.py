@@ -233,6 +233,22 @@ class TestBaseResource:
         assert resource.update() == resource._create_or_update.return_value
         resource._create_or_update.assert_called_with(resource._update_fn, resource.update_payload)
 
+    @pytest.mark.parametrize(
+        "configuration, invalid_keys, expect_error",
+        [
+            ({"valid_key": "foo", "invalidKey": "bar"}, {"invalidKey"}, True),
+            ({"valid_key": "foo", "invalidKey": "bar", "secondInvalidKey": "bar"}, {"invalidKey", "secondInvalidKey"}, True),
+            ({"valid_key": "foo", "validKey": "bar"}, {"invalidKey"}, False),
+        ],
+    )
+    def test__check_for_invalid_configuration_keys(self, configuration, invalid_keys, expect_error):
+        if not expect_error:
+            result = resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "You have some invalid keys")
+            assert result is None
+        else:
+            with pytest.raises(resources.InvalidConfigurationError, match=f"You have some invalid keys: {', '.join(invalid_keys)}"):
+                resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "You have some invalid keys")
+
 
 class TestSourceAndDestination:
     @pytest.fixture
@@ -379,6 +395,85 @@ class TestConnection:
             },
         }
 
+    @pytest.fixture
+    def legacy_connection_configurations(self):
+        return [
+            {
+                "definition_type": "connection",
+                "resource_name": "my_connection",
+                "source_id": "my_source",
+                "destination_id": "my_destination",
+                "configuration": {
+                    "namespaceDefinition": "customformat",
+                    "namespaceFormat": "foo",
+                    "prefix": "foo",
+                    "syncCatalog": {
+                        "streams": [
+                            {
+                                "stream": {
+                                    "name": "name_example",
+                                    "json_schema": {},
+                                    "supported_sync_modes": ["incremental"],
+                                    "source_defined_cursor": True,
+                                    "default_cursor_field": ["default_cursor_field"],
+                                    "source_defined_primary_key": [["string_example"]],
+                                    "namespace": "namespace_example",
+                                },
+                                "config": {
+                                    "sync_mode": "incremental",
+                                    "cursor_field": ["cursor_field_example"],
+                                    "destination_sync_mode": "append_dedup",
+                                    "primary_key": [["string_example"]],
+                                    "alias_name": "alias_name_example",
+                                    "selected": True,
+                                },
+                            }
+                        ]
+                    },
+                    "schedule": {"units": 1, "time_unit": "days"},
+                    "status": "active",
+                    "resourceRequirements": {"cpu_request": "foo", "cpu_limit": "foo", "memory_request": "foo", "memory_limit": "foo"},
+                },
+            },
+            {
+                "definition_type": "connection",
+                "resource_name": "my_connection",
+                "source_id": "my_source",
+                "destination_id": "my_destination",
+                "configuration": {
+                    "namespace_definition": "customformat",
+                    "namespace_format": "foo",
+                    "prefix": "foo",
+                    "sync_catalog": {
+                        "streams": [
+                            {
+                                "stream": {
+                                    "name": "name_example",
+                                    "jsonSchema": {},
+                                    "supportedSyncModes": ["incremental"],
+                                    "sourceDefinedCursor": True,
+                                    "defaultCursorField": ["default_cursor_field"],
+                                    "sourceDefinedPrimary_key": [["string_example"]],
+                                    "namespace": "namespace_example",
+                                },
+                                "config": {
+                                    "syncMode": "incremental",
+                                    "cursorField": ["cursor_field_example"],
+                                    "destinationSyncMode": "append_dedup",
+                                    "primaryKey": [["string_example"]],
+                                    "aliasName": "alias_name_example",
+                                    "selected": True,
+                                },
+                            }
+                        ]
+                    },
+                    "schedule": {"units": 1, "time_unit": "days"},
+                    "status": "active",
+                    "resource_requirements": {"cpu_request": "foo", "cpu_limit": "foo", "memory_request": "foo", "memory_limit": "foo"},
+                },
+            },
+        ]
+
     @pytest.mark.parametrize(
         "state",
         [None, resources.ResourceState("config_path", "resource_id", 123, "abc")],
@@ -488,6 +583,15 @@ class TestConnection:
         assert created_catalog.streams[0].config.primary_key == config["primary_key"]
         assert created_catalog.streams[0].config.alias_name == config["alias_name"]
         assert created_catalog.streams[0].config.selected == config["selected"]
+
+    def test__check_for_legacy_connection_configuration_keys(
+        self, mock_api_client, connection_configuration, legacy_connection_configurations
+    ):
+        resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
+        assert resource._check_for_legacy_connection_configuration_keys(connection_configuration["configuration"]) is None
+        for legacy_configuration in legacy_connection_configurations:
+            with pytest.raises(resources.InvalidConfigurationError):
+                resource._check_for_legacy_connection_configuration_keys(legacy_configuration["configuration"])
 
 
 @pytest.mark.parametrize(
