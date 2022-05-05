@@ -15,6 +15,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -84,6 +85,18 @@ public abstract class BaseDatabaseConfigPersistenceTest {
       .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/postgres")
       .withIcon("postgresql.svg")
       .withSourceType(SourceType.DATABASE)
+      .withTombstone(false);
+
+  protected static final StandardSourceDefinition SOURCE_CUSTOM = new StandardSourceDefinition()
+      .withName("Custom")
+      .withSourceDefinitionId(UUID.fromString("baba338e-5647-4c0b-adf4-da0e75f5a750"))
+      .withDockerRepository("airbyte/cusom")
+      .withDockerImageTag("0.3.11")
+      .withDocumentationUrl("https://docs.airbyte.io/integrations/sources/postgres")
+      .withIcon("postgresql.svg")
+      .withSourceType(SourceType.DATABASE)
+      .withCustom(true)
+      .withReleaseStage(ReleaseStage.CUSTOM)
       .withTombstone(false);
   protected static final StandardDestinationDefinition DESTINATION_SNOWFLAKE = new StandardDestinationDefinition()
       .withName("Snowflake")
