@@ -312,6 +312,7 @@ Backoff policy options:
 - `max_retries` Specifies maximum amount of retries for backoff policy (by default is 5)
 - `raise_on_http_errors` If set to False, allows opting-out of raising HTTP code exception (by default is True)
 
+
 There are many other customizable options - you can find them in the [`airbyte_cdk.sources.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/http.py) class. 
 
 So in order to read data from the exchange rates API, we'll fill out the necessary information for the stream to do its work. First, we'll implement a basic read that just reads the last day's exchange rates, then we'll implement incremental sync using stream slicing.
