@@ -1,3 +1,4 @@
+import logging
 from typing import Iterator, TextIO, BinaryIO, Union, Mapping
 from fastavro import reader
 import fastavro
@@ -5,15 +6,6 @@ import fastavro
 from .abstract_file_parser import AbstractFileParser
 from typing import Any
 
-# TODO: DONE - complete list of mappings
-# TODO: DONE - Adding avro class to the spec
-# TODO: DONE - Handle multiple data types in the conversion
-# TODO: DONE (doesn't take any additional columns) - check arguments avro reader
-# TODO: DONE - Install everything from readme and run spec to setup the integration
-# TODO: Test locally with different files
-# TODO: Write unit tests
-# TODO: Write integration tests
-# TODO: Update docs
 
 # mapping from apache avro docs: https://avro.apache.org/docs/current/spec.html#schema_complex
 data_type_mapping = {
@@ -43,6 +35,11 @@ class AvroParser(AbstractFileParser):
 
     @staticmethod
     def parse_data_type(data_type_mapping: dict, avro_schema: dict) -> dict:
+        """ Convert data types from avro to json format
+        :param data_type_mapping: mapping from avro to json data types
+        :param avro_schema: schema comes with the avro file
+        :return schema_dict with data types converted from avro to json standards
+        """
         schema_dict = {}
         for i in avro_schema["fields"]:
             data_type = i["type"]
@@ -53,6 +50,8 @@ class AvroParser(AbstractFileParser):
                     dt = data_type_mapping[dt]
                     datatype_list.append(dt)
                 schema_dict[i["name"]] = datatype_list
+            elif type(data_type) is dict:
+                raise TypeError(f"nested records not supported")
             elif data_type in data_type_mapping:
                 schema_dict[i["name"]] = data_type_mapping[data_type]
             else:
@@ -60,17 +59,21 @@ class AvroParser(AbstractFileParser):
         return schema_dict
 
     @staticmethod
-    def get_avro_schema(file) -> dict:
+    def get_avro_schema(file: Union[TextIO, BinaryIO]) -> dict:
+        """ Extract schema for records
+        :param file: file-like object (opened via StorageFile)
+        :return schema extracted from the avro file
+        """
         avro_reader = fastavro.reader(file)
         schema = avro_reader.writer_schema
         if not schema['type'] == "record":
             unsupported_type = schema['type']
-            raise TypeError(f"Only record based avro files are supported. Found {unsupported_type}")
+            raise (f"Only record based avro files are supported. Found {unsupported_type}")
         else:
             return schema
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
-        """
+        """ Return schema 
         :param file: file-like object (opened via StorageFile)
         :return: mapping of {columns:datatypes} where datatypes are JsonSchema types
         """
@@ -79,7 +82,7 @@ class AvroParser(AbstractFileParser):
         return schema_dict
 
     def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
-        """
+        """ Stream the data using a generator
         :param file: file-like object (opened via StorageFile)
         :yield: data record as a mapping of {columns:values}
         """

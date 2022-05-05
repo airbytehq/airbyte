@@ -141,6 +141,18 @@
                 "type": "integer"
               }
             }
+          },
+          {
+            "title": "avro",
+            "description": "parses avro file",
+            "type": "object",
+            "properties": {
+              "filetype": {
+                "title": "Filetype",
+                "const": "avro",
+                "type": "string"
+              }
+            }
           }
         ]
       },
