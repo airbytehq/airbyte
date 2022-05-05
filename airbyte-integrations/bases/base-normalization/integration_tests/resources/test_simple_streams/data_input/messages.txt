@@ -51,4 +51,3 @@
 {"type": "RECORD", "record": {"stream": "1_prefix_startwith_number", "emitted_at": 1602637990800, "data": { "id": 2, "date": "2020-09-01", "text": "hi 4"}}}
 
 {"type":"RECORD","record":{"stream":"multiple_column_names_conflicts","data":{"id":1,"User Id":"chris","user_id":42,"User id":300,"user id": 102,"UserId":101},"emitted_at":1623959926}}
-{"type":"RECORD","record":{"stream":"special_characters","data":{"id":1,"character_1":"some random special characters: ࠈൡሗ","user_id":42,"character_2":"some random special characters: žõ⥁🌞"},"emitted_at":1623959932}}
