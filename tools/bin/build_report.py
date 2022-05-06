@@ -109,12 +109,12 @@ def failed_report(failed_report) -> str:
     return "\n".join([" ".join(connector) for connector in failed_report])
 
 
-def create_report(connectors) -> str:
+def create_report(connectors, statuses: List[str]) -> str:
     sources_len = len([name for name in connectors if name.startswith("source")])
     destinations_len = len([name for name in connectors if name.startswith("destination")])
 
     report = f"""
-CONNECTORS:   total: {len(connectors)}
+CONNECTORS:   total: {len(connectors)} {" & ".join(statuses)} connectors
 Sources:      total: {sources_len} / tested: {len(TESTED_SOURCE)} / success: {len(SUCCESS_SOURCE)} ({round(len(SUCCESS_SOURCE) / sources_len * 100, 1)}%)
 Destinations: total: {destinations_len} / tested: {len(TESTED_DESTINATION)} / success: {len(SUCCESS_DESTINATION)} ({round(len(SUCCESS_DESTINATION) / destinations_len * 100, 1)}%)
 
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
     report = create_report(relevant_connectors)
     print(report)
-    send_report(report)
+    # send_report(report)
     print("Finish")
 elif "pytest" in sys.argv[0]:
     import unittest
