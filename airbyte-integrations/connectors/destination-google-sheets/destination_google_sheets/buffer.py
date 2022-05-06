@@ -37,7 +37,10 @@ class WriteBuffer:
         """
         stream = configured_stream.stream
         self.records_buffer[stream.name] = []
-        self.stream_info[stream.name] = {"headers": sorted(list(stream.json_schema.get("properties").keys())), "is_set": False}
+        self.stream_info[stream.name] = {
+            "headers": sorted(list(stream.json_schema.get("properties").keys())), 
+            "is_set": False,
+        }
 
     def add_to_buffer(self, stream_name: str, record: Mapping):
         """
@@ -47,8 +50,10 @@ class WriteBuffer:
         2) coerces normalized record to str
         3) gets values as list of record values from record mapping.
         """
-        normalized_record = self.get_record_values(self.normalize_record(stream_name, record))
-        self.records_buffer[stream_name].append(normalized_record)
+        
+        norm_record = self.normalize_record(stream_name, record)
+        norm_values = list(map(str, norm_record.values()))
+        self.records_buffer[stream_name].append(norm_values)
 
     def flush_buffer(self, stream_name: str):
         """
@@ -104,15 +109,3 @@ class WriteBuffer:
         [record.pop(key) for key in record.copy().keys() if key not in headers]
 
         return dict(sorted(record.items(), key=lambda x: x[0]))
-
-    def get_record_values(self, record: Mapping) -> List[str]:
-        """
-        Returns the input record values.
-        """
-        return self.values_to_str(list(record.values()))
-
-    def values_to_str(self, values: List) -> List[Any]:
-        """
-        Force input record values to be a type of string.
-        """
-        return [str(value) for value in values]

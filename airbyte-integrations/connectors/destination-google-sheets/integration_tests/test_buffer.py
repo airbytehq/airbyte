@@ -122,34 +122,6 @@ def test_normalize_record(stream_name, record, expected):
 
 
 @pytest.mark.parametrize(
-    "record, expected",
-    [
-        ({"id": 123}, ["123"]),
-        ({"id": 123, "key2": "value"}, ["123", "value"]),
-        ({}, []),
-    ],
-    ids=["num", "num / str", "empty_record"],
-)
-def test_get_record_values(record, expected):
-    actual = TEST_WRITE_BUFFER.get_record_values(record)
-    assert actual == expected
-
-
-@pytest.mark.parametrize(
-    "list_values, expected",
-    [
-        ([{"key": "value"}], ["{'key': 'value'}"]),
-        ([123, ["str in list"]], ["123", "['str in list']"]),
-        ([], []),
-    ],
-    ids=["key_value", "num / list", "empty_record"],
-)
-def test_values_to_str(list_values, expected):
-    actual = TEST_WRITE_BUFFER.values_to_str(list_values)
-    assert actual == expected
-
-
-@pytest.mark.parametrize(
     "buffer, expected_len",
     [
         (TEST_WRITE_BUFFER.records_buffer, 0),
