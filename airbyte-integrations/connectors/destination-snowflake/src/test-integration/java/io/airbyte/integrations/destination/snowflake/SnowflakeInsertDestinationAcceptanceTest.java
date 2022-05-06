@@ -21,6 +21,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -37,10 +39,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInsertDestinationAcceptanceTest.class);
+
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
@@ -104,6 +111,26 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new SnowflakeTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {
     return Optional.of(NAME_TRANSFORMER);
   }
@@ -122,18 +149,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return retrieveRecordsFromTable(tableName, schema);
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = NAME_TRANSFORMER.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
     return database.bufferedResultSetQuery(
@@ -161,6 +176,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     ((ObjectNode) config).put("schema", schemaName);
 
     database = SnowflakeDatabase.getDatabase(config);
+    LOGGER.warn("config : {}", config);
     database.execute(createSchemaQuery);
   }
 
