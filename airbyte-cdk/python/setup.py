@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.54",
+    version="0.1.55",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -69,8 +69,5 @@ setup(
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
         ],
-    },
-    entry_points={
-        "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
 )

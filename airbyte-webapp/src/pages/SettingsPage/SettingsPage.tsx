@@ -3,21 +3,21 @@ import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
 
+import HeadTitle from "components/HeadTitle";
+import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
-import LoadingPage from "components/LoadingPage";
-import HeadTitle from "components/HeadTitle";
 import SideMenu from "components/SideMenu";
 import { CategoryItem } from "components/SideMenu/SideMenu";
 
-import useRouter from "hooks/useRouter";
 import useConnector from "hooks/services/useConnector";
+import useRouter from "hooks/useRouter";
 
-import NotificationPage from "./pages/NotificationPage";
-import ConfigurationsPage from "./pages/ConfigurationsPage";
-import MetricsPage from "./pages/MetricsPage";
 import AccountPage from "./pages/AccountPage";
+import ConfigurationsPage from "./pages/ConfigurationsPage";
 import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
+import MetricsPage from "./pages/MetricsPage";
+import NotificationPage from "./pages/NotificationPage";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;

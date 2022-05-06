@@ -17,13 +17,14 @@ import {
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
-import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 import { equal, naturalComparatorBy } from "utils/objects";
+import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
-import { StreamFieldTable } from "./StreamFieldTable";
+import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { TreeRowWrapper } from "./components/TreeRowWrapper";
-import { flatten, getPathType } from "./utils";
+import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
+import { flatten, getPathType } from "./utils";
 
 const Section = styled.div<{ error?: boolean; isSelected: boolean }>`
   border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : "none")};
@@ -46,6 +47,7 @@ type TreeViewRowProps = {
   namespaceFormat: string;
   prefix: string;
   updateStream: (id: string, newConfiguration: Partial<AirbyteStreamConfiguration>) => void;
+  mode?: ConnectionFormMode;
 };
 
 const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
@@ -56,6 +58,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   prefix,
   errors,
   destinationSupportedSyncModes,
+  mode,
 }) => {
   const [isRowExpanded, onExpand] = useToggle(false);
   const { stream, config } = streamNode;
@@ -162,6 +165,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           onCursorChange={onCursorSelect}
           hasFields={hasChildren}
           onExpand={onExpand}
+          mode={mode}
         />
       </TreeRowWrapper>
       {isRowExpanded && hasChildren && (

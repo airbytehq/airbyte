@@ -93,7 +93,7 @@ class SourceAmazonAds(AbstractSource):
 
     def spec(self, *args) -> ConnectorSpecification:
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/amazon-ads",
+            documentationUrl="https://docs.airbyte.com/integrations/sources/amazon-ads",
             connectionSpecification=AmazonAdsConfig.schema(),
             advanced_auth=advanced_auth,
         )
