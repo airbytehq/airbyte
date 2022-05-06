@@ -26,5 +26,5 @@ docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
 VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew clean build -x :airbyte-db:lib:test
 VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew publish
-VERSION=$VERSION ./tools/bin/publish_docker.sh
+VERSION=$VERSION JDK_VERSION=$JDK_VERSION ./tools/bin/publish_docker.sh
 echo "Completed building and publishing PLATFORM..."
