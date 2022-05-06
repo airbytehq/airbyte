@@ -18,7 +18,7 @@ class GoogleSheetsWriter(WriteBuffer):
         """
         Deletes all the records belonging to the input stream.
         """
-        self.spreadsheet.clean_worksheet(f"{stream_name}")
+        self.spreadsheet.clean_worksheet(stream_name)
 
     def check_headers(self, stream_name: str):
         """
@@ -54,7 +54,7 @@ class GoogleSheetsWriter(WriteBuffer):
         self.check_headers(stream_name)
         values: list = self.records_buffer[stream_name] or []
         if values:
-            stream: Worksheet = self.spreadsheet.open_worksheet(f"{stream_name}")
+            stream: Worksheet = self.spreadsheet.open_worksheet(stream_name)
             self.logger.info(f"Writing data for stream: {stream_name}")
             # we start from the cell of `A2` as starting range to fill the spreadsheet
             stream.append_table(values, start="A2", dimension="ROWS")
@@ -79,7 +79,7 @@ class GoogleSheetsWriter(WriteBuffer):
         primary_key: str = configured_stream.primary_key[0][0]
         stream_name: str = configured_stream.stream.name
 
-        stream: Worksheet = self.spreadsheet.open_worksheet(f"{stream_name}")
+        stream: Worksheet = self.spreadsheet.open_worksheet(stream_name)
         rows_to_remove: list = self.spreadsheet.find_duplicates(stream, primary_key)
 
         if rows_to_remove:
