@@ -22,6 +22,7 @@ fi
 docker login -u airbytebot -p "${DOCKER_PASSWORD}"
 
 #source ./tools/bin/bump_version.sh
+echo $JDK_VERSION
 
 echo "Building and publishing PLATFORM version $NEW_VERSION for git revision $GIT_REVISION..."
 VERSION=$VERSION SUB_BUILD=PLATFORM ./gradlew clean build -x :airbyte-db:lib:test
