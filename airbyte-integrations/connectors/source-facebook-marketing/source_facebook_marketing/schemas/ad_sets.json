@@ -88,6 +88,15 @@
         }
       }
     },
+    "bid_strategy" : {
+      "type": ["null", "string"]
+    },
+    "bid_amount": {
+      "type": ["null", "number"]
+    },
+    "bid_constraints": {
+      "type": ["null", "object"]
+    },
     "adlabels": {
       "type": ["null", "array"],
       "items": {
