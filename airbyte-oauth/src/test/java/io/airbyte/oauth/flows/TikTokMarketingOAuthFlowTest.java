@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.protocol.models.OAuthConfigSpecification;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
