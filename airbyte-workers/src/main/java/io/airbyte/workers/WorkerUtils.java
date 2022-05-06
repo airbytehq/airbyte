@@ -103,7 +103,7 @@ public class WorkerUtils {
     final String streamPrefix = syncInput.getPrefix();
     return syncInput.getCatalog().getStreams().stream().collect(
         Collectors.toMap(
-            k -> String.format("%s".trim() + streamPrefix + k.getStream().getName().trim(), Objects.toString(k.getStream().getNamespace(), "")),
+            k -> String.format("%s".trim() + k.getStream().getName().trim(), Objects.toString(k.getStream().getNamespace(), "")),
             v -> v.getStream().getJsonSchema()));
 
   }

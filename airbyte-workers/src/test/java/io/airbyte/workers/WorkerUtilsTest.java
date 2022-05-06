@@ -127,7 +127,7 @@ class WorkerUtilsTest {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     final StandardSyncInput syncInput = syncPair.getValue();
     final Map<String, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
-    assertNotNull(mapOutput.get("favorite_color_pipeuser_preferences"));
+    assertNotNull(mapOutput.get("user_preferences"));
   }
 
   @Test
@@ -135,8 +135,8 @@ class WorkerUtilsTest {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig(true);
     final StandardSyncInput syncInput = syncPair.getValue();
     final Map<String, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
-    assertNotNull(mapOutput.get("namespacefavorite_color_pipeuser_preferences"));
-    assertNotNull(mapOutput.get("namespace2favorite_color_pipeuser_preferences"));
+    assertNotNull(mapOutput.get("namespaceuser_preferences"));
+    assertNotNull(mapOutput.get("namespace2user_preferences"));
   }
 
   /**

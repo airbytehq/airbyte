@@ -70,7 +70,7 @@ class DefaultReplicationWorkerTest {
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
   private static final Path WORKSPACE_ROOT = Path.of("workspaces/10");
-  private static final String STREAM_NAME = "favorite_color_pipeuser_preferences";
+  private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
   private static final AirbyteMessage RECORD_MESSAGE1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
   private static final AirbyteMessage RECORD_MESSAGE2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");

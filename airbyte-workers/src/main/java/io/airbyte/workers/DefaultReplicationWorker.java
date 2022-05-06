@@ -292,15 +292,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             throw new SourceException("Source process read attempt failed", e);
           }
           if (messageOptional.isPresent()) {
-            final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
-
-            if (message.getRecord() != null) {
+            if (messageOptional.get().getRecord() != null) {
               try {
-                recordSchemaValidator.validateSchema(message.getRecord());
+                recordSchemaValidator.validateSchema(messageOptional.get().getRecord());
               } catch (final RecordSchemaValidationException e) {
                 LOGGER.warn(e.getMessage());
               }
             }
+
+            final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
 
             messageTracker.acceptFromSource(message);
             try {
