@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
-import io.airbyte.db.exception.ConnectionWrapperErrorException;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -79,7 +79,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (final ConnectionWrapperErrorException e) {
+    } catch (final ConnectionErrorException e) {
       LOGGER.error("Exception while checking connection: ", e);
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
               .getErrorMessage(e.getCustomErrorCode(), e);

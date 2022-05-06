@@ -5,9 +5,16 @@
 
 from pathlib import Path
 
+from pytest import fixture
 from source_freshdesk.client import Client
 
 HERE = Path(__file__).parent.absolute()
+
+
+@fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 def test_client_backoff_on_limit_reached(requests_mock):

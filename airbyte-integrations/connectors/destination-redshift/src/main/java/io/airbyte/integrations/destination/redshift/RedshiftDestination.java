@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import java.util.Map;
@@ -76,4 +77,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     return jsonNode == null || jsonNode.asText().equals("");
   }
 
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.REDSHIFT;
+  }
 }

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import useRouter from "hooks/useRouter";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { DestinationDefinition } from "core/domain/connector";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import useRouter from "hooks/useRouter";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 
 type IProps = {
   onSubmit: (values: {
@@ -39,7 +39,7 @@ const DestinationForm: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const analyticsService = useAnalyticsService();
+  const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
@@ -58,9 +58,8 @@ const DestinationForm: React.FC<IProps> = ({
       afterSelectConnector();
     }
 
-    analyticsService.track("New Destination - Action", {
-      action: "Select a connector",
-      connector_destination_definition: connector?.name,
+    trackNewDestinationAction("Select a connector", {
+      connector_destination: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
     });
   };

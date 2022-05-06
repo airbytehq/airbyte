@@ -7,6 +7,8 @@ package io.airbyte.integrations.base.errors.utils;
 public enum ConnectionErrorType {
 
   INCORRECT_USERNAME_OR_PASSWORD("Incorrect username or password"),
+  INCORRECT_CREDENTIALS("Incorrect credentials"),
+  INCORRECT_BUCKET_NAME("Incorrect bucket name"),
   INCORRECT_HOST_OR_PORT("Incorrect host or port"),
   INCORRECT_PASSWORD("incorrect password"),
   INCORRECT_USERNAME_OR_HOST("Incorrect username or host"),

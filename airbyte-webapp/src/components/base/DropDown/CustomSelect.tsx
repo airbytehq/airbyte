@@ -1,5 +1,5 @@
-import styled from "styled-components";
 import Select, { Props } from "react-select";
+import styled from "styled-components";
 
 export const CustomSelect = styled(Select)<
   {

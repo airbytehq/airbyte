@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import java.util.Map;
@@ -66,6 +67,11 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
             redshiftConfig.get("database").asText()))
         .put(SCHEMA, schema)
         .build());
+  }
+
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.REDSHIFT;
   }
 
 }

@@ -15,7 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
-import io.airbyte.db.exception.ConnectionWrapperErrorException;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
@@ -93,7 +93,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final List<CheckedConsumer<MongoDatabase, Exception>> checkList = new ArrayList<>();
     checkList.add(database -> {
       if (getAuthorizedCollections(database).isEmpty()) {
-        throw new ConnectionWrapperErrorException("", "Unable to execute any operation on the source!");
+        throw new ConnectionErrorException("", "Unable to execute any operation on the source!");
       } else {
         LOGGER.info("The source passed the basic operation test!");
       }
@@ -160,9 +160,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       try {
         var mongoException = (MongoCommandException) e.getCause();
         String code = String.valueOf(mongoException.getCode());
-        throw new ConnectionWrapperErrorException(code, e.getMessage());
+        throw new ConnectionErrorException(code, e.getMessage());
+      } catch (ConnectionErrorException ex) {
+        throw ex;
       } catch (Exception ex) {
-        throw new ConnectionWrapperErrorException("", e.getMessage());
+        throw new ConnectionErrorException("", e.getMessage());
       }
     }
   }

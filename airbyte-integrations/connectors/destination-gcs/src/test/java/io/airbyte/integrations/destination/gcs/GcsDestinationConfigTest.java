@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CREDENTIALS;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfig;
@@ -15,6 +18,8 @@ import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialCo
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import java.io.IOException;
+
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.junit.jupiter.api.Test;
 
 class GcsDestinationConfigTest {
@@ -40,6 +45,14 @@ class GcsDestinationConfigTest {
 
     final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) formatConfig;
     assertEquals("deflate-5", avroFormatConfig.getCodecFactory().toString());
+  }
+
+  @Test
+  void testCheckIncorrectSignatureFailure() throws IOException {
+    var config = Jsons.deserialize(MoreResources.readResource("test_config.json"));
+    var destination = new GcsDestination();
+    var actual = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_CREDENTIALS.getValue());
   }
 
 }

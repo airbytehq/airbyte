@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.Databases;
-import io.airbyte.db.exception.ConnectionWrapperErrorException;
+import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
@@ -63,7 +63,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       AirbyteSentry.executeWithTracing("CreateAndDropTable",
               () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations));
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (final ConnectionWrapperErrorException ex) {
+    } catch (final ConnectionErrorException ex) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
               .getErrorMessage(ex.getCustomErrorCode(), ex);
       return new AirbyteConnectionStatus()
@@ -94,7 +94,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       sqlOps.dropTableIfExists(database, outputSchema, outputTableName);
     } catch (SQLException ex) {
       SQLException sqlException = (SQLException) ex.getCause();
-      throw new ConnectionWrapperErrorException(sqlException.getSQLState(), ex.getMessage());
+      throw new ConnectionErrorException(sqlException.getSQLState(), ex.getMessage());
     } catch (Exception ex) {
       throw new Exception(ex);
     }

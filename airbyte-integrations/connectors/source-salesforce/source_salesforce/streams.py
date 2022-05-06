@@ -14,7 +14,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from numpy import nan
@@ -33,6 +34,7 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    encoding = "ISO-8859-1"
 
     def __init__(
         self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
@@ -273,7 +275,7 @@ class BulkSalesforceStream(SalesforceStream):
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response:
             with open(tmp_file, "w") as data_file:
                 for chunk in response.iter_content(chunk_size=chunk_size):
-                    data_file.writelines(self.filter_null_bytes(chunk.decode("utf-8")))
+                    data_file.writelines(self.filter_null_bytes(chunk.decode(self.encoding)))
         # check the file exists
         if os.path.isfile(tmp_file):
             return tmp_file
@@ -287,7 +289,7 @@ class BulkSalesforceStream(SalesforceStream):
         @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
         """
         try:
-            with open(path, "r", encoding="utf-8") as data:
+            with open(path, "r", encoding=self.encoding) as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
@@ -477,3 +479,26 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
         return {"q": query}
+
+
+class Describe(Stream):
+    """
+    Stream of sObjects' (Salesforce Objects) describe:
+    https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm
+    """
+
+    name = "Describe"
+    primary_key = "name"
+
+    def __init__(self, sf_api: Salesforce, catalog: ConfiguredAirbyteCatalog = None, **kwargs):
+        super().__init__(**kwargs)
+        self.sf_api = sf_api
+        if catalog:
+            self.sobjects_to_describe = [s.stream.name for s in catalog.streams if s.stream.name != self.name]
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Yield describe response of SObjects defined in catalog as streams only.
+        """
+        for sobject in self.sobjects_to_describe:
+            yield self.sf_api.describe(sobject=sobject)

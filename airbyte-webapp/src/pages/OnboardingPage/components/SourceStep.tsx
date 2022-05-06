@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
-import { useCreateSource } from "hooks/services/useSourceHook";
 import { JobInfo } from "core/domain/job";
+import { LogsRequestError } from "core/request/LogsRequestError";
+import { useCreateSource } from "hooks/services/useSourceHook";
+import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
 
-import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
 
 type IProps = {
   onSuccess: () => void;
@@ -31,7 +31,7 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
 
   const { mutateAsync: createSource } = useCreateSource();
 
-  const analyticsService = useAnalyticsService();
+  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
@@ -64,10 +64,9 @@ const SourceStep: React.FC<IProps> = ({ onNextStep, onSuccess }) => {
   const onServiceSelect = (sourceId: string) => {
     const sourceDefinition = getSourceDefinitionById(sourceId);
 
-    analyticsService.track("New Source - Action", {
-      action: "Select a connector",
+    trackNewSourceAction("Select a connector", {
       connector_source: sourceDefinition?.name,
-      connector_source_id: sourceDefinition?.sourceDefinitionId,
+      connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
     });
 
     setError(null);

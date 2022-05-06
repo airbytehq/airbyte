@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.errors.messages;
 
 import io.airbyte.integrations.base.errors.utils.ConnectorType;
@@ -13,8 +17,9 @@ public class SnowflakeErrorMessage implements ErrorMessage{
         CONSTANTS.put("28000", INCORRECT_USERNAME_OR_HOST);
     }
 
-    @Override
-    public ConnectorType getConnectorType() {
-        return SNOWFLAKE;
-    }
+  @Override
+  public ConnectorType getConnectorType() {
+    return SNOWFLAKE;
+  }
+
 }

@@ -9,6 +9,7 @@ import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestina
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
@@ -83,6 +84,11 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
     return S3DestinationConfig.getS3DestinationConfig(config);
+  }
+
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.REDSHIFT;
   }
 
 }

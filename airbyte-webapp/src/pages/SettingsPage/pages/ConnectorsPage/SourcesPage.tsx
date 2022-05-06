@@ -2,9 +2,9 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
+import { SourceDefinition } from "core/domain/connector";
 import useConnector from "hooks/services/useConnector";
 import { useSourceList } from "hooks/services/useSourceHook";
-import { SourceDefinition } from "core/domain/connector";
 import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import ConnectorsView from "./components/ConnectorsView";
