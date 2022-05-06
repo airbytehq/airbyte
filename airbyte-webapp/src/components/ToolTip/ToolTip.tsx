@@ -8,10 +8,10 @@ type ToolTipProps = {
   cursor?: "pointer" | "help" | "not-allowed";
 };
 
-const Control = styled.div<{ $cursor?: "pointer" | "help" | "not-allowed" }>`
+const Control = styled.div<{ $cursor?: "pointer" | "help" | "not-allowed"; $showCursor?: boolean }>`
   display: inline-block;
   position: relative;
-  cursor: ${({ $cursor }) => $cursor ?? "pointer"};
+  cursor: ${({ $cursor, $showCursor = true }) => ($showCursor && $cursor) ?? "pointer"};
 `;
 
 const ToolTipView = styled.div<{ $disabled?: boolean }>`
@@ -39,7 +39,7 @@ const ToolTipView = styled.div<{ $disabled?: boolean }>`
 
 const ToolTip: React.FC<ToolTipProps> = ({ children, control, className, disabled, cursor }) => {
   return (
-    <Control $cursor={cursor}>
+    <Control $cursor={cursor} $showCursor={!disabled}>
       {control}
       <ToolTipView className={className} $disabled={disabled}>
         {children}
