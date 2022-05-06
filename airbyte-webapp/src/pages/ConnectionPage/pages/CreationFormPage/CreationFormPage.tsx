@@ -14,16 +14,19 @@ import { Destination, DestinationDefinition, Source, SourceDefinition } from "co
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import {
+  useDestinationDefinition,
+  useDestinationDefinitionList,
+} from "services/connector/DestinationDefinitionService";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { useSourceDefinition, useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { SidePanelStatusProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
 
-import DestinationForm from "./components/ConnectionDestinationForm";
-import ConnectionCreateSourceForm from "./components/ConnectionSourceForm";
+import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
 import ExistingEntityForm from "./components/ExistingEntityForm";
-import SourceForm from "./components/SourceForm";
+import { ConnectionCreateSourceForm } from "./components/SourceForm";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -67,7 +70,7 @@ function usePreloadData(): {
   return { source, sourceDefinition, destination, destinationDefinition };
 }
 
-const CreationFormPage: React.FC = () => {
+export const CreationFormPage: React.FC = () => {
   const { location, push } = useRouter();
 
   const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
@@ -84,6 +87,20 @@ const CreationFormPage: React.FC = () => {
 
   const { data: sourceDefinitionSpecification, error: sourceDefinitionError } =
     useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
+
+  const hasDestinationDefinitionId = (state: unknown): state is { destinationDefinitionId: string } => {
+    return (
+      typeof state === "object" &&
+      state !== null &&
+      typeof (state as { destinationDefinitionId?: string }).destinationDefinitionId === "string"
+    );
+  };
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState<string | null>(
+    hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
+  );
+
+  const { data: destinationDefinitionSpecification, error: destinationDefinitionError } =
+    useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
   // TODO: Probably there is a better way to figure it out instead of just checking third elem
   const locationType = location.pathname.split("/")[3];
@@ -129,8 +146,11 @@ const CreationFormPage: React.FC = () => {
   };
 
   const { sourceDefinitions } = useSourceDefinitionList();
+  const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const selectedService = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
+  const selectedService = destinationDefinitionId
+    ? destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId)
+    : sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
 
   const renderStep = () => {
     if (currentStep === StepsTypes.CREATE_ENTITY || currentStep === StepsTypes.CREATE_CONNECTOR) {
@@ -141,7 +161,7 @@ const CreationFormPage: React.FC = () => {
               <ExistingEntityForm type="source" onSubmit={onSelectExistingSource} />
             )}
             <>
-              <SourceForm
+              <ConnectionCreateSourceForm
                 setSourceDefinitionId={setSourceDefinitionId}
                 sourceDefinitionSpecification={sourceDefinitionSpecification}
                 sourceDefinitionError={sourceDefinitionError}
@@ -164,7 +184,10 @@ const CreationFormPage: React.FC = () => {
             {type === EntityStepsTypes.CONNECTION && (
               <ExistingEntityForm type="destination" onSubmit={onSelectExistingDestination} />
             )}
-            <DestinationForm
+            <ConnectionCreateDestinationForm
+              setDestinationDefinitionId={setDestinationDefinitionId}
+              destinationDefinitionSpecification={destinationDefinitionSpecification}
+              destinationDefinitionError={destinationDefinitionError}
               afterSubmit={() => {
                 setCurrentEntityStep(EntityStepsTypes.CONNECTION);
                 setCurrentStep(StepsTypes.CREATE_CONNECTION);
@@ -275,5 +298,3 @@ const CreationFormPage: React.FC = () => {
     </SidePanelStatusProvider>
   );
 };
-
-export default CreationFormPage;

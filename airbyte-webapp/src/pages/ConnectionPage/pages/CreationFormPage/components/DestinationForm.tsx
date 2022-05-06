@@ -2,16 +2,25 @@ import React, { useState } from "react";
 
 // TODO: create separate component for source and destinations forms
 import { ConnectionConfiguration } from "core/domain/connection";
+import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
 import DestinationForm from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
-type IProps = {
+interface ConnectionCreateDestinationFormProps {
+  setDestinationDefinitionId: React.Dispatch<React.SetStateAction<string | null>> | null;
   afterSubmit: () => void;
-};
+  destinationDefinitionSpecification: DestinationDefinitionSpecification | undefined;
+  destinationDefinitionError: Error | null;
+}
 
-const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
+export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinationFormProps> = ({
+  afterSubmit,
+  setDestinationDefinitionId,
+  destinationDefinitionSpecification,
+  destinationDefinitionError,
+}) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 
@@ -49,12 +58,10 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
       onSubmit={onSubmitDestinationForm}
       destinationDefinitions={destinationDefinitions}
       hasSuccess={successRequest}
-      setDestinationDefinitionId={null}
-      destinationDefinitionSpecification={undefined}
-      destinationDefinitionError={null}
+      setDestinationDefinitionId={setDestinationDefinitionId}
+      destinationDefinitionSpecification={destinationDefinitionSpecification}
+      destinationDefinitionError={destinationDefinitionError}
       isLoading={false}
     />
   );
 };
-
-export default CreateDestinationPage;

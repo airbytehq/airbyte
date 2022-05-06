@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 
 import { FormPageContent } from "components/ConnectorBlocks";
 import DocumentationPanel from "components/DocumentationPanel/DocumentationPanel";
@@ -12,10 +11,12 @@ import { useCreateDestination } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
+import { SidePanelStatusProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
+import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
 
 import DestinationForm from "./components/DestinationForm";
 
-const CreateDestinationPage: React.FC = () => {
+export const CreateDestinationPage: React.FC = () => {
   const { location, push } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 
@@ -64,36 +65,25 @@ const CreateDestinationPage: React.FC = () => {
   return (
     <>
       <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
-      <ReflexContainer orientation="vertical" windowResizeAware={true}>
-        <ReflexElement className="left-pane">
-          <PageTitle withLine title={<FormattedMessage id="destinations.newDestinationTitle" />} />
-          <FormPageContent>
-            <DestinationForm
-              onSubmit={onSubmitDestinationForm}
-              destinationDefinitions={destinationDefinitions}
-              setDestinationDefinitionId={setDestinationDefinitionId}
-              destinationDefinitionSpecification={destinationDefinitionSpecification}
-              destinationDefinitionError={destinationDefinitionError}
-              hasSuccess={successRequest}
-              isLoading={isLoading}
-            />
-          </FormPageContent>
-        </ReflexElement>
-        <ReflexSplitter />
-        <ReflexElement className="right-pane" maxSize={800}>
-          {selectedService ? (
-            <DocumentationPanel
-              onClose={() => null}
-              selectedService={selectedService}
-              documentationUrl={selectedService?.documentationUrl || ""}
-            />
-          ) : (
-            "GET STARTED"
-          )}
-        </ReflexElement>
-      </ReflexContainer>
+      <SidePanelStatusProvider>
+        <ConnectorDocumentationLayout>
+          <>
+            <PageTitle title={null} middleTitleBlock={<FormattedMessage id="destinations.newDestinationTitle" />} />
+            <FormPageContent>
+              <DestinationForm
+                onSubmit={onSubmitDestinationForm}
+                destinationDefinitions={destinationDefinitions}
+                setDestinationDefinitionId={setDestinationDefinitionId}
+                destinationDefinitionSpecification={destinationDefinitionSpecification}
+                destinationDefinitionError={destinationDefinitionError}
+                hasSuccess={successRequest}
+                isLoading={isLoading}
+              />
+            </FormPageContent>
+          </>
+          <DocumentationPanel documentationUrl={selectedService?.documentationUrl || ""} />
+        </ConnectorDocumentationLayout>{" "}
+      </SidePanelStatusProvider>
     </>
   );
 };
-
-export default CreateDestinationPage;

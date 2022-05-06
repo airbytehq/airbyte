@@ -77,9 +77,7 @@ export const CreateSourcePage: React.FC = () => {
               />
             </FormPageContent>
           </>
-          <>
-            <DocumentationPanel documentationUrl={selectedService?.documentationUrl || ""} />
-          </>
+          <DocumentationPanel documentationUrl={selectedService?.documentationUrl || ""} />
         </ConnectorDocumentationLayout>
       </SidePanelStatusProvider>
     </>

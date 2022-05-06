@@ -15,7 +15,7 @@ interface ConnectionCreateSourceFormProps {
   sourceDefinitionError: Error | null;
 }
 
-const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({
+export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({
   afterSubmit,
   setSourceDefinitionId,
   sourceDefinitionSpecification,
@@ -61,5 +61,3 @@ const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({
     />
   );
 };
-
-export default ConnectionCreateSourceForm;
