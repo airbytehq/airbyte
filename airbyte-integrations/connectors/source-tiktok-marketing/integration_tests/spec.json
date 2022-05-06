@@ -11,8 +11,8 @@
         "default": {},
         "order": 0,
         "type": "object",
-        "oneOf": [
-          {
+        "oneOf": [{
+
             "title": "OAuth2.0",
             "type": "object",
             "properties": {
@@ -42,39 +42,8 @@
               }
             },
             "required": ["app_id", "secret", "access_token"]
-          },
-          {
-            "title": "Production Access Token",
-            "type": "object",
-            "properties": {
-              "auth_type": {
-                "title": "Auth Type",
-                "const": "prod_access_token",
-                "order": 0,
-                "type": "string"
-              },
-              "app_id": {
-                "title": "App ID",
-                "description": "The Developer Application App ID.",
-                "airbyte_secret": true,
-                "type": "string"
-              },
-              "secret": {
-                "title": "Secret",
-                "description": "The Developer Application Secret.",
-                "airbyte_secret": true,
-                "type": "string"
-              },
-              "access_token": {
-                "title": "Access Token",
-                "description": "The long-term authorized access token.",
-                "airbyte_secret": true,
-                "type": "string"
-              }
-            },
-            "required": ["app_id", "secret", "access_token"]
-          },
-          {
+          }, {
+
             "title": "Sandbox Access Token",
             "type": "object",
             "properties": {
