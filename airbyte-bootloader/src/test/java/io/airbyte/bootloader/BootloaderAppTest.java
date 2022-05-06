@@ -10,6 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +27,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
@@ -78,7 +83,7 @@ public class BootloaderAppTest {
     environmentVariables.set("DATABASE_PASSWORD", "docker");
     environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
-    val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, mockedSecretMigrator);
+    val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
     bootloader.load();
 
     val jobDatabase = new JobsDatabaseInstance(
@@ -125,7 +130,16 @@ public class BootloaderAppTest {
     val mockedFeatureFlags = mock(FeatureFlags.class);
     when(mockedFeatureFlags.usesNewScheduler()).thenReturn(false);
 
-    val mockedSecretMigrator = mock(SecretMigrator.class);
+    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+        .copySecrets(true)
+        .maskSecrets(true)
+        .build();
+    final Database configDatabase = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
+    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
+
+    val jobsPersistence = new DefaultJobPersistence(configDatabase);
+
+    val spiedSecretMigrator = spy(new SecretMigrator(configPersistence, jobsPersistence, SecretPersistence.getLongLived(mockedConfigs)));
 
     // Although we are able to inject mocked configs into the Bootloader, a particular migration in the
     // configs database
@@ -134,15 +148,9 @@ public class BootloaderAppTest {
     environmentVariables.set("DATABASE_PASSWORD", "docker");
     environmentVariables.set("DATABASE_URL", container.getJdbcUrl());
 
-    val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, mockedSecretMigrator);
+    val initBootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
     initBootloader.load();
 
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .copySecrets(true)
-        .maskSecrets(true)
-        .build();
-    final Database configDatabase = Databases.createPostgresDatabase(container.getUsername(), container.getPassword(), container.getJdbcUrl());
-    final ConfigPersistence configPersistence = new DatabaseConfigPersistence(configDatabase, jsonSecretsProcessor);
     final ConfigPersistence localSchema = YamlSeedConfigPersistence.getDefault();
     final ConfigRepository configRepository = new ConfigRepository(configPersistence, configDatabase);
     configRepository.loadDataNoSecrets(localSchema);
@@ -176,14 +184,35 @@ public class BootloaderAppTest {
         .withWorkspaceId(workspaceId)
         .withConfiguration(mapper.readTree(sourceSpecs)));
 
-    when(mockedFeatureFlags.runSecretMigration()).thenReturn(true);
-    val bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags);
+    when(mockedFeatureFlags.forceSecretMigration()).thenReturn(false);
+    var bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator);
+    boolean isMigrated = jobsPersistence.isSecretMigrated();
+
+    assertFalse(isMigrated);
+
     bootloader.load();
+    verify(spiedSecretMigrator).migrateSecrets();
 
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
 
     assertFalse(sourceConnection.getConfiguration().toString().contains("nonhiddensecret"));
     assertTrue(sourceConnection.getConfiguration().toString().contains("_secret"));
+
+    isMigrated = jobsPersistence.isSecretMigrated();
+    assertTrue(isMigrated);
+
+    reset(spiedSecretMigrator);
+    // We need to re-create the bootloader because it is closing the persistence after running load
+    bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator);
+    bootloader.load();
+    verifyNoInteractions(spiedSecretMigrator);
+
+    reset(spiedSecretMigrator);
+    when(mockedFeatureFlags.forceSecretMigration()).thenReturn(true);
+    // We need to re-create the bootloader because it is closing the persistence after running load
+    bootloader = new BootloaderApp(mockedConfigs, mockedFeatureFlags, spiedSecretMigrator);
+    bootloader.load();
+    verify(spiedSecretMigrator).migrateSecrets();
   }
 
   @Test
