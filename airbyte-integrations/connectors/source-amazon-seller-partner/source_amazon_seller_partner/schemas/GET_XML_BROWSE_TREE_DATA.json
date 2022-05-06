@@ -13,28 +13,12 @@
         "attribute": {
           "anyOf": [
             {
-              "type": ["null", "object"],
-              "properties": {
-                "@name": {
-                  "type": ["null", "string"]
-                },
-                "#text": {
-                  "type": ["null", "string"]
-                }
-              }
+              "$ref": "#/definitions/attribute"
             },
             {
               "type": ["array"],
               "items": {
-                "type": ["null", "object"],
-                "properties": {
-                  "@name": {
-                    "type": ["null", "string"]
-                  },
-                  "#text": {
-                    "type": ["null", "string"]
-                  }
-                }
+                "$ref": "#/definitions/attribute"
               }
             }
           ]
@@ -92,45 +76,47 @@
             "refinementField": {
               "anyOf": [
                 {
-                  "type": ["null", "object"],
-                  "properties": {
-                    "acceptedValues": {
-                      "type": ["null", "string"]
-                    },
-                    "hasModifier": {
-                      "type": ["null", "string"]
-                    },
-                    "modifiers": {
-                      "type": ["null", "string"]
-                    },
-                    "refinementAttribute": {
-                      "type": ["null", "string"]
-                    }
-                  }
+                  "$ref": "#/definitions/refinementField"
                 },
                 {
                   "type": ["array"],
                   "items": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "acceptedValues": {
-                        "type": ["null", "string"]
-                      },
-                      "hasModifier": {
-                        "type": ["null", "string"]
-                      },
-                      "modifiers": {
-                        "type": ["null", "string"]
-                      },
-                      "refinementAttribute": {
-                        "type": ["null", "string"]
-                      }
-                    }
+                    "$ref": "#/definitions/refinementField"
                   }
                 }
               ]
             }
           }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "attribute": {
+      "type": ["null", "object"],
+      "properties": {
+        "@name": {
+          "type": ["null", "string"]
+        },
+        "#text": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "refinementField": {
+      "type": ["null", "object"],
+      "properties": {
+        "acceptedValues": {
+          "type": ["null", "string"]
+        },
+        "hasModifier": {
+          "type": ["null", "string"]
+        },
+        "modifiers": {
+          "type": ["null", "string"]
+        },
+        "refinementAttribute": {
+          "type": ["null", "string"]
         }
       }
     }
