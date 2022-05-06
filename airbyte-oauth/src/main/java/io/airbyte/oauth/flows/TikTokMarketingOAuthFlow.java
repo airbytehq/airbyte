@@ -24,7 +24,7 @@ import org.apache.http.client.utils.URIBuilder;
  */
 public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
 
-  private static final String ACCESS_TOKEN_URL = "https://business-api.tiktok.com/open_api/v1.2/oauth2/access_token/";
+  private static final String ACCESS_TOKEN_URL = "https://ads.tiktok.com/open_api/v1.2/oauth2/access_token/";
 
   protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     return getConfigValueUnsafe(oauthConfig, "app_id");
@@ -82,6 +82,17 @@ public class TikTokMarketingOAuthFlow extends BaseOAuth2Flow {
   @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
+  }
+
+  @Override
+  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
+    if (queryParams.containsKey("auth_code")) {
+      return (String) queryParams.get("auth_code");
+    } else if (queryParams.containsKey("code")) {
+      return (String) queryParams.get("code");
+    } else {
+      throw new IOException("Undefined 'auth_code'/'code' from consent redirected url.");
+    }
   }
 
   @Override
