@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static io.airbyte.integrations.destination.snowflake.SnowflakeTestDataComparator.NAME_TRANSFORMER;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -21,8 +22,6 @@ import java.sql.SQLException;
 import org.junit.jupiter.api.Test;
 
 class SnowflakeDestinationIntegrationTest {
-
-  private final SnowflakeSQLNameTransformer namingResolver = new SnowflakeSQLNameTransformer();
 
   @Test
   void testCheckFailsWithInvalidPermissions() throws Exception {
@@ -46,7 +45,7 @@ class SnowflakeDestinationIntegrationTest {
   }
 
   public void syncWithNamingResolver(final JdbcDatabase database, final String schema) throws SQLException {
-    final String normalizedSchemaName = namingResolver.getIdentifier(schema);
+    final String normalizedSchemaName = NAME_TRANSFORMER.getIdentifier(schema);
     try {
       database.execute(String.format("CREATE SCHEMA %s", normalizedSchemaName));
     } finally {

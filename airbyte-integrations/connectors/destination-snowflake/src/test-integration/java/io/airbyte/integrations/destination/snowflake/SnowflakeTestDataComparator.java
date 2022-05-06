@@ -1,11 +1,14 @@
 package io.airbyte.integrations.destination.snowflake;
 
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SnowflakeTestDataComparator extends AdvancedTestDataComparator {
+
+    public static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
 
     @Override
     protected List<String> resolveIdentifier(final String identifier) {
