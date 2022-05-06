@@ -68,6 +68,7 @@ jobs:
           # 80 gb disk
           ec2-image-id: ami-0d648081937c75a73
   publish-image:
+    timeout-minutes: 240
     needs: start-publish-image-runner
     runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
     environment: more-secrets
