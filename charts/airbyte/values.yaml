@@ -1,11 +1,9 @@
 ## @section Global Parameters
 
 ## @param global.imageRegistry Global Docker image registry
-## @param global.storageClass Global StorageClass for Persistent Volume(s)
 ##
 global:
   imageRegistry: ""
-  storageClass: ""
 
 ## @section Common Parameters
 
@@ -43,7 +41,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.36.11-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -209,7 +207,7 @@ scheduler:
   image:
     repository: airbyte/scheduler
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.36.11-alpha
 
   ## @param scheduler.podAnnotations [object] Add extra annotations to the scheduler pod
   ##
@@ -440,7 +438,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.36.11-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -512,20 +510,6 @@ server:
     type: ClusterIP
     port: 8001
 
-  ## @param server.persistence.accessMode The access mode for the airbyte server pvc
-  ## @param server.persistence.size The size of the pvc to use for the airbyte server pvc
-  persistence:
-    size: 1Gi
-    accessMode: ReadWriteOnce
-    ## @param server.persistence.storageClass The storage class to use for the airbyte server pvc
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    storageClass: ""
-
   ## @param server.nodeSelector [object] Node labels for pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
@@ -581,7 +565,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.36.11-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -699,7 +683,7 @@ bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.36.6-alpha
+    tag: 0.36.11-alpha
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
@@ -922,8 +906,8 @@ logs:
 
   ## Google Cloud Storage (GCS) Log Location Configuration
   ## @param logs.gcs.bucket GCS bucket name
-  ## @param logs.gcs.credentials The path the GCS creds file is located
-  ## @param logs.gcs.credentialsJson Base64 encoded JSON credentials
+  ## @param logs.gcs.credentials The path the GCS creds are written to
+  ## @param logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
   gcs:
     bucket: ""
     # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
@@ -965,12 +949,12 @@ jobs:
   kube:
     ## JOB_KUBE_ANNOTATIONS
     ## pod annotations of the sync job and the default pod annotations fallback for others jobs
-    ## @params jobs.kube.annotations [object] key/value annotations applied to kube jobs
+    ## @param jobs.kube.annotations [object] key/value annotations applied to kube jobs
     annotations: {}
 
     ## JOB_KUBE_NODE_SELECTORS
     ## pod node selector of the sync job and the default pod node selector fallback for others jobs
-    ## @params jobs.kubeSelector [object] key/value node selector applied to kube jobs
+    ## @param jobs.kube.nodeSelector [object] key/value node selector applied to kube jobs
     nodeSelector: {}
 
     ## JOB_KUBE_TOLERATIONS

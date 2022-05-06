@@ -2,25 +2,24 @@
 
 This page guides you through the process of setting up the TikTok Marketing source connector.
 
-## Prerequisites
-* Start date
-* Report Granularity (LIFETIME, DAY, HOUR)
+## Prerequisites (Airbyte Cloud)
+* A Tiktok Ads Business account with permission to access data from accounts you want to sync 
 
-For Production environment:
+## Prerequisites (Airbyte Open Source)
+For the Production environment:
 * Access token 
 * Secret
 * App ID
 
-For Sandbox environment:
+To access the Sandbox environment:
 * Access token 
 * Advertiser ID
-
 
 ## Step 1: Set up TikTok
 
 1. Create a TikTok For Business account: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702715936951297)
-2. Create developer application: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702716474845185)
-3. For sandbox environment: create a Sandbox Ad Account [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1701890920013825)
+2. (Open source only) Create developer application: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702716474845185)
+3. (Open source only) For a sandbox environment: create a Sandbox Ad Account [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1701890920013825)
 
 ## Step 2: Set up the source connector in Airbyte
 
@@ -45,21 +44,25 @@ For Sandbox environment:
 
 ## Supported streams and sync modes
 
-| Stream                            | Environment  | Granularities     | Key         | Incremental    |
-|:----------------------------------|--------------|-------------------|-------------|:---------------|
-| Advertisers                       | Prod,Sandbox | LIFETIME,DAY,HOUR | id          | No             |
-| AdGroups                          | Prod,Sandbox | LIFETIME,DAY,HOUR | adgroup_id  | Yes (DAY,HOUR) |
-| Ads                               | Prod,Sandbox | LIFETIME,DAY,HOUR | ad_id       | Yes (DAY,HOUR) |
-| Campaigns                         | Prod,Sandbox | LIFETIME,DAY,HOUR | campaign_id | Yes (DAY,HOUR) |
-| AdsReports                        | Prod,Sandbox | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| AdvertisersReports                | Prod         | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| AdGroupsReports                   | Prod,Sandbox | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| CampaignsReports                  | Prod,Sandbox | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| AdvertisersAudienceReports        | Prod         | LIFETIME,DAY,HOUR | None        | Yes (DAY,HOUR) |
-| AdGroupAudienceReports            | Prod,Sandbox | DAY,HOUR          | None        | Yes (DAY,HOUR) |
-| AdsAudienceReports                | Prod,Sandbox | DAY,HOUR          | None        | Yes (DAY,HOUR) |
-| CampaignsAudienceReportsByCountry | Prod,Sandbox | DAY,HOUR          | None        | Yes (DAY,HOUR) |
+| Stream                            | Environment  | Supported aggregation granularities | Key         | Incremental    |
+|:----------------------------------|--------------|-------------------------------------|-------------|:---------------|
+| Advertisers                       | Prod,Sandbox | LIFETIME,DAY,HOUR                   | id          | No             |
+| AdGroups                          | Prod,Sandbox | LIFETIME,DAY,HOUR                   | adgroup_id  | Yes (DAY,HOUR) |
+| Ads                               | Prod,Sandbox | LIFETIME,DAY,HOUR                   | ad_id       | Yes (DAY,HOUR) |
+| Campaigns                         | Prod,Sandbox | LIFETIME,DAY,HOUR                   | campaign_id | Yes (DAY,HOUR) |
+| AdsReports                        | Prod,Sandbox | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
+| AdvertisersReports                | Prod         | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
+| AdGroupsReports                   | Prod,Sandbox | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
+| CampaignsReports                  | Prod,Sandbox | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
+| AdvertisersAudienceReports        | Prod         | LIFETIME,DAY,HOUR                   | None        | Yes (DAY,HOUR) |
+| AdGroupAudienceReports            | Prod,Sandbox | DAY,HOUR                            | None        | Yes (DAY,HOUR) |
+| AdsAudienceReports                | Prod,Sandbox | DAY,HOUR                            | None        | Yes (DAY,HOUR) |
+| CampaignsAudienceReportsByCountry | Prod,Sandbox | DAY,HOUR                            | None        | Yes (DAY,HOUR) |
 
+### Report Aggregation
+Reports synced by this connector can use either hourly, daily, or lifetime granularities for aggregating performance data. For example, if you select the daily-aggregation flavor of a report, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
+
+### Output Schemas
 **[Advertisers](https://ads.tiktok.com/marketing_api/docs?id=1708503202263042) Stream**
 ```
 {
@@ -521,6 +524,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 0.1.9   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
 | 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | updated spec descriptions                                                                     |
 | 0.1.7   | 2022-04-27 | [12380](https://github.com/airbytehq/airbyte/pull/12380) | fixed spec descriptions and documentation                                                     |
 | 0.1.6   | 2022-04-19 | [11378](https://github.com/airbytehq/airbyte/pull/11378) | updated logic for stream initializations, fixed errors in schemas, updated SAT and unit tests |

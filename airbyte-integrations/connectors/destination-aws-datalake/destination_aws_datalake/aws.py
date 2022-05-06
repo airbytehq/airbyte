@@ -2,6 +2,8 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
+
 import boto3
 from airbyte_cdk.destinations import Destination
 from botocore.exceptions import ClientError
@@ -54,7 +56,6 @@ class AwsHandler:
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def head_bucket(self):
-        print(self._bucket_name)
         self.s3_client.head_bucket(Bucket=self._bucket_name)
 
     @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
@@ -101,7 +102,6 @@ class AwsHandler:
         else:
             return None
 
-    @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def update_table(self, database, table_info, transaction_id):
         self.glue_client.update_table(DatabaseName=database, TableInput=table_info, TransactionId=transaction_id)
 
@@ -114,6 +114,22 @@ class AwsHandler:
                 return not_null_types[0]
         else:
             return property_type
+
+    def cast_to_athena(self, str_type):
+        preprocessed_type = self.preprocess_type(str_type)
+        return self.COLUMNS_MAPPING.get(preprocessed_type, preprocessed_type)
+
+    def generate_athena_schema(self, schema):
+        columns = []
+        for (k, v) in schema.items():
+            athena_type = self.cast_to_athena(v["type"])
+            if athena_type == "object":
+                properties = v["properties"]
+                type_str = ",".join([f"{k1}:{self.cast_to_athena(v1['type'])}" for (k1, v1) in properties.items()])
+                columns.append({"Name": k, "Type": f"struct<{type_str}>"})
+            else:
+                columns.append({"Name": k, "Type": athena_type})
+        return columns
 
     def update_table_schema(self, txid, database, table, schema):
         table_info = table["Table"]
@@ -137,9 +153,9 @@ class AwsHandler:
             ]:
                 table_info.pop(k)
 
-        self.logger.info("Schema = " + repr(schema))
+        self.logger.debug("Schema = " + repr(schema))
 
-        columns = [{"Name": k, "Type": self.COLUMNS_MAPPING.get(self.preprocess_type(v["type"]), v["type"])} for (k, v) in schema.items()]
+        columns = self.generate_athena_schema(schema)
         if "StorageDescriptor" in table_info:
             table_info["StorageDescriptor"]["Columns"] = columns
         else:
@@ -147,7 +163,6 @@ class AwsHandler:
         self.update_table(database, table_info, txid)
         self.glue_client.update_table(DatabaseName=database, TableInput=table_info, TransactionId=txid)
 
-    @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def get_all_table_objects(self, txid, database, table):
         table_objects = []
 
@@ -177,7 +192,6 @@ class AwsHandler:
         flat_list = [item for sublist in table_objects for item in sublist]
         return flat_list
 
-    @retry(stop_max_attempt_number=10, wait_random_min=2000, wait_random_max=3000)
     def purge_table(self, txid, database, table):
         self.logger.debug(f"Going to purge table {table}")
         write_ops = []
@@ -235,12 +249,15 @@ class LakeformationTransaction:
         self._aws_handler.lf_client.cancel_transaction(TransactionId=self.txid)
 
     def commit_transaction(self):
-        self._logger.debug("Commiting Lakeformation Transaction")
+        self._logger.debug(f"Commiting Lakeformation Transaction {self.txid}")
         self._aws_handler.lf_client.commit_transaction(TransactionId=self.txid)
 
     def extend_transaction(self):
         self._logger.debug("Extending Lakeformation Transaction")
         self._aws_handler.lf_client.extend_transaction(TransactionId=self.txid)
+
+    def describe_transaction(self):
+        return self._aws_handler.lf_client.describe_transaction(TransactionId=self.txid)
 
     def __enter__(self, transaction_type="READ_AND_WRITE"):
         self._logger.debug("Starting Lakeformation Transaction")
@@ -250,6 +267,9 @@ class LakeformationTransaction:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._logger.debug("Exiting LakeformationTransaction context manager")
+        tx_desc = self.describe_transaction()
+        self._logger.debug(json.dumps(tx_desc, default=str))
+
         if exc_type:
             self._logger.error("Exiting LakeformationTransaction context manager due to an exception")
             self._logger.error(repr(exc_type))
@@ -258,5 +278,11 @@ class LakeformationTransaction:
             self._transaction = None
         else:
             self._logger.debug("Exiting LakeformationTransaction context manager due to reaching end of with block")
-            self.commit_transaction()
-            self._transaction = None
+            try:
+                self.commit_transaction()
+                self._transaction = None
+            except Exception as e:
+                self.cancel_transaction()
+                self._logger.error(f"Could not commit the transaction id = {self.txid} because of :\n{repr(e)}")
+                self._transaction = None
+                raise (e)

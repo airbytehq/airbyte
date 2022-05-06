@@ -151,7 +151,7 @@ public class IntegrationRunner {
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
         try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-          AirbyteSentry.executeWithTracing("ReadSource", () -> messageIterator.forEachRemaining(outputRecordCollector::accept));
+          AirbyteSentry.executeWithTracing("ReadSource", () -> produceMessages(messageIterator));
         }
       }
       // destination only
@@ -167,6 +167,16 @@ public class IntegrationRunner {
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
+  }
+
+  private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
+    watchForOrphanThreads(
+        () -> messageIterator.forEachRemaining(outputRecordCollector),
+        () -> System.exit(FORCED_EXIT_CODE),
+        INTERRUPT_THREAD_DELAY_MINUTES,
+        TimeUnit.MINUTES,
+        EXIT_THREAD_DELAY_MINUTES,
+        TimeUnit.MINUTES);
   }
 
   @VisibleForTesting
