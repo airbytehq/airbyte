@@ -7,6 +7,7 @@ package io.airbyte.bootloader;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -31,7 +32,6 @@ import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -211,25 +211,11 @@ public class BootloaderApp {
     final var bootloader = new BootloaderApp(configs, featureFlags, secretMigrator);
     bootloader.load();
 
-      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-        configsDslContext.close();
-        jobsDslContext.close();
-        closeDataSource(configsDataSource);
-        closeDataSource(jobsDataSource);
-      }));
+      // Ensure that the database resources are closed on application shutdown
+      CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
       final var bootloader = new BootloaderApp(configs, featureFlags, configsDslContext);
       bootloader.load(configsDataSource, jobsDataSource, jobsDslContext);
-    }
-  }
-
-  private static void closeDataSource(final DataSource dataSource) {
-    if (dataSource != null && dataSource instanceof Closeable closeable) {
-      try {
-        closeable.close();
-      } catch (final IOException e) {
-        LOGGER.error("Unable to close data source.", e);
-      }
     }
   }
 

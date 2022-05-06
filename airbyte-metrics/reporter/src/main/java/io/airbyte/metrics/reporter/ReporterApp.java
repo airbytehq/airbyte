@@ -4,6 +4,7 @@
 
 package io.airbyte.metrics.reporter;
 
+import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.db.Database;
@@ -14,7 +15,6 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.metrics.lib.DatadogClientConfiguration;
 import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
 import io.airbyte.metrics.lib.MetricEmittingApps;
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import javax.sql.DataSource;
@@ -40,16 +40,8 @@ public class ReporterApp {
 
     try (final DSLContext dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES)) {
 
-      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-        dslContext.close();
-        if (dataSource instanceof Closeable closeable) {
-          try {
-            closeable.close();
-          } catch (final IOException e) {
-            log.error("Unable to close data source.", e);
-          }
-        }
-      }));
+      // Ensure that the database resources are closed on application shutdown
+      CloseableShutdownHook.registerRuntimeShutdownHook(dataSource, dslContext);
 
       configDatabase = new ConfigsDatabaseInstance(dslContext)
           .getInitialized();

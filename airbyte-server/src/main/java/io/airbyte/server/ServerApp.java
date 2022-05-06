@@ -9,6 +9,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -57,7 +58,6 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -285,12 +285,8 @@ public class ServerApp implements ServerRunnable {
       try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
           final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES)) {
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-          closeDslContext(configsDslContext);
-          closeDslContext(jobsDslContext);
-          closeDataSource(configsDataSource);
-          closeDataSource(jobsDataSource);
-        }));
+        // Ensure that the database resources are closed on application shutdown
+        CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
         getServer(new ServerFactory.Api(), YamlSeedConfigPersistence.getDefault(),
             configs, configsDslContext, configsDataSource, jobsDslContext, jobsDataSource).start();
@@ -298,24 +294,6 @@ public class ServerApp implements ServerRunnable {
     } catch (final Throwable e) {
       LOGGER.error("Server failed", e);
       System.exit(1); // so the app doesn't hang on background threads
-    }
-  }
-
-  private static void closeDataSource(final DataSource dataSource) {
-    if (dataSource != null) {
-      if (dataSource instanceof Closeable closeable) {
-        try {
-          closeable.close();
-        } catch (final IOException e) {
-          LOGGER.error("Unable to close data source.", e);
-        }
-      }
-    }
-  }
-
-  private static void closeDslContext(final DSLContext dslContext) {
-    if (dslContext != null) {
-      dslContext.close();
     }
   }
 

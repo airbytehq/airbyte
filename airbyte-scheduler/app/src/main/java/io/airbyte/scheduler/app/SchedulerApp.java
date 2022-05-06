@@ -15,6 +15,7 @@ import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -43,7 +44,6 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.worker_run.TemporalWorkerRunFactory;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -251,12 +251,8 @@ public class SchedulerApp {
     try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
         final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES)) {
 
-      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-        closeDslContext(configsDslContext);
-        closeDslContext(jobsDslContext);
-        closeDataSource(configsDataSource);
-        closeDataSource(jobsDataSource);
-      }));
+      // Ensure that the database resources are closed on application shutdown
+      CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
       // Wait for the server to initialize the database and run migration
       // This should be converted into check for the migration version. Everything else as per.
@@ -309,22 +305,6 @@ public class SchedulerApp {
           configs.getSyncJobMaxAttempts(),
           configs.getAirbyteVersionOrWarning(), configs.getWorkerEnvironment(), configs.getLogConfigs())
               .start();
-    }
-  }
-
-  private static void closeDslContext(final DSLContext dslContext) {
-    if (dslContext != null) {
-      dslContext.close();
-    }
-  }
-
-  private static void closeDataSource(final DataSource dataSource) {
-    if (dataSource instanceof Closeable closeable) {
-      try {
-        closeable.close();
-      } catch (final IOException e) {
-        LOGGER.error("Unable to close data source.", e);
-      }
     }
   }
 

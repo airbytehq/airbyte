@@ -9,6 +9,7 @@ import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
@@ -76,7 +77,6 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
@@ -465,36 +465,14 @@ public class WorkerApp {
       try (final DSLContext configsDslContext = DSLContextFactory.create(configsDataSource, SQLDialect.POSTGRES);
           final DSLContext jobsDslContext = DSLContextFactory.create(jobsDataSource, SQLDialect.POSTGRES)) {
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-          closeDslContext(configsDslContext);
-          closeDslContext(jobsDslContext);
-          closeDataSource(configsDataSource);
-          closeDataSource(jobsDataSource);
-        }));
+        // Ensure that the database resources are closed on application shutdown
+        CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
         launchWorkerApp(configs, configsDslContext, jobsDslContext);
       }
     } catch (final Throwable t) {
       LOGGER.error("Worker app failed", t);
       System.exit(1);
-    }
-  }
-
-  private static void closeDslContext(final DSLContext dslContext) {
-    if (dslContext != null) {
-      dslContext.close();
-    }
-  }
-
-  private static void closeDataSource(final DataSource dataSource) {
-    if (dataSource != null) {
-      if (dataSource instanceof Closeable closeable) {
-        try {
-          closeable.close();
-        } catch (final IOException e) {
-          LOGGER.error("Unable to close data source.", e);
-        }
-      }
     }
   }
 
