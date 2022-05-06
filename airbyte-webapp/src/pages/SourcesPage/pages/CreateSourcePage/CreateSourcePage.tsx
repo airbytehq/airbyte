@@ -1,9 +1,5 @@
-import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
-import styled from "styled-components";
 
 import { PageTitle } from "components";
 import { FormPageContent } from "components/ConnectorBlocks";
@@ -15,20 +11,21 @@ import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
 
 import SourceForm from "./components/SourceForm";
 
-const PanelGrabber = styled.div`
-  height: 100vh;
-  padding: 6px;
-  display: flex;
-`;
+// const PanelGrabber = styled.div`
+//   height: 100vh;
+//   padding: 6px;
+//   display: flex;
+// `;
 
-const GrabberHandle = styled(FontAwesomeIcon)`
-  margin: auto;
-  height: 25px;
-  color: ${({ theme }) => theme.greyColor20};
-`;
+// const GrabberHandle = styled(FontAwesomeIcon)`
+//   margin: auto;
+//   height: 25px;
+//   color: ${({ theme }) => theme.greyColor20};
+// `;
 
 const CreateSourcePage: React.FC = () => {
   const { location, push } = useRouter();
@@ -75,8 +72,8 @@ const CreateSourcePage: React.FC = () => {
   return (
     <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
-      <ReflexContainer orientation="vertical" windowResizeAware={true}>
-        <ReflexElement className="left-pane">
+      <ConnectorDocumentationLayout>
+        <>
           <PageTitle title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
           <FormPageContent>
             <SourceForm
@@ -89,21 +86,16 @@ const CreateSourcePage: React.FC = () => {
               isLoading={isLoading}
             />
           </FormPageContent>
-        </ReflexElement>
-
-        <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
-          <PanelGrabber>
-            <GrabberHandle icon={faGripLinesVertical} size={"1x"} />
-          </PanelGrabber>
-        </ReflexSplitter>
-        <ReflexElement className="right-pane" size={1000}>
+        </>
+        <>
           <DocumentationPanel
             onClose={() => null}
             selectedService={selectedService}
             documentationUrl={selectedService?.documentationUrl || ""}
           />
-        </ReflexElement>
-      </ReflexContainer>
+          hi
+        </>
+      </ConnectorDocumentationLayout>
     </>
   );
 };
