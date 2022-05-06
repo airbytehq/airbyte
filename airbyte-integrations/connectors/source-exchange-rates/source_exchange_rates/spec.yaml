@@ -1,4 +1,4 @@
-documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+documentationUrl: https://go.estuary.dev/kbrc7P
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: exchangeratesapi.io Source Spec
@@ -17,13 +17,13 @@ connectionSpecification:
     access_key:
       type: string
       description: >-
-        Your API Access Key. See https://exchangeratesapi.io/documentation/. The key is
+        Your API Access Key. See this article to generate one https://exchangeratesapi.io/documentation/. The key is
         case sensitive.
       airbyte_secret: true
     base:
       type: string
       description: >-
-        ISO reference currency. See https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html.
+        ISO reference currency. See the documentation https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html.
         Free plan doesn't support Source Currency Switching, default base
         currency is EUR
       examples:
