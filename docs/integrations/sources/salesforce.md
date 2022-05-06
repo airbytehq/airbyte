@@ -14,7 +14,6 @@ This page guides you through the process of setting up the Salesforce source con
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
 
-
 To create a dedicated read only Salesforce user:
 
 1. [Log into Salesforce](https://login.salesforce.com/) with an admin account.
@@ -25,12 +24,12 @@ To create a dedicated read only Salesforce user:
 6. Scroll down to the **Standard Object Permissions** and **Custom Object Permissions** and enable the **Read** checkbox for objects that you want to replicate via Airbyte.
 7. Scroll to the top and click **Save**.
 8. On the left side, under Administration, click **Users** > **Users**. The All Users page is displayed. Click **New User**.
-9. Fill out the required fields: 
-    1. For License, select **Salesforce**. 
-    2. For Profile, select **Airbyte Read Only User**. 
+9. Fill out the required fields:
+    1. For License, select **Salesforce**.
+    2. For Profile, select **Airbyte Read Only User**.
     3. For Email, make sure to use an email address that you can access.
 10. Click **Save**.
-11. Copy the Username and keep it accessible. 
+11. Copy the Username and keep it accessible.
 12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
 ## Step 2: Set up Salesforce as a Source in Airbyte
@@ -72,20 +71,17 @@ The Salesforce source connector supports the following sync modes:
 **Incremental Deletes Sync**
 <br/>The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the field `isDeleted=true` value.
 
-
 ## Performance considerations
 
-The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) sync mode. 
-
+The Salesforce connector is restricted by Salesforce’s [Daily Rate Limits](https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm). The connector syncs data until it hits the daily rate limit, then ends the sync early with success status, and starts the next sync from where it left off. Note that picking up from where it ends will work only for incremental sync, which is why we recommend using the [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) sync mode.
 
 ## Supported Objects
 
 The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
 
-
 Airbyte fetches and handles all the possible and available streams dynamically based on:
 
-* If the authenticated Salesforce user has the Role and Permissions to read and fetch objects 
+* If the authenticated Salesforce user has the Role and Permissions to read and fetch objects
 
 * If the stream has the queryable property set to true. Airbyte can fetch only queryable streams via the API. If you don’t see your object available via Airbyte, check if it is API-accessible to the Salesforce user you authenticated with in Step 2.
 
@@ -117,36 +113,38 @@ Now that you have set up the Salesforce source connector, check out the followin
 * [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
 * [Replicate Salesforce and Zendesk data to Keen for unified analytics](https://airbyte.com/tutorials/salesforce-zendesk-analytics)
 
-
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                                                                          |
-|:--------|:-----------| :--- |:---------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.3 | 2022-04-04 | [11692](https://github.com/airbytehq/airbyte/pull/11692) | Optimised memory usage for `BULK` API calls |
-| 1.0.2 | 2022-03-01 | [10751](https://github.com/airbytehq/airbyte/pull/10751) | Fix broken link anchor in connector configuration |
-| 1.0.1 | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679) | Reorganize input parameter order on the UI |
-| 1.0.0 | 2022-02-27 | [10516](https://github.com/airbytehq/airbyte/pull/10516) | Speed up schema discovery by using parallelism |
-| 0.1.23  | 2022-02-10 | [10141](https://github.com/airbytehq/airbyte/pull/10141) | Processing of failed jobs                                                                                                        |
-| 0.1.22  | 2022-02-02 | [10012](https://github.com/airbytehq/airbyte/pull/10012) | Increase CSV field_size_limit                                                                                                    |
-| 0.1.21  | 2022-01-28 | [9499](https://github.com/airbytehq/airbyte/pull/9499) | If a sync reaches daily rate limit it ends the sync early with success status. Read more in `Performance considerations` section |
-| 0.1.20  | 2022-01-26 | [9757](https://github.com/airbytehq/airbyte/pull/9757) | Parse CSV with "unix" dialect                                                                                                    |
-| 0.1.19  | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description                                                                                        |
-| 0.1.18  | 2022-01-20 | [9478](https://github.com/airbytehq/airbyte/pull/9478) | Add available stream filtering by `queryable` flag                                                                               |
-| 0.1.17  | 2022-01-19 | [9302](https://github.com/airbytehq/airbyte/pull/9302) | Deprecate API Type parameter                                                                                                     |
-| 0.1.16  | 2022-01-18 | [9151](https://github.com/airbytehq/airbyte/pull/9151) | Fix pagination in REST API streams                                                                                               |
-| 0.1.15  | 2022-01-11 | [9409](https://github.com/airbytehq/airbyte/pull/9409) | Correcting the presence of an extra `else` handler in the error handling                                                         |
-| 0.1.14  | 2022-01-11 | [9386](https://github.com/airbytehq/airbyte/pull/9386) | Handling 400 error, while `sobject` doesn't support `query` or `queryAll` requests                                               |
-| 0.1.13  | 2022-01-11 | [8797](https://github.com/airbytehq/airbyte/pull/8797) | Switched from authSpecification to advanced_auth in specefication                                                                |
-| 0.1.12  | 2021-12-23 | [8871](https://github.com/airbytehq/airbyte/pull/8871) | Fix `examples` for new field in specification                                                                                    |
-| 0.1.11  | 2021-12-23 | [8871](https://github.com/airbytehq/airbyte/pull/8871) | Add the ability to filter streams by user                                                                                        |
-| 0.1.10  | 2021-12-23 | [9005](https://github.com/airbytehq/airbyte/pull/9005) | Handling 400 error when a stream is not queryable                                                                                |
-| 0.1.9   | 2021-12-07 | [8405](https://github.com/airbytehq/airbyte/pull/8405) | Filter 'null' byte(s) in HTTP responses                                                                                          |
-| 0.1.8   | 2021-11-30 | [8191](https://github.com/airbytehq/airbyte/pull/8191) | Make `start_date` optional and change its format to `YYYY-MM-DD`                                                                 |
-| 0.1.7   | 2021-11-24 | [8206](https://github.com/airbytehq/airbyte/pull/8206) | Handling 400 error when trying to create a job for sync using Bulk API.                                                          |
-| 0.1.6   | 2021-11-16 | [8009](https://github.com/airbytehq/airbyte/pull/8009) | Fix retring of BULK jobs                                                                                                         |
-| 0.1.5   | 2021-11-15 | [7885](https://github.com/airbytehq/airbyte/pull/7885) | Add `Transform` for output records                                                                                               |
-| 0.1.4   | 2021-11-09 | [7778](https://github.com/airbytehq/airbyte/pull/7778) | Fix types for `anyType` fields                                                                                                   |
-| 0.1.3   | 2021-11-06 | [7592](https://github.com/airbytehq/airbyte/pull/7592) | Fix getting `anyType` fields using BULK API                                                                                      |
-| 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification                                                        |
-| 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209) | Fix bug with pagination for BULK API                                                                                             |
-| 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619) | Salesforce Aitbyte-Native Connector                                                                                              |
+| Version | Date       | Pull Request                                                 | Subject                                                                                                                          |
+|:--------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.8   | 2022-05-04 | [12576](https://github.com/airbytehq/airbyte/pull/12576)     | Decode responses as utf-8 and fallback to ISO-8859-1 if needed                                                                   |
+| 1.0.7   | 2022-05-03 | [12552](https://github.com/airbytehq/airbyte/pull/12552)     | Decode responses as ISO-8859-1 instead of utf-8                                                                                  |
+| 1.0.4   | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335)     | Adding fixtures to mock time.sleep for connectors that explicitly sleep                                                          |
+| 1.0.3   | 2022-04-04 | [11692](https://github.com/airbytehq/airbyte/pull/11692)     | Optimised memory usage for `BULK` API calls                                                                                      |
+| 1.0.2   | 2022-03-01 | [10751](https://github.com/airbytehq/airbyte/pull/10751)     | Fix broken link anchor in connector configuration                                                                                |
+| 1.0.1   | 2022-02-27 | [10679](https://github.com/airbytehq/airbyte/pull/10679)     | Reorganize input parameter order on the UI                                                                                       |
+| 1.0.0   | 2022-02-27 | [10516](https://github.com/airbytehq/airbyte/pull/10516)     | Speed up schema discovery by using parallelism                                                                                   |
+| 0.1.23  | 2022-02-10 | [10141](https://github.com/airbytehq/airbyte/pull/10141)     | Processing of failed jobs                                                                                                        |
+| 0.1.22  | 2022-02-02 | [10012](https://github.com/airbytehq/airbyte/pull/10012)     | Increase CSV field_size_limit                                                                                                    |
+| 0.1.21  | 2022-01-28 | [9499](https://github.com/airbytehq/airbyte/pull/9499)       | If a sync reaches daily rate limit it ends the sync early with success status. Read more in `Performance considerations` section |
+| 0.1.20  | 2022-01-26 | [9757](https://github.com/airbytehq/airbyte/pull/9757)       | Parse CSV with "unix" dialect                                                                                                    |
+| 0.1.19  | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617)       | Update connector fields title/description                                                                                        |
+| 0.1.18  | 2022-01-20 | [9478](https://github.com/airbytehq/airbyte/pull/9478)       | Add available stream filtering by `queryable` flag                                                                               |
+| 0.1.17  | 2022-01-19 | [9302](https://github.com/airbytehq/airbyte/pull/9302)       | Deprecate API Type parameter                                                                                                     |
+| 0.1.16  | 2022-01-18 | [9151](https://github.com/airbytehq/airbyte/pull/9151)       | Fix pagination in REST API streams                                                                                               |
+| 0.1.15  | 2022-01-11 | [9409](https://github.com/airbytehq/airbyte/pull/9409)       | Correcting the presence of an extra `else` handler in the error handling                                                         |
+| 0.1.14  | 2022-01-11 | [9386](https://github.com/airbytehq/airbyte/pull/9386)       | Handling 400 error, while `sobject` doesn't support `query` or `queryAll` requests                                               |
+| 0.1.13  | 2022-01-11 | [8797](https://github.com/airbytehq/airbyte/pull/8797)       | Switched from authSpecification to advanced_auth in specefication                                                                |
+| 0.1.12  | 2021-12-23 | [8871](https://github.com/airbytehq/airbyte/pull/8871)       | Fix `examples` for new field in specification                                                                                    |
+| 0.1.11  | 2021-12-23 | [8871](https://github.com/airbytehq/airbyte/pull/8871)       | Add the ability to filter streams by user                                                                                        |
+| 0.1.10  | 2021-12-23 | [9005](https://github.com/airbytehq/airbyte/pull/9005)       | Handling 400 error when a stream is not queryable                                                                                |
+| 0.1.9   | 2021-12-07 | [8405](https://github.com/airbytehq/airbyte/pull/8405)       | Filter 'null' byte(s) in HTTP responses                                                                                          |
+| 0.1.8   | 2021-11-30 | [8191](https://github.com/airbytehq/airbyte/pull/8191)       | Make `start_date` optional and change its format to `YYYY-MM-DD`                                                                 |
+| 0.1.7   | 2021-11-24 | [8206](https://github.com/airbytehq/airbyte/pull/8206)       | Handling 400 error when trying to create a job for sync using Bulk API.                                                          |
+| 0.1.6   | 2021-11-16 | [8009](https://github.com/airbytehq/airbyte/pull/8009)       | Fix retring of BULK jobs                                                                                                         |
+| 0.1.5   | 2021-11-15 | [7885](https://github.com/airbytehq/airbyte/pull/7885)       | Add `Transform` for output records                                                                                               |
+| 0.1.4   | 2021-11-09 | [7778](https://github.com/airbytehq/airbyte/pull/7778)       | Fix types for `anyType` fields                                                                                                   |
+| 0.1.3   | 2021-11-06 | [7592](https://github.com/airbytehq/airbyte/pull/7592)       | Fix getting `anyType` fields using BULK API                                                                                      |
+| 0.1.2   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)       | Annotate Oauth2 flow initialization parameters in connector specification                                                        |
+| 0.1.1   | 2021-09-21 | [6209](https://github.com/airbytehq/airbyte/pull/6209)       | Fix bug with pagination for BULK API                                                                                             |
+| 0.1.0   | 2021-09-08 | [5619](https://github.com/airbytehq/airbyte/pull/5619)       | Salesforce Aitbyte-Native Connector                                                                                              |

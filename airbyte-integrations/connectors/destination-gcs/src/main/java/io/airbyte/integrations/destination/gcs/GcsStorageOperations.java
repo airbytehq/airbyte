@@ -9,7 +9,9 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,4 +45,8 @@ public class GcsStorageOperations extends S3StorageOperations {
     }
   }
 
+  @Override
+  protected Map<String, String> getMetadataMapping() {
+    return new HashMap<>();
+  }
 }
