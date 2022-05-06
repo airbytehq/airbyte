@@ -1,0 +1,7 @@
+{
+    "username": "xxx",
+    "password": "xxx",
+    "database": "non_existing_database_name",
+    "engine": "database_name_Analytics",
+    "s3_bucket": "bucket_name"
+}
