@@ -536,6 +536,32 @@ public class DefaultJobPersistence implements JobPersistence {
     return record.get(fieldName, LocalDateTime.class).toEpochSecond(ZoneOffset.UTC);
   }
 
+  private final String SECRET_MIGRATION_STATUS = "secretMigration";
+
+  @Override
+  public boolean isSecretMigrated() throws IOException {
+    final Result<Record> result = jobDatabase.query(ctx -> ctx.select()
+        .from(AIRBYTE_METADATA_TABLE)
+        .where(DSL.field(METADATA_KEY_COL).eq(SECRET_MIGRATION_STATUS))
+        .fetch());
+
+    return result.stream().count() == 1;
+  }
+
+  @Override
+  public void setSecretMigrationDone() throws IOException {
+    jobDatabase.query(ctx -> ctx.execute(String.format(
+        "INSERT INTO %s(%s, %s) VALUES('%s', '%s') ON CONFLICT (%s) DO UPDATE SET %s = '%s'",
+        AIRBYTE_METADATA_TABLE,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        SECRET_MIGRATION_STATUS,
+        true,
+        METADATA_KEY_COL,
+        METADATA_VAL_COL,
+        true)));
+  }
+
   @Override
   public Optional<String> getVersion() throws IOException {
     final Result<Record> result = jobDatabase.query(ctx -> ctx.select()

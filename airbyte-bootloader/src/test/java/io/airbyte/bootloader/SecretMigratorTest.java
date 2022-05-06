@@ -17,6 +17,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,11 +44,14 @@ public class SecretMigratorTest {
   @Mock
   private SecretPersistence secretPersistence;
 
+  @Mock
+  private JobPersistence jobPersistence;
+
   private SecretMigrator secretMigrator;
 
   @BeforeEach
   void setup() {
-    secretMigrator = Mockito.spy(new SecretMigrator(configPersistence, Optional.of(secretPersistence)));
+    secretMigrator = Mockito.spy(new SecretMigrator(configPersistence, jobPersistence, Optional.of(secretPersistence)));
   }
 
   @Test
@@ -116,6 +120,8 @@ public class SecretMigratorTest {
     secretPersistence.write(Mockito.any(), Mockito.any());
     Mockito.verify(secretMigrator).migrateDestinations(destinationConnections, standardDestinationDefinitions);
     Mockito.verify(secretPersistence).write(Mockito.any(), Mockito.eq(destinationSecret));
+
+    Mockito.verify(jobPersistence).setSecretMigrationDone();
   }
 
   @Test

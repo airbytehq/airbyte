@@ -327,7 +327,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public SecretPersistenceType getSecretPersistenceType() {
-    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.NONE.name());
+    final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.TESTING_CONFIG_DB_TABLE.name());
     return SecretPersistenceType.valueOf(secretPersistenceStr);
   }
 
