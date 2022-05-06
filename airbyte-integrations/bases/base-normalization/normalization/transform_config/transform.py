@@ -142,8 +142,19 @@ class TransformConfig:
         if "credentials_json" in config:
             dbt_config["method"] = "service-account-json"
             dbt_config["keyfile_json"] = json.loads(config["credentials_json"])
-        else:
-            dbt_config["method"] = "oauth"
+        elif "credentials" in config:
+            credentials = config["credentials"]
+            if credentials["auth_type"] == "service_account":
+                dbt_config["method"] = "service-account-json"
+                dbt_config["keyfile_json"] = json.loads(credentials["credentials_json"])
+            if credentials["auth_type"] == "oauth2.0":
+                dbt_config["method"] = "oauth-secrets"
+                dbt_config["token_uri"] = "https://oauth2.googleapis.com/token"
+                dbt_config["scopes"] = ["https://www.googleapis.com/auth/bigquery"]
+                dbt_config["client_id"] = credentials["client_id"]
+                dbt_config["client_secret"] = credentials["client_secret"]
+                dbt_config["refresh_token"] = credentials["refresh_token"]
+
         if "dataset_location" in config:
             dbt_config["location"] = config["dataset_location"]
         return dbt_config
