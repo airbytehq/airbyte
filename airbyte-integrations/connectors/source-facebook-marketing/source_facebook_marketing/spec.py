@@ -114,7 +114,7 @@ class ConnectorConfig(BaseConfig):
         order=3,
         description=(
             "The value of the access token generated. "
-            'See the https://go.estuary.dev/OzUqlE for more information'
+            'See the docs for more information: https://go.estuary.dev/OzUqlE'
         ),
         airbyte_secret=True,
     )
