@@ -11,23 +11,12 @@ import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { SidePanelStatusProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
 
 import SourceForm from "./components/SourceForm";
 
-// const PanelGrabber = styled.div`
-//   height: 100vh;
-//   padding: 6px;
-//   display: flex;
-// `;
-
-// const GrabberHandle = styled(FontAwesomeIcon)`
-//   margin: auto;
-//   height: 25px;
-//   color: ${({ theme }) => theme.greyColor20};
-// `;
-
-const CreateSourcePage: React.FC = () => {
+export const CreateSourcePage: React.FC = () => {
   const { location, push } = useRouter();
 
   const [successRequest, setSuccessRequest] = useState(false);
@@ -72,32 +61,27 @@ const CreateSourcePage: React.FC = () => {
   return (
     <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
-      <ConnectorDocumentationLayout>
-        <>
-          <PageTitle title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
-          <FormPageContent>
-            <SourceForm
-              onSubmit={onSubmitSourceForm}
-              sourceDefinitions={sourceDefinitions}
-              setSourceDefinitionId={setSourceDefinitionId}
-              sourceDefinitionSpecification={sourceDefinitionSpecification}
-              sourceDefinitionError={sourceDefinitionError}
-              hasSuccess={successRequest}
-              isLoading={isLoading}
-            />
-          </FormPageContent>
-        </>
-        <>
-          <DocumentationPanel
-            onClose={() => null}
-            selectedService={selectedService}
-            documentationUrl={selectedService?.documentationUrl || ""}
-          />
-          hi
-        </>
-      </ConnectorDocumentationLayout>
+      <SidePanelStatusProvider>
+        <ConnectorDocumentationLayout>
+          <>
+            <PageTitle title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
+            <FormPageContent>
+              <SourceForm
+                onSubmit={onSubmitSourceForm}
+                sourceDefinitions={sourceDefinitions}
+                setSourceDefinitionId={setSourceDefinitionId}
+                sourceDefinitionSpecification={sourceDefinitionSpecification}
+                sourceDefinitionError={sourceDefinitionError}
+                hasSuccess={successRequest}
+                isLoading={isLoading}
+              />
+            </FormPageContent>
+          </>
+          <>
+            <DocumentationPanel documentationUrl={selectedService?.documentationUrl || ""} />
+          </>
+        </ConnectorDocumentationLayout>
+      </SidePanelStatusProvider>
     </>
   );
 };
-
-export default CreateSourcePage;

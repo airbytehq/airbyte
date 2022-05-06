@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { LoadingPage } from "components";
+import { LoadingPage, PageTitle } from "components";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import CreateConnectionContent from "components/CreateConnectionContent";
+import DocumentationPanel from "components/DocumentationPanel/DocumentationPanel";
 import HeadTitle from "components/HeadTitle";
-import MainPageWithScroll from "components/MainPageWithScroll";
-import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
 
 import { Connection } from "core/domain/connection";
@@ -16,7 +15,10 @@ import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useSourceDefinition, useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
+import { SidePanelStatusProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
+import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
 
 import DestinationForm from "./components/ConnectionDestinationForm";
 import ConnectionCreateSourceForm from "./components/ConnectionSourceForm";
@@ -68,6 +70,21 @@ function usePreloadData(): {
 const CreationFormPage: React.FC = () => {
   const { location, push } = useRouter();
 
+  const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
+    return (
+      typeof state === "object" &&
+      state !== null &&
+      typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId === "string"
+    );
+  };
+
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
+    hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
+  );
+
+  const { data: sourceDefinitionSpecification, error: sourceDefinitionError } =
+    useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
+
   // TODO: Probably there is a better way to figure it out instead of just checking third elem
   const locationType = location.pathname.split("/")[3];
 
@@ -111,6 +128,10 @@ const CreationFormPage: React.FC = () => {
     setCurrentStep(StepsTypes.CREATE_CONNECTION);
   };
 
+  const { sourceDefinitions } = useSourceDefinitionList();
+
+  const selectedService = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
+
   const renderStep = () => {
     if (currentStep === StepsTypes.CREATE_ENTITY || currentStep === StepsTypes.CREATE_CONNECTOR) {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
@@ -119,17 +140,22 @@ const CreationFormPage: React.FC = () => {
             {type === EntityStepsTypes.CONNECTION && (
               <ExistingEntityForm type="source" onSubmit={onSelectExistingSource} />
             )}
-            <SourceForm
-              afterSubmit={() => {
-                if (type === "connection") {
-                  setCurrentEntityStep(EntityStepsTypes.DESTINATION);
-                  setCurrentStep(StepsTypes.CREATE_CONNECTOR);
-                } else {
-                  setCurrentEntityStep(EntityStepsTypes.CONNECTION);
-                  setCurrentStep(StepsTypes.CREATE_CONNECTION);
-                }
-              }}
-            />
+            <>
+              <SourceForm
+                setSourceDefinitionId={setSourceDefinitionId}
+                sourceDefinitionSpecification={sourceDefinitionSpecification}
+                sourceDefinitionError={sourceDefinitionError}
+                afterSubmit={() => {
+                  if (type === "connection") {
+                    setCurrentEntityStep(EntityStepsTypes.DESTINATION);
+                    setCurrentStep(StepsTypes.CREATE_CONNECTOR);
+                  } else {
+                    setCurrentEntityStep(EntityStepsTypes.CONNECTION);
+                    setCurrentStep(StepsTypes.CREATE_CONNECTION);
+                  }
+                }}
+              />
+            </>
           </>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
@@ -218,33 +244,35 @@ const CreationFormPage: React.FC = () => {
   )[type];
 
   return (
-    <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: titleId }]} />}
-      pageTitle={
-        <PageTitle
-          withLine
-          title={<FormattedMessage id={titleId} />}
-          middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
-        />
-      }
-    >
-      <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
-        {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
-          <ConnectionBlock
-            itemFrom={source ? { name: source.name, icon: sourceDefinition?.icon } : undefined}
-            itemTo={
-              destination
-                ? {
-                    name: destination.name,
-                    icon: destinationDefinition?.icon,
-                  }
-                : undefined
-            }
+    <SidePanelStatusProvider>
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
+      <ConnectorDocumentationLayout>
+        <>
+          <PageTitle
+            withLine
+            title={<FormattedMessage id={titleId} />}
+            middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
           />
-        )}
-        {renderStep()}
-      </FormPageContent>
-    </MainPageWithScroll>
+          <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
+            {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
+              <ConnectionBlock
+                itemFrom={source ? { name: source.name, icon: sourceDefinition?.icon } : undefined}
+                itemTo={
+                  destination
+                    ? {
+                        name: destination.name,
+                        icon: destinationDefinition?.icon,
+                      }
+                    : undefined
+                }
+              />
+            )}
+            {renderStep()}
+          </FormPageContent>
+        </>
+        <DocumentationPanel documentationUrl={selectedService?.documentationUrl || ""} />
+      </ConnectorDocumentationLayout>
+    </SidePanelStatusProvider>
   );
 };
 

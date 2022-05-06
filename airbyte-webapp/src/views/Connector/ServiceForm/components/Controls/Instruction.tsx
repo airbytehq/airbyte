@@ -1,10 +1,10 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useToggle } from "react-use";
 import styled from "styled-components";
 
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { getDocumentationType } from "hooks/services/useDocumentation";
+import { useSidePanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
 interface InstructionProps {
   selectedService: SourceDefinition | DestinationDefinition;
@@ -38,16 +38,15 @@ const DocumentationLink = styled.a`
   color: ${({ theme }) => theme.primaryColor};
 `;
 
-const Instruction: React.FC<InstructionProps> = ({ documentationUrl }) => {
-  const [isSideViewOpen, setIsSideViewOpen] = useToggle(false);
+export const Instruction: React.FC<InstructionProps> = ({ documentationUrl }) => {
+  const { sidePanelStatus, setSidePanelStatus } = useSidePanelContext();
 
   const docType = getDocumentationType(documentationUrl);
 
   return (
     <>
-      {isSideViewOpen && <div>hi</div>}
       {docType === "internal" && (
-        <SideViewButton type="button" onClick={() => setIsSideViewOpen(true)}>
+        <SideViewButton type="button" onClick={() => setSidePanelStatus(!sidePanelStatus)}>
           <FormattedMessage id="form.setupGuide" />
         </SideViewButton>
       )}
@@ -59,5 +58,3 @@ const Instruction: React.FC<InstructionProps> = ({ documentationUrl }) => {
     </>
   );
 };
-
-export default Instruction;

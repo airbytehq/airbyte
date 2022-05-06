@@ -1,5 +1,7 @@
 import type { Url } from "url";
 
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FormattedMessage } from "react-intl";
 import { PluggableList } from "react-markdown/lib/react-markdown";
 import { ReflexElement } from "react-reflex";
@@ -8,14 +10,14 @@ import urls from "rehype-urls";
 import styled from "styled-components";
 
 import { LoadingPage, PageTitle } from "components";
-import { Card } from "components/base";
+import { Button } from "components/base";
 import Markdown from "components/Markdown/Markdown";
 
 import { useConfig } from "config";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { useDocumentation } from "hooks/services/useDocumentation";
+import { useSidePanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
-export const DocumentationContainer = styled(Card)`
+export const DocumentationContainer = styled.div`
   padding: 0px 0px 20px;
   background-color: #ffffff;
 `;
@@ -24,13 +26,14 @@ export const DocumentationContent = styled(Markdown)`
   padding: 0px 35px 20px;
 `;
 
-type DocsPanelProps = {
-  selectedService: SourceDefinition | DestinationDefinition | undefined;
+interface DocsPanelProps {
   documentationUrl: string;
-};
+}
 
-const DocumentationPanel: React.FC<{ onClose: () => void } & DocsPanelProps> = ({ documentationUrl }) => {
+const DocumentationPanel: React.FC<DocsPanelProps> = ({ documentationUrl }) => {
   const config = useConfig();
+
+  const { setSidePanelStatus } = useSidePanelContext();
 
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
@@ -62,7 +65,20 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & DocsPanelProps> = (
         <LoadingPage />
       ) : docs ? (
         <DocumentationContainer>
-          <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
+          <PageTitle
+            withLine
+            title={<FormattedMessage id="connector.setupGuide" />}
+            endComponent={
+              <Button
+                onClick={() => {
+                  setSidePanelStatus(false);
+                }}
+                iconOnly={true}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </Button>
+            }
+          />
           <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
         </DocumentationContainer>
       ) : (
