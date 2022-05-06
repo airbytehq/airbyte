@@ -22,6 +22,8 @@ jobs:
           commands: |
             test
             test-performance
+            build-connector
+            publish-connector
             publish
             publish-external
             publish-cdk

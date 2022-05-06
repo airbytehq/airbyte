@@ -1,22 +1,40 @@
-FROM airbyte/integration-base-singer:0.1.1
+FROM python:3.9.11-alpine3.15 as base
 
-# Bash is installed for more convenient debugging. GCC is required by tap-zoom to compile ciso8601.
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update \
-    && apt-get install -y bash \
-    && apt-get install -y gcc \
-    && rm -rf /var/lib/apt/lists/*
+# build and load all requirements
+FROM base as builder
+WORKDIR /airbyte/integration_code
 
-ENV CODE_PATH="source_zoom_singer"
-ENV AIRBYTE_IMPL_MODULE="source_zoom_singer"
-ENV AIRBYTE_IMPL_PATH="SourceZoomSinger"
-ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
+# upgrade pip to the latest version
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata \
+    && apk --no-cache add git \
+    && apk --no-cache add build-base
+
+
+COPY setup.py ./
+# install necessary packages to a temporary folder
+RUN pip install --prefix=/install .
+
+# build a clean environment
+FROM base
+WORKDIR /airbyte/integration_code
+
+# copy all loaded and built libraries to a pure basic image
+COPY --from=builder /install /usr/local
+# add default timezone settings
+COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
+RUN echo "Etc/UTC" > /etc/timezone
+
+# bash is installed for more convenient debugging.
+RUN apk --no-cache add bash
+
+# copy payload code only
+COPY main.py ./
+COPY source_zoom_singer ./source_zoom_singer
+
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.2.4
 LABEL io.airbyte.name=airbyte/source-zoom-singer
-
-WORKDIR /airbyte/integration_code
-COPY $CODE_PATH ./$CODE_PATH
-COPY setup.py ./
-
-RUN pip install .

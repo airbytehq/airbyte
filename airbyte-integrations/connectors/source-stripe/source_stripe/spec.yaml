@@ -26,22 +26,22 @@ connectionSpecification:
       order: 1
     start_date:
       type: string
-      title: Start Date
+      title: Replication start date
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
       description: >-
-        UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
-        this date will not be replicated.
+        UTC date and time in the format 2017-01-25T00:00:00Z. Only data generated
+        after this date will be replicated.
       examples:
         - "2017-01-25T00:00:00Z"
       order: 2
     lookback_window_days:
       type: integer
-      title: Lookback Window (in days)
+      title: Lookback Window in days (Optional)
       default: 0
       minimum: 0
       description: >-
-        When set, the connector will always reload data from the past N days,
-        where N is the value set here. This is useful if your data is updated
+        When set, the connector will always re-export data from the past N days,
+        where N is the value set here. This is useful if your data is frequently updated
         after creation. More info <a
         href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
       order: 3

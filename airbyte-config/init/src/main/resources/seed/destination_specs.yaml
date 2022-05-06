@@ -188,7 +188,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-aws-datalake:0.1.0"
+- dockerImage: "airbyte/destination-aws-datalake:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/aws-datalake"
     connectionSpecification:
@@ -243,7 +243,7 @@
             required:
             - "credentials_title"
             - "aws_access_key_id"
-            - "aws_secret_access_key_id"
+            - "aws_secret_access_key"
             properties:
               credentials_title:
                 type: "string"
@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.1"
+- dockerImage: "airbyte/destination-bigquery:1.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -294,6 +294,7 @@
       type: "object"
       required:
       - "project_id"
+      - "dataset_location"
       - "dataset_id"
       additionalProperties: true
       properties:
@@ -317,20 +318,12 @@
             \ dataset. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\"\
             >here</a>."
           title: "Project ID"
-        dataset_id:
-          type: "string"
-          description: "The default BigQuery Dataset ID that tables are replicated\
-            \ to if the source does not specify a namespace. Read more <a href=\"\
-            https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
-          title: "Default Dataset ID"
         dataset_location:
           type: "string"
           description: "The location of the dataset. Warning: Changes made after creation\
-            \ will not be applied. The default \"US\" value is used if not set explicitly.\
-            \ Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\"\
+            \ will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\"\
             >here</a>."
-          title: "Dataset Location (Optional)"
-          default: "US"
+          title: "Dataset Location"
           enum:
           - "US"
           - "EU"
@@ -363,6 +356,12 @@
           - "us-west2"
           - "us-west3"
           - "us-west4"
+        dataset_id:
+          type: "string"
+          description: "The default BigQuery Dataset ID that tables are replicated\
+            \ to if the source does not specify a namespace. Read more <a href=\"\
+            https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
+          title: "Default Dataset ID"
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
@@ -495,7 +494,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.1"
+- dockerImage: "airbyte/destination-bigquery-denormalized:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -793,7 +792,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.1.4"
+- dockerImage: "airbyte/destination-clickhouse:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1288,7 +1287,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.2.4"
+- dockerImage: "airbyte/destination-gcs:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -2267,7 +2266,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.16"
+- dockerImage: "airbyte/destination-mssql:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -2819,7 +2818,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-oracle:0.1.15"
+- dockerImage: "airbyte/destination-oracle:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
@@ -3047,7 +3046,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-postgres:0.3.18"
+- dockerImage: "airbyte/destination-postgres:0.3.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
@@ -3644,7 +3643,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.3"
+- dockerImage: "airbyte/destination-s3:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3658,40 +3657,46 @@
       - "format"
       additionalProperties: false
       properties:
-        s3_endpoint:
-          title: "Endpoint"
+        access_key_id:
           type: "string"
-          default: ""
-          description: "This is your S3 endpoint url.(if you are working with AWS\
-            \ S3, just leave empty)."
+          description: "The access key ID to access the S3 bucket. Airbyte requires\
+            \ Read and Write permissions to the given bucket. See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)\
+            \ on how to generate an access key."
+          title: "S3 Key ID *"
+          airbyte_secret: true
           examples:
-          - "http://localhost:9000"
+          - "A012345678910EXAMPLE"
           order: 0
-        s3_bucket_name:
-          title: "S3 Bucket Name"
+        secret_access_key:
           type: "string"
-          description: "The name of the S3 bucket."
+          description: "The corresponding secret to the access key ID. See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)"
+          title: "S3 Access Key *"
+          airbyte_secret: true
+          examples:
+          - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+          order: 1
+        s3_bucket_name:
+          title: "S3 Bucket Name *"
+          type: "string"
+          description: "The name of the S3 bucket. See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)\
+            \ to create an S3 bucket."
           examples:
           - "airbyte_sync"
-          order: 1
+          order: 2
         s3_bucket_path:
-          description: "Directory under the S3 bucket where data will be written."
+          title: "S3 Bucket Path *"
+          description: "Directory under the S3 bucket where data will be written.\
+            \ See [this](https://docs.airbyte.com/integrations/destinations/s3#:~:text=to%20format%20the-,bucket%20path,-%3A)"
           type: "string"
           examples:
           - "data_sync/test"
-          order: 2
-        s3_path_format:
-          description: "Format string on how data will be organized inside the S3\
-            \ bucket directory"
-          type: "string"
-          examples:
-          - "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
           order: 3
         s3_bucket_region:
-          title: "S3 Bucket Region"
+          title: "S3 Bucket Region *"
           type: "string"
           default: ""
-          description: "The region of the S3 bucket."
+          description: "The region of the S3 bucket. See [this](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions)\
+            \ for all region codes."
           enum:
           - ""
           - "us-east-1"
@@ -3720,29 +3725,11 @@
           - "us-gov-east-1"
           - "us-gov-west-1"
           order: 4
-        access_key_id:
-          type: "string"
-          description: "The access key id to access the S3 bucket. Airbyte requires\
-            \ Read and Write permissions to the given bucket, if not set, Airbyte\
-            \ will rely on Instance Profile."
-          title: "S3 Key Id"
-          airbyte_secret: true
-          examples:
-          - "A012345678910EXAMPLE"
-          order: 5
-        secret_access_key:
-          type: "string"
-          description: "The corresponding secret to the access key id, if S3 Key Id\
-            \ is set, then S3 Access Key must also be provided"
-          title: "S3 Access Key"
-          airbyte_secret: true
-          examples:
-          - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
-          order: 6
         format:
-          title: "Output Format"
+          title: "Output Format *"
           type: "object"
-          description: "Output data format"
+          description: "Format of the data output. See [this](https://docs.airbyte.com/integrations/destinations/s3/#output-schema)\
+            \ for more details"
           oneOf:
           - title: "Avro: Apache Avro"
             required:
@@ -3750,17 +3737,19 @@
             - "compression_codec"
             properties:
               format_type:
+                title: "Format Type *"
                 type: "string"
                 enum:
                 - "Avro"
                 default: "Avro"
+                order: 0
               compression_codec:
-                title: "Compression Codec"
+                title: "Compression Codec *"
                 description: "The compression algorithm used to compress data. Default\
                   \ to no compression."
                 type: "object"
                 oneOf:
-                - title: "no compression"
+                - title: "No Compression"
                   required:
                   - "codec"
                   properties:
@@ -3780,7 +3769,7 @@
                       - "Deflate"
                       default: "Deflate"
                     compression_level:
-                      title: "Deflate level"
+                      title: "Deflate Level"
                       description: "0: no compression & fastest, 9: best compression\
                         \ & slowest."
                       type: "integer"
@@ -3807,7 +3796,7 @@
                       - "xz"
                       default: "xz"
                     compression_level:
-                      title: "Compression level"
+                      title: "Compression Level"
                       description: "See <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\"\
                         >here</a> for details."
                       type: "integer"
@@ -3825,7 +3814,7 @@
                       - "zstandard"
                       default: "zstandard"
                     compression_level:
-                      title: "Compression level"
+                      title: "Compression Level"
                       description: "Negative levels are 'fast' modes akin to lz4 or\
                         \ snappy, levels above 9 are generally for archival purposes,\
                         \ and levels above 18 use a lot of memory."
@@ -3834,7 +3823,7 @@
                       minimum: -5
                       maximum: 22
                     include_checksum:
-                      title: "Include checksum"
+                      title: "Include Checksum"
                       description: "If true, include a checksum with each data block."
                       type: "boolean"
                       default: false
@@ -3847,8 +3836,9 @@
                       enum:
                       - "snappy"
                       default: "snappy"
+                order: 1
               part_size_mb:
-                title: "Block Size (MB) for Amazon S3 multipart upload"
+                title: "Block Size (MB) for Amazon S3 multipart upload (Optional)"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
                   \ to upload a bigger files and improve the speed, but consumes9\
@@ -3857,12 +3847,14 @@
                 default: 5
                 examples:
                 - 5
+                order: 2
           - title: "CSV: Comma-Separated Values"
             required:
             - "format_type"
             - "flattening"
             properties:
               format_type:
+                title: "Format Type *"
                 type: "string"
                 enum:
                 - "CSV"
@@ -3877,7 +3869,7 @@
                 - "No flattening"
                 - "Root level flattening"
               part_size_mb:
-                title: "Block Size (MB) for Amazon S3 multipart upload"
+                title: "Block Size (MB) For Amazon S3 Multipart Upload (Optional)"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
                   \ to upload a bigger files and improve the speed, but consumes9\
@@ -3911,17 +3903,18 @@
                       enum:
                       - "GZIP"
                       default: "GZIP"
-          - title: "JSON Lines: newline-delimited JSON"
+          - title: "JSON Lines: Newline-delimited JSON"
             required:
             - "format_type"
             properties:
               format_type:
+                title: "Format Type *"
                 type: "string"
                 enum:
                 - "JSONL"
                 default: "JSONL"
               part_size_mb:
-                title: "Block Size (MB) for Amazon S3 multipart upload"
+                title: "Block Size (MB) For Amazon S3 Multipart Upload (Optional)"
                 description: "This is the size of a \"Part\" being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will allow\
                   \ to upload a bigger files and improve the speed, but consumes9\
@@ -3958,12 +3951,13 @@
             - "format_type"
             properties:
               format_type:
+                title: "Format Type *"
                 type: "string"
                 enum:
                 - "Parquet"
                 default: "Parquet"
               compression_codec:
-                title: "Compression Codec"
+                title: "Compression Codec (Optional)"
                 description: "The compression algorithm used to compress data pages."
                 type: "string"
                 enum:
@@ -3976,7 +3970,7 @@
                 - "ZSTD"
                 default: "UNCOMPRESSED"
               block_size_mb:
-                title: "Block Size (Row Group Size) (MB)"
+                title: "Block Size (Row Group Size) (MB) (Optional)"
                 description: "This is the size of a row group being buffered in memory.\
                   \ It limits the memory usage when writing. Larger values will improve\
                   \ the IO when reading, but consume more memory when writing. Default:\
@@ -3986,7 +3980,7 @@
                 examples:
                 - 128
               max_padding_size_mb:
-                title: "Max Padding Size (MB)"
+                title: "Max Padding Size (MB) (Optional)"
                 description: "Maximum size allowed as padding to align row groups.\
                   \ This is also the minimum size of a row group. Default: 8 MB."
                 type: "integer"
@@ -3994,7 +3988,7 @@
                 examples:
                 - 8
               page_size_kb:
-                title: "Page Size (KB)"
+                title: "Page Size (KB) (Optional)"
                 description: "The page size is for compression. A block is composed\
                   \ of pages. A page is the smallest unit that must be read fully\
                   \ to access a single record. If this value is too small, the compression\
@@ -4004,7 +3998,7 @@
                 examples:
                 - 1024
               dictionary_page_size_kb:
-                title: "Dictionary Page Size (KB)"
+                title: "Dictionary Page Size (KB) (Optional)"
                 description: "There is one dictionary page per column per row group\
                   \ when dictionary encoding is used. The dictionary page size works\
                   \ like the page size but for dictionary. Default: 1024 KB."
@@ -4013,10 +4007,27 @@
                 examples:
                 - 1024
               dictionary_encoding:
-                title: "Dictionary Encoding"
+                title: "Dictionary Encoding (Optional)"
                 description: "Default: true."
                 type: "boolean"
                 default: true
+          order: 5
+        s3_endpoint:
+          title: "Endpoint (Optional)"
+          type: "string"
+          default: ""
+          description: "This is your S3 endpoint url. (If you are working with AWS\
+            \ S3, you can leave blank). See [this](https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use)"
+          examples:
+          - "http://localhost:9000"
+          order: 6
+        s3_path_format:
+          title: "S3 Path Format (Optional)"
+          description: "Format string on how data will be organized inside the S3\
+            \ bucket directory. See [this](https://docs.airbyte.com/integrations/destinations/s3#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format)"
+          type: "string"
+          examples:
+          - "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
           order: 7
     supportsIncremental: true
     supportsNormalization: false
@@ -4077,7 +4088,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.24"
+- dockerImage: "airbyte/destination-snowflake:0.4.25"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4144,6 +4155,7 @@
           order: 5
         credentials:
           title: "Authorization Method"
+          description: ""
           type: "object"
           oneOf:
           - type: "object"
@@ -4213,6 +4225,8 @@
             - "method"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "Standard"
@@ -4226,6 +4240,8 @@
             - "method"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "Internal Staging"
@@ -4242,6 +4258,8 @@
             - "secret_access_key"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "S3 Staging"
@@ -4325,6 +4343,46 @@
                   \ to true."
                 default: true
                 order: 6
+              encryption:
+                title: "Encryption"
+                type: "object"
+                description: "How to encrypt the staging data"
+                default:
+                  encryption_type: "none"
+                order: 7
+                oneOf:
+                - title: "No encryption"
+                  description: "Staging data will be stored in plaintext."
+                  type: "object"
+                  required:
+                  - "encryption_type"
+                  properties:
+                    encryption_type:
+                      type: "string"
+                      const: "none"
+                      enum:
+                      - "none"
+                      default: "none"
+                - title: "AES-CBC envelope encryption"
+                  description: "Staging data will be encrypted using AES-CBC envelope\
+                    \ encryption."
+                  type: "object"
+                  required:
+                  - "encryption_type"
+                  properties:
+                    encryption_type:
+                      type: "string"
+                      const: "aes_cbc_envelope"
+                      enum:
+                      - "aes_cbc_envelope"
+                      default: "aes_cbc_envelope"
+                    key_encrypting_key:
+                      type: "string"
+                      title: "Key"
+                      description: "The key, base64-encoded. Must be either 128, 192,\
+                        \ or 256 bits. Leave blank to have Airbyte generate an ephemeral\
+                        \ key for each sync."
+                      airbyte_secret: true
           - title: "GCS Staging"
             additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
@@ -4337,6 +4395,8 @@
             - "credentials_json"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "GCS Staging"
@@ -4383,6 +4443,8 @@
             - "azure_blob_storage_sas_token"
             properties:
               method:
+                title: ""
+                description: ""
                 type: "string"
                 enum:
                 - "Azure Blob Staging"

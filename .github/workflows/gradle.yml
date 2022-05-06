@@ -51,6 +51,7 @@ jobs:
               - '.github/**'
               - 'buildSrc/**'
               - 'tools/**'
+              - '*.gradle'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
