@@ -103,7 +103,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.36.11-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.37.0-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
