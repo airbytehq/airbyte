@@ -283,9 +283,15 @@ class HttpStream(Stream, ABC):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
+        print("---REQUEST!!!---")
+        print(request.url)
+        print(request.method)
+        print(request.headers)
+        print(request_kwargs)
         AirbyteSentry.add_breadcrumb(message=f"Issue {request.url}", data=request_kwargs)
         with AirbyteSentry.start_transaction_span(op="_send", description=request.url):
             response: requests.Response = self._session.send(request, **request_kwargs)
+            print(f"response: {response}")
 
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)

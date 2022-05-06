@@ -57,12 +57,7 @@ class Connector(ABC):
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
-    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
-        required to run this integration. By default, this will be loaded from a "spec.yaml" or a "spec.json" in the package root.
-        """
-
+    def get_spec_obj(self):
         package = self.__class__.__module__.split(".")[0]
 
         yaml_spec = load_optional_package_file(package, "spec.yaml")
@@ -76,7 +71,15 @@ class Connector(ABC):
         elif json_spec:
             spec_obj = json.loads(json_spec)
         else:
-            raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
+            raise FileNotFoundError(f"Unable to find spec.yaml or spec.json in the package {package}.")
+        return spec_obj
+
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
+        """
+        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+        required to run this integration. By default, this will be loaded from a "spec.yaml" or a "spec.json" in the package root.
+        """
+        spec_obj = self.get_spec_obj()
 
         return ConnectorSpecification.parse_obj(spec_obj)
 

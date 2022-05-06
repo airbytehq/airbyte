@@ -1,0 +1,69 @@
+"documentationUrl": "https://docs.airbyte.io/integrations/sources/sendgrid"
+"connectionSpecification":
+  "title": "Sendgrid Spec"
+  "type": "object"
+  "required": ["apikey"]
+  "additionalProperties": false
+  "properties":
+    "apikey":
+      "type": "string"
+      "description": 'API Key, use <a href="https://app.sendgrid.com/settings/api_keys/">admin</a> to generate this key.'
+    "start_time":
+      "type": "integer"
+      "description": "Start time in timestamp integer format. Any data before this timestamp will not be replicated."
+      "examples": [1558359837]
+
+source:
+  class_name: "airbyte_cdk.sources.cac.configurable_source.ConfigurableSource"
+  options:
+    check:
+      # TODO: add CheckStream to checks.__init__
+      class_name: "airbyte_cdk.sources.cac.checks.check_stream.CheckStream"
+      options:
+        stream:
+          class_name: "airbyte_cdk.sources.cac.configurable_stream.ConfigurableStream"
+          vars:
+            data_field: "results"
+          options:
+            schema:
+              class_name: StaticSchema
+              options:
+                file_path: "./schemas/segments.json"
+            retriever:
+              class_name: "airbyte_cdk.sources.cac.retrievers.simple_retriever.SimpleRetriever"
+              options:
+                requester:
+                  class_name: "airbyte_cdk.sources.cac.requesters.http_requester.HttpRequester"
+                  options:
+                    url_base: "https://api.sendgrid.com/v3/"
+                    path: "marketing/segments"
+                    method: GET
+                    authenticator:
+                      class_name: "airbyte_cdk.sources.streams.http.auth.token.TokenAuthenticator"
+                      options:
+                        token: "{{ config['apikey'] }}"
+                extractor:
+                  class_name: "airbyte_cdk.sources.cac.extractors.jq.JqExtractor"
+                  options:
+                    transform: ".{{ vars['data_field'] }}[]"
+    streams:
+      segments:
+        class_name: "airbyte_cdk.sources.cac.configurable_stream.ConfigurableStream"
+        options:
+          schema:
+            class_name: StaticSchema
+            options:
+              file_path: "./schemas/segments.json"
+          retriever:
+            class_name: "airbyte_cdk.sources.cac.retrivers.SimpleRetriever"
+            options:
+              requester:
+                class_name: "airbyte_cdk.sources.cac.requesters.HttpRequester"
+                options:
+                  url_base: "https://api.sendgrid.com/v3/"
+                  path: "marketing/segments"
+                  method: GET
+                  authenticator:
+                    class_name: "airbyte_cdk.sources.streams.http.auth.token.TokenAuthenticator"
+                    options:
+                      token: "{{ config.apikey }}"
