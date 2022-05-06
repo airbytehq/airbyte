@@ -36,11 +36,12 @@ export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
 export type AuthLogout = () => void;
 
-type AuthContextApi = {
+interface AuthContextApi {
   user: User | null;
   inited: boolean;
   emailVerified: boolean;
   isLoading: boolean;
+  loggedOut: boolean;
   login: AuthLogin;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
@@ -50,7 +51,7 @@ type AuthContextApi = {
   sendEmailVerification: AuthSendEmailVerification;
   verifyEmail: AuthVerifyEmail;
   logout: AuthLogout;
-};
+}
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
@@ -96,6 +97,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       inited: state.inited,
       isLoading: state.loading,
       emailVerified: state.emailVerified,
+      loggedOut: state.loggedOut,
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
 
