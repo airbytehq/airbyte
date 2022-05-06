@@ -5,6 +5,7 @@ import styled from "styled-components";
 import * as yup from "yup";
 
 import { H1, LabeledInput, Link, LoadingButton } from "components";
+import HeadTitle from "components/HeadTitle";
 
 import { useConfig } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
@@ -43,6 +44,7 @@ const SignupPage: React.FC = () => {
 
   return (
     <div>
+      <HeadTitle titles={[{ id: "login.signup" }]} />
       <H1 bold>
         <FormattedMessage id="login.activateAccess" />
       </H1>
