@@ -25,7 +25,8 @@ RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packa
 RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 RUN apt-get update && apt-get install -y kubectl
 
-ARG VERSION=0.36.9-alpha
+# Don't change this manually.  Bump version expects to make moves based on this string
+ARG VERSION=0.36.11-alpha
 
 ENV APPLICATION airbyte-container-orchestrator
 ENV VERSION=${VERSION}
