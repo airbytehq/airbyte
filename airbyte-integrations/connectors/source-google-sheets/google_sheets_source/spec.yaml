@@ -1,4 +1,4 @@
-documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
+documentationUrl: https://go.estuary.dev/xk4acK
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Google Sheets Spec
@@ -12,9 +12,7 @@ connectionSpecification:
       type: string
       title: Spreadsheet Link
       description: >-
-        The link to your spreadsheet. See <a
-        href='https://docs.airbyte.com/integrations/sources/google-sheets#sheetlink'>this
-        guide</a> for more details.
+        The link to your spreadsheet. See this guide for more details https://go.estuary.dev/phEkVt
       examples:
         - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
     credentials:
@@ -64,9 +62,7 @@ connectionSpecification:
               title: Service Account Information.
               description: >-
                 The JSON key of the service account to use for authorization.
-                See <a
-                href='https://github.com/airbytehq/airbyte/blob/master/docs/integrations/sources/google-sheets.md#setupguide'>Setup
-                Guide</a> for more details
+                See this setup guide for more details https://go.estuary.dev/RP7TxO
               airbyte_secret: true
               examples:
                 - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
