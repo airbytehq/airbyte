@@ -149,6 +149,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
 
         def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
         def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
+        def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
         def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
         def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
@@ -158,6 +159,7 @@ def Task getDockerBuildTask(String artifactName, String projectDir, String build
         buildArgs.put('JDK_VERSION', jdkVersion)
         buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
         buildArgs.put('ALPINE_IMAGE', alpineImage)
+        buildArgs.put('NGINX_IMAGE', nginxImage)
         buildArgs.put('JDK_IMAGE', openjdkImage)
         buildArgs.put('VERSION', buildVersion)
     })

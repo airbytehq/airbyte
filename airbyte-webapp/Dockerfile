@@ -1,4 +1,5 @@
-FROM nginx:1.19-alpine as webapp
+ARG NGINX_IMAGE=nginx:1.19-alpine
+FROM ${NGINX_IMAGE} as webapp
 
 EXPOSE 80
 
