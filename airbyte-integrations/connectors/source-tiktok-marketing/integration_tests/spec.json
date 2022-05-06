@@ -6,7 +6,8 @@
     "type": "object",
     "properties": {
       "credentials": {
-        "title": "Authentication *",
+        "title": "Authentication Method",
+        "description": "Authentication method",
         "default": {},
         "order": 0,
         "type": "object",
@@ -23,13 +24,13 @@
               },
               "app_id": {
                 "title": "App ID",
-                "description": "The App ID applied by the developer.",
+                "description": "The Developer Application App ID.",
                 "airbyte_secret": true,
                 "type": "string"
               },
               "secret": {
                 "title": "Secret",
-                "description": "The private key of the developer's application.",
+                "description": "The Developer Application Secret.",
                 "airbyte_secret": true,
                 "type": "string"
               },
@@ -54,18 +55,19 @@
               },
               "app_id": {
                 "title": "App ID",
-                "description": "The App ID applied by the developer.",
+                "description": "The Developer Application App ID.",
+                "airbyte_secret": true,
                 "type": "string"
               },
               "secret": {
                 "title": "Secret",
-                "description": "The private key of the developer application.",
+                "description": "The Developer Application Secret.",
                 "airbyte_secret": true,
                 "type": "string"
               },
               "access_token": {
                 "title": "Access Token",
-                "description": "The Long-term Authorized Access Token.",
+                "description": "The long-term authorized access token.",
                 "airbyte_secret": true,
                 "type": "string"
               }
@@ -84,12 +86,12 @@
               },
               "advertiser_id": {
                 "title": "Advertiser ID",
-                "description": "The Advertiser ID  which generated for the developer's Sandbox application.",
+                "description": "The Advertiser ID which generated for the developer's Sandbox application.",
                 "type": "string"
               },
               "access_token": {
                 "title": "Access Token",
-                "description": "The Long-term Authorized Access Token.",
+                "description": "The long-term authorized access token.",
                 "airbyte_secret": true,
                 "type": "string"
               }
@@ -99,7 +101,7 @@
         ]
       },
       "start_date": {
-        "title": "Start Date *",
+        "title": "Replication Start Date *",
         "description": "The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. If this parameter is not set, all data will be replicated.",
         "default": "2016-09-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
@@ -107,8 +109,8 @@
         "type": "string"
       },
       "report_granularity": {
-        "title": "Report Granularity *",
-        "description": "Which time granularity should be grouped by; for LIFETIME there will be no grouping. This option is used for reports' streams only.",
+        "title": "Report Aggregation Granularity *",
+        "description": "The granularity used for aggregating performance data in reports. See <a href=\"https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation\">the docs</a>.",
         "default": "DAY",
         "enum": ["LIFETIME", "DAY", "HOUR"],
         "order": 2,

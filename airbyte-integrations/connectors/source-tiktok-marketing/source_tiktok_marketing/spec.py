@@ -18,26 +18,9 @@ class OauthCredSpec(BaseModel):
         title = "OAuth2.0"
 
     auth_type: str = Field(default="oauth2.0", const=True, order=0)
-
-    app_id: str = Field(title="App ID", description="The App ID applied by the developer.", airbyte_secret=True)
-
-    secret: str = Field(title="Secret", description="The private key of the developer's application.", airbyte_secret=True)
-
+    app_id: str = Field(title="App ID", description="The Developer Application App ID.", airbyte_secret=True)
+    secret: str = Field(title="Secret", description="The Developer Application Secret.", airbyte_secret=True)
     access_token: str = Field(title="Access Token", description="Long-term Authorized Access Token.", airbyte_secret=True)
-
-
-class SandboxEnvSpec(BaseModel):
-    class Config:
-        title = "Sandbox Access Token"
-
-    auth_type: str = Field(default="sandbox_access_token", const=True, order=0)
-
-    # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
-    advertiser_id: str = Field(
-        title="Advertiser ID", description="The Advertiser ID  which generated for the developer's Sandbox application."
-    )
-
-    access_token: str = Field(title="Access Token", description="The Long-term Authorized Access Token.", airbyte_secret=True)
 
 
 class ProductionEnvSpec(BaseModel):
@@ -45,12 +28,22 @@ class ProductionEnvSpec(BaseModel):
         title = "Production Access Token"
 
     auth_type: str = Field(default="prod_access_token", const=True, order=0)
+    app_id: str = Field(title="App ID", description="The Developer Application App ID.", airbyte_secret=True)
+    secret: str = Field(title="Secret", description="The Developer Application Secret.", airbyte_secret=True)
+    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
 
-    # it is float because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
-    app_id: str = Field(description="The App ID applied by the developer.", title="App ID")
-    secret: str = Field(title="Secret", description="The private key of the developer application.", airbyte_secret=True)
 
-    access_token: str = Field(title="Access Token", description="The Long-term Authorized Access Token.", airbyte_secret=True)
+class SandboxEnvSpec(BaseModel):
+    class Config:
+        title = "Sandbox Access Token"
+
+    auth_type: str = Field(default="sandbox_access_token", const=True, order=0)
+    # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
+    advertiser_id: str = Field(
+        title="Advertiser ID", description="The Advertiser ID which generated for the developer's Sandbox application."
+    )
+
+    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
 
 
 class SourceTiktokMarketingSpec(BaseModel):
@@ -58,11 +51,11 @@ class SourceTiktokMarketingSpec(BaseModel):
         title = "TikTok Marketing Source Spec"
 
     credentials: Union[OauthCredSpec, ProductionEnvSpec, SandboxEnvSpec] = Field(
-        title="Authentication *", order=0, default={}, type="object"
+        title="Authentication Method", description="Authentication method", order=0, default={}, type="object"
     )
 
     start_date: str = Field(
-        title="Start Date *",
+        title="Replication Start Date *",
         default=DEFAULT_START_DATE,
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         description="The Start Date in format: YYYY-MM-DD. Any data before this date will not be replicated. "
@@ -71,9 +64,9 @@ class SourceTiktokMarketingSpec(BaseModel):
     )
 
     report_granularity: str = Field(
-        title="Report Granularity *",
-        description="Which time granularity should be grouped by; for LIFETIME there will be no grouping. "
-        "This option is used for reports' streams only.",
+        title="Report Aggregation Granularity *",
+        description="The granularity used for aggregating performance data in reports. See <a "
+        'href="https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation">the docs</a>.',
         default=ReportGranularity.default().value,
         enum=[g.value for g in ReportGranularity],
         order=2,

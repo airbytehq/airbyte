@@ -57,6 +57,7 @@ type UpdateConnection = {
   schedule?: ScheduleProperties | null;
   operations?: Operation[];
   withRefreshedCatalog?: boolean;
+  sourceCatalogId?: string;
 };
 
 export type ListConnection = { connections: Connection[] };
