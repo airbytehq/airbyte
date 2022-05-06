@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+import os
 from typing import Any, List, Mapping, Tuple
 
 import yaml
@@ -20,6 +21,9 @@ class ConfigurableSource(AbstractSource):
 
     def _load_spec(self):
         # TODO is it better to do package loading?
+        print(f"path: {self._path_to_spec}")
+        print(f"path: {os.path}")
+        print(f"os.listdir: {os.listdir()}")
         with open(self._path_to_spec, "r") as f:
             return yaml.load(f.read(), Loader=yaml.SafeLoader)
 
