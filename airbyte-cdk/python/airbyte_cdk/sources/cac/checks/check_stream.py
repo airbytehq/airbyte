@@ -1,11 +1,14 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from typing import Tuple
+
 from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.cac.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.cac.factory import LowCodeComponentFactory
 
 
-class CheckStream:
+class CheckStream(ConnectionChecker):
     # FIXME: needs to implemeent an interface
     def __init__(self, stream_config, vars, config):
         print(f"stream_config: {stream_config}")
@@ -14,7 +17,7 @@ class CheckStream:
         self._stream_config = stream_config
         print(f"created chck stream with: {self._stream_config}")
 
-    def check_connection(self, config):
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             print(f"stream: {self._stream_config}")
             stream = LowCodeComponentFactory().build(self._stream_config["stream"], self._stream_config.get("vars", {}), config)

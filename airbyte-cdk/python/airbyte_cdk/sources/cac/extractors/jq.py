@@ -1,9 +1,12 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from typing import List
+
 import pyjq
 import requests
 from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
+from airbyte_cdk.sources.cac.types import Record
 
 
 class JqExtractor:
@@ -19,7 +22,7 @@ class JqExtractor:
         self._transform = self._options["transform"]
         print("after creating transform")
 
-    def extract_records(self, response: requests.Response):
+    def extract_records(self, response: requests.Response) -> List[Record]:
         print(f"extracting records for {response}")
         response_body = response.json()
         print(f"response body: {response_body}")

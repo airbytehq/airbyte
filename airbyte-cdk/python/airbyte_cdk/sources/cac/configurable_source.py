@@ -33,7 +33,7 @@ class ConfigurableSource(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         connection_check_config = self._source_config["options"]["check"]
         connection_checker = self._factory.build(connection_check_config, self._merge_dicts(self._vars, self._top_level_vars), config)
-        return connection_checker.check_connection(config)
+        return connection_checker.check_connection(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         pass
