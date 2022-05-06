@@ -14,18 +14,16 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.Record;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static MSSQLServerContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
@@ -110,29 +108,6 @@ public class MSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
                   .map(this::getJsonFromRecord)
                   .collect(Collectors.toList());
             });
-  }
-
-  private JsonNode getJsonFromRecord(Record record) {
-    ObjectNode node = mapper.createObjectNode();
-
-    Arrays.stream(record.fields()).forEach(field -> {
-      var value = record.get(field);
-
-      switch (field.getDataType().getTypeName()) {
-        case "nvarchar":
-          var stringValue = (String) value;
-          if (stringValue != null && (stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\[.*\\]$")
-              || stringValue.replaceAll("[^\\x00-\\x7F]", "").matches("^\\{.*\\}$"))) {
-            node.set(field.getName(), Jsons.deserialize(stringValue));
-          } else {
-            node.put(field.getName(), stringValue);
-          }
-          break;
-        default:
-          node.put(field.getName(), (value != null ? value.toString() : null));
-      }
-    });
-    return node;
   }
 
   @BeforeAll
