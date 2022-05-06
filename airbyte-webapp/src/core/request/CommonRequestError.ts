@@ -9,8 +9,8 @@ export class CommonRequestError extends Error {
     this.message = msg ?? "common.error";
   }
 
-  get status(): number {
-    return (this._status || this.response?.status) ?? 400;
+  get status() {
+    return this._status || this.response?.status;
   }
 }
 

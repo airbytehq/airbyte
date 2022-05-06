@@ -145,13 +145,15 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   const hasError = configErrors && Object.keys(configErrors).length > 0;
   const hasChildren = fields && fields.length > 0;
 
+  console.log({ streamNode });
+
   return (
     <Section error={hasError} isSelected={isSelected}>
       <TreeRowWrapper>
         <StreamHeader
           stream={streamNode}
           destNamespace={destNamespace}
-          destName={prefix + streamNode.stream?.name}
+          destName={prefix + (streamNode.stream?.name ?? "")}
           availableSyncModes={availableSyncModes}
           onSelectStream={onSelectStream}
           onSelectSyncMode={onSelectSyncMode}
