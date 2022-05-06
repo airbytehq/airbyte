@@ -39,12 +39,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -295,6 +297,33 @@ public class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistence
         .withName("random-name")
         .withTombstone(false);
     writeSource(configPersistence, source1);
+  }
+
+  @Test
+  public void filterCustomSource() {
+    final Map<String, ConnectorInfo> sourceMap = new HashMap<>();
+    final String nonCustomKey = "non-custom";
+    final String customKey = "custom";
+    sourceMap.put(nonCustomKey, new ConnectorInfo("id", Jsons.jsonNode(SOURCE_POSTGRES)));
+    sourceMap.put(customKey, new ConnectorInfo("id", Jsons.jsonNode(SOURCE_CUSTOM)));
+
+    final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap, ConfigSchema.STANDARD_SOURCE_DEFINITION);
+
+    Assertions.assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
+  }
+
+  @Test
+  public void filterCustomDestination() {
+    final Map<String, ConnectorInfo> sourceMap = new HashMap<>();
+    final String nonCustomKey = "non-custom";
+    final String customKey = "custom";
+    sourceMap.put(nonCustomKey, new ConnectorInfo("id", Jsons.jsonNode(DESTINATION_S3)));
+    sourceMap.put(customKey, new ConnectorInfo("id", Jsons.jsonNode(DESTINATION_CUSTOM)));
+
+    final Map<String, ConnectorInfo> filteredSourceMap = configPersistence.filterCustomConnector(sourceMap,
+        ConfigSchema.STANDARD_DESTINATION_DEFINITION);
+
+    Assertions.assertThat(filteredSourceMap).containsOnlyKeys(nonCustomKey);
   }
 
 }

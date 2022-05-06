@@ -1728,6 +1728,33 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
   }
 
   /**
+   * The custom connector are not present in the seed and thus it is not relevant to validate their
+   * latest version. This method allows to filter them out.
+   *
+   * @param connectorRepositoryToIdVersionMap
+   * @param configType
+   * @return
+   */
+  @VisibleForTesting
+  Map<String, ConnectorInfo> filterCustomConnector(final Map<String, ConnectorInfo> connectorRepositoryToIdVersionMap,
+                                                   final AirbyteConfig configType) {
+    return connectorRepositoryToIdVersionMap.entrySet().stream()
+        // The validation is based on the of the connector name is based on the seed which doesn't contain
+        // any custom connectors. They can thus be
+        // filtered out.
+        .filter(entry -> {
+          if (configType == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
+            return !Jsons.object(entry.getValue().definition, StandardSourceDefinition.class).getCustom();
+          } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
+            return !Jsons.object(entry.getValue().definition, StandardDestinationDefinition.class).getCustom();
+          } else {
+            return true;
+          }
+        })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  /**
    * @param connectorRepositoriesInUse when a connector is used in any standard sync, its definition
    *        will not be updated. This is necessary because the new connector version may not be
    *        backward compatible.
@@ -1746,15 +1773,18 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       final JsonNode latestDefinition = Jsons.jsonNode(definition);
       final String repository = latestDefinition.get("dockerRepository").asText();
 
+      final Map<String, ConnectorInfo> connectorRepositoryToIdVersionMapWithoutCustom = filterCustomConnector(connectorRepositoryToIdVersionMap,
+          configType);
+
       // Add new connector
-      if (!connectorRepositoryToIdVersionMap.containsKey(repository)) {
+      if (!connectorRepositoryToIdVersionMapWithoutCustom.containsKey(repository)) {
         LOGGER.info("Adding new connector {}: {}", repository, latestDefinition);
         writeOrUpdateStandardDefinition(ctx, configType, latestDefinition);
         newCount++;
         continue;
       }
 
-      final ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMap.get(repository);
+      final ConnectorInfo connectorInfo = connectorRepositoryToIdVersionMapWithoutCustom.get(repository);
       final JsonNode currentDefinition = connectorInfo.definition;
 
       // todo (lmossman) - this logic to remove the "spec" field is temporary; it is necessary to avoid
