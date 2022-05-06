@@ -182,9 +182,9 @@ def get_docker_label_to_connector_directory(base_directory: str, connector_modul
     return result
 
 
-def get_connectors_with_certification_status(definitions_yaml: List, statuses: List[str]) -> List[str]:
+def get_connectors_with_release_stage(definitions_yaml: List, stages: List[str]) -> List[str]:
     """returns e.g: ['airbyte/source-salesforce', ...] when given 'generally_available' as input"""
-    return [definition["dockerRepository"] for definition in definitions_yaml if definition.get("releaseStage", "alpha") in statuses]
+    return [definition["dockerRepository"] for definition in definitions_yaml if definition.get("releaseStage", "alpha") in stages]
 
 
 def read_definitions_yaml(path: str):
@@ -192,14 +192,14 @@ def read_definitions_yaml(path: str):
         return yaml.safe_load(file)
 
 
-def get_connectors_with_status(base_directory: str, connectors: List[str], relevant_statuses=["beta", "generally_available"]):
+def get_connectors_with_release_stages(base_directory: str, connectors: List[str], relevant_stages=["beta", "generally_available"]):
     # TODO currently this also excludes shared libs like source-jdbc, we probably shouldn't do that, so we can get the build status of those
     #  modules as well.
     connector_label_to_connector_directory = get_docker_label_to_connector_directory(base_directory, connectors)
 
-    connectors_with_desired_status = get_connectors_with_certification_status(
-        read_definitions_yaml(SOURCE_DEFINITIONS_YAML), relevant_statuses
-    ) + get_connectors_with_certification_status(read_definitions_yaml(DESTINATION_DEFINITIONS_YAML), relevant_statuses)
+    connectors_with_desired_status = get_connectors_with_release_stage(
+        read_definitions_yaml(SOURCE_DEFINITIONS_YAML), relevant_stages
+    ) + get_connectors_with_release_stage(read_definitions_yaml(DESTINATION_DEFINITIONS_YAML), relevant_stages)
     # return appropriate directory names
     return [
         connector_label_to_connector_directory[label]
@@ -217,13 +217,14 @@ if __name__ == "__main__":
 
     # find all connectors and filter to beta and GA
     connectors = sorted(os.listdir(CONNECTORS_ROOT_PATH))
-    relevant_connectors = get_connectors_with_status(CONNECTORS_ROOT_PATH, connectors, ["beta", "generally_available"])
+    relevant_stages = ["beta", "generally_available"]
+    relevant_connectors = get_connectors_with_release_stages(CONNECTORS_ROOT_PATH, connectors, relevant_stages)
     print(f"Checking {len(relevant_connectors)} relevant connectors out of {len(connectors)} total connectors")
 
     # analyse build results for each connector
     [check_connector(connector) for connector in relevant_connectors]
 
-    report = create_report(relevant_connectors)
+    report = create_report(relevant_connectors, relevant_stages)
     print(report)
     # send_report(report)
     print("Finish")
@@ -237,12 +238,10 @@ elif "pytest" in sys.argv[0]:
                 {"releaseStage": "beta", "dockerRepository": "beta_connector"},
                 {"releaseStage": "generally_available", "dockerRepository": "GA_connector"},
             ]
-            assert ["alpha_connector"] == get_connectors_with_certification_status(mock_def_yaml, ["alpha"])
-            assert ["alpha_connector", "beta_connector"] == get_connectors_with_certification_status(mock_def_yaml, ["alpha", "beta"])
-            assert ["beta_connector", "GA_connector"] == get_connectors_with_certification_status(
-                mock_def_yaml, ["beta", "generally_available"]
-            )
-            assert ["GA_connector"] == get_connectors_with_certification_status(mock_def_yaml, ["generally_available"])
+            assert ["alpha_connector"] == get_connectors_with_release_stage(mock_def_yaml, ["alpha"])
+            assert ["alpha_connector", "beta_connector"] == get_connectors_with_release_stage(mock_def_yaml, ["alpha", "beta"])
+            assert ["beta_connector", "GA_connector"] == get_connectors_with_release_stage(mock_def_yaml, ["beta", "generally_available"])
+            assert ["GA_connector"] == get_connectors_with_release_stage(mock_def_yaml, ["generally_available"])
 
         def test_parse_dockerfile_label(self):
             mock_dockerfile = """
