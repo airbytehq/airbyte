@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.errors.utils.ConnectorType;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.sql.JDBCType;
 import java.util.Set;
@@ -69,4 +70,8 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
         "INFORMATION_SCHEMA");
   }
 
+  @Override
+  public ConnectorType getConnectorType() {
+    return ConnectorType.SNOWFLAKE;
+  }
 }

@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.jdbc.test;
 
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
+import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_SCHEMA_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -308,7 +310,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
-    if(!source.getConnectorType().equals(ConnectorType.DEFAULT)) {
+    if(!(source.getConnectorType().equals(ConnectorType.DEFAULT) || source.getConnectorType().equals(ConnectorType.SNOWFLAKE))) {
       ((ObjectNode) config).put("port", "0000");
       final AirbyteConnectionStatus actual = source.check(config);
       assertEquals(Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
@@ -317,10 +319,19 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
-    if(!source.getConnectorType().equals(ConnectorType.DEFAULT)) {
+    if(!(source.getConnectorType().equals(ConnectorType.DEFAULT))) {
       ((ObjectNode) config).put("database", "wrongdatabase");
       final AirbyteConnectionStatus actual = source.check(config);
       assertEquals(Status.FAILED, actual.getStatus(), INCORRECT_DB_NAME.getValue());
+    }
+  }
+
+  @Test
+  public void testCheckIncorrectSchemaFailure() throws Exception {
+    if(!(source.getConnectorType().equals(ConnectorType.DEFAULT))) {
+      ((ObjectNode) config).putArray("schema").add("wrongschema");
+      final AirbyteConnectionStatus actual = source.check(config);
+      assertEquals(Status.FAILED, actual.getStatus(), INCORRECT_SCHEMA_NAME.getValue());
     }
   }
 
