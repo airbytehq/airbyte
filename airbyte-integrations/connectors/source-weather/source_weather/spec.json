@@ -1,4 +1,5 @@
-{
+{   "documentationUrl": "https://docs.airbyte.com/integrations/sources/weather",
+    "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "properties": {
@@ -18,3 +19,4 @@
       "appid"
     ]
   }
+}

@@ -11,6 +11,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+import requests
+import json
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -182,6 +184,7 @@ class Employees(IncrementalWeatherStream):
 
 # Source
 class SourceWeather(AbstractSource):
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -193,6 +196,25 @@ class SourceWeather(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        if "lat" not in config or "lon" not in config and "apikey" not in config:
+            log("Input config must contain the properties 'api_key' and 'lat'"and 'lon')
+            sys.exit(1)
+        else:
+        # Validate input configuration
+            response = requests.get('https://api.openweathermap.org/data/2.5/weather', params=config)
+            if response.status_code == 200:
+                result = {"status": "SUCCEEDED"}
+            elif response.status_code == 403:
+                # HTTP code 403 means authorization failed so the API key is incorrect
+                result = {"status": "FAILED", "message": "API Key is incorrect."}
+                return False, None
+            else:
+                # Consider any other code a "generic" failure and tell the user to make sure their config is correct.
+                result = {"status": "FAILED", "message": "Input configuration is incorrect. Please verify the input stock ticker and API key."}
+                return False, None
+            # Format the result of the check operation according to the Airbyte Specification
+            output_message = {"type": "CONNECTION_STATUS", "connectionStatus": result}
+            print(json.dumps(output_message))
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
