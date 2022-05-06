@@ -22,7 +22,6 @@ class KyribaClient:
         self.password = password
         self.url = f"{gateway_url}/oauth/token"
 
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=10)
     def login(self) -> TokenAuthenticator:
         data = {"grant_type": "client_credentials"}
         auth = requests.auth.HTTPBasicAuth(self.username, self.password)
@@ -67,6 +66,7 @@ class KyribaStream(HttpStream):
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=10)
     def should_retry(self, response: requests.Response) -> bool:
         # Kyriba uses basic auth to generate an expiring bearer token
         # There is no refresh token, so users need to log in again when the token expires

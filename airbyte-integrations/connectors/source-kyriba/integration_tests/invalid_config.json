@@ -1,3 +1,8 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+    "username": "username",
+    "password": "password",
+    "version": 1,
+    "start_date": "2022-05-01",
+    "end_date": "2022-05-04",
+    "domain": "demo.kyriba.com"
 }
