@@ -2,21 +2,22 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock, call, patch
-from pytest import fixture
-from destination_firebolt.destination import DestinationFirebolt, FireboltWriter, establish_connection
-from airbyte_cdk.models import (
-    Status,
-    ConfiguredAirbyteStream,
-    AirbyteStream,
-    SyncMode,
-    DestinationSyncMode,
-    ConfiguredAirbyteCatalog,
-    AirbyteMessage,
-    Type,
-    AirbyteRecordMessage,
-)
 from datetime import datetime
+from unittest.mock import MagicMock, call, patch
+
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+    Type,
+)
+from destination_firebolt.destination import DestinationFirebolt, FireboltWriter, establish_connection
+from pytest import fixture
 
 
 @fixture(params=["my_engine", "my_engine.api.firebolt.io"])
