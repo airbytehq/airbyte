@@ -36,7 +36,6 @@ class KyribaClient:
         self.password = password
         self.url = f"{gateway_url}/oauth/token"
 
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=10)
     def login(self) -> TokenAuthenticator:
         data = {"grant_type": "client_credentials"}
         auth = requests.auth.HTTPBasicAuth(self.username, self.password)
