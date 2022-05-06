@@ -191,6 +191,7 @@
     - [DynamoDB](integrations/destinations/dynamodb.md)
     - [Elasticsearch](integrations/destinations/elasticsearch.md)
     - [End-to-End Testing](integrations/destinations/e2e-test.md)
+    - [Firebolt](integrations/destinations/firebolt.md)
     - [Chargify](integrations/destinations/chargify.md)
     - [Google Cloud Storage (GCS)](integrations/destinations/gcs.md)
     - [Google Firestore](integrations/destinations/firestore.md)

@@ -180,6 +180,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [DynamoDB](sources/dynamodb.md)                            | Alpha                | Yes                 |
 | [Elasticsearch](destinations/elasticsearch.md)             | Alpha                | Yes                 |
 | [End-to-End Testing](destinations/e2e-test.md)             | Alpha                | Yes                 |
+| [Firebolt](destinations/firebolt.md)             | Alpha                | No                 |
 | [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
 | [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
 | [Kafka](destinations/kafka.md)                             | Alpha                | No                  |
