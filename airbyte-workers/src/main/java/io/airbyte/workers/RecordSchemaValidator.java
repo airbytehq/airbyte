@@ -6,7 +6,6 @@ package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.config.StandardSyncInput;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -22,7 +21,7 @@ public class RecordSchemaValidator {
 
   private final Map<String, JsonNode> streams;
 
-  public RecordSchemaValidator(final StandardSyncInput syncInput, final Map<String, JsonNode> streamNamesToSchemas) {
+  public RecordSchemaValidator(final Map<String, JsonNode> streamNamesToSchemas) {
     // streams is Map of a stream name (including prefix) and stream schema
     // for easy access when we check each record's schema
     this.streams = streamNamesToSchemas;

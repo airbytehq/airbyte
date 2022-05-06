@@ -145,7 +145,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             });
 
         final CompletableFuture<?> replicationThreadFuture = CompletableFuture.runAsync(
-            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, syncInput, recordSchemaValidator),
+            getReplicationRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator),
             executors).whenComplete((msg, ex) -> {
               if (ex != null) {
                 if (ex.getCause() instanceof SourceException) {
@@ -277,7 +277,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final AirbyteMapper mapper,
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
-                                                 final StandardSyncInput syncInput,
                                                  final RecordSchemaValidator recordSchemaValidator) {
     return () -> {
       MDC.setContextMap(mdc);
