@@ -179,7 +179,12 @@ public class FailureHelper {
    */
   public static List<FailureReason> orderedFailures(final Set<FailureReason> failures) {
     final Comparator<FailureReason> compareByIsTrace = Comparator.comparing(f -> {
-      return f.getMetadata().getAdditionalProperties().containsKey(TRACE_MESSAGE_METADATA_KEY) ? 0 : 1;
+      final Object metadata = f.getMetadata();
+      if (metadata != null) {
+        return f.getMetadata().getAdditionalProperties().containsKey(TRACE_MESSAGE_METADATA_KEY) ? 0 : 1;
+      } else {
+       return 1;
+      }
     });
     final Comparator<FailureReason> compareByTimestamp = Comparator.comparing(FailureReason::getTimestamp);
     final Comparator<FailureReason> compareByTraceAndTimestamp = compareByIsTrace.thenComparing(compareByTimestamp);
