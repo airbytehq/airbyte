@@ -66,31 +66,30 @@ class GoogleSheets:
         Finds the duplicated records inside of target worksheet.
         Returns: List of indexes of rows to remove from target worksheet.
             [1, 4, 5, ..., 99]
-        """
-        
-        rows_unique, rows_to_delete = {}, []
+        """        
+        rows_unique_values, rows_to_delete = {}, []
 
         pk_col_index = self.index_cols(stream)[primary_key]
-        pk_col_values = stream.get_col(pk_col_index, include_tailing_empty=False)[1:]  # get everything but 0 position.
-
-        for i, row in enumerate(pk_col_values, 1):
-            # offset-down the index by 1 to iterate the list correctly
-            value = pk_col_values[i - 1]
-            # check the value is unique
-            if value not in rows_unique.values():
-                # add to a dict, otherwise
-                rows_unique[i] = row
+        # get all values except 0, because it's a header value
+        pk_col_values = stream.get_col(pk_col_index, include_tailing_empty=False)[1:]  
+        for i, row_value in enumerate(pk_col_values, 2):
+            if row_value not in rows_unique_values:
+                rows_unique_values[row_value] = None
             else:
-                # append to a list, if duplicate is found
-                # we offset-up the index by 1 to match the spreadsheet row index correctly
-                rows_to_delete.append(i + 1)
+                rows_to_delete.append(i)
 
-        rows_to_delete.reverse()  # reverse the order of the list
+        # reverse the order of the list
+        rows_to_delete.reverse()
         return rows_to_delete
 
     def remove_duplicates(self, stream: Worksheet, rows_list: list):
         """
         Removes duplicated rows, provided by `rows_list` as list of indexes.
+        
+        We are working with delete operation in offline mode, to decrease the number of API calls.
+        1) Unlink the spreadsheet (make it for offline use)
+        2) Perform delete operation and update the actual row index
+        3) Link the spreadsheet (sync with online version) using batch_update method.
         """
         stream.unlink()
         [stream.delete_rows(row, 1) for row in rows_list]
