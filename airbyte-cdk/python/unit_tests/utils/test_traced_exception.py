@@ -2,8 +2,10 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import json
+
 import pytest
-from airbyte_cdk.models.airbyte_protocol import AirbyteMessage, FailureType, TraceType
+from airbyte_cdk.models.airbyte_protocol import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, FailureType, TraceType
 from airbyte_cdk.models.airbyte_protocol import Type as MessageType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -51,3 +53,31 @@ def test_existing_exception_as_airbyte_message(raised_exception):
     assert airbyte_message.trace.error.stack_trace.endswith(
         'raise RuntimeError("an error has occurred")\n' "RuntimeError: an error has occurred\n"
     )
+
+
+def test_emit_message(capsys):
+    traced_exc = AirbyteTracedException(
+        internal_message="internal message", message="user-friendly message", exception=RuntimeError("oh no")
+    )
+
+    expected_message = AirbyteMessage(
+        type="TRACE",
+        trace=AirbyteTraceMessage(
+            type="ERROR",
+            emitted_at=0.0,
+            error=AirbyteErrorTraceMessage(
+                failure_type="system_error",
+                message="user-friendly message",
+                internal_message="internal message",
+                stack_trace="RuntimeError: oh no\n",
+            ),
+        ),
+    )
+
+    traced_exc.emit_message()
+
+    stdout = capsys.readouterr().out
+    printed_message = AirbyteMessage.parse_obj(json.loads(stdout))
+    printed_message.trace.emitted_at = 0.0
+
+    assert printed_message == expected_message

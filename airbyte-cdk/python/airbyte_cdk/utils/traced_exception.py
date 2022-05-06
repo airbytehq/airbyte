@@ -7,6 +7,7 @@ from datetime import datetime
 
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, FailureType, TraceType
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 
 class AirbyteTracedException(Exception):
@@ -54,6 +55,15 @@ class AirbyteTracedException(Exception):
         )
 
         return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
+
+    def emit_message(self):
+        """
+        Prints the exception as an AirbyteTraceMessage.
+        Note that this will be called automatically on uncaught exceptions when using the airbyte_cdk entrypoint.
+        """
+        message = self.as_airbyte_message().json(exclude_unset=True)
+        filtered_message = filter_secrets(message)
+        print(filtered_message)
 
     @classmethod
     def from_exception(cls, exc: Exception, *args, **kwargs) -> "AirbyteTracedException":
