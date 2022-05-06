@@ -19,6 +19,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
+import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
@@ -37,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SecretMigrator {
 
   private final ConfigPersistence configPersistence;
+  private final JobPersistence jobPersistence;
   private final Optional<SecretPersistence> secretPersistence;
 
   @Value
@@ -81,6 +83,8 @@ public class SecretMigrator {
     final List<DestinationConnection> destinations = configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
 
     migrateDestinations(destinations, definitionIdToDestinationSpecs);
+
+    jobPersistence.setSecretMigrationDone();
   }
 
   /**

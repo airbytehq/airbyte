@@ -53,13 +53,15 @@ public class BootloaderApp {
   private final Configs configs;
   private final Runnable postLoadExecution;
   private final FeatureFlags featureFlags;
-  private final SecretMigrator secretMigrator;
+  private SecretMigrator secretMigrator;
   private ConfigPersistence configPersistence;
   private Database configDatabase;
+  private Database jobDatabase;
+  private JobPersistence jobPersistence;
 
   @VisibleForTesting
-  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags, final SecretMigrator secretMigrator) {
-    this(configs, () -> {}, featureFlags, secretMigrator);
+  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
+    this(configs, () -> {}, featureFlags, null);
   }
 
   /**
@@ -82,44 +84,31 @@ public class BootloaderApp {
     initPersistences();
   }
 
-  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
+  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags, final SecretMigrator secretMigrator) {
     this.configs = configs;
     this.featureFlags = featureFlags;
 
-    try {
-      initPersistences();
-      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
-      secretMigrator = new SecretMigrator(configPersistence, secretPersistence);
+    initPersistences();
 
-      postLoadExecution = () -> {
-        try {
-          configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+    postLoadExecution = () -> {
+      try {
+        configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
 
-          if (featureFlags.runSecretMigration()) {
-            secretMigrator.migrateSecrets();
-          }
-          LOGGER.info("Loaded seed data..");
-        } catch (final IOException | JsonValidationException e) {
-          throw new RuntimeException(e);
+        if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
+          secretMigrator.migrateSecrets();
         }
-      };
+        LOGGER.info("Loaded seed data..");
+      } catch (final IOException | JsonValidationException e) {
+        throw new RuntimeException(e);
+      }
+    };
 
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public BootloaderApp() {
-    this(new EnvConfigs(), new EnvVariableFeatureFlags());
   }
 
   public void load() throws Exception {
     LOGGER.info("Setting up config database and default workspace..");
 
-    try (
-
-        final Database jobDatabase =
-            new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize()) {
+    try {
       LOGGER.info("Created initial jobs and configs database...");
 
       final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
@@ -140,34 +129,63 @@ public class BootloaderApp {
 
       jobPersistence.setVersion(currAirbyteVersion.serialize());
       LOGGER.info("Set version to {}", currAirbyteVersion);
+
+      postLoadExecution.run();
+    } finally {
+      jobDatabase.close();
+      configDatabase.close();
     }
 
-    postLoadExecution.run();
     LOGGER.info("Finished running post load Execution..");
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
   }
 
+  private static Database getConfigDatabase(final Configs configs) throws IOException {
+    return new ConfigsDatabaseInstance(
+        configs.getConfigDatabaseUser(),
+        configs.getConfigDatabasePassword(),
+        configs.getConfigDatabaseUrl()).getAndInitialize();
+  }
+
+  private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
+    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+        .maskSecrets(true)
+        .copySecrets(true)
+        .build();
+
+    return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+  }
+
+  private static Database getJobDatabase(final Configs configs) throws IOException {
+    return new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize();
+  }
+
+  private static JobPersistence getJobPersistence(final Database jobDatabase) throws IOException {
+    return new DefaultJobPersistence(jobDatabase);
+  }
+
   private void initPersistences() {
     try {
-      configDatabase = new ConfigsDatabaseInstance(
-          configs.getConfigDatabaseUser(),
-          configs.getConfigDatabasePassword(),
-          configs.getConfigDatabaseUrl()).getAndInitialize();
-
-      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-          .maskSecrets(true)
-          .copySecrets(true)
-          .build();
-
-      configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+      configDatabase = getConfigDatabase(configs);
+      configPersistence = getConfigPersistence(configDatabase);
+      jobDatabase = getJobDatabase(configs);
+      jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {
       e.printStackTrace();
     }
   }
 
   public static void main(final String[] args) throws Exception {
-    final var bootloader = new BootloaderApp();
+    final Configs configs = new EnvConfigs();
+    final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+    final Database configDatabase = getConfigDatabase(configs);
+    final ConfigPersistence configPersistence = getConfigPersistence(configDatabase);
+    final Database jobDatabase = getJobDatabase(configs);
+    final JobPersistence jobPersistence = getJobPersistence(jobDatabase);
+    final SecretMigrator secretMigrator = new SecretMigrator(configPersistence, jobPersistence, SecretPersistence.getLongLived(configs));
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+    final var bootloader = new BootloaderApp(configs, featureFlags, secretMigrator);
     bootloader.load();
   }
 

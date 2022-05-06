@@ -112,15 +112,13 @@ def updated_connection_configuration_and_path(octavia_test_project_directory, so
         local_configuration = yaml.safe_load(dumb_local_configuration_file)
     local_configuration["source_id"] = source.resource_id
     local_configuration["destination_id"] = destination.resource_id
-    local_configuration["configuration"]["sourceId"] = source.resource_id
-    local_configuration["configuration"]["destinationId"] = destination.resource_id
     with open(edited_path, "w") as updated_configuration_file:
         yaml.dump(local_configuration, updated_configuration_file)
     return local_configuration, edited_path
 
 
 @pytest.fixture(scope="session")
-def connection(api_client, workspace_id, octavia_test_project_directory, source, destination):
+def connection(api_client, workspace_id, octavia_test_project_directory, source, destination, connection_state_path):
     configuration, configuration_path = updated_connection_configuration_and_path(octavia_test_project_directory, source, destination)
     connection = Connection(api_client, workspace_id, configuration, configuration_path)
     yield connection

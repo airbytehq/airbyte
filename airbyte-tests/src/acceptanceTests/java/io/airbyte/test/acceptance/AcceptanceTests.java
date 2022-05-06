@@ -455,6 +455,7 @@ public class AcceptanceTests {
         .name(STREAM_NAME)
         .namespace("public")
         .jsonSchema(jsonSchema)
+        .sourceDefinedCursor(null)
         .defaultCursorField(Collections.emptyList())
         .sourceDefinedPrimaryKey(Collections.emptyList())
         .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
