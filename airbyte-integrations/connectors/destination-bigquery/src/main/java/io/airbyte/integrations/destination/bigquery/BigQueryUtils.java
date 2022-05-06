@@ -287,7 +287,7 @@ public class BigQueryUtils {
   }
 
   public static boolean isUsingJsonCredentials(final JsonNode config) {
-    return config.has(BigQueryConsts.CONFIG_CREDS) && !config.get(BigQueryConsts.CONFIG_CREDS).asText().isEmpty();
+    return config.get(BigQueryConsts.CREDENTIALS).has(BigQueryConsts.CONFIG_CREDS) && !config.get(BigQueryConsts.CREDENTIALS).get(BigQueryConsts.CONFIG_CREDS).asText().isEmpty();
   }
 
   // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html

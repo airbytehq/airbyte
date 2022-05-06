@@ -51,9 +51,9 @@ public enum GoogleCredentialType {
       // handle the credentials json being passed as a json object or a json object already serialized as
       // a string.
       final String credentialsString =
-          config.get(BigQueryConsts.CONFIG_CREDS).isObject() ?
-              Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
-              : config.get(BigQueryConsts.CONFIG_CREDS).asText();
+          config.get(BigQueryConsts.CREDENTIALS).get(BigQueryConsts.CONFIG_CREDS).isObject() ?
+              Jsons.serialize(config.get(BigQueryConsts.CREDENTIALS).get(BigQueryConsts.CONFIG_CREDS))
+              : config.get(BigQueryConsts.CREDENTIALS).get(BigQueryConsts.CONFIG_CREDS).asText();
       try {
         credentials = ServiceAccountCredentials
             .fromStream(new ByteArrayInputStream(credentialsString.getBytes(UTF_8)));
