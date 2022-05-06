@@ -39,16 +39,14 @@ connectionSpecification:
             client_id:
               title: Client ID
               description: >-
-                The Client ID of your HubSpot developer application. See our docs if you need help finding this ID. 
-                https://go.estuary.dev/XSVhJy
+                The Client ID of your HubSpot developer application. See our docs if you need help finding this ID. https://go.estuary.dev/XSVhJy
               type: string
               examples:
                 - "123456789000"
             client_secret:
               title: Client Secret
               description: >-
-                The Client Secret of your HubSpot developer application. See our docs if you need help finding this secret.  
-                https://go.estuary.dev/XSVhJy
+                The Client Secret of your HubSpot developer application. See our docs if you need help finding this secret. https://go.estuary.dev/XSVhJy
               type: string
               examples:
                 - secret
@@ -56,8 +54,7 @@ connectionSpecification:
             refresh_token:
               title: Refresh Token
               description: >-
-                Refresh Token to renew the expired Access Token. See our docs if you need help generating the token.  
-                https://go.estuary.dev/XSVhJy
+                Refresh Token to renew the expired Access Token. See our docs if you need help generating the token. https://go.estuary.dev/XSVhJy
               type: string
               examples:
                 - refresh_token
@@ -77,9 +74,7 @@ connectionSpecification:
             api_key:
               title: API key
               description: >-
-                HubSpot API Key. See our docs if you need help finding this key.  
-                https://go.estuary.dev/XSVhJy
-                if you need help finding this key.
+                HubSpot API Key. See our docs if you need help finding this key. https://go.estuary.dev/XSVhJy
               type: string
               airbyte_secret: true
 authSpecification:
