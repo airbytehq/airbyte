@@ -20,6 +20,7 @@ public class FailureHelper {
 
   private static final String JOB_ID_METADATA_KEY = "jobId";
   private static final String ATTEMPT_NUMBER_METADATA_KEY = "attemptNumber";
+  private static final String TRACE_MESSAGE_METADATA_KEY = "from_trace_message";
 
   private static final String WORKFLOW_TYPE_SYNC = "SyncWorkflow";
   private static final String ACTIVITY_TYPE_REPLICATE = "Replicate";
@@ -40,7 +41,7 @@ public class FailureHelper {
         .withInternalMessage(m.getError().getInternalMessage())
         .withStacktrace(m.getError().getStackTrace())
         .withTimestamp(m.getEmittedAt().longValue())
-        .withMetadata(jobAndAttemptMetadata(jobId, attemptNumber));
+        .withMetadata(traceMessageMetadata(jobId, attemptNumber));
   }
 
   public static FailureReason sourceFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
@@ -165,11 +166,24 @@ public class FailureHelper {
         .withAdditionalProperty(ATTEMPT_NUMBER_METADATA_KEY, attemptNumber);
   }
 
+  private static Metadata traceMessageMetadata(final Long jobId, final Integer attemptNumber) {
+    return new Metadata()
+        .withAdditionalProperty(JOB_ID_METADATA_KEY, jobId)
+        .withAdditionalProperty(ATTEMPT_NUMBER_METADATA_KEY, attemptNumber)
+        .withAdditionalProperty(TRACE_MESSAGE_METADATA_KEY, true);
+  }
+
   /**
-   * Orders failures by timestamp, so that earlier failures come first in the list.
+   * Orders failures by putting errors from trace messages first, and then orders by timestamp, so
+   * that earlier failures come first.
    */
-  private static List<FailureReason> orderedFailures(final Set<FailureReason> failures) {
-    return failures.stream().sorted(Comparator.comparing(FailureReason::getTimestamp)).collect(Collectors.toList());
+  public static List<FailureReason> orderedFailures(final Set<FailureReason> failures) {
+    final Comparator<FailureReason> compareByIsTrace = Comparator.comparing(f -> {
+      return f.getMetadata().getAdditionalProperties().containsKey(TRACE_MESSAGE_METADATA_KEY) ? 0 : 1;
+    });
+    final Comparator<FailureReason> compareByTimestamp = Comparator.comparing(FailureReason::getTimestamp);
+    final Comparator<FailureReason> compareByTraceAndTimestamp = compareByIsTrace.thenComparing(compareByTimestamp);
+    return failures.stream().sorted(compareByTraceAndTimestamp).collect(Collectors.toList());
   }
 
 }

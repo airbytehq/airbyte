@@ -61,7 +61,7 @@ public class AirbyteMessageUtils {
   public static AirbyteTraceMessage createErrorTraceMessage(final String message) {
     return new AirbyteTraceMessage()
         .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
-        .withEmittedAt(121212.0)
+        .withEmittedAt(Long.valueOf(121212))
         .withError(new AirbyteErrorTraceMessage().withMessage(message));
   }
 

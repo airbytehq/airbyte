@@ -158,9 +158,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
-   * When a connector emits a trace message, check the type
-   * and call the correct function. If it is an error trace message,
-   * add it to the list of errorTraceMessages for the connector type
+   * When a connector emits a trace message, check the type and call the correct function. If it is an
+   * error trace message, add it to the list of errorTraceMessages for the connector type
    */
   private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final String connectorType) {
     log.info(String.valueOf(traceMessage));
@@ -171,9 +170,9 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   private void handleEmittedErrorTrace(final AirbyteTraceMessage errorTraceMessage, final String connectorType) {
-    if(connectorType == CONNECTOR_TYPES.DESTINATION.toString()) {
+    if (connectorType == CONNECTOR_TYPES.DESTINATION.toString()) {
       destinationErrorTraceMessages.add(errorTraceMessage);
-    } else if(connectorType == CONNECTOR_TYPES.SOURCE.toString()) {
+    } else if (connectorType == CONNECTOR_TYPES.SOURCE.toString()) {
       sourceErrorTraceMessages.add(errorTraceMessage);
     }
   }
@@ -191,12 +190,12 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   @Override
-  public AirbyteTraceMessage getFirstSourceErrorTraceMessage(){
+  public AirbyteTraceMessage getFirstSourceErrorTraceMessage() {
     return sourceErrorTraceMessages.get(0);
   }
 
   @Override
-  public AirbyteTraceMessage getFirstDestinationErrorTraceMessage(){
+  public AirbyteTraceMessage getFirstDestinationErrorTraceMessage() {
     return destinationErrorTraceMessages.get(0);
   }
 

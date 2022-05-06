@@ -112,7 +112,7 @@ definitions:
           - ERROR
       emitted_at:
         description: "the time in ms that the message was emitted"
-        type: number
+        type: integer
       error:
         description: "error trace message: the error object"
         "$ref": "#/definitions/AirbyteErrorTraceMessage"
