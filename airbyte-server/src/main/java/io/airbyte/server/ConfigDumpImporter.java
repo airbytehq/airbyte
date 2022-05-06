@@ -160,7 +160,7 @@ public class ConfigDumpImporter {
     if (!AirbyteVersion.isCompatible(targetVersion, importVersion)) {
       throw new IOException(String
           .format("Imported VERSION (%s) is incompatible with current Airbyte version (%s).\n" +
-              "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte\n",
+              "Please upgrade your Airbyte Archive, see more at https://docs.airbyte.com/operator-guides/upgrading-airbyte\n",
               importVersion, targetVersion));
     }
   }

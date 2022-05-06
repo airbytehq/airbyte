@@ -29,6 +29,10 @@
       "channel_filter": {
         "type": "array",
         "default": [],
+        "items": {
+          "type": "string",
+          "minLength": 0
+        },
         "title": "Channel name filter",
         "description": "A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter.",
         "examples": ["channel_one", "channel_two"]

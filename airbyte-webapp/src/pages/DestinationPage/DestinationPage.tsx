@@ -7,8 +7,8 @@ import { StartOverErrorView } from "views/common/StartOverErrorView";
 import CreationFormPage from "../ConnectionPage/pages/CreationFormPage";
 import { RoutePaths } from "../routePaths";
 import AllDestinationsPage from "./pages/AllDestinationsPage";
-import DestinationItemPage from "./pages/DestinationItemPage";
 import CreateDestinationPage from "./pages/CreateDestinationPage";
+import DestinationItemPage from "./pages/DestinationItemPage";
 
 const DestinationsPage: React.FC = () => {
   return (
@@ -16,7 +16,7 @@ const DestinationsPage: React.FC = () => {
       <Route path={RoutePaths.DestinationNew} element={<CreateDestinationPage />} />
       <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
       <Route
-        path=":id"
+        path=":id/*"
         element={
           <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
             <DestinationItemPage />

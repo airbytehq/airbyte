@@ -1,23 +1,25 @@
-import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { H6, Link } from "components";
 import StepsMenu from "components/StepsMenu";
 
+import { Connection, ConnectionStatus } from "core/domain/connection";
 import { Source, Destination } from "core/domain/connector/types";
 import useRouter from "hooks/useRouter";
 
-import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import { RoutePaths } from "../../../../routePaths";
+import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 
-type IProps = {
+interface ConnectionPageTitleProps {
   source: Source;
   destination: Destination;
+  connection: Connection;
   currentStep: ConnectionSettingsRoutes;
-};
+}
 
 const Title = styled.div`
   text-align: center;
@@ -41,7 +43,7 @@ const ConnectorsLink = styled(Link)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const ConnectionPageTitle: React.FC<IProps> = ({ source, destination, currentStep }) => {
+const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({ source, destination, connection, currentStep }) => {
   const { push } = useRouter<{ id: string }>();
 
   const steps = [
@@ -57,11 +59,13 @@ const ConnectionPageTitle: React.FC<IProps> = ({ source, destination, currentSte
       id: ConnectionSettingsRoutes.TRANSFORMATION,
       name: <FormattedMessage id={"connectionForm.transformation.title"} />,
     },
-    {
+  ];
+
+  connection.status !== ConnectionStatus.DEPRECATED &&
+    steps.push({
       id: ConnectionSettingsRoutes.SETTINGS,
       name: <FormattedMessage id="sources.settings" />,
-    },
-  ];
+    });
 
   const onSelectStep = (id: string) => {
     if (id === ConnectionSettingsRoutes.STATUS) {

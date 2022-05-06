@@ -321,6 +321,8 @@ class ConnectionsHandlerTest {
       catalog.getStreams().get(0).getStream().setName("azkaban_users");
       catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
 
+      final UUID newSourceCatalogId = UUID.randomUUID();
+
       final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
           .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), NamespaceDefinitionType.class))
           .namespaceFormat(standardSync.getNamespaceFormat())
@@ -335,7 +337,8 @@ class ConnectionsHandlerTest {
               .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
               .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
               .memoryLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit())
-              .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest()));
+              .memoryRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest()))
+          .sourceCatalogId(newSourceCatalogId);
 
       final ConfiguredAirbyteCatalog configuredCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
       configuredCatalog.getStreams().get(0).getStream().withName("azkaban_users");
@@ -352,7 +355,8 @@ class ConnectionsHandlerTest {
           .withStatus(StandardSync.Status.INACTIVE)
           .withCatalog(configuredCatalog)
           .withManual(true)
-          .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
+          .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
+          .withSourceCatalogId(newSourceCatalogId);
 
       when(configRepository.getStandardSync(standardSync.getConnectionId()))
           .thenReturn(standardSync)
