@@ -326,6 +326,7 @@ class DbtIntegrationTest(object):
                 "credentials_json": json.dumps(credentials),
                 "dataset_id": self.target_schema,
                 "project_id": credentials["project_id"],
+                "dataset_location": "US",
             }
         elif destination_type.value == DestinationType.MYSQL.value:
             profiles_config["database"] = self.target_schema
