@@ -27,7 +27,6 @@ tests:
 #          "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA",
 #          "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT",
 #          "VendorDirectFulfillmentShipping",
-#          "GET_XML_BROWSE_TREE_DATA"
 #        ]
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_alternate_purchase.json"
@@ -41,6 +40,8 @@ tests:
 #      configured_catalog_path: "integration_tests/configured_catalog_brand_analytics_search_terms.json"
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog_fba_fulfillment_customer_shipment_replacement_data.json"
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog_browse_tree_data.json"
 # TODO: uncomment when Orders (or any other incremental) stream is filled with data
 #  incremental:
 #   - config_path: "secrets/config.json"
