@@ -29,8 +29,8 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   }
 
   @Override
-  public boolean runSecretMigration() {
-    return Boolean.parseBoolean(System.getenv("MIGRATE_SECRET_STORE"));
+  public boolean forceSecretMigration() {
+    return Boolean.parseBoolean(System.getenv("FORCE_MIGRATE_SECRET_STORE"));
   }
 
 }
