@@ -1,5 +1,6 @@
 ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim AS worker
+ARG JDK_IMAGE=openjdk:${JDK_VERSION}-slim
+FROM ${JDK_IMAGE} AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
 

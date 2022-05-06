@@ -1,5 +1,6 @@
 ARG JDK_VERSION=17.0.1
-FROM openjdk:${JDK_VERSION}-slim AS scheduler
+ARG JDK_IMAGE=openjdk:${JDK_VERSION}-slim
+FROM ${JDK_IMAGE} AS scheduler
 
 ARG VERSION=0.36.10-alpha
 
