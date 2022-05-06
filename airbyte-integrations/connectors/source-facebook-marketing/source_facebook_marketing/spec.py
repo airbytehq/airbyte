@@ -114,7 +114,7 @@ class ConnectorConfig(BaseConfig):
         order=3,
         description=(
             "The value of the access token generated. "
-            'See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information'
+            'See the https://go.estuary.dev/OzUqlE for more information'
         ),
         airbyte_secret=True,
     )
