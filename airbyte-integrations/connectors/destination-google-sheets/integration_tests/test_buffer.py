@@ -76,8 +76,7 @@ def test_add_to_buffer(input_messages=read_input_messages(TEST_RECORDS_PATH)):
             continue
 
     for stream in TEST_WRITE_BUFFER.records_buffer:
-        stream_name = list(stream.keys())[0]
-        assert len(stream[stream_name]) > 0
+        assert len(TEST_WRITE_BUFFER.records_buffer[stream]) > 0
 
 
 @pytest.mark.parametrize(
@@ -90,9 +89,7 @@ def test_add_to_buffer(input_messages=read_input_messages(TEST_RECORDS_PATH)):
     ids=["stream_1", "stream_2", "stream_3"],
 )
 def test_records_count_in_buffer(stream_name, expected_count):
-    for stream in TEST_WRITE_BUFFER.records_buffer:
-        if stream_name in stream:
-            assert len(stream[stream_name]) == expected_count
+    assert len(TEST_WRITE_BUFFER.records_buffer[stream_name]) == expected_count
 
 
 @pytest.mark.parametrize(
@@ -106,11 +103,8 @@ def test_records_count_in_buffer(stream_name, expected_count):
 )
 def test_flush_buffer(stream_name):
     TEST_WRITE_BUFFER.flush_buffer(stream_name)
-
     # check the buffer is cleaned
-    for stream in TEST_WRITE_BUFFER.records_buffer:
-        if stream_name in stream:
-            assert len(stream[stream_name]) == 0
+    assert len(TEST_WRITE_BUFFER.records_buffer[stream_name]) == 0
 
 
 @pytest.mark.parametrize(
@@ -157,7 +151,10 @@ def test_values_to_str(list_values, expected):
 
 @pytest.mark.parametrize(
     "buffer, expected_len",
-    [(TEST_WRITE_BUFFER.records_buffer, 0), (TEST_WRITE_BUFFER.stream_info, 0)],
+    [
+        (TEST_WRITE_BUFFER.records_buffer, 0),
+        (TEST_WRITE_BUFFER.stream_info, 0),
+    ],
     ids=["records_buffer", "stream_info"],
 )
 def test_check_buffers_are_null(buffer, expected_len):

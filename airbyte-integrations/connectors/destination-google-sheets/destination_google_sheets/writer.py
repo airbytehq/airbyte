@@ -24,11 +24,10 @@ class GoogleSheetsWriter(WriteBuffer):
         """
         Checks whether data headers belonging to the input stream are set.
         """
-        for streams in self.stream_info:
-            if stream_name in streams:
-                if not streams["is_set"]:
-                    self.spreadsheet.set_headers(stream_name, streams[stream_name])
-                    streams["is_set"] = True
+        stream = self.stream_info[stream_name]
+        if not stream["is_set"]:
+            self.spreadsheet.set_headers(stream_name, stream["headers"])
+            self.stream_info[stream_name]["is_set"] = True
 
     def queue_write_operation(self, stream_name: str):
         """
@@ -38,11 +37,10 @@ class GoogleSheetsWriter(WriteBuffer):
         2) writes it to the target worksheet
         3) cleans-up the records_buffer belonging to input stream
         """
-        for streams in self.records_buffer:
-            if stream_name in streams:
-                if len(streams[stream_name]) == self.flush_interval:
-                    self.write_from_queue(stream_name)
-                    self.flush_buffer(stream_name)
+        
+        if len(self.records_buffer[stream_name]) == self.flush_interval:
+            self.write_from_queue(stream_name)
+            self.flush_buffer(stream_name)
 
     def write_from_queue(self, stream_name: str):
         """
@@ -52,16 +50,13 @@ class GoogleSheetsWriter(WriteBuffer):
         2) gets the values from the records_buffer
         3) if there are records to write - writes them to the target worksheet
         """
-        values: list = []
+
         self.check_headers(stream_name)
-
-        for streams in self.records_buffer:
-            if stream_name in streams:
-                values = streams[stream_name]
-
-        if len(values) > 0:
+        values: list = self.records_buffer[stream_name] or []
+        if values:
             stream: Worksheet = self.spreadsheet.open_worksheet(f"{stream_name}")
             self.logger.info(f"Writing data for stream: {stream_name}")
+            # we start from the cell of `A2` as starting range to fill the spreadsheet
             stream.append_table(values, start="A2", dimension="ROWS")
         else:
             self.logger.info(f"Skipping empty stream: {stream_name}")
@@ -71,11 +66,9 @@ class GoogleSheetsWriter(WriteBuffer):
         Stands for writing records that are still left to be written,
         but don't match the condition for `queue_write_operation`.
         """
-        for streams in self.records_buffer:
-            stream_name = list(streams.keys())[0]
-            if stream_name in streams:
-                self.write_from_queue(stream_name)
-                self.flush_buffer(stream_name)
+        for stream_name in self.records_buffer:
+            self.write_from_queue(stream_name)
+            self.flush_buffer(stream_name)
 
     def deduplicate_records(self, configured_stream: AirbyteStream):
         """
@@ -89,9 +82,9 @@ class GoogleSheetsWriter(WriteBuffer):
         stream: Worksheet = self.spreadsheet.open_worksheet(f"{stream_name}")
         rows_to_remove: list = self.spreadsheet.find_duplicates(stream, primary_key)
 
-        if len(rows_to_remove) > 0:
+        if rows_to_remove:
             self.logger.info(f"Duplicated records are found for stream: {stream_name}, resolving...")
             self.spreadsheet.remove_duplicates(stream, rows_to_remove)
             self.logger.info(f"Finished deduplicating records for stream: {stream_name}")
         else:
-            print(f"No duplicated records found for stream: {stream_name}")
+            self.logger.info(f"No duplicated records found for stream: {stream_name}")

@@ -40,10 +40,7 @@ def test_delete_stream_entries():
 
 def test_check_headers():
     TEST_WRITER.check_headers(TEST_STREAM)
-    for streams in TEST_WRITER.stream_info:
-        stream_name = TEST_STREAM
-        if stream_name in streams:
-            assert True if streams["is_set"] else False
+    assert True if TEST_WRITER.stream_info[TEST_STREAM]["is_set"] else False
 
 
 # define input records
@@ -94,6 +91,7 @@ def test_queue_write_operation(expected):
 )
 def test_write_whats_left(expected):
     TEST_WRITER.write_whats_left()
+    
     # check expected records are written into target worksheet
     test_wks = TEST_SPREADSHEET.open_worksheet(TEST_STREAM)
     records = test_wks.get_all_records()
@@ -125,22 +123,24 @@ input_dup_records = [
 def test_deduplicate_records(expected):
     # set `is_set` for headers to False
     # because previously the headers have been set already
-    for streams in TEST_WRITER.stream_info:
-        if TEST_STREAM in streams:
-            streams["is_set"] = False
+    TEST_WRITER.stream_info[TEST_STREAM]["is_set"] = False
+    
     # writing duplicates
     for record in input_dup_records:
         stream_name = record["stream"]
         data = record["data"]
         TEST_WRITER.add_to_buffer(stream_name, data)
         TEST_WRITER.queue_write_operation(stream_name)
+        
     # removing duplicates
     for configured_stream in TEST_CATALOG.streams:
         TEST_WRITER.deduplicate_records(configured_stream)
+        
     # checking result
     test_wks = TEST_SPREADSHEET.open_worksheet(TEST_STREAM)
     records = test_wks.get_all_records()
     assert records == expected
+    
     # remove the test worksheet after tests
     TEST_SPREADSHEET.spreadsheet.del_worksheet(test_wks)
 

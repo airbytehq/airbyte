@@ -67,6 +67,7 @@ class GoogleSheets:
         Returns: List of indexes of rows to remove from target worksheet.
             [1, 4, 5, ..., 99]
         """
+        # TODO: rows_unique must be a dict, otherwise we can expect performance issue because "element in list" = O(n), for dict it is O(1)
         rows_unique, rows_to_delete = [], []
 
         pk_col_index = self.index_cols(stream)[primary_key]

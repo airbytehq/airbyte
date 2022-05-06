@@ -53,7 +53,7 @@ def test_check():
         ('{"type": "LOG", "log": {"level": "INFO", "message": "Auth session is expired. Refreshing..."}}', False),
         ('{"type": "LOG", "log": {"level": "INFO", "message": "Successfully refreshed auth session"}}', False),
         ('{"type": "LOG", "log": {"level": "INFO", "message": "Writing data for stream: stream_1"}}', True),
-        ("No duplicated records found for stream: stream_1", True),
+        ('{"type": "LOG", "log": {"level": "INFO", "message": "No duplicated records found for stream: stream_1"}}', True),
     ],
     ids=["token needs refresh", "token refreshed", "writing stream", "no dups found for stream"],
 )

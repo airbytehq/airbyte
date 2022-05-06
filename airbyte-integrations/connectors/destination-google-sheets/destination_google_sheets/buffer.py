@@ -14,9 +14,9 @@ class WriteBuffer:
     # Default instance of AirbyteLogger
     logger = AirbyteLogger()
     # Buffer for input records
-    records_buffer = []
+    records_buffer = {}
     # Placeholder for streams metadata
-    stream_info = []
+    stream_info = {}
     # interval after which the records_buffer should be cleaned up for selected stream
     flush_interval = 1000
 
@@ -36,11 +36,8 @@ class WriteBuffer:
         Populates `stream_info` placeholder with stream metadata information.
         """
         stream = configured_stream.stream
-        stream_schema = stream.json_schema
-        stream_name = stream.name
-
-        self.records_buffer.append({stream_name: []})
-        self.stream_info.append({stream_name: sorted(list(stream_schema.get("properties").keys())), "is_set": False})
+        self.records_buffer[stream.name] = []
+        self.stream_info[stream.name] = {"headers": sorted(list(stream.json_schema.get("properties").keys())), "is_set": False}
 
     def add_to_buffer(self, stream_name: str, record: Mapping):
         """
@@ -50,15 +47,14 @@ class WriteBuffer:
         2) coerces normalized record to str
         3) gets values as list of record values from record mapping.
         """
-        for stream in self.records_buffer:
-            if stream_name in stream:
-                stream[stream_name].append(self.get_record_values(self.normalize_record(stream_name, record)))
+        normalized_record = self.get_record_values(self.normalize_record(stream_name, record))
+        self.records_buffer[stream_name].append(normalized_record)
 
     def flush_buffer(self, stream_name: str):
         """
         Cleans up the `records_buffer` values, belonging to input stream.
         """
-        [stream[stream_name].clear() for stream in self.records_buffer if stream_name in stream]
+        self.records_buffer[stream_name].clear()
 
     def normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:
         """
@@ -101,13 +97,11 @@ class WriteBuffer:
                                    ^                          ^
 
         """
-
-        for stream in self.stream_info:
-            if stream_name in stream:
-                # undersetting scenario
-                [record.update({key: self.default_missing}) for key in stream[stream_name] if key not in record.keys()]
-                # oversetting scenario
-                [record.pop(key) for key in record.copy().keys() if key not in stream[stream_name]]
+        headers = self.stream_info[stream_name]["headers"]
+        # undersetting scenario
+        [record.update({key: self.default_missing}) for key in headers if key not in record.keys()]
+        # oversetting scenario
+        [record.pop(key) for key in record.copy().keys() if key not in headers]
 
         return dict(sorted(record.items(), key=lambda x: x[0]))
 
@@ -121,4 +115,4 @@ class WriteBuffer:
         """
         Force input record values to be a type of string.
         """
-        return [str(values[i]) for i in range(len(values))]
+        return [str(value) for value in values]
