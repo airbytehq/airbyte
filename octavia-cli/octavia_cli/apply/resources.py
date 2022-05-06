@@ -573,9 +573,9 @@ class Connection(BaseResource):
             )
         return AirbyteCatalog(streams_and_configurations)
 
-    # TODO this check can be removed when all our active user are on >= 0.36.10
+    # TODO this check can be removed when all our active user are on >= 0.36.11
     def _check_for_legacy_connection_configuration_keys(self, configuration_to_check):
-        """We changed connection configuration keys from camelCase to snake_case in 0.36.10.
+        """We changed connection configuration keys from camelCase to snake_case in 0.36.11.
         This function check if the connection configuration has some camelCase keys and display a meaningful error message.
 
         Args:
