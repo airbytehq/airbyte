@@ -30,6 +30,7 @@ This source is capable of syncing the following streams:
 - [Brand Analytics Market Basket Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
 - [Brand Analytics Repeat Purchase Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
 - [Brand Analytics Search Terms Report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#brand-analytics-reports)
+- [Browse tree report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#browse-tree-report)
 
 ## Getting started
 
