@@ -59,8 +59,8 @@ def test_index_cols():
 
 
 def test_find_duplicates():
-    input_values = [[1, "a"], [2, "b"], [1, "a"]]
-    expected = [4]  # the 4th row is the duplicate of the 1st.
+    input_values = [[1, "a"], [1, "a"], [2, "b"], [1, "a"], [1, "a"]]
+    expected = [6, 5, 3]  # the 4th row is the duplicate of the 1st.
 
     test_wks = TEST_SPREADSHEET.open_worksheet(TEST_STREAM)
     test_wks.append_table(input_values, start="A2", dimension="ROWS")

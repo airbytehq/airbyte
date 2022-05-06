@@ -55,7 +55,7 @@ class GoogleSheets:
         Returns: Mapping with column name and it's index.
             {"id": 1, "name": 2, ..., "other": 99}
         """
-        header = stream[1]
+        header = stream[1] # get the first row
         col_index = {}
         for i, col in enumerate(header):
             col_index[col] = i + 1
@@ -67,16 +67,22 @@ class GoogleSheets:
         Returns: List of indexes of rows to remove from target worksheet.
             [1, 4, 5, ..., 99]
         """
-        # TODO: rows_unique must be a dict, otherwise we can expect performance issue because "element in list" = O(n), for dict it is O(1)
-        rows_unique, rows_to_delete = [], []
+        
+        rows_unique, rows_to_delete = {}, []
 
         pk_col_index = self.index_cols(stream)[primary_key]
-        col_values = stream.get_col(pk_col_index, include_tailing_empty=False)[1:]  # get everything but 0 position.
+        pk_col_values = stream.get_col(pk_col_index, include_tailing_empty=False)[1:]  # get everything but 0 position.
 
-        for i, row in enumerate(col_values, 1):
-            if col_values[i - 1] not in rows_unique:
-                rows_unique.append(row)
+        for i, row in enumerate(pk_col_values, 1):
+            # offset-down the index by 1 to iterate the list correctly
+            value = pk_col_values[i - 1]
+            # check the value is unique
+            if value not in rows_unique.values():
+                # add to a dict, otherwise
+                rows_unique[i] = row
             else:
+                # append to a list, if duplicate is found
+                # we offset-up the index by 1 to match the spreadsheet row index correctly
                 rows_to_delete.append(i + 1)
 
         rows_to_delete.reverse()  # reverse the order of the list
