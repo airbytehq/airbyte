@@ -95,15 +95,6 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
     </SyncButton>
   );
 
-  const wrapWithTooltip = (component: JSX.Element) =>
-    isAtLeastOneJobRunningOrPending ? (
-      <ToolTip control={component} cursor="not-allowed">
-        <FormattedMessage id={"connection.pendingSync"} />
-      </ToolTip>
-    ) : (
-      component
-    );
-
   return (
     <Content>
       <StyledContentCard
@@ -112,8 +103,12 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
             <FormattedMessage id={"sources.syncHistory"} />
             {connection.status === ConnectionStatus.active && (
               <div>
-                {wrapWithTooltip(resetDataBtn)}
-                {wrapWithTooltip(syncNowBtn)}
+                <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                  <FormattedMessage id={"connection.pendingSync"} />
+                </ToolTip>
+                <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                  <FormattedMessage id={"connection.pendingSync"} />
+                </ToolTip>
               </div>
             )}
           </Title>
