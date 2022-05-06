@@ -22,7 +22,7 @@ public class RecordSchemaValidator {
   private final Map<String, JsonNode> streams;
 
   public RecordSchemaValidator(final Map<String, JsonNode> streamNamesToSchemas) {
-    // streams is Map of a stream name (including prefix) and stream schema
+    // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
     this.streams = streamNamesToSchemas;
   }
