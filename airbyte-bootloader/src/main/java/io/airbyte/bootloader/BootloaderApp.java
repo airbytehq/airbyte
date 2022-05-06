@@ -105,10 +105,6 @@ public class BootloaderApp {
 
   }
 
-  /*
-   * public BootloaderApp() { this(new EnvConfigs(), new EnvVariableFeatureFlags()); }
-   */
-
   public void load() throws Exception {
     LOGGER.info("Setting up config database and default workspace..");
 
