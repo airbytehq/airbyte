@@ -116,11 +116,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
     for (final String collectionName : getAuthorizedCollections(database)) {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final Map<String, BsonType> uniqueFields = MongoUtils.getUniqueFields(collection);
-
-      final List<CommonField<BsonType>> fields = uniqueFields.keySet().stream()
-          .map(field -> new CommonField<>(field, uniqueFields.get(field)))
-          .collect(Collectors.toList());
+      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
 
       // The field name _id is reserved for use as a primary key;
       final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()

@@ -17,20 +17,16 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.instance.DatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseInstance;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.validation.json.JsonValidationException;
-import io.temporal.client.WorkflowClient;
-import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,13 +51,15 @@ public class BootloaderApp {
   private static final AirbyteVersion VERSION_BREAK = new AirbyteVersion("0.32.0-alpha");
 
   private final Configs configs;
-  private Runnable postLoadExecution;
+  private final Runnable postLoadExecution;
   private final FeatureFlags featureFlags;
+  private final SecretMigrator secretMigrator;
+  private ConfigPersistence configPersistence;
+  private Database configDatabase;
 
   @VisibleForTesting
-  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
-    this.configs = configs;
-    this.featureFlags = featureFlags;
+  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags, final SecretMigrator secretMigrator) {
+    this(configs, () -> {}, featureFlags, secretMigrator);
   }
 
   /**
@@ -72,41 +70,54 @@ public class BootloaderApp {
    * @param configs
    * @param postLoadExecution
    */
-  public BootloaderApp(final Configs configs, final Runnable postLoadExecution, final FeatureFlags featureFlags) {
+  public BootloaderApp(final Configs configs,
+                       final Runnable postLoadExecution,
+                       final FeatureFlags featureFlags,
+                       final SecretMigrator secretMigrator) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
     this.featureFlags = featureFlags;
+    this.secretMigrator = secretMigrator;
+
+    initPersistences();
+  }
+
+  public BootloaderApp(final Configs configs, final FeatureFlags featureFlags) {
+    this.configs = configs;
+    this.featureFlags = featureFlags;
+
+    try {
+      initPersistences();
+      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configs);
+      secretMigrator = new SecretMigrator(configPersistence, secretPersistence);
+
+      postLoadExecution = () -> {
+        try {
+          configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+
+          if (featureFlags.runSecretMigration()) {
+            secretMigrator.migrateSecrets();
+          }
+          LOGGER.info("Loaded seed data..");
+        } catch (final IOException | JsonValidationException e) {
+          throw new RuntimeException(e);
+        }
+      };
+
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public BootloaderApp() {
-    configs = new EnvConfigs();
-    featureFlags = new EnvVariableFeatureFlags();
-    postLoadExecution = () -> {
-      try {
-        final Database configDatabase =
-            new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
-                .getAndInitialize();
-        final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-            .maskSecrets(!featureFlags.exposeSecretsInExport())
-            .copySecrets(true)
-            .build();
-        final ConfigPersistence configPersistence =
-            DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-        configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
-        LOGGER.info("Loaded seed data..");
-      } catch (final IOException e) {
-        e.printStackTrace();
-      }
-    };
+    this(new EnvConfigs(), new EnvVariableFeatureFlags());
   }
 
   public void load() throws Exception {
     LOGGER.info("Setting up config database and default workspace..");
 
     try (
-        final Database configDatabase =
-            new ConfigsDatabaseInstance(configs.getConfigDatabaseUser(), configs.getConfigDatabasePassword(), configs.getConfigDatabaseUrl())
-                .getAndInitialize();
+
         final Database jobDatabase =
             new JobsDatabaseInstance(configs.getDatabaseUser(), configs.getDatabasePassword(), configs.getDatabaseUrl()).getAndInitialize()) {
       LOGGER.info("Created initial jobs and configs database...");
@@ -118,11 +129,6 @@ public class BootloaderApp {
       runFlywayMigration(configs, configDatabase, jobDatabase);
       LOGGER.info("Ran Flyway migrations...");
 
-      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-          .maskSecrets(!featureFlags.exposeSecretsInExport())
-          .copySecrets(false)
-          .build();
-      final ConfigPersistence configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
       final ConfigRepository configRepository =
           new ConfigRepository(configPersistence, configDatabase);
 
@@ -136,12 +142,28 @@ public class BootloaderApp {
       LOGGER.info("Set version to {}", currAirbyteVersion);
     }
 
-    if (postLoadExecution != null) {
-      postLoadExecution.run();
-      LOGGER.info("Finished running post load Execution..");
-    }
+    postLoadExecution.run();
+    LOGGER.info("Finished running post load Execution..");
 
     LOGGER.info("Finished bootstrapping Airbyte environment..");
+  }
+
+  private void initPersistences() {
+    try {
+      configDatabase = new ConfigsDatabaseInstance(
+          configs.getConfigDatabaseUser(),
+          configs.getConfigDatabasePassword(),
+          configs.getConfigDatabaseUrl()).getAndInitialize();
+
+      final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
+          .maskSecrets(true)
+          .copySecrets(true)
+          .build();
+
+      configPersistence = DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public static void main(final String[] args) throws Exception {
@@ -227,18 +249,6 @@ public class BootloaderApp {
       jobDbMigrator.migrate();
     } else {
       LOGGER.info("Auto database migration is skipped");
-    }
-  }
-
-  private static void cleanupZombies(final JobPersistence jobPersistence) throws IOException {
-    final Configs configs = new EnvConfigs();
-    final WorkflowClient wfClient =
-        WorkflowClient.newInstance(WorkflowServiceStubs.newInstance(
-            WorkflowServiceStubsOptions.newBuilder().setTarget(configs.getTemporalHost()).build()));
-    for (final Job zombieJob : jobPersistence.listJobsWithStatus(JobStatus.RUNNING)) {
-      LOGGER.info("Kill zombie job {} for connection {}", zombieJob.getId(), zombieJob.getScope());
-      wfClient.newUntypedWorkflowStub("sync_" + zombieJob.getId())
-          .terminate("Zombie");
     }
   }
 

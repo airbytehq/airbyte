@@ -16,7 +16,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.junit.Test;
 
 public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestinationAcceptanceTest {
@@ -40,9 +39,9 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
         "oracle.jdbc.driver.OracleDriver",
         getAdditionalProperties(algorithm));
 
-    final String network_service_banner =
+    final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).toList();
+    final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertThat(collect.get(2).get("NETWORK_SERVICE_BANNER").asText(),
         equals("Oracle Advanced Security: " + algorithm + " encryption"));
@@ -73,8 +72,8 @@ public class NneOracleDestinationAcceptanceTest extends UnencryptedOracleDestina
         "oracle.jdbc.driver.OracleDriver",
         getAdditionalProperties(algorithm));
 
-    final String network_service_banner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
-    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).collect(Collectors.toList());
+    final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
+    final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertEquals("tcp", collect.get(0).get("NETWORK_PROTOCOL").asText());
   }

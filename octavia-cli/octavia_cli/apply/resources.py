@@ -552,7 +552,7 @@ class Connection(BaseResource):
         return self._search_fn(self.api_instance, self.search_payload, _check_return_type=False)
 
     def _get_comparable_configuration(self) -> dict:
-        keys_to_filter_out = ["connectionId", "operationIds"]
+        keys_to_filter_out = ["connectionId", "operationIds", "sourceCatalogId"]
         comparable_configuration = super()._get_comparable_configuration()
         return {k: v for k, v in comparable_configuration.items() if k not in keys_to_filter_out}
 
