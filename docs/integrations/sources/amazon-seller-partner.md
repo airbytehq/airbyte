@@ -69,7 +69,8 @@ Information about rate limits you may find [here](https://github.com/amzn/sellin
 
 | Version  | Date       | Pull Request                                             | Subject                                                                |
 |:---------|:-----------|:---------------------------------------------------------| :--------------------------------------------------------------------- |
-| `0.2.16` | 2022-05-04 | [\#9789](https://github.com/airbytehq/airbyte/pull/12523)| allow to use IAM user arn or IAM role arn                             |
+| `0.2.17` | 2022-05-06 | [\#12663](https://github.com/airbytehq/airbyte/pull/12663)| Add GET_XML_BROWSE_TREE_DATA report                                   |
+| `0.2.16` | 2022-05-04 | [\#9789](https://github.com/airbytehq/airbyte/pull/12523)| allow to use IAM user arn or IAM role arn                              |
 | `0.2.15` | 2022-01-25 | [\#9789](https://github.com/airbytehq/airbyte/pull/9789) | Add stream FbaReplacementsReports                                      |
 | `0.2.14` | 2022-01-19 | [\#9621](https://github.com/airbytehq/airbyte/pull/9621) | Add GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL report        |
 | `0.2.13` | 2022-01-18 | [\#9581](https://github.com/airbytehq/airbyte/pull/9581) | Change createdSince parameter to dataStartTime                         |
