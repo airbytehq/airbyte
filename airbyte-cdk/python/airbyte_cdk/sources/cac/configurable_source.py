@@ -12,6 +12,9 @@ from airbyte_cdk.sources.streams.core import Stream
 
 class ConfigurableSource(AbstractSource):
     def __init__(self, path_to_spec):
+        if not os.path.exists(path_to_spec):
+            # Small hack until i figure out the docker issue
+            path_to_spec = f"/airbyte/integration_code/{path_to_spec[1:]}"
         self._path_to_spec = path_to_spec
         self._factory = LowCodeComponentFactory()
         self._spec = self._load_spec()
