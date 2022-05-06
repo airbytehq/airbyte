@@ -4,7 +4,7 @@ import React from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import styled from "styled-components";
 
-import { useSidePanelContext } from "./ConnectorDocumentationContext";
+import { useDocumentationPanelContext } from "./ConnectorDocumentationContext";
 
 const PanelGrabber = styled.div`
   height: 100vh;
@@ -23,19 +23,19 @@ const GrabberHandle = styled(FontAwesomeIcon)`
 export const ConnectorDocumentationLayout = ({ children }: { children: [React.ReactNode, React.ReactNode] }) => {
   const [left, right] = children;
 
-  const { sidePanelStatus } = useSidePanelContext();
+  const { documentationPanelOpen } = useDocumentationPanelContext();
 
   return (
     <ReflexContainer orientation="vertical" windowResizeAware={true}>
       <ReflexElement className="left-pane"> {left}</ReflexElement>
-      {sidePanelStatus && (
+      {documentationPanelOpen && (
         <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
           <PanelGrabber>
             <GrabberHandle icon={faGripLinesVertical} size={"1x"} />
           </PanelGrabber>
         </ReflexSplitter>
       )}
-      {sidePanelStatus && (
+      {documentationPanelOpen && (
         <ReflexElement className="right-pane" size={1000}>
           {right}
         </ReflexElement>

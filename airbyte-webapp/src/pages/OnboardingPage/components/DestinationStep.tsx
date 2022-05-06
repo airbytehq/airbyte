@@ -9,6 +9,7 @@ import { useDestinationDefinitionList } from "services/connector/DestinationDefi
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
 import HighlightedText from "./HighlightedText";
 import TitlesBlock from "./TitlesBlock";
@@ -20,6 +21,7 @@ type Props = {
 
 const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   const [destinationDefinitionId, setDestinationDefinitionId] = useState<string | null>(null);
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { data: destinationDefinitionSpecification, isLoading } =
     useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
   const { destinationDefinitions } = useDestinationDefinitionList();
@@ -63,7 +65,10 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   };
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
+    setDocumentationPanelOpen(false);
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
+    setDocumentationUrl(destinationConnector?.documentationUrl || "");
+
     trackNewDestinationAction("Select a connector", {
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id: destinationConnector?.destinationDefinitionId,

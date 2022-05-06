@@ -7,7 +7,7 @@ import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { RoutePaths } from "../routePaths";
 import AllSourcesPage from "./pages/AllSourcesPage";
-import { CreateSourcePage } from "./pages/CreateSourcePage/CreateSourcePage";
+import CreateSourcePage from "./pages/CreateSourcePage/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
 
 export const SourcesPage: React.FC = () => (

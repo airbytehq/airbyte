@@ -1,24 +1,22 @@
-import { createContext, Dispatch, SetStateAction, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
-export const SidePanelStatusContext = createContext<ReturnType<typeof useInitialSidePanelState>>({} as any);
+// @ts-expect-error Default value provided at implementation
+const DocumenationPanelContext = createContext<ReturnType<typeof useSidePanelState>>();
 
-export const useInitialSidePanelState = (
-  sidePanelStatus: boolean,
-  setSidePanelStatus: Dispatch<SetStateAction<boolean>>
-) => {
+export const useSidePanelState = () => {
+  const [documentationPanelOpen, setDocumentationPanelOpen] = useState(false);
+  const [documentationUrl, setDocumentationUrl] = useState("");
+
   return {
-    sidePanelStatus,
-    setSidePanelStatus,
+    documentationPanelOpen,
+    setDocumentationPanelOpen,
+    documentationUrl,
+    setDocumentationUrl,
   };
 };
 
-export const useSidePanelContext = () => useContext(SidePanelStatusContext);
+export const useDocumentationPanelContext = () => useContext(DocumenationPanelContext);
 
-export const SidePanelStatusProvider: React.FC = ({ children }) => {
-  const [sidePanelStatus, setSidePanelStatus] = useState(false);
-  return (
-    <SidePanelStatusContext.Provider value={useInitialSidePanelState(sidePanelStatus, setSidePanelStatus)}>
-      {children}
-    </SidePanelStatusContext.Provider>
-  );
+export const DocumentationPanelProvider: React.FC = ({ children }) => {
+  return <DocumenationPanelContext.Provider value={useSidePanelState()}>{children}</DocumenationPanelContext.Provider>;
 };

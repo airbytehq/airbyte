@@ -15,7 +15,7 @@ import Markdown from "components/Markdown/Markdown";
 
 import { useConfig } from "config";
 import { useDocumentation } from "hooks/services/useDocumentation";
-import { useSidePanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
 export const DocumentationContainer = styled.div`
   padding: 0px 0px 20px;
@@ -26,14 +26,10 @@ export const DocumentationContent = styled(Markdown)`
   padding: 0px 35px 20px;
 `;
 
-interface DocsPanelProps {
-  documentationUrl: string;
-}
-
-const DocumentationPanel: React.FC<DocsPanelProps> = ({ documentationUrl }) => {
+export const DocumentationPanel: React.FC = () => {
   const config = useConfig();
 
-  const { setSidePanelStatus } = useSidePanelContext();
+  const { setDocumentationPanelOpen, documentationUrl } = useDocumentationPanelContext();
 
   const { data: docs, isLoading } = useDocumentation(documentationUrl);
 
@@ -71,7 +67,7 @@ const DocumentationPanel: React.FC<DocsPanelProps> = ({ documentationUrl }) => {
             endComponent={
               <Button
                 onClick={() => {
-                  setSidePanelStatus(false);
+                  setDocumentationPanelOpen(false);
                 }}
                 iconOnly={true}
               >
@@ -89,5 +85,3 @@ const DocumentationPanel: React.FC<DocsPanelProps> = ({ documentationUrl }) => {
     </>
   );
 };
-
-export default DocumentationPanel;

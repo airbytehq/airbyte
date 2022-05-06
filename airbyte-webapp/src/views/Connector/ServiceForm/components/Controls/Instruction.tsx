@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import { getDocumentationType } from "hooks/services/useDocumentation";
-import { useSidePanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
 interface InstructionProps {
   selectedService: SourceDefinition | DestinationDefinition;
@@ -39,7 +39,8 @@ const DocumentationLink = styled.a`
 `;
 
 export const Instruction: React.FC<InstructionProps> = ({ documentationUrl }) => {
-  const { sidePanelStatus, setSidePanelStatus } = useSidePanelContext();
+  const { documentationPanelOpen: sidePanelStatus, setDocumentationPanelOpen: setSidePanelStatus } =
+    useDocumentationPanelContext();
 
   const docType = getDocumentationType(documentationUrl);
 

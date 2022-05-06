@@ -1,46 +1,62 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition, DestinationDefinitionSpecification } from "core/domain/connector";
+import { DestinationDefinition } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import useRouter from "hooks/useRouter";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 
-type DestinationFormProps = {
+interface DestinationFormProps {
   onSubmit: (values: {
     name: string;
     serviceType: string;
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  afterSelectConnector?: () => void;
   destinationDefinitions: DestinationDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-  setDestinationDefinitionId: React.Dispatch<React.SetStateAction<string | null>> | null;
-  destinationDefinitionSpecification: DestinationDefinitionSpecification | undefined;
-  destinationDefinitionError: Error | null;
-  isLoading: boolean;
+  afterSelectConnector?: () => void;
+}
+
+const hasDestinationDefinitionId = (state: unknown): state is { destinationDefinitionId: string } => {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    typeof (state as { destinationDefinitionId?: string }).destinationDefinitionId === "string"
+  );
 };
 
-const DestinationForm: React.FC<DestinationFormProps> = ({
+export const DestinationForm: React.FC<DestinationFormProps> = ({
   onSubmit,
   destinationDefinitions,
   error,
   hasSuccess,
   afterSelectConnector,
-  setDestinationDefinitionId,
-  destinationDefinitionSpecification,
-  destinationDefinitionError,
-  isLoading,
 }) => {
+  const { location } = useRouter();
   const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
 
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState(
+    hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
+  );
+  const {
+    data: destinationDefinitionSpecification,
+    isLoading,
+    error: destinationDefinitionError,
+  } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
+
   const onDropDownSelect = (destinationDefinitionId: string) => {
-    setDestinationDefinitionId && setDestinationDefinitionId(destinationDefinitionId);
+    setDocumentationPanelOpen(false);
+    setDestinationDefinitionId(destinationDefinitionId);
     const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
+    setDocumentationUrl(connector?.documentationUrl || "");
 
     if (afterSelectConnector) {
       afterSelectConnector();
@@ -72,15 +88,9 @@ const DestinationForm: React.FC<DestinationFormProps> = ({
       hasSuccess={hasSuccess}
       errorMessage={errorMessage}
       isLoading={isLoading}
-      formValues={
-        destinationDefinitionSpecification
-          ? { serviceType: destinationDefinitionSpecification.destinationDefinitionId }
-          : undefined
-      }
+      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
       title={<FormattedMessage id="onboarding.destinationSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />
   );
 };
-
-export default DestinationForm;

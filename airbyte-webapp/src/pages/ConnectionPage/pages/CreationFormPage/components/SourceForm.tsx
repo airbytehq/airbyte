@@ -2,25 +2,16 @@ import React, { useState } from "react";
 
 // TODO: create separate component for source and destinations forms
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceDefinitionSpecification } from "core/domain/connector";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import { SourceForm } from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
 interface ConnectionCreateSourceFormProps {
-  setSourceDefinitionId: React.Dispatch<React.SetStateAction<string | null>> | null;
   afterSubmit: () => void;
-  sourceDefinitionSpecification: SourceDefinitionSpecification | undefined;
-  sourceDefinitionError: Error | null;
 }
 
-export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({
-  afterSubmit,
-  setSourceDefinitionId,
-  sourceDefinitionSpecification,
-  sourceDefinitionError,
-}) => {
+export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -49,15 +40,5 @@ export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProp
     }, 2000);
   };
 
-  return (
-    <SourceForm
-      onSubmit={onSubmitSourceStep}
-      sourceDefinitions={sourceDefinitions}
-      hasSuccess={successRequest}
-      setSourceDefinitionId={setSourceDefinitionId}
-      sourceDefinitionSpecification={sourceDefinitionSpecification}
-      sourceDefinitionError={sourceDefinitionError}
-      isLoading={false}
-    />
-  );
+  return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
 };

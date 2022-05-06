@@ -5,7 +5,7 @@ import { LoadingPage, PageTitle } from "components";
 import ConnectionBlock from "components/ConnectionBlock";
 import { FormPageContent } from "components/ConnectorBlocks";
 import CreateConnectionContent from "components/CreateConnectionContent";
-import DocumentationPanel from "components/DocumentationPanel/DocumentationPanel";
+import { DocumentationPanel } from "components/DocumentationPanel/DocumentationPanel";
 import HeadTitle from "components/HeadTitle";
 import StepsMenu from "components/StepsMenu";
 
@@ -14,14 +14,9 @@ import { Destination, DestinationDefinition, Source, SourceDefinition } from "co
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-import {
-  useDestinationDefinition,
-  useDestinationDefinitionList,
-} from "services/connector/DestinationDefinitionService";
-import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
-import { useSourceDefinition, useSourceDefinitionList } from "services/connector/SourceDefinitionService";
-import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { SidePanelStatusProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { DocumentationPanelProvider } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationContext";
 import { ConnectorDocumentationLayout } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationLayout";
 
 import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
@@ -73,35 +68,6 @@ function usePreloadData(): {
 export const CreationFormPage: React.FC = () => {
   const { location, push } = useRouter();
 
-  const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
-    return (
-      typeof state === "object" &&
-      state !== null &&
-      typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId === "string"
-    );
-  };
-
-  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
-    hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
-  );
-
-  const { data: sourceDefinitionSpecification, error: sourceDefinitionError } =
-    useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
-
-  const hasDestinationDefinitionId = (state: unknown): state is { destinationDefinitionId: string } => {
-    return (
-      typeof state === "object" &&
-      state !== null &&
-      typeof (state as { destinationDefinitionId?: string }).destinationDefinitionId === "string"
-    );
-  };
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState<string | null>(
-    hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
-  );
-
-  const { data: destinationDefinitionSpecification, error: destinationDefinitionError } =
-    useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
-
   // TODO: Probably there is a better way to figure it out instead of just checking third elem
   const locationType = location.pathname.split("/")[3];
 
@@ -145,13 +111,6 @@ export const CreationFormPage: React.FC = () => {
     setCurrentStep(StepsTypes.CREATE_CONNECTION);
   };
 
-  const { sourceDefinitions } = useSourceDefinitionList();
-  const { destinationDefinitions } = useDestinationDefinitionList();
-
-  const selectedService = destinationDefinitionId
-    ? destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId)
-    : sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
-
   const renderStep = () => {
     if (currentStep === StepsTypes.CREATE_ENTITY || currentStep === StepsTypes.CREATE_CONNECTOR) {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
@@ -162,9 +121,6 @@ export const CreationFormPage: React.FC = () => {
             )}
             <>
               <ConnectionCreateSourceForm
-                setSourceDefinitionId={setSourceDefinitionId}
-                sourceDefinitionSpecification={sourceDefinitionSpecification}
-                sourceDefinitionError={sourceDefinitionError}
                 afterSubmit={() => {
                   if (type === "connection") {
                     setCurrentEntityStep(EntityStepsTypes.DESTINATION);
@@ -185,9 +141,6 @@ export const CreationFormPage: React.FC = () => {
               <ExistingEntityForm type="destination" onSubmit={onSelectExistingDestination} />
             )}
             <ConnectionCreateDestinationForm
-              setDestinationDefinitionId={setDestinationDefinitionId}
-              destinationDefinitionSpecification={destinationDefinitionSpecification}
-              destinationDefinitionError={destinationDefinitionError}
               afterSubmit={() => {
                 setCurrentEntityStep(EntityStepsTypes.CONNECTION);
                 setCurrentStep(StepsTypes.CREATE_CONNECTION);
@@ -267,7 +220,7 @@ export const CreationFormPage: React.FC = () => {
   )[type];
 
   return (
-    <SidePanelStatusProvider>
+    <DocumentationPanelProvider>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <ConnectorDocumentationLayout>
         <>
@@ -293,8 +246,8 @@ export const CreationFormPage: React.FC = () => {
             {renderStep()}
           </FormPageContent>
         </>
-        <DocumentationPanel documentationUrl={selectedService?.documentationUrl || ""} />
+        <DocumentationPanel />
       </ConnectorDocumentationLayout>
-    </SidePanelStatusProvider>
+    </DocumentationPanelProvider>
   );
 };
