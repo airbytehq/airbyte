@@ -126,7 +126,7 @@ public class SlackNotificationClientTest {
         """
         Your connection from source-test to destination-test was automatically disabled because it failed 100 times consecutively or has been failing for 14 days in a row.
 
-        Please address the failing issues to ensure your syncs continue to run. The most recent attempted job description You can access its logs here: logUrl.
+        Please address the failing issues to ensure your syncs continue to run. The most recent attempted job description.
 
         Workspace ID: %s
         Connection ID: %s
@@ -139,7 +139,7 @@ public class SlackNotificationClientTest {
             .withNotificationType(NotificationType.SLACK)
             .withSendOnSuccess(true)
             .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test")));
-    assertTrue(client.notifyConnectionDisabled("", "source-test", "destination-test", "job description", WORKSPACE_ID, CONNECTION_ID));
+    assertTrue(client.notifyConnectionDisabled("", "source-test", "destination-test", "job description.", WORKSPACE_ID, CONNECTION_ID));
   }
 
   @Test
@@ -148,7 +148,7 @@ public class SlackNotificationClientTest {
         """
         Your connection from source-test to destination-test is scheduled to be automatically disabled because it either failed 50 times consecutively or there were only failed jobs in the past 7 days. Once it has failed 100 times consecutively or has been failing for 14 days in a row, the connection will be automatically disabled.
 
-        Please address the failing issues to ensure your syncs continue to run. The most recent attempted job description
+        Please address the failing issues to ensure your syncs continue to run. The most recent attempted job description.
 
         Workspace ID: %s
         Connection ID: %s
@@ -161,7 +161,7 @@ public class SlackNotificationClientTest {
             .withNotificationType(NotificationType.SLACK)
             .withSendOnSuccess(true)
             .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test")));
-    assertTrue(client.notifyConnectionDisableWarning("", "source-test", "destination-test", "job description", WORKSPACE_ID, CONNECTION_ID));
+    assertTrue(client.notifyConnectionDisableWarning("", "source-test", "destination-test", "job description.", WORKSPACE_ID, CONNECTION_ID));
   }
 
   static class ServerHandler implements HttpHandler {
