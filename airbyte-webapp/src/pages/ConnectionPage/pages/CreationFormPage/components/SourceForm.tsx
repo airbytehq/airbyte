@@ -1,4 +1,3 @@
-// TODO: create separate component for source and destinations forms
 import React, { useState } from "react";
 
 import { ConnectionConfiguration } from "core/domain/connection";

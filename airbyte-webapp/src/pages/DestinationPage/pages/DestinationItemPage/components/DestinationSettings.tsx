@@ -6,12 +6,11 @@ import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector, Destination } from "core/domain/connector";
+import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-
-import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 const Content = styled.div`
   max-width: 813px;
