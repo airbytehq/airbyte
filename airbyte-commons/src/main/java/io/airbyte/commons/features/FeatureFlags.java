@@ -16,6 +16,6 @@ public interface FeatureFlags {
 
   boolean exposeSecretsInExport();
 
-  boolean runSecretMigration();
+  boolean forceSecretMigration();
 
 }

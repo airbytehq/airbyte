@@ -105,7 +105,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.36.11-alpha
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.37.0-alpha
 ```
 
 ### Using `docker-compose`
@@ -362,8 +362,9 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 ## Changelog
 
-| Version | Date       | Description       | PR                                                       |
-|---------|------------|-------------------|----------------------------------------------------------|
-| 0.36.2  | 2022-04-15 | Improve telemetry | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.68 | 2022-04-12 | Add telemetry     | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.61 | 2022-04-07 | Alpha release     | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
+| Version | Date       | Description                         | PR                                                       |
+|---------|------------|-------------------------------------|----------------------------------------------------------|
+| 0.36.11 | 2022-05-05 | Use snake case in connection fields | [#12133](https://github.com/airbytehq/airbyte/pull/12133)|
+| 0.36.2  | 2022-04-15 | Improve telemetry                   | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.68 | 2022-04-12 | Add telemetry                       | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
+| 0.35.61 | 2022-04-07 | Alpha release                       | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|

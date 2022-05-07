@@ -243,7 +243,6 @@ class ConnectionRenderer(BaseRenderer):
     @staticmethod
     def catalog_to_yaml(catalog: dict) -> str:
         """Convert the source catalog to a YAML string.
-        Convert camel case to snake case.
 
         Args:
             catalog (dict): Source's catalog.

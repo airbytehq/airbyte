@@ -4,11 +4,11 @@
 
 import logging
 import logging.config
-import sys
 import traceback
-from typing import List, Tuple
+from typing import Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from deprecated import deprecated
 
 TRACE_LEVEL_NUM = 5
@@ -32,41 +32,17 @@ LOGGING_CONFIG = {
 }
 
 
-def init_unhandled_exception_output_filtering(logger: logging.Logger) -> None:
-    """
-    Make sure unhandled exceptions are not printed to the console without passing through the Airbyte logger and having
-    secrets removed.
-    """
-
-    def hook_fn(exception_type, exception_value, traceback_):
-        # For developer ergonomics, we want to see the stack trace in the logs when we do a ctrl-c
-        if issubclass(exception_type, KeyboardInterrupt):
-            sys.__excepthook__(exception_type, exception_value, traceback_)
-        else:
-            logger.critical(exception_value, exc_info=exception_value)
-
-    sys.excepthook = hook_fn
-
-
 def init_logger(name: str = None):
     """Initial set up of logger"""
     logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")
     logger = logging.getLogger(name)
     logger.setLevel(TRACE_LEVEL_NUM)
     logging.config.dictConfig(LOGGING_CONFIG)
-    init_unhandled_exception_output_filtering(logger)
     return logger
 
 
 class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
-
-    _secrets: List[str] = []
-
-    @classmethod
-    def update_secrets(cls, secrets: List[str]):
-        """Update the list of secrets to be replaced in the log message"""
-        cls._secrets = secrets
 
     # Transforming Python log levels to Airbyte protocol log levels
     level_mapping = {
@@ -82,8 +58,7 @@ class AirbyteLogFormatter(logging.Formatter):
         """Return a JSON representation of the log message"""
         message = super().format(record)
         airbyte_level = self.level_mapping.get(record.levelno, "INFO")
-        for secret in AirbyteLogFormatter._secrets:
-            message = message.replace(secret, "****")
+        message = filter_secrets(message)
         log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
         return log_message.json(exclude_unset=True)
 
