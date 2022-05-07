@@ -158,16 +158,64 @@ class TestTransformConfig:
         assert expected_keyfile == actual_keyfile
         assert extract_schema(actual_output) == "my_dataset_id"
 
-    def test_transform_bigquery_no_credentials(self):
-        input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id"}
+    def test_transform_bigquery_credentials_service_account(self):
+        input = {
+            "project_id": "my_project_id",
+            "dataset_id": "my_dataset_id",
+            "credentials": {
+                "auth_type": "service_account",
+                "credentials_json": '{ "type": "service_account-json" }',
+            },
+            "transformation_priority": "interactive",
+            "dataset_location": "EU",
+        }
 
         actual_output = TransformConfig().transform_bigquery(input)
         expected_output = {
             "type": "bigquery",
-            "method": "oauth",
+            "method": "service-account-json",
             "project": "my_project_id",
             "dataset": "my_dataset_id",
             "priority": "interactive",
+            "keyfile_json": {"type": "service_account-json"},
+            "location": "EU",
+            "retries": 3,
+            "threads": 8,
+        }
+
+        actual_keyfile = actual_output["keyfile_json"]
+        expected_keyfile = {"type": "service_account-json"}
+        assert expected_output == actual_output
+        assert expected_keyfile == actual_keyfile
+        assert extract_schema(actual_output) == "my_dataset_id"
+
+    def test_transform_bigquery_credentials_oauth(self):
+        input = {
+            "project_id": "my_project_id",
+            "dataset_id": "my_dataset_id",
+            "credentials": {
+                "auth_type": "oauth2.0",
+                "client_id": "client_id",
+                "client_secret": "client_secret",
+                "refresh_token": "refresh_token",
+            },
+            "transformation_priority": "interactive",
+            "dataset_location": "EU",
+        }
+
+        actual_output = TransformConfig().transform_bigquery(input)
+        expected_output = {
+            "type": "bigquery",
+            "method": "oauth-secrets",
+            "project": "my_project_id",
+            "dataset": "my_dataset_id",
+            "priority": "interactive",
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "refresh_token": "refresh_token",
+            "scopes": ["https://www.googleapis.com/auth/bigquery"],
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "location": "EU",
             "retries": 3,
             "threads": 8,
         }
@@ -181,7 +229,6 @@ class TestTransformConfig:
         actual_output = TransformConfig().transform_bigquery(input)
         expected_output = {
             "type": "bigquery",
-            "method": "oauth",
             "project": "my_project_id",
             "dataset": "my_dataset_id",
             "priority": "interactive",
