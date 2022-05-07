@@ -10,7 +10,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class SimpleRetriever(HttpStream):
     def __init__(self, requester, extractor, vars, config):
-        print(f"retriever with config: {requester} and {extractor} and {vars} and {config}")
+        # print(f"retriever with config: {requester} and {extractor} and {vars} and {config}")
 
         # FIXME: we should probably share the factory?
         self._requester = LowCodeComponentFactory().create_component(requester, vars, config)
@@ -37,12 +37,15 @@ class SimpleRetriever(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        print(f"received response: {response}")
-        return self._extractor.extract_records(response)
+        # print(f"received response: {response}")
+        records = self._extractor.extract_records(response)
+        # print(f"records: {records}")
+        return records
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        pass
+        # FIXME: TODO
+        return "id"
 
     def merge_dicts(self, d1, d2):
         return {**d1, **d2}

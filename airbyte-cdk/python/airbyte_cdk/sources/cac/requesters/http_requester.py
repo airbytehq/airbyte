@@ -7,10 +7,10 @@ from airbyte_cdk.sources.cac.requesters.requester import Requester
 
 class HttpRequester(Requester):
     def __init__(self, url_base, path, method, authenticator, vars, config):
-        print("creating HttpRequester")
+        # print("creating HttpRequester")
         self._authenticator = LowCodeComponentFactory().create_component(authenticator, vars, config)
-        print(f"authenticator: {self._authenticator.auth_method}")
-        print(f"authenticator: {self._authenticator.auth_header}")
+        # print(f"authenticator: {self._authenticator.auth_method}")
+        # print(f"authenticator: {self._authenticator.auth_header}")
         self._url_base = url_base
         self._path = path
         self._method = method

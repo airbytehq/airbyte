@@ -17,10 +17,13 @@ from airbyte_cdk.sources.streams.core import Stream
 
 
 class ConfigurableStream(Stream):
-    def __init__(self, schema, retriever: Retriever, vars: "Vars", config: "Config"):
-        print(f"creating a configurable stream with {retriever}")
+    def __init__(self, name, schema, retriever: Retriever, vars: "Vars", config: "Config"):
+        # print(f"creating a configurable stream with {name}")
+        # print(f"schema: {schema}")
+        self._name = name
         self._vars = vars
-        print(f"stream.vars: {self._vars}")
+        self._schema_loader = LowCodeComponentFactory().create_component(schema, vars, config)
+        # print(f"stream.vars: {self._vars}")
         self._retriever = LowCodeComponentFactory().create_component(retriever, vars, config)
 
     def read_records(
@@ -34,7 +37,25 @@ class ConfigurableStream(Stream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        pass
+        # FIXME: TODO
+        return "id"
 
     def merge_dicts(self, d1, d2):
         return {**d1, **d2}
+
+    @property
+    def name(self) -> str:
+        """
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        """
+        return self._name
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: A dict of the JSON schema representing this stream.
+
+        The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
+        Override as needed.
+        """
+        # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
+        return self._schema_loader.get_json_schema()

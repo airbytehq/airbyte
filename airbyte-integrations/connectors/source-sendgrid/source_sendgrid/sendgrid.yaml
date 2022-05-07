@@ -25,10 +25,11 @@ source:
           vars:
             data_field: "results"
           options:
+            name: segments
             schema:
-              class_name: StaticSchema
+              class_name: "airbyte_cdk.sources.cac.schema.json_schema.JsonSchema"
               options:
-                file_path: "./schemas/segments.json"
+                file_path: "/Users/alex/code/airbyte/airbyte-integrations/connectors/source-sendgrid/schemas/segments.json"
             retriever:
               class_name: "airbyte_cdk.sources.cac.retrievers.simple_retriever.SimpleRetriever"
               options:
@@ -49,16 +50,19 @@ source:
     streams:
       segments:
         class_name: "airbyte_cdk.sources.cac.configurable_stream.ConfigurableStream"
+        vars:
+          data_field: "results"
         options:
+          name: segments
           schema:
-            class_name: StaticSchema
+            class_name: "airbyte_cdk.sources.cac.schema.json_schema.JsonSchema"
             options:
-              file_path: "./schemas/segments.json"
+              file_path: "/Users/alex/code/airbyte/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/schemas/segments.json"
           retriever:
-            class_name: "airbyte_cdk.sources.cac.retrivers.SimpleRetriever"
+            class_name: "airbyte_cdk.sources.cac.retrievers.simple_retriever.SimpleRetriever"
             options:
               requester:
-                class_name: "airbyte_cdk.sources.cac.requesters.HttpRequester"
+                class_name: "airbyte_cdk.sources.cac.requesters.http_requester.HttpRequester"
                 options:
                   url_base: "https://api.sendgrid.com/v3/"
                   path: "marketing/segments"
@@ -67,3 +71,7 @@ source:
                     class_name: "airbyte_cdk.sources.streams.http.auth.token.TokenAuthenticator"
                     options:
                       token: "{{ config.apikey }}"
+              extractor:
+                class_name: "airbyte_cdk.sources.cac.extractors.jq.JqExtractor"
+                options:
+                  transform: ".{{ vars['data_field'] }}[]"

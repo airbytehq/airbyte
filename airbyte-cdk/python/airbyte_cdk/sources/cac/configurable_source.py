@@ -46,6 +46,13 @@ class ConfigurableSource(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         print(f"source_config: {self._source_config}")
         print(f"config: {config}")
+        streams_config = self._source_config["options"]["streams"]
+
+        streams = [
+            LowCodeComponentFactory().create_component(stream_config, self._vars, config) for stream_config in streams_config.values()
+        ]
+        print(f"streams: {streams}")
+        return streams
 
     #   streams_config = self._options["streams"]
 
