@@ -126,7 +126,7 @@ git add CNAME
 PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit --message "Adds CNAME to deploy for $revision"
 
 # non functional. for debugging
-git branch
+git rev-parse --abbrev-ref HEAD
 
 if test "$(tty)" == "not a tty"; then
   # note that this is NOT airbyte repo
