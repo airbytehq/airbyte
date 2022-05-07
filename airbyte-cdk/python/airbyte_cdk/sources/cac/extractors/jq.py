@@ -10,16 +10,15 @@ from airbyte_cdk.sources.cac.types import Record
 
 
 class JqExtractor:
-    def __init__(self, options, vars, config):
-        print(f"creating JqExtractor with object config: {options}")
+    def __init__(self, transform, vars, config):
+        print(f"creating JqExtractor with transform: {transform}")
         print(f"creating JqExtractor with config:{config}")
         print(f"creating JqExtractor with vars:{vars}")
         self._vars = vars
-        self._options = options
         self._config = config
         self._interpolator = JinjaInterpolation()
         print("before creating transform")
-        self._transform = self._options["transform"]
+        self._transform = transform
         print("after creating transform")
 
     def extract_records(self, response: requests.Response) -> List[Record]:

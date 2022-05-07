@@ -4,19 +4,24 @@
 
 # from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator, NoAuth
 # from airbyte_cdk.sources.streams.http.http import HttpStream
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.cac.factory import LowCodeComponentFactory
+from airbyte_cdk.sources.cac.retrievers.retriever import Retriever
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.cac.types import Vars, Config
+
 from airbyte_cdk.sources.streams.core import Stream
 
 
 class ConfigurableStream(Stream):
-    def __init__(self, object_config, parent_vars, config):
-        print(f"creating a configurable stream with {object_config}")
-        self._vars = self.merge_dicts(object_config.get("vars", {}), parent_vars)
+    def __init__(self, schema, retriever: Retriever, vars: "Vars", config: "Config"):
+        print(f"creating a configurable stream with {retriever}")
+        self._vars = vars
         print(f"stream.vars: {self._vars}")
-        self._retriever = LowCodeComponentFactory().build(object_config["retriever"], self._vars, config)
+        self._retriever = LowCodeComponentFactory().create_component(retriever, vars, config)
 
     def read_records(
         self,

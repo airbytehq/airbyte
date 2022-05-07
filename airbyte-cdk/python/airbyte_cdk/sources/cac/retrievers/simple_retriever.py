@@ -9,15 +9,12 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SimpleRetriever(HttpStream):
-    def __init__(self, object_config, parent_vars, config):
-        print(f"retriever with config: {object_config}")
+    def __init__(self, requester, extractor, vars, config):
+        print(f"retriever with config: {requester} and {extractor} and {vars} and {config}")
 
-        self._requester = LowCodeComponentFactory().build(
-            object_config["requester"], self.merge_dicts(object_config.get("vars", {}), parent_vars), config
-        )
-        self._extractor = LowCodeComponentFactory().build(
-            object_config["extractor"], self.merge_dicts(object_config.get("vars", {}), parent_vars), config
-        )
+        # FIXME: we should probably share the factory?
+        self._requester = LowCodeComponentFactory().create_component(requester, vars, config)
+        self._extractor = LowCodeComponentFactory().create_component(extractor, vars, config)
         super().__init__(self._requester.get_authenticator())
 
     @property

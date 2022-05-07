@@ -3,10 +3,11 @@
 #
 import datetime
 
+from airbyte_cdk.sources.cac.interpolation.interpolation import Interpolation
 from jinja2 import Environment
 
 
-class JinjaInterpolation:
+class JinjaInterpolation(Interpolation):
     def __init__(self):
         self._environment = Environment()
         self._environment.globals["now_local"] = datetime.datetime.now

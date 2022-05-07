@@ -2,17 +2,18 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 from airbyte_cdk.sources.cac.factory import LowCodeComponentFactory
+from airbyte_cdk.sources.cac.requesters.requester import Requester
 
 
-class HttpRequester:
-    def __init__(self, options, vars, config):
-        print(f"creating HttpRequester with {options}")
-        self._authenticator = LowCodeComponentFactory().build(options["authenticator"], vars, config)
+class HttpRequester(Requester):
+    def __init__(self, url_base, path, method, authenticator, vars, config):
+        print("creating HttpRequester")
+        self._authenticator = LowCodeComponentFactory().create_component(authenticator, vars, config)
         print(f"authenticator: {self._authenticator.auth_method}")
         print(f"authenticator: {self._authenticator.auth_header}")
-        # print(f"authenticator: {self._authenticator._token}")
-        self._url_base = options["url_base"]
-        self._path = options["path"]
+        self._url_base = url_base
+        self._path = path
+        self._method = method
 
     def get_authenticator(self):
         return self._authenticator
@@ -23,5 +24,5 @@ class HttpRequester:
     def get_path(self):
         return self._path
 
-    def merge_dicts(self, d1, d2):
-        return {**d1, **d2}
+    def get_method(self):
+        return self._method

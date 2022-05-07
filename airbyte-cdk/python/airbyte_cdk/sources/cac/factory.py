@@ -1,18 +1,30 @@
 #
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
+
 import importlib
+from typing import TYPE_CHECKING
 
 from airbyte_cdk.sources.cac.interpolation.eval import JinjaInterpolation
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.cac.types import ComponentDefinition, Config, Options, Vars
 
 
 class LowCodeComponentFactory:
     def __init__(self):
         self._interpolator = JinjaInterpolation()
 
-    def build(self, config_mapping, parent_vars, config):
-        print(f"config_mapping: {config_mapping}")
-        fqcn = config_mapping["class_name"]
+    def create_component(self, component_definition: ComponentDefinition, vars: Vars, config: Config):
+        class_name = component_definition["class_name"]
+        component_vars = component_definition.get("vars", {})
+        options = component_definition.get("options", {})
+        return self.build(class_name=class_name, options=options, parent_vars=vars, inner_vars=component_vars, config=config)
+
+    def build(self, class_name: str, options: Options, parent_vars: Vars, inner_vars: Vars, config: Config):
+        # print(f"config_mapping: {config_mapping}")
+        fqcn = class_name  # config_mapping["class_name"]
         split = fqcn.split(".")
         module = ".".join(split[:-1])
         class_name = split[-1]
@@ -21,16 +33,16 @@ class LowCodeComponentFactory:
         print(f"module: {module}")
         print(f"{class_name}")
         class_ = getattr(importlib.import_module(module), class_name)
-        all_vars = self.merge_dicts(parent_vars, config_mapping.get("vars", {}))
+        all_vars = self.merge_dicts(parent_vars, inner_vars)
 
         if "TokenAuthenticator" in class_name:
             print("creating auth")
-            print(config_mapping)
-            options = config_mapping["options"]
+            # print(config_mapping)
+            # options = config_mapping["options"]
             interpolated_options = {k: self._interpolator.eval(v, all_vars, config) for k, v in options.items()}
             return class_(**interpolated_options)
 
-        return class_(config_mapping["options"], all_vars, config)
+        return class_(vars=all_vars, config=config, **options)
 
     def merge_dicts(self, d1, d2):
         return {**d1, **d2}
