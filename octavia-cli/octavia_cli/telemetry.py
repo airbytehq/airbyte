@@ -84,7 +84,7 @@ class TelemetryClient:
             "project_is_initialized": ctx.obj.get("PROJECT_IS_INITIALIZED"),
             "airbyter": os.getenv("AIRBYTE_ROLE") == "airbyter",
         }
-        command_name = self._create_command_name(ctx, extra_info_name)
+        command_name = self._create_command_name(ctx, extra_info_name=extra_info_name)
         self.segment_client.track(
             user_id=user_id, anonymous_id=anonymous_id, event=command_name, properties=segment_properties, context=segment_context
         )
