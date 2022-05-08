@@ -17,26 +17,30 @@ export enum FirebaseActionMode {
 }
 
 export const VerifyEmailAction: React.FC = () => {
-  const { query } = useRouter<{ oobCode: string }>();
+  const { query } = useRouter<{ oobCode: string; mode: string }>();
   const { verifyEmail } = useAuthService();
   const navigate = useNavigate();
   const { formatMessage } = useIntl();
   const { registerNotification } = useNotificationService();
 
   useAsync(async () => {
-    // Send verification code to authentication service
-    await verifyEmail(query.oobCode);
-    // Show a notification that the mail got verified successfully
-    registerNotification({
-      id: "auth/email-verified",
-      title: formatMessage({ id: "verifyEmail.notification" }),
-      isError: false,
-    });
-    // Navigate the user to the homepage
-    navigate("/");
+    if (query.mode === FirebaseActionMode.VERIFY_EMAIL) {
+      // Send verification code to authentication service
+      await verifyEmail(query.oobCode);
+      // Show a notification that the mail got verified successfully
+      registerNotification({
+        id: "auth/email-verified",
+        title: formatMessage({ id: "verifyEmail.notification" }),
+        isError: false,
+      });
+      // Navigate the user to the homepage
+      navigate("/");
+    }
   }, []);
 
-  return <LoadingPage />;
+  // Only render the loading screen if we're verifying an email otherwise don't render anything,
+  // since password reset is handled in a different place.
+  return query.mode === FirebaseActionMode.VERIFY_EMAIL ? <LoadingPage /> : null;
 };
 
 export const ResetPasswordAction: React.FC = () => {

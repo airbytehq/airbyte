@@ -3141,6 +3141,7 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+          nullable: true
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3221,6 +3222,7 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+          nullable: true
     WebBackendConnectionUpdate:
       type: object
       required:
@@ -3307,6 +3309,7 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+          nullable: true
     ConnectionSearch:
       type: object
       properties:
@@ -3597,6 +3600,7 @@ components:
         sourceDefinedCursor:
           description: If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
           type: boolean
+          nullable: true
         defaultCursorField:
           description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
           type: array
@@ -3611,6 +3615,7 @@ components:
               type: string
         namespace:
           type: string
+          nullable: true
           description: Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.
     StreamJsonSchema:
       type: object

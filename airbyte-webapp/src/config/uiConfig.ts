@@ -6,7 +6,7 @@ const uiConfig = {
   privacyLink: "https://airbyte.com/privacy-policy",
   helpLink: "https://airbyte.com/community",
   gitLink: "https://docs.airbyte.com/quickstart/deploy-airbyte",
-  updateLink: `${BASE_DOCS_LINK}/upgrading-airbyte`,
+  updateLink: `${BASE_DOCS_LINK}/operator-guides/upgrading-airbyte`,
   productReleaseStages: `${BASE_DOCS_LINK}/project-overview/product-release-stages`,
   slackLink: "https://slack.airbyte.com",
   supportTicketLink: "https://airbyte.com/contact-support",

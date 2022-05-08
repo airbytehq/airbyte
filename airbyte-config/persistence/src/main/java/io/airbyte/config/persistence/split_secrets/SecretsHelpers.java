@@ -304,6 +304,10 @@ public class SecretsHelpers {
     return getSecretCoordinate("airbyte_workspace_", newSecret, secretReader, workspaceId, uuidSupplier, oldSecretFullCoordinate);
   }
 
+  public static String getCoordinatorBase(final String secretBasePrefix, final UUID secretBaseId, final Supplier<UUID> uuidSupplier) {
+    return secretBasePrefix + secretBaseId + "_secret_" + uuidSupplier.get();
+  }
+
   private static SecretCoordinate getSecretCoordinate(final String secretBasePrefix,
                                                       final String newSecret,
                                                       final ReadOnlySecretPersistence secretReader,
@@ -329,7 +333,7 @@ public class SecretsHelpers {
     if (coordinateBase == null) {
       // IMPORTANT: format of this cannot be changed without introducing migrations for secrets
       // persistences
-      coordinateBase = secretBasePrefix + secretBaseId + "_secret_" + uuidSupplier.get();
+      coordinateBase = getCoordinatorBase(secretBasePrefix, secretBaseId, uuidSupplier);
     }
 
     if (version == null) {
