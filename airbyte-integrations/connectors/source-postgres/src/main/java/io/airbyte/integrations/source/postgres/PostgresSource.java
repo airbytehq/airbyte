@@ -308,12 +308,33 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                -- all grants
                                c.relacl IS NULL
                                -- read grant
-                          OR     s[2] = 'r');
+                        OR     s[2] = 'r')
+                 UNION
+                 SELECT DISTINCT table_catalog,
+                         table_schema,
+                         table_name,
+                         privilege_type
+                 FROM            information_schema.table_privileges p
+                 JOIN			 information_schema.applicable_roles r ON p.grantee = r.role_name
+                 WHERE   r.grantee in
+                (WITH RECURSIVE membership_tree(grpid, userid) AS (
+                    SELECT pg_roles.oid, pg_roles.oid
+                    FROM pg_roles WHERE oid = (select oid from pg_roles where  rolname=?)
+                  UNION ALL
+                    SELECT m_1.roleid, t_1.userid
+                    FROM pg_auth_members m_1, membership_tree t_1
+                    WHERE m_1.member = t_1.grpid
+                )
+                SELECT DISTINCT m.rolname AS grpname
+                FROM membership_tree t, pg_roles r, pg_roles m
+                WHERE t.grpid = m.oid AND t.userid = r.oid)
+                 AND             privilege_type = 'SELECT';
           """);
       final String username = database.getDatabaseConfig().get("username").asText();
       ps.setString(1, username);
       ps.setString(2, username);
       ps.setString(3, username);
+      ps.setString(4, username);
       return ps;
     };
 
