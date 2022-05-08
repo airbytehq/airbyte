@@ -1,0 +1,23 @@
+{
+    "object": "person",
+    "id": "PERSON_ID",
+    "$address1": "",
+    "$address2": "",
+    "$city": "Mount Vernon",
+    "$country": "United States",
+    "$latitude": "",
+    "$longitude": "",
+    "$region": "Virginia",
+    "$zip": "22121",
+    "$email": "george.washington@klaviyo.com",
+    "$title": "President",
+    "$phone_number": "+13239169023",
+    "$organization": "U.S. Government",
+    "$first_name": "George",
+    "$last_name": "Washington",
+    "$timezone": "US/Eastern",
+    "$id": "CUSTOM_ID",
+    "$source":-6,
+    "created": "2021-11-04 09:06:13",
+    "updated": "2021-11-23 11:21:03"
+  }

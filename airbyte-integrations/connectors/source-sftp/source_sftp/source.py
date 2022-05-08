@@ -4,6 +4,7 @@
 
 
 import logging
+import json
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -16,14 +17,55 @@ from .stream import SFTPIncrementalStream
 
 class SourceSftp(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        client = get_client(config)
-        return [SFTPIncrementalStream(
-            client=client,
-            table_name=config["table_name"],
-            start_date=config["start_date"],
-            prefix=config.get("prefix"),
-            pattern=config.get("pattern")
-        )]
+        pattern = config.get("pattern")
+        if pattern and 'xlsx' in pattern:
+            sheet_list_input = config.get("sheet_list",None)
+            stream_list = []
+
+            if sheet_list_input:
+                sheet_list = sheet_list_input.split(',')
+                
+                for sheet in sheet_list:
+                    reader_config = config.get("reader_config","{}")
+                    reader_config = json.loads(reader_config)
+                    reader_config["sheet_name"] = sheet
+                    config["reader_config"] = json.dumps(reader_config)
+
+                    client = get_client(config)
+                    stream_list.append(SFTPIncrementalStream(
+                        client=client,
+                        table_name=sheet,
+                        start_date=config["start_date"],
+                        prefix=config.get("prefix"),
+                        pattern=config.get("pattern"),
+                        location=config.get("location")
+                    ))
+                
+            else:
+                print(f"No sheet_list provided, get first sheet only")
+                client = get_client(config)
+                stream_list.append(SFTPIncrementalStream(
+                    client=client,
+                    table_name=config["table_name"],
+                    start_date=config["start_date"],
+                    prefix=config.get("prefix"),
+                    pattern=config.get("pattern"),
+                    location=config.get("location")
+                ))
+            return stream_list
+            
+        elif 'csv' in pattern:
+            client = get_client(config)
+            return [SFTPIncrementalStream(
+                client=client,
+                table_name=config["table_name"],
+                start_date=config["start_date"],
+                prefix=config.get("prefix"),
+                pattern=config.get("pattern"),
+                location=config.get("location")
+            )]
+        else:
+            raise ValueError(f"Pattern in config does not indicate file type is csv or xlsx. Please check again")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """

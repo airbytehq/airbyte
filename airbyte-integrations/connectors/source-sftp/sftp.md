@@ -15,7 +15,7 @@ The SFTP source supports Full Refresh and Incremental sync.
 
 ### Limitations
 
-- Support CSV file type only
+- Support CSV + XLSX file type only
 - All files must have the same schema
 
 ## Getting started

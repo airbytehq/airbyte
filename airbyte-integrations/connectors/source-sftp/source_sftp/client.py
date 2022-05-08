@@ -200,7 +200,8 @@ class Client:
     @backoff.on_exception(backoff.expo, (socket.timeout), max_tries=5, factor=2)
     def load_dataframes(self, file_path, skip_data=False):
         _reader_config = {**self.reader_config}
-        _reader_config["chunksize"] = CHUNK_SIZE
+        if file_path.endswith('.csv'):
+            _reader_config["chunksize"] = CHUNK_SIZE
         if skip_data:
             _reader_config["nrows"] = 0
             _reader_config["index_col"] = 0
@@ -208,7 +209,10 @@ class Client:
         logger.debug("Load dataframe from file %s, with read options: %s", file_path, _reader_config)
         with self.sftp.open(file_path, "r") as file:
             # file.prefetch()
-            yield from pd.read_csv(file, **_reader_config)
+            if file_path.endswith('.csv'):
+                yield from pd.read_csv(file, **_reader_config)
+            elif file_path.endswith('.xlsx'):
+                yield pd.read_excel(file, **_reader_config)
 
     def read(self, file_path, fields=None, skip_data=False):
         fields = set(fields) if fields else None

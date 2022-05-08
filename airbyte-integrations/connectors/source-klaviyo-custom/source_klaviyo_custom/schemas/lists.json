@@ -1,0 +1,30 @@
+{
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	"$id": "https://example.com/object1650447447.json", 
+	"title": "Root", 
+	"type": "array",
+	"default": [],
+	"items":{
+		"$id": "#root/items", 
+		"title": "Items", 
+		"type": "object",
+		"properties": {
+			"list_id": {
+				"$id": "#root/items/list_id", 
+				"title": "List_id", 
+				"type": "string",
+				"default": "",
+				"pattern": "^.*$"
+			},
+			"list_name": {
+				"$id": "#root/items/list_name", 
+				"title": "List_name", 
+				"type": "string",
+				"default": "",
+				"pattern": "^.*$"
+			}
+		}
+	}
+
+}

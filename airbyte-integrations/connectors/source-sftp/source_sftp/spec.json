@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Sftp Spec",
     "type": "object",
-    "required": ["table_name", "user", "password", "host", "start_date"],
+    "required": ["table_name", "pattern", "user", "password", "host", "port", "start_date"],
     "additionalProperties": false,
     "properties": {
       "table_name": {
@@ -60,6 +60,17 @@
         "title": "prefix",
         "default": "",
         "description": "SFTP file prefix"
+      },
+      "sheet_list": {
+        "type": "string",
+        "title": "List of excel sheets if file type is xlsx",
+        "description": "Excel file sheet list"
+      },
+      "location": {
+        "type": "string",
+        "title": "Account location",
+        "examples": ["US","CA"],
+        "description": "Location of account"
       }
     }
   },

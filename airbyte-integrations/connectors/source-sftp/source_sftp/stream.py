@@ -29,6 +29,7 @@ class SFTPStream(Stream):
         pattern: str = None,
         fields: Mapping[str, Any] = None,
         start_date: str = None,
+        location: str = None
     ) -> None:
         self._client = client
         self.table_name = table_name
@@ -36,6 +37,7 @@ class SFTPStream(Stream):
         self.pattern = pattern or PATTERN_ALL
         self.fields = fields or {}
         self.start_date = self.parse_dttm(start_date or OLDEST_DATETIME)
+        self.location = location
 
     @classmethod
     def parse_dttm(cls, text: str) -> datetime:
@@ -50,7 +52,7 @@ class SFTPStream(Stream):
 
     @property
     def name(self) -> str:
-        return self.table_name
+        return f"{self.table_name}_{self.location.lower()}" if self.location else self.table_name
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:

@@ -7,26 +7,22 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
-    "paramiko==2.9.2",
-    "pytz==2021.3",
-    "pandas==1.3.5",
-    "backoff==1.11.1",
-    "openpyxl==3.0.9"
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "pytest-mock~=3.6.1",
     "source-acceptance-test",
 ]
 
 setup(
-    name="source_sftp",
-    description="Source implementation for SFTP.",
+    name="source_fullstory",
+    description="Source implementation for Fullstory.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
