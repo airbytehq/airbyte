@@ -162,7 +162,7 @@ const MainInfo: React.FC<MainInfoProps> = ({
             wasActive={showFeedback}
             onClick={onCancelJob}
           >
-            {showFeedback ? <FormattedMessage id="form.canceling" /> : <FormattedMessage id="form.cancel" />}
+            <FormattedMessage id={showFeedback ? "form.canceling" : "form.cancel"} />
           </CancelButton>
         )}
         <FormattedTimeParts value={getJobCreatedAt(job) * 1000} hour="numeric" minute="2-digit">
