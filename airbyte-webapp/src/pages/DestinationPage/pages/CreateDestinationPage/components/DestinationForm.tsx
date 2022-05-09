@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition } from "core/domain/connector";
+import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import useRouter from "hooks/useRouter";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
@@ -17,7 +17,7 @@ type IProps = {
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  destinationDefinitions: DestinationDefinition[];
+  destinationDefinitions: DestinationDefinitionRead[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
   afterSelectConnector?: () => void;

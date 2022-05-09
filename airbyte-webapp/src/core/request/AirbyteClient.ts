@@ -1279,7 +1279,7 @@ export interface SourceDefinitionReadList {
 }
 
 /**
- * Update the SourceDefinition. Currently, the only allowed attribute to update is the default docker image version.
+ * Update the SourceDefinitionRead. Currently, the only allowed attribute to update is the default docker image version.
  */
 export interface SourceDefinitionUpdate {
   sourceDefinitionId: SourceDefinitionId;
@@ -1788,7 +1788,7 @@ export const revokeSourceDefinitionFromWorkspace = (
 };
 
 /**
- * @summary Get specification for a SourceDefinition.
+ * @summary Get specification for a SourceDefinitionRead.
  */
 export const getSourceDefinitionSpecification = (
   sourceDefinitionIdWithWorkspaceId: SourceDefinitionIdWithWorkspaceId,

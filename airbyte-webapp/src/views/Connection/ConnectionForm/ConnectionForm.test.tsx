@@ -1,13 +1,18 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import { Destination, Source } from "core/domain/connector";
-import { ConnectionStatus, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import {
+  ConnectionStatus,
+  DestinationRead,
+  NamespaceDefinitionType,
+  SourceRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 import { render } from "utils/testutils";
 
 import ConnectionForm from "./ConnectionForm";
 
-const mockSource: Source = {
+const mockSource: SourceRead = {
   sourceId: "test-source",
   name: "test source",
   sourceName: "test-source-name",
@@ -16,7 +21,7 @@ const mockSource: Source = {
   connectionConfiguration: undefined,
 };
 
-const mockDestination: Destination = {
+const mockDestination: DestinationRead = {
   destinationId: "test-destination",
   name: "test destination",
   destinationName: "test destination name",

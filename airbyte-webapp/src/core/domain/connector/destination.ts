@@ -1,5 +1,7 @@
-import { ConnectorDefinition, DestinationDefinition } from "./types";
+import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 
-export function isDestinationDefinition(connector: ConnectorDefinition): connector is DestinationDefinition {
-  return (connector as DestinationDefinition).destinationDefinitionId !== undefined;
+import { ConnectorDefinition } from "./types";
+
+export function isDestinationDefinition(connector: ConnectorDefinition): connector is DestinationDefinitionRead {
+  return (connector as DestinationDefinitionRead).destinationDefinitionId !== undefined;
 }

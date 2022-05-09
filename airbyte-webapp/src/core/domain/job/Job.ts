@@ -1,7 +1,6 @@
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
 import Status from "core/statuses";
 
-import { SynchronousJobRead } from "../../request/AirbyteClient";
+import { DestinationDefinitionRead, SourceDefinitionRead, SynchronousJobRead } from "../../request/AirbyteClient";
 
 export type JobMeta = SynchronousJobRead;
 
@@ -77,8 +76,8 @@ export interface JobDebugInfoMeta {
   configType: string;
   configId: string;
   status: Status | null;
-  sourceDefinition: SourceDefinition;
-  destinationDefinition: DestinationDefinition;
+  sourceDefinition: SourceDefinitionRead;
+  destinationDefinition: DestinationDefinitionRead;
 }
 
 export interface JobDebugInfoDetails {

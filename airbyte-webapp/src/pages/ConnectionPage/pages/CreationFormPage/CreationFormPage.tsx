@@ -10,14 +10,19 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
 
-import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
-import { WebBackendConnectionRead } from "../../../../core/request/AirbyteClient";
+import {
+  DestinationDefinitionRead,
+  DestinationRead,
+  SourceDefinitionRead,
+  SourceRead,
+  WebBackendConnectionRead,
+} from "../../../../core/request/AirbyteClient";
 import DestinationForm from "./components/DestinationForm";
 import ExistingEntityForm from "./components/ExistingEntityForm";
 import SourceForm from "./components/SourceForm";
@@ -47,10 +52,10 @@ const hasDestinationId = (state: unknown): state is { destinationId: string } =>
 };
 
 function usePreloadData(): {
-  sourceDefinition?: SourceDefinition;
-  destination?: Destination;
-  source?: Source;
-  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinitionRead;
+  destination?: DestinationRead;
+  source?: SourceRead;
+  destinationDefinition?: DestinationDefinitionRead;
 } {
   const { location } = useRouter();
 

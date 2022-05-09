@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
-import { DestinationDefinition } from "core/domain/connector";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
@@ -29,8 +28,12 @@ function useGetDestinationDefinitionService(): DestinationDefinitionService {
   );
 }
 
+export interface DestinationDefinitionReadWithLatestTag extends DestinationDefinitionRead {
+  latestDockerImageTag?: string;
+}
+
 const useDestinationDefinitionList = (): {
-  destinationDefinitions: DestinationDefinition[];
+  destinationDefinitions: DestinationDefinitionReadWithLatestTag[];
 } => {
   const service = useGetDestinationDefinitionService();
   const workspace = useCurrentWorkspace();
@@ -49,7 +52,7 @@ const useDestinationDefinitionList = (): {
 
         return {
           ...destination,
-          latestDockerImageTag: withLatest?.dockerImageTag ?? "",
+          latestDockerImageTag: withLatest?.dockerImageTag,
         };
       }
     );
@@ -60,7 +63,7 @@ const useDestinationDefinitionList = (): {
 
 const useDestinationDefinition = <T extends string | undefined>(
   id: T
-): T extends string ? DestinationDefinition : DestinationDefinition | undefined => {
+): T extends string ? DestinationDefinitionRead : DestinationDefinitionRead | undefined => {
   const service = useGetDestinationDefinitionService();
 
   return useSuspenseQuery(destinationDefinitionKeys.detail(id || ""), () => service.get(id || ""), {

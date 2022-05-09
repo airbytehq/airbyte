@@ -9,13 +9,12 @@ import { IDataItem } from "components/base/DropDown/components/Option";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
-import { Destination, Source } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
 
-import { WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -33,15 +32,15 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
-type IProps = {
+type CreateConnectionContentProps = {
   additionBottomControls?: React.ReactNode;
-  source: Source;
-  destination: Destination;
+  source: SourceRead;
+  destination: DestinationRead;
   afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
   noTitles?: boolean;
 };
 
-const CreateConnectionContent: React.FC<IProps> = ({
+const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   source,
   destination,
   afterSubmitConnection,

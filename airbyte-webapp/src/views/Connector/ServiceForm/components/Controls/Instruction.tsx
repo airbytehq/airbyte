@@ -13,11 +13,11 @@ import { Markdown } from "components/Markdown";
 import { SideView } from "components/SideView";
 
 import { useConfig } from "config";
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
-import { useDocumentation, getDocumentationType } from "hooks/services/useDocumentation";
+import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
+import { getDocumentationType, useDocumentation } from "hooks/services/useDocumentation";
 
-type IProps = {
-  selectedService: SourceDefinition | DestinationDefinition;
+type InstructionProps = {
+  selectedService: SourceDefinitionRead | DestinationDefinitionRead;
   documentationUrl: string;
 };
 
@@ -68,7 +68,7 @@ const HeaderLink = styled.a`
   }
 `;
 
-const DocumentationPanel: React.FC<{ onClose: () => void } & IProps> = ({
+const DocumentationPanel: React.FC<{ onClose: () => void } & InstructionProps> = ({
   selectedService,
   documentationUrl,
   onClose,
@@ -117,7 +117,7 @@ const DocumentationPanel: React.FC<{ onClose: () => void } & IProps> = ({
   );
 };
 
-const Instruction: React.FC<IProps> = ({ selectedService, documentationUrl }) => {
+const Instruction: React.FC<InstructionProps> = ({ selectedService, documentationUrl }) => {
   const [isSideViewOpen, setIsSideViewOpen] = useToggle(false);
   const docType = getDocumentationType(documentationUrl);
 

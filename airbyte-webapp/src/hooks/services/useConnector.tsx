@@ -22,8 +22,8 @@ type ConnectorService = {
   hasNewDestinationVersion: boolean;
   countNewSourceVersion: number;
   countNewDestinationVersion: number;
-  updateAllSourceVersions: () => unknown;
-  updateAllDestinationVersions: () => unknown;
+  updateAllSourceVersions: () => Promise<void>;
+  updateAllDestinationVersions: () => Promise<void>;
 };
 
 const useConnector = (): ConnectorService => {
@@ -45,7 +45,7 @@ const useConnector = (): ConnectorService => {
       newSourceDefinitions?.map((item) =>
         updateSourceDefinition({
           sourceDefinitionId: item.sourceDefinitionId,
-          dockerImageTag: item.latestDockerImageTag,
+          dockerImageTag: item.latestDockerImageTag ?? "",
         })
       )
     );
@@ -56,7 +56,7 @@ const useConnector = (): ConnectorService => {
       newDestinationDefinitions?.map((item) =>
         updateDestinationDefinition({
           destinationDefinitionId: item.destinationDefinitionId,
-          dockerImageTag: item.latestDockerImageTag,
+          dockerImageTag: item.latestDockerImageTag ?? "",
         })
       )
     );

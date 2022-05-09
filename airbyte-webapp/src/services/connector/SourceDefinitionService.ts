@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { useConfig } from "config";
-import { SourceDefinition } from "core/domain/connector";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
@@ -29,8 +28,12 @@ function useGetSourceDefinitionService(): SourceDefinitionService {
   );
 }
 
+export interface SourceDefinitionReadWithLatestTag extends SourceDefinitionRead {
+  latestDockerImageTag?: string;
+}
+
 const useSourceDefinitionList = (): {
-  sourceDefinitions: SourceDefinition[];
+  sourceDefinitions: SourceDefinitionReadWithLatestTag[];
 } => {
   const service = useGetSourceDefinitionService();
   const workspace = useCurrentWorkspace();
@@ -48,7 +51,7 @@ const useSourceDefinitionList = (): {
 
       return {
         ...source,
-        latestDockerImageTag: withLatest?.dockerImageTag ?? "",
+        latestDockerImageTag: withLatest?.dockerImageTag,
       };
     });
 
@@ -58,7 +61,7 @@ const useSourceDefinitionList = (): {
 
 const useSourceDefinition = <T extends string | undefined>(
   id: T
-): T extends string ? SourceDefinition : SourceDefinition | undefined => {
+): T extends string ? SourceDefinitionRead : SourceDefinitionRead | undefined => {
   const service = useGetSourceDefinitionService();
 
   return useSuspenseQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {

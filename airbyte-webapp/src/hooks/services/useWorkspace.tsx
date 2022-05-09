@@ -1,7 +1,7 @@
 import { useMutation } from "react-query";
 
-import { Destination, Source } from "core/domain/connector";
 import { NotificationService } from "core/domain/notification/NotificationService";
+import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useInitService } from "services/useInitService";
 import { useCurrentWorkspace, useUpdateWorkspace } from "services/workspaces/WorkspacesService";
@@ -51,8 +51,8 @@ const useWorkspace = () => {
     destination,
   }: {
     feedback: string;
-    source: Source;
-    destination: Destination;
+    source: SourceRead;
+    destination: DestinationRead;
   }) => {
     analyticsService.track("Onboarding Feedback", {
       feedback,

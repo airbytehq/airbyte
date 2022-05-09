@@ -4,7 +4,6 @@ import FrequencyConfig from "config/FrequencyConfig.json";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
-import { Destination, Source, SourceDefinition } from "core/domain/connector";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useInitService } from "services/useInitService";
 import { equal } from "utils/objects";
@@ -12,8 +11,11 @@ import { equal } from "utils/objects";
 import { useConfig } from "../../config";
 import {
   ConnectionSchedule,
+  DestinationRead,
   NamespaceDefinitionType,
   OperationCreate,
+  SourceDefinitionRead,
+  SourceRead,
   WebBackendConnectionRead,
   WebBackendConnectionUpdate,
 } from "../../core/request/AirbyteClient";
@@ -40,9 +42,9 @@ export type ValuesProps = {
 
 type CreateConnectionProps = {
   values: ValuesProps;
-  source: Source;
-  destination: Destination;
-  sourceDefinition?: SourceDefinition | { name: string; sourceDefinitionId: string };
+  source: SourceRead;
+  destination: DestinationRead;
+  sourceDefinition?: SourceDefinitionRead | { name: string; sourceDefinitionId: string };
   destinationDefinition?: { name: string; destinationDefinitionId: string };
   sourceCatalogId: string | undefined;
 };

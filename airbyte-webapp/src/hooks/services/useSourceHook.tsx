@@ -4,14 +4,13 @@ import { useMutation, useQueryClient } from "react-query";
 import { useConfig } from "config";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { Source } from "core/domain/connector";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
-import { SynchronousJobRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { SourceRead, SynchronousJobRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -40,7 +39,7 @@ function useSourceService() {
   return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
-type SourceList = { sources: Source[] };
+type SourceList = { sources: SourceRead[] };
 
 const useSourceList = (): SourceList => {
   const workspace = useCurrentWorkspace();
@@ -51,7 +50,7 @@ const useSourceList = (): SourceList => {
 
 const useGetSource = <T extends string | undefined | null>(
   sourceId: T
-): T extends string ? Source : Source | undefined => {
+): T extends string ? SourceRead : SourceRead | undefined => {
   const service = useSourceService();
 
   return useSuspenseQuery(sourcesKeys.detail(sourceId ?? ""), () => service.get(sourceId ?? ""), {
@@ -97,7 +96,7 @@ const useDeleteSource = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation(
-    (payload: { source: Source; connectionsWithSource: WebBackendConnectionRead[] }) =>
+    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
       service.delete(payload.source.sourceId),
     {
       onSuccess: (_data, ctx) => {

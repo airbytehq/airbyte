@@ -2,15 +2,11 @@ import { useCallback, useMemo, useRef } from "react";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
 import { useConfig } from "config";
-import {
-  ConnectorDefinitionSpecification,
-  ConnectorSpecification,
-  DestinationGetConsentPayload,
-  SourceGetConsentPayload,
-} from "core/domain/connector";
+import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { SourceAuthService } from "core/domain/connector/SourceAuthService";
+import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/request/AirbyteClient";
 
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import useRouter from "../useRouter";
@@ -41,11 +37,11 @@ export function useConnectorAuth(): {
     connector: ConnectorDefinitionSpecification,
     oAuthInputConfiguration: Record<string, unknown>
   ) => Promise<{
-    payload: SourceGetConsentPayload | DestinationGetConsentPayload;
+    payload: SourceOauthConsentRequest | DestinationOauthConsentRequest;
     consentUrl: string;
   }>;
   completeOauthRequest: (
-    params: SourceGetConsentPayload | DestinationGetConsentPayload,
+    params: SourceOauthConsentRequest | DestinationOauthConsentRequest,
     queryParams: Record<string, unknown>
   ) => Promise<Record<string, unknown>>;
 } {
@@ -69,7 +65,7 @@ export function useConnectorAuth(): {
       connector: ConnectorDefinitionSpecification,
       oAuthInputConfiguration: Record<string, unknown>
     ): Promise<{
-      payload: SourceGetConsentPayload | DestinationGetConsentPayload;
+      payload: SourceOauthConsentRequest | DestinationOauthConsentRequest;
       consentUrl: string;
     }> => {
       if (isSourceDefinitionSpecification(connector)) {
@@ -95,7 +91,7 @@ export function useConnectorAuth(): {
       }
     },
     completeOauthRequest: async (
-      params: SourceGetConsentPayload | DestinationGetConsentPayload,
+      params: SourceOauthConsentRequest | DestinationOauthConsentRequest,
       queryParams: Record<string, unknown>
     ): Promise<Record<string, unknown>> => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,7 +99,7 @@ export function useConnectorAuth(): {
         ...params,
         queryParams,
       };
-      return (payload as SourceGetConsentPayload).sourceDefinitionId
+      return (payload as SourceOauthConsentRequest).sourceDefinitionId
         ? sourceAuthService.completeOauth(payload)
         : destinationAuthService.completeOauth(payload);
     },
@@ -119,7 +115,7 @@ export function useRunOauthFlow(
   run: (oauthInputParams: Record<string, unknown>) => void;
 } {
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
-  const param = useRef<SourceGetConsentPayload | DestinationGetConsentPayload>();
+  const param = useRef<SourceOauthConsentRequest | DestinationOauthConsentRequest>();
 
   const [{ loading }, onStartOauth] = useAsyncFn(
     async (oauthInputParams: Record<string, unknown>) => {

@@ -7,9 +7,13 @@ import { ConnectorIcon } from "components/ConnectorIcon";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
 
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
+import {
+  ConnectionStatus,
+  DestinationDefinitionRead,
+  SourceDefinitionRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 
-import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 import EnabledControl from "./EnabledControl";
 
 const MainInfo = styled(ContentCard)`
@@ -36,8 +40,8 @@ const EnabledCell = styled(Cell)`
 interface StatusMainInfoProps {
   connection: WebBackendConnectionRead;
   frequencyText?: string;
-  destinationDefinition?: DestinationDefinition;
-  sourceDefinition?: SourceDefinition;
+  destinationDefinition?: DestinationDefinitionRead;
+  sourceDefinition?: SourceDefinitionRead;
   allowSync?: boolean;
 }
 

@@ -1,14 +1,13 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { Destination } from "core/domain/connector";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
 import { useConfig } from "../../config";
-import { WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { DestinationRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -36,7 +35,7 @@ function useDestinationService() {
   return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
-type DestinationList = { destinations: Destination[] };
+type DestinationList = { destinations: DestinationRead[] };
 
 const useDestinationList = (): DestinationList => {
   const workspace = useCurrentWorkspace();
@@ -47,7 +46,7 @@ const useDestinationList = (): DestinationList => {
 
 const useGetDestination = <T extends string | undefined | null>(
   destinationId: T
-): T extends string ? Destination : Destination | undefined => {
+): T extends string ? DestinationRead : DestinationRead | undefined => {
   const service = useDestinationService();
 
   return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
@@ -91,7 +90,7 @@ const useDeleteDestination = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation(
-    (payload: { destination: Destination; connectionsWithDestination: WebBackendConnectionRead[] }) =>
+    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionRead[] }) =>
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {
