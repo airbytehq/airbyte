@@ -42,6 +42,11 @@ nested_records_schema_str = """{
     ]
 }"""
 
+nested_schema_output = {
+        "lastname": "string",
+        "address": "string"   
+}
+
 master_schema = {
     "name": "string",
     "age": ["integer", "null"],
@@ -62,7 +67,7 @@ class TestAvroParser(AbstractTestParser):
         :param num_rows: number of rows to be generated
         :return: string with path to the file created
         """
-        filename = os.path.join(TMP_FOLDER, out_file + "." + cls.filetype)
+        filename = os.path.join(out_file + "." + cls.filetype)
         parsed_schema = schema.parse(schema_str)
         rec_writer = io.DatumWriter(parsed_schema)
         file_writer = datafile.DataFileWriter(open(filename, "wb"), rec_writer, parsed_schema)
@@ -102,14 +107,14 @@ class TestAvroParser(AbstractTestParser):
             "fails": [],
         }
 
-        # test for avro schema with nested records. This should fail as it's not supported
+        # test for avro schema with nested records. This will pass as all nested records are returned as one string
         cases["test_nested_records"] = {
             "AbstractFileParser": AvroParser(format=cls.filetype),
             "filepath": cls.generate_avro_file(nested_records_schema_str, "test_nested_records", 0),
             "num_records": 0,
-            "inferred_schema": master_schema,
+            "inferred_schema": nested_schema_output,
             "line_checks": {},
-            "fails": ["test_get_inferred_schema"],
+            "fails": [],
         }
 
         return cases

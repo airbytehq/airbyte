@@ -13,7 +13,6 @@ MAIN_REQUIREMENTS = [
     "dill==0.3.4",
     "pytz",
     "fastavro==1.4.11",
-    "anyio==3.5.0" # needed?
     "python-snappy==0.6.1"
 ]
 
@@ -24,8 +23,8 @@ TEST_REQUIREMENTS = [
     "psutil",
     "pytest-order",
     "netifaces~=0.11.0",
-    "docker"
-    "avro==1.11.0",
+    "docker",
+    "avro==1.11.0"
 ]
 
 setup(
