@@ -4,7 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { ContentCard } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 
-import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
+import { Connector, ConnectorT } from "core/domain/connector";
+import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -16,7 +17,7 @@ export type ConnectorCardProvidedProps = {
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
+  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
 };
 
 export const ConnectorCard: React.FC<
