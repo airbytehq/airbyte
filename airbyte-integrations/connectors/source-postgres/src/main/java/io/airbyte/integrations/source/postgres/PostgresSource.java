@@ -136,11 +136,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
       for (final String schema : schemas) {
-        LOGGER.debug("Discovering schema: {}", schema);
-        internals.addAll(super.discoverInternal(database, schema));
-      }
-      for (final TableInfo<CommonField<JDBCType>> info : internals) {
-        LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
+        LOGGER.info("Checking schema: {}", schema);
+        final List<TableInfo<CommonField<JDBCType>>> tables = super.discoverInternal(database, schema);
+        internals.addAll(tables);
+        for (final TableInfo<CommonField<JDBCType>> table : tables) {
+          LOGGER.info("Found table: {}.{}", table.getNameSpace(), table.getName());
+        }
       }
       return internals;
     } else {
